@@ -11,7 +11,6 @@
 <translation id="2831078752570172210">お使いのアカウントはロックアウトされています。システム管理者にお問い合わせください。</translation>
 <translation id="2844349213149998955">このデバイスで個人用アカウントでログインすることはできません。仕事用アカウントでログインしてください。</translation>
 <translation id="3306357053520292004">このパソコンのユーザーはこのアカウントですでに追加されています。別のアカウントでログインしてください。</translation>
-<translation id="3968372833844047539">ログインできるのは G Suite Enterprise のユーザーのみです。</translation>
 <translation id="4057329986137569701">内部エラーが発生しました。</translation>
 <translation id="4267670563222825190">ドメイン ユーザーがお使いのアカウントで見つかりませんでした。管理者にお問い合わせください。</translation>
 <translation id="4300229033992784001">アカウントのパスワードが変更されました。Windows アカウントと仕事用アカウントを同期するには、現在の Windows のパスワードを入力してください。</translation>
@@ -25,7 +24,6 @@
 <translation id="7357241217513796177">ネットワークに接続していることを確認してから、もう一度お試しください。</translation>
 <translation id="7536769223115622137">仕事用アカウントを追加</translation>
 <translation id="7856245195110636219">続行するには現在の Windows パスワードを入力する必要があります。システム管理者にお問い合わせください。</translation>
-<translation id="7996763357529480810">G Suite 仕事用アカウントを使用してログインする。</translation>
 <translation id="8639729688781680518">Windows パスワードをお忘れの場合</translation>
 <translation id="866458870819756755">ユーザーを作成できませんでした。</translation>
 <translation id="8875753657315897487">仕事用アカウントを使用してログイン</translation>

@@ -319,6 +319,7 @@
 <translation id="1468571364034902819">無法使用這個設定檔</translation>
 <translation id="1470811252759861213">如要在所有電腦上使用您的擴充功能，請<ph name="SIGN_IN_LINK" />。</translation>
 <translation id="1470967055429794975">這項操作將清除這個安全金鑰上的所有資料，包括 PIN 碼</translation>
+<translation id="1472675084647422956">顯示更多</translation>
 <translation id="1475502736924165259">您儲存的這些憑證不屬於任何其他類別</translation>
 <translation id="1476088332184200792">複製到你的裝置</translation>
 <translation id="1476607407192946488">語言設定(&amp;L)</translation>
@@ -333,7 +334,6 @@
 <translation id="1486096554574027028">搜尋密碼</translation>
 <translation id="1487335504823219454">開啟 - 自訂設定</translation>
 <translation id="1489664337021920575">選擇其他選項</translation>
-<translation id="1489956991149850859">你可以在這裡新增、移除或重新命名指紋。</translation>
 <translation id="1493892686965953381">正在等待 <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">還有 <ph name="NUM_PRINTERS" /> 個可用裝置。</translation>
 <translation id="1495677929897281669">返回分頁</translation>
@@ -897,7 +897,6 @@
 <translation id="2280486287150724112">右邊界</translation>
 <translation id="2282146716419988068">GPU 處理程序</translation>
 <translation id="2282155092769082568">自動設定網址：</translation>
-<translation id="228758327756499171"><ph name="NUMBER_OF_MORE_APPS" /> 個應用程式</translation>
 <translation id="2288181517385084064">切換至攝影機</translation>
 <translation id="2288735659267887385">無障礙設定</translation>
 <translation id="2289270750774289114">當網站要搜尋附近的藍牙裝置時，必須先詢問你 (建議)</translation>
@@ -1483,7 +1482,6 @@
 <translation id="3151539355209957474">開始時間</translation>
 <translation id="3151562827395986343">清除歷史記錄、Cookie、快取等資料</translation>
 <translation id="3151786313568798007">方向</translation>
-<translation id="3153862085237805241">儲存卡片</translation>
 <translation id="3154351730702813399">裝置管理員可能會監控你的瀏覽活動。</translation>
 <translation id="3154429428035006212">離線超過一個月</translation>
 <translation id="3156531245809797194">如要使用 Chrome，請登入帳戶</translation>
@@ -1625,10 +1623,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔線</translation>
 <translation id="3387614642886316601">使用進階拼字檢查功能</translation>
-<translation id="3391459139089708789">這部裝置會在 <ph name="MONTH_AND_YEAR" />前自動進行軟體和安全性更新。
-      <ph name="LINK_BEGIN" />
-        瞭解詳情
-      <ph name="LINK_END" /></translation>
 <translation id="3396800784455899911">點選 [接受並繼續] 按鈕即表示您同意上述的 Google 服務處理程序。</translation>
 <translation id="3399432415385675819">通知功能會遭到停用</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> 赫茲) - 交錯顯示</translation>
@@ -2263,7 +2257,6 @@
 <translation id="428565720843367874">掃描這個檔案時，防毒軟體發生意外錯誤。</translation>
 <translation id="4287502004382794929">你的軟體授權量不足，無法註冊這個裝置。如要購買更多授權，請與銷售人員聯絡。如果你認為這則訊息有誤，請與支援小組聯絡。</translation>
 <translation id="4289540628985791613">總覽</translation>
-<translation id="4291934469232591280">版本：<ph name="VERSION" /></translation>
 <translation id="4295072614469448764">應用程式已出現在你的終端機上，且可能在啟動器中顯示圖示。</translation>
 <translation id="4295979599050707005">請再次登入，並確認你的帳戶 (<ph name="USER_EMAIL" />) 可用於 Chrome 和 Google Play 的網站、應用程式與擴充功能。你也可以移除這個帳戶。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="4296575653627536209">新增受監管的使用者</translation>
@@ -2541,7 +2534,6 @@
 <translation id="4736292055110123391">讓你在所有裝置上的書籤、密碼、歷史記錄及其他設定保持同步</translation>
 <translation id="4737715515457435632">請連上網路</translation>
 <translation id="473775607612524610">更新</translation>
-<translation id="4739098340603978916">大小：<ph name="APP_SIZE" /></translation>
 <translation id="4739639199548674512">票證</translation>
 <translation id="4742746985488890273">固定至檔案櫃</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />瞭解如何更新應用程式<ph name="END_LINK" /></translation>
@@ -2561,7 +2553,6 @@
 <translation id="4765582662863429759">允許 Android 訊息將簡訊內容從手機轉送到 Chromebook</translation>
 <translation id="4768332406694066911">您有這些機構核發給您的憑證</translation>
 <translation id="4774824109040330448">在手機上使用相容的驗證器應用程式掃描 QR 圖碼。</translation>
-<translation id="4776146737004271126">開啟 Android 設定</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
 <translation id="4777825441726637019">Play 商店</translation>
 <translation id="4779083564647765204">縮放</translation>
@@ -2584,7 +2575,6 @@
 <translation id="480990236307250886">開啟首頁</translation>
 <translation id="4813136279048157860">我的圖片</translation>
 <translation id="4813512666221746211">網路錯誤</translation>
-<translation id="4816492930507672669">依頁面大小自動調整</translation>
 <translation id="4820236583224459650">設為使用中票證</translation>
 <translation id="4821935166599369261">分析已啟用(&amp;P)</translation>
 <translation id="4823484602432206655">讀取及變更使用者和裝置設定</translation>
@@ -2808,7 +2798,6 @@
 <translation id="5135085122826131075">只要說出「Ok Google」就能存取 Google 助理。</translation>
 <translation id="5135533361271311778">無法建立書籤項目。</translation>
 <translation id="5137501176474113045">刪除此項目</translation>
-<translation id="5138227688689900538">顯示較少</translation>
 <translation id="5139955368427980650">開啟(&amp;O)</translation>
 <translation id="5142961317498132443">驗證</translation>
 <translation id="5143374789336132547">擴充功能「<ph name="EXTENSION_NAME" />」已變更您點選 [首頁] 按鈕時所顯示的網頁。</translation>
@@ -2888,7 +2877,6 @@
 <translation id="5265797726250773323">安裝時發生錯誤</translation>
 <translation id="5266113311903163739">憑證授權單位匯入錯誤</translation>
 <translation id="5269977353971873915">列印失敗</translation>
-<translation id="5270167208902136840">顯示另外 <ph name="NUMBER_OF_MORE_APPS" /> 個應用程式</translation>
 <translation id="5275352920323889391">狗</translation>
 <translation id="5275776633505022322">剩餘嘗試次數：<ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="527605982717517565">永遠允許在 <ph name="HOST" /> 執行 JavaScript</translation>
@@ -3784,7 +3772,6 @@
 <translation id="6555810572223193255">目前無法執行清理作業</translation>
 <translation id="6556866813142980365">重做</translation>
 <translation id="6557290421156335491">我的捷徑</translation>
-<translation id="6559023360691182159">{COUNT,plural, =0{無}=1{<ph name="APP_1" />}=2{<ph name="APP_1" />和<ph name="APP_2" />}=3{<ph name="APP_1" />、<ph name="APP_2" />和<ph name="APP_3" />}=4{<ph name="APP_1" />、<ph name="APP_2" />、<ph name="APP_3" />和另外 1 個應用程式}other{<ph name="APP_1" />、<ph name="APP_2" />、<ph name="APP_3" />和另外 <ph name="EXTRA_APPS" /> 個應用程式}}</translation>
 <translation id="6561726789132298588">Enter 鍵</translation>
 <translation id="656293578423618167">檔案路徑或檔案名稱過長。請縮短檔案名稱或選擇其他儲存位置。</translation>
 <translation id="6563469144985748109">你的管理員尚未核准這個網站</translation>
@@ -3914,7 +3901,6 @@
 <translation id="677965093459947883">非常小</translation>
 <translation id="6781284683813954823">Doodle 連結</translation>
 <translation id="6781978626986383437">已取消 Linux 備份作業</translation>
-<translation id="6782111308708962316">禁止第三方網站儲存及讀取 Cookie 資料</translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6787839852456839824">鍵盤快速鍵</translation>
 <translation id="6788210894632713004">未封裝擴充功能</translation>
@@ -5052,7 +5038,6 @@
 <translation id="8398877366907290961">仍要繼續</translation>
 <translation id="8400146488506985033">管理使用者</translation>
 <translation id="8401432541486058167">請輸入與智慧型卡片相關聯的 PIN 碼。</translation>
-<translation id="8401839918915644121">依紙張大小自動調整</translation>
 <translation id="8405046151008197676">瞭解最新的更新內容摘要</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">先詢問我 (建議)</translation>
@@ -5284,7 +5269,6 @@
 <translation id="8743390665131937741">全螢幕縮放比例：</translation>
 <translation id="8743864605301774756">1 小時前更新</translation>
 <translation id="874689135111202667">{0,plural, =1{要將 1 個檔案上傳到這個網站嗎？}other{要將 # 個檔案上傳到這個網站嗎？}}</translation>
-<translation id="8747503242566427664">這個應用程式可以：</translation>
 <translation id="8748384418490037181">Smart Lock 選項</translation>
 <translation id="8749863574775030885">存取製造商不明的 USB 裝置</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> 要求與序列埠連線</translation>
@@ -5356,7 +5340,6 @@
 <translation id="883062543841130884">替代項目</translation>
 <translation id="8830796635868321089">無法以目前的 Proxy 設定啟動更新檢查，請調整 <ph name="PROXY_SETTINGS_LINK_START" />Proxy 設定<ph name="PROXY_SETTINGS_LINK_END" />。</translation>
 <translation id="8831140208248705279">將你的 <ph name="DEVICE_TYPE" /> 與 Android 手機搭配使用，可發揮更大效益。只要連結這兩個裝置，你就能透過電腦收發簡訊、分享網際網路連線，以及使用手機解鎖 <ph name="DEVICE_TYPE" />。<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
-<translation id="8831664945713891930">開啟擴充功能設定</translation>
 <translation id="8834039744648160717">網路設定由 <ph name="USER_EMAIL" /> 控制。</translation>
 <translation id="8838601485495657486">不透明</translation>
 <translation id="8838770651474809439">漢堡</translation>
@@ -5479,7 +5462,6 @@
 <translation id="9008201768610948239">略過</translation>
 <translation id="9009369504041480176">上傳中 (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">一律顯示圖示</translation>
-<translation id="9011424611726486705">開啟網站設定</translation>
 <translation id="9013707997379828817">你的管理員已復原這個裝置。請儲存重要檔案後再重新啟動。重新啟動後，裝置上的資料將全數刪除。</translation>
 <translation id="9018218886431812662">安裝完成</translation>
 <translation id="901834265349196618">電子郵件</translation>

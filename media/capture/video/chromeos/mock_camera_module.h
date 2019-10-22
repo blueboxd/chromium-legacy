@@ -26,12 +26,14 @@ class MockCameraModule : public cros::mojom::CameraModule {
 
   ~MockCameraModule();
 
-  void OpenDevice(int32_t camera_id,
-                  cros::mojom::Camera3DeviceOpsRequest device_ops_request,
-                  OpenDeviceCallback callback) override;
+  void OpenDevice(
+      int32_t camera_id,
+      mojo::PendingReceiver<cros::mojom::Camera3DeviceOps> device_ops_receiver,
+      OpenDeviceCallback callback) override;
   MOCK_METHOD3(DoOpenDevice,
                void(int32_t camera_id,
-                    cros::mojom::Camera3DeviceOpsRequest& device_ops_request,
+                    mojo::PendingReceiver<cros::mojom::Camera3DeviceOps>
+                        device_ops_receiver,
                     OpenDeviceCallback& callback));
 
   void GetNumberOfCameras(GetNumberOfCamerasCallback callback) override;

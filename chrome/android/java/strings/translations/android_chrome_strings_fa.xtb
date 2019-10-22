@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">‏برای اینکه به Chrome امکان دهید برایتان اعلان ارسال کند، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم اعلان‌ها را روشن کنید.</translation>
 <translation id="204321170514947529">‏<ph name="APP_NAME" /> داده‌هایی در Chrome نیز دارد</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">ممکن است تغییر پسوند فایل موجب رفتار نامنتظری شود و برای دستگاه مضر باشد.</translation>
 <translation id="2056878612599315956">سایت موقتاً متوقف شد</translation>
 <translation id="2063713494490388661">ضربه برای جستجو</translation>
 <translation id="2067805253194386918">نوشتار</translation>
@@ -915,7 +914,6 @@
 <translation id="7810647596859435254">باز کردن با…</translation>
 <translation id="7821588508402923572">میزان داده صرفه‌جویی‌شده اینجا نشان داده می‌شود</translation>
 <translation id="7837721118676387834">به پخش‌خودکار ویدیو‌های صامت‌شده برای سایتی خاص امکان دهید.</translation>
-<translation id="7838340937077326045">مطمئنید می‌خواهید پسوند فایل را تغییر دهید؟</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>
 <translation id="784934925303690534">محدوده زمانی</translation>
 <translation id="7851858861565204677">دستگاه‌های دیگر</translation>

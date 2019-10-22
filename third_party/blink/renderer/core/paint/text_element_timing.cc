@@ -65,16 +65,16 @@ void TextElementTiming::OnTextObjectPainted(const TextRecord& record) {
   // Text aggregators should be Elements!
   DCHECK(node->IsElementNode());
   auto* element = To<Element>(node);
-  const AtomicString& attr =
-      element->FastGetAttribute(html_names::kElementtimingAttr);
-  if (attr.IsEmpty())
+  if (!element->FastHasAttribute(html_names::kElementtimingAttr))
     return;
 
   const AtomicString& id = element->GetIdAttribute();
   DEFINE_STATIC_LOCAL(const AtomicString, kTextPaint, ("text-paint"));
   performance_->AddElementTiming(
       kTextPaint, g_empty_string, record.element_timing_rect_,
-      record.paint_time, base::TimeTicks(), attr, IntSize(), id, element);
+      record.paint_time, base::TimeTicks(),
+      element->FastGetAttribute(html_names::kElementtimingAttr), IntSize(), id,
+      element);
 }
 
 void TextElementTiming::Trace(blink::Visitor* visitor) {

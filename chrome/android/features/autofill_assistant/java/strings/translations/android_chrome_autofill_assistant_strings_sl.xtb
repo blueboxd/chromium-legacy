@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
-<translation id="1135993792949700405">Chrome bo <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> pošiljal osebne podatke, ki ste jih izbrali</translation>
 <translation id="1625889395409731085">Želite odpreti zunanjo povezavo?</translation>
 <translation id="1699570257714336246">Manjkajo podatki</translation>
 <translation id="2203046366315513658">Zmanjšanje vrednosti</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Pomočnik Google v Chromu, odprt pri polovični višini</translation>
 <translation id="6973932557599545801">Ne morem vam pomagati. Nadaljujte sami.</translation>
 <translation id="7658239707568436148">Prekliči</translation>
-<translation id="7871791972254842204">Pozneje preberite pogoje in določila za <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ter se strinjajte z njimi</translation>
 <translation id="8253702004019660079">Pomočnik Google v Chromu.</translation>
 <translation id="9138504265731110181">Pomočnik Google vam prihrani čas tako, da vam pomaga preveriti splet</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>

@@ -257,7 +257,6 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
         shelf->SelectValueForShelfAlignment(0, radius, 0),
         shelf->SelectValueForShelfAlignment(0, 0, radius),
     });
-    opaque_background_.AddCacheRenderSurfaceRequest();
   }
   opaque_background_.SetBounds(opaque_background_bounds);
   UpdateDragHandle();

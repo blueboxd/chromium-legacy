@@ -1,6 +1,5 @@
 <!doctype html>
-<html dir="$i18n{textdirection}" lang="$i18n{language}" class="loading"
-    $i18n{newprintpreviewlayout}>
+<html dir="$i18n{textdirection}" lang="$i18n{language}" class="loading">
 <head>
   <meta charset="utf-8">
 <if expr="not optimize_webui">
@@ -8,24 +7,14 @@
 </if>
   <style>
     html {
-      background: rgb(232, 234, 237);  /* --google-grey-200 */
+      background: white;
       /* Remove 300ms delay for 'click' event, when using touch interface. */
       touch-action: manipulation;
     }
 
     @media (prefers-color-scheme: dark) {
       html {
-        background: rgb(189, 193, 198);  /* --google-grey-400 */
-      }
-    }
-
-    html[new-print-preview-layout] {
-      background: rgb(218, 220, 224);  /* --google-grey-refresh-300 */
-    }
-
-    @media (prefers-color-scheme: dark) {
-      html[new-print-preview-layout] {
-        background: rgb(95, 99, 104);  /* --google-grey-refresh-700 */
+        background: rgb(40, 41, 44);
       }
     }
 
@@ -38,15 +27,10 @@
     }
 
     .loading body {
-      display: flex;
-    }
-
-    [new-print-preview-layout].loading body {
-      flex-direction: row-reverse;
     }
 
     .loading body::before {
-      background: white;
+      background: rgb(218, 220, 224);  /* --google-grey-refresh-300 */
       border-bottom-width: 0;
       border-color: rgb(232, 234, 237);
       border-inline-end-width: 1px;
@@ -56,18 +40,13 @@
       content: '';
       display: block;
       height: 100%;
-      width: 384px;  /* --print-preview-sidebar-width */
-    }
-
-    [new-print-preview-layout].loading body::before {
-      border-inline-end-width: 0;
-      border-inline-start-width: 1px;
+      width: calc(100% - 385px);  /* --print-preview-sidebar-width */
     }
 
     @media (prefers-color-scheme: dark) {
       .loading body::before {
-        background: rgb(40, 41, 44);
-        border-color: rgba(255, 255, 255, .04);
+        background: rgb(95, 99, 104);  /* --google-grey-refresh-700 */
+        border-color: rgba(40, 41, 44, .9);
       }
     }
   </style>

@@ -381,6 +381,9 @@ TYPED_TEST_P(CookieStoreChangeGlobalTest, OverwriteWithHttpOnly) {
   // overwrite the non-http-only version.
   CookieOptions allow_httponly;
   allow_httponly.set_include_httponly();
+  allow_httponly.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+
   EXPECT_TRUE(this->CreateAndSetCookie(cs, this->http_www_foo_.url(),
                                        "A=C; path=/path1; httponly",
                                        allow_httponly));
@@ -1175,6 +1178,9 @@ TYPED_TEST_P(CookieStoreChangeUrlTest, OverwriteWithHttpOnly) {
   // overwrite the non-http-only version.
   CookieOptions allow_httponly;
   allow_httponly.set_include_httponly();
+  allow_httponly.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+
   EXPECT_TRUE(this->CreateAndSetCookie(cs, this->http_www_foo_.url(),
                                        "A=C; path=/foo; httponly",
                                        allow_httponly));
@@ -2196,6 +2202,9 @@ TYPED_TEST_P(CookieStoreChangeNamedTest, OverwriteWithHttpOnly) {
   // overwrite the non-http-only version.
   CookieOptions allow_httponly;
   allow_httponly.set_include_httponly();
+  allow_httponly.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+
   EXPECT_TRUE(this->CreateAndSetCookie(cs, this->http_www_foo_.url(),
                                        "abc=hij; path=/foo; httponly",
                                        allow_httponly));

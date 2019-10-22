@@ -4,6 +4,13 @@
 
 /* This file should contain style used on desktop but not Android or iOS. */
 
+:root {
+  --fontSizePercent: 22%;
+  --mdblue: rgb(26, 115, 232);
+  --mdblue-faint: rgba(26, 115, 232, .2);
+  --mdblue-focus: rgba(26, 115, 232, .2);
+}
+
 fieldset {
   border: none;
   background: transparent;
@@ -75,7 +82,7 @@ fieldset {
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
               0 4px 8px 3px rgba(60, 64, 67, 0.15);
   width: 320px;
-  height: 144px;
+  height: 168px;
   padding: 16px;
   box-sizing: border-box;
   font-size: 16px;
@@ -147,7 +154,7 @@ select#fontFamilySelection {
 }
 
 .themeOption input[type="radio"]:checked {
-  border: 2px solid blue;
+  border: 2px solid var(--mdblue);
 }
 
 #fontSizeWrapper {
@@ -155,5 +162,85 @@ select#fontFamilySelection {
 }
 
 #fontSizeSelection {
+  -webkit-appearance: none;
   width: 100%;
+  margin: 0;
+  background: transparent;
+}
+
+#fontSizeSelection:focus {
+  outline: none;
+}
+
+#fontSizeSelection::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  border-radius: 50%;
+  background-color: var(--mdblue);
+  width: 10px;
+  height: 10px;
+
+  /* Position the thumb over the slider track. */
+  margin-top: -4px;
+
+  /* Render the thumb on top of the tickmarks. We can't just rearrange the HTML
+   * because the tickmarks need to render above the slider's track. */
+  position: relative;
+  z-index: 1;
+}
+
+#fontSizeSelection:focus::-webkit-slider-thumb {
+  box-shadow: 0px 0px 0px 11px var(--mdblue-focus);
+}
+
+#fontSizeSelection::-webkit-slider-container {
+  /* Increase the clickable area of the slider. */
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+
+#fontSizeSelection::-webkit-slider-runnable-track {
+  height: 2px;
+  width: 100%;
+
+  /* Make the track opaque blue to the left of the thumb and mostly transparent
+   * to the right of the thumb. */
+  background: linear-gradient(
+    to right, var(--mdblue), var(--mdblue) var(--fontSizePercent),
+    var(--mdblue-faint) var(--fontSizePercent), var(--mdblue-faint));
+}
+
+.tickmarks {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 0;
+  height: 2px;
+
+  /* Position the tickmarks over the slider track. */
+  margin-top: -20px;
+
+  /* Restrict the height of individual options to that of their containing
+   * datalist. Setting the height property directly does not seem to have an
+   * impact. */
+  overflow: hidden;
+}
+
+.tickmarks option {
+  width: 1px;
+  padding: 0;
+}
+
+.tickmarks option.beforeThumb {
+  background: white;
+}
+
+.tickmarks option.afterThumb {
+  background: var(--mdblue);
+}
+
+.label-container {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding-top: 8px;
 }

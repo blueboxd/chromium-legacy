@@ -130,6 +130,10 @@ class AshTestHelper {
     return test_keyboard_controller_observer_.get();
   }
 
+  TestAssistantService* test_assistant_service() {
+    return assistant_service_.get();
+  }
+
   void reset_commandline() { command_line_.reset(); }
 
  private:

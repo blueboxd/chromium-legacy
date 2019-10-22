@@ -225,6 +225,13 @@ void AddPermissions(ExtensionInstallPrompt::Prompt* prompt,
       {prompt->GetPermissionsHeading(), std::move(permissions_view)});
 }
 
+std::unique_ptr<views::Link> CreatePromptLink(views::LinkListener* listener) {
+  auto store_link = std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
+  store_link->set_listener(listener);
+  return store_link;
+}
+
 }  // namespace
 
 ExtensionInstallDialogView::ExtensionInstallDialogView(
@@ -242,6 +249,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       install_button_enabled_(false) {
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
   DialogDelegate::set_draggable(true);
+  if (prompt_->has_webstore_data())
+    DialogDelegate::SetExtraView(CreatePromptLink(this));
   set_close_on_deactivate(false);
   CreateContents();
 
@@ -366,16 +375,6 @@ void ExtensionInstallDialogView::AddedToWidget() {
   }
 
   GetBubbleFrameView()->SetTitleView(std::move(title_container));
-}
-
-std::unique_ptr<views::View> ExtensionInstallDialogView::CreateExtraView() {
-  if (!prompt_->has_webstore_data())
-    return nullptr;
-
-  auto store_link = std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
-  store_link->set_listener(this);
-  return store_link;
 }
 
 bool ExtensionInstallDialogView::Cancel() {

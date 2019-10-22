@@ -27,7 +27,7 @@ std::unique_ptr<Widget> CreateDragWidget(aura::Window* root_window) {
   params.name = "DragWidget";
   params.accept_events = false;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+  params.shadow_type = Widget::InitParams::ShadowType::kNone;
   params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent =
       root_window->GetChildById(kShellWindowId_DragImageAndTooltipContainer);

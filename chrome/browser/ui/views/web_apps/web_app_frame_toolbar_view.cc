@@ -9,7 +9,10 @@
 #include "base/numerics/ranges.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -21,18 +24,28 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/button_utils.h"
+#include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
 #include "chrome/browser/ui/views/web_apps/web_app_origin_text.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -269,6 +282,21 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
       AddChildView(std::make_unique<WebAppMenuButton>(browser_view));
 #endif
 
+  if (base::FeatureList::IsEnabled(features::kDesktopMinimalUI)) {
+    // TODO(crbug.com/1007151): Only create buttons for Minimal UI PWAs.
+    // TODO(crbug.com/1007151): Place buttons at far left of title bar.
+    // TODO(crbug.com/1007151): Make the icons have correct sizes.
+    back_ = AddChildView(CreateBackButton(this, browser_view->browser()));
+    reload_ = AddChildView(CreateReloadButton(browser_view->browser()));
+
+    views::SetHitTestComponent(back_, static_cast<int>(HTCLIENT));
+    views::SetHitTestComponent(reload_, static_cast<int>(HTCLIENT));
+
+    chrome::AddCommandObserver(browser_view->browser(), IDC_BACK, this);
+    chrome::AddCommandObserver(browser_view->browser(), IDC_RELOAD, this);
+    md_observer_.Add(ui::MaterialDesignController::GetInstance());
+  }
+
   UpdateChildrenColor();
   UpdateStatusIconsVisibility();
 
@@ -281,9 +309,15 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   browser_view_->SetToolbarButtonProvider(this);
   browser_view_->immersive_mode_controller()->AddObserver(this);
   scoped_widget_observer_.Add(widget);
+
+  GenerateMinimalUIButtonImages();
 }
 
 WebAppFrameToolbarView::~WebAppFrameToolbarView() {
+  if (back_)
+    chrome::RemoveCommandObserver(browser_view_->browser(), IDC_BACK, this);
+  if (reload_)
+    chrome::RemoveCommandObserver(browser_view_->browser(), IDC_RELOAD, this);
   ImmersiveModeController* immersive_controller =
       browser_view_->immersive_mode_controller();
   if (immersive_controller)
@@ -303,6 +337,7 @@ void WebAppFrameToolbarView::UpdateCaptionColors() {
   inactive_color_ =
       frame_view->GetCaptionColor(BrowserFrameActiveState::kInactive);
   UpdateChildrenColor();
+  GenerateMinimalUIButtonImages();
 }
 
 void WebAppFrameToolbarView::SetPaintAsActive(bool active) {
@@ -310,6 +345,7 @@ void WebAppFrameToolbarView::SetPaintAsActive(bool active) {
     return;
   paint_as_active_ = active;
   UpdateChildrenColor();
+  GenerateMinimalUIButtonImages();
 }
 
 int WebAppFrameToolbarView::LayoutInContainer(int leading_x,
@@ -356,6 +392,27 @@ WebAppFrameToolbarView::CreateToolbarActionsBar(
     ToolbarActionsBar* main_bar) const {
   DCHECK_EQ(browser_view_->browser(), browser);
   return std::make_unique<WebAppToolbarActionsBar>(delegate, browser, main_bar);
+}
+
+void WebAppFrameToolbarView::EnabledStateChangedForCommand(int id,
+                                                           bool enabled) {
+  switch (id) {
+    case IDC_BACK:
+      back_->SetEnabled(enabled);
+      break;
+    case IDC_RELOAD:
+      reload_->SetEnabled(enabled);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void WebAppFrameToolbarView::ButtonPressed(views::Button* sender,
+                                           const ui::Event& event) {
+  chrome::ExecuteCommandWithDisposition(
+      browser_view_->browser(), sender->tag(),
+      ui::DispositionFromEventFlags(event.flags()));
 }
 
 SkColor WebAppFrameToolbarView::GetContentSettingInkDropColor() const {
@@ -459,6 +516,14 @@ AvatarToolbarButton* WebAppFrameToolbarView::GetAvatarToolbarButton() {
   return nullptr;
 }
 
+ToolbarButton* WebAppFrameToolbarView::GetBackButton() {
+  return back_;
+}
+
+ReloadButton* WebAppFrameToolbarView::GetReloadButton() {
+  return reload_;
+}
+
 void WebAppFrameToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
                                                        bool visibility) {
   if (!visibility || !pending_widget_visibility_)
@@ -471,6 +536,11 @@ void WebAppFrameToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
         FROM_HERE, kTitlebarAnimationDelay, this,
         &WebAppFrameToolbarView::StartTitlebarAnimation);
   }
+}
+
+void WebAppFrameToolbarView::OnTouchUiChanged() {
+  GenerateMinimalUIButtonImages();
+  SchedulePaint();
 }
 
 void WebAppFrameToolbarView::DisableAnimationForTesting() {
@@ -542,4 +612,23 @@ void WebAppFrameToolbarView::UpdateChildrenColor() {
     content_settings_container_->SetIconColor(icon_color);
   page_action_icon_container_view_->SetIconColor(icon_color);
   web_app_menu_button_->SetColor(icon_color);
+}
+
+void WebAppFrameToolbarView::GenerateMinimalUIButtonImages() {
+  const SkColor normal_color = GetCaptionColor();
+  const SkColor disabled_color =
+      SkColorSetA(normal_color, gfx::kDisabledControlAlpha);
+
+  if (back_) {
+    const bool touch_ui = ui::MaterialDesignController::touch_ui();
+    const gfx::VectorIcon& back_image =
+        touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
+    back_->SetImage(views::Button::STATE_NORMAL,
+                    gfx::CreateVectorIcon(back_image, normal_color));
+    back_->SetImage(views::Button::STATE_DISABLED,
+                    gfx::CreateVectorIcon(back_image, disabled_color));
+  }
+
+  if (reload_)
+    reload_->SetColors(normal_color, disabled_color);
 }

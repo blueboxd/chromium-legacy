@@ -463,13 +463,6 @@ class RenderWidgetHostTest : public testing::Test {
     return handle_mouse_event_;
   }
 
-  void RunLoopFor(base::TimeDelta duration) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), duration);
-    run_loop.Run();
-  }
-
  protected:
   // testing::Test
   void SetUp() override {
@@ -707,6 +700,8 @@ class RenderWidgetHostTest : public testing::Test {
     return reinterpret_cast<const WebInputEvent*>(data);
   }
 
+  BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
@@ -727,7 +722,6 @@ class RenderWidgetHostTest : public testing::Test {
  private:
   SyntheticWebTouchEvent touch_event_;
 
-  BrowserTaskEnvironment task_environment_;
   mojo::Remote<viz::mojom::CompositorFrameSinkClient>
       renderer_compositor_frame_sink_remote_;
 
@@ -1303,7 +1297,7 @@ TEST_F(RenderWidgetHostTest, DontPostponeInputEventAckTimeout) {
   host_->StartInputEventAckTimeout(TimeDelta::FromSeconds(30));
 
   // Wait long enough for first timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1319,7 +1313,7 @@ TEST_F(RenderWidgetHostTest, StopAndStartInputEventAckTimeout) {
   host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(10));
 
   // Wait long enough for first timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMilliseconds(40));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(40));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1334,7 +1328,7 @@ TEST_F(RenderWidgetHostTest, ShorterDelayInputEventAckTimeout) {
   host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(20));
 
   // Wait long enough for the second timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMilliseconds(25));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(25));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1349,18 +1343,18 @@ TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
 
   // The timeout should not fire.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  RunLoopFor(TimeDelta::FromMicroseconds(2));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(2));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // The timeout should never reactivate while hidden.
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 10, 0, false);
-  RunLoopFor(TimeDelta::FromMicroseconds(2));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(2));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // Showing the widget should restore the timeout, as the events have
   // not yet been ack'ed.
   host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
-  RunLoopFor(TimeDelta::FromMicroseconds(2));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(2));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1385,7 +1379,7 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Wait long enough for first timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMicroseconds(20));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(20));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
@@ -2054,9 +2048,7 @@ TEST_F(RenderWidgetHostTest, RendererHangRecordsMetrics) {
   tester.ExpectUniqueSample("Renderer.Hung.Duration", 17000, 1);
 }
 
-// TODO(https://crbug.com/992784): Flakily fails the final
-// ConsumePendingUserActivationIfAllowed expectation, after RunLoopFor().
-TEST_F(RenderWidgetHostTest, DISABLED_PendingUserActivationTimeout) {
+TEST_F(RenderWidgetHostTest, PendingUserActivationTimeout) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(
       features::kBrowserVerifiedUserActivation);
@@ -2078,10 +2070,11 @@ TEST_F(RenderWidgetHostTest, DISABLED_PendingUserActivationTimeout) {
   EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
   EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
 
-  // Pending activation is reset after |kActivationNotificationExpireTime|.
+  // Timer reset the pending activation.
   SimulateMouseEvent(WebInputEvent::kMouseDown);
   SimulateMouseEvent(WebInputEvent::kMouseDown);
-  RunLoopFor(RenderWidgetHostImpl::kActivationNotificationExpireTime);
+  task_environment_.FastForwardBy(
+      RenderWidgetHostImpl::kActivationNotificationExpireTime);
   EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
 }
 

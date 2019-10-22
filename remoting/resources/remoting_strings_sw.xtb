@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Mbaya</translation>
 <translation id="1152528166145813711">Chagua...</translation>
 <translation id="1199593201721843963">Funga miunganisho ya mbali</translation>
+<translation id="1201402288615127009">Endelea</translation>
 <translation id="1291443878853470558">Lazima uwashe miunganisho ya mbali iwapo unataka kutumia Chromoting kufikia kompyuta hii.</translation>
 <translation id="1297009705180977556">Hitilafu imetokea wakati wa kuunganisha kwenye <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(kipengele hiki bado hakipatikani kwa kompyuta yako)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali sasa inapatikana kwenye wavuti. Jaribu <ph name="LINK_BEGIN" />programu yetu ya wavuti<ph name="LINK_END" />—ina kasi na hailipishwi, ina vipengele vingi zaidi, ikiwa ni pamoja na uwezo ulioboreshwa wa kutumia skrini nyingi.</translation>
 <translation id="1643640058022401035">Kuondoka kwenye ukurasa huu kutakamilisha kipindi chako cha Chromoting.</translation>
 <translation id="1654128982815600832">Inawasha miunganisho ya mbali kwa kompyuta hii...</translation>
+<translation id="1697532407822776718">Mko tayari nyote!</translation>
 <translation id="170207782578677537">Ilishindwa kusajili kompyuta hii.</translation>
 <translation id="174018511426417793">Huna kompyuta zilizosajiliwa. Ili uwashe miunganisho ya mbali, sakinisha Eneo-kazi la Mbali la Chrome hapo na ubofye “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Inaunganisha...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Mchakato wa Seva Pangishi</translation>
 <translation id="20876857123010370">Hali ya padi ya kusogeza</translation>
 <translation id="2089514346391228378">Miunganisho ya mbali ya kompyuta hii imefungwa.</translation>
+<translation id="2198363917176605566">Ili utumie <ph name="PRODUCT_NAME" />, unahitaji kutoa ruhusa ya 'Kurekodi Skrini' ili maudhui ya skrini kwenye Mac hii yaweze kutumwa kwenye mashine ya mbali.
+
+Ili utoe ruhusa, bofya '<ph name="BUTTON_NAME" />' hapa chini ili ufungue kijisehemu cha mapendeleo ya 'Kurekodi Skrini' kisha chagua kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari imechaguliwa, batilisha uteuzi kisha uichague tena.</translation>
 <translation id="2208514473086078157">Mipangilio ya sera hairuhusu kushiriki kompyuta hii kama mpangishaji wa Eneokazi la Mbali la Chrome. Wasiliana na msimamizi wa mfumo wako kwa usaidizi.</translation>
 <translation id="2220529011494928058">Ripoti tatizo</translation>
 <translation id="2221097377466213233">Tumia Ctrl ya kulia kwa kitufe cha Win (⌘ kwenye Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Mara ya mwisho alionekana mtandaoni <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Programu hii haitumiki tena. Ili upate vipengele vipya zaidi na masasisho ya usalama, tafadhali tumia <ph name="LINK_BEGIN" />programu ya wavuti ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Tusaidie kuboresha Eneo-kazi la Mbali la Chrome kwa kuturuhusu tukusanye takwimu za matumizi na ripoti za hitilafu.</translation>
+<translation id="2504109125669302160">Idhinisha 'Ufikivu' kwenye <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Imeunganisha kwenye <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">KUMBUKA: Ili kuhakikisha kuwa mikato yote ya kibodi inapatikana, unaweza kusanidi Kompyuta ya Mbali ya Chrome ili "Ifungue kama dirisha'’.</translation>
 <translation id="2540992418118313681">Ungependa kushiriki kompyuta hii kwa mtumiaji mwingine ili kuangalia na kudhibiti?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Mkataba Kuu</translation>
 <translation id="4430435636878359009">Funga miunganisho ya mbali kwenye kompyuta hii</translation>
 <translation id="4430915108080446161">Inazalisha msimbo wa ufikiaji…</translation>
+<translation id="443560535555262820">Fungua Mapendeleo ya Ufikivu</translation>
 <translation id="4450893287417543264">Usionyeshe tena</translation>
 <translation id="4472575034687746823">Anza</translation>
 <translation id="4481276415609939789">Huna kompyuta zilizosajiliwa. Ili uwashe miunganisho ya mbali kwenye kompyuta, sakinisha Chromoting hapo na uofye “<ph name="BUTTON_NAME" />”.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Badilisha PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (imepitwa na wakati)</translation>
 <translation id="6221358653751391898">Hujaingia kwenye Chrome. Tafadhali ingia na ujaribu tena.</translation>
+<translation id="6223301979382383752">Fungua Mapendeleo ya Kurekodi Skrini</translation>
 <translation id="6227369581881558336">Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali sasa inapatikana kwenye wavuti na ina vipengele vipya ikiwa ni pamoja na uhamishaji wa faili! Angalia <ph name="LINK_BEGIN" />programu yetu ya wavuti<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Seva pangishi inayotumika kwenye skrini ya dashibodi imezima ili kutumia hali ya pazia kwa kubadilisha hadi seva pangishi inayotumika katika kipindi mahususi cha mtumiaji.</translation>
 <translation id="629730747756840877">Akaunti</translation>
 <translation id="6304318647555713317">Kiteja</translation>
 <translation id="6381670701864002291">Kitu kingine.</translation>
 <translation id="6398765197997659313">Ondoka kwenye Skrini nzima</translation>
+<translation id="6411861157501911556">Ili utumie <ph name="PRODUCT_NAME" />, unahitaji kutoa ruhusa ya 'Ufikivu' ili maudhui kutoka skrini ya mbali yaweze kuwekwa kwenye Mac hii.
+
+Ili utoe ruhusa hii, bofya '<ph name="BUTTON_NAME" />' hapa chini ili ufungue kijisehemu cha mapendeleo ya 'Ufikivu' kisha uchague kisanduku karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari imechaguliwa, huenda utahitaji kubatilisha uteuzi kisha uichague upya.</translation>
 <translation id="6441316101718669559">Ujumuishaji wa eneo-kazi hautumiki kwenye mfumo huu. Bado unaweza kutumia programu, lakini hali ya mtumiaji itaharibiwa.</translation>
 <translation id="652218476070540101">PIN ya kompyuta hii inasasishwa...</translation>
 <translation id="6527303717912515753">Shiriki</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Hakikisha kuwa kompyuta ya mbali inaonekana</translation>
 <translation id="9149992051684092333">Ili uanze kushiriki enezo-kazi lako, toa msimbo wa ufikiji hapa chini kwa mtu atakayekuwa akikusaidia.</translation>
 <translation id="916856682307586697">Anzisha XSession chaguomsingi</translation>
+<translation id="9187628920394877737">Idhinisha 'Kurekodi Skrini' kwenye <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Idhinisha</translation>
 <translation id="9213184081240281106">Usanidi wa seva pangishi si sahihi.</translation>
 <translation id="951991426597076286">Kataa</translation>

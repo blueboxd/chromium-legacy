@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
-<translation id="1135993792949700405">আপনার বেছে নেওয়া <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-এ Chrome ব্যক্তিগত ডেটা পাঠাবে</translation>
 <translation id="1625889395409731085">এক্সটারনাল লিঙ্ক খুলতে চান?</translation>
 <translation id="1699570257714336246">সম্পূর্ণ তথ্য দেওয়া হয়নি</translation>
 <translation id="2203046366315513658">কমান</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Chrome-এ Google অ্যাসিস্ট্যান্ট অর্ধেক স্ক্রিন জুড়ে খোলা আছে।</translation>
 <translation id="6973932557599545801">আমি সাহায্য করতে পারছি না, নিজের মতো করে এগিয়ে যান।</translation>
 <translation id="7658239707568436148">বাতিল</translation>
-<translation id="7871791972254842204">পরে <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-এ দেওয়া নিয়ম ও শর্তাবলী পড়ে সম্মতি দেব</translation>
 <translation id="8253702004019660079">Chrome-এ Google অ্যাসিস্ট্যান্ট।</translation>
 <translation id="9138504265731110181">Google অ্যাসিস্ট্যান্ট ওয়েবে চেক-আউট করতে সাহায্য করে আপনার সময় বাঁচায়</translation>
 <translation id="945522503751344254">মতামত জানান</translation>

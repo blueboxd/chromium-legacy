@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">Seite später laden</translation>
 <translation id="1015730422737071372">Weitere Details angeben</translation>
 <translation id="1021110881106174305">Akzeptierte Karten</translation>
-<translation id="1023523064224774104">Chromium hat festgestellt, dass Sie Ihr Passwort gerade auf einer verdächtigen Seite eingegeben haben. Bitte setzen Sie Ihr Passwort umgehend zurück.</translation>
 <translation id="1032854598605920125">Im Uhrzeigersinn drehen</translation>
 <translation id="1035334672863811645">In Chrome anmelden</translation>
 <translation id="1036348656032585052">Deaktivieren</translation>
@@ -122,6 +121,7 @@
 <translation id="1501859676467574491">Zeigen Sie Karten von Ihrem Google-Konto</translation>
 <translation id="1507202001669085618">&lt;p&gt;Diese Fehlermeldung wird angezeigt, wenn Sie ein WLAN-Portal verwenden, bei dem eine Anmeldung erforderlich ist, bevor Sie online gehen können.&lt;/p&gt;
     &lt;p&gt;Klicken Sie auf der Seite, die Sie öffnen möchten, auf &lt;strong&gt;Verbinden&lt;/strong&gt;, um den Fehler zu beheben.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Liste der Verlaufseinträge</translation>
 <translation id="1517433312004943670">Telefonnummer erforderlich</translation>
 <translation id="1517500485252541695">Akzeptierte Kredit- und Debitkarten</translation>
 <translation id="1519264250979466059">Build-Datum</translation>
@@ -307,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2438874542388153331">Vierfache Lochung rechts</translation>
+<translation id="245044156129055925">Sie haben Ihr Passwort gerade auf einer verdächtigen Seite eingegeben. Chromium empfiehlt, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="2463193859425327265">Startseite ändern</translation>
 <translation id="2463739503403862330">Ausfüllen</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -543,7 +544,6 @@
 <translation id="3655670868607891010">Sollte Ihnen diese Meldung häufiger angezeigt werden, sehen Sie sich unsere <ph name="HELP_LINK" /> an.</translation>
 <translation id="3658742229777143148">Überarbeitung</translation>
 <translation id="366077651725703012">Kreditkarte aktualisieren</translation>
-<translation id="3672525478985456967">Der Name dieser Website ähnelt dem von <ph name="LOOKALIKE_DOMAIN" />. Angreifer kopieren manchmal Websites und nehmen kleine, unauffällige Änderungen am Domainnamen vor.</translation>
 <translation id="3676592649209844519">Geräte-ID:</translation>
 <translation id="3677008721441257057">Meinten Sie vielleicht &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Anfrage konnte nicht signiert werden</translation>
@@ -606,6 +606,9 @@
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> hat das Chrome Enterprise-Sicherheitssystem für Ihren Browser aktiviert. Das Chrome Enterprise-Sicherheitssystem kann auf manche Ihrer Daten zugreifen.</translation>
+<translation id="3987405730340719549">Chromes hat festgestellt, dass diese Website eventuell gefälscht oder betrügerisch ist.
+
+    Wenn dies Ihrer Meinung nach fälschlicherweise angezeigt wird, gehen Sie bitte auf: https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Weniger als 1 MB</translation>
 <translation id="3990250421422698716">Jog-Versatz</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Webseite in der Nähe}other{# Webseiten in der Nähe}}</translation>
@@ -864,7 +867,6 @@
 <translation id="5230733896359313003">Versandadresse</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Schließen</translation>
 <translation id="5250209940322997802">"Mit Netzwerk verbinden"</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Umschlag)</translation>
@@ -984,6 +986,9 @@
 <translation id="5813119285467412249">&amp;Hinzufügen wiederholen</translation>
 <translation id="583281660410589416">Unbekannt</translation>
 <translation id="5838278095973806738">Sie sollten keine vertraulichen Informationen wie Passwörter oder Kreditkartennummern auf dieser Website eingeben, da sie von Angreifern gestohlen werden könnten.</translation>
+<translation id="5855253129151731373">Der Hostname dieser Website ähnelt dem von <ph name="LOOKALIKE_DOMAIN" />. Angreifer kopieren manchmal Websites und nehmen kleine, unauffällige Änderungen an der URL vor.
+
+    Wenn dies Ihrer Meinung nach fälschlicherweise angezeigt wird, gehen Sie bitte auf: https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5863847714970149516">Auf der nächsten Seite wird möglicherweise versucht, Ihnen etwas in Rechnung zu stellen</translation>
 <translation id="5866257070973731571">Telefonnummer hinzufügen</translation>
@@ -1006,7 +1011,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> wird geöffnet…</translation>
 <translation id="5947933617628957894">Ja, hinzufügen</translation>
 <translation id="5951495562196540101">Registrierung mit Kundenkonto nicht möglich (Paketlizenz verfügbar).</translation>
-<translation id="5966900314707961320">Bei Aktivierung der Funktion können Websites keine Cookies verwenden, die Ihre Browserdaten über mehrere Websites hinweg erfassen</translation>
 <translation id="5967592137238574583">Kontaktdaten bearbeiten</translation>
 <translation id="5967867314010545767">Aus Verlauf entfernen</translation>
 <translation id="5975083100439434680">Verkleinern</translation>
@@ -1095,6 +1099,7 @@
 <translation id="6401136357288658127">Diese Richtlinie ist veraltet. Verwenden Sie stattdessen die Richtlinie "<ph name="NEW_POLICY" />".</translation>
 <translation id="6404511346730675251">Lesezeichen bearbeiten</translation>
 <translation id="6406765186087300643">C0 (Umschlag)</translation>
+<translation id="6409754798200046165">Sie haben Ihr Passwort gerade auf einer verdächtigen Seite eingegeben. Chrome empfiehlt, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="6410264514553301377">Ablaufdatum und CVC für <ph name="CREDIT_CARD" /> eingeben</translation>
 <translation id="6415778972515849510">Mithilfe von Chromium können Sie Ihr Google-Konto schützen und Ihr Passwort ändern.</translation>
 <translation id="6427730057873428458">Fensterfaltung</translation>
@@ -1102,7 +1107,6 @@
 <translation id="6433490469411711332">Kontaktdaten bearbeiten</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> hat die Verbindung abgelehnt.</translation>
 <translation id="6434309073475700221">Verwerfen</translation>
-<translation id="6435221585574090192">Sicherheitshinweise, die vom Chrome Enterprise-Sicherheitssystem gemeldet wurden, werden mit Ihrem Administrator geteilt. Sie können Seiten-URLs, Dateinamen, Dateimetadaten, den Nutzernamen für Ihr Gerät und Ihren Chrome-Nutzernamen enthalten.</translation>
 <translation id="6440503408713884761">Ignoriert</translation>
 <translation id="6446163441502663861">Kahu (Umschlag)</translation>
 <translation id="6446608382365791566">Weitere Informationen hinzufügen</translation>
@@ -1392,6 +1396,7 @@ Weitere Details:
 <translation id="7932579305932748336">Im­prä­g­nie­ren</translation>
 <translation id="79338296614623784">Geben Sie eine gültige Telefonnummer ein</translation>
 <translation id="7934052535022478634">Zahlung abgeschlossen</translation>
+<translation id="7935031712718413217">Mögliche Spoofing-URL</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Läuft am <ph name="EXPIRATION_DATE_ABBR" /> ab</translation>
 <translation id="7938958445268990899">Serverzertifikat ist noch nicht gültig.</translation>
@@ -1446,7 +1451,6 @@ Weitere Details:
 <translation id="8184538546369750125">Globalen Standard verwenden (Zulassen)</translation>
 <translation id="8194797478851900357">&amp;Verschieben rückgängig machen</translation>
 <translation id="8197543752516192074">Seite übersetzen</translation>
-<translation id="8197899142098070286">Chrome hat festgestellt, dass Sie Ihr Passwort gerade auf einer verdächtigen Seite eingegeben haben. Bitte setzen Sie Ihr Passwort umgehend zurück.</translation>
 <translation id="8201077131113104583">Ungültige Update-URL für Erweiterung mit der ID "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8202097416529803614">Zusammenfassung der Bestellung</translation>
 <translation id="8202370299023114387">Konflikt</translation>
@@ -1534,7 +1538,6 @@ Weitere Details:
 <translation id="8718314106902482036">Zahlung nicht abgeschlossen</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, Suchvorschlag</translation>
 <translation id="8719528812645237045">Mehrfache Lochung oben</translation>
-<translation id="8723954843026426558">Ich stimme den Nutzungsbedingungen, der Datenschutzerklärung und dem Widerrufsrecht von <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> zu</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8728672262656704056">Sie haben den Inkognitomodus aktiviert</translation>
 <translation id="8730621377337864115">Fertig</translation>

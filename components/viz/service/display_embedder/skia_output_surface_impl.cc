@@ -92,6 +92,12 @@ gpu::ContextUrl& GetActiveUrl() {
   return *active_url;
 }
 
+OutputSurface::Type GetOutputSurfaceType(SkiaOutputSurfaceDependency* deps) {
+  // TODO(penghuang): Support more types.
+  return deps->IsUsingVulkan() ? OutputSurface::Type::kVulkan
+                               : OutputSurface::Type::kOpenGL;
+}
+
 }  // namespace
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
@@ -124,7 +130,8 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     util::PassKey<SkiaOutputSurfaceImpl> /* pass_key */,
     std::unique_ptr<SkiaOutputSurfaceDependency> deps,
     const RendererSettings& renderer_settings)
-    : dependency_(std::move(deps)),
+    : SkiaOutputSurface(GetOutputSurfaceType(deps.get())),
+      dependency_(std::move(deps)),
       is_using_vulkan_(dependency_->IsUsingVulkan()),
       renderer_settings_(renderer_settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

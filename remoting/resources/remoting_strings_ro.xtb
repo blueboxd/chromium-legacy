@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Slabă</translation>
 <translation id="1152528166145813711">Selectează...</translation>
 <translation id="1199593201721843963">Dezactivează conexiunile la distanță</translation>
+<translation id="1201402288615127009">Înainte</translation>
 <translation id="1291443878853470558">Trebuie să activați conexiunile la distanță dacă doriți să utilizați Chromoting pentru a accesa acest computer.</translation>
 <translation id="1297009705180977556">Eroare la conectarea la <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(această funcție nu este încă disponibilă pe computerul tău)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Aplicația Desktop la distanță Chrome este acum pe web. Încearcă <ph name="LINK_BEGIN" />aplicația web<ph name="LINK_END" />. Este rapidă, gratuită și are multe funcții, inclusiv compatibilitate îmbunătățită pentru mai monitoare multiple.</translation>
 <translation id="1643640058022401035">Părăsind această pagină, veți încheia sesiunea Chromoting.</translation>
 <translation id="1654128982815600832">Se activează conexiunile la distanță pentru acest computer…</translation>
+<translation id="1697532407822776718">Ești gata!</translation>
 <translation id="170207782578677537">Înregistrarea acestui computer nu a reușit.</translation>
 <translation id="174018511426417793">Nu aveți niciun computer înregistrat. Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Se conectează…</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Proces gazdă</translation>
 <translation id="20876857123010370">Modul trackpad</translation>
 <translation id="2089514346391228378">Conexiunile la distanță pentru acest computer au fost activate.</translation>
+<translation id="2198363917176605566">Ca să folosești <ph name="PRODUCT_NAME" />, trebuie să acorzi permisiunea pentru „Înregistrarea ecranului”, astfel încât conținutul de pe ecranul acestui computer Mac să poată fi trimis la dispozitivul la distanță.
+
+Ca să acorzi această permisiune, dă clic pe butonul „<ph name="BUTTON_NAME" />” de mai jos pentru a deschide panoul de preferințe pentru „Înregistrarea ecranului”, apoi bifează caseta de lângă „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Dacă opțiunea „<ph name="SERVICE_SCRIPT_NAME" />” este deja bifată, debifeaz-o și bifeaz-o din nou.</translation>
 <translation id="2208514473086078157">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Desktop la distanță Chrome. Contactați administratorul de sistem pentru asistență.</translation>
 <translation id="2220529011494928058">Semnalați o problemă</translation>
 <translation id="2221097377466213233">Folosește tasta Ctrl din dreapta pentru tasta Windows (⌘ pe Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Ultima dată online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Această aplicație nu mai este acceptată. Pentru a te asigura că beneficiezi de cele mai recente funcții și actualizări de securitate, folosește <ph name="LINK_BEGIN" />aplicația web Desktop la distanță Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Ajutați-ne să îmbunătățim Desktop la distanță Chrome, permițându-ne să colectăm statistici de utilizare și rapoarte de blocare.</translation>
+<translation id="2504109125669302160">Acordă permisiunea „Accesibilitate” pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Conectat la <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTĂ: pentru a vă asigura că toate comenzile rapide de la tastatură sunt disponibile, puteți seta Desktop la distanță Chrome în modul „Deschideți ca fereastră”.</translation>
 <translation id="2540992418118313681">Dorești să permiți accesul la acest computer altui utilizator, pentru ca acesta să îl poată vedea și controla?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Biblioteca nucleu</translation>
 <translation id="4430435636878359009">Dezactivați conexiunile la distanță la acest computer</translation>
 <translation id="4430915108080446161">Se generează codul de acces...</translation>
+<translation id="443560535555262820">Deschide preferințele pentru accesibilitate</translation>
 <translation id="4450893287417543264">Nu mai afișa</translation>
 <translation id="4472575034687746823">Începeți</translation>
 <translation id="4481276415609939789">Nu aveți niciun computer înregistrat. Pentru a activa conexiunile la distanță pentru un alt computer, instalați Chromoting pe acesta și dați clic pe „<ph name="BUTTON_NAME" />”.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Schimbă codul PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (neactualizată)</translation>
 <translation id="6221358653751391898">Nu te-ai conectat la Chrome. Conectează-te și încearcă din nou.</translation>
+<translation id="6223301979382383752">Deschide preferințele pentru Înregistrarea ecranului</translation>
 <translation id="6227369581881558336">Aplicația Desktop la distanță Chrome este acum pe web cu noi funcții, inclusiv transfer de fișiere! Vezi noua noastră <ph name="LINK_BEGIN" />aplicație web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Executarea gazdei pe ecranul de conectare al consolei a fost oprită pentru a accepta modul perdea, comutând la o gazdă care rulează într-o sesiune specifică utilizatorului.</translation>
 <translation id="629730747756840877">Cont</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Altă problemă.</translation>
 <translation id="6398765197997659313">Ieși din ecranul complet</translation>
+<translation id="6411861157501911556">Ca să folosești <ph name="PRODUCT_NAME" />, trebuie să acorzi permisiunea „Accesibilitate”, astfel încât intrările de la dispozitivul la distanță să poată fi injectate pe acest computer Mac.
+
+Ca să acorzi această permisiune, dă clic pe butonul „<ph name="BUTTON_NAME" />” de mai jos pentru a deschide panoul de preferințe pentru „Accesibilitate”, apoi bifează caseta de lângă „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Dacă opțiunea „<ph name="SERVICE_SCRIPT_NAME" />” este deja bifată, debifeaz-o și bifeaz-o din nou.</translation>
 <translation id="6441316101718669559">Integrarea desktop nu este compatibilă cu această platformă. Poți să folosești în continuare această aplicație, însă experiența de utilizare va fi inferioară.</translation>
 <translation id="652218476070540101">Se actualizează codul PIN pentru acest computer…</translation>
 <translation id="6527303717912515753">Trimite</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Păstrează vizibil tot desktopul la distanță</translation>
 <translation id="9149992051684092333">Pentru a începe să permiteți accesul la desktopul dvs., trimiteți codul de acces de mai jos persoanei care vă va oferi asistență.</translation>
 <translation id="916856682307586697">Lansează sesiunea XSession prestabilită</translation>
+<translation id="9187628920394877737">Acordă permisiunea „Înregistrarea ecranului” pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Autorizați</translation>
 <translation id="9213184081240281106">Configurație nevalidă a gazdei.</translation>
 <translation id="951991426597076286">Refuză</translation>

@@ -63,10 +63,10 @@ import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
-import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -188,8 +188,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     public void performPostInflationStartup() {
         super.performPostInflationStartup();
-        getStatusBarColorController().updateStatusBarColor(ToolbarColors.isUsingDefaultToolbarColor(
-                getResources(), false, getBaseStatusBarColor()));
+        getStatusBarColorController().updateStatusBarColor(mTabProvider.getTab());
 
         // Properly attach tab's InfoBarContainer to the view hierarchy if the tab is already
         // attached to a ChromeActivity, as the main tab might have been initialized prior to
@@ -470,6 +469,15 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         super.registerDirectActions();
         mDirectActionInitializer.allowMenuActions(
                 this, getTabModelSelector(), R.id.bookmark_this_page_id, R.id.preferences_id);
+    }
+
+    @Override
+    public int getActivityThemeColor() {
+        if (mIntentDataProvider.isOpenedByChrome()) {
+            return TabState.UNSPECIFIED_THEME_COLOR;
+        }
+
+        return mIntentDataProvider.getToolbarColor();
     }
 
     @Override

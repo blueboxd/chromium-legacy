@@ -82,6 +82,12 @@ void LearningTaskControllerImpl::CancelObservation(base::UnguessableToken id) {
   helper_->CancelObservation(id);
 }
 
+void LearningTaskControllerImpl::UpdateDefaultTarget(
+    base::UnguessableToken id,
+    const base::Optional<TargetValue>& default_target) {
+  NOTREACHED();
+}
+
 const LearningTask& LearningTaskControllerImpl::GetLearningTask() {
   return task_;
 }

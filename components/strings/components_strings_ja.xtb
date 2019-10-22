@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">後でページを読み込む</translation>
 <translation id="1015730422737071372">詳細を報告する</translation>
 <translation id="1021110881106174305">利用可能なカード</translation>
-<translation id="1023523064224774104">不審なサイトでパスワードを入力しました。今すぐパスワードを再設定してください。</translation>
 <translation id="1032854598605920125">時計回りに回転</translation>
 <translation id="1035334672863811645">Chrome にログイン</translation>
 <translation id="1036348656032585052">オフにする</translation>
@@ -541,7 +540,6 @@
 <translation id="3655670868607891010">このエラーが頻繁に表示される場合は、こちらの<ph name="HELP_LINK" />をお試しください。</translation>
 <translation id="3658742229777143148">変更履歴</translation>
 <translation id="366077651725703012">クレジット カードを更新する</translation>
-<translation id="3672525478985456967">このサイトの名前は <ph name="LOOKALIKE_DOMAIN" /> と似ているようです。不正なユーザーがドメイン名のごく一部を一目ではわからないように改変してサイトを偽装する場合があります。</translation>
 <translation id="3676592649209844519">デバイス ID:</translation>
 <translation id="3677008721441257057">もしかして: &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;</translation>
 <translation id="3678029195006412963">リクエストに署名できませんでした</translation>
@@ -859,7 +857,6 @@
 <translation id="5230733896359313003">配送先住所</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">閉じる</translation>
 <translation id="5250209940322997802">「ネットワークに接続してください」</translation>
 <translation id="5251803541071282808">クラウド</translation>
 <translation id="5252000469029418751">C7（封筒）</translation>
@@ -1001,7 +998,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> を開いています…</translation>
 <translation id="5947933617628957894">はい、追加します</translation>
 <translation id="5951495562196540101">一般ユーザー向けアカウントでは登録できません（ライセンス パッケージが利用可能です）。</translation>
-<translation id="5966900314707961320">オンにすると、サイトは Cookie を使用してあなたをウェブ上でトラッキングできなくなります</translation>
 <translation id="5967592137238574583">連絡先情報の編集</translation>
 <translation id="5967867314010545767">履歴から削除</translation>
 <translation id="5975083100439434680">縮小する</translation>
@@ -1097,7 +1093,6 @@
 <translation id="6433490469411711332">連絡先情報の編集</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> で接続が拒否されました。</translation>
 <translation id="6434309073475700221">破棄</translation>
-<translation id="6435221585574090192">Chrome Enterprise Threat Protection によってフラグ付けされたセキュリティ イベントに関するデータを、管理者と共有できます。データの例としては、ページ URL、ファイル名、ファイル メタデータ、デバイスのユーザー名、Chrome のユーザー名などがあります。</translation>
 <translation id="6440503408713884761">除外されました</translation>
 <translation id="6446163441502663861">Kahu（封筒）</translation>
 <translation id="6446608382365791566">他の情報を追加</translation>
@@ -1441,7 +1436,6 @@
 <translation id="8184538546369750125">グローバルのデフォルト値（[許可]）を使用</translation>
 <translation id="8194797478851900357">移動の取り消し（&amp;U）</translation>
 <translation id="8197543752516192074">ページを翻訳する</translation>
-<translation id="8197899142098070286">不審なサイトでパスワードを入力しました。今すぐパスワードを再設定してください。</translation>
 <translation id="8201077131113104583">ID「<ph name="EXTENSION_ID" />」の拡張機能に対する無効な更新 URL です。</translation>
 <translation id="8202097416529803614">ご注文概要</translation>
 <translation id="8202370299023114387">競合</translation>
@@ -1529,7 +1523,6 @@
 <translation id="8718314106902482036">支払い処理を完了できませんでした</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />、<ph name="DESCRIPTION" />、検索候補</translation>
 <translation id="8719528812645237045">多穴パンチ（上）</translation>
-<translation id="8723954843026426558"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> の利用規約、プライバシー ポリシー、利用を中止する権利について同意します</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8728672262656704056">シークレット モードです</translation>
 <translation id="8730621377337864115">完了</translation>

@@ -198,9 +198,10 @@ TEST_F(FindInPageJsTest, FindAcrossMultipleNodes) {
   }));
 }
 
-// Tests that a FindInPage match can be highlighted.
+// Tests that a FindInPage match can be highlighted and the correct
+// accessibility string is returned.
 TEST_F(FindInPageJsTest, FindHighlightMatch) {
-  ASSERT_TRUE(LoadHtml("<span>foo</span>"));
+  ASSERT_TRUE(LoadHtml("<span>some foo match</span>"));
   const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
@@ -225,12 +226,15 @@ TEST_F(FindInPageJsTest, FindHighlightMatch) {
   }));
 
   __block bool highlight_done = false;
+  __block std::string context_string;
   std::vector<base::Value> highlight_params;
   highlight_params.push_back(base::Value(0));
   main_web_frame()->CallJavaScriptFunction(
       kFindInPageSelectAndScrollToMatch, highlight_params,
       base::BindOnce(^(const base::Value* result) {
         highlight_done = true;
+        context_string =
+            result->FindKey(kSelectAndScrollResultContextString)->GetString();
       }),
       kCallJavascriptFunctionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
@@ -240,12 +244,13 @@ TEST_F(FindInPageJsTest, FindHighlightMatch) {
   EXPECT_NSEQ(@1,
               ExecuteJavaScript(
                   @"document.getElementsByClassName('find_selected').length"));
+  EXPECT_EQ("some foo match", context_string);
 }
 
 // Tests that a FindInPage match can be highlighted and that a previous
 // highlight is removed when another match is highlighted.
 TEST_F(FindInPageJsTest, FindHighlightSeparateMatches) {
-  ASSERT_TRUE(LoadHtml("<span>foo foo</span>"));
+  ASSERT_TRUE(LoadHtml("<span>foo foo match</span>"));
   const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
@@ -270,18 +275,22 @@ TEST_F(FindInPageJsTest, FindHighlightSeparateMatches) {
   }));
 
   __block bool highlight_done = false;
+  __block std::string context_string;
   std::vector<base::Value> highlight_params;
   highlight_params.push_back(base::Value(0));
   main_web_frame()->CallJavaScriptFunction(
       kFindInPageSelectAndScrollToMatch, highlight_params,
       base::BindOnce(^(const base::Value* result) {
         highlight_done = true;
+        context_string =
+            result->FindKey(kSelectAndScrollResultContextString)->GetString();
       }),
       kCallJavascriptFunctionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return highlight_done;
   }));
 
+  EXPECT_EQ("foo ", context_string);
   EXPECT_NSEQ(@1,
               ExecuteJavaScript(
                   @"document.getElementsByClassName('find_selected').length"));
@@ -293,12 +302,15 @@ TEST_F(FindInPageJsTest, FindHighlightSeparateMatches) {
       kFindInPageSelectAndScrollToMatch, highlight_second_params,
       base::BindOnce(^(const base::Value* result) {
         highlight_done = true;
+        context_string =
+            result->FindKey(kSelectAndScrollResultContextString)->GetString();
       }),
       kCallJavascriptFunctionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return highlight_done;
   }));
 
+  EXPECT_EQ(" foo match", context_string);
   id inner_html = ExecuteJavaScript(@"document.body.innerHTML");
   ASSERT_TRUE([inner_html isKindOfClass:[NSString class]]);
   EXPECT_TRUE([inner_html

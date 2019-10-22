@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">vājš</translation>
 <translation id="1152528166145813711">Atlasīt...</translation>
 <translation id="1199593201721843963">Atspējot attālos savienojumus</translation>
+<translation id="1201402288615127009">Tālāk</translation>
 <translation id="1291443878853470558">Ja vēlaties piekļūt šim datoram, izmantojot Chrome saiti, ir jāiespējo attālie savienojumi.</translation>
 <translation id="1297009705180977556">Kļūda, veidojot savienojumu ar “<ph name="HOSTNAME" />”</translation>
 <translation id="1324095856329524885">(šī funkcija vēl nav pieejama jūsu datoram)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Tagad Chrome attālā darbvirsma ir pieejama tīmeklī. Izmēģiniet mūsu bezmaksas <ph name="LINK_BEGIN" />tīmekļa lietotni<ph name="LINK_END" />! Tā ir ātra un sniedz vēl vairāk funkciju, tostarp uzlabotu atbalstu vairākiem monitoriem.</translation>
 <translation id="1643640058022401035">Aizverot šo lapu, Chrome saites sesija tiks pārtraukta.</translation>
 <translation id="1654128982815600832">Notiek attālo savienojumu iespējošana šim datoram…</translation>
+<translation id="1697532407822776718">Gatavs!</translation>
 <translation id="170207782578677537">Neizdevās reģistrēt šo datoru.</translation>
 <translation id="174018511426417793">Jums nav neviena reģistrēta datora. Lai iespējotu attālus savienojumus ar kādu datoru, instalējiet Chrome attālo darbvirsmu attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Notiek savienojuma izveide…</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Saimniekdatora process</translation>
 <translation id="20876857123010370">Skārienpaliktņa režīms</translation>
 <translation id="2089514346391228378">Šim datoram tika iespējoti attālie savienojumi.</translation>
+<translation id="2198363917176605566"><ph name="PRODUCT_NAME" /> izmantošanai jums jāpiešķir “Ekrāna ierakstīšanas” atļauja, lai šī Mac ekrāna saturu varētu nosūtīt uz attālo datoru.
+
+Lai piešķirtu šo atļauju, tālāk noklikšķiniet uz “<ph name="BUTTON_NAME" />” un atveriet preferenču rūti “Ekrāna ierakstīšana”, pēc tam atzīmējiet kastīti, kas atrodas blakus “<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Ja kastīte “<ph name="SERVICE_SCRIPT_NAME" />” jau ir atzīmēta, noņemiet atzīmi un atzīmējiet to vēlreiz.</translation>
 <translation id="2208514473086078157">Saskaņā ar politikas iestatījumiem šo datoru nevar koplietot kā Chrome attālās darbvirsmas saimniekdatoru. Lai saņemtu palīdzību, sazinieties ar sistēmas administratoru.</translation>
 <translation id="2220529011494928058">Ziņot par problēmu</translation>
 <translation id="2221097377466213233">Win datorā izmantot labās puses Ctrl taustiņu (Mac datorā — ⌘)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Pēdējo reizi redzēts tiešsaistē <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Šī lietotne vairs netiek atbalstīta. Lai saņemtu jaunākās funkcijas un drošības atjauninājumus, lūdzu, izmantojiet <ph name="LINK_BEGIN" />Chrome attālās darbvirsmas tīmekļa lietotni<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Palīdziet mums uzlabot Chrome attālo darbvirsmu, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
+<translation id="2504109125669302160">“Pieejamības” atļaujas piešķiršana pakalpojumam <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Izveidots savienojums ar “<ph name="HOSTNAME" />”</translation>
 <translation id="2512228156274966424">PIEZĪME. Lai būtu pieejami visi īsinājumtaustiņi, Chrome attālo darbvirsmu varat konfigurēt šādi: “Atvērt kā logu”.</translation>
 <translation id="2540992418118313681">Vai vēlaties koplietot šo datoru ar citu lietotāju, lai viņš varētu skatīt un pārvaldīt tajā esošo saturu?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Galvenā bibliotēka</translation>
 <translation id="4430435636878359009">Atspējojiet attālos savienojumus ar šo datoru.</translation>
 <translation id="4430915108080446161">Notiek piekļuves koda ģenerēšana...</translation>
+<translation id="443560535555262820">Atvērt pieejamības preferences</translation>
 <translation id="4450893287417543264">Vairs nerādīt</translation>
 <translation id="4472575034687746823">Sākt darbu</translation>
 <translation id="4481276415609939789">Jums nav neviena reģistrēta datora. Lai iespējotu attālus savienojumu ar kādu datoru, instalējiet Chrome saiti attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME" />.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Mainīt PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (novecojis)</translation>
 <translation id="6221358653751391898">Jūs neesat pierakstījies pārlūkā Chrome. Lūdzu, pierakstieties un mēģiniet vēlreiz.</translation>
+<translation id="6223301979382383752">Atvērt ekrāna ierakstīšanas preferences</translation>
 <translation id="6227369581881558336">Tagad Chrome attālā darbvirsma ir pieejama tīmeklī, un tajā ir jaunas funkcijas, piemēram, failu pārsūtīšana. Apskatiet mūsu <ph name="LINK_BEGIN" />tīmekļa lietotni<ph name="LINK_END" />!</translation>
 <translation id="6284412385303060032">Saimniekdators, kas darbojas konsoles pieteikšanās ekrānā, ir izslēgts, lai atbalstītu aizkara režīmu, pārslēdzoties uz saimniekdatoru, kurš darbojas noteikta lietotāja sesijā.</translation>
 <translation id="629730747756840877">Konts</translation>
 <translation id="6304318647555713317">Klients</translation>
 <translation id="6381670701864002291">Cita problēma.</translation>
 <translation id="6398765197997659313">Iziet no pilnekrāna režīma</translation>
+<translation id="6411861157501911556">Lai izmantotu <ph name="PRODUCT_NAME" />, jums ir nepieciešams piešķirt “Pieejamības” atļauju, lai šajā Mac datorā varētu ievadīt attālā datora ievadi.
+
+Lai piešķirtu šo atļauju, tālāk noklikšķiniet uz pogas “<ph name="BUTTON_NAME" />” un atveriet preferenču rūti “Pieejamība”, pēc tam atzīmējiet kastīti, kas atrodas blakus “<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Ja kastīte “<ph name="SERVICE_SCRIPT_NAME" />” jau ir atzīmēta, noņemiet atzīmi un atzīmējiet vēlreiz.</translation>
 <translation id="6441316101718669559">Šajā platformā netiek atbalstīta darbvirsmas integrācija. Jūs joprojām varat izmantot lietojumprogrammu, taču lietotāja pieredze nebūs pietiekami laba.</translation>
 <translation id="652218476070540101">Notiek šī datora PIN atjaunināšana…</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Rādīt visu attālo darbvirsmu</translation>
 <translation id="9149992051684092333">Lai koplietotu savu darbvirsmu, paziņojiet tālāk redzamo piekļuves kodu lietotājam, kurš jums palīdzēs.</translation>
 <translation id="916856682307586697">Uzsākt noklusējuma XSession</translation>
+<translation id="9187628920394877737">Izsniegt “Ekrāna ierakstīšanas” atļauju pakalpojumam <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Autorizēšana</translation>
 <translation id="9213184081240281106">Saimniekdatora konfigurācija nav derīga.</translation>
 <translation id="951991426597076286">Noraidīt</translation>

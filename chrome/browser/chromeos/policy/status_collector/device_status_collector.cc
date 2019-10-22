@@ -128,10 +128,6 @@ const char kStorageInfoPath[] = "/var/log/storage_info.txt";
 // The location where stateful partition info is read from.
 const char kStatefulPartitionPath[] = "/home/.shadow";
 
-// How often the child's usage time is stored.
-static constexpr base::TimeDelta kUpdateChildActiveTimeInterval =
-    base::TimeDelta::FromSeconds(30);
-
 // Helper function (invoked via blocking pool) to fetch information about
 // mounted disks.
 std::vector<em::VolumeInfo> GetVolumeInfo(
@@ -841,9 +837,6 @@ DeviceStatusCollector::DeviceStatusCollector(
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds), this,
                          &DeviceStatusCollector::CheckIdleState);
-  update_child_usage_timer_.Start(FROM_HERE, kUpdateChildActiveTimeInterval,
-                                  this,
-                                  &DeviceStatusCollector::UpdateChildUsageTime);
   resource_usage_sampling_timer_.Start(
       FROM_HERE, TimeDelta::FromSeconds(kResourceUsageSampleIntervalSeconds),
       this, &DeviceStatusCollector::SampleResourceUsage);
@@ -878,8 +871,6 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceBoardStatus, callback);
 
   power_manager_->AddObserver(this);
-  // Watch for changes on the device state to calculate the child's active time.
-  chromeos::UsageTimeStateNotifier::GetInstance()->AddObserver(this);
 
   // Fetch the current values of the policies.
   UpdateReportingSettings();
@@ -916,21 +907,11 @@ DeviceStatusCollector::DeviceStatusCollector(
 
 DeviceStatusCollector::~DeviceStatusCollector() {
   power_manager_->RemoveObserver(this);
-  chromeos::UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
 }
 
 // static
 void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDeviceActivityTimes);
-}
-
-TimeDelta DeviceStatusCollector::GetActiveChildScreenTime() {
-  if (!user_manager::UserManager::Get()->IsLoggedInAsChildUser())
-    return TimeDelta::FromSeconds(0);
-
-  UpdateChildUsageTime();
-  return TimeDelta::FromMilliseconds(
-      pref_service_->GetInteger(prefs::kChildScreenTimeMilliseconds));
 }
 
 void DeviceStatusCollector::CheckIdleState() {
@@ -1016,12 +997,9 @@ void DeviceStatusCollector::ClearCachedResourceUsage() {
 }
 
 void DeviceStatusCollector::ProcessIdleState(ui::IdleState state) {
-  // Do nothing if device activity reporting is disabled or if it's a child
-  // account. Usage time for child accounts are calculated differently.
-  if (!report_activity_times_ ||
-      user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
+  // Do nothing if device activity reporting is disabled.
+  if (!report_activity_times_)
     return;
-  }
 
   Time now = GetCurrentTime();
 
@@ -1048,58 +1026,10 @@ void DeviceStatusCollector::ProcessIdleState(ui::IdleState state) {
   last_idle_check_ = now;
 }
 
-void DeviceStatusCollector::OnUsageTimeStateChange(
-    chromeos::UsageTimeStateNotifier::UsageTimeState state) {
-  UpdateChildUsageTime();
-  last_state_active_ =
-      state == chromeos::UsageTimeStateNotifier::UsageTimeState::ACTIVE;
-}
-
 void DeviceStatusCollector::PowerChanged(
     const power_manager::PowerSupplyProperties& prop) {
   if (!power_status_callback_.is_null())
     std::move(power_status_callback_).Run(prop);
-}
-
-void DeviceStatusCollector::UpdateChildUsageTime() {
-  if (!report_activity_times_ ||
-      !user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
-    return;
-  }
-
-  // Only child accounts should be using this method.
-  CHECK(user_manager::UserManager::Get()->IsLoggedInAsChildUser());
-
-  Time now = GetCurrentTime();
-  Time reset_time = activity_storage_->GetBeginningOfDay(now);
-  if (reset_time > now)
-    reset_time -= TimeDelta::FromDays(1);
-  // Reset screen time if it has not been reset today.
-  if (reset_time > pref_service_->GetTime(prefs::kLastChildScreenTimeReset)) {
-    pref_service_->SetTime(prefs::kLastChildScreenTimeReset, now);
-    pref_service_->SetInteger(prefs::kChildScreenTimeMilliseconds, 0);
-    pref_service_->CommitPendingWrite();
-  }
-
-  if (!last_active_check_.is_null() && last_state_active_) {
-    // If it's been too long since the last report, or if the activity is
-    // negative (which can happen when the clock changes), assume a single
-    // interval of activity. This is the same strategy used to enterprise users.
-    base::TimeDelta active_seconds = now - last_active_check_;
-    if (active_seconds < base::TimeDelta::FromSeconds(0) ||
-        active_seconds >= (2 * kUpdateChildActiveTimeInterval)) {
-      activity_storage_->AddActivityPeriod(now - kUpdateChildActiveTimeInterval,
-                                           now, GetUserForActivityReporting());
-    } else {
-      activity_storage_->AddActivityPeriod(last_active_check_, now,
-                                           GetUserForActivityReporting());
-    }
-
-    activity_storage_->PruneActivityPeriods(
-        now, max_stored_past_activity_interval_,
-        max_stored_future_activity_interval_);
-  }
-  last_active_check_ = now;
 }
 
 void DeviceStatusCollector::SampleResourceUsage() {
@@ -1350,8 +1280,7 @@ std::string DeviceStatusCollector::GetUserForActivityReporting() const {
   if (!primary_user || !primary_user->HasGaiaAccount())
     return std::string();
 
-  // Report only affiliated users for enterprise reporting and signed-in user
-  // for consumer reporting.
+  // Report only affiliated users for enterprise reporting.
   std::string primary_user_email = primary_user->GetAccountId().GetUserEmail();
   if (!chromeos::ChromeUserManager::Get()->ShouldReportUser(
           primary_user_email)) {
@@ -1368,10 +1297,6 @@ bool DeviceStatusCollector::IncludeEmailsInActivityReports() const {
 
 bool DeviceStatusCollector::GetActivityTimes(
     em::DeviceStatusReportRequest* status) {
-  if (user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
-    UpdateChildUsageTime();
-  }
-
   // If user reporting is off, data should be aggregated per day.
   // Signed-in user is reported in non-enterprise reporting.
   std::vector<ActivityStorage::ActivityPeriod> activity_times =

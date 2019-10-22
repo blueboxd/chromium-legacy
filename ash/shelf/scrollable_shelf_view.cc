@@ -576,6 +576,9 @@ void ScrollableShelfView::Layout() {
   const gfx::Insets padding_insets = CalculateEdgePadding();
   available_space_ = GetLocalBounds();
   available_space_.Inset(padding_insets);
+  if (ShouldAdaptToRTL())
+    available_space_ = GetMirroredRect(available_space_);
+
   // The hotseat uses |available_space_| to determine where to show its
   // background, so notify it when it is recalculated.
   GetShelf()->shelf_widget()->hotseat_widget()->UpdateOpaqueBackground();
@@ -1380,6 +1383,13 @@ int ScrollableShelfView::CalculateAdjustedOffset() const {
 }
 
 void ScrollableShelfView::UpdateVisibleSpace() {
+  const bool in_hotseat_tablet =
+      chromeos::switches::ShouldShowShelfHotseat() && IsInTabletMode();
+  if (layout_strategy_ == kNotShowArrowButtons && !in_hotseat_tablet) {
+    visible_space_ = GetLocalBounds();
+    return;
+  }
+
   const int before_padding =
       (left_arrow_->GetVisible() ? kArrowButtonGroupWidth : 0);
   const int after_padding =
@@ -1396,8 +1406,7 @@ void ScrollableShelfView::UpdateVisibleSpace() {
   }
   visible_space_insets -= CalculateRipplePaddingInsets();
 
-  visible_space_ =
-      ShouldAdaptToRTL() ? available_space_ : GetMirroredRect(available_space_);
+  visible_space_ = available_space_;
   visible_space_.Inset(visible_space_insets);
 }
 

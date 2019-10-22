@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
-<translation id="1135993792949700405">Chrome మీరు ఎంచుకున్న వ్యక్తిగత డేటాను <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కు పంపుతుంది</translation>
 <translation id="1625889395409731085">బాహ్య లింక్‌ను తెరవాలా?</translation>
 <translation id="1699570257714336246">సమాచారం సరిగ్గా లేదు</translation>
 <translation id="2203046366315513658">విలువను తగ్గిస్తుంది</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Chromeలో Google అసిస్టెంట్ సగం ఎత్తులో తెరవబడింది.</translation>
 <translation id="6973932557599545801">క్షమించండి నేను సహాయం చేయలేకపోయాను, దయచేసి మీరే స్వంతంగా కొనసాగండి.</translation>
 <translation id="7658239707568436148">రద్దు చేయి</translation>
-<translation id="7871791972254842204"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />లోని నిబంధనలు &amp; షరతులను తర్వాత చదివి, అంగీకరించండి</translation>
 <translation id="8253702004019660079">Chromeలో Google అసిస్టెంట్.</translation>
 <translation id="9138504265731110181">వెబ్‌లో తనిఖీ చేయడం ద్వారా Google అసిస్టెంట్ మీ సమయాన్ని ఆదా చేయడంలో మీకు సహాయపడుతుంది.</translation>
 <translation id="945522503751344254">అభిప్రాయాన్ని పంపండి</translation>

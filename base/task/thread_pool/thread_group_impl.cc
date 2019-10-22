@@ -323,57 +323,40 @@ ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
       priority_hint_(priority_hint),
       idle_workers_stack_cv_for_testing_(lock_.CreateConditionVariable()),
       // Mimics the UMA_HISTOGRAM_LONG_TIMES macro.
-      detach_duration_histogram_(
-          histogram_label.empty()
-              ? nullptr
-              : Histogram::FactoryTimeGet(
-                    JoinString(
-                        {kDetachDurationHistogramPrefix, histogram_label},
-                        ""),
-                    TimeDelta::FromMilliseconds(1),
-                    TimeDelta::FromHours(1),
-                    50,
-                    HistogramBase::kUmaTargetedHistogramFlag)),
+      detach_duration_histogram_(Histogram::FactoryTimeGet(
+          JoinString({kDetachDurationHistogramPrefix, histogram_label}, ""),
+          TimeDelta::FromMilliseconds(1),
+          TimeDelta::FromHours(1),
+          50,
+          HistogramBase::kUmaTargetedHistogramFlag)),
       // Mimics the UMA_HISTOGRAM_COUNTS_1000 macro. When a worker runs more
       // than 1000 tasks before detaching, there is no need to know the exact
       // number of tasks that ran.
-      num_tasks_before_detach_histogram_(
-          histogram_label.empty()
-              ? nullptr
-              : Histogram::FactoryGet(
-                    JoinString(
-                        {kNumTasksBeforeDetachHistogramPrefix, histogram_label},
-                        ""),
-                    1,
-                    1000,
-                    50,
-                    HistogramBase::kUmaTargetedHistogramFlag)),
+      num_tasks_before_detach_histogram_(Histogram::FactoryGet(
+          JoinString({kNumTasksBeforeDetachHistogramPrefix, histogram_label},
+                     ""),
+          1,
+          1000,
+          50,
+          HistogramBase::kUmaTargetedHistogramFlag)),
       // Mimics the UMA_HISTOGRAM_COUNTS_100 macro. A ThreadGroup is
       // expected to run between zero and a few tens of workers.
       // When it runs more than 100 worker, there is no need to know the exact
       // number of workers that ran.
-      num_workers_histogram_(
-          histogram_label.empty()
-              ? nullptr
-              : Histogram::FactoryGet(
-                    JoinString({kNumWorkersHistogramPrefix, histogram_label},
-                               ""),
-                    1,
-                    100,
-                    50,
-                    HistogramBase::kUmaTargetedHistogramFlag)),
-      num_active_workers_histogram_(
-          histogram_label.empty()
-              ? nullptr
-              : Histogram::FactoryGet(
-                    JoinString(
-                        {kNumActiveWorkersHistogramPrefix, histogram_label},
-                        ""),
-                    1,
-                    100,
-                    50,
-                    HistogramBase::kUmaTargetedHistogramFlag)),
+      num_workers_histogram_(Histogram::FactoryGet(
+          JoinString({kNumWorkersHistogramPrefix, histogram_label}, ""),
+          1,
+          100,
+          50,
+          HistogramBase::kUmaTargetedHistogramFlag)),
+      num_active_workers_histogram_(Histogram::FactoryGet(
+          JoinString({kNumActiveWorkersHistogramPrefix, histogram_label}, ""),
+          1,
+          100,
+          50,
+          HistogramBase::kUmaTargetedHistogramFlag)),
       tracked_ref_factory_(this) {
+  DCHECK(!histogram_label.empty());
   DCHECK(!thread_group_label_.empty());
 }
 
@@ -527,13 +510,10 @@ size_t ThreadGroupImpl::NumberOfIdleWorkersForTesting() const {
 
 void ThreadGroupImpl::ReportHeartbeatMetrics() const {
   CheckedAutoLock auto_lock(lock_);
-  if (num_workers_histogram_) {
-    num_workers_histogram_->Add(workers_.size());
-  }
-  if (num_active_workers_histogram_) {
-    num_active_workers_histogram_->Add(workers_.size() -
-                                       idle_workers_stack_.Size());
-  }
+  num_workers_histogram_->Add(workers_.size());
+
+  num_active_workers_histogram_->Add(workers_.size() -
+                                     idle_workers_stack_.Size());
 }
 
 ThreadGroupImpl::WorkerThreadDelegateImpl::WorkerThreadDelegateImpl(
@@ -712,10 +692,8 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::CleanupLockRequired(
   DCHECK(!outer_->join_for_testing_started_);
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
-  if (outer_->num_tasks_before_detach_histogram_) {
-    outer_->num_tasks_before_detach_histogram_->Add(
-        worker_only().num_tasks_since_last_detach);
-  }
+  outer_->num_tasks_before_detach_histogram_->Add(
+      worker_only().num_tasks_since_last_detach);
   outer_->cleanup_timestamps_.push(subtle::TimeTicksNowIgnoringOverride());
   worker->Cleanup();
   outer_->idle_workers_stack_.Remove(worker);
@@ -965,10 +943,8 @@ ThreadGroupImpl::CreateAndRegisterWorkerLockRequired(
   DCHECK_LE(workers_.size(), max_tasks_);
 
   if (!cleanup_timestamps_.empty()) {
-    if (detach_duration_histogram_) {
-      detach_duration_histogram_->AddTime(
-          subtle::TimeTicksNowIgnoringOverride() - cleanup_timestamps_.top());
-    }
+    detach_duration_histogram_->AddTime(subtle::TimeTicksNowIgnoringOverride() -
+                                        cleanup_timestamps_.top());
     cleanup_timestamps_.pop();
   }
 

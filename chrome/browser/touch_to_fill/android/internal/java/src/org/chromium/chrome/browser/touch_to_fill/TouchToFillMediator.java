@@ -53,8 +53,7 @@ class TouchToFillMediator {
         mDesiredFaviconSize = desiredFaviconSize;
     }
 
-    void showCredentials(
-            String formattedUrl, boolean isOriginSecure, List<Credential> credentials) {
+    void showCredentials(String url, boolean isOriginSecure, List<Credential> credentials) {
         assert credentials != null;
         mModel.set(ON_CLICK_MANAGE, this::onManagePasswordSelected);
         mModel.set(VISIBLE, true);
@@ -64,7 +63,8 @@ class TouchToFillMediator {
 
         sheetItems.add(new ListItem(TouchToFillProperties.ItemType.HEADER,
                 new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
-                        .with(FORMATTED_URL, formattedUrl)
+                        .with(FORMATTED_URL,
+                                UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url))
                         .with(ORIGIN_SECURE, isOriginSecure)
                         .build()));
 
@@ -79,7 +79,7 @@ class TouchToFillMediator {
                             .with(ON_CLICK_LISTENER, this::onSelectedCredential)
                             .build();
             sheetItems.add(new ListItem(TouchToFillProperties.ItemType.CREDENTIAL, propertyModel));
-            mDelegate.fetchFavicon(credential.getOriginUrl(), mDesiredFaviconSize,
+            mDelegate.fetchFavicon(credential.getOriginUrl(), url, mDesiredFaviconSize,
                     (bitmap) -> propertyModel.set(FAVICON, bitmap));
         }
     }

@@ -19,6 +19,7 @@
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/http/http_request_headers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -342,11 +343,10 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
       CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
   dynamic_action_2.response_headers_to_remove.push_back("set-cookie");
 
-  std::vector<RequestAction> expected_actions;
-  expected_actions.push_back(std::move(static_action_1));
-  expected_actions.push_back(std::move(dynamic_action_1));
-  expected_actions.push_back(std::move(dynamic_action_2));
-  EXPECT_TRUE(AreRequestActionsEqual(expected_actions, actions));
+  EXPECT_THAT(actions, ::testing::UnorderedElementsAre(
+                           ::testing::Eq(::testing::ByRef(static_action_1)),
+                           ::testing::Eq(::testing::ByRef(dynamic_action_1)),
+                           ::testing::Eq(::testing::ByRef(dynamic_action_2))));
 
   GURL gmail_url = GURL("http://gmail.com");
   RequestParams gmail_params;
@@ -358,11 +358,6 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
   EXPECT_EQ(expected_mask, composite_matcher->GetRemoveHeadersMask(
                                gmail_params, 0u, &actions));
 
-  // Reinitialize |static_action_1| as the original |static_action_1| is owned
-  // by |expected_actions| and will be deleted when |expected_actions| is
-  // cleared.
-  static_action_1 =
-      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
   static_action_1.request_headers_to_remove.push_back(
       net::HttpRequestHeaders::kCookie);
   static_action_1.request_headers_to_remove.push_back(
@@ -372,10 +367,9 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
       CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
   static_action_2.response_headers_to_remove.push_back("set-cookie");
 
-  expected_actions.clear();
-  expected_actions.push_back(std::move(static_action_1));
-  expected_actions.push_back(std::move(static_action_2));
-  EXPECT_TRUE(AreRequestActionsEqual(expected_actions, actions));
+  EXPECT_THAT(actions, ::testing::UnorderedElementsAre(
+                           ::testing::Eq(::testing::ByRef(static_action_1)),
+                           ::testing::Eq(::testing::ByRef(static_action_2))));
 }
 
 // Ensure CompositeMatcher detects requests to be notified based on the rule

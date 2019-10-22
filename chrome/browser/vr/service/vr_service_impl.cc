@@ -38,10 +38,6 @@
 #endif
 
 namespace {
-
-// TODO(https://crbug.com/960132): When we unship WebVR 1.1, set this to false.
-static constexpr bool kAllowHTTPWebVRWithFlag = true;
-
 bool IsSecureContext(content::RenderFrameHost* host) {
   if (!host)
     return false;
@@ -322,7 +318,7 @@ void VRServiceImpl::RequestSession(
   }
 
   // Check that the request satisfies secure context requirements.
-  if (!IsSecureContextRequirementSatisfied()) {
+  if (!IsSecureContext(render_frame_host_)) {
     std::move(callback).Run(
         device::mojom::RequestSessionResult::NewFailureReason(
             device::mojom::RequestSessionError::ORIGIN_NOT_SECURE));
@@ -616,18 +612,6 @@ void VRServiceImpl::OnDeactivate(device::mojom::VRDisplayEventReason reason) {
 
 content::WebContents* VRServiceImpl::GetWebContents() {
   return content::WebContents::FromRenderFrameHost(render_frame_host_);
-}
-
-bool VRServiceImpl::IsSecureContextRequirementSatisfied() {
-  // We require secure connections unless both the webvr flag and the
-  // http flag are enabled.
-  static bool requires_secure_context =
-      !kAllowHTTPWebVRWithFlag ||
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebVR);
-  if (!requires_secure_context)
-    return true;
-  return IsSecureContext(render_frame_host_);
 }
 
 bool VRServiceImpl::IsConsentGrantedForDevice(

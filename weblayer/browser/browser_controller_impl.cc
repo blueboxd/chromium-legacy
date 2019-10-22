@@ -21,7 +21,10 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
+#include "base/json/json_writer.h"
+#include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/java/jni/BrowserControllerImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
 #endif
@@ -40,6 +43,14 @@ struct UserData : public base::SupportsUserData::Data {
 
 #if defined(OS_ANDROID)
 BrowserController* g_last_browser_controller;
+
+void JavaScriptResultCallback(
+    const base::android::ScopedJavaGlobalRef<jobject>& callback,
+    base::Value result) {
+  std::string json;
+  base::JSONWriter::Write(result, &json);
+  base::android::RunStringCallbackAndroid(callback, json);
+}
 #endif
 
 }  // namespace
@@ -149,6 +160,17 @@ void BrowserControllerImpl::SetTopControlsContainerView(
       native_top_controls_container_view);
 }
 
+void BrowserControllerImpl::ExecuteScript(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& script,
+    const base::android::JavaParamRef<jobject>& callback) {
+  base::android::ScopedJavaGlobalRef<jobject> jcallback(env, callback);
+  web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
+      base::android::ConvertJavaStringToUTF16(script),
+      base::BindOnce(&JavaScriptResultCallback, jcallback),
+      ISOLATED_WORLD_ID_WEBLAYER);
+}
+
 #endif
 
 void BrowserControllerImpl::LoadingStateChanged(content::WebContents* source,
@@ -214,11 +236,6 @@ blink::mojom::DisplayMode BrowserControllerImpl::GetDisplayMode(
     const content::WebContents* web_contents) {
   return is_fullscreen_ ? blink::mojom::DisplayMode::kFullscreen
                         : blink::mojom::DisplayMode::kBrowser;
-}
-
-void BrowserControllerImpl::DidFirstVisuallyNonEmptyPaint() {
-  for (auto& observer : observers_)
-    observer.FirstContentfulPaint();
 }
 
 void BrowserControllerImpl::DidFinishNavigation(

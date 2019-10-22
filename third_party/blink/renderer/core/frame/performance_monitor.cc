@@ -21,15 +21,6 @@
 
 namespace blink {
 
-namespace {
-constexpr auto kLongTaskSubTaskThreshold =
-    base::TimeDelta::FromMilliseconds(12);
-}  // namespace
-
-void PerformanceMonitor::BypassLongCompileThresholdOnceForTesting() {
-  bypass_long_compile_threshold_ = true;
-}
-
 // static
 base::TimeDelta PerformanceMonitor::Threshold(ExecutionContext* context,
                                               Violation violation) {
@@ -203,16 +194,6 @@ void PerformanceMonitor::Will(const probe::ExecuteScript& probe) {
 
 void PerformanceMonitor::Did(const probe::ExecuteScript& probe) {
   DidExecuteScript();
-
-  if (!enabled_ || thresholds_[kLongTask].is_zero())
-    return;
-
-  if (probe.Duration() <= kLongTaskSubTaskThreshold)
-    return;
-  auto sub_task_attribution = std::make_unique<SubTaskAttribution>(
-      AtomicString("script-run"), probe.context->Url().GetString(),
-      probe.CaptureStartTime(), probe.Duration());
-  sub_task_attributions_.push_back(std::move(sub_task_attribution));
 }
 
 void PerformanceMonitor::Will(const probe::CallFunction& probe) {
@@ -252,26 +233,7 @@ void PerformanceMonitor::Will(const probe::V8Compile& probe) {
   v8_compile_start_time_ = probe.CaptureStartTime();
 }
 
-void PerformanceMonitor::Did(const probe::V8Compile& probe) {
-  if (!enabled_ || thresholds_[kLongTask].is_zero())
-    return;
-
-  base::TimeDelta v8_compile_duration = probe.Duration();
-
-  if (bypass_long_compile_threshold_) {
-    bypass_long_compile_threshold_ = false;
-  } else {
-    if (v8_compile_duration <= kLongTaskSubTaskThreshold)
-      return;
-  }
-
-  auto sub_task_attribution = std::make_unique<SubTaskAttribution>(
-      AtomicString("script-compile"),
-      String::Format("%s(%d, %d)", probe.file_name.Utf8().c_str(), probe.line,
-                     probe.column),
-      v8_compile_start_time_, v8_compile_duration);
-  sub_task_attributions_.push_back(std::move(sub_task_attribution));
-}
+void PerformanceMonitor::Did(const probe::V8Compile& probe) {}
 
 void PerformanceMonitor::Will(const probe::UserCallback& probe) {
   ++user_callback_depth_;
@@ -315,7 +277,6 @@ void PerformanceMonitor::WillProcessTask(base::TimeTicks start_time) {
   per_task_style_and_layout_time_ = base::TimeDelta();
   user_callback_ = nullptr;
   v8_compile_start_time_ = base::TimeTicks();
-  sub_task_attributions_.clear();
 }
 
 void PerformanceMonitor::DidProcessTask(base::TimeTicks start_time,
@@ -341,7 +302,7 @@ void PerformanceMonitor::DidProcessTask(base::TimeTicks start_time,
         it.key->ReportLongTask(
             start_time, end_time,
             task_has_multiple_contexts_ ? nullptr : task_execution_context_,
-            task_has_multiple_contexts_, sub_task_attributions_);
+            task_has_multiple_contexts_);
       }
     }
   }

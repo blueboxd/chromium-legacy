@@ -32,6 +32,7 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/driver/file_based_trusted_vault_client.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
@@ -69,6 +70,9 @@
 #endif
 
 namespace {
+
+const base::FilePath::CharType kTrustedVaultFilename[] =
+    FILE_PATH_LITERAL("Trusted Vault");
 
 syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
   std::string disabled_types_str =
@@ -110,6 +114,10 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
           profile_web_data_service_, account_web_data_service_, password_store_,
           /*account_password_store=*/nullptr,
           ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_));
+
+  // TODO(crbug.com/1012660): Instantiate a specific client for ios.
+  trusted_vault_client_ = std::make_unique<syncer::FileBasedTrustedVaultClient>(
+      browser_state_->GetStatePath().Append(kTrustedVaultFilename));
 }
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}
@@ -191,9 +199,7 @@ IOSChromeSyncClient::GetInvalidationService() {
 }
 
 syncer::TrustedVaultClient* IOSChromeSyncClient::GetTrustedVaultClient() {
-  // TODO(crbug.com/1012660): Instantiate a generic client for ios.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return trusted_vault_client_.get();
 }
 
 scoped_refptr<syncer::ExtensionsActivity>

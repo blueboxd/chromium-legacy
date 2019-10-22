@@ -18,7 +18,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/common/content_export.h"
@@ -190,7 +190,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  std::unique_ptr<leveldb::LevelDBDatabaseImpl> database_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> database_;
   bool tried_to_recreate_during_open_ = false;
   bool in_memory_ = false;
 

@@ -20,4 +20,6 @@ interface INavigationControllerClient {
   void navigationCompleted(IClientNavigation navigation) = 4;
 
   void navigationFailed(IClientNavigation navigation) = 5;
+
+  void onFirstContentfulPaint() = 6;
 }

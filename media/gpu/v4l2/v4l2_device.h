@@ -390,7 +390,8 @@ class MEDIA_GPU_EXPORT V4L2Device
       bool is_encoder);
   static uint32_t V4L2PixFmtToDrmFormat(uint32_t format);
   // Calculates the largest plane's allocation size requested by a V4L2 device.
-  static gfx::Size AllocatedSizeFromV4L2Format(struct v4l2_format format);
+  static gfx::Size AllocatedSizeFromV4L2Format(
+      const struct v4l2_format& format);
 
   // Convert required H264 profile and level to V4L2 enums.
   static int32_t VideoCodecProfileToV4L2H264Profile(VideoCodecProfile profile);

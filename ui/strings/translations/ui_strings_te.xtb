@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 నిమిషం క్రితం}other{# నిమిషాల క్రితం}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1ని}other{#ని}}</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
+<translation id="1201402288615127009">తరువాత</translation>
 <translation id="1243314992276662751">అప్‌లోడ్ చేయి</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" />ను షేర్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">మీ స్క్రీన్‌పై ఉన్న స్పర్శ లక్ష్యాలను నొక్కండి.</translation>
 <translation id="2295140143284145483">సర్వే</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేస్తోంది</translation>
 <translation id="2388990488038464401">మీ ఫోన్ నుండి ఈ నంబర్‌‌కు కాల్ చేయాలా?</translation>
 <translation id="24452542372838207">నోటిఫికేషన్‌ను విస్తరించు</translation>
 <translation id="2445449901874883781">ఎక్కువ సాంద్రతను ఉపయోగించు</translation>
@@ -162,6 +164,7 @@
 <translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
 <translation id="6656912866303152668">Chromeతో <ph name="TARGET_DEVICE_NAME" /> సింక్ చేయబడి ఉందని నిర్ధారించుకుని, ఆపై మళ్లీ పంపే ప్రయత్నం చేయండి.</translation>
 <translation id="6699343763173986273">మీడియా తరువాత ట్రాక్</translation>
+<translation id="6710213216561001401">మునుపటి</translation>
 <translation id="6779314412797872738">దీని నుండి మీ ఫోన్‌కు Android నంబర్‌ను పంపడానికి, రెండు పరికరాలలోని సెట్టింగ్‌లలో "<ph name="TROUBLESHOOT_LINK" />".</translation>
 <translation id="6786750046913594791">ఫోల్డర్‌ను మూసివేయండి</translation>
 <translation id="6808150112686056157">మీడియా ఆపివేయి</translation>
@@ -179,6 +182,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 నిమి. మిగిలి ఉంది}other{# నిమి. మిగిలి ఉన్నాయి}}</translation>
 <translation id="7319740667687257810">లాంఛ‌ర్‌, పాక్షిక వీక్షణ</translation>
+<translation id="7352651011704765696">ఏదో తప్పు జరిగింది</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 నిమి. క్రితం}other{# నిమి. క్రితం}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 నిమిషం మిగిలి ఉంది}other{# నిమిషాలు మిగిలి ఉన్నాయి}}</translation>

@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Läs in sidan senare</translation>
 <translation id="1015730422737071372">Ange ytterligare information</translation>
 <translation id="1021110881106174305">Godkända kort</translation>
-<translation id="1023523064224774104">Du angav just ditt lösenord på en webbplats som har identifierats som misstänkt i
-          Chromium. Återställ lösenordet nu.</translation>
 <translation id="1032854598605920125">Rotera medurs</translation>
 <translation id="1035334672863811645">Logga in i Chrome</translation>
 <translation id="1036348656032585052">Inaktivera</translation>
@@ -123,6 +121,7 @@
 <translation id="1501859676467574491">Visa kort från ditt Google-konto</translation>
 <translation id="1507202001669085618">&lt;p&gt;Felmeddelandet visas om du använder en Wi-Fi-portal där du måste logga in innan du kommer ut på internet.&lt;/p&gt;
     &lt;p&gt;Åtgärda problemet genom att klicka på &lt;strong&gt;Anslut&lt;/strong&gt; på sidan du försöker öppna.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Lista över historikposter</translation>
 <translation id="1517433312004943670">Telefonnummer är obligatoriskt</translation>
 <translation id="1517500485252541695">Godkända kredit- och betalkort</translation>
 <translation id="1519264250979466059">Programversionsdatum</translation>
@@ -308,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat kan ha återkallats. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="2438874542388153331">Fyra hål till höger</translation>
+<translation id="245044156129055925">Du angav just ditt lösenord på en bedräglig webbplats. Du rekommenderas i Chromium att ändra lösenordet nu.</translation>
 <translation id="2463193859425327265">Ändra startsida</translation>
 <translation id="2463739503403862330">Fyll i</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -552,7 +552,6 @@
 <translation id="3655670868607891010">Om du ser detta ofta provar du <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Version</translation>
 <translation id="366077651725703012">Uppdatera kreditkortet</translation>
-<translation id="3672525478985456967">Webbplatsens namn liknar <ph name="LOOKALIKE_DOMAIN" />. Ibland försöker hackare efterlikna webbplatser genom att göra små, svårupptäckta ändringar i domännamnet.</translation>
 <translation id="3676592649209844519">Enhets-id:</translation>
 <translation id="3677008721441257057">Menade du &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Begäran kunde inte signeras</translation>
@@ -618,6 +617,9 @@
 <translation id="397105322502079400">Beräknar ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> har blockerats</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> har aktiverat skydd mot hot i Chrome Enterprise i webbläsaren. Skyddet mot hot i Chrome Enterprise har tillgång till en del av din data.</translation>
+<translation id="3987405730340719549">Den här webbplatsen har fastställts som potentiellt falsk eller bedräglig av Chrome.
+
+    Besök https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals om du anser att detta är felaktigt.</translation>
 <translation id="3987940399970879459">Mindre än 1 MB</translation>
 <translation id="3990250421422698716">Stötvis förskjutning</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webbsida i närheten}other{# webbsidor i närheten}}</translation>
@@ -876,7 +878,6 @@
 <translation id="5230733896359313003">Leveransadress</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Ta bort permanent</translation>
 <translation id="5250209940322997802">Anslut till ett nätverk</translation>
 <translation id="5251803541071282808">Moln</translation>
 <translation id="5252000469029418751">C7 (kuvert)</translation>
@@ -996,6 +997,9 @@
 <translation id="5813119285467412249">&amp;Gör om Lägg till</translation>
 <translation id="583281660410589416">Okänd</translation>
 <translation id="5838278095973806738">Du bör inte ange några känsliga uppgifter på den här webbplatsen (till exempel lösenord eller kreditkortsuppgifter) eftersom hackare kan stjäla dem.</translation>
+<translation id="5855253129151731373">Webbplatsens värdnamn liknar <ph name="LOOKALIKE_DOMAIN" />. Ibland försöker hackare efterlikna webbplatser genom att göra små, svårupptäckta ändringar i domännamnet.
+
+    Besök https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals om du anser att detta är felaktigt.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5863847714970149516">Sidan du är på väg till kan försöka debitera dig</translation>
 <translation id="5866257070973731571">Ange telefonnummer</translation>
@@ -1018,7 +1022,6 @@
 <translation id="5946937721014915347">Öppnar <ph name="SITE_NAME" /> …</translation>
 <translation id="5947933617628957894">Ja, lägg till</translation>
 <translation id="5951495562196540101">Det går inte att registrera enheten med ett konsumentkonto (paketerad licens är tillgänglig).</translation>
-<translation id="5966900314707961320">När detta har aktiverats kan en webbplats inte använda cookies som spårar dig på webben</translation>
 <translation id="5967592137238574583">Redigera kontaktuppgifter</translation>
 <translation id="5967867314010545767">Ta bort från historiken</translation>
 <translation id="5975083100439434680">Zooma ut</translation>
@@ -1107,6 +1110,7 @@
 <translation id="6401136357288658127">Den här principen är utfasad. Använd principen <ph name="NEW_POLICY" /> i stället.</translation>
 <translation id="6404511346730675251">Redigera bokmärke</translation>
 <translation id="6406765186087300643">C0 (kuvert)</translation>
+<translation id="6409754798200046165">Du angav just ditt lösenord på en bedräglig webbplats. Du rekommenderas i Chrome att ändra lösenordet nu.</translation>
 <translation id="6410264514553301377">Ange utgångsdatum och CVC-kod för <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Du kan skydda Google-kontot genom att byta lösenord.</translation>
 <translation id="6427730057873428458">Fönsterfalsning</translation>
@@ -1114,7 +1118,6 @@
 <translation id="6433490469411711332">Redigera kontaktuppgifter</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avvisade anslutningen.</translation>
 <translation id="6434309073475700221">Kasta</translation>
-<translation id="6435221585574090192">Dela data om säkerhetshändelser som flaggats av skyddet mot hot i Chrome Enterprise med administratören. Det kan t.ex. vara webbadresser, filnamn och metadata om filer, ditt användarnamn på enheten och ditt användarnamn i Chrome.</translation>
 <translation id="6440503408713884761">Ignoreras</translation>
 <translation id="6446163441502663861">Kahu (kuvert)</translation>
 <translation id="6446608382365791566">Lägg till mer information</translation>
@@ -1404,6 +1407,7 @@ Mer information.
 <translation id="7932579305932748336">Beläggning</translation>
 <translation id="79338296614623784">Ange ett giltigt telefonnummer</translation>
 <translation id="7934052535022478634">Betalningen är slutförd</translation>
+<translation id="7935031712718413217">Webbadress med möjlig identitetsförfalskning</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Upphör att gälla den <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Servercertifikatet är inte giltigt ännu.</translation>
@@ -1458,7 +1462,6 @@ Mer information.
 <translation id="8184538546369750125">Använd global standardinställning (Tillåt)</translation>
 <translation id="8194797478851900357">&amp;Ångra Flytta</translation>
 <translation id="8197543752516192074">Översätt sidan</translation>
-<translation id="8197899142098070286">Du angav just ditt lösenord på en webbplats som har identifierats som misstänkt i Chrome. Återställ lösenordet nu.</translation>
 <translation id="8201077131113104583">Ogiltig webbadress för uppdatering för tillägg med id <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Beställningsöversikt</translation>
 <translation id="8202370299023114387">Konflikt</translation>
@@ -1546,7 +1549,6 @@ Mer information:
 <translation id="8718314106902482036">Betalningen slutfördes inte</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, sökförslag</translation>
 <translation id="8719528812645237045">Flera hål högst upp</translation>
-<translation id="8723954843026426558">Jag godkänner användarvillkor, sekretesspolicy och ångerrätt på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8728672262656704056">Du surfar inkognito</translation>
 <translation id="8730621377337864115">Klart</translation>

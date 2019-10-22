@@ -51,6 +51,7 @@ class AssistantSetupController;
 class AssistantStateController;
 class AssistantSuggestionsController;
 class AssistantUiController;
+class AssistantWebUiController;
 
 class ASH_EXPORT AssistantController
     : public chromeos::assistant::mojom::AssistantController,
@@ -145,6 +146,10 @@ class ASH_EXPORT AssistantController
 
   AssistantUiController* ui_controller() { return &assistant_ui_controller_; }
 
+  AssistantWebUiController* web_ui_controller() {
+    return assistant_web_ui_controller_.get();
+  }
+
   AssistantViewDelegate* view_delegate() { return &view_delegate_; }
 
   bool IsAssistantReady() const;
@@ -202,6 +207,7 @@ class ASH_EXPORT AssistantController
   AssistantSetupController assistant_setup_controller_{this};
   AssistantSuggestionsController assistant_suggestions_controller_{this};
   AssistantUiController assistant_ui_controller_{this};
+  std::unique_ptr<AssistantWebUiController> assistant_web_ui_controller_;
 
   AssistantViewDelegateImpl view_delegate_{this};
 

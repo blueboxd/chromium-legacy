@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">To let Chrome send you notifications, also turn on notifications in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> also has data in Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Changing the file extension may result in unexpected behaviour and be harmful to your device.</translation>
 <translation id="2056878612599315956">Site paused</translation>
 <translation id="2063713494490388661">Tap to Search</translation>
 <translation id="2067805253194386918">text</translation>
@@ -263,6 +262,7 @@
 <translation id="2913331724188855103">Allow sites to save and read cookie data (recommended)</translation>
 <translation id="2923908459366352541">Name is invalid</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> storage</translation>
+<translation id="2942036813789421260">Preview tab is closed</translation>
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Switched to incognito tabs</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
@@ -388,6 +388,7 @@
 <translation id="3988466920954086464">See instant search results in this panel</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3997476611815694295">Unimportant storage</translation>
+<translation id="4000212216660919741">Offline Home</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4008040567710660924">Allow cookies for a specific site.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# hr}other{# hrs}}</translation>
@@ -767,6 +768,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6697947395630195233">Chrome needs access to your location to share your location with this site.</translation>
 <translation id="6698801883190606802">Manage synced data</translation>
 <translation id="6699370405921460408">Google servers will optimise the pages that you visit.</translation>
+<translation id="6706288973712894588">You are currently offline.\n<ph name="BEGIN_LINK" />Explore your offline feed.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">News</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="671481426037969117">Your <ph name="FQDN" /> timer ran out. It will start again tomorrow.</translation>
@@ -866,6 +868,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7475688122056506577">SD card not found. Some of your files may be missing.</translation>
 <translation id="7479104141328977413">Tab management</translation>
 <translation id="7481312909269577407">Forward</translation>
+<translation id="7482656565088326534">Preview tab</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">data saved</translation>
 <translation id="7498271377022651285">Please wait…</translation>
@@ -915,7 +918,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7810647596859435254">Open with…</translation>
 <translation id="7821588508402923572">Your data savings will appear here</translation>
 <translation id="7837721118676387834">Allow auto-play of muted videos for a specific site.</translation>
-<translation id="7838340937077326045">Are you sure that you want to change the file extension?</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
 <translation id="784934925303690534">Time range</translation>
 <translation id="7851858861565204677">Other devices</translation>
@@ -996,6 +998,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8380167699614421159">This site shows intrusive or misleading ads</translation>
 <translation id="8393700583063109961">Send message</translation>
 <translation id="8413126021676339697">Show full history</translation>
+<translation id="8427875596167638501">Preview tab is half-opened</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8438566539970814960">Make searches and browsing better</translation>
 <translation id="8441146129660941386">Seek backward</translation>
@@ -1086,7 +1089,9 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="9086455579313502267">Unable to access the network</translation>
 <translation id="9100505651305367705">Offer to show articles in simplified view, when supported</translation>
 <translation id="9100610230175265781">Passphrase required</translation>
+<translation id="9102803872260866941">Preview tab is opened</translation>
 <translation id="9104217018994036254">List of devices to share a tab with.</translation>
+<translation id="9133397713400217035">Explore offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>

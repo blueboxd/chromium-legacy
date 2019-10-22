@@ -365,7 +365,7 @@ public final class ChildProcessLauncherHelperImpl {
         }
 
         if (sSandboxedChildConnectionAllocator == null) {
-            Log.w(TAG,
+            Log.d(TAG,
                     "Create a new ChildConnectionAllocator with package name = %s,"
                             + " sandboxed = true",
                     packageName);

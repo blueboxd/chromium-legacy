@@ -206,6 +206,16 @@ void NavigationControllerImpl::DidFinishNavigation(
   navigation_map_.erase(navigation_map_.find(navigation_handle));
 }
 
+void NavigationControllerImpl::DidFirstVisuallyNonEmptyPaint() {
+#if defined(OS_ANDROID)
+  Java_NavigationControllerImpl_onFirstContentfulPaint(AttachCurrentThread(),
+                                                       java_controller_);
+#endif
+
+  for (auto& observer : observers_)
+    observer.OnFirstContentfulPaint();
+}
+
 #if defined(OS_ANDROID)
 static jlong JNI_NavigationControllerImpl_GetNavigationController(
     JNIEnv* env,

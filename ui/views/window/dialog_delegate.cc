@@ -89,7 +89,7 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
 #if !defined(OS_MACOSX)
     // Except on Mac, the bubble frame includes its own shadow; remove any
     // native shadowing. On Mac, the window server provides the shadow.
-    params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+    params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
 #endif
   }
   params.context = context;

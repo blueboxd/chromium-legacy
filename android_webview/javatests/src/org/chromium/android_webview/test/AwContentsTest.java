@@ -1007,4 +1007,19 @@ public class AwContentsTest {
                 RecordHistogram.getHistogramValueCountForTesting(
                         AwContents.LOAD_URL_SCHEME_HISTOGRAM_NAME, expectedSchemeEnum));
     }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testFindAllAsyncEmptySearchString() {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        try {
+            awContents.findAllAsync(null);
+            Assert.fail("A null searchString should cause an exception to be thrown");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+    }
 }

@@ -26,8 +26,7 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
@@ -81,7 +80,8 @@ static const uint8_t kUTF16Format = 0;
 static const uint8_t kLatin1Format = 1;
 
 storage::DomStorageDatabase::Key CreateMetaDataKey(const url::Origin& origin) {
-  auto serialized_origin = leveldb::StdStringToUint8Vector(origin.Serialize());
+  auto origin_str = origin.Serialize();
+  std::vector<uint8_t> serialized_origin(origin_str.begin(), origin_str.end());
   storage::DomStorageDatabase::Key key;
   key.reserve(base::size(kMetaPrefix) + serialized_origin.size());
   key.insert(key.end(), kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix));
@@ -145,7 +145,7 @@ storage::DomStorageDatabase::Key MakeOriginPrefix(const url::Origin& origin) {
   return prefix;
 }
 
-void DeleteOrigins(leveldb::LevelDBDatabaseImpl* database,
+void DeleteOrigins(storage::AsyncDomStorageDatabase* database,
                    std::vector<url::Origin> origins,
                    base::OnceCallback<void(leveldb::Status)> callback) {
   database->RunDatabaseTask(
@@ -738,7 +738,7 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
     options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
 
     in_memory_ = false;
-    database_ = leveldb::LevelDBDatabaseImpl::OpenDirectory(
+    database_ = storage::AsyncDomStorageDatabase::OpenDirectory(
         std::move(options), directory_, "leveldb", memory_dump_id_,
         leveldb_task_runner_,
         base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
@@ -748,7 +748,7 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
 
   // We were not given a subdirectory. Use a memory backed database.
   in_memory_ = true;
-  database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
+  database_ = storage::AsyncDomStorageDatabase::OpenInMemory(
       memory_dump_id_, "local-storage", leveldb_task_runner_,
       base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -797,7 +797,7 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
     // Existing database, check if version number matches current schema
     // version.
     int64_t db_version;
-    if (!base::StringToInt64(leveldb::Uint8VectorToStdString(value),
+    if (!base::StringToInt64(std::string(value.begin(), value.end()),
                              &db_version) ||
         db_version < kMinSchemaVersion ||
         db_version > kCurrentLocalStorageSchemaVersion) {

@@ -165,5 +165,12 @@ public final class NavigationController {
                 observer.navigationFailed((Navigation) navigation);
             }
         }
+
+        @Override
+        public void onFirstContentfulPaint() {
+            for (NavigationObserver observer : mObservers) {
+                observer.onFirstContentfulPaint();
+            }
+        }
     }
 }

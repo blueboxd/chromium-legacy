@@ -51,6 +51,9 @@ class SharingDeviceRegistration {
   // Returns if device can handle receiving of shared clipboard contents.
   virtual bool IsSharedClipboardSupported() const;
 
+  // Returns if device can handle receiving of sms fetcher requests.
+  virtual bool IsSmsFetcherSupported() const;
+
   // For testing
   void SetEnabledFeaturesForTesting(
       std::set<sync_pb::SharingSpecificFields_EnabledFeatures>

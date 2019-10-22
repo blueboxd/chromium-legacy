@@ -48,8 +48,11 @@ bool LibraryLoaded(JNIEnv* env,
                        false,    // Thread ID
                        false,    // Timestamp
                        false);   // Tick count
-  VLOG(0) << "Chromium logging enabled: level = " << logging::GetMinLogLevel()
-          << ", default verbosity = " << logging::GetVlogVerbosity();
+  if (logging::GetMinLogLevel() != 0 || logging::GetVlogVerbosity() != 0 ||
+      DCHECK_IS_ON()) {
+    VLOG(0) << "Chromium logging enabled: level = " << logging::GetMinLogLevel()
+            << ", default verbosity = " << logging::GetVlogVerbosity();
+  }
 
   return true;
 }

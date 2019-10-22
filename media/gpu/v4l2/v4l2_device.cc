@@ -1356,7 +1356,8 @@ int32_t V4L2Device::H264LevelIdcToV4L2H264Level(uint8_t level_idc) {
 }
 
 // static
-gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(struct v4l2_format format) {
+gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(
+    const struct v4l2_format& format) {
   gfx::Size coded_size;
   gfx::Size visible_size;
   VideoPixelFormat frame_format = PIXEL_FORMAT_UNKNOWN;

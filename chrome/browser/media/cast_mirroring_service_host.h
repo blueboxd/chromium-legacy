@@ -25,8 +25,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
-// TODO(https://crbug.com/879012): Remove the build flag. OffscreenTab should
-// not only be defined when extension is enabled.
+// TODO(crbug.com/879012): Remove the build flag. OffscreenTab should not only
+// be defined when extension is enabled.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/media/offscreen_tab.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

@@ -73,6 +73,10 @@ std::string FilterSourceStream::Description() const {
   return next_type_string + "," + GetTypeAsString();
 }
 
+bool FilterSourceStream::MayHaveMoreBytes() const {
+  return !upstream_end_reached_;
+}
+
 FilterSourceStream::SourceType FilterSourceStream::ParseEncodingType(
     const std::string& encoding) {
   if (encoding.empty()) {

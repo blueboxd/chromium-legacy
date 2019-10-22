@@ -183,7 +183,7 @@ function checkForBluetoothKeywords(inputEvent) {
 function sendReport() {
   if ($('description-text').value.length == 0) {
     const description = $('description-text');
-    description.placeholder = loadTimeData.getString('no-description');
+    description.placeholder = loadTimeData.getString('noDescription');
     description.focus();
     return false;
   }

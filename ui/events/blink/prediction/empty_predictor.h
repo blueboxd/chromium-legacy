@@ -27,8 +27,8 @@ class EmptyPredictor : public InputPredictor {
   bool HasPrediction() const override;
 
   // Returns the last_input_ for testing.
-  bool GeneratePrediction(base::TimeTicks predict_time,
-                          InputData* result) const override;
+  std::unique_ptr<InputData> GeneratePrediction(
+      base::TimeTicks predict_time) const override;
 
   // Returns kTimeInterval for testing.
   base::TimeDelta TimeInterval() const override;

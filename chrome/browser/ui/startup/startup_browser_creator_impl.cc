@@ -816,9 +816,8 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   if (!browser || !profile_ || browser->tab_strip_model()->count() == 0)
     return;
 
-  if (HasPendingUncleanExit(browser->profile())) {
-    SessionCrashedBubble::Show(browser);
-  }
+  if (HasPendingUncleanExit(browser->profile()))
+    SessionCrashedBubble::ShowIfNotOffTheRecordProfile(browser);
 
   bool show_bad_flags_security_warnings = ShouldShowBadFlagsSecurityWarnings();
   if (command_line_.HasSwitch(switches::kEnableAutomation) &&

@@ -102,6 +102,7 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   static constexpr char kTaskManagerId[] = "ijaigheoohcacdnplfbdimmcfldnnhdi";
   const ash::ShelfID shelf_id(kTaskManagerId);
   window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
+  window->SetProperty(ash::kAppIDKey, shelf_id.app_id);
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
 #endif
   return g_task_manager_view->table_model_.get();

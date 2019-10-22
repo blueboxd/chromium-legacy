@@ -402,7 +402,12 @@ static NSString* gSearchTerm;
 
 - (void)findInPageManager:(web::FindInPageManager*)manager
     didSelectMatchAtIndex:(NSInteger)index
+        withContextString:(NSString*)contextString
               forWebState:(web::WebState*)webState {
+  if (contextString) {
+    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
+                                    contextString);
+  }
   // Increment index so that match number show in FindBar ranges from 1...N as
   // opposed to 0...N-1.
   index++;

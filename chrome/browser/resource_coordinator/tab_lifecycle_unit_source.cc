@@ -407,9 +407,9 @@ void TabLifecycleUnitSource::OnLifecycleStateChanged(
     performance_manager::mojom::LifecycleState state) {
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
 
-  // Some WebContents aren't attached to a tab, so there is no corresponding
-  // TabLifecycleUnit.
-  // TODO(fdoray): This may want to filter for the navigation_id.
+  // Lifecycle state is updated independently from navigations. Therefore, there
+  // is no need to filter out the event if it was generated before the last
+  // navigation.
   if (lifecycle_unit)
     lifecycle_unit->UpdateLifecycleState(state);
 }

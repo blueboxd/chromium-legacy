@@ -83,23 +83,20 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
                                          &delayed_task_manager_),
       has_disable_best_effort_switch_(HasDisableBestEffortTasksSwitch()),
       tracked_ref_factory_(this) {
+  DCHECK(!histogram_label.empty());
+
   foreground_thread_group_ = std::make_unique<ThreadGroupImpl>(
-      histogram_label.empty()
-          ? std::string()
-          : JoinString(
-                {histogram_label, kForegroundPoolEnvironmentParams.name_suffix},
-                "."),
+      JoinString(
+          {histogram_label, kForegroundPoolEnvironmentParams.name_suffix}, "."),
       kForegroundPoolEnvironmentParams.name_suffix,
       kForegroundPoolEnvironmentParams.priority_hint,
       task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef());
 
   if (CanUseBackgroundPriorityForWorkerThread()) {
     background_thread_group_ = std::make_unique<ThreadGroupImpl>(
-        histogram_label.empty()
-            ? std::string()
-            : JoinString({histogram_label,
-                          kBackgroundPoolEnvironmentParams.name_suffix},
-                         "."),
+        JoinString(
+            {histogram_label, kBackgroundPoolEnvironmentParams.name_suffix},
+            "."),
         kBackgroundPoolEnvironmentParams.name_suffix,
         kBackgroundPoolEnvironmentParams.priority_hint,
         task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef());

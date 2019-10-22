@@ -614,6 +614,26 @@ void RecordSiteIsolationPrintMetrics(blink::WebFrame* printed_frame) {
       cross_site_visible_frame_count);
 }
 
+bool CopyMetafileDataToReadOnlySharedMem(
+    const MetafileSkia& metafile,
+    PrintHostMsg_DidPrintContent_Params* params) {
+  uint32_t buf_size = metafile.GetDataSize();
+  if (buf_size == 0)
+    return false;
+
+  base::MappedReadOnlyRegion region_mapping =
+      mojo::CreateReadOnlySharedMemoryRegion(buf_size);
+  if (!region_mapping.IsValid())
+    return false;
+
+  if (!metafile.GetData(region_mapping.mapping.memory(), buf_size))
+    return false;
+
+  params->metafile_data_region = std::move(region_mapping.region);
+  params->subframe_content_info = metafile.GetSubframeContentInfo();
+  return true;
+}
+
 }  // namespace
 
 FrameReference::FrameReference(blink::WebLocalFrame* frame) {
@@ -2168,26 +2188,6 @@ void PrintRenderFrameHelper::PrintPageInternal(
   DCHECK(ret);
 }
 #endif  // !defined(OS_MACOSX)
-
-bool PrintRenderFrameHelper::CopyMetafileDataToReadOnlySharedMem(
-    const MetafileSkia& metafile,
-    PrintHostMsg_DidPrintContent_Params* params) {
-  uint32_t buf_size = metafile.GetDataSize();
-  if (buf_size == 0)
-    return false;
-
-  base::MappedReadOnlyRegion region_mapping =
-      mojo::CreateReadOnlySharedMemoryRegion(buf_size);
-  if (!region_mapping.IsValid())
-    return false;
-
-  if (!metafile.GetData(region_mapping.mapping.memory(), buf_size))
-    return false;
-
-  params->metafile_data_region = std::move(region_mapping.region);
-  params->subframe_content_info = metafile.GetSubframeContentInfo();
-  return true;
-}
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintRenderFrameHelper::ShowScriptedPrintPreview() {

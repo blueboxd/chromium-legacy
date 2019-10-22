@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="1135993792949700405">Chrome va trimite datele cu caracter personal selectate la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Deschizi linkul extern?</translation>
 <translation id="1699570257714336246">Informații lipsă</translation>
 <translation id="2203046366315513658">Redu valoarea</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Asistentul Google în Chrome a fost deschis la jumătate din înălțime.</translation>
 <translation id="6973932557599545801">Nu te mai pot ajuta. Continuă personal.</translation>
 <translation id="7658239707568436148">Anulează</translation>
-<translation id="7871791972254842204">Citește și acceptă termenii și condițiile domeniului <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> mai târziu</translation>
 <translation id="8253702004019660079">Asistentul Google în Chrome.</translation>
 <translation id="9138504265731110181">Cu Asistentul Google economisești timp la finalizarea achizițiilor pe web</translation>
 <translation id="945522503751344254">Trimite feedback</translation>

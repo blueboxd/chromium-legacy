@@ -96,7 +96,6 @@
     "components/components_locale_settings.grd": "Not UI strings; localized separately",
     "components/omnibox/resources/omnibox_resources.grd": "Not UI strings; localized separately",
     "third_party/blink/renderer/devtools/front_end/langpacks/devtools_ui_strings.grd" : "Devtools UI strings that are optionally enabled by browser.",
-    "third_party/devtools-frontend/src/front_end/langpacks/devtools_ui_strings.grd" : "Devtools UI strings that are optionally enabled by browser.",
     "tools/grit/grit/testdata/buildinfo.grd": "Test data",
     "tools/grit/grit/testdata/chrome/app/generated_resources.grd": "Test data",
     "tools/grit/grit/testdata/substitute.grd": "Test data",

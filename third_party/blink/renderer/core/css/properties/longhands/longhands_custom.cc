@@ -845,8 +845,8 @@ const CSSValue* BorderImageSlice::CSSValueFromComputedStyleInternal(
 
 const CSSValue* BorderImageSlice::InitialValue() const {
   DEFINE_STATIC_LOCAL(
-      const Persistent<CSSBorderImageSliceValue>, value,
-      (MakeGarbageCollected<CSSBorderImageSliceValue>(
+      const Persistent<cssvalue::CSSBorderImageSliceValue>, value,
+      (MakeGarbageCollected<cssvalue::CSSBorderImageSliceValue>(
           CSSQuadValue::Create(
               CSSNumericLiteralValue::Create(
                   100, CSSPrimitiveValue::UnitType::kPercentage),
@@ -5051,8 +5051,9 @@ const CSSValue* Rotate::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (style.Rotate()->X() != 0 || style.Rotate()->Y() != 0 ||
       style.Rotate()->Z() != 1) {
-    const CSSAxisValue* axis = MakeGarbageCollected<CSSAxisValue>(
-        style.Rotate()->X(), style.Rotate()->Y(), style.Rotate()->Z());
+    const cssvalue::CSSAxisValue* axis =
+        MakeGarbageCollected<cssvalue::CSSAxisValue>(
+            style.Rotate()->X(), style.Rotate()->Y(), style.Rotate()->Z());
     list->Append(*axis);
   }
   list->Append(*CSSNumericLiteralValue::Create(

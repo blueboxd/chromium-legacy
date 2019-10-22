@@ -1638,13 +1638,6 @@ void PaintLayerScrollableArea::SetSnapContainerData(
   EnsureRareData().snap_container_data_ = data;
 }
 
-void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(
-    ScrollbarOrientation orientation) {
-  GetLayoutBox()->GetDocument().GetSnapCoordinator().SnapAtCurrentPosition(
-      *GetLayoutBox(), orientation == kHorizontalScrollbar,
-      orientation == kVerticalScrollbar);
-}
-
 bool PaintLayerScrollableArea::HasOverflowControls() const {
   // We do not need to check for ScrollCorner because it only exists iff there
   // are scrollbars, see: |ScrollCornerRect| and |UpdateScrollCornerStyle|.
@@ -2071,11 +2064,7 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_point), true, true);
-  end_point = GetLayoutBox()
-                  ->GetDocument()
-                  .GetSnapCoordinator()
-                  .GetSnapPosition(*GetLayoutBox(), *strategy)
-                  .value_or(end_point);
+  end_point = GetSnapPosition(*strategy).value_or(end_point);
   new_scroll_offset = ScrollPositionToOffset(end_point);
 
   if (params.is_for_scroll_sequence) {

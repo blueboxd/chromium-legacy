@@ -4,9 +4,7 @@
 
 package org.chromium.weblayer;
 
-import android.content.ComponentCallbacks;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -47,11 +45,11 @@ public final class WebLayer {
      * Loads the WebLayer implementation and returns the IWebLayer. This does *not* trigger the
      * implementation to start.
      */
-    private static IWebLayer connectToWebLayerImplementation(Context remoteContext)
+    private static IWebLayer connectToWebLayerImplementation(ClassLoader remoteClassLoader)
             throws UnsupportedVersionException {
         try {
-            Class webLayerClass = remoteContext.getClassLoader().loadClass(
-                    "org.chromium.weblayer_private.WebLayerImpl");
+            Class webLayerClass =
+                    remoteClassLoader.loadClass("org.chromium.weblayer_private.WebLayerImpl");
 
             // Check version before doing anything else on the implementation side.
             if (!(boolean) webLayerClass.getMethod("checkVersion", Integer.TYPE)
@@ -72,7 +70,7 @@ public final class WebLayer {
      * Loads assets for WebLayer and returns the package ID to use when calling
      * R.onResourcesLoaded().
      */
-    private static int loadAssets(Context appContext, Context remoteContext) {
+    private static int loadAssets(Context appContext) {
         WebViewDelegate delegate;
         PackageInfo implPackageInfo;
         try {
@@ -109,10 +107,12 @@ public final class WebLayer {
     public static ListenableFuture<WebLayer> create(Context appContext)
             throws UnsupportedVersionException {
         if (sFuture == null) {
-            Context remoteContext = createRemoteContext(appContext.getApplicationContext());
-            IWebLayer iWebLayer = connectToWebLayerImplementation(remoteContext);
-            int resourcesPackageId = loadAssets(appContext, remoteContext);
-            sFuture = new WebLayerLoadFuture(iWebLayer, remoteContext, resourcesPackageId);
+            // Just in case the app passed an Activity context.
+            appContext = appContext.getApplicationContext();
+            ClassLoader remoteClassLoader = createRemoteClassLoader(appContext);
+            IWebLayer iWebLayer = connectToWebLayerImplementation(remoteClassLoader);
+            int resourcesPackageId = loadAssets(appContext);
+            sFuture = new WebLayerLoadFuture(iWebLayer, appContext, resourcesPackageId);
         }
         return sFuture;
     }
@@ -123,7 +123,7 @@ public final class WebLayer {
     private static final class WebLayerLoadFuture extends ListenableFuture<WebLayer> {
         private final IWebLayer mIWebLayer;
 
-        WebLayerLoadFuture(IWebLayer iWebLayer, Context remoteContext, int resourcesPackageId) {
+        WebLayerLoadFuture(IWebLayer iWebLayer, Context appContext, int resourcesPackageId) {
             mIWebLayer = iWebLayer;
             ValueCallback<Boolean> loadCallback = new ValueCallback<Boolean>() {
                 @Override
@@ -134,7 +134,7 @@ public final class WebLayer {
                 }
             };
             try {
-                iWebLayer.initAndLoadAsync(ObjectWrapper.wrap(remoteContext),
+                iWebLayer.initAndLoadAsync(ObjectWrapper.wrap(appContext),
                         ObjectWrapper.wrap(loadCallback), resourcesPackageId);
             } catch (RemoteException e) {
                 throw new APICallException(e);
@@ -209,47 +209,19 @@ public final class WebLayer {
     }
 
     /**
-     * Creates a Context for the remote (weblayer implementation) side.
+     * Creates a ClassLoader for the remote (weblayer implementation) side.
      */
-    static Context createRemoteContext(Context localContext) {
-        Context remoteContext;
+    static ClassLoader createRemoteClassLoader(Context localContext) {
         try {
             // TODO(cduvall): Might want to cache the remote context so we don't need to call into
             // package manager more than we need to.
-            remoteContext = localContext.createPackageContext(getImplPackageName(localContext),
-                    Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+            Context remoteContext =
+                    localContext.createPackageContext(getImplPackageName(localContext),
+                            Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+            return remoteContext.getClassLoader();
         } catch (NameNotFoundException e) {
             throw new AndroidRuntimeException(e);
         }
-        return wrapContext(localContext, remoteContext);
-    }
-
-    private static Context wrapContext(Context localContext, Context remoteContext) {
-        return new ContextWrapper(localContext) {
-            @Override
-            public Context getApplicationContext() {
-                if (getBaseContext().getApplicationContext() == getBaseContext()) return this;
-                return wrapContext(getBaseContext().getApplicationContext(), remoteContext);
-            }
-
-            @Override
-            public ClassLoader getClassLoader() {
-                return remoteContext.getClassLoader();
-            }
-
-            @Override
-            public void registerComponentCallbacks(ComponentCallbacks callback) {
-                // We have to override registerComponentCallbacks and unregisterComponentCallbacks
-                // since they call getApplicationContext().[un]registerComponentCallbacks()
-                // which causes us to go into a loop.
-                getBaseContext().registerComponentCallbacks(callback);
-            }
-
-            @Override
-            public void unregisterComponentCallbacks(ComponentCallbacks callback) {
-                getBaseContext().unregisterComponentCallbacks(callback);
-            }
-        };
     }
 
     private static String getImplPackageName(Context localContext)

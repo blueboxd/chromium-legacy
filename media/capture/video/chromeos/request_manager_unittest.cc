@@ -21,8 +21,10 @@
 #include "media/capture/video/chromeos/mock_video_capture_client.h"
 #include "media/capture/video/chromeos/stream_buffer_manager.h"
 #include "media/capture/video/mock_gpu_memory_buffer_manager.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 using testing::_;
 using testing::A;
 using testing::AtLeast;
@@ -84,13 +86,11 @@ class RequestManagerTest : public ::testing::Test {
  public:
   void SetUp() override {
     quit_ = false;
-    cros::mojom::Camera3CallbackOpsRequest callback_ops_request =
-        mojo::MakeRequest(&mock_callback_ops_);
     device_context_ = std::make_unique<CameraDeviceContext>(
         std::make_unique<unittest_internal::MockVideoCaptureClient>());
 
     request_manager_ = std::make_unique<RequestManager>(
-        std::move(callback_ops_request),
+        mock_callback_ops_.BindNewPipeAndPassReceiver(),
         std::make_unique<MockStreamCaptureInterface>(), device_context_.get(),
         VideoCaptureBufferType::kSharedMemory,
         std::make_unique<FakeCameraBufferFactory>(),
@@ -273,7 +273,7 @@ class RequestManagerTest : public ::testing::Test {
 
  protected:
   std::unique_ptr<RequestManager> request_manager_;
-  cros::mojom::Camera3CallbackOpsPtr mock_callback_ops_;
+  mojo::Remote<cros::mojom::Camera3CallbackOps> mock_callback_ops_;
   std::unique_ptr<CameraDeviceContext> device_context_;
   cros::mojom::Camera3StreamPtr stream;
 

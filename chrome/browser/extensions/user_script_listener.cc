@@ -179,9 +179,7 @@ void UserScriptListener::AppendNewURLPatterns(content::BrowserContext* context,
 
 void UserScriptListener::ReplaceURLPatterns(content::BrowserContext* context,
                                             const URLPatterns& patterns) {
-  // TODO(estade): enable this check once it no longer fails.
-  // DCHECK_EQ(1U, profile_data_.count(context));
-
+  DCHECK_EQ(1U, profile_data_.count(context));
   profile_data_[context].url_patterns = patterns;
 }
 

@@ -93,12 +93,11 @@ class ScrollPredictorTest : public testing::Test {
     event = WebInputEventTraits::Clone(event_with_callback->event());
   }
 
-  bool PredictionAvailable(ui::InputPredictor::InputData* result,
-                           double time_delta_in_milliseconds = 0) {
+  std::unique_ptr<ui::InputPredictor::InputData> PredictionAvailable(
+      double time_delta_in_milliseconds = 0) {
     return scroll_predictor_->predictor_->GeneratePrediction(
         WebInputEvent::GetStaticTimeStampForTests() +
-            base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds),
-        result);
+        base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds));
   }
 
   gfx::PointF GetLastAccumulatedDelta() {
@@ -211,8 +210,7 @@ TEST_F(ScrollPredictorTest, ScrollResamplingStates) {
 
 TEST_F(ScrollPredictorTest, ResampleGestureScrollEvents) {
   SendGestureScrollBegin();
-  ui::InputPredictor::InputData result;
-  EXPECT_FALSE(PredictionAvailable(&result));
+  EXPECT_FALSE(PredictionAvailable());
 
   WebScopedInputEvent gesture_update = CreateGestureScrollUpdate(0, -20);
   HandleResampleScrollEvents(gesture_update);
@@ -232,12 +230,13 @@ TEST_F(ScrollPredictorTest, ResampleGestureScrollEvents) {
                 ->data.scroll_update.delta_y);
 
   // Cumulative amount of scroll from the GSB is stored in the empty predictor.
-  EXPECT_TRUE(PredictionAvailable(&result));
-  EXPECT_EQ(-80, result.pos.y());
+  auto result = PredictionAvailable();
+  EXPECT_TRUE(result);
+  EXPECT_EQ(-80, result->pos.y());
 
   // Send another GSB, Prediction will be reset.
   SendGestureScrollBegin();
-  EXPECT_FALSE(PredictionAvailable(&result));
+  EXPECT_FALSE(PredictionAvailable());
 
   // Sent another GSU.
   gesture_update = CreateGestureScrollUpdate(0, -35);
@@ -246,13 +245,13 @@ TEST_F(ScrollPredictorTest, ResampleGestureScrollEvents) {
             static_cast<const blink::WebGestureEvent*>(gesture_update.get())
                 ->data.scroll_update.delta_y);
   // Total amount of scroll is track from the last GSB.
-  EXPECT_TRUE(PredictionAvailable(&result));
-  EXPECT_EQ(-35, result.pos.y());
+  result = PredictionAvailable();
+  EXPECT_TRUE(result);
+  EXPECT_EQ(-35, result->pos.y());
 }
 
 TEST_F(ScrollPredictorTest, ScrollInDifferentDirection) {
   SendGestureScrollBegin();
-  ui::InputPredictor::InputData result;
 
   // Scroll down.
   WebScopedInputEvent gesture_update = CreateGestureScrollUpdate(0, -20);
@@ -260,8 +259,9 @@ TEST_F(ScrollPredictorTest, ScrollInDifferentDirection) {
   EXPECT_EQ(-20,
             static_cast<const blink::WebGestureEvent*>(gesture_update.get())
                 ->data.scroll_update.delta_y);
-  EXPECT_TRUE(PredictionAvailable(&result));
-  EXPECT_EQ(-20, result.pos.y());
+  auto result = PredictionAvailable();
+  EXPECT_TRUE(result);
+  EXPECT_EQ(-20, result->pos.y());
 
   // Scroll up.
   gesture_update = CreateGestureScrollUpdate(0, 25);
@@ -270,9 +270,10 @@ TEST_F(ScrollPredictorTest, ScrollInDifferentDirection) {
                    ->data.scroll_update.delta_x);
   EXPECT_EQ(25, static_cast<const blink::WebGestureEvent*>(gesture_update.get())
                     ->data.scroll_update.delta_y);
-  EXPECT_TRUE(PredictionAvailable(&result));
-  EXPECT_EQ(0, result.pos.x());
-  EXPECT_EQ(5, result.pos.y());
+  result = PredictionAvailable();
+  EXPECT_TRUE(result);
+  EXPECT_EQ(0, result->pos.x());
+  EXPECT_EQ(5, result->pos.y());
 
   // Scroll left + right.
   gesture_update = CreateGestureScrollUpdate(-35, 0);
@@ -282,9 +283,10 @@ TEST_F(ScrollPredictorTest, ScrollInDifferentDirection) {
                     ->data.scroll_update.delta_x);
   EXPECT_EQ(0, static_cast<const blink::WebGestureEvent*>(gesture_update.get())
                    ->data.scroll_update.delta_y);
-  EXPECT_TRUE(PredictionAvailable(&result));
-  EXPECT_EQ(25, result.pos.x());
-  EXPECT_EQ(5, result.pos.y());
+  result = PredictionAvailable();
+  EXPECT_TRUE(result);
+  EXPECT_EQ(25, result->pos.x());
+  EXPECT_EQ(5, result->pos.y());
 }
 
 TEST_F(ScrollPredictorTest, ScrollUpdateWithEmptyOriginalEventList) {
@@ -299,8 +301,7 @@ TEST_F(ScrollPredictorTest, ScrollUpdateWithEmptyOriginalEventList) {
                 ->data.scroll_update.delta_y);
 
   // No prediction available because the event is skipped.
-  ui::InputPredictor::InputData result;
-  EXPECT_FALSE(PredictionAvailable(&result));
+  EXPECT_FALSE(PredictionAvailable());
 
   // Send a GSU with original event.
   gesture_update = CreateGestureScrollUpdate(0, -30);
@@ -318,21 +319,20 @@ TEST_F(ScrollPredictorTest, ScrollUpdateWithEmptyOriginalEventList) {
                 ->data.scroll_update.delta_y);
 
   // Prediction only track GSU with original event list.
-  EXPECT_TRUE(PredictionAvailable(&result));
-  EXPECT_EQ(-30, result.pos.y());
+  auto result = PredictionAvailable();
+  EXPECT_TRUE(result);
+  EXPECT_EQ(-30, result->pos.y());
 }
 
 TEST_F(ScrollPredictorTest, LSQPredictorTest) {
   SetUpLSQPredictor();
   SendGestureScrollBegin();
 
-  ui::InputPredictor::InputData result;
-
   // Send 1st GSU, no prediction available.
   WebScopedInputEvent gesture_update =
       CreateGestureScrollUpdate(0, -30, 8 /* ms */);
   HandleResampleScrollEvents(gesture_update, 16 /* ms */);
-  EXPECT_FALSE(PredictionAvailable(&result, 16 /* ms */));
+  EXPECT_FALSE(PredictionAvailable(16 /* ms */));
   EXPECT_EQ(-30,
             static_cast<const blink::WebGestureEvent*>(gesture_update.get())
                 ->data.scroll_update.delta_y);
@@ -351,7 +351,7 @@ TEST_F(ScrollPredictorTest, LSQPredictorTest) {
                 base::TimeDelta::FromMillisecondsD(16 /* ms */),
             static_cast<const blink::WebGestureEvent*>(gesture_update.get())
                 ->TimeStamp());
-  EXPECT_FALSE(PredictionAvailable(&result, 24 /* ms */));
+  EXPECT_FALSE(PredictionAvailable(24 /* ms */));
 
   // Send 3rd and 4th GSU, prediction result returns the sum of delta_y, event
   // aligned at frame time.
@@ -364,8 +364,9 @@ TEST_F(ScrollPredictorTest, LSQPredictorTest) {
                 base::TimeDelta::FromMillisecondsD(32 /* ms */),
             static_cast<const blink::WebGestureEvent*>(gesture_update.get())
                 ->TimeStamp());
-  EXPECT_TRUE(PredictionAvailable(&result, 32 /* ms */));
-  EXPECT_EQ(-120, result.pos.y());
+  auto result = PredictionAvailable(32 /* ms */);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(-120, result->pos.y());
 
   gesture_update = CreateGestureScrollUpdate(0, -30, 32 /* ms */);
   HandleResampleScrollEvents(gesture_update, 40 /* ms */);
@@ -376,8 +377,9 @@ TEST_F(ScrollPredictorTest, LSQPredictorTest) {
                 base::TimeDelta::FromMillisecondsD(40 /* ms */),
             static_cast<const blink::WebGestureEvent*>(gesture_update.get())
                 ->TimeStamp());
-  EXPECT_TRUE(PredictionAvailable(&result, 40 /* ms */));
-  EXPECT_EQ(-150, result.pos.y());
+  result = PredictionAvailable(40 /* ms */);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(-150, result->pos.y());
 }
 
 TEST_F(ScrollPredictorTest, ScrollPredictorNotChangeScrollDirection) {

@@ -77,10 +77,10 @@ bool LinearPredictor::HasPrediction() const {
          static_cast<size_t>(EquationOrder::kFirstOrder);
 }
 
-bool LinearPredictor::GeneratePrediction(base::TimeTicks predict_time,
-                                         InputData* result) const {
+std::unique_ptr<InputPredictor::InputData> LinearPredictor::GeneratePrediction(
+    base::TimeTicks predict_time) const {
   if (!HasPrediction())
-    return false;
+    return nullptr;
 
   float pred_dt =
       (predict_time - events_queue_.back().time_stamp).InMillisecondsF();
@@ -88,30 +88,29 @@ bool LinearPredictor::GeneratePrediction(base::TimeTicks predict_time,
   // Compute the prediction
   // Note : a first order prediction is computed when only 2 events are
   // available in the second order predictor
-  GeneratePredictionFirstOrder(pred_dt, result);
   if (equation_order_ == EquationOrder::kSecondOrder && events_dt_ > 0 &&
-      events_queue_.size() == static_cast<size_t>(EquationOrder::kSecondOrder))
+      events_queue_.size() ==
+          static_cast<size_t>(EquationOrder::kSecondOrder)) {
     // Add the acceleration term to the current result
-    GeneratePredictionSecondOrder(pred_dt, result);
-
-  return true;
+    return std::make_unique<InputData>(GeneratePredictionSecondOrder(pred_dt),
+                                       predict_time);
+  }
+  return std::make_unique<InputData>(GeneratePredictionFirstOrder(pred_dt),
+                                     predict_time);
 }
 
-void LinearPredictor::GeneratePredictionFirstOrder(float pred_dt,
-                                                   InputData* result) const {
-  result->pos =
-      events_queue_.back().pos + ScaleVector2d(cur_velocity_, pred_dt);
+gfx::PointF LinearPredictor::GeneratePredictionFirstOrder(float pred_dt) const {
+  return events_queue_.back().pos + ScaleVector2d(cur_velocity_, pred_dt);
 }
 
-void LinearPredictor::GeneratePredictionSecondOrder(float pred_dt,
-                                                    InputData* result) const {
+gfx::PointF LinearPredictor::GeneratePredictionSecondOrder(
+    float pred_dt) const {
   DCHECK(equation_order_ == EquationOrder::kSecondOrder);
 
-  // Compute the acceleration between the last two velocities
   gfx::Vector2dF acceleration =
       ScaleVector2d(cur_velocity_ - last_velocity_, 1.0 / events_dt_);
-  // Update the prediction
-  result->pos += ScaleVector2d(acceleration, 0.5 * pred_dt * pred_dt);
+  return events_queue_.back().pos + ScaleVector2d(cur_velocity_, pred_dt) +
+         ScaleVector2d(acceleration, 0.5 * pred_dt * pred_dt);
 }
 
 base::TimeDelta LinearPredictor::TimeInterval() const {

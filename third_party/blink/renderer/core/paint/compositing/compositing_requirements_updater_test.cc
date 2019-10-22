@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_requirements_updater.h"
+
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -125,7 +128,19 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_EQ(IntRect(0, 0, 100, 100), tracking->Invalidations()[0].rect);
 }
 
-TEST_F(CompositingRequirementsUpdaterTest, NonTrivial3DTransforms) {
+class CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D
+    : public CompositingRequirementsUpdaterTest {
+ public:
+  CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kDoNotCompositeTrivial3D);
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(CompositingRequirementsUpdaterTestWithDoNotCompositeTrivial3D,
+       NonTrivial3DTransforms) {
   ScopedCSSIndependentTransformPropertiesForTest feature_scope(true);
 
   SetBodyInnerHTML(R"HTML(

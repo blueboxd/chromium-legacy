@@ -15,6 +15,7 @@
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,6 +39,23 @@ constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
 #endif
 #endif
 
+// See kRunManualTestsFlag in "content_switches.cc".
+const char kManualTestPrefix[] = "MANUAL_";
+
+// Tests starting with 'MANUAL_' are skipped unless the
+// command line flag "--run-manual" is supplied.
+class SkipManualTests : public testing::EmptyTestEventListener {
+ public:
+  void OnTestStart(const testing::TestInfo& test_info) override {
+    if (base::StartsWith(test_info.name(), kManualTestPrefix,
+                         base::CompareCase::SENSITIVE) &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kRunManualTestsFlag)) {
+      GTEST_SKIP();
+    }
+  }
+};
+
 }  // namespace
 
 ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
@@ -46,6 +64,8 @@ ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
 
 void ContentTestSuiteBase::Initialize() {
   base::TestSuite::Initialize();
+  testing::UnitTest::GetInstance()->listeners().Append(
+      std::make_unique<SkipManualTests>().release());
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);

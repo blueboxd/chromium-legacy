@@ -112,6 +112,11 @@ class SharedRemoteBase
     void Bind(PendingType remote) {
       DCHECK(task_runner_->RunsTasksInCurrentSequence());
       remote_.Bind(std::move(remote));
+
+      // The ThreadSafeForwarder will always block the calling thread on a
+      // reply, so there's no need for the endpoint to employ its own sync
+      // waiting logic.
+      remote_.internal_state()->force_outgoing_messages_async(true);
     }
 
     void Accept(Message message) {
@@ -161,14 +166,16 @@ class SharedRemoteBase
 // thread, but has some additional overhead and latency in message transmission
 // as a trade-off.
 //
-// Async calls are posted to the sequence that the underlying Remote is bound
-// to, and responses are posted back to the calling sequence. Sync calls are
-// dispatched directly if the call is made on the sequence that the wrapped
-// Remote is bound to, or posted otherwise. It's important to be aware that
-// sync calls block both the calling sequence and the bound Remote's sequence.
-// That means that you cannot make sync calls through a SharedRemote if the
-// underlying Remote is bound to a sequence that cannot block, like the IPC
-// thread.
+// Async calls are posted to the bound sequence (the sequence that the
+// underlying Remote is bound to, i.e. |bind_task_runner| below), and responses
+// are posted back to the calling sequence. Sync calls are dispatched directly
+// if the call is made on the bound sequence, or posted otherwise.
+//
+// This means that in general, when making calls from sequences other than the
+// bound sequence, a hop is first made *to* the bound sequence; and when
+// receiving replies, a hop is made *from* the bound the sequence.
+//
+// Note that sync calls only block the calling sequence.
 template <typename Interface>
 class SharedRemote {
  public:

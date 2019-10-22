@@ -128,12 +128,13 @@ class MockRemotingSource : public media::mojom::RemotingSource {
   mojo::Receiver<media::mojom::RemotingSource> receiver_{this};
 };
 
-// TODO(xjz): Remove the media::mojom::MirrorServiceRemoter implementation after
-// Mirroring Service is launched.
+// TODO(crbug.com/1015486): Remove the media::mojom::MirrorServiceRemoter
+// implementation after Mirroring Service is launched.
 class MockMediaRemoter final : public media::mojom::MirrorServiceRemoter,
                                public media::mojom::Remoter {
  public:
-  // TODO(xjz): Remove this ctor after Mirroring Service is launched.
+  // TODO(crbug.com/1015486): Remove this ctor after Mirroring Service is
+  // launched.
   explicit MockMediaRemoter(FakeMediaRouter* media_router) {
     mojo::PendingRemote<media::mojom::MirrorServiceRemoter> pending_remoter;
     deprecated_receiver_.Bind(pending_remoter.InitWithNewPipeAndPassReceiver());
@@ -219,7 +220,7 @@ class MockMediaRemoter final : public media::mojom::MirrorServiceRemoter,
                video_sender_receiver));
 
  private:
-  // TODO(xjz): Remove these after Mirroring Service is launched.
+  // TODO(crbug.com/1015486): Remove these after Mirroring Service is launched.
   mojo::Receiver<media::mojom::MirrorServiceRemoter> deprecated_receiver_{this};
   mojo::Remote<media::mojom::MirrorServiceRemotingSource> deprecated_source_;
 
@@ -638,7 +639,8 @@ INSTANTIATE_TEST_SUITE_P(,
                                            EXTERNAL_FAILURE,
                                            USER_DISABLED));
 
-// TODO(xjz): Remove the following tests after Mirroring Service is launched.
+// TODO(crbug.com/1015486): Remove the following tests after Mirroring Service
+// is launched.
 TEST_F(CastRemotingConnectorTest,
        DeprecatedNotifiesWhenSinkIsAvailableAndThenGone) {
   MockRemotingSource source;

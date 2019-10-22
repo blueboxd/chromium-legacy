@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Чтобы Chrome отправлял вам уведомления, включите их в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Приложение "<ph name="APP_NAME" />" также хранит свои данные в Chrome</translation>
 <translation id="2049574241039454490"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE_OF_TOTAL" /></translation>
-<translation id="2049961518639794558">Изменение расширения файла может привести к сбоям и нанести вред устройству.</translation>
 <translation id="2056878612599315956">Доступ к сайту приостановлен</translation>
 <translation id="2063713494490388661">Нажмите для поиска</translation>
 <translation id="2067805253194386918">текст</translation>
@@ -263,6 +262,7 @@
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
 <translation id="2923908459366352541">Имя недействительно</translation>
 <translation id="2932150158123903946">Хранилище Google <ph name="APP_NAME" /></translation>
+<translation id="2942036813789421260">Вкладка предпросмотра закрыта</translation>
 <translation id="2956410042958133412">Этим аккаунтом управляют <ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Переключено на вкладки в режиме инкогнито</translation>
 <translation id="2968755619301702150">Просмотр сертификатов</translation>
@@ -388,6 +388,7 @@
 <translation id="3988466920954086464">Результаты поиска появятся на этой панели.</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> из ?</translation>
 <translation id="3997476611815694295">Маловажные данные</translation>
+<translation id="4000212216660919741">Главный экран в офлайн-режиме</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="4008040567710660924">Разрешить определенному сайту сохранять файлы cookie.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# час}one{# час}few{# часа}many{# часов}other{# часа}}</translation>
@@ -767,6 +768,7 @@
 <translation id="6697947395630195233">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
 <translation id="6699370405921460408">Серверы Google будут оптимизировать загружаемые страницы.</translation>
+<translation id="6706288973712894588">Вы не в Сети.\n<ph name="BEGIN_LINK" />Показать офлайн-ленту<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Новости</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="671481426037969117">Время на таймере <ph name="FQDN" /> истекло. Завтра сайт снова станет доступен.</translation>
@@ -866,6 +868,7 @@
 <translation id="7475688122056506577">SD-карта не найдена. Некоторые файлы могут отсутствовать.</translation>
 <translation id="7479104141328977413">Управление вкладками</translation>
 <translation id="7481312909269577407">Вперед</translation>
+<translation id="7482656565088326534">Вкладка предпросмотра</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (последнее обновление: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">сэкономлено</translation>
 <translation id="7498271377022651285">Подождите…</translation>
@@ -915,7 +918,6 @@
 <translation id="7810647596859435254">Открыть с помощью...</translation>
 <translation id="7821588508402923572">Здесь появятся данные об экономии трафика</translation>
 <translation id="7837721118676387834">Разрешить определенному сайту автоматически воспроизводить видео без звука.</translation>
-<translation id="7838340937077326045">Вы точно хотите изменить расширение файла?</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>
 <translation id="784934925303690534">Временной диапазон</translation>
 <translation id="7851858861565204677">Другие устройства</translation>
@@ -996,6 +998,7 @@
 <translation id="8380167699614421159">Этот сайт показывает навязчивую или вводящую в заблуждение рекламу</translation>
 <translation id="8393700583063109961">Отправить сообщение</translation>
 <translation id="8413126021676339697">Показать всю историю</translation>
+<translation id="8427875596167638501">Вкладка предпросмотра открыта на половину экрана</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8438566539970814960">Помогать улучшить просмотр страниц и поиск</translation>
 <translation id="8441146129660941386">Перемотать назад</translation>
@@ -1086,7 +1089,9 @@
 <translation id="9086455579313502267">Нет доступа к сети</translation>
 <translation id="9100505651305367705">Предлагать упрощенный просмотр статей, если он поддерживается</translation>
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
+<translation id="9102803872260866941">Вкладка предпросмотра открыта</translation>
 <translation id="9104217018994036254">Список устройств для отправки вкладки.</translation>
+<translation id="9133397713400217035">Офлайн-контент</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
 <translation id="9139068048179869749">Запрашивать разрешение на отправку уведомлений (рекомендуется)</translation>

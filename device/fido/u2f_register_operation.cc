@@ -33,8 +33,7 @@ U2fRegisterOperation::~U2fRegisterOperation() = default;
 void U2fRegisterOperation::Start() {
   DCHECK(IsConvertibleToU2fRegisterCommand(request()));
 
-  const auto& exclude_list = request().exclude_list;
-  if (exclude_list && !exclude_list->empty()) {
+  if (!request().exclude_list.empty()) {
     // First try signing with the excluded credentials to see whether this
     // device should be excluded.
     WinkAndTrySign();
@@ -115,14 +114,14 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
       // Continue to iterate through the provided key handles in the exclude
       // list to check for already registered keys.
       current_key_handle_index_++;
-      if (current_key_handle_index_ == request().exclude_list->size() &&
+      if (current_key_handle_index_ == request().exclude_list.size() &&
           !probing_alternative_rp_id_ && request().app_id) {
         // All elements of |request().exclude_list| have been tested, but
         // there's a second AppID so they need to be tested again.
         probing_alternative_rp_id_ = true;
         current_key_handle_index_ = 0;
       }
-      if (current_key_handle_index_ < request().exclude_list->size()) {
+      if (current_key_handle_index_ < request().exclude_list.size()) {
         WinkAndTrySign();
       } else {
         // Reached the end of exclude list with no duplicate credential.
@@ -204,8 +203,8 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
 }
 
 const std::vector<uint8_t>& U2fRegisterOperation::excluded_key_handle() const {
-  DCHECK_LT(current_key_handle_index_, request().exclude_list->size());
-  return request().exclude_list.value()[current_key_handle_index_].id();
+  DCHECK_LT(current_key_handle_index_, request().exclude_list.size());
+  return request().exclude_list[current_key_handle_index_].id();
 }
 
 }  // namespace device

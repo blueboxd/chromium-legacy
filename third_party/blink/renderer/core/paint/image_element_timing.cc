@@ -29,13 +29,11 @@ IsExplicitlyRegisteredForTiming(const LayoutObject* layout_object) {
   if (!element)
     return false;
 
-  // If the element has no 'elementtiming' attribute or an empty value, do not
+  // If the element has no 'elementtiming' attribute, do not
   // generate timing entries for the element. See
   // https://wicg.github.io/element-timing/#sec-modifications-DOM for report
   // vs. ignore criteria.
-  const AtomicString& attr =
-      element->FastGetAttribute(html_names::kElementtimingAttr);
-  return !attr.IsEmpty();
+  return element->FastHasAttribute(html_names::kElementtimingAttr);
 }
 
 }  // namespace internal

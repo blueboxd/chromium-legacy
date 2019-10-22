@@ -294,6 +294,7 @@ TEST_F(SessionControllerImplTest, GetLoginStateForActiveSession) {
       {user_manager::USER_TYPE_KIOSK_APP, LoginStatus::KIOSK_APP},
       {user_manager::USER_TYPE_CHILD, LoginStatus::SUPERVISED},
       {user_manager::USER_TYPE_ARC_KIOSK_APP, LoginStatus::KIOSK_APP},
+      {user_manager::USER_TYPE_WEB_KIOSK_APP, LoginStatus::KIOSK_APP}
       // TODO: Add USER_TYPE_ACTIVE_DIRECTORY if we add a status for it.
   };
 

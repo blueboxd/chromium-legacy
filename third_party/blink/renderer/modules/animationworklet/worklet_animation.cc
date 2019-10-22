@@ -798,34 +798,10 @@ base::Optional<base::TimeDelta> WorkletAnimation::CurrentTimeInternal() const {
   return (timeline_time - start_time_.value()) * playback_rate_;
 }
 
-bool WorkletAnimation::NeedsPeek(base::TimeDelta current_time) {
-  bool local_time_is_set = false;
-  for (auto& time : local_times_) {
-    if (time) {
-      local_time_is_set = true;
-      break;
-    }
-  }
-
-  // If any of the local times has been set, a previous peek must have
-  // completed. Request a new peek only if the input time changes.
-  if (local_time_is_set)
-    return last_peek_request_time_ != current_time;
-
-  return true;
-}
-
 void WorkletAnimation::UpdateInputState(
     AnimationWorkletDispatcherInput* input_state) {
   base::Optional<base::TimeDelta> current_time = CurrentTime();
   if (!running_on_main_thread_) {
-    if (!current_time)
-      return;
-    base::TimeDelta current_time_value = current_time.value();
-    if (!NeedsPeek(current_time_value))
-      return;
-    last_peek_request_time_ = current_time_value;
-    input_state->Peek(id_);
     return;
   }
   bool was_active = IsActive(last_play_state_);
@@ -860,12 +836,18 @@ void WorkletAnimation::SetOutputState(
     const AnimationWorkletOutput::AnimationState& state) {
   DCHECK(state.worklet_animation_id == id_);
   // The local times for composited effects, i.e. not running on main, are
-  // peeked and set via the main thread. If an animator is not ready upon
-  // peeking state.local_times will be empty.
-  DCHECK(local_times_.size() == state.local_times.size() ||
-         !running_on_main_thread_);
+  // updated via posting animation events from the compositor thread to the main
+  // thread (see WorkletAnimation::NotifyLocalTimeUpdated).
+  DCHECK(local_times_.size() == state.local_times.size() &&
+         running_on_main_thread_);
   for (wtf_size_t i = 0; i < state.local_times.size(); ++i)
     local_times_[i] = state.local_times[i];
+}
+
+void WorkletAnimation::NotifyLocalTimeUpdated(
+    base::Optional<base::TimeDelta> local_time) {
+  DCHECK(!running_on_main_thread_);
+  local_times_[0] = local_time;
 }
 
 void WorkletAnimation::Dispose() {

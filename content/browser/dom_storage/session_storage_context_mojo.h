@@ -21,7 +21,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
@@ -137,7 +137,9 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   void PretendToConnectForTesting();
 
-  leveldb::LevelDBDatabaseImpl* DatabaseForTesting() { return database_.get(); }
+  storage::AsyncDomStorageDatabase* DatabaseForTesting() {
+    return database_.get();
+  }
 
   void FlushAreaForTesting(const std::string& namespace_id,
                            const url::Origin& origin);
@@ -234,11 +236,11 @@ class CONTENT_EXPORT SessionStorageContextMojo
   };
   MetadataParseResult ParseDatabaseVersion(
       ValueAndStatus version,
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>*
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
           migration_tasks);
   MetadataParseResult ParseNamespaces(
       KeyValuePairsAndStatus namespaces,
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
           migration_tasks);
   MetadataParseResult ParseNextMapId(ValueAndStatus next_map_id);
 
@@ -273,7 +275,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  std::unique_ptr<leveldb::LevelDBDatabaseImpl> database_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> database_;
   bool in_memory_ = false;
   bool tried_to_recreate_during_open_ = false;
 

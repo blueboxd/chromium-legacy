@@ -15,8 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_database.h"
@@ -33,8 +32,15 @@
 
 namespace content {
 namespace {
-using leveldb::StdStringToUint8Vector;
-using leveldb::Uint8VectorToStdString;
+
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
+
+std::vector<uint8_t> SliceToVector(const leveldb::Slice& s) {
+  auto span = base::make_span(s.data(), s.size());
+  return std::vector<uint8_t>(span.begin(), span.end());
+}
 
 void ErrorCallback(leveldb::Status* status_out, leveldb::Status status) {
   *status_out = status;
@@ -49,7 +55,7 @@ class SessionStorageMetadataTest : public testing::Test {
         test_origin1_(url::Origin::Create(GURL("http://host1:1/"))),
         test_origin2_(url::Origin::Create(GURL("http://host2:2/"))) {
     base::RunLoop loop;
-    database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
+    database_ = storage::AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "SessionStorageMetadataTest",
         base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
         base::BindLambdaForTesting([&](leveldb::Status) { loop.Quit(); }));
@@ -84,7 +90,7 @@ class SessionStorageMetadataTest : public testing::Test {
         }));
     loop.Run();
 
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
         migration_tasks;
     EXPECT_TRUE(
         metadata->ParseDatabaseVersion(version_value, &migration_tasks));
@@ -164,7 +170,7 @@ class SessionStorageMetadataTest : public testing::Test {
   }
 
   void RunBatch(
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks,
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks,
       base::OnceCallback<void(leveldb::Status)> callback) {
     base::RunLoop loop;
     database_->RunBatchDatabaseTasks(
@@ -183,7 +189,7 @@ class SessionStorageMetadataTest : public testing::Test {
   std::string test_namespace3_id_;
   url::Origin test_origin1_;
   url::Origin test_origin2_;
-  std::unique_ptr<leveldb::LevelDBDatabaseImpl> database_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> database_;
 
   std::vector<uint8_t> database_version_key_;
   std::vector<uint8_t> next_map_id_key_;
@@ -192,7 +198,7 @@ class SessionStorageMetadataTest : public testing::Test {
 
 TEST_F(SessionStorageMetadataTest, SaveNewMetadata) {
   SessionStorageMetadata metadata;
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks =
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks =
       metadata.SetupNewDatabase();
 
   leveldb::Status status;
@@ -241,7 +247,7 @@ TEST_F(SessionStorageMetadataTest, SaveNewMap) {
   SessionStorageMetadata metadata;
   ReadMetadataFromDatabase(&metadata);
 
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks;
   auto ns1_entry = metadata.GetOrCreateNamespaceEntry(test_namespace1_id_);
   auto map_data = metadata.RegisterNewMap(ns1_entry, test_origin1_, &tasks);
   ASSERT_TRUE(map_data);
@@ -275,7 +281,7 @@ TEST_F(SessionStorageMetadataTest, ShallowCopies) {
   auto ns1_entry = metadata.GetOrCreateNamespaceEntry(test_namespace1_id_);
   auto ns3_entry = metadata.GetOrCreateNamespaceEntry(test_namespace3_id_);
 
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks;
   metadata.RegisterShallowClonedNamespace(ns1_entry, ns3_entry, &tasks);
 
   leveldb::Status status;
@@ -311,7 +317,7 @@ TEST_F(SessionStorageMetadataTest, DeleteNamespace) {
   SessionStorageMetadata metadata;
   ReadMetadataFromDatabase(&metadata);
 
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks;
   metadata.DeleteNamespace(test_namespace1_id_, &tasks);
   leveldb::Status status;
   RunBatch(std::move(tasks), base::BindOnce(&ErrorCallback, &status));
@@ -345,7 +351,7 @@ TEST_F(SessionStorageMetadataTest, DeleteArea) {
   ReadMetadataFromDatabase(&metadata);
 
   // First delete an area with a shared map.
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks;
   metadata.DeleteArea(test_namespace1_id_, test_origin1_, &tasks);
   leveldb::Status status;
   RunBatch(std::move(tasks), base::BindOnce(&ErrorCallback, &status));
@@ -486,7 +492,8 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
   std::string db_value;
   leveldb::Status s = db()->Get(options, leveldb::Slice("version"), &db_value);
   EXPECT_TRUE(s.IsNotFound());
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> migration_tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
+      migration_tasks;
   EXPECT_TRUE(metadata.ParseDatabaseVersion(base::nullopt, &migration_tasks));
   EXPECT_FALSE(migration_tasks.empty());
   EXPECT_EQ(1ul, migration_tasks.size());
@@ -494,7 +501,7 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
   // Grab the next map id, verify it doesn't crash.
   s = db()->Get(options, leveldb::Slice("next-map-id"), &db_value);
   EXPECT_TRUE(s.ok());
-  metadata.ParseNextMapId(leveldb::StdStringToUint8Vector(db_value));
+  metadata.ParseNextMapId(StdStringToUint8Vector(db_value));
 
   // Get all keys-value pairs with the given key prefix
   std::vector<storage::DomStorageDatabase::KeyValuePair> values;
@@ -504,8 +511,7 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
     for (; it->Valid(); it->Next()) {
       if (!it->key().starts_with(leveldb::Slice("namespace-")))
         break;
-      values.emplace_back(leveldb::GetVectorFor(it->key()),
-                          leveldb::GetVectorFor(it->value()));
+      values.emplace_back(SliceToVector(it->key()), SliceToVector(it->value()));
     }
     EXPECT_TRUE(it->status().ok());
   }

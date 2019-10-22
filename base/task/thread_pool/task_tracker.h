@@ -31,6 +31,7 @@
 namespace base {
 
 class ConditionVariable;
+class HistogramBase;
 
 namespace internal {
 
@@ -53,8 +54,7 @@ enum class CanRunPolicy {
 // and records metrics and trace events. This class is thread-safe.
 class BASE_EXPORT TaskTracker {
  public:
-  // |histogram_label| is used to label histograms. No histograms are recorded
-  // if it is empty.
+  // |histogram_label| is used as a suffix for histograms, it must not be empty.
   TaskTracker(StringPiece histogram_label);
 
   virtual ~TaskTracker();
@@ -131,15 +131,26 @@ class BASE_EXPORT TaskTracker {
   // no tasks are blocking shutdown).
   bool IsShutdownComplete() const;
 
+  enum class LatencyHistogramType {
+    // Records the latency of each individual task posted through TaskTracker.
+    TASK_LATENCY,
+    // Records the latency of heartbeat tasks which are independent of current
+    // workload. These avoid a bias towards TASK_LATENCY reporting that high-
+    // priority tasks are "slower" than regular tasks because high-priority
+    // tasks tend to be correlated with heavy workloads.
+    HEARTBEAT_LATENCY,
+  };
+
   // Records two histograms
   // 1. ThreadPool.[label].HeartbeatLatencyMicroseconds.[suffix]:
   //    Now() - posted_time
   // 2. ThreadPool.[label].NumTasksRunWhileQueuing.[suffix]:
   //    GetNumTasksRun() - num_tasks_run_when_posted.
   // [label] is the histogram label provided to the constructor.
-  // [suffix] is derived from |task_priority|.
+  // [suffix] is derived from |task_priority| and |may_block|.
   void RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms(
       TaskPriority task_priority,
+      bool may_block,
       TimeTicks posted_time,
       int num_tasks_run_when_posted) const;
 
@@ -202,9 +213,10 @@ class BASE_EXPORT TaskTracker {
   // manner.
   void CallFlushCallbackForTesting();
 
-  // Records |Now() - posted_time| to the
-  // ThreadPool.TaskLatencyMicroseconds.[label].[priority] histogram.
-  void RecordLatencyHistogram(TaskPriority priority,
+  // Records |Now() - posted_time| to the appropriate |latency_histogram_type|
+  // based on |task_traits|.
+  void RecordLatencyHistogram(LatencyHistogramType latency_histogram_type,
+                              TaskTraits task_traits,
                               TimeTicks posted_time) const;
 
   void IncrementNumTasksRun();
@@ -217,9 +229,6 @@ class BASE_EXPORT TaskTracker {
                                    Task* task);
 
   TaskAnnotator task_annotator_;
-
-  // Suffix for histograms recorded by this TaskTracker.
-  const std::string histogram_label_;
 
   // Indicates whether logging information about TaskPriority::BEST_EFFORT tasks
   // was enabled with a command line switch.
@@ -267,6 +276,25 @@ class BASE_EXPORT TaskTracker {
   // Counter for number of tasks run so far, used to record tasks run while
   // a task queued to histogram.
   std::atomic_int num_tasks_run_{0};
+
+  // ThreadPool.TaskLatencyMicroseconds.*,
+  // ThreadPool.HeartbeatLatencyMicroseconds.*, and
+  // ThreadPool.NumTasksRunWhileQueuing.* histograms. The first index is
+  // a TaskPriority. The second index is 0 for non-blocking tasks, 1 for
+  // blocking tasks. Intentionally leaked.
+  // TODO(scheduler-dev): Consider using STATIC_HISTOGRAM_POINTER_GROUP for
+  // these.
+  using TaskPriorityType = std::underlying_type<TaskPriority>::type;
+  static constexpr TaskPriorityType kNumTaskPriorities =
+      static_cast<TaskPriorityType>(TaskPriority::HIGHEST) + 1;
+  static constexpr uint8_t kNumBlockingModes = 2;
+  HistogramBase* const task_latency_histograms_[kNumTaskPriorities]
+                                               [kNumBlockingModes];
+  HistogramBase* const heartbeat_latency_histograms_[kNumTaskPriorities]
+                                                    [kNumBlockingModes];
+  HistogramBase* const
+      num_tasks_run_while_queuing_histograms_[kNumTaskPriorities]
+                                             [kNumBlockingModes];
 
   // Ensures all state (e.g. dangling cleaned up workers) is coalesced before
   // destroying the TaskTracker (e.g. in test environments).

@@ -1214,6 +1214,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UnregisterProtocolHandler(const std::string& scheme,
                                  const GURL& url,
                                  bool user_gesture) override;
+  void DidDisplayInsecureContent() override;
+  void DidContainInsecureFormAction() override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1349,9 +1351,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(
       SitePerProcessBrowserTest,
       IsDetachedSubframeObservableDuringUnloadHandlerCrossProcess);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
                            UnloadHandlersArePowerful);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
                            UnloadHandlersArePowerfulGrandChild);
 
   class DroppedInterfaceRequestLogger;

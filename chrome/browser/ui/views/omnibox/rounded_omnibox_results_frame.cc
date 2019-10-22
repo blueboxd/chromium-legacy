@@ -188,7 +188,7 @@ void RoundedOmniboxResultsFrame::OnBeforeWidgetInit(
 
   // Since we are drawing the shadow in Views via the BubbleBorder, we never
   // want our widget to have its own window-manager drawn shadow.
-  params->shadow_type = views::Widget::InitParams::ShadowType::SHADOW_TYPE_NONE;
+  params->shadow_type = views::Widget::InitParams::ShadowType::kNone;
 }
 
 // static

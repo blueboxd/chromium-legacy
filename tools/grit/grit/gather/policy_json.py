@@ -164,12 +164,14 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
       'arc_support': 'Information about the effect on Android apps'
     }
     if item_type == 'policy':
-      return '%s of the policy named %s' % (key_map[key], item['name'])
-    elif item_type == 'enum_item':
-      return ('%s of the option named %s in policy %s' %
-              (key_map[key], item['name'], parent_item['name']))
-    else:
-      raise Exception('Unexpected type %s' % item_type)
+      return ('%s of the policy named %s [owner(s): %s]' %
+              (key_map[key], item['name'],
+               ','.join(item['owners'] if 'owners' in item else 'unknown')))
+    if item_type == 'enum_item':
+      return ('%s of the option named %s in policy %s [owner(s): %s]' %
+              (key_map[key], item['name'], parent_item['name'],
+               ','.join(parent_item['owners'] if 'owners' in parent_item else 'unknown')))
+    raise Exception('Unexpected type %s' % item_type)
 
   def _AddSchemaKeys(self, obj, depth):
     obj_type = type(obj)

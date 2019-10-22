@@ -6,14 +6,10 @@ module tracing.mojom;
 
 [EnableIf=is_perfetto_supported_os]
 import "services/tracing/public/mojom/perfetto_service.mojom";
-[EnableIf=is_perfetto_supported_os]
-import "services/tracing/public/mojom/tracing.mojom";
 
 struct ConnectToTracingRequest {
 [EnableIf=is_perfetto_supported_os]
   PerfettoService perfetto_service;
-[EnableIf=is_perfetto_supported_os]
-  AgentRegistry agent_registry;
 };
 
 // The tracing service will bind this interface on every other service,

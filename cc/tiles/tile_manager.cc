@@ -845,12 +845,6 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     }
   }
 
-  if (had_enough_memory_to_schedule_tiles_needed_now) {
-    int64_t tiles_gpu_memory_kb = memory_usage.memory_bytes() / 1024;
-    UMA_HISTOGRAM_MEMORY_KB("TileManager.TilesGPUMemoryUsage2",
-                            tiles_gpu_memory_kb);
-  }
-
   UMA_HISTOGRAM_BOOLEAN("TileManager.ExceededMemoryBudget",
                         !had_enough_memory_to_schedule_tiles_needed_now);
   did_oom_on_last_assign_ = !had_enough_memory_to_schedule_tiles_needed_now;

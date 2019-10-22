@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">나쁨</translation>
 <translation id="1152528166145813711">선택…</translation>
 <translation id="1199593201721843963">원격 연결 사용중지</translation>
+<translation id="1201402288615127009">다음</translation>
 <translation id="1291443878853470558">Chromoting을 사용하여 컴퓨터에 액세스하려면 원격 연결을 사용하도록 설정해야 합니다.</translation>
 <translation id="1297009705180977556"><ph name="HOSTNAME" /> 연결 중 오류가 발생했습니다</translation>
 <translation id="1324095856329524885">(이 컴퓨터에서 사용할 수 없는 기능입니다.)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">이제 웹에서 Chrome 원격 데스크톱을 사용할 수 있습니다. 빠른 속도를 자랑하는 무료 <ph name="LINK_BEGIN" />웹 앱<ph name="LINK_END" />을 사용해 보세요. 여러 대의 모니터를 지원하는 기능이 개선되었으며 그밖에도 더 많은 기능을 제공합니다.</translation>
 <translation id="1643640058022401035">이 페이지를 닫으면 Chromoting 세션이 종료됩니다.</translation>
 <translation id="1654128982815600832">컴퓨터의 원격 연결을 사용하도록 설정 중...</translation>
+<translation id="1697532407822776718">설정 완료</translation>
 <translation id="170207782578677537">컴퓨터를 등록하는 데 실패했습니다.</translation>
 <translation id="174018511426417793">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>
 <translation id="1742469581923031760">연결 중...</translation>

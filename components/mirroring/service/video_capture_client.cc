@@ -160,7 +160,7 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
 
   // If the timestamp is not prepared, we use reference time to make a rough
   // estimate. e.g. ThreadSafeCaptureOracle::DidCaptureFrame().
-  // TODO(crbug/618407): Fix upstream capturers to always set timestamp and
+  // TODO(crbug.com/618407): Fix upstream capturers to always set timestamp and
   // reference time.
   if (info->timestamp.is_zero())
     info->timestamp = reference_time - first_frame_ref_time_;
@@ -179,7 +179,7 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
   scoped_refptr<media::VideoFrame> frame;
   BufferFinishedCallback buffer_finished_callback;
   if (buffer_iter->second->is_shared_buffer_handle()) {
-    // TODO(https://crbug.com/843117): Remove this case after migrating
+    // TODO(crbug.com/843117): Remove this case after migrating
     // media::VideoCaptureDeviceClient to the new shared memory API.
     auto mapping_iter = mapped_buffers_.find(buffer_id);
     const size_t buffer_size =

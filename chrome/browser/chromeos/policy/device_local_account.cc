@@ -332,9 +332,8 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
           continue;
         }
 
-        accounts.push_back(DeviceLocalAccount(
-            WebKioskAppBasicInfo(url), account_id));
-
+        accounts.push_back(
+            DeviceLocalAccount(WebKioskAppBasicInfo(url), account_id));
         break;
       }
       default:

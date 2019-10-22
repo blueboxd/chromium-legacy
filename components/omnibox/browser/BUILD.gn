@@ -477,3 +477,17 @@ fuzzer_test("omnibox_view_fuzzer") {
     "//base",
   ]
 }
+
+fuzzer_test("search_suggestion_parser_fuzzer") {
+  sources = [
+    "search_suggestion_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":browser",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//third_party/icu:icui18n",
+    "//third_party/metrics_proto:metrics_proto",
+  ]
+}

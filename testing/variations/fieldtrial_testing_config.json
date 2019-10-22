@@ -598,6 +598,21 @@
             ]
         }
     ],
+    "AppListZeroStateMixedTypesRanker": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AppListZeroStateMixedTypesRanker",
+                    "enable_features": [
+                        "EnableZeroStateMixedTypesRanker"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppleScriptExecuteJavaScript": [
         {
             "platforms": [

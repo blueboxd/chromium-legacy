@@ -33,8 +33,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 namespace {
 
 class NullAnimator : public StyleCascade::Animator {
@@ -197,7 +195,8 @@ void StyleCascade::Apply(const CSSProperty& property, Resolver& resolver) {
 
   const CSSValue* value = cascaded.GetValue();
 
-  if (const auto* v = DynamicTo<CSSPendingInterpolationValue>(value)) {
+  if (const auto* v =
+          DynamicTo<cssvalue::CSSPendingInterpolationValue>(value)) {
     resolver.animator_.Apply(property, *v, resolver);
     return;
   }
@@ -280,7 +279,7 @@ const CSSValue* StyleCascade::Resolve(const CSSProperty& property,
     return ResolveCustomProperty(property, *v, resolver);
   if (const auto* v = DynamicTo<CSSVariableReferenceValue>(value))
     return ResolveVariableReference(property, *v, resolver);
-  if (const auto* v = DynamicTo<CSSPendingSubstitutionValue>(value))
+  if (const auto* v = DynamicTo<cssvalue::CSSPendingSubstitutionValue>(value))
     return ResolvePendingSubstitution(property, *v, resolver);
   return &value;
 }
@@ -314,7 +313,7 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
       if (!custom_property->IsRegistered())
         return CSSInvalidVariableValue::Create();
     }
-    return CSSUnsetValue::Create();
+    return cssvalue::CSSUnsetValue::Create();
   }
 
   if (data == decl.Value())
@@ -344,12 +343,12 @@ const CSSValue* StyleCascade::ResolveVariableReference(
       return parsed;
   }
 
-  return CSSUnsetValue::Create();
+  return cssvalue::CSSUnsetValue::Create();
 }
 
 const CSSValue* StyleCascade::ResolvePendingSubstitution(
     const CSSProperty& property,
-    const CSSPendingSubstitutionValue& value,
+    const cssvalue::CSSPendingSubstitutionValue& value,
     Resolver& resolver) {
   DCHECK(!resolver.IsLocked(property));
   AutoLock lock(property, resolver);
@@ -363,7 +362,7 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
   TokenSequence sequence;
 
   if (!ResolveTokensInto(shorthand_data->Tokens(), resolver, sequence))
-    return CSSUnsetValue::Create();
+    return cssvalue::CSSUnsetValue::Create();
 
   HeapVector<CSSPropertyValue, 256> parsed_properties;
   const bool important = false;
@@ -372,7 +371,7 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
           shorthand_property_id, important, sequence.TokenRange(),
           shorthand_value->ParserContext(), parsed_properties,
           StyleRule::RuleType::kStyle)) {
-    return CSSUnsetValue::Create();
+    return cssvalue::CSSUnsetValue::Create();
   }
 
   // For -internal-visited-properties with CSSPendingSubstitutionValues,

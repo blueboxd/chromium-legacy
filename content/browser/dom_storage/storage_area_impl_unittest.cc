@@ -16,8 +16,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/test/browser_task_environment.h"
@@ -38,7 +37,7 @@ const char* kTestSource = "source";
 const size_t kTestSizeLimit = 512;
 
 std::string ToString(const std::vector<uint8_t>& input) {
-  return leveldb::Uint8VectorToStdString(input);
+  return std::string(input.begin(), input.end());
 }
 
 std::vector<uint8_t> ToBytes(base::StringPiece input) {
@@ -122,7 +121,7 @@ class StorageAreaImplTest : public testing::Test,
 
   StorageAreaImplTest() {
     base::RunLoop loop;
-    db_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
+    db_ = storage::AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "StorageAreaImplTest",
         base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
         base::BindLambdaForTesting(
@@ -278,7 +277,7 @@ class StorageAreaImplTest : public testing::Test,
   const std::vector<Observation>& observations() { return observations_; }
 
   MockDelegate* delegate() { return &delegate_; }
-  leveldb::LevelDBDatabaseImpl* database() { return db_.get(); }
+  storage::AsyncDomStorageDatabase* database() { return db_.get(); }
 
   void should_record_send_old_value_observations(bool value) {
     should_record_send_old_value_observations_ = value;
@@ -334,7 +333,7 @@ class StorageAreaImplTest : public testing::Test,
   }
 
   BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<leveldb::LevelDBDatabaseImpl> db_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> db_;
   MockDelegate delegate_;
   std::unique_ptr<StorageAreaImpl> storage_area_;
   mojo::Remote<blink::mojom::StorageArea> storage_area_remote_;

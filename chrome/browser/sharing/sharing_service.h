@@ -47,6 +47,7 @@ class SharedClipboardMessageHandler;
 class SharingFCMHandler;
 class SharingFCMSender;
 class SharingSyncPreference;
+class SmsFetchRequestHandler;
 class VapidKeyManager;
 enum class SharingDeviceRegistrationResult;
 
@@ -209,6 +210,7 @@ class SharingService : public KeyedService,
   AckMessageHandler ack_message_handler_;
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;
+  std::unique_ptr<SmsFetchRequestHandler> sms_fetch_request_handler_;
 #endif  // defined(OS_ANDROID)
   std::unique_ptr<SharedClipboardMessageHandler>
       shared_clipboard_message_handler_;

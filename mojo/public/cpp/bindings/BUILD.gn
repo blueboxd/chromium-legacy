@@ -202,6 +202,8 @@ component("bindings") {
     "sync_event_watcher.h",
     "sync_handle_registry.h",
     "sync_handle_watcher.h",
+    "thread_safe_forwarder_base.cc",
+    "thread_safe_forwarder_base.h",
     "thread_safe_interface_ptr.h",
     "unique_associated_receiver_set.h",
     "unique_ptr_impl_ref_traits.h",

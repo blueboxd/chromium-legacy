@@ -241,7 +241,7 @@ public class VrBrowserTransitionTest {
      * from WebVR presentation to the VR browser.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
+    @CommandLineFlags.Add("enable-blink-features=WebVR")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @MediumTest
     public void testExitPresentationWebVrToVrShell() throws IllegalArgumentException {
@@ -290,7 +290,7 @@ public class VrBrowserTransitionTest {
      * re-entering presentation works. This is a regression test for crbug.com/799999.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
+    @CommandLineFlags.Add("enable-blink-features=WebVR")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @MediumTest
     public void testWebVrReEntryFromVrBrowser() {

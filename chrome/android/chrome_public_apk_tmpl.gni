@@ -326,6 +326,8 @@ template("monochrome_public_common_apk_or_module_tmpl") {
   chrome_public_common_apk_or_module_tmpl(target_name) {
     forward_variables_from(invoker,
                            [
+                             "failed_manifest_expectation_file",
+                             "failed_proguard_expectation_file",
                              "version_code",
                              "verify_manifest",
                            ])

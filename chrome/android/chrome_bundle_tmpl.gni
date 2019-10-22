@@ -53,6 +53,7 @@ template("chrome_bundle") {
                              "base_module_target",
                              "bundle_name",
                              "compress_shared_libraries",
+                             "failed_proguard_expectation_file",
                              "keystore_name",
                              "keystore_password",
                              "keystore_path",

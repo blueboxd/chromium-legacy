@@ -70,9 +70,17 @@ void SourceStreamToDataPipe::DidRead(int result) {
     OnComplete(result);
     return;
   }
+
   dest_ = pending_write_->Complete(result);
-  pending_write_ = nullptr;
   transferred_bytes_ += result;
+
+  // Don't hop through an extra ReadMore just to find out there's no more data.
+  if (!source_->MayHaveMoreBytes()) {
+    OnComplete(net::OK);
+    return;
+  }
+
+  pending_write_ = nullptr;
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SourceStreamToDataPipe::ReadMore,

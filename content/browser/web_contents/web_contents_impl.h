@@ -605,6 +605,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
   void DidDisplayInsecureContent() override;
+  void DidContainInsecureFormAction() override;
   void DidRunInsecureContent(const GURL& security_origin,
                              const GURL& target_url) override;
   void PassiveInsecureContentFound(const GURL& resource_url) override;
@@ -1292,8 +1293,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const std::string& http_request,
       const std::string& mime_type,
       ResourceType resource_type);
-  void OnDidDisplayInsecureContent(RenderFrameHostImpl* source);
-  void OnDidContainInsecureFormAction(RenderFrameHostImpl* source);
   void OnDidRunInsecureContent(RenderFrameHostImpl* source,
                                const GURL& security_origin,
                                const GURL& target_url);

@@ -54,29 +54,6 @@ class CORE_EXPORT SnapCoordinator final
   // are updated whenever a layout happens.
   void UpdateAllSnapContainerData();
 
-  // SnapAtCurrentPosition(), SnapForEndPosition(), SnapForDirection(), and
-  // SnapForEndAndDirection() return true if snapping was performed, and false
-  // otherwise. Note that this does not necessarily mean that any scrolling was
-  // performed as a result e.g., if we are already at the snap point.
-  //
-  // SnapAtCurrentPosition() calls SnapForEndPosition() with the current
-  // scroll position.
-  bool SnapAtCurrentPosition(const LayoutBox& snap_container,
-                             bool scrolled_x,
-                             bool scrolled_y) const;
-  bool SnapForEndPosition(const LayoutBox& snap_container,
-                          const FloatPoint& end_position,
-                          bool scrolled_x,
-                          bool scrolled_y) const;
-  bool SnapForDirection(const LayoutBox& snap_container,
-                        const ScrollOffset& delta) const;
-  bool SnapForEndAndDirection(const LayoutBox& snap_container,
-                              const ScrollOffset& delta) const;
-
-  base::Optional<FloatPoint> GetSnapPosition(
-      const LayoutBox& snap_container,
-      const cc::SnapSelectionStrategy& strategy) const;
-
 #ifndef NDEBUG
   void ShowSnapAreaMap();
   void ShowSnapAreasFor(const LayoutBox*);
@@ -85,10 +62,6 @@ class CORE_EXPORT SnapCoordinator final
 
  private:
   friend class SnapCoordinatorTest;
-
-  // Returns true if a snap point was found.
-  bool PerformSnapping(const LayoutBox& snap_container,
-                       const cc::SnapSelectionStrategy& strategy) const;
 
   void UpdateSnapContainerData(LayoutBox&);
 

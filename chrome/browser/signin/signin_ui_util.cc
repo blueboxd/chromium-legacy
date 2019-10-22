@@ -365,6 +365,13 @@ void RecordAnimatedIdentityTriggered(Profile* profile) {
 
 void RecordProfileMenuViewShown(Profile* profile) {
   base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened"));
+  if (profile->IsRegularProfile()) {
+    base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened_Regular"));
+  } else if (profile->IsGuestSession()) {
+    base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened_Guest"));
+  } else if (profile->IsIncognitoProfile()) {
+    base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened_Incognito"));
+  }
 
   base::TimeTicks animation_last_shown =
       AnimatedIdentityUserData::GetLastShown(profile);
@@ -373,6 +380,21 @@ void RecordProfileMenuViewShown(Profile* profile) {
 
   base::UmaHistogramLongTimes("Profile.Menu.OpenedAfterAvatarAnimation",
                               base::TimeTicks::Now() - animation_last_shown);
+}
+
+void RecordProfileMenuClick(Profile* profile) {
+  base::RecordAction(
+      base::UserMetricsAction("ProfileMenu_ActionableItemClicked"));
+  if (profile->IsRegularProfile()) {
+    base::RecordAction(
+        base::UserMetricsAction("ProfileMenu_ActionableItemClicked_Regular"));
+  } else if (profile->IsGuestSession()) {
+    base::RecordAction(
+        base::UserMetricsAction("ProfileMenu_ActionableItemClicked_Guest"));
+  } else if (profile->IsIncognitoProfile()) {
+    base::RecordAction(
+        base::UserMetricsAction("ProfileMenu_ActionableItemClicked_Incognito"));
+  }
 }
 
 }  // namespace signin_ui_util

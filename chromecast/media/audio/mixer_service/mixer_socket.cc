@@ -9,9 +9,13 @@
 #include <utility>
 
 #include "base/big_endian.h"
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "chromecast/media/audio/mixer_service/constants.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
+#include "chromecast/net/io_buffer_pool.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/stream_socket.h"
 
@@ -74,17 +78,47 @@ bool MixerSocket::Delegate::HandleAudioBuffer(
 constexpr size_t MixerSocket::kAudioHeaderSize;
 constexpr size_t MixerSocket::kAudioMessageHeaderSize;
 
-MixerSocket::MixerSocket(std::unique_ptr<net::StreamSocket> socket,
-                         Delegate* delegate)
-    : SmallMessageSocket(std::move(socket)), delegate_(delegate) {
-  DCHECK(delegate_);
-}
+MixerSocket::MixerSocket(std::unique_ptr<net::StreamSocket> socket)
+    : socket_(std::make_unique<SmallMessageSocket>(this, std::move(socket))) {}
 
-MixerSocket::~MixerSocket() = default;
+MixerSocket::MixerSocket() = default;
+
+MixerSocket::~MixerSocket() {
+  if (counterpart_task_runner_) {
+    counterpart_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MixerSocket::OnEndOfStream, local_counterpart_));
+  }
+}
 
 void MixerSocket::SetDelegate(Delegate* delegate) {
   DCHECK(delegate);
+  bool had_delegate = (delegate_ != nullptr);
   delegate_ = delegate;
+  if (socket_ && !had_delegate) {
+    socket_->ReceiveMessages();
+  }
+}
+
+void MixerSocket::SetLocalCounterpart(
+    base::WeakPtr<MixerSocket> local_counterpart,
+    scoped_refptr<base::SequencedTaskRunner> counterpart_task_runner) {
+  local_counterpart_ = std::move(local_counterpart);
+  counterpart_task_runner_ = std::move(counterpart_task_runner);
+}
+
+base::WeakPtr<MixerSocket> MixerSocket::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+void MixerSocket::UseBufferPool(scoped_refptr<IOBufferPool> buffer_pool) {
+  DCHECK(buffer_pool);
+  DCHECK(buffer_pool->threadsafe());
+
+  buffer_pool_ = std::move(buffer_pool);
+  if (socket_) {
+    socket_->UseBufferPool(buffer_pool_);
+  }
 }
 
 // static
@@ -120,10 +154,7 @@ void MixerSocket::SendPreparedAudioBuffer(
   uint16_t payload_size;
   base::ReadBigEndian(audio_buffer->data(), &payload_size);
   DCHECK_GE(payload_size, kAudioHeaderSize);
-  if (!SmallMessageSocket::SendBuffer(audio_buffer.get(),
-                                      sizeof(uint16_t) + payload_size)) {
-    write_queue_.push(std::move(audio_buffer));
-  }
+  SendBuffer(std::move(audio_buffer), sizeof(uint16_t) + payload_size);
 }
 
 void MixerSocket::SendProto(const google::protobuf::MessageLite& message) {
@@ -133,16 +164,20 @@ void MixerSocket::SendProto(const google::protobuf::MessageLite& message) {
 
   int total_size =
       sizeof(type) + sizeof(padding_bytes) + message_size + padding_bytes;
-  scoped_refptr<net::IOBufferWithSize> storage;
-  void* buffer = PrepareSend(total_size);
-  char* ptr;
-  if (buffer) {
-    ptr = reinterpret_cast<char*>(buffer);
-  } else {
-    storage = base::MakeRefCounted<net::IOBufferWithSize>(sizeof(uint16_t) +
-                                                          total_size);
 
-    ptr = storage->data();
+  scoped_refptr<net::IOBuffer> buffer;
+  char* ptr = (socket_ ? static_cast<char*>(socket_->PrepareSend(total_size))
+                       : nullptr);
+  if (!ptr) {
+    if (buffer_pool_ &&
+        buffer_pool_->buffer_size() >= sizeof(uint16_t) + total_size) {
+      buffer = buffer_pool_->GetBuffer();
+    }
+    if (!buffer) {
+      buffer =
+          base::MakeRefCounted<net::IOBuffer>(sizeof(uint16_t) + total_size);
+    }
+    ptr = buffer->data();
     base::WriteBigEndian(ptr, static_cast<uint16_t>(total_size));
     ptr += sizeof(uint16_t);
   }
@@ -155,32 +190,53 @@ void MixerSocket::SendProto(const google::protobuf::MessageLite& message) {
   ptr += message_size;
   memset(ptr, 0, padding_bytes);
 
-  if (buffer) {
-    Send();
+  if (!buffer) {
+    socket_->Send();
+    return;
   }
-  if (storage) {
-    write_queue_.push(std::move(storage));
+  SendBuffer(std::move(buffer), sizeof(uint16_t) + total_size);
+}
+
+void MixerSocket::SendBuffer(scoped_refptr<net::IOBuffer> buffer,
+                             int buffer_size) {
+  if (counterpart_task_runner_) {
+    counterpart_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&MixerSocket::OnMessageBuffer),
+                       local_counterpart_, std::move(buffer), buffer_size));
+    return;
+  }
+  DCHECK(socket_);
+  if (!socket_->SendBuffer(buffer, buffer_size)) {
+    write_queue_.push(std::move(buffer));
   }
 }
 
 void MixerSocket::OnSendUnblocked() {
+  DCHECK(socket_);
   while (!write_queue_.empty()) {
     uint16_t message_size;
     base::ReadBigEndian(write_queue_.front()->data(), &message_size);
-    if (!SmallMessageSocket::SendBuffer(write_queue_.front().get(),
-                                        sizeof(uint16_t) + message_size)) {
+    if (!socket_->SendBuffer(write_queue_.front().get(),
+                             sizeof(uint16_t) + message_size)) {
       return;
     }
     write_queue_.pop();
   }
 }
 
+void MixerSocket::ReceiveMoreMessages() {
+  socket_->ReceiveMessagesSynchronously();
+}
+
 void MixerSocket::OnError(int error) {
   LOG(ERROR) << "Socket error from " << this << ": " << error;
+  DCHECK(delegate_);
   delegate_->OnConnectionError();
 }
 
 void MixerSocket::OnEndOfStream() {
+  DCHECK(delegate_);
   delegate_->OnConnectionError();
 }
 

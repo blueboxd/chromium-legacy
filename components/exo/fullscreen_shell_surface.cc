@@ -229,7 +229,7 @@ void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.delegate = this;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.show_state = show_state;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;

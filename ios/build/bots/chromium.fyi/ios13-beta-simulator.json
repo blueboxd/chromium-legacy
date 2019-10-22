@@ -1,9 +1,11 @@
 {
   "comments": [
-    "Run tests on iOS13beta track on 64-bit iOS 13 simulators.",
-    "Note: Xcode 11 requires OSX 10.14.4 and up"
+    "Runs tests on iOS GM SDK on iOS 13 simulators.",
+    "Note: Xcode 11 requires OSX 10.14.4 and up",
+    "Note: This file should be kept in sync with the",
+    "trybot configuration in ../chromium.mac/."
   ],
-  "xcode build version": "11a420a",
+  "xcode build version": "11a1027",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",

@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">稍後再載入頁面</translation>
 <translation id="1015730422737071372">提供其他詳細資訊</translation>
 <translation id="1021110881106174305">接受的信用卡</translation>
-<translation id="1023523064224774104">Chromium 偵測到你剛才在可疑的網站上輸入密碼。請立即重設你的密碼！</translation>
 <translation id="1032854598605920125">順時針旋轉</translation>
 <translation id="1035334672863811645">登入 Chrome</translation>
 <translation id="1036348656032585052">關閉</translation>
@@ -541,7 +540,6 @@
 <translation id="3655670868607891010">如果你經常看到這個頁面，請參考這些說明：<ph name="HELP_LINK" />。</translation>
 <translation id="3658742229777143148">修訂版本</translation>
 <translation id="366077651725703012">更新信用卡</translation>
-<translation id="3672525478985456967">這個網站的網域名稱與 <ph name="LOOKALIKE_DOMAIN" /> 相似。攻擊者有時會在網域名稱中加入難以辨識的細微變更來仿冒網站。</translation>
 <translation id="3676592649209844519">裝置 ID：</translation>
 <translation id="3677008721441257057">你是否要前往 &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;？</translation>
 <translation id="3678029195006412963">無法簽署要求</translation>
@@ -859,7 +857,6 @@
 <translation id="5230733896359313003">運送地址</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">關閉</translation>
 <translation id="5250209940322997802">「連線至網路」</translation>
 <translation id="5251803541071282808">雲端</translation>
 <translation id="5252000469029418751">C7 (信封)</translation>
@@ -1001,7 +998,6 @@
 <translation id="5946937721014915347">正在開啟 <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">是，我要新增</translation>
 <translation id="5951495562196540101">無法透過個人帳戶註冊 (有封裝授權)。</translation>
-<translation id="5966900314707961320">開啟這項功能時，網站不能使用 Cookie 來追蹤你在網路上的活動</translation>
 <translation id="5967592137238574583">編輯聯絡資訊</translation>
 <translation id="5967867314010545767">從記錄中移除</translation>
 <translation id="5975083100439434680">縮小</translation>
@@ -1097,7 +1093,6 @@
 <translation id="6433490469411711332">編輯聯絡資訊</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒絕連線。</translation>
 <translation id="6434309073475700221">捨棄</translation>
-<translation id="6435221585574090192">將 Chrome Enterprise 威脅防護功能標記的安全性事件相關資料提供給系統管理員。這些資料可能包括網頁網址、檔名、檔案中繼資料、你的裝置使用者名稱和 Chrome 使用者名稱。</translation>
 <translation id="6440503408713884761">已忽略</translation>
 <translation id="6446163441502663861">Kahu (信封)</translation>
 <translation id="6446608382365791566">新增詳細資訊</translation>
@@ -1441,7 +1436,6 @@
 <translation id="8184538546369750125">使用全域預設值 (允許)</translation>
 <translation id="8194797478851900357">復原移動(&amp;U)</translation>
 <translation id="8197543752516192074">翻譯網頁</translation>
-<translation id="8197899142098070286">Chrome 偵測到你剛才在可疑的網站上輸入密碼。請立即重設你的密碼！</translation>
 <translation id="8201077131113104583">擴充功能 (ID：「<ph name="EXTENSION_ID" />」) 的更新網址無效。</translation>
 <translation id="8202097416529803614">訂單摘要</translation>
 <translation id="8202370299023114387">衝突</translation>
@@ -1528,7 +1522,6 @@
 <translation id="8718314106902482036">未完成付款程序</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />，<ph name="DESCRIPTION" />，搜尋建議</translation>
 <translation id="8719528812645237045">多孔 (頂端)</translation>
-<translation id="8723954843026426558">我同意 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 的條款及細則、隱私權政策和撤銷權</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8728672262656704056">你已進入無痕模式</translation>
 <translation id="8730621377337864115">完成</translation>

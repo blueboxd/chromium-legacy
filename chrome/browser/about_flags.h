@@ -118,6 +118,9 @@ namespace testing {
 // Returns the global set of feature entries.
 const flags_ui::FeatureEntry* GetFeatureEntries(size_t* count);
 
+// Sets the global set of feature entries.
+void SetFeatureEntries(const std::vector<flags_ui::FeatureEntry>& entries);
+
 // This value is reported as switch histogram ID if switch name has unknown
 // format.
 extern const base::HistogramBase::Sample kBadSwitchFormatHistogramId;

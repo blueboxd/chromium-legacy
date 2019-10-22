@@ -90,10 +90,17 @@ const base::Feature kUseTextForUpdateButton{"UseTextForUpdateButton",
 const base::Feature kWebFooterExperiment{"WebFooterExperiment",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 // Enables a web-based toolbar. See https://crbug.com/989131. Note this feature
 // only works when the ENABLE_WEBUI_TAB_STRIP buildflag is enabled.
 const base::Feature kWebUITabStrip{"WebUITabStrip",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the demo options for the WebUI Tab Strip. This flag will only work
+// if kWebUITabStrip is enabled.
+const base::Feature kWebUITabStripDemoOptions{
+    "WebUITabStripDemoOptions", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if defined(OS_CHROMEOS)
 // Enables a warning about connecting to hidden WiFi networks.

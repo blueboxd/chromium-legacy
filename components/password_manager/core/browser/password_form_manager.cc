@@ -504,11 +504,10 @@ bool PasswordFormManager::HasGeneratedPassword() const {
 }
 
 void PasswordFormManager::SetGenerationPopupWasShown(
-    bool generation_popup_was_shown,
     bool is_manual_generation) {
-  votes_uploader_.set_generation_popup_was_shown(generation_popup_was_shown);
+  votes_uploader_.set_generation_popup_was_shown(true);
   votes_uploader_.set_is_manual_generation(is_manual_generation);
-  metrics_recorder_->SetPasswordGenerationPopupShown(generation_popup_was_shown,
+  metrics_recorder_->SetPasswordGenerationPopupShown(true,
                                                      is_manual_generation);
 }
 

@@ -79,6 +79,15 @@ class WeakLearningTaskController : public LearningTaskController {
                       id);
   }
 
+  void UpdateDefaultTarget(
+      base::UnguessableToken id,
+      const base::Optional<TargetValue>& default_target) override {
+    if (!weak_session_)
+      return;
+
+    outstanding_observations_[id] = default_target;
+  }
+
   const LearningTask& GetLearningTask() override { return task_; }
 
   base::WeakPtr<LearningSessionImpl> weak_session_;

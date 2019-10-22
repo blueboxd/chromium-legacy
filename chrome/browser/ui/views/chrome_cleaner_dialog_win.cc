@@ -53,17 +53,18 @@ enum class ChromeCleanerDialog::DialogInteractionResult {
 ChromeCleanerDialog::ChromeCleanerDialog(
     safe_browsing::ChromeCleanerDialogController* dialog_controller,
     safe_browsing::ChromeCleanerController* cleaner_controller)
-    : browser_(nullptr),
-      dialog_controller_(dialog_controller),
-      cleaner_controller_(cleaner_controller),
-      details_button_(nullptr),
-      logs_permission_checkbox_(nullptr) {
+    : dialog_controller_(dialog_controller),
+      cleaner_controller_(cleaner_controller) {
   DCHECK(dialog_controller_);
   DCHECK(cleaner_controller_);
 
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL));
+  details_button_ =
+      DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
+          this, l10n_util::GetStringUTF16(
+                    IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL)));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(
@@ -142,16 +143,6 @@ bool ChromeCleanerDialog::ShouldShowCloseButton() const {
 }
 
 // DialogDelegate overrides.
-
-std::unique_ptr<views::View> ChromeCleanerDialog::CreateExtraView() {
-  DCHECK(!details_button_);
-
-  auto details_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(
-                IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL));
-  details_button_ = details_button.get();
-  return details_button;
-}
 
 bool ChromeCleanerDialog::Accept() {
   HandleDialogInteraction(DialogInteractionResult::kAccept);

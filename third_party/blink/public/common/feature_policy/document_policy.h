@@ -89,6 +89,11 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   bool IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
                         const PolicyValue& threshold_value) const;
 
+  // Returns true if the feature is being migrated to document policy
+  // TODO(iclelland): remove this method when those features are fully
+  // migrated to document policy.
+  bool IsFeatureSupported(mojom::FeaturePolicyFeature feature) const;
+
   // Returns the value of the given feature on the given origin.
   PolicyValue GetFeatureValue(mojom::FeaturePolicyFeature feature) const;
 
@@ -121,6 +126,9 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
       const FeatureState& defaults);
 
   void UpdateFeatureState(const FeatureState& feature_state);
+
+  static FeatureState ParsedDocumentPolicyToFeatureState(
+      const ParsedDocumentPolicy& policies);
 
   // Threshold values for each defined feature.
   // TODO(iclelland): Generate these members; pack booleans in bitfields if

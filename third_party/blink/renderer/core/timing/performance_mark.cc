@@ -17,7 +17,6 @@
 namespace blink {
 
 PerformanceMark::PerformanceMark(
-    ScriptState* script_state,
     const AtomicString& name,
     double start_time,
     scoped_refptr<SerializedScriptValue> serialized_detail,
@@ -41,9 +40,8 @@ PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
     if (exception_state.HadException())
       return nullptr;
   }
-  return MakeGarbageCollected<PerformanceMark>(script_state, name, start_time,
-                                               std::move(serialized_detail),
-                                               exception_state);
+  return MakeGarbageCollected<PerformanceMark>(
+      name, start_time, std::move(serialized_detail), exception_state);
 }
 
 // static

@@ -585,8 +585,6 @@ class Internals final : public ScriptWrappable {
 
   void simulateRasterUnderInvalidations(bool enable);
 
-  void BypassLongCompileThresholdOnce(ExceptionState&);
-
   // The number of calls to update the blink lifecycle (see:
   // LocalFrameView::UpdateLifecyclePhasesInternal).
   unsigned LifecycleUpdateCount() const;

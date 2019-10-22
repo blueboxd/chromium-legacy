@@ -399,18 +399,18 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
 
     // OSX likes to put shadows on most things. However, frameless windows (with
     // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.
-    // SHADOW_TYPE_DROP is used for Menus, which get the same shadow style on
+    // ShadowType::kDrop is used for Menus, which get the same shadow style on
     // Mac.
     switch (params.shadow_type) {
-      case Widget::InitParams::SHADOW_TYPE_NONE:
+      case Widget::InitParams::ShadowType::kNone:
         window_params->has_window_server_shadow = false;
         break;
-      case Widget::InitParams::SHADOW_TYPE_DEFAULT:
+      case Widget::InitParams::ShadowType::kDefault:
         // Controls should get views shadows instead of native shadows.
         window_params->has_window_server_shadow =
             params.type != Widget::InitParams::TYPE_CONTROL;
         break;
-      case Widget::InitParams::SHADOW_TYPE_DROP:
+      case Widget::InitParams::ShadowType::kDrop:
         window_params->has_window_server_shadow = true;
         break;
     }  // No default case, to pick up new types.

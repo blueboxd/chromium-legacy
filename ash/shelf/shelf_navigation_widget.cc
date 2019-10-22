@@ -50,6 +50,12 @@ gfx::Rect GetSecondButtonBounds() {
       ShelfConfig::Get()->control_size());
 }
 
+bool IsBackButtonShown() {
+  return chromeos::switches::ShouldShowShelfHotseat()
+             ? IsTabletMode() && ShelfConfig::Get()->is_in_app()
+             : IsTabletMode();
+}
+
 }  // namespace
 
 class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
@@ -228,10 +234,11 @@ gfx::Size ShelfNavigationWidget::GetIdealSize() const {
   const int control_size = ShelfConfig::Get()->control_size();
   if (!shelf_->IsHorizontalAlignment())
     return gfx::Size(control_size, control_size);
-  return gfx::Size(
-      IsTabletMode() ? (2 * control_size + ShelfConfig::Get()->button_spacing())
-                     : control_size,
-      control_size);
+
+  return gfx::Size(IsBackButtonShown() ? (2 * control_size +
+                                          ShelfConfig::Get()->button_spacing())
+                                       : control_size,
+                   control_size);
 }
 
 bool ShelfNavigationWidget::OnNativeWidgetActivationChanged(bool active) {
@@ -276,7 +283,7 @@ void ShelfNavigationWidget::OnShelfAlignmentChanged(aura::Window* root_window) {
 
 void ShelfNavigationWidget::OnImplicitAnimationsCompleted() {
   // Hide the back button once it has become fully transparent.
-  if (!IsTabletMode())
+  if (!IsTabletMode() || !IsBackButtonShown())
     GetBackButton()->SetVisible(false);
 }
 
@@ -285,22 +292,23 @@ void ShelfNavigationWidget::OnShelfConfigUpdated() {
 }
 
 void ShelfNavigationWidget::UpdateLayout() {
-  const bool tablet_mode = IsTabletMode();
+  bool is_back_button_shown = IsBackButtonShown();
+
   // Show the back button right away so that the animation is visible.
-  if (tablet_mode)
+  if (is_back_button_shown)
     GetBackButton()->SetVisible(true);
-  GetBackButton()->SetFocusBehavior(tablet_mode
+  GetBackButton()->SetFocusBehavior(is_back_button_shown
                                         ? views::View::FocusBehavior::ALWAYS
                                         : views::View::FocusBehavior::NEVER);
   ui::ScopedLayerAnimationSettings settings(
       GetBackButton()->layer()->GetAnimator());
   settings.SetTransitionDuration(kBackButtonOpacityAnimationDuration);
   settings.AddObserver(this);
-  GetBackButton()->layer()->SetOpacity(tablet_mode ? 1 : 0);
+  GetBackButton()->layer()->SetOpacity(is_back_button_shown ? 1 : 0);
 
   bounds_animator_->AnimateViewTo(
       GetHomeButton(),
-      tablet_mode ? GetSecondButtonBounds() : GetFirstButtonBounds());
+      is_back_button_shown ? GetSecondButtonBounds() : GetFirstButtonBounds());
   GetBackButton()->SetBoundsRect(GetFirstButtonBounds());
 
   delegate_->UpdateOpaqueBackground();

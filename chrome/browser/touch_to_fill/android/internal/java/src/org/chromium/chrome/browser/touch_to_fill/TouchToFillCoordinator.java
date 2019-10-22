@@ -32,9 +32,8 @@ public class TouchToFillCoordinator implements TouchToFillComponent {
     }
 
     @Override
-    public void showCredentials(
-            String formattedUrl, boolean isOriginSecure, List<Credential> credentials) {
-        mMediator.showCredentials(formattedUrl, isOriginSecure, credentials);
+    public void showCredentials(String url, boolean isOriginSecure, List<Credential> credentials) {
+        mMediator.showCredentials(url, isOriginSecure, credentials);
     }
 
     /**

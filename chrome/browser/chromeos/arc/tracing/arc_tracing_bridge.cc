@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
+#include "base/trace_event/trace_event.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -37,8 +38,6 @@ namespace {
 // atrace is 1024 bytes. Here we add additional size as we're using JSON and
 // have additional data fields.
 constexpr size_t kArcTraceMessageLength = 1024 + 512;
-
-constexpr char kChromeTraceEventLabel[] = "traceEvents";
 
 // The prefix of the categories to be shown on the trace selection UI.
 // The space at the end of the string is intentional as the separator between
@@ -445,13 +444,7 @@ void ArcTracingBridge::OnTracingReaderStopped(
 }
 
 ArcTracingBridge::ArcTracingAgent::ArcTracingAgent(ArcTracingBridge* bridge)
-    : BaseAgent(
-
-          kChromeTraceEventLabel,
-          tracing::mojom::TraceDataType::ARRAY,
-          base::kNullProcessId),
-      bridge_(bridge) {
-}
+    : bridge_(bridge) {}
 
 ArcTracingBridge::ArcTracingAgent::~ArcTracingAgent() = default;
 
@@ -459,30 +452,6 @@ void ArcTracingBridge::ArcTracingAgent::GetCategories(
     std::set<std::string>* category_set) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bridge_->GetCategories(category_set);
-}
-
-void ArcTracingBridge::ArcTracingAgent::StartTracing(
-    const std::string& config,
-    base::TimeTicks coordinator_time,
-    Agent::StartTracingCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  bridge_->StartTracing(config, std::move(callback));
-}
-
-void ArcTracingBridge::ArcTracingAgent::StopAndFlush(
-    mojo::PendingRemote<tracing::mojom::Recorder> recorder) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  recorder_.Bind(std::move(recorder));
-  // |bridge_| owns us, so it's OK to pass an unretained pointer.
-  bridge_->StopAndFlush(
-      base::BindOnce(&ArcTracingAgent::OnTraceData, base::Unretained(this)));
-}
-
-void ArcTracingBridge::ArcTracingAgent::OnTraceData(const std::string& data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(recorder_);
-  recorder_->AddChunk(data);
-  recorder_.reset();
 }
 
 ArcTracingBridge::ArcTracingReader::ArcTracingReader() = default;

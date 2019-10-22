@@ -1019,6 +1019,8 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
     return;
 
   if (is_being_dragged_) {
+    DCHECK_EQ(this, overview_session_->window_drag_controller()->item());
+    overview_session_->window_drag_controller()->ResetGesture();
     Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
         kOcclusionPauseDurationForDrag);
   }
@@ -1173,9 +1175,15 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
   screen_rect.set_size(screen_size);
 
   const int top_view_inset = transform_window_.GetTopInset();
+  gfx::RectF transformed_bounds = target_bounds;
+  // Update |transformed_bounds| to match the unclipped size of the window, so
+  // we transform the window to the correct size.
+  if (unclipped_size_)
+    transformed_bounds.set_size(gfx::SizeF(*unclipped_size_));
+
   gfx::RectF overview_item_bounds =
       transform_window_.ShrinkRectToFitPreservingAspectRatio(
-          screen_rect, target_bounds, top_view_inset, kHeaderHeightDp);
+          screen_rect, transformed_bounds, top_view_inset, kHeaderHeightDp);
 
   const gfx::Transform transform =
       gfx::TransformBetweenRects(screen_rect, overview_item_bounds);
@@ -1186,17 +1194,24 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
     return;
   }
 
-  ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
-  transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
-  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW &&
-      !animation_settings.empty()) {
-    animation_settings.front()->AddObserver(new AnimationObserver{
-        base::BindOnce(&OverviewItem::OnItemBoundsAnimationStarted,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::BindOnce(&OverviewItem::OnItemBoundsAnimationEnded,
-                       weak_ptr_factory_.GetWeakPtr())});
+  {
+    ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
+    transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
+    if (animation_type ==
+            OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW &&
+        !animation_settings.empty()) {
+      animation_settings.front()->AddObserver(new AnimationObserver{
+          base::BindOnce(&OverviewItem::OnItemBoundsAnimationStarted,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&OverviewItem::OnItemBoundsAnimationEnded,
+                         weak_ptr_factory_.GetWeakPtr())});
+    }
+    SetTransform(window, transform);
   }
-  SetTransform(window, transform);
+
+  transform_window_.SetClipping(unclipped_size_
+                                    ? GetWindowTargetBoundsWithInsets().size()
+                                    : gfx::SizeF());
 }
 
 void OverviewItem::CreateWindowLabel() {

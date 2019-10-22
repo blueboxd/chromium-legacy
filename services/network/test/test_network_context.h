@@ -238,9 +238,10 @@ class TestNetworkContext : public mojom::NetworkContext {
                          const net::NetworkIsolationKey& network_isolation_key,
                          const net::AuthCredentials& credentials,
                          AddAuthCacheEntryCallback callback) override {}
-  void LookupBasicAuthCredentials(
+  void LookupServerBasicAuthCredentials(
       const GURL& url,
-      LookupBasicAuthCredentialsCallback callback) override {}
+      const net::NetworkIsolationKey& network_isolation_key,
+      LookupServerBasicAuthCredentialsCallback callback) override {}
   void GetOriginPolicyManager(
       mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) override {}
 };

@@ -61,6 +61,9 @@ class InputEngine : public mojom::InputChannel {
   mojo::ReceiverSet<mojom::InputChannel, std::unique_ptr<InputEngineContext>>
       channel_receivers_;
 
+  // Whether the AltRight key is held down or not. Only used for rule-based.
+  bool isAltRightDown_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(InputEngine);
 };
 

@@ -65,7 +65,7 @@ import java.util.concurrent.TimeUnit;
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-webvr"})
+        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR and WebXR are only supported on L+
 public class WebXrVrInputTest {
     @ClassParameter
@@ -124,7 +124,7 @@ public class WebXrVrInputTest {
                     sdk_is_less_than = Build.VERSION_CODES.M)
             @Restriction(RESTRICTION_TYPE_SVR)
             @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void
@@ -209,7 +209,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testControllerClicksRegisteredOnDaydream_WebXr() {
@@ -245,7 +245,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testControllerExposedAsGamepadOnDaydream_WebXr() {
@@ -396,7 +396,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testScreenTapsRegisteredOnCardboard_WebXr() {
@@ -434,7 +434,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testTransientScreenTapsRegisteredOnCardboard_WebXr() {
@@ -481,7 +481,7 @@ public class WebXrVrInputTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testPresentationLocksFocus_WebXr() {
@@ -518,7 +518,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             public void testAppButtonExitsPresentation_WebXr() {
         appButtonExitsPresentationImpl(
@@ -571,7 +571,7 @@ public class WebXrVrInputTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             public void testAppButtonNoopsWhenBrowsingDisabled_WebXr() throws ExecutionException {
         appButtonNoopsTestImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
@@ -588,7 +588,7 @@ public class WebXrVrInputTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.WAA,
             XrActivityRestriction.SupportedActivity.CCT})
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             public void
             testAppButtonNoopsWhenBrowsingNotSupported_WebXr() throws ExecutionException {
@@ -670,7 +670,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             public void testAppButtonAfterPageStopsSubmitting_WebXr() {
         appButtonAfterPageStopsSubmittingImpl(
@@ -697,7 +697,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWebXrInputSourceHasGamepad() {
@@ -713,7 +713,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWebXrInputSourceWithoutGamepad_Cardboard() {
@@ -762,7 +762,7 @@ public class WebXrVrInputTest {
     @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testAppButtonLongPressDisplaysPermissions() throws InterruptedException {
@@ -777,7 +777,7 @@ public class WebXrVrInputTest {
     @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
             public void testAppButtonLongPressDisplaysPermissionsIncognito()
@@ -851,7 +851,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             // TODO(https://crbug.com/901494): Make this run everywhere when permissions are
             // unbroken.
@@ -864,7 +864,7 @@ public class WebXrVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXrGamepadModule"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
             public void testInSessionPermissionRequestsIncognito() {

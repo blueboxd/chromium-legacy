@@ -887,7 +887,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
                                  : views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.delegate = this;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.show_state = show_state;
   // Make shell surface a transient child if |parent_| has been set and

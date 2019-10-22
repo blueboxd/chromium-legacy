@@ -22,6 +22,7 @@
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/views/background.h"
@@ -78,12 +79,14 @@ void AssistantPageView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   if (assistant_view_delegate_) {
-    assistant_main_view_ = new AssistantMainView(assistant_view_delegate_);
-    AddChildView(assistant_main_view_);
+    assistant_main_view_ = AddChildView(
+        std::make_unique<AssistantMainView>(assistant_view_delegate_));
 
-    // Web view.
-    assistant_web_view_ = new AssistantWebView(assistant_view_delegate_);
-    AddChildView(assistant_web_view_);
+    // Do not add web view when Assistant web container is enabled.
+    if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
+      assistant_web_view_ = AddChildView(
+          std::make_unique<AssistantWebView>(assistant_view_delegate_));
+    }
 
     // Update the view state based on the current UI mode.
     OnUiModeChanged(assistant_view_delegate_->GetUiModel()->ui_mode(),
@@ -129,8 +132,12 @@ void AssistantPageView::RequestFocus() {
         assistant_main_view_->RequestFocus();
       break;
     case AssistantUiMode::kWebUi:
-      if (assistant_web_view_)
-        assistant_web_view_->RequestFocus();
+      if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
+        if (assistant_web_view_)
+          assistant_web_view_->RequestFocus();
+        break;
+      }
+      NOTREACHED();
       break;
     case AssistantUiMode::kMainUi:
     case AssistantUiMode::kMiniUi:
@@ -147,10 +154,6 @@ void AssistantPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void AssistantPageView::ChildPreferredSizeChanged(views::View* child) {
   MaybeUpdateAppListState(child->GetHeightForWidth(width()));
   PreferredSizeChanged();
-
-  // After layout events, focus can be lost so we need to explicitly request
-  // on behalf of the child views.
-  RequestFocus();
 }
 
 void AssistantPageView::ChildVisibilityChanged(views::View* child) {
@@ -249,8 +252,12 @@ void AssistantPageView::OnUiModeChanged(AssistantUiMode ui_mode,
         assistant_main_view_->SetVisible(true);
       break;
     case AssistantUiMode::kWebUi:
-      if (assistant_web_view_)
-        assistant_web_view_->SetVisible(true);
+      if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
+        if (assistant_web_view_)
+          assistant_web_view_->SetVisible(true);
+        break;
+      }
+      NOTREACHED();
       break;
     case AssistantUiMode::kMainUi:
     case AssistantUiMode::kMiniUi:
@@ -283,7 +290,7 @@ void AssistantPageView::OnUiVisibilityChanged(
   }
 }
 
-const AssistantMainView* AssistantPageView::GetMainViewForTest() const {
+AssistantMainView* AssistantPageView::GetMainViewForTest() {
   return assistant_main_view_;
 }
 
@@ -296,8 +303,12 @@ int AssistantPageView::GetChildViewHeightForWidth(int width) const {
           height = assistant_main_view_->GetHeightForWidth(width);
         break;
       case AssistantUiMode::kWebUi:
-        if (assistant_web_view_)
-          height = assistant_web_view_->GetHeightForWidth(width);
+        if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
+          if (assistant_web_view_)
+            height = assistant_web_view_->GetHeightForWidth(width);
+          break;
+        }
+        NOTREACHED();
         break;
       case AssistantUiMode::kMainUi:
       case AssistantUiMode::kMiniUi:

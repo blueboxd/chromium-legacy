@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">Загрузить страницу позже</translation>
 <translation id="1015730422737071372">Сообщить дополнительную информацию</translation>
 <translation id="1021110881106174305">Карты, которые принимаются к оплате</translation>
-<translation id="1023523064224774104">Браузер Chromium обнаружил, что вы только что ввели пароль на подозрительном сайте. Сбросьте пароль прямо сейчас.</translation>
 <translation id="1032854598605920125">Повернуть по часовой стрелке</translation>
 <translation id="1035334672863811645">войдите в Chrome</translation>
 <translation id="1036348656032585052">Отключить</translation>
@@ -122,6 +121,7 @@
 <translation id="1501859676467574491">Показывать банковские карты, сохраненные в аккаунте Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Эта ошибка может возникать при использовании портала Wi-Fi, для работы с которым требуется выполнить вход.&lt;/p&gt;
     &lt;p&gt;Чтобы устранить проблему, нажмите &lt;strong&gt;Подключиться&lt;/strong&gt; на нужной веб-странице.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Список записей из истории</translation>
 <translation id="1517433312004943670">Укажите номер телефона</translation>
 <translation id="1517500485252541695">Дебетовые и кредитные карты, которые принимаются к оплате</translation>
 <translation id="1519264250979466059">Дата сборки</translation>
@@ -307,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности может быть отозван. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="2438874542388153331">Четыре отверстия справа</translation>
+<translation id="245044156129055925">Вы только что ввели пароль на поддельном сайте. Браузер Chromium рекомендует сменить пароль прямо сейчас.</translation>
 <translation id="2463193859425327265">Изменить главную страницу</translation>
 <translation id="2463739503403862330">Заполнить</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -540,7 +541,6 @@
 <translation id="3655670868607891010">Если эта проблема возникает часто, изучите <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Версия</translation>
 <translation id="366077651725703012">Изменить данные кредитной карты</translation>
-<translation id="3672525478985456967">Имя этого сайта похоже на <ph name="LOOKALIKE_DOMAIN" />. Иногда злоумышленники создают копии сайтов и вносят незаметные изменения в их доменное имя.</translation>
 <translation id="3676592649209844519">Идентификатор устройства:</translation>
 <translation id="3677008721441257057">Возможно, вы хотели открыть сайт &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Не удалось подписать запрос</translation>
@@ -601,6 +601,9 @@
 <translation id="397105322502079400">Вычисление…</translation>
 <translation id="3973234410852337861">Сайт <ph name="HOST_NAME" /> заблокирован</translation>
 <translation id="3981540111851280311">Администратор домена <ph name="ENROLLMENT_DOMAIN" /> включил в вашем браузере систему защиты Chrome Enterprise, у которой есть доступ к некоторым вашим данным.</translation>
+<translation id="3987405730340719549">Браузер Chrome определил, что этот сайт может оказаться поддельным или мошенническим.
+
+    Если вы думаете, что это сообщение показано по ошибке, заполните форму на странице https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Менее 1 МБ</translation>
 <translation id="3990250421422698716">Смещение</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница поблизости}one{# веб-страница поблизости}few{# веб-страницы поблизости}many{# веб-страниц поблизости}other{# веб-страницы поблизости}}</translation>
@@ -783,7 +786,7 @@
 <translation id="4880827082731008257">Искать в истории</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
-<translation id="4901778704868714008">Сохранить…</translation>
+<translation id="4901778704868714008">Сохранить</translation>
 <translation id="4913987521957242411">Отверстие в левом верхнем углу</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{и ещё 1 веб-страница}one{и ещё # веб-страница}few{и ещё # веб-страницы}many{и ещё # веб-страниц}other{и ещё # веб-страницы}}</translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -858,7 +861,6 @@
 <translation id="5230733896359313003">Адрес доставки</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Закрыть</translation>
 <translation id="5250209940322997802">"Подключитесь к сети"</translation>
 <translation id="5251803541071282808">Облако</translation>
 <translation id="5252000469029418751">C7 (конверт)</translation>
@@ -978,6 +980,9 @@
 <translation id="5813119285467412249">&amp;Повторить добавление</translation>
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5838278095973806738">Не сообщайте этому сайту конфиденциальную информацию (например, пароли и номера банковских карт). К ней могут получить доступ злоумышленники.</translation>
+<translation id="5855253129151731373">Имя хоста этого сайта похоже на <ph name="LOOKALIKE_DOMAIN" />. Иногда злоумышленники создают копии сайтов и вносят незаметные изменения в их доменное имя.
+
+    Если вы думаете, что это сообщение показано по ошибке, заполните форму на странице https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="5863847714970149516">При открытии этой страницы с вашего счета могут быть списаны средства</translation>
 <translation id="5866257070973731571">Добавьте номер телефона</translation>
@@ -1000,7 +1005,6 @@
 <translation id="5946937721014915347">Загрузка <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Да</translation>
 <translation id="5951495562196540101">Регистрация невозможна, так как тип аккаунта не соответствует лицензии на устройстве.</translation>
-<translation id="5966900314707961320">Когда эта настройка включена, сайты не могут использовать файлы cookie, которые отслеживают ваши действия в Интернете.</translation>
 <translation id="5967592137238574583">Измените контактную информацию</translation>
 <translation id="5967867314010545767">Удалить из истории</translation>
 <translation id="5975083100439434680">Уменьшить</translation>
@@ -1089,6 +1093,7 @@
 <translation id="6401136357288658127">Правило устарело. Используйте <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Изменить закладку</translation>
 <translation id="6406765186087300643">C0 (конверт)</translation>
+<translation id="6409754798200046165">Вы только что ввели пароль на поддельном сайте. Браузер Chrome рекомендует сменить пароль прямо сейчас.</translation>
 <translation id="6410264514553301377">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Защитите свой аккаунт Google и смените пароль с помощью Chromium.</translation>
 <translation id="6427730057873428458">Фальцовка калиткой в два сгиба</translation>
@@ -1096,7 +1101,6 @@
 <translation id="6433490469411711332">Изменить контактную информацию</translation>
 <translation id="6433595998831338502">Сайт <ph name="HOST_NAME" /> не позволяет установить соединение.</translation>
 <translation id="6434309073475700221">Отменить передачу</translation>
-<translation id="6435221585574090192">Отправлять администратору данные о событиях безопасности, определенных системой защиты Chrome Enterprise как потенциально опасные. К таким данным относятся URL страниц, названия файлов, метаданные файлов, название вашего устройства и имя пользователя Chrome.</translation>
 <translation id="6440503408713884761">Пропускается</translation>
 <translation id="6446163441502663861">Kahu (конверт)</translation>
 <translation id="6446608382365791566">Укажите дополнительную информацию</translation>
@@ -1386,6 +1390,7 @@
 <translation id="7932579305932748336">Покрытие</translation>
 <translation id="79338296614623784">Укажите действительный номер телефона.</translation>
 <translation id="7934052535022478634">Платеж обработан</translation>
+<translation id="7935031712718413217">Возможный спуфинг URL</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Действует до <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Сертификат сервера еще не действителен.</translation>
@@ -1440,7 +1445,6 @@
 <translation id="8184538546369750125">Использовать глобальный параметр по умолчанию (разрешать)</translation>
 <translation id="8194797478851900357">&amp;Отменить перемещение</translation>
 <translation id="8197543752516192074">Перевести страницу</translation>
-<translation id="8197899142098070286">Браузер Chrome обнаружил, что вы только что ввели пароль на подозрительном сайте. Сбросьте пароль прямо сейчас.</translation>
 <translation id="8201077131113104583">Недействительный URL для обновления расширения с идентификатором <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Информация о заказе</translation>
 <translation id="8202370299023114387">Конфликт</translation>
@@ -1527,7 +1531,6 @@
 <translation id="8718314106902482036">Не удалось обработать платеж</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, подсказка</translation>
 <translation id="8719528812645237045">Несколько отверстий сверху</translation>
-<translation id="8723954843026426558">Я соглашаюсь с Условиями использования и Политикой конфиденциальности сайта <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, а также понимаю, что у меня есть право на отзыв данного согласия.</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8728672262656704056">Вы перешли в режим инкогнито</translation>
 <translation id="8730621377337864115">Готово</translation>

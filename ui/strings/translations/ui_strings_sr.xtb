@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Пре 1 минут}one{Пре # минут}few{Пре # минута}other{Пре # минута}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 м}one{# м}few{# м}other{# м}}</translation>
 <translation id="1181037720776840403">Уклони</translation>
+<translation id="1201402288615127009">Даље</translation>
 <translation id="1243314992276662751">Отпреми</translation>
 <translation id="1266864766717917324">Није успело дељење: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Додирните циљна поља за додир на екрану.</translation>
 <translation id="2295140143284145483">Анкета</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Проверава се интернет веза</translation>
 <translation id="2388990488038464401">Желите ли да позовете овај број са телефона?</translation>
 <translation id="24452542372838207">Прошири обавештење</translation>
 <translation id="2445449901874883781">Користи високу густину</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Још 1 секунда}one{Још # секунда}few{Још # секунде}other{Још # секунди}}</translation>
 <translation id="5941711191222866238">Смањи</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 сат}one{# сат}few{# сата}other{# сати}}</translation>
+<translation id="5946629889255121107">Број је инициран са <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />. страница од <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Обришите текст из оквира за претрагу</translation>
 <translation id="6040143037577758943">Затвори</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Чување датотеке</translation>
 <translation id="6656912866303152668">Уверите се да је синхронизација за <ph name="TARGET_DEVICE_NAME" /> укључена на Chrome-у и пробајте да пошаљете поново.</translation>
 <translation id="6699343763173986273">Следећа песма медија</translation>
+<translation id="6710213216561001401">Претходно</translation>
 <translation id="6779314412797872738">Да бисте послали број са овог уређаја на Android телефон, <ph name="TROUBLESHOOT_LINK" /> за оба уређаја у подешавањима.</translation>
 <translation id="6786750046913594791">Затворите директоријум</translation>
 <translation id="6808150112686056157">Заустављање медија</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Још 1 мин}one{Још # мин}few{Још # мин}other{Још # мин}}</translation>
 <translation id="7319740667687257810">Покретач, делимичан приказ</translation>
+<translation id="7352651011704765696">Нешто није у реду</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Пре 1 мин}one{Пре # мин}few{Пре # мин}other{Пре # мин}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Још 1 минут}one{Још # минут}few{Још # минута}other{Још # минута}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Пре 1 сат}one{Пре # сат}few{Пре # сата}other{Пре # сати}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Још 1 сек}one{Још # сек}few{Још # сек}other{Још # сек}}</translation>
+<translation id="8134065097954893699">Ова страница се поново учитава</translation>
 <translation id="8144660977431427332">Претраге омогућава Google помоћник. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, аутоматско довршавање</translation>
 <translation id="815598010540052116">Помери надоле</translation>

@@ -118,7 +118,7 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
     // TODO(skuhne): If we run into an application which should have a shadow
     // but does not have, a new attribute has to be added.
     if (IsFrameless())
-      init_params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+      init_params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   }
   if (create_params.always_on_top)
     init_params.z_order = ui::ZOrderLevel::kFloatingWindow;

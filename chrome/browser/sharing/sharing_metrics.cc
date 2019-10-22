@@ -59,6 +59,8 @@ chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
       return chrome_browser_sharing::CLICK_TO_CALL_MESSAGE;
     case chrome_browser_sharing::SharingMessage::kSharedClipboardMessage:
       return chrome_browser_sharing::SHARED_CLIPBOARD_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kSmsFetchRequest:
+      return chrome_browser_sharing::SMS_FETCH_REQUEST;
   }
   // For proto3 enums unrecognized enum values are kept when parsing, and a new
   // payload case received over the network would not default to

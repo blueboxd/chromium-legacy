@@ -129,8 +129,14 @@ class OmniboxResultView : public views::View,
   // The theme provider associated with this view.
   const ui::ThemeProvider* theme_provider_;
 
-  // Whether this view is in the hovered state.
-  bool is_hovered_;
+  // Whether this view is in the hovered state. Note: This is false when a
+  // child button is hovered, and therefore this is different from
+  // View::IsMouseHovered(). This is useful for a contrasting highlight between
+  // the tab-switch button and the row, but is a non-standard hover meaning.
+  //
+  // TODO(tommycli): Investigate if we can get the desired tab-switch button
+  // behavior while using just plain View::IsMouseHovered().
+  bool is_hovered_ = false;
 
   // The data this class is built to display (the "Omnibox Result").
   AutocompleteMatch match_;

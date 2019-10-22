@@ -35,8 +35,8 @@ defaults.swarming_tags.set(['vpython:native-python-wrapper'])
 
 
 XCODE_IOS_11_CACHE = swarming.cache(
-    name = 'xcode_ios_11a420a',
-    path = 'xcode_ios_11a420a.app',
+    name = 'xcode_ios_11a1027',
+    path = 'xcode_ios_11a1027.app',
 )
 
 
@@ -1283,7 +1283,7 @@ fyi_ios_builder(
     name = 'ios-simulator-cr-recipe',
     executable = luci.recipe(name = 'chromium'),
     properties = {
-        'xcode_build_version': '11a420a',
+        'xcode_build_version': '11a1027',
     },
 )
 

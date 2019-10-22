@@ -47,9 +47,7 @@ class DragWindowFromShelfController {
   // view is active during dragging.
   static constexpr float kVelocityToOverviewThreshold = 1000.f;
 
-  DragWindowFromShelfController(
-      aura::Window* window,
-      const std::vector<aura::Window*>& hidden_windows);
+  explicit DragWindowFromShelfController(aura::Window* window);
   ~DragWindowFromShelfController();
 
   // Called during swiping up on the shelf.
@@ -61,6 +59,8 @@ class DragWindowFromShelfController {
   void CancelDrag();
 
  private:
+  class WindowsHider;
+
   void OnDragStarted(const gfx::Point& location_in_screen);
   void OnDragEnded(const gfx::Point& location_in_screen,
                    bool should_drop_window_in_overview,
@@ -115,9 +115,9 @@ class DragWindowFromShelfController {
   bool drag_started_ = false;
   BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAuto;
 
-  // The windows that are hidden during window dragging. Depends on different
+  // Hide all eligible windows during window dragging. Depends on different
   // scenarios, we may or may not reshow there windows when drag ends.
-  std::vector<aura::Window*> hidden_windows_;
+  std::unique_ptr<WindowsHider> windows_hider_;
 
   // Timer to show and update overview.
   base::OneShotTimer show_overview_timer_;

@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> aggiunto</translation>
 <translation id="1056775291175587022">Nessuna rete</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">Cellulare: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Mi annoio</translation>
 <translation id="1104084341931202936">Mostra impostazioni di accessibilità</translation>
 <translation id="1104621072296271835">I tuoi dispositivi funzionano ancora meglio insieme</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Cancella tutto</translation>
 <translation id="1247372569136754018">Microfono (interno)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Questa impostazione è stata applicata dall'amministratore.</translation>
 <translation id="1252999807265626933">In carica da: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Che tempo fa?</translation>
 <translation id="1267032506238418139">Modifica alla scorciatoia</translation>
 <translation id="1270290102613614947">Tastiera sullo schermo disattivata</translation>
 <translation id="1272079795634619415">Interrompi</translation>
+<translation id="1275285675049378717">Alimentazione di <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Puoi riprendere <ph name="COME_BACK_DAY_OF_WEEK" /> alle ore <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Segnale debole</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">Modalità ad alto contrasto</translation>
 <translation id="2542089167727451762">Tocca la tua immagine del profilo</translation>
 <translation id="255671100581129685">L'Assistente Google non è disponibile in una sessione pubblica.</translation>
+<translation id="256712445991462162">la lente d'ingrandimento ancorata</translation>
 <translation id="2575685495496069081">L'accesso simultaneo è stato disattivato</translation>
 <translation id="2582112259361606227">Riavvia per aggiornare</translation>
 <translation id="2617342710774726426">La scheda SIM è bloccata</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">Strumenti per stilo</translation>
 <translation id="3368922792935385530">Connessa</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
+<translation id="3386978599540877378">la lente d'ingrandimento a schermo intero</translation>
 <translation id="3400357268283240774">Impostazioni aggiuntive</translation>
 <translation id="3413817803639110246">Niente da vedere in questo momento</translation>
 <translation id="343571671045587506">Modifica promemoria</translation>
@@ -237,8 +242,10 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lente d'ingrandimento</translation>
 <translation id="4351433414020964307">L'assistente è in fase di caricamento…</translation>
+<translation id="4356930093361201197">modalità ad alto contrasto</translation>
 <translation id="4378551569595875038">Connessione...</translation>
 <translation id="4379531060876907730">Ecco gli strumenti per il tuo stilo</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Hai premuto la scorciatoia da tastiera per la lente d'ingrandimento ancorata. Vuoi attivarla?</translation>
 <translation id="4421231901400348175">Condividi il controllo dello schermo con <ph name="HELPER_NAME" /> tramite Assistenza remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
@@ -269,6 +276,7 @@
 <translation id="4831034276697007977">Vuoi disattivare i clic automatici?</translation>
 <translation id="4849058404725798627">Evidenzia oggetto con stato attivo della tastiera</translation>
 <translation id="485592688953820832">Nessuna azione (pausa)</translation>
+<translation id="4868492592575313542">attiva</translation>
 <translation id="4872237917498892622">Alt+tasto per la ricerca o Maiusc</translation>
 <translation id="4890187583552566966">L'Assistente Google è stato disattivato dall'amministratore.</translation>
 <translation id="4895488851634969361">La batteria è carica.</translation>
@@ -392,6 +400,7 @@
 <translation id="6727969043791803658">Dispositivo connesso. Livello batteria: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">La traccia delle prestazioni è attiva</translation>
 <translation id="6752912906630585008">Desktop <ph name="REMOVED_DESK" /> rimosso e unito al desktop <ph name="RECEIVE_DESK" /></translation>
+<translation id="6777216307882431711">Alimentazione dei dispositivi USB-C collegati</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>
 <translation id="6820676911989879663">Fai una pausa!</translation>
@@ -443,6 +452,7 @@
 <translation id="7568294522609223312">Disattiva i clic automatici</translation>
 <translation id="7569509451529460200">Braille e ChromeVox attivati</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
+<translation id="7600875258240007829">Visualizza tutte le notifiche</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>
 <translation id="7647488630410863958">Sblocca il dispositivo per visualizzare le notifiche</translation>
 <translation id="7649070708921625228">Guida</translation>
@@ -507,6 +517,7 @@
 <translation id="8452135315243592079">Scheda SIM mancante</translation>
 <translation id="8454013096329229812">Wi-Fi attivo.</translation>
 <translation id="847056008324733326">Impostazioni scala di visualizzazione</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> ha <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Premi ALT + tasto per la ricerca o MAIUSC per annullare.</translation>
 <translation id="8513108775083588393">Rotazione automatica</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
@@ -535,6 +546,7 @@
 <translation id="8909138438987180327">Livello batteria: <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">L'Assistente Google non parla questa lingua.</translation>
+<translation id="8936501819958976551">disattivata</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="8940956008527784070">Batteria in esaurimento (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>

@@ -34,6 +34,7 @@
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scrollbar.h"
+#include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -836,6 +837,83 @@ void ScrollableArea::OnScrollFinished() {
           .MarkHoverStateDirty();
     }
   }
+}
+
+base::Optional<FloatPoint> ScrollableArea::GetSnapPosition(
+    const cc::SnapSelectionStrategy& strategy) const {
+  const auto* optional_data = GetSnapContainerData();
+  if (!optional_data)
+    return base::nullopt;
+
+  const cc::SnapContainerData& data = *optional_data;
+  if (!data.size())
+    return base::nullopt;
+
+  gfx::ScrollOffset snap_position;
+  if (data.FindSnapPosition(strategy, &snap_position)) {
+    FloatPoint snap_point(snap_position.x(), snap_position.y());
+    return snap_point;
+  }
+
+  return base::nullopt;
+}
+
+void ScrollableArea::SnapAfterScrollbarScrolling(
+    ScrollbarOrientation orientation) {
+  SnapAtCurrentPosition(orientation == kHorizontalScrollbar,
+                        orientation == kVerticalScrollbar);
+}
+
+bool ScrollableArea::SnapAtCurrentPosition(
+    bool scrolled_x,
+    bool scrolled_y,
+    base::ScopedClosureRunner on_finish) {
+  FloatPoint current_position = ScrollPosition();
+  return SnapForEndPosition(current_position, scrolled_x, scrolled_y,
+                            std::move(on_finish));
+}
+
+bool ScrollableArea::SnapForEndPosition(const FloatPoint& end_position,
+                                        bool scrolled_x,
+                                        bool scrolled_y,
+                                        base::ScopedClosureRunner on_finish) {
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndPosition(
+          gfx::ScrollOffset(end_position), scrolled_x, scrolled_y);
+  return PerformSnapping(*strategy, std::move(on_finish));
+}
+
+bool ScrollableArea::SnapForDirection(const ScrollOffset& delta,
+                                      base::ScopedClosureRunner on_finish) {
+  FloatPoint current_position = ScrollPosition();
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForDirection(
+          gfx::ScrollOffset(current_position),
+          gfx::ScrollOffset(delta.Width(), delta.Height()));
+  return PerformSnapping(*strategy, std::move(on_finish));
+}
+
+bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
+  FloatPoint current_position = ScrollPosition();
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForEndAndDirection(
+          gfx::ScrollOffset(current_position),
+          gfx::ScrollOffset(delta.Width(), delta.Height()));
+  return PerformSnapping(*strategy);
+}
+
+bool ScrollableArea::PerformSnapping(const cc::SnapSelectionStrategy& strategy,
+                                     base::ScopedClosureRunner on_finish) {
+  base::Optional<FloatPoint> snap_point = GetSnapPosition(strategy);
+  if (!snap_point)
+    return false;
+
+  CancelScrollAnimation();
+  CancelProgrammaticScrollAnimation();
+  SetScrollOffset(ScrollPositionToOffset(snap_point.value()),
+                  kProgrammaticScroll, kScrollBehaviorSmooth,
+                  on_finish.Release());
+  return true;
 }
 
 void ScrollableArea::Trace(blink::Visitor* visitor) {

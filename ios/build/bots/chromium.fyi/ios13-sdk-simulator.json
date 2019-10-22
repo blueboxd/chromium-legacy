@@ -1,6 +1,6 @@
 {
   "comments": [
-    "Runs tests on 64-bit iOS 13.1 tests"
+    "Runs tests with Xcode11 Beta SDK on iOS 13 beta simulators."
   ],
   "xcode build version": "11a1027",
   "gn_args": [

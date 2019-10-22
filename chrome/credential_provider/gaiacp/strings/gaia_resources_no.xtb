@@ -11,7 +11,6 @@
 <translation id="2831078752570172210">Kontoen er utestengt. Kontakt systemadministratoren.</translation>
 <translation id="2844349213149998955">Det er ikke tillatt å logge på med personlige kontoer på denne enheten. Logg på med en jobbkonto.</translation>
 <translation id="3306357053520292004">En bruker på denne datamaskinen er allerede lagt til med denne kontoen. Logg på med en annen konto.</translation>
-<translation id="3968372833844047539">Kun Gsuite Enterprise-brukere har lov til å logge på.</translation>
 <translation id="4057329986137569701">Det oppsto en intern feil.</translation>
 <translation id="4267670563222825190">Fant ingen domenebruker for kontoen din. Kontakt administratoren din.</translation>
 <translation id="4300229033992784001">Passordet for kontoen din er endret. Skriv inn Windows-passordet ditt for å synkronisere Windows-kontoen og jobbkontoen din.</translation>
@@ -25,7 +24,6 @@
 <translation id="7357241217513796177">Sørg for at du er koblet til et nettverk, og prøv på nytt.</translation>
 <translation id="7536769223115622137">Legg til jobbkonto</translation>
 <translation id="7856245195110636219">Kan ikke fortsette uten at du skriver inn det nåværende Windows-passordet. Kontakt en systemadministrator.</translation>
-<translation id="7996763357529480810">Logg på med G Suite-jobbkontoen din.</translation>
 <translation id="8639729688781680518">Jeg har glemt Windows-passordet</translation>
 <translation id="866458870819756755">Kunne ikke opprette bruker.</translation>
 <translation id="8875753657315897487">Logg på med jobbkontoen din</translation>

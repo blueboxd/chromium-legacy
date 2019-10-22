@@ -13,9 +13,9 @@ import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 interface IWebLayer {
   // Initializes WebLayer and starts loading. It is expected that is called
   // before anything else. |loadedCallback| is a ValueCallback that is called
-  // when load completes. |webLayerContext| is a Context that refers to the
-  // WebLayer implementation.
-  void initAndLoadAsync(in IObjectWrapper webLayerContext,
+  // when load completes. |appContext| is a Context that refers to the
+  // Application using WebLayer.
+  void initAndLoadAsync(in IObjectWrapper appContext,
                         in IObjectWrapper loadedCallback,
                         int resourcesPackageId) = 1;
 

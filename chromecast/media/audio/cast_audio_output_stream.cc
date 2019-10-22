@@ -239,13 +239,15 @@ void CastAudioOutputStream::MixerServiceWrapper::FillNextBuffer(
     playout_timestamp = 0;
   }
 
-  // If |audio_bus_| has been created (i.e., this is not the first
-  // FillNextBuffer call) and |frames| doesn't change, which is expected behavir
-  // from MixerServiceConnection, the |audio_bus_| won't be recreated but be
-  // reused.
-  if (!audio_bus_ || frames != audio_bus_->frames()) {
-    audio_bus_ = ::media::AudioBus::Create(audio_params_.channels(), frames);
+  // Wrap the data buffer so we can write directly into it.
+  if (!audio_bus_) {
+    audio_bus_ = ::media::AudioBus::CreateWrapper(audio_params_.channels());
   }
+  float* channel_data = static_cast<float*>(buffer);
+  for (int c = 0; c < audio_params_.channels(); ++c) {
+    audio_bus_->SetChannelData(c, channel_data + c * frames);
+  }
+  audio_bus_->set_frames(frames);
 
   base::TimeDelta delay = kMixerStartThreshold;
   base::TimeTicks delay_timestamp =
@@ -253,14 +255,8 @@ void CastAudioOutputStream::MixerServiceWrapper::FillNextBuffer(
 
   int frames_filled =
       source_callback_->OnMoreData(delay, delay_timestamp, 0, audio_bus_.get());
-
-  float* channel_data = static_cast<float*>(buffer);
-  for (int channel = 0; channel < audio_params_.channels(); channel++) {
-    std::copy_n(audio_bus_->channel(channel), frames_filled, channel_data);
-    channel_data += frames_filled;
-  }
-
-  mixer_connection_->SendNextBuffer(frames_filled);
+  DCHECK_EQ(frames_filled, frames);
+  mixer_connection_->SendNextBuffer(frames);
 }
 
 CastAudioOutputStream::CastAudioOutputStream(

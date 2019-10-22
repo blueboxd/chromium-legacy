@@ -9,15 +9,16 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 
 namespace content {
 
 namespace {
+
 void SessionStorageResponse(base::OnceClosure callback, bool success) {
   std::move(callback).Run();
 }
+
 }  // namespace
 
 SessionStorageNamespaceImplMojo::SessionStorageNamespaceImplMojo(
@@ -58,7 +59,7 @@ bool SessionStorageNamespaceImplMojo::HasAreaForOrigin(
 }
 
 void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
-    leveldb::LevelDBDatabaseImpl* database,
+    storage::AsyncDomStorageDatabase* database,
     SessionStorageMetadata::NamespaceEntry namespace_metadata) {
   DCHECK(!IsPopulated());
   database_ = database;
@@ -85,7 +86,7 @@ void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
 }
 
 void SessionStorageNamespaceImplMojo::PopulateAsClone(
-    leveldb::LevelDBDatabaseImpl* database,
+    storage::AsyncDomStorageDatabase* database,
     SessionStorageMetadata::NamespaceEntry namespace_metadata,
     const OriginAreas& areas_to_clone) {
   DCHECK(!IsPopulated());
@@ -227,7 +228,7 @@ void SessionStorageNamespaceImplMojo::Clone(
 }
 
 void SessionStorageNamespaceImplMojo::CloneAllNamespacesWaitingForClone(
-    leveldb::LevelDBDatabaseImpl* database,
+    storage::AsyncDomStorageDatabase* database,
     SessionStorageMetadata* metadata,
     const std::map<std::string,
                    std::unique_ptr<SessionStorageNamespaceImplMojo>>&

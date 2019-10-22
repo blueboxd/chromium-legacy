@@ -31,6 +31,15 @@ namespace {
 // shown on the active browser window, so there is no case in which it will be
 // shown twice at the same time.
 static CookieControlsBubbleView* g_instance;
+
+std::unique_ptr<views::Link> CreateNotWorkingLink(
+    views::LinkListener* listener) {
+  auto link = std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE));
+  link->set_listener(listener);
+  return link;
+}
+
 }  // namespace
 
 // static
@@ -98,6 +107,7 @@ CookieControlsBubbleView::CookieControlsBubbleView(
     CookieControlsController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
+  not_working_link_ = DialogDelegate::SetExtraView(CreateNotWorkingLink(this));
   observer_.Add(controller);
 }
 
@@ -199,14 +209,6 @@ void CookieControlsBubbleView::Init() {
   gfx::Insets insets = margins();
   set_margins(gfx::Insets(insets.top(), 0, insets.bottom(), 0));
   SetBorder(views::CreateEmptyBorder(0, insets.left(), 0, insets.right()));
-}
-
-std::unique_ptr<views::View> CookieControlsBubbleView::CreateExtraView() {
-  auto view = std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE));
-  not_working_link_ = view.get();
-  not_working_link_->set_listener(this);
-  return std::move(view);
 }
 
 void CookieControlsBubbleView::AddedToWidget() {

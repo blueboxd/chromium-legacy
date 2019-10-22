@@ -277,6 +277,9 @@ void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
     else
       update_excluded_schemas_profile->Remove(scheme, nullptr);
   }
+
+  if (g_external_protocol_handler_delegate)
+    g_external_protocol_handler_delegate->OnSetBlockState(scheme, state);
 }
 
 // static

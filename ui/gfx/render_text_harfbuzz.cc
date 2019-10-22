@@ -704,6 +704,26 @@ void ApplyForcedDirection(UBiDiLevel* level) {
   }
 }
 
+internal::TextRunHarfBuzz::FontParams CreateFontParams(
+    const gfx::Font& primary_font,
+    UBiDiLevel bidi_level,
+    UScriptCode script,
+    const internal::StyleIterator& style) {
+  internal::TextRunHarfBuzz::FontParams font_params(primary_font);
+  font_params.italic = style.style(TEXT_STYLE_ITALIC);
+  font_params.baseline_type = style.baseline();
+  font_params.font_size = style.font_size_override();
+  font_params.strike = style.style(TEXT_STYLE_STRIKE);
+  font_params.underline = style.style(TEXT_STYLE_UNDERLINE);
+  font_params.heavy_underline = style.style(TEXT_STYLE_HEAVY_UNDERLINE);
+  font_params.weight = style.weight();
+  font_params.level = bidi_level;
+  font_params.script = script;
+  // Odd BiDi embedding levels correspond to RTL runs.
+  font_params.is_rtl = (font_params.level % 2) == 1;
+  return font_params;
+}
+
 }  // namespace
 
 namespace internal {
@@ -1910,54 +1930,74 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   internal::StyleIterator style(empty_colors, baselines(),
                                 font_size_overrides(), weights(), styles());
 
-  for (size_t run_break = 0; run_break < text.length();) {
-    Range run_range;
-    internal::TextRunHarfBuzz::FontParams font_params(primary_font);
-    run_range.set_start(run_break);
-    font_params.italic = style.style(TEXT_STYLE_ITALIC);
-    font_params.baseline_type = style.baseline();
-    font_params.font_size = style.font_size_override();
-    font_params.strike = style.style(TEXT_STYLE_STRIKE);
-    font_params.underline = style.style(TEXT_STYLE_UNDERLINE);
-    font_params.heavy_underline = style.style(TEXT_STYLE_HEAVY_UNDERLINE);
-    font_params.weight = style.weight();
-    int32_t script_item_break = 0;
-    bidi_iterator.GetLogicalRun(run_break, &script_item_break,
-                                &font_params.level);
-    CHECK_GT(static_cast<size_t>(script_item_break), run_break);
-    ApplyForcedDirection(&font_params.level);
-    // Odd BiDi embedding levels correspond to RTL runs.
-    font_params.is_rtl = (font_params.level % 2) == 1;
-    // Find the length and script of this script run.
-    script_item_break =
-        ScriptInterval(text, run_break, script_item_break - run_break,
-                       &font_params.script) +
-        run_break;
+  // Split the original text by logical runs, then each logical run by common
+  // script and each sequence at special characters and style boundaries. This
+  // invariant holds: bidi_run_start <= script_run_start <= breaking_run_start
+  // <= breaking_run_end <= script_run_end <= bidi_run_end
+  for (size_t bidi_run_start = 0; bidi_run_start < text.length();) {
+    // Determine the longest logical run (e.g. same bidi direction) from this
+    // point.
+    int32_t bidi_run_break = 0;
+    UBiDiLevel bidi_level = 0;
+    bidi_iterator.GetLogicalRun(bidi_run_start, &bidi_run_break, &bidi_level);
+    size_t bidi_run_end = static_cast<size_t>(bidi_run_break);
+    DCHECK_LT(bidi_run_start, bidi_run_end);
 
-    // Find the next break and advance the iterators as needed.
-    const size_t new_run_break = std::min(
-        static_cast<size_t>(script_item_break),
-        TextIndexToGivenTextIndex(text, style.GetRange().end()));
-    CHECK_GT(new_run_break, run_break)
-        << "It must proceed! " << text << " " << run_break;
-    run_break = new_run_break;
+    ApplyForcedDirection(&bidi_level);
 
-    // Break runs at certain characters that need to be rendered separately to
-    // prevent either an unusual character from forcing a fallback font on the
-    // entire run, or brackets from being affected by a fallback font.
-    // http://crbug.com/278913, http://crbug.com/396776
-    if (run_break > run_range.start())
-      run_break = FindRunBreakingCharacter(text, run_range.start(), run_break);
+    for (size_t script_run_start = bidi_run_start;
+         script_run_start < bidi_run_end;) {
+      // Find the longest sequence of characters that have at least one common
+      // UScriptCode value.
+      UScriptCode script = USCRIPT_INVALID_CODE;
+      size_t script_run_end =
+          ScriptInterval(text, script_run_start,
+                         bidi_run_end - script_run_start, &script) +
+          script_run_start;
+      DCHECK_LT(script_run_start, script_run_end);
 
-    DCHECK(IsValidCodePointIndex(text, run_break));
-    style.UpdatePosition(DisplayIndexToTextIndex(run_break));
-    run_range.set_end(run_break);
+      for (size_t breaking_run_start = script_run_start;
+           breaking_run_start < script_run_end;) {
+        // Break runs at certain characters that need to be rendered separately
+        // to prevent either an unusual character from forcing a fallback font
+        // on the entire run, or brackets from being affected by a fallback
+        // font. http://crbug.com/278913, http://crbug.com/396776
+        size_t breaking_char_end =
+            FindRunBreakingCharacter(text, breaking_run_start, script_run_end);
 
-    auto run = std::make_unique<internal::TextRunHarfBuzz>(
-        font_list().GetPrimaryFont());
-    (*out_commonized_run_map)[font_params].push_back(run.get());
-    run->range = run_range;
-    out_run_list->Add(std::move(run));
+        // Break runs at style boundaries.
+        style.UpdatePosition(DisplayIndexToTextIndex(breaking_run_start));
+        size_t text_style_end =
+            TextIndexToGivenTextIndex(text, style.GetRange().end());
+
+        // The next break is the nearest break position.
+        const size_t breaking_run_end =
+            std::min(breaking_char_end, text_style_end);
+        DCHECK_LT(breaking_run_start, breaking_run_end);
+        DCHECK(IsValidCodePointIndex(text, breaking_run_end));
+
+        // Set the font params for the current run for the current run break.
+        internal::TextRunHarfBuzz::FontParams font_params =
+            CreateFontParams(primary_font, bidi_level, script, style);
+
+        // Create the current run from [breaking_run_start, breaking_run_end[.
+        auto run = std::make_unique<internal::TextRunHarfBuzz>(primary_font);
+        run->range = Range(breaking_run_start, breaking_run_end);
+
+        // Add the created run to the set of runs.
+        (*out_commonized_run_map)[font_params].push_back(run.get());
+        out_run_list->Add(std::move(run));
+
+        // Move to the next run.
+        breaking_run_start = breaking_run_end;
+      }
+
+      // Move to the next script sequence.
+      script_run_start = script_run_end;
+    }
+
+    // Move to the next direction sequence.
+    bidi_run_start = bidi_run_end;
   }
 
   // Add trace event to track incorrect usage of fallback fonts.

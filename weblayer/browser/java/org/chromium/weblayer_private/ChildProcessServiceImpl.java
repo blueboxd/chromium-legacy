@@ -11,6 +11,7 @@ import android.os.IBinder;
 
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.process_launcher.ChildProcessService;
+import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.content_public.app.ChildProcessServiceFactory;
 import org.chromium.weblayer_private.aidl.IChildProcessService;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
@@ -21,8 +22,10 @@ public final class ChildProcessServiceImpl extends IChildProcessService.Stub {
     private ChildProcessService mService;
 
     @UsedByReflection("WebLayer")
-    public static IBinder create(Service service, Context context) {
-        return new ChildProcessServiceImpl(service, context);
+    public static IBinder create(Service service, Context appContext) {
+        // Wrap the app context so that it can be used to load WebLayer implementation classes.
+        appContext = ClassLoaderContextWrapperFactory.get(appContext);
+        return new ChildProcessServiceImpl(service, appContext);
     }
 
     @Override

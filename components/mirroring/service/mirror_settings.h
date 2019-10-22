@@ -20,9 +20,10 @@ namespace mirroring {
 // Holds the default settings for a mirroring session. This class provides the
 // audio/video configs that this sender supports. And also provides the
 // audio/video constraints used for capturing.
-// TODO(xjz): Add the function to generate the audio capture contraints.
-// TODO(xjz): Add setters to the settings that might be overriden by integration
-// tests.
+// TODO(crbug.com/1015458): Add the function to generate the audio capture
+// contraints.
+// TODO(crbug.com/1015458): Add setters to the settings that might be overriden
+// by integration tests.
 class COMPONENT_EXPORT(MIRRORING_SERVICE) MirrorSettings {
  public:
   MirrorSettings();

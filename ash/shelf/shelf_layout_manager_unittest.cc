@@ -3487,7 +3487,7 @@ TEST_P(HotseatShelfLayoutManagerTest, ReleasingSlowDragAboveThreshold) {
 }
 
 // Tests that showing overview after showing the hotseat results in only one
-// animation, to |kShown|.
+// animation, to |kExtended|.
 TEST_P(HotseatShelfLayoutManagerTest, ShowingOverviewFromShownAnimatesOnce) {
   GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
   TabletModeControllerTestApi().EnterTabletMode();
@@ -3508,7 +3508,7 @@ TEST_P(HotseatShelfLayoutManagerTest, ShowingOverviewFromShownAnimatesOnce) {
                                                 .CenterPoint();
   GetEventGenerator()->GestureTapAt(overview_button_center);
 
-  state_watcher_->CheckEqual({HotseatState::kExtended, HotseatState::kShown});
+  state_watcher_->CheckEqual({HotseatState::kExtended});
 }
 
 // Tests that the hotseat is not flush with the bottom of the screen when home
@@ -3578,6 +3578,80 @@ TEST_P(HotseatShelfLayoutManagerTest, DragActiveWindowInTabletMode) {
 
   generator->ReleaseTouch();
   EXPECT_TRUE(window->layer()->transform().IsIdentity());
+}
+
+// Tests that swiping downward, towards the bezel, from a variety of points
+// results in hiding the hotseat.
+TEST_F(HotseatShelfLayoutManagerTest, HotseatHidesWhenSwipedToBezel) {
+  // Go to in-app shelf and extend the hotseat.
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  SwipeUpOnShelf();
+
+  // Drag from the hotseat to the bezel, the hotseat should hide.
+  gfx::Rect shelf_widget_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+  gfx::Rect hotseat_bounds =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+  gfx::Point start = hotseat_bounds.top_center();
+  const gfx::Point end =
+      gfx::Point(shelf_widget_bounds.x() + shelf_widget_bounds.width() / 2,
+                 shelf_widget_bounds.bottom() + 1);
+  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  const int kNumScrollSteps = 4;
+  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                             kNumScrollSteps);
+
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Reset the hotseat and swipe from the center of the hotseat, it should hide.
+  SwipeUpOnShelf();
+
+  start = hotseat_bounds.CenterPoint();
+  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                             kNumScrollSteps);
+
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Reset the hotseat and swipe from the bottom of the hotseat, it should hide.
+  SwipeUpOnShelf();
+
+  start = hotseat_bounds.bottom_center();
+  start.Offset(0, -1);
+  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                             kNumScrollSteps);
+
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Reset the hotseat and swipe from the center of the in-app shelf, it should
+  // hide.
+  SwipeUpOnShelf();
+
+  start = shelf_widget_bounds.CenterPoint();
+
+  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                             kNumScrollSteps);
+
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Reset the hotseat and swipe from the bottom of the in-app shelf, it should
+  // hide.
+  SwipeUpOnShelf();
+
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+  start = shelf_widget_bounds.bottom_center();
+  // The first few events which get sent to ShelfLayoutManager are
+  // ui::ET_TAP_DOWN, and ui::ET_GESTURE_START. After a few px we get
+  // ui::ET_GESTURE_SCROLL_UPDATE. Add 6 px of slop to get the first events out
+  // of the way, and 1 extra px to ensure we are not on the bottom edge of the
+  // display.
+  start.Offset(0, -7);
+
+  GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                             kNumScrollSteps);
+
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {

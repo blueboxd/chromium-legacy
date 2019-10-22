@@ -187,6 +187,9 @@ views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
 
     // Set shelf icon.
     const ash::ShelfID shelf_id(ash::kInternalAppIdKeyboardShortcutViewer);
+    window->SetProperty(
+        ash::kAppIDKey,
+        new std::string(ash::kInternalAppIdKeyboardShortcutViewer));
     window->SetProperty(ash::kShelfIDKey,
                         new std::string(shelf_id.Serialize()));
     window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);

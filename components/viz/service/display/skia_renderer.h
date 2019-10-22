@@ -104,19 +104,28 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void PrepareCanvas(const base::Optional<gfx::Rect>& scissor_rect,
                      const base::Optional<gfx::RRectF>& rounded_corner_bounds,
                      const gfx::Transform* cdt);
-  // Further modify the canvas or draw parameters as needed to apply the effects
-  // represented by |rpdq_params|.  |content_paint| must be a non-null pointer.
+  // Further modify the canvas as needed to apply the effects represented by
+  // |rpdq_params|. Call Prepare[Paint|Color]OrCanvasForRPDQ when possible,
+  // in order apply the RPDQ effects into a more efficient format.
   void PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
-                            DrawQuadParams* params,
-                            SkPaint* content_paint);
+                            DrawQuadParams* params);
+  // Attempt to apply the effects in |rpdq_params| to the paint used to draw
+  // the quad; otherwise modify the current canvas instead.
+  void PreparePaintOrCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
+                                   DrawQuadParams* params,
+                                   SkPaint* paint);
+  // Attempt to apply the effects in |rpdq_params| to the color used to draw
+  // the quad; otherwise modify the current canvas as a fallback.
+  void PrepareColorOrCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
+                                   DrawQuadParams* params,
+                                   SkColor* color);
 
   // The returned DrawQuadParams can be modified by the DrawX calls that accept
   // params so that they can apply explicit data transforms before sending to
   // Skia in a consistent manner.
   DrawQuadParams CalculateDrawQuadParams(const DrawQuad* quad,
                                          const gfx::QuadF* draw_region);
-  DrawRPDQParams CalculateRPDQParams(const SkImage* src_image,
-                                     const RenderPassDrawQuad* quad,
+  DrawRPDQParams CalculateRPDQParams(const RenderPassDrawQuad* quad,
                                      DrawQuadParams* params);
 
   SkCanvas::ImageSetEntry MakeEntry(const SkImage* image,
@@ -130,38 +139,52 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       DrawQuadParams* params);
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
+                             const DrawRPDQParams* rpdq_params,
                              const DrawQuadParams& params);
   void AddQuadToBatch(const SkImage* image,
                       const gfx::RectF& valid_texel_bounds,
                       DrawQuadParams* params);
   void FlushBatchedQuads();
 
-  // Utility to draw a single quad as a filled color
-  void DrawColoredQuad(SkColor color, DrawQuadParams* params);
-  // Utility to make a single ImageSetEntry and draw it with the complex paint.
+  // Utility function that calls appropriate draw function based on quad
+  // material. If |rpdq_params| is not null, then |quad| is assumed to be the
+  // bypass quad associated with the RenderPass that defined the |rpdq_params|.
+  void DrawQuadInternal(const DrawQuad* quad,
+                        const DrawRPDQParams* rpdq_params,
+                        DrawQuadParams* params);
+
+  // Utility to draw a single quad as a filled color, and optionally apply the
+  // effects defined in |rpdq_params| when the quad is bypassing the render pass
+  void DrawColoredQuad(SkColor color,
+                       const DrawRPDQParams* rpdq_params,
+                       DrawQuadParams* params);
+  // Utility to make a single ImageSetEntry and draw it with the complex paint,
+  // and optionally apply the effects defined in |rpdq_params| when the quad is
+  // bypassing the render pass
   void DrawSingleImage(const SkImage* image,
                        const gfx::RectF& valid_texel_bounds,
-                       const SkPaint& paint,
+                       const DrawRPDQParams* rpdq_params,
+                       SkPaint* paint,
                        DrawQuadParams* params);
 
   // DebugBorder, Picture, RPDQ, and SolidColor quads cannot be batched. They
   // either are not textures (debug, picture, solid color), or it's very likely
   // the texture will have advanced paint effects (rpdq)
+  void DrawRenderPassQuad(const RenderPassDrawQuad* quad,
+                          DrawQuadParams* params);
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
                            DrawQuadParams* params);
   void DrawPictureQuad(const PictureDrawQuad* quad, DrawQuadParams* params);
-  void DrawRenderPassQuad(const RenderPassDrawQuad* quad,
-                          DrawQuadParams* params);
-  void DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
-                                  const SkImage* content_image,
-                                  DrawQuadParams* params);
+
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad,
                           DrawQuadParams* params);
 
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                            DrawQuadParams* params);
   void DrawTextureQuad(const TextureDrawQuad* quad, DrawQuadParams* params);
-  void DrawTileDrawQuad(const TileDrawQuad* quad, DrawQuadParams* params);
+  void DrawTileDrawQuad(const TileDrawQuad* quad,
+                        const DrawRPDQParams* rpdq_params,
+                        DrawQuadParams* params);
   void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad, DrawQuadParams* params);
   void DrawUnsupportedQuad(const DrawQuad* quad, DrawQuadParams* params);
 

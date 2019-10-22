@@ -56,10 +56,8 @@ class TouchToFillBridge implements TouchToFillComponent.Delegate {
     }
 
     @CalledByNative
-    private void showCredentials(
-            String formattedUrl, boolean isOriginSecure, Credential[] credentials) {
-        mTouchToFillComponent.showCredentials(
-                formattedUrl, isOriginSecure, Arrays.asList(credentials));
+    private void showCredentials(String url, boolean isOriginSecure, Credential[] credentials) {
+        mTouchToFillComponent.showCredentials(url, isOriginSecure, Arrays.asList(credentials));
     }
 
     @Override
@@ -80,9 +78,11 @@ class TouchToFillBridge implements TouchToFillComponent.Delegate {
     }
 
     @Override
-    public void fetchFavicon(String origin, @Px int desiredSize, Callback<Bitmap> callback) {
+    public void fetchFavicon(String credentialOrigin, String frameOrigin, @Px int desiredSize,
+            Callback<Bitmap> callback) {
         assert mNativeView != 0 : "Favicon was requested after the bridge was destroyed!";
-        TouchToFillBridgeJni.get().fetchFavicon(mNativeView, origin, desiredSize, callback);
+        TouchToFillBridgeJni.get().fetchFavicon(
+                mNativeView, credentialOrigin, frameOrigin, desiredSize, callback);
     }
 
     @NativeMethods
@@ -90,7 +90,7 @@ class TouchToFillBridge implements TouchToFillComponent.Delegate {
         void onCredentialSelected(long nativeTouchToFillViewImpl, Credential credential);
         void onManagePasswordsSelected(long nativeTouchToFillViewImpl);
         void onDismiss(long nativeTouchToFillViewImpl);
-        void fetchFavicon(long nativeTouchToFillViewImpl, String origin, int desiredSizeInPx,
-                Callback<Bitmap> callback);
+        void fetchFavicon(long nativeTouchToFillViewImpl, String credentialOrigin,
+                String fallbackOrigin, int desiredSizeInPx, Callback<Bitmap> callback);
     }
 }

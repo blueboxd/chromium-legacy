@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Il y a une minute}one{Il y a # minute}other{Il y a # minutes}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}one{# m}other{# m}}</translation>
 <translation id="1181037720776840403">Supprimer</translation>
+<translation id="1201402288615127009">Suivant</translation>
 <translation id="1243314992276662751">Importer</translation>
 <translation id="1266864766717917324">Impossible de partager le contenu suivant : <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Windows</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Appuyez sur les cibles tactiles affichées à l'écran.</translation>
 <translation id="2295140143284145483">Enquête</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> To/s</translation>
+<translation id="2353636109065292463">Vérifier votre connexion Internet</translation>
 <translation id="2388990488038464401">Appeler ce numéro depuis votre téléphone ?</translation>
 <translation id="24452542372838207">Développer la notification</translation>
 <translation id="2445449901874883781">Utiliser une densité élevée</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 seconde restante}one{# seconde restante}other{# secondes restantes}}</translation>
 <translation id="5941711191222866238">Réduire</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 heure}one{# heure}other{# heures}}</translation>
+<translation id="5946629889255121107">Numéro initié à partir de <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> sur <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Effacer le texte de la zone de recherche</translation>
 <translation id="6040143037577758943">Fermer</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Enregistrer le fichier</translation>
 <translation id="6656912866303152668">Assurez-vous que la synchronisation est activée dans Chrome sur votre <ph name="TARGET_DEVICE_NAME" />, puis réessayez.</translation>
 <translation id="6699343763173986273">Contenu multimédia : titre suivant</translation>
+<translation id="6710213216561001401">Précédent</translation>
 <translation id="6779314412797872738">Pour envoyer un numéro vers votre téléphone Android, veuillez <ph name="TROUBLESHOOT_LINK" /> pour les deux appareils dans les paramètres.</translation>
 <translation id="6786750046913594791">Fermer le dossier</translation>
 <translation id="6808150112686056157">Contenu multimédia : arrêt</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min restante}one{# min restante}other{# min restantes}}</translation>
 <translation id="7319740667687257810">Lanceur d'applications, vue partielle</translation>
+<translation id="7352651011704765696">Un problème est survenu</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Il y a 1 min}one{Il y a # min}other{Il y a # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minute restante}one{# minute restante}other{# minutes restantes}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Il y a 1 heure}one{Il y a # heure}other{Il y a # heures}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s restante}one{# s restante}other{# s restantes}}</translation>
+<translation id="8134065097954893699">Actualiser cette page</translation>
 <translation id="8144660977431427332">Vos recherches sont optimisées par l'Assistant Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, saisie semi-automatique</translation>
 <translation id="815598010540052116">Défilement vers le bas</translation>

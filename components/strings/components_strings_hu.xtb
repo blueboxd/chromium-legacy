@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Oldal betöltése később</translation>
 <translation id="1015730422737071372">További részletek megadása</translation>
 <translation id="1021110881106174305">Elfogadott kártyák</translation>
-<translation id="1023523064224774104">A Chromium észlelte, hogy gyanús webhelyen írta be a
-          jelszavát. Kérjük a jelszó azonnali módosítására!</translation>
 <translation id="1032854598605920125">Forgatás jobbra</translation>
 <translation id="1035334672863811645">bejelentkezés a Chrome-ba</translation>
 <translation id="1036348656032585052">Kikapcsolás</translation>
@@ -123,6 +121,7 @@
 <translation id="1501859676467574491">Jelenítsen meg kártyákat az Ön Google-fiókjából</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ez a hiba akkor fordul elő, ha olyan Wi-Fi-portált használ, amely bejelentkezést igényel, mielőtt kapcsolódna az internethez.&lt;/p&gt;
     &lt;p&gt;A hiba kijavításához kattintson a &lt;strong&gt;Csatlakozás&lt;/strong&gt; lehetőségre a megnyitni próbált oldalon.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Előzménybejegyzések listája</translation>
 <translation id="1517433312004943670">Telefonszám szükséges</translation>
 <translation id="1517500485252541695">Elfogadott hitel- és bankkártyák</translation>
 <translation id="1519264250979466059">Build dátuma</translation>
@@ -308,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát visszavonhatták. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="2438874542388153331">Négy lyuk a jobb oldalon</translation>
+<translation id="245044156129055925">Megtévesztő webhelyen adta meg jelszavát. A Chromium a jelszó azonnali módosítását javasolja.</translation>
 <translation id="2463193859425327265">Kezdőlap módosítása</translation>
 <translation id="2463739503403862330">Kitöltés</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -548,7 +548,6 @@
 <translation id="3655670868607891010">Ha gyakran látja ezt, próbálja ki a következőt: <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Ellenőrzés</translation>
 <translation id="366077651725703012">Hitelkártya frissítése</translation>
-<translation id="3672525478985456967">Ennek a webhelynek a neve hasonló a következő webhelyéhez: <ph name="LOOKALIKE_DOMAIN" />. A támadók néha úgy próbálnak meg webhelyeket utánozni, hogy apró, alig észrevehető változtatásokkal rendelkező domainnevet használnak.</translation>
 <translation id="3676592649209844519">Eszközazonosító:</translation>
 <translation id="3677008721441257057">Erre gondolt: &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">A kérést nem lehetett aláírni</translation>
@@ -614,6 +613,9 @@
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3973234410852337861">A(z) <ph name="HOST_NAME" /> le van tiltva</translation>
 <translation id="3981540111851280311">A(z) <ph name="ENROLLMENT_DOMAIN" /> engedélyezte a Chrome Enterprise fenyegetések elleni védelmét a böngészőben. A Chrome Enterprise fenyegetések elleni védelme hozzáfér az Ön bizonyos adataihoz.</translation>
+<translation id="3987405730340719549">A Chrome azt észlelte, hogy ez a webhely hamis vagy megtévesztő szándékú lehet.
+
+    Ha úgy gondolja, hogy ez a figyelmeztetés téves, keresse fel a következő oldalt: https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Kevesebb mint 1 MB</translation>
 <translation id="3990250421422698716">Példányok eltolása</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 közeli weboldal}other{# közeli weboldal}}</translation>
@@ -872,7 +874,6 @@
 <translation id="5230733896359313003">Szállítási cím</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Elvetés</translation>
 <translation id="5250209940322997802">„Csatlakozás a hálózathoz”</translation>
 <translation id="5251803541071282808">Felhő</translation>
 <translation id="5252000469029418751">C7 (boríték)</translation>
@@ -992,6 +993,9 @@
 <translation id="5813119285467412249">&amp;Hozzáadás újra</translation>
 <translation id="583281660410589416">Ismeretlen</translation>
 <translation id="5838278095973806738">Ne írjon be semmilyen bizalmas adatot (például jelszót vagy hitelkártyaadatot) a webhelyen, mivel a támadók ellophatják.</translation>
+<translation id="5855253129151731373">Ennek a webhelynek a gazdagépneve hasonló a következőhöz: <ph name="LOOKALIKE_DOMAIN" />. A támadók néha úgy próbálnak meg webhelyeket utánozni, hogy apró, alig észrevehető változtatásokkal rendelkező domainnevet használnak.
+
+    Ha úgy gondolja, hogy ez a figyelmeztetés téves, keresse fel a következő oldalt: https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
 <translation id="5863847714970149516">Előfordulhat, hogy a következő oldal megpróbál pénzt felszámolni Önnek</translation>
 <translation id="5866257070973731571">Telefonszám hozzáadása</translation>
@@ -1014,7 +1018,6 @@
 <translation id="5946937721014915347">A(z) <ph name="SITE_NAME" /> megnyitása…</translation>
 <translation id="5947933617628957894">Igen, hozzáadom</translation>
 <translation id="5951495562196540101">Fogyasztói fiókkal nem lehet regisztrálni (a csomaghoz tartozik licenc is).</translation>
-<translation id="5966900314707961320">Bekapcsolt állapotban a webhelyek nem tudnak cookie-kat használni, amelyek nyomon követik tevékenységeit az interneten</translation>
 <translation id="5967592137238574583">Kapcsolattartási adatok szerkesztése</translation>
 <translation id="5967867314010545767">Eltávolítás az előzmények közül</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
@@ -1103,6 +1106,7 @@
 <translation id="6401136357288658127">Ez a házirend megszűnt. Használja helyette a(z) <ph name="NEW_POLICY" /> házirendet.</translation>
 <translation id="6404511346730675251">Könyvjelző szerkesztése</translation>
 <translation id="6406765186087300643">C0 (boríték)</translation>
+<translation id="6409754798200046165">Megtévesztő webhelyen adta meg jelszavát. A Chrome azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
 <translation id="6410264514553301377">Írja be a(z) <ph name="CREDIT_CARD" /> kártyán szereplő lejárati dátumot és CVC-t</translation>
 <translation id="6415778972515849510">A Chromium segíthet a Google-fiók védelmében és a jelszó módosításában.</translation>
 <translation id="6427730057873428458">Kihajtható</translation>
@@ -1110,7 +1114,6 @@
 <translation id="6433490469411711332">Kapcsolattartási adatok szerkesztése</translation>
 <translation id="6433595998831338502">A(z) <ph name="HOST_NAME" /> visszautasította a csatlakozást.</translation>
 <translation id="6434309073475700221">Elvetés</translation>
-<translation id="6435221585574090192">A Chrome Enterprise fenyegetések elleni védelme által megjelölt biztonsági események adatait megoszthatja az adminisztrátorral. Az adatok tartalmazhatják az oldalak URL-jeit, a fájlok nevét és metaadatait, valamint az eszközhöz és a Chrome-hoz tartozó felhasználónevét.</translation>
 <translation id="6440503408713884761">Figyelmen kívül hagyva</translation>
 <translation id="6446163441502663861">Kahu (boríték)</translation>
 <translation id="6446608382365791566">További adatok hozzáadása</translation>
@@ -1400,6 +1403,7 @@ További részletek:
 <translation id="7932579305932748336">Bevonat</translation>
 <translation id="79338296614623784">Érvényes telefonszámot adjon meg</translation>
 <translation id="7934052535022478634">A fizetés befejeződött</translation>
+<translation id="7935031712718413217">Lehetséges címhamisító URL</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Lejárat dátuma: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">A szerver tanúsítványa még nem érvényes.</translation>
@@ -1454,7 +1458,6 @@ További részletek:
 <translation id="8184538546369750125">Globális alapértelmezés használata (Engedélyezés)</translation>
 <translation id="8194797478851900357">&amp;Áthelyezés visszavonása</translation>
 <translation id="8197543752516192074">Oldal lefordítása</translation>
-<translation id="8197899142098070286">A Chrome észlelte, hogy gyanús webhelyen írta be a jelszavát. Kérjük a jelszó azonnali módosítására!</translation>
 <translation id="8201077131113104583">A(z) „<ph name="EXTENSION_ID" />” azonosítójú bővítmény frissítési URL-je érvénytelen.</translation>
 <translation id="8202097416529803614">Rendelés összegzése</translation>
 <translation id="8202370299023114387">Ütközés</translation>
@@ -1542,7 +1545,6 @@ További részletek:
 <translation id="8718314106902482036">A fizetés nem fejeződött be</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, keresési javaslat</translation>
 <translation id="8719528812645237045">Több lyuk felül</translation>
-<translation id="8723954843026426558">Elfogadom a(z) <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> általános szerződési feltételeit, adatvédelmi irányelveit és elállási jogát.</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8728672262656704056">Ön inkognitómódra váltott</translation>
 <translation id="8730621377337864115">Kész</translation>

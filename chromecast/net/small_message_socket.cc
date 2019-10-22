@@ -75,14 +75,17 @@ class SmallMessageSocket::BufferWrapper : public ::net::IOBuffer {
   size_t used_ = 0;
 };
 
-SmallMessageSocket::SmallMessageSocket(std::unique_ptr<net::Socket> socket)
-    : socket_(std::move(socket)),
+SmallMessageSocket::SmallMessageSocket(Delegate* delegate,
+                                       std::unique_ptr<net::Socket> socket)
+    : delegate_(delegate),
+      socket_(std::move(socket)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       write_storage_(base::MakeRefCounted<net::GrowableIOBuffer>()),
       write_buffer_(base::MakeRefCounted<BufferWrapper>()),
       read_storage_(base::MakeRefCounted<net::GrowableIOBuffer>()),
       read_buffer_(base::MakeRefCounted<BufferWrapper>()),
       weak_factory_(this) {
+  DCHECK(delegate_);
   write_storage_->SetCapacity(kDefaultBufferSize);
   read_storage_->SetCapacity(kDefaultBufferSize);
 }
@@ -115,6 +118,7 @@ void SmallMessageSocket::ActivateBufferPool(char* current_data,
   size_t new_buffer_size;
   if (current_size <= buffer_pool_->buffer_size()) {
     new_buffer = buffer_pool_->GetBuffer();
+    CHECK(new_buffer);
     new_buffer_size = buffer_pool_->buffer_size();
   } else {
     new_buffer = base::MakeRefCounted<::net::IOBuffer>(current_size * 2);
@@ -199,7 +203,12 @@ bool SmallMessageSocket::HandleWriteResult(int result) {
     return false;
   }
   if (result <= 0) {
-    PostError(result);
+    // Post a task rather than just calling OnError(), to avoid calling
+    // OnError()
+    // synchronously.
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&SmallMessageSocket::OnError,
+                                          weak_factory_.GetWeakPtr(), result));
     return false;
   }
 
@@ -211,17 +220,13 @@ bool SmallMessageSocket::HandleWriteResult(int result) {
   write_buffer_->ClearUnderlyingBuffer();
   if (send_blocked_) {
     send_blocked_ = false;
-    OnSendUnblocked();
+    delegate_->OnSendUnblocked();
   }
   return false;
 }
 
-void SmallMessageSocket::PostError(int error) {
-  // Post a task rather than just calling OnError(), to avoid calling OnError()
-  // synchronously.
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&SmallMessageSocket::OnError,
-                                        weak_factory_.GetWeakPtr(), error));
+void SmallMessageSocket::OnError(int error) {
+  delegate_->OnError(error);
 }
 
 void SmallMessageSocket::ReceiveMessages() {
@@ -281,12 +286,12 @@ bool SmallMessageSocket::HandleReadResult(int result) {
   }
 
   if (result == 0 || result == net::ERR_CONNECTION_CLOSED) {
-    OnEndOfStream();
+    delegate_->OnEndOfStream();
     return false;
   }
 
   if (result < 0) {
-    OnError(result);
+    delegate_->OnError(result);
     return false;
   }
 
@@ -325,7 +330,8 @@ bool SmallMessageSocket::HandleCompletedMessages() {
     // Take a weak pointer in case OnMessage() causes this to be deleted.
     auto self = weak_factory_.GetWeakPtr();
     in_message_ = true;
-    keep_reading = OnMessage(start_ptr + sizeof(uint16_t), message_size);
+    keep_reading =
+        delegate_->OnMessage(start_ptr + sizeof(uint16_t), message_size);
     if (!self) {
       return false;
     }
@@ -372,6 +378,7 @@ bool SmallMessageSocket::HandleCompletedMessageBuffers() {
 
     auto old_buffer = read_buffer_->TakeUnderlyingBuffer();
     auto new_buffer = buffer_pool_->GetBuffer();
+    CHECK(new_buffer);
     size_t new_buffer_size = buffer_pool_->buffer_size();
     size_t extra_size = bytes_read - required_size;
     if (extra_size > 0) {
@@ -388,7 +395,8 @@ bool SmallMessageSocket::HandleCompletedMessageBuffers() {
 
     // Take a weak pointer in case OnMessageBuffer() causes this to be deleted.
     auto self = weak_factory_.GetWeakPtr();
-    bool keep_reading = OnMessageBuffer(std::move(old_buffer), required_size);
+    bool keep_reading =
+        delegate_->OnMessageBuffer(std::move(old_buffer), required_size);
     if (!self || !keep_reading) {
       return false;
     }
@@ -401,8 +409,9 @@ bool SmallMessageSocket::HandleCompletedMessageBuffers() {
   return true;
 }
 
-bool SmallMessageSocket::OnMessageBuffer(scoped_refptr<net::IOBuffer> buffer,
-                                         int size) {
+bool SmallMessageSocket::Delegate::OnMessageBuffer(
+    scoped_refptr<net::IOBuffer> buffer,
+    int size) {
   return OnMessage(buffer->data() + sizeof(uint16_t), size - sizeof(uint16_t));
 }
 

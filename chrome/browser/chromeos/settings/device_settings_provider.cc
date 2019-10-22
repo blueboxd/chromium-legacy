@@ -275,6 +275,11 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
             base::Value(entry.android_kiosk_app().display_name()));
       }
+      if (entry.web_kiosk_app().has_url()) {
+        entry_dict.SetKey(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
+            base::Value(entry.web_kiosk_app().url()));
+      }
     } else if (entry.has_deprecated_public_session_id()) {
       // Deprecated public session specification.
       entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyId,

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="1135993792949700405">Chrome तुम्ही निवडलेला वैयक्तिक डेटा <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ला पाठवेल</translation>
 <translation id="1625889395409731085">बाह्य लिंक उघडायची आहे का?</translation>
 <translation id="1699570257714336246">माहिती नाही आहे</translation>
 <translation id="2203046366315513658">मूल्य कमी करा</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Chrome मधील Google असिस्टंट अर्ध्या स्क्रीनवर उघडले आहे.</translation>
 <translation id="6973932557599545801">सॉरी मला मदत करता आली नाही कृपया तुम्ही स्वतःच सुरू ठेवा.</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
-<translation id="7871791972254842204">नंतर <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> वरील अटी आणि नियम वाचा आणि त्यांच्याशी सहमती दर्शवा</translation>
 <translation id="8253702004019660079">Chrome मधील Google असिस्टंट.</translation>
 <translation id="9138504265731110181">तुम्हाला वेबवर चेक आउट करण्यात मदत करून Google असिस्टंट तुमचा वेळ वाचवते</translation>
 <translation id="945522503751344254">अभिप्राय पाठवा</translation>

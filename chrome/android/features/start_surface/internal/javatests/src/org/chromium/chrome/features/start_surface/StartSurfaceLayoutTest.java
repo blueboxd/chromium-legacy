@@ -641,8 +641,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisabledTest(message = "crbug.com/1014792, should not fetch all tabs in TabModel when we" +
-            "switch model")
     public void testIncognitoToggle_thumbnailFetchCount() throws InterruptedException {
         mActivityTestRule.loadUrl(mUrl);
         int oldFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();

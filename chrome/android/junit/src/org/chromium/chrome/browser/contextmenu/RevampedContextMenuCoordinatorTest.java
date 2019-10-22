@@ -21,6 +21,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuGroup;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator.ListItemType;
+import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 import java.util.ArrayList;
@@ -33,10 +35,12 @@ import java.util.List;
 public class RevampedContextMenuCoordinatorTest {
     private RevampedContextMenuCoordinator mCoordinator;
     private Activity mActivity;
+    private WindowAndroid mWindow;
 
     @Before
     public void setUpTest() {
         mActivity = Robolectric.setupActivity(Activity.class);
+        mWindow = new ActivityWindowAndroid(mActivity, false);
         mCoordinator = new RevampedContextMenuCoordinator(0, null);
     }
 
@@ -62,7 +66,7 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.IMAGE, groupTwo));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mWindow, rawItems, params);
 
         assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
         assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
@@ -95,7 +99,7 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mWindow, rawItems, params);
 
         assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
         assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
@@ -116,7 +120,7 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mWindow, rawItems, params);
 
         assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
         assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));

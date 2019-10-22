@@ -21,8 +21,10 @@
 
 - (void)findInPageManager:(web::FindInPageManager*)manager
     didSelectMatchAtIndex:(NSInteger)index
+        withContextString:(NSString*)contextString
               forWebState:(web::WebState*)webState {
   _webState = webState;
+  _contextString = [contextString copy];
   _index = index;
 }
 

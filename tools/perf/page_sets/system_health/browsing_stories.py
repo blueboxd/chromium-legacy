@@ -257,7 +257,7 @@ class RedditMobileStory2019(_ArticleBrowsingStory):
     for i in xrange(self.ITEMS_TO_VISIT + 1):
       # Skip the ad disguised as an article.
       if i == 1:
-           continue
+        continue
       self._NavigateToItem(action_runner, i)
       self._ReadNextArticle(action_runner)
       self._NavigateBack(action_runner)
@@ -602,23 +602,6 @@ class YouTubeMobileStory(_MediaBrowsingStory):
   ITEM_SELECTOR_INDEX = 3
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.EMERGING_MARKET,
           story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
-
-
-class YouTubeDesktopStory2018(_MediaBrowsingStory):
-  """Load a typical YouTube video then navigate to a next few videos. Stop and
-  watch each video for a few seconds.
-  """
-  NAME = 'browse:media:youtube:2018'
-  URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=0'
-  ITEM_SELECTOR = 'ytd-compact-video-renderer.ytd-watch-next-secondary-results-renderer a'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  IS_SINGLE_PAGE_APP = True
-  # A longer view time allows videos to load and play.
-  ITEM_VIEW_TIME_IN_SECONDS = 5
-  ITEMS_TO_VISIT = 8
-  ITEM_SELECTOR_INDEX = 3
-  PLATFORM_SPECIFIC = True
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018]
 
 
 class YouTubeTVDesktopStory2019(_MediaBrowsingStory):

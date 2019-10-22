@@ -76,6 +76,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) AssociatedInterfacePtrStateBase {
     endpoint_client_->AcceptWithResponder(&message, std::move(responder));
   }
 
+  void force_outgoing_messages_async(bool force) {
+    DCHECK(endpoint_client_);
+    endpoint_client_->force_outgoing_messages_async(force);
+  }
+
  protected:
   void Swap(AssociatedInterfacePtrStateBase* other);
   void Bind(ScopedInterfaceEndpointHandle handle,

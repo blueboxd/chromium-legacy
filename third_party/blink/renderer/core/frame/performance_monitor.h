@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/timing/sub_task_attribution.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -55,12 +54,10 @@ class CORE_EXPORT PerformanceMonitor final
 
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
-    virtual void ReportLongTask(
-        base::TimeTicks start_time,
-        base::TimeTicks end_time,
-        ExecutionContext* task_context,
-        bool has_multiple_contexts,
-        const SubTaskAttribution::EntriesVector& sub_task_attributions) {}
+    virtual void ReportLongTask(base::TimeTicks start_time,
+                                base::TimeTicks end_time,
+                                ExecutionContext* task_context,
+                                bool has_multiple_contexts) {}
     virtual void ReportLongLayout(base::TimeDelta duration) {}
     virtual void ReportGenericViolation(Violation,
                                         const String& text,
@@ -75,8 +72,6 @@ class CORE_EXPORT PerformanceMonitor final
                                      base::TimeDelta time,
                                      std::unique_ptr<SourceLocation>);
   static base::TimeDelta Threshold(ExecutionContext*, Violation);
-
-  void BypassLongCompileThresholdOnceForTesting();
 
   // Instrumenting methods.
   void Will(const probe::RecalculateStyle&);
@@ -149,8 +144,6 @@ class CORE_EXPORT PerformanceMonitor final
   const void* user_callback_;
   base::TimeTicks v8_compile_start_time_;
 
-  SubTaskAttribution::EntriesVector sub_task_attributions_;
-
   base::TimeDelta thresholds_[kAfterLast];
 
   Member<LocalFrame> local_root_;
@@ -163,7 +156,6 @@ class CORE_EXPORT PerformanceMonitor final
               typename DefaultHash<size_t>::Hash,
               WTF::UnsignedWithZeroKeyHashTraits<size_t>>
       subscriptions_;
-  bool bypass_long_compile_threshold_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceMonitor);
 };

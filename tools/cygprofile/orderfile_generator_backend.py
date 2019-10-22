@@ -855,40 +855,32 @@ class OrderfileGenerator(object):
                                   '--device={}'.format(
                                       self._profiler._device.serial),
                                   '--browser=exact',
-                                  '--output-format=chartjson',
+                                  '--output-format=csv',
                                   '--output-dir={}'.format(out_dir),
                                   '--reset-results',
                                   '--browser-executable={}'.format(apk),
                                   'orderfile.memory_mobile'])
 
-      out_file_path = os.path.join(out_dir, 'results-chart.json')
+      out_file_path = os.path.join(out_dir, 'results.csv')
       if not os.path.exists(out_file_path):
         raise Exception('Results file not found!')
 
+      results = {}
       with open(out_file_path, 'r') as f:
-        json_results = json.load(f)
-
-      if not json_results:
-        raise Exception('Results file is empty')
-
-      if not 'charts' in json_results:
-        raise Exception('charts can not be found in results!')
-
-      charts = json_results['charts']
-      results = dict()
-      for story in charts:
-        if not story.endswith("NativeCodeResidentMemory_avg"):
-          continue
-
-        results[story] = dict()
-        for substory in charts[story]:
-          if substory == 'summary':
+        reader = csv.DictReader(f)
+        for row in reader:
+          if not row['name'].endswith('NativeCodeResidentMemory'):
             continue
-          if not 'values' in charts[story][substory]:
-            raise Exception(
-              'Values can not be found in charts:%s:%s' % (story, substory))
+          # Note: NativeCodeResidentMemory records a single sample from each
+          # story run, so this average (reported as 'avg') is exactly the value
+          # of that one sample. Each story is run multiple times, so this loop
+          # will accumulate into a list all values for all runs of each story.
+          results.setdefault(row['name'], {}).setdefault(
+              row['stories'], []).append(row['avg'])
 
-          results[story][substory] = charts[story][substory]['values']
+      if not results:
+        raise Exception('Could not find relevant results')
+
       return results
 
     except Exception as e:

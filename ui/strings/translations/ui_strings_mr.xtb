@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 मिनिटापूर्वी}other{# मिनिटांपूर्वी}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1मि}other{#मि}}</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
+<translation id="1201402288615127009">पुढील</translation>
 <translation id="1243314992276662751">अपलोड करा</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> शेअर करू शकलो नाही</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">आपल्या स्क्रीनवरील लक्ष्यांना स्पर्श करा टॅप करा.</translation>
 <translation id="2295140143284145483">सर्वेक्षण</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">तुमचे इंटरनेट कनेक्शन तपासत आहे</translation>
 <translation id="2388990488038464401">तुमच्या फोनवरून या नंबरवर कॉल करायचा का?</translation>
 <translation id="24452542372838207">सूचना विस्तार करा</translation>
 <translation id="2445449901874883781">उच्च घनता वापरा</translation>
@@ -162,6 +164,7 @@
 <translation id="6620110761915583480">फाइल सेव्ह करा</translation>
 <translation id="6656912866303152668">Chrome मध्ये <ph name="TARGET_DEVICE_NAME" /> चे सिंक सुरू केले असल्याची खात्री करा आणि त्यानंतर पाठवण्याचा पुन्हा प्रयत्न करा.</translation>
 <translation id="6699343763173986273">मीडिया पुढील ट्रॅक</translation>
+<translation id="6710213216561001401">मागील</translation>
 <translation id="6779314412797872738">येथून तुमच्या Android फोनवर नंबर पाठवण्यासाठी, सेटिंग्जमध्ये दोन्ही डिव्हाइससाठी <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">फोल्डर बंद करा</translation>
 <translation id="6808150112686056157">मीडिया थांबवा</translation>
@@ -179,6 +182,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 मिनिट शिल्लक}other{# मिनिटे शिल्लक}}</translation>
 <translation id="7319740667687257810">लाँचर, आंशिक दृश्य</translation>
+<translation id="7352651011704765696">काहीतरी चूक झाली</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 मिनिटापूर्वी}other{# मिनिटांपूर्वी}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 मिनिट शिल्लक}other{# मिनिटे शिल्लक}}</translation>

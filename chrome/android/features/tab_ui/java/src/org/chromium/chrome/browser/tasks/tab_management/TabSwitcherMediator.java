@@ -185,11 +185,12 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
                 TabList currentTabModelFilter =
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
-                mResetHandler.resetWithTabList(currentTabModelFilter, false, mShowTabsInMruOrder);
                 mContainerViewModel.set(IS_INCOGNITO, currentTabModelFilter.isIncognito());
                 if (mTabGridDialogController != null) {
                     mTabGridDialogController.hideDialog(false);
                 }
+                if (!mContainerViewModel.get(IS_VISIBLE)) return;
+                mResetHandler.resetWithTabList(currentTabModelFilter, false, mShowTabsInMruOrder);
                 if (mIphProvider != null) {
                     mIphProvider.maybeShowIPH(mTabModelSelector.isIncognitoSelected());
                 }

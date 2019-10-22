@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Mala</translation>
 <translation id="1152528166145813711">Seleccionar…</translation>
 <translation id="1199593201721843963">Inhabilitar conexiones remotas</translation>
+<translation id="1201402288615127009">Siguiente</translation>
 <translation id="1291443878853470558">Si quieres utilizar Chromoting para acceder a este ordenador, debes habilitar las conexiones remotas.</translation>
 <translation id="1297009705180977556">No se ha podido establecer conexión con <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(esta función aún no está disponible para tu ordenador)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Escritorio Remoto de Chrome ahora está en la Web. Prueba nuestra <ph name="LINK_BEGIN" />aplicación web<ph name="LINK_END" />: es rápida y gratuita. Además, tiene aún más funciones, incluida la compatibilidad mejorada con varios monitores.</translation>
 <translation id="1643640058022401035">Si abandonas esta página, finalizará tu sesión en Chromoting.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas con este ordenador...</translation>
+<translation id="1697532407822776718">¡Listo!</translation>
 <translation id="170207782578677537">No se ha podido registrar este ordenador.</translation>
 <translation id="174018511426417793">No tienes ningún ordenador registrado. Para habilitar conexiones remotas con un ordenador, instala Escritorio Remoto de Chrome en él y haz clic en <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Conectando...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Proceso de host</translation>
 <translation id="20876857123010370">Modo de panel táctil</translation>
 <translation id="2089514346391228378">Se han habilitado las conexiones remotas con este ordenador.</translation>
+<translation id="2198363917176605566">Para usar <ph name="PRODUCT_NAME" />, tienes que conceder el permiso de grabación de la pantalla para que se pueda enviar el contenido de la pantalla de este Mac al ordenador remoto.
+
+Para conceder este permiso, haz clic en <ph name="BUTTON_NAME" /> más abajo para abrir el panel de preferencias Grabación de la pantalla y marca la casilla situada junto a <ph name="SERVICE_SCRIPT_NAME" />.
+
+Si la casilla <ph name="SERVICE_SCRIPT_NAME" /> ya está marcada, desmárcala y vuelve a marcarla.</translation>
 <translation id="2208514473086078157">La configuración de la política no permite compartir este ordenador como un host de Escritorio Remoto de Chrome. Ponte en contacto con el administrador del sistema para obtener asistencia.</translation>
 <translation id="2220529011494928058">Notificar un problema</translation>
 <translation id="2221097377466213233">Utilizar Ctrl derecho para tecla Windows (⌘ en Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Visto por última vez online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Esta aplicación ya no es compatible. Para obtener las actualizaciones de seguridad y las funciones más recientes, utiliza la <ph name="LINK_BEGIN" />aplicación web Escritorio Remoto de Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio Remoto de Chrome autorizando la recopilación de estadísticas de uso e informes sobre fallos.</translation>
+<translation id="2504109125669302160">Conceder permiso de accesibilidad a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Conectado a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Para asegurarte de que estén disponibles todas las combinaciones de teclas, puedes configurar la aplicación Escritorio Remoto de Chrome para que se abra como una ventana.</translation>
 <translation id="2540992418118313681">¿Quieres compartir este ordenador para que otro usuario pueda acceder a él y controlarlo?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Biblioteca principal</translation>
 <translation id="4430435636878359009">Se inhabilitan las conexiones remotas con este ordenador</translation>
 <translation id="4430915108080446161">Generando código de acceso...</translation>
+<translation id="443560535555262820">Abrir preferencias de accesibilidad</translation>
 <translation id="4450893287417543264">No volver a mostrar</translation>
 <translation id="4472575034687746823">Empezar</translation>
 <translation id="4481276415609939789">No tienes ningún ordenador registrado. Para habilitar conexiones remotas con un ordenador, instala Chromoting en él y haz clic en <ph name="BUTTON_NAME" />.</translation>
@@ -160,7 +169,7 @@
 <translation id="4913529628896049296">esperando conexión...</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="492843737083352574">Tengo problemas con mi teclado o con el ratón.</translation>
-<translation id="4973800994433240357">Al descargar el programa de instalación del host de Chromoting, aceptas las <ph name="LINK_BEGIN" />Condiciones de Servicio<ph name="LINK_END" /> de Google.</translation>
+<translation id="4973800994433240357">Al descargar el programa de instalación del host de Chromoting, aceptas los <ph name="LINK_BEGIN" />Términos del Servicio<ph name="LINK_END" /> de Google.</translation>
 <translation id="4974476491460646149">Conexión cerrada para <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">En primer lugar, debes configurar el acceso remoto a tu ordenador</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (sin conexión)</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (obsoleto)</translation>
 <translation id="6221358653751391898">No has iniciado sesión en Chrome. Inicia sesión y vuelve a intentarlo.</translation>
+<translation id="6223301979382383752">Abrir preferencias de Grabación de la pantalla</translation>
 <translation id="6227369581881558336">Escritorio Remoto de Chrome ahora está en la Web con nuevas funciones, como la transferencia de archivos. Accede a nuestra <ph name="LINK_BEGIN" />aplicación web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Se ha cerrado el host que se ejecuta en la pantalla de inicio de sesión de la consola para poder admitir el modo de cortina. Para ello, se ha cambiado a un host que se ejecuta en una sesión específica de usuario.</translation>
 <translation id="629730747756840877">Cuenta</translation>
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Otro problema.</translation>
 <translation id="6398765197997659313">Salir del modo de pantalla completa</translation>
+<translation id="6411861157501911556">Para usar <ph name="PRODUCT_NAME" />, tienes que conceder el permiso de accesibilidad para que se pueda insertar la información del ordenador remoto en este Mac.
+
+Para conceder este permiso, haz clic en <ph name="BUTTON_NAME" /> más abajo para abrir el panel de preferencias Accesibilidad y marca la casilla situada junto a <ph name="SERVICE_SCRIPT_NAME" />.
+
+Si la casilla <ph name="SERVICE_SCRIPT_NAME" /> ya está marcada, desmárcala y vuelve a marcarla.</translation>
 <translation id="6441316101718669559">La integración del escritorio no se admite en esta plataforma. Puedes seguir utilizando la aplicación, pero la experiencia de usuario se verá afectada.</translation>
 <translation id="652218476070540101">Se está actualizando el PIN de este ordenador...</translation>
 <translation id="6527303717912515753">Compartir</translation>
@@ -281,7 +296,7 @@
 <translation id="7981525049612125370">La sesión remota ha caducado.</translation>
 <translation id="8038111231936746805">(acción predeterminada)</translation>
 <translation id="8041089156583427627">Enviar</translation>
-<translation id="8041721485428375115">Al descargar el programa de instalación del host de Escritorio Remoto de Chrome, aceptas las <ph name="LINK_BEGIN" />Condiciones de Servicio<ph name="LINK_END" /> de Google.</translation>
+<translation id="8041721485428375115">Al descargar el programa de instalación del host de Escritorio Remoto de Chrome, aceptas los <ph name="LINK_BEGIN" />Términos del Servicio<ph name="LINK_END" /> de Google.</translation>
 <translation id="8060029310790625334">Centro de Ayuda</translation>
 <translation id="806699900641041263">Estableciendo conexión con <ph name="HOSTNAME" /></translation>
 <translation id="8073845705237259513">Para utilizar la aplicación Escritorio Remoto de Chrome, debes añadir una cuenta de Google al dispositivo.</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Mantiene todo el escritorio remoto visible</translation>
 <translation id="9149992051684092333">Para empezar a compartir tu escritorio, proporciona el código de acceso que se muestra a continuación a la persona que te vaya a ayudar.</translation>
 <translation id="916856682307586697">Iniciar la XSession predeterminada</translation>
+<translation id="9187628920394877737">Conceder permiso de grabación de la pantalla a <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="9213184081240281106">Configuración del host no válida.</translation>
 <translation id="951991426597076286">Rechazar</translation>

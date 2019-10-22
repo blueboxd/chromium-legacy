@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">पेज नंतर लोड करा</translation>
 <translation id="1015730422737071372">अतिरिक्त तपशील प्रदान करा</translation>
 <translation id="1021110881106174305">स्वीकारलेली कार्ड</translation>
-<translation id="1023523064224774104">तुम्ही नुकताच तुमचा पासवर्ड संशयास्पद साइटवर एंटर केल्याचे Chromium ने डिटेक्ट केले
-          आहे. कृपया आता तुमचा पासवर्ड रीसेट करा!</translation>
 <translation id="1032854598605920125">घड्याळाच्या दिशेने फिरवा</translation>
 <translation id="1035334672863811645">Chrome मध्ये साइन इन करा</translation>
 <translation id="1036348656032585052">बंद करा</translation>
@@ -551,7 +549,6 @@
 <translation id="3655670868607891010">तुम्ही हे वारंवार पहात असल्यास, हे वापरून पहा <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">पुनरावृत्ती</translation>
 <translation id="366077651725703012">क्रेडिट कार्ड अपडेट करा</translation>
-<translation id="3672525478985456967">या साइटचे नाव <ph name="LOOKALIKE_DOMAIN" /> सारखे दिसत आहे. हल्लेखोर कधीकधी डोमेन नेममध्ये सूक्ष्म, डोळ्यांना न दिसणारे बदल करून साइटची नक्कल करतात.</translation>
 <translation id="3676592649209844519">डिव्हाइस आयडी:</translation>
 <translation id="3677008721441257057">तुम्हाला &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; म्हणायचे आहे का?</translation>
 <translation id="3678029195006412963">विनंती स्वाक्षरीकृत करणे शक्य झाले नाही</translation>
@@ -875,7 +872,6 @@
 <translation id="5230733896359313003">पाठविण्याचा पत्ता</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">डिसमिस करा</translation>
 <translation id="5250209940322997802">"नेटवर्कशी कनेक्ट करा"</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
@@ -1017,7 +1013,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> उघडत आहे…</translation>
 <translation id="5947933617628957894">होय, जोडा</translation>
 <translation id="5951495562196540101">उपभोक्ता खात्याने नोंदणी करू शकत नाही (पॅकेज केलेला परवाना उपलब्ध).</translation>
-<translation id="5966900314707961320">सुरू केलेला असतो तेव्हा साइट संपूर्ण वेबवर तुमचा माग ठेवणाऱ्या कुकी वापरू शकत नाहीत</translation>
 <translation id="5967592137238574583">संपर्क माहिती संपादित करा</translation>
 <translation id="5967867314010545767">इतिहासातून काढून टाका</translation>
 <translation id="5975083100439434680">झूम कमी करा</translation>
@@ -1114,7 +1109,6 @@
 <translation id="6433490469411711332">संपर्क माहिती संपादित करा</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> नी कनेक्ट करण्यास नकार दिला.</translation>
 <translation id="6434309073475700221">नाकारा</translation>
-<translation id="6435221585574090192">तुमच्या अ‍ॅडमिनिस्ट्रेटरला Chrome एंटरप्राइझ जोखीम सुरक्षितता ने फ्लॅग केलेल्या सुरक्षितता इव्‍हेंटसंबंधित डेटा शेअर करा. यामध्ये कदाचित पेजची url, फाइलचे नाव आणि फाइल मेटाडेटा, तुमच्या डिव्हाइसचे वापरकर्ता नाव आणि Chrome चे वापरकर्ता नाव यांचा समावेश आहे.</translation>
 <translation id="6440503408713884761">दुर्लक्ष केले</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">अधिक माहिती जोडा</translation>
@@ -1458,7 +1452,6 @@
 <translation id="8184538546369750125">सार्वत्रिक डीफॉल्‍ट वापरा (अनुमती द्या)</translation>
 <translation id="8194797478851900357">&amp;हलवा पूर्ववत करा</translation>
 <translation id="8197543752516192074">पेजचे भाषांतर करा</translation>
-<translation id="8197899142098070286">तुम्ही नुकताच तुमचा पासवर्ड संशयास्पद साइटवर एंटर केल्याचे Chrome ने डिटेक्ट केले आहे. कृपया आता तुमचा पासवर्ड रीसेट करा!</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />"असलेल्या एक्स्टेंशनसाठी अवैध अपडेट URL.</translation>
 <translation id="8202097416529803614">ऑर्डर सारांश</translation>
 <translation id="8202370299023114387">विरोध</translation>
@@ -1545,7 +1538,6 @@
 <translation id="8718314106902482036">पेमेंट पूर्ण झाले नाही</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, शोध सूचना</translation>
 <translation id="8719528812645237045">मल्टिपल पंच बॉटम</translation>
-<translation id="8723954843026426558">मी अटी आणि नियम, गोपनीयता धोरण आणि <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> मधून बाहेर पडण्याच्या अधिकाराला साहमती दर्शवतो/ते</translation>
 <translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8728672262656704056">तुम्ही गुप्त मोडमध्ये आहात</translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>

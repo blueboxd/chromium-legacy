@@ -351,16 +351,23 @@ AtkObject* GetActiveDescendantOfCurrentFocused() {
   return nullptr;
 }
 
-void PrependTextAttributeToSet(const AtkTextAttribute attribute,
+void PrependTextAttributeToSet(const std::string& attribute,
                                const std::string& value,
                                AtkAttributeSet** attributes) {
   DCHECK(attributes);
 
   AtkAttribute* new_attribute =
       static_cast<AtkAttribute*>(g_malloc(sizeof(AtkAttribute)));
-  new_attribute->name = g_strdup(atk_text_attribute_get_name(attribute));
+  new_attribute->name = g_strdup(attribute.c_str());
   new_attribute->value = g_strdup(value.c_str());
   *attributes = g_slist_prepend(*attributes, new_attribute);
+}
+
+void PrependAtkTextAttributeToSet(const AtkTextAttribute attribute,
+                                  const std::string& value,
+                                  AtkAttributeSet** attributes) {
+  PrependTextAttributeToSet(atk_text_attribute_get_name(attribute), value,
+                            attributes);
 }
 
 std::string ToAtkTextAttributeColor(const std::string color) {
@@ -376,41 +383,44 @@ AtkAttributeSet* ToAtkAttributeSet(const TextAttributeList& attributes) {
   AtkAttributeSet* copied_attributes = nullptr;
   for (const auto& attribute : attributes) {
     if (attribute.first == "background-color") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_BG_COLOR,
-                                ToAtkTextAttributeColor(attribute.second),
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_BG_COLOR,
+                                   ToAtkTextAttributeColor(attribute.second),
+                                   &copied_attributes);
     } else if (attribute.first == "color") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_FG_COLOR,
-                                ToAtkTextAttributeColor(attribute.second),
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_FG_COLOR,
+                                   ToAtkTextAttributeColor(attribute.second),
+                                   &copied_attributes);
     } else if (attribute.first == "font-family") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_FAMILY_NAME, attribute.second,
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_FAMILY_NAME, attribute.second,
+                                   &copied_attributes);
     } else if (attribute.first == "font-size") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_SIZE, attribute.second,
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_SIZE, attribute.second,
+                                   &copied_attributes);
     } else if (attribute.first == "font-weight" && attribute.second == "bold") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_WEIGHT, "700",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_WEIGHT, "700",
+                                   &copied_attributes);
     } else if (attribute.first == "font-style") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_STYLE, "italic",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_STYLE, "italic",
+                                   &copied_attributes);
     } else if (attribute.first == "text-line-through-style") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_STRIKETHROUGH, "true",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_STRIKETHROUGH, "true",
+                                   &copied_attributes);
     } else if (attribute.first == "text-underline-style") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "single",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "single",
+                                   &copied_attributes);
     } else if (attribute.first == "invalid") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_INVALID, attribute.second,
-                                &copied_attributes);
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "error",
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_INVALID, attribute.second,
+                                   &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "error",
+                                   &copied_attributes);
     } else if (attribute.first == "language") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, attribute.second,
-                                &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, attribute.second,
+                                   &copied_attributes);
     } else if (attribute.first == "writing-mode") {
-      PrependTextAttributeToSet(ATK_TEXT_ATTR_DIRECTION, attribute.second,
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_DIRECTION, attribute.second,
+                                   &copied_attributes);
+    } else if (attribute.first == "text-position") {
+      PrependTextAttributeToSet(attribute.first, attribute.second,
                                 &copied_attributes);
     }
   }
@@ -754,11 +764,31 @@ void GetMinimumIncrement(AtkValue* atk_value, GValue* value) {
                                  value);
 }
 
+#if defined(ATK_212)
+void SetValue(AtkValue* atk_value, const double new_value) {
+  g_return_if_fail(ATK_VALUE(atk_value));
+
+  AtkObject* atk_object = ATK_OBJECT(atk_value);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return;
+
+  AXActionData data;
+  data.action = ax::mojom::Action::kSetValue;
+  data.value = base::NumberToString(new_value);
+  obj->GetDelegate()->AccessibilityPerformAction(data);
+}
+#endif  // defined(ATK_212)
+
 void Init(AtkValueIface* iface) {
   iface->get_current_value = GetCurrentValue;
   iface->get_maximum_value = GetMaximumValue;
   iface->get_minimum_value = GetMinimumValue;
   iface->get_minimum_increment = GetMinimumIncrement;
+
+#if defined(ATK_212)
+  iface->set_value = SetValue;
+#endif  // defined(ATK_212)
 }
 
 const GInterfaceInfo Info = {reinterpret_cast<GInterfaceInitFunc>(Init),
@@ -3392,10 +3422,8 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
   // If this is a non-web-content text entry, then we need to trigger text
   // change signals when the value changes. This is handled by browser
   // accessibility for web content.
-  if (IsPlainTextField() || !GetDelegate()->IsWebContent()) {
+  if (IsPlainTextField() && !GetDelegate()->IsWebContent())
     UpdateHypertext();
-    return;
-  }
 
   if (!IsRangeValueSupported(GetData()))
     return;

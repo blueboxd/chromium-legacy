@@ -57,6 +57,13 @@ mojom::KeypressResponseForRulebasedPtr GenerateKeypressResponseForRulebased(
   return keypress_response;
 }
 
+bool IsModifierKey(const std::string& key_code) {
+  return key_code == "AltLeft" || key_code == "AltRight" ||
+         key_code == "ShiftLeft" || key_code == "ShiftRight" ||
+         key_code == "ControlLeft" || key_code == "ControlRight" ||
+         key_code == "CapsLock";
+}
+
 }  // namespace
 
 InputEngineContext::InputEngineContext(const std::string& ime) : ime_spec(ime) {
@@ -104,8 +111,29 @@ void InputEngine::ProcessKeypressForRulebased(
   auto& context = channel_receivers_.current_context();
   auto& engine = context.get()->engine;
 
+  // According to the W3C spec, |altKey| is false if the AltGr key
+  // is pressed [1]. However, all rule-based input methods on Chrome OS use
+  // the US QWERTY layout as a base layout, with AltGr implemented at this
+  // layer. This means the right Alt key reports as being a normal Alt key, so
+  // |altKey| is true. Thus, we need to take |altKey| and exclude the
+  // right Alt key to determine the status of the "true" Alt key.
+  // [1] https://www.w3.org/TR/uievents-key/#keys-modifier
+  // TODO(https://crbug.com/1014778): Change the base layouts for the
+  // rule-based input methods so that |altKey| is false when AltGr is pressed.
+  if (keypress_info->code == "AltRight") {
+    isAltRightDown_ = keypress_info->type == "keydown";
+  }
+
+  const bool isAltDown = keypress_info->alt && !isAltRightDown_;
+
+  // - Shift/AltRight/Caps/Ctrl are modifier keys for the characters which the
+  // Mojo service may accept, but don't send the keys themselves to Mojo.
+  // - Ctrl+? and Alt+? are shortcut keys, so don't send them to the rule based
+  // engine.
   if (!engine || keypress_info->type.empty() ||
-      keypress_info->type != "keydown") {
+      keypress_info->type != "keydown" ||
+      (IsModifierKey(keypress_info->code) || keypress_info->ctrl ||
+       isAltDown)) {
     std::move(callback).Run(mojom::KeypressResponseForRulebased::New(
         false, std::vector<mojom::OperationForRulebasedPtr>(0)));
     return;
@@ -129,6 +157,7 @@ void InputEngine::ResetForRulebased() {
   if (engine) {
     engine->Reset();
   }
+  isAltRightDown_ = false;
 }
 
 void InputEngine::GetRulebasedKeypressCountForTesting(

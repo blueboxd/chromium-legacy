@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
@@ -826,6 +827,23 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   ready_listener.Reset();
 }
 
+// Test that app window has shelf ID and app ID properties set.
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppIDWindowProperties) {
+  const Extension* extension = LoadAndLaunchPlatformApp("launch", "Launched");
+  AppWindow* window = CreateAppWindow(browser()->profile(), extension);
+  ASSERT_TRUE(window);
+
+  const gfx::NativeWindow native_window = window->GetNativeWindow();
+  ash::ShelfID shelf_id =
+      ash::ShelfID::Deserialize(native_window->GetProperty(ash::kShelfIDKey));
+  EXPECT_EQ(extension->id(), shelf_id.app_id);
+  std::string* app_id = native_window->GetProperty(ash::kAppIDKey);
+  ASSERT_TRUE(app_id);
+  EXPECT_EQ(shelf_id.app_id, *app_id);
+
+  CloseAppWindow(window);
+}
+
 // Test that we can launch an app with a shortcut.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchPinned) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -950,6 +968,143 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchUnpinned) {
   destroyed_watcher.Wait();
   EXPECT_EQ(--tab_count, tab_strip->count());
   EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(shortcut_id)->status);
+}
+
+// Verifies that native browser window properties are properly set when showing
+// an unpinned hosted app web contents.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForUnpinnedHostedApp) {
+  const extensions::Extension* extension = LoadAndLaunchExtension(
+      "app1", extensions::LaunchContainer::kLaunchContainerTab,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB);
+
+  int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
+  ash::ShelfID browser_id = shelf_model()->items()[browser_index].id;
+
+  // If the app is not pinned, and thus does not have an associated shelf item,
+  // the shelf ID should be set to the browser ID,
+  const gfx::NativeWindow native_window =
+      browser()->window()->GetNativeWindow();
+  ash::ShelfID shelf_id =
+      ash::ShelfID::Deserialize(native_window->GetProperty(ash::kShelfIDKey));
+  EXPECT_EQ(browser_id, shelf_id);
+  // The app ID should have the actual extension ID.
+  std::string* app_id = native_window->GetProperty(ash::kAppIDKey);
+  ASSERT_TRUE(app_id);
+  EXPECT_EQ(extension->id(), *app_id);
+}
+
+// Verifies that native browser window properties are properly set when showing
+// a pinned hosted app web contents.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForPinnedHostedApp) {
+  // Load and pin a hosted app.
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("app1/"));
+  ASSERT_TRUE(extension);
+  controller_->PinAppWithID(extension->id());
+
+  // Navigate to the app's launch URL.
+  ui_test_utils::NavigateToURL(
+      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(extension));
+
+  // When an app shportcut exists, the window shelf ID should point to the app
+  // shortcut.
+  const gfx::NativeWindow native_window =
+      browser()->window()->GetNativeWindow();
+  ash::ShelfID shelf_id =
+      ash::ShelfID::Deserialize(native_window->GetProperty(ash::kShelfIDKey));
+  EXPECT_EQ(extension->id(), shelf_id.app_id);
+  std::string* app_id = native_window->GetProperty(ash::kAppIDKey);
+  ASSERT_TRUE(app_id);
+  EXPECT_EQ(extension->id(), *app_id);
+}
+
+// Verifies that native browser window properties are properly set when showing
+// an unpinned bookmark app.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForUnpinnedBookmarkApp) {
+  // Load and navigate to a bookmark app.
+  const Extension* extension = InstallExtensionWithSourceAndFlags(
+      test_data_dir_.AppendASCII("app2/"), 1, extensions::Manifest::INTERNAL,
+      extensions::Extension::FROM_BOOKMARK);
+  ASSERT_TRUE(extension);
+  ui_test_utils::NavigateToURL(
+      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(extension));
+
+  int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
+  ash::ShelfID browser_id = shelf_model()->items()[browser_index].id;
+
+  // If the app is not pinned, and thus does not have an associated shelf item,
+  // the shelf ID should be set to the browser ID,
+  const gfx::NativeWindow native_window =
+      browser()->window()->GetNativeWindow();
+  ash::ShelfID shelf_id =
+      ash::ShelfID::Deserialize(native_window->GetProperty(ash::kShelfIDKey));
+  EXPECT_EQ(browser_id, shelf_id);
+  // The app ID should have the actual extension ID.
+  std::string* app_id = native_window->GetProperty(ash::kAppIDKey);
+  ASSERT_TRUE(app_id);
+  EXPECT_EQ(extension->id(), *app_id);
+}
+
+// Verifies that native browser window properties are properly set when showing
+// a pinned bookmark app.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForPinnedBookmarkApp) {
+  // Load and pin a bookmark app.
+  const Extension* extension = InstallExtensionWithSourceAndFlags(
+      test_data_dir_.AppendASCII("app2/"), 1, extensions::Manifest::INTERNAL,
+      extensions::Extension::FROM_BOOKMARK);
+  ASSERT_TRUE(extension);
+  controller_->PinAppWithID(extension->id());
+
+  // Navigate to the app's launch URL.
+  ui_test_utils::NavigateToURL(
+      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(extension));
+
+  // When an app shportcut exists, the window shelf ID should point to the app
+  // shortcut.
+  const gfx::NativeWindow native_window =
+      browser()->window()->GetNativeWindow();
+  ash::ShelfID shelf_id =
+      ash::ShelfID::Deserialize(native_window->GetProperty(ash::kShelfIDKey));
+  EXPECT_EQ(extension->id(), shelf_id.app_id);
+  std::string* app_id = native_window->GetProperty(ash::kAppIDKey);
+  ASSERT_TRUE(app_id);
+  EXPECT_EQ(extension->id(), *app_id);
+}
+
+// Verifies that native browser window properties are properly set when showing
+// a PWA tab.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForPWA) {
+  // Start server and open test page.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL(embedded_test_server()->GetURL("/banners/manifest_test_page.html")));
+
+  // Install PWA.
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+  web_app::WebAppInstallObserver observer(profile());
+  chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA);
+  web_app::AppId app_id = observer.AwaitNextInstall();
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+
+  // Find the native window for the app.
+  gfx::NativeWindow native_window = nullptr;
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    if (browser->app_controller() &&
+        browser->app_controller()->GetAppId() == app_id) {
+      native_window = browser->window()->GetNativeWindow();
+      break;
+    }
+  }
+  ASSERT_TRUE(native_window);
+
+  // The native window shelf ID and app ID should match the web app ID.
+  ash::ShelfID shelf_id =
+      ash::ShelfID::Deserialize(native_window->GetProperty(ash::kShelfIDKey));
+  EXPECT_EQ(app_id, shelf_id.app_id);
+  std::string* window_app_id = native_window->GetProperty(ash::kAppIDKey);
+  ASSERT_TRUE(window_app_id);
+  EXPECT_EQ(app_id, *window_app_id);
 }
 
 // Launches an app in the background and then tries to open it. This is test for
@@ -1715,7 +1870,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
 }
 
 // Check that the window's ShelfID property matches that of the active tab.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDAndActiveTab) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
@@ -1728,6 +1883,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   ash::ShelfID id =
       ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
   EXPECT_EQ(browser_id, id);
+  std::string* window_app_id = window->GetProperty(ash::kAppIDKey);
+  ASSERT_TRUE(window_app_id);
+  EXPECT_EQ(browser_id.app_id, *window_app_id);
 
   ash::ShelfID app_id = CreateShortcut("app1");
   EXPECT_EQ(2, shelf_model()->item_count());
@@ -1739,11 +1897,19 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
   EXPECT_EQ(app_id, id);
 
+  window_app_id = window->GetProperty(ash::kAppIDKey);
+  ASSERT_TRUE(window_app_id);
+  EXPECT_EQ(app_id.app_id, *window_app_id);
+
   // Activate the tab at index 0 (NTP) and expect a browser ShelfID.
   browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
   EXPECT_EQ(browser_id, id);
+
+  window_app_id = window->GetProperty(ash::kAppIDKey);
+  ASSERT_TRUE(window_app_id);
+  EXPECT_EQ(browser_id.app_id, *window_app_id);
 }
 
 // Check that a windowed V1 application can navigate away from its domain, but
@@ -1815,6 +1981,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsAndTaskManagerWindows) {
   ASSERT_TRUE(settings_browser);
   EXPECT_EQ(browser_count, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(item_count + 1, shelf_model()->item_count());
+
+  aura::Window* settings_window = settings_browser->window()->GetNativeWindow();
+  ASSERT_TRUE(settings_window->GetProperty(ash::kAppIDKey));
+  EXPECT_TRUE(crx_file::id_util::IdIsValid(
+      *settings_window->GetProperty(ash::kAppIDKey)));
 
   chrome::ShowTaskManager(browser());
   // Spin a run loop to sync Ash's ShelfModel change for the task manager.

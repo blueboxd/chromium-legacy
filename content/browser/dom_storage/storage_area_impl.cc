@@ -11,8 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -61,16 +60,16 @@ base::TimeDelta StorageAreaImpl::RateLimiter::ComputeDelayNeeded(
 StorageAreaImpl::CommitBatch::CommitBatch() : clear_all_first(false) {}
 StorageAreaImpl::CommitBatch::~CommitBatch() {}
 
-StorageAreaImpl::StorageAreaImpl(leveldb::LevelDBDatabaseImpl* database,
+StorageAreaImpl::StorageAreaImpl(storage::AsyncDomStorageDatabase* database,
                                  const std::string& prefix,
                                  Delegate* delegate,
                                  const Options& options)
     : StorageAreaImpl(database,
-                      leveldb::StdStringToUint8Vector(prefix),
+                      std::vector<uint8_t>(prefix.begin(), prefix.end()),
                       delegate,
                       options) {}
 
-StorageAreaImpl::StorageAreaImpl(leveldb::LevelDBDatabaseImpl* database,
+StorageAreaImpl::StorageAreaImpl(storage::AsyncDomStorageDatabase* database,
                                  std::vector<uint8_t> prefix,
                                  Delegate* delegate,
                                  const Options& options)
@@ -122,8 +121,9 @@ std::unique_ptr<StorageAreaImpl> StorageAreaImpl::ForkToNewPrefix(
     const std::string& new_prefix,
     Delegate* delegate,
     const Options& options) {
-  return ForkToNewPrefix(leveldb::StdStringToUint8Vector(new_prefix), delegate,
-                         options);
+  return ForkToNewPrefix(
+      std::vector<uint8_t>(new_prefix.begin(), new_prefix.end()), delegate,
+      options);
 }
 
 std::unique_ptr<StorageAreaImpl> StorageAreaImpl::ForkToNewPrefix(
@@ -269,7 +269,7 @@ void StorageAreaImpl::Put(
         // currently the only observer to these notification is the client
         // itself.
         DVLOG(1) << "Storage area with prefix "
-                 << leveldb::Uint8VectorToStdString(prefix_)
+                 << std::string(prefix_.begin(), prefix_.end())
                  << ": past value has length of " << found->second << ", but:";
         if (client_old_value) {
           DVLOG(1) << "Given past value has incorrect length of "
@@ -379,7 +379,7 @@ void StorageAreaImpl::Delete(
       // clients will not contain old value. This is okay since currently the
       // only observer to these notification is the client itself.
       DVLOG(1) << "Storage area with prefix "
-               << leveldb::Uint8VectorToStdString(prefix_)
+               << std::string(prefix_.begin(), prefix_.end())
                << ": past value has length of " << found->second << ", but:";
       if (client_old_value) {
         DVLOG(1) << "Given past value has incorrect length of "

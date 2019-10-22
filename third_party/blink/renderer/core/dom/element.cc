@@ -140,7 +140,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
-#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -1369,7 +1368,7 @@ void Element::setScrollLeft(double new_left) {
                   scrollable_area->ScrollOffsetToPosition(end_offset)),
               true, false);
       base::Optional<FloatPoint> snap_point =
-          GetDocument().GetSnapCoordinator().GetSnapPosition(*box, *strategy);
+          scrollable_area->GetSnapPosition(*strategy);
       if (snap_point.has_value()) {
         end_offset =
             scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -1382,10 +1381,8 @@ void Element::setScrollLeft(double new_left) {
       std::unique_ptr<cc::SnapSelectionStrategy> strategy =
           cc::SnapSelectionStrategy::CreateForEndPosition(
               gfx::ScrollOffset(end_point), true, false);
-      end_point = GetDocument()
-                      .GetSnapCoordinator()
-                      .GetSnapPosition(*box, *strategy)
-                      .value_or(end_point);
+      end_point =
+          scrollable_area->GetSnapPosition(*strategy).value_or(end_point);
 
       FloatPoint new_position(end_point.X(),
                               scrollable_area->ScrollPosition().Y());
@@ -1435,7 +1432,7 @@ void Element::setScrollTop(double new_top) {
                   scrollable_area->ScrollOffsetToPosition(end_offset)),
               false, true);
       base::Optional<FloatPoint> snap_point =
-          GetDocument().GetSnapCoordinator().GetSnapPosition(*box, *strategy);
+          scrollable_area->GetSnapPosition(*strategy);
       if (snap_point.has_value()) {
         end_offset =
             scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -1449,10 +1446,8 @@ void Element::setScrollTop(double new_top) {
       std::unique_ptr<cc::SnapSelectionStrategy> strategy =
           cc::SnapSelectionStrategy::CreateForEndPosition(
               gfx::ScrollOffset(end_point), false, true);
-      end_point = GetDocument()
-                      .GetSnapCoordinator()
-                      .GetSnapPosition(*box, *strategy)
-                      .value_or(end_point);
+      end_point =
+          scrollable_area->GetSnapPosition(*strategy).value_or(end_point);
       FloatPoint new_position(scrollable_area->ScrollPosition().X(),
                               end_point.Y());
       scrollable_area->ScrollToAbsolutePosition(new_position,
@@ -1575,10 +1570,8 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndAndDirection(current_position,
                                                             displacement);
-    new_position = GetDocument()
-                       .GetSnapCoordinator()
-                       .GetSnapPosition(*box, *strategy)
-                       .value_or(new_position);
+    new_position =
+        scrollable_area->GetSnapPosition(*strategy).value_or(new_position);
     scrollable_area->ScrollToAbsolutePosition(new_position, scroll_behavior);
   }
 }
@@ -1639,7 +1632,7 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
                   scrollable_area->ScrollOffsetToPosition(new_offset)),
               scroll_to_options->hasLeft(), scroll_to_options->hasTop());
       base::Optional<FloatPoint> snap_point =
-          GetDocument().GetSnapCoordinator().GetSnapPosition(*box, *strategy);
+          scrollable_area->GetSnapPosition(*strategy);
       if (snap_point.has_value()) {
         new_offset =
             scrollable_area->ScrollPositionToOffset(snap_point.value());
@@ -1665,10 +1658,8 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
           cc::SnapSelectionStrategy::CreateForEndPosition(
               gfx::ScrollOffset(new_position), scroll_to_options->hasLeft(),
               scroll_to_options->hasTop());
-      new_position = GetDocument()
-                         .GetSnapCoordinator()
-                         .GetSnapPosition(*box, *strategy)
-                         .value_or(new_position);
+      new_position =
+          scrollable_area->GetSnapPosition(*strategy).value_or(new_position);
       scrollable_area->ScrollToAbsolutePosition(new_position, scroll_behavior);
     }
   }
@@ -1704,10 +1695,7 @@ void Element::ScrollFrameBy(const ScrollToOptions* scroll_to_options) {
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndAndDirection(current_position,
                                                           displacement);
-  new_position = GetDocument()
-                     .GetSnapCoordinator()
-                     .GetSnapPosition(*GetDocument().GetLayoutView(), *strategy)
-                     .value_or(new_position);
+  new_position = viewport->GetSnapPosition(*strategy).value_or(new_position);
   viewport->SetScrollOffset(viewport->ScrollPositionToOffset(new_position),
                             kProgrammaticScroll, scroll_behavior);
 }
@@ -1741,10 +1729,7 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(new_position), scroll_to_options->hasLeft(),
           scroll_to_options->hasTop());
-  new_position = GetDocument()
-                     .GetSnapCoordinator()
-                     .GetSnapPosition(*GetDocument().GetLayoutView(), *strategy)
-                     .value_or(new_position);
+  new_position = viewport->GetSnapPosition(*strategy).value_or(new_position);
   new_offset = viewport->ScrollPositionToOffset(new_position);
   viewport->SetScrollOffset(new_offset, kProgrammaticScroll, scroll_behavior);
 }
@@ -3043,9 +3028,9 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
       UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc);
   }
 
-    ClearChildNeedsStyleRecalc();
-    // We've updated all the children that needs an update (might be 0).
-    display_lock_style_scope.DidUpdateChildStyle();
+  ClearChildNeedsStyleRecalc();
+  // We've updated all the children that needs an update (might be 0).
+  display_lock_style_scope.DidUpdateChildStyle();
 
   if (HasCustomStyleCallbacks())
     DidRecalcStyle(child_change);

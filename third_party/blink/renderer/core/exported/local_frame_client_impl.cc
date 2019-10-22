@@ -677,16 +677,6 @@ void LocalFrameClientImpl::DidAccessInitialDocument() {
     web_frame_->Client()->DidAccessInitialDocument();
 }
 
-void LocalFrameClientImpl::DidDisplayInsecureContent() {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidDisplayInsecureContent();
-}
-
-void LocalFrameClientImpl::DidContainInsecureFormAction() {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidContainInsecureFormAction();
-}
-
 void LocalFrameClientImpl::DidRunInsecureContent(const SecurityOrigin* origin,
                                                  const KURL& insecure_url) {
   if (web_frame_->Client()) {

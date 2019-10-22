@@ -59,6 +59,9 @@ class ExternalProtocolHandler {
         const GURL& url,
         content::WebContents* web_contents) = 0;
     virtual void FinishedProcessingCheck() = 0;
+
+    virtual void OnSetBlockState(const std::string& scheme,
+                                 ExternalProtocolHandler::BlockState state) {}
     virtual ~Delegate() {}
   };
 

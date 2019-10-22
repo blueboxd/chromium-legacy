@@ -202,16 +202,9 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_UI_HEADER_HTML"
                  file="ui/header.html"
-                 type="chrome_html"
-                 preprocess="true" />
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_UI_HEADER_JS"
                  file="ui/header.js"
-                 type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_UI_HEADER_NEW_HTML"
-                 file="ui/header_new.html"
-                 type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_UI_HEADER_NEW_JS"
-                 file="ui/header_new.js"
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_UI_BUTTON_STRIP_HTML"
                  file="ui/button_strip.html"

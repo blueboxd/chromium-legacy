@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "content/public/browser/notification_service.h"
@@ -27,6 +28,7 @@ namespace chromeos {
 KioskAppMenuController::KioskAppMenuController() {
   kiosk_observer_.Add(KioskAppManager::Get());
   arc_kiosk_observer_.Add(ArcKioskAppManager::Get());
+  web_kiosk_observer_.Add(WebKioskAppManager::Get());
 }
 
 KioskAppMenuController::~KioskAppMenuController() = default;
@@ -45,6 +47,10 @@ void KioskAppMenuController::OnKioskAppsSettingsChanged() {
 }
 
 void KioskAppMenuController::OnArcKioskAppsChanged() {
+  SendKioskApps();
+}
+
+void KioskAppMenuController::OnWebKioskAppsChanged() {
   SendKioskApps();
 }
 
@@ -70,21 +76,29 @@ void KioskAppMenuController::SendKioskApps() {
     output.push_back(std::move(menu_entry));
   }
 
+  const gfx::ImageSkia default_icon = *ui::ResourceBundle::GetSharedInstance()
+                                           .GetImageNamed(IDR_APP_DEFAULT_ICON)
+                                           .ToImageSkia();
+
   std::vector<ArcKioskAppData*> arc_apps;
   ArcKioskAppManager::Get()->GetAllApps(&arc_apps);
   for (ArcKioskAppData* app : arc_apps) {
     ash::KioskAppMenuEntry menu_entry;
     menu_entry.account_id = app->account_id();
     menu_entry.name = base::UTF8ToUTF16(app->name());
-    if (app->icon().isNull()) {
-      menu_entry.icon = *ui::ResourceBundle::GetSharedInstance()
-                             .GetImageNamed(IDR_APP_DEFAULT_ICON)
-                             .ToImageSkia();
-    } else {
-      menu_entry.icon = app->icon();
-    }
+    menu_entry.icon = app->icon().isNull() ? default_icon : app->icon();
+  }
+
+  std::vector<WebKioskAppManager::SimpleWebAppData> web_apps;
+  WebKioskAppManager::Get()->GetApps(&web_apps);
+  for (const auto& app : web_apps) {
+    ash::KioskAppMenuEntry menu_entry;
+    menu_entry.account_id = app.account_id;
+    menu_entry.name = base::UTF8ToUTF16(app.name);
+    menu_entry.icon = app.icon.isNull() ? default_icon : app.icon;
     output.push_back(std::move(menu_entry));
   }
+
   ash::KioskAppMenu::Get()->SetKioskApps(
       output, base::BindRepeating(&KioskAppMenuController::LaunchApp,
                                   weak_factory_.GetWeakPtr()));

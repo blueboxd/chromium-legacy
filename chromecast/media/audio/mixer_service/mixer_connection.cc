@@ -17,6 +17,7 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/mixer_service/constants.h"
+#include "chromecast/media/audio/mixer_service/mixer_socket.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -40,12 +41,22 @@ constexpr base::TimeDelta kConnectTimeout = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
+std::unique_ptr<MixerSocket> CreateLocalMixerServiceConnection()
+    __attribute__((__weak__));
+
 MixerConnection::MixerConnection() : weak_factory_(this) {}
 
 MixerConnection::~MixerConnection() = default;
 
 void MixerConnection::Connect() {
   DCHECK(!connecting_socket_);
+  if (CreateLocalMixerServiceConnection) {
+    auto socket = CreateLocalMixerServiceConnection();
+    if (socket) {
+      OnConnected(std::move(socket));
+      return;
+    }
+  }
 
 #if BUILDFLAG(USE_UNIX_SOCKETS)
   const base::CommandLine* command_line =
@@ -87,7 +98,8 @@ void MixerConnection::ConnectCallback(int result) {
     LOG_IF(INFO, !log_timeout_) << "Now connected to mixer service";
     log_connection_failure_ = true;
     log_timeout_ = true;
-    OnConnected(std::move(connecting_socket_));
+    auto socket = std::make_unique<MixerSocket>(std::move(connecting_socket_));
+    OnConnected(std::move(socket));
     return;
   }
 

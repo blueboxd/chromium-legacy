@@ -264,8 +264,6 @@ jumbo_source_set("browser_sources") {
     "info_map.cc",
     "info_map.h",
     "install_flag.h",
-    "io_thread_extension_message_filter.cc",
-    "io_thread_extension_message_filter.h",
     "json_file_sanitizer.cc",
     "json_file_sanitizer.h",
     "lazy_background_task_queue.cc",

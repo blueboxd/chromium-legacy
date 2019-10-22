@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Huono</translation>
 <translation id="1152528166145813711">Valitse…</translation>
 <translation id="1199593201721843963">Poista etäyhteydet käytöstä</translation>
+<translation id="1201402288615127009">Seuraava</translation>
 <translation id="1291443878853470558">Etäyhteydet on otettava käyttöön, jotta tietokonetta voidaan käyttää Chromotingin avulla.</translation>
 <translation id="1297009705180977556">Virhe yhdistettäessä isäntään <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(Tämä ominaisuus ei ole vielä saatavilla tietokoneellesi.)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome-etäkäyttö on nyt verkossa. Kokeile <ph name="LINK_BEGIN" />verkkosovellusta<ph name="LINK_END" />: se on nopea ja maksuton ja siinä on entistä enemmän ominaisuuksia, mukaan lukien parannettu useiden näyttöjen tuki.</translation>
 <translation id="1643640058022401035">Vaihtamalla sivua päätät Chromoting-käyttökerran.</translation>
 <translation id="1654128982815600832">Otetaan tietokoneen etäyhteyksiä käyttöön…</translation>
+<translation id="1697532407822776718">Kaikki on valmista.</translation>
 <translation id="170207782578677537">Tietokoneen rekisteröinti epäonnistui.</translation>
 <translation id="174018511426417793">Käyttöösi ei ole rekisteröity tietokoneita. Ota käyttöön etäyhteys asentamalla toiselle tietokoneelle Chrome-etäkäyttö ja klikkaamalla painiketta <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Yhdistetään…</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Isäntäprosessi</translation>
 <translation id="20876857123010370">Ohjauslevytila</translation>
 <translation id="2089514346391228378">Tietokoneen etäyhteydet on otettu käyttöön.</translation>
+<translation id="2198363917176605566">Jos haluat, että <ph name="PRODUCT_NAME" /> on käytettävissä, sinun on myönnettävä Näytön tallennus ‑käyttölupa, jotta tämän Macin näytön sisältö voidaan lähettää etälaitteelle.
+
+Jos haluat myöntää käyttöluvan, valitse alta <ph name="BUTTON_NAME" />, niin näytön tallennuksen asetuspaneeli avautuu. Valitse sitten ruutu kohdasta <ph name="SERVICE_SCRIPT_NAME" />.
+
+Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittuna, poista valinta ja valitse se uudelleen.</translation>
 <translation id="2208514473086078157">Käytäntöasetukset eivät salli tämän tietokoneen jakamista Chrome-etäkäyttöisäntänä. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="2220529011494928058">Ilmoita ongelmasta</translation>
 <translation id="2221097377466213233">Käytä oikeanpuoleista Ctrl-painiketta Win-painikkeena (⌘ Macilla)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Havaittiin verkossa viimeksi <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Tätä sovellusta ei enää tueta. Varmista, että saat uusimmat ominaisuudet ja tietoturvapäivitykset, käyttämällä <ph name="LINK_BEGIN" />Chrome-etäkäyttö-verkkosovellusta<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Auta meitä parantamaan Chrome-etäkäyttöä antamalla meidän kerätä käyttötilastoja ja virheraportteja.</translation>
+<translation id="2504109125669302160">Myönnä Esteettömyys-käyttölupa: <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Yhdistetty isäntään <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Huomaa: voit varmistaa kaikkien pikanäppäinten käytettävyyden, kun määrität Chrome-etäkäytön avautumaan ikkunassa.</translation>
 <translation id="2540992418118313681">Haluatko jakaa tämän tietokoneen niin, että toinen käyttäjä voi käyttää ja valvoa sitä?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Ydinkirjasto</translation>
 <translation id="4430435636878359009">Poista käytöstä etäyhteydet tähän tietokoneeseen</translation>
 <translation id="4430915108080446161">Luodaan käyttökoodia...</translation>
+<translation id="443560535555262820">Avaa esteettömyysasetukset</translation>
 <translation id="4450893287417543264">Älä näytä uudelleen</translation>
 <translation id="4472575034687746823">Aloita</translation>
 <translation id="4481276415609939789">Käyttöösi ei ole rekisteröity tietokoneita. Ota käyttöön etäyhteys asentamalla toiselle tietokoneelle Chromoting ja klikkaamalla painiketta <ph name="BUTTON_NAME" />.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Vaihda PIN-koodi</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (vanhentunut)</translation>
 <translation id="6221358653751391898">Et ole kirjautunut Chromeen. Kirjaudu sisään ja yritä uudelleen.</translation>
+<translation id="6223301979382383752">Avaa näytön tallennuksen asetukset</translation>
 <translation id="6227369581881558336">Chrome-etäkäyttö on nyt verkossa uusine ominaisuuksineen, mukaan lukien tiedostonsiirto. Tutustu <ph name="LINK_BEGIN" />verkkosovellukseen<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Konsolin logiikkaruudussa käynnissä ollut isäntä sulkeutui tukeakseen verhotilaa. Vaihdetaan käyttäjäkohtaisessa istunnossa käynnissä olevaan isäntään.</translation>
 <translation id="629730747756840877">Tili</translation>
 <translation id="6304318647555713317">Asiakas</translation>
 <translation id="6381670701864002291">Jokin muu syy.</translation>
 <translation id="6398765197997659313">Poistu koko näytön tilasta</translation>
+<translation id="6411861157501911556">Jos haluat, että <ph name="PRODUCT_NAME" /> on käytettävissä, sinun on myönnettävä Esteettömyys-käyttölupa, jotta etäkoneen syöte voidaan siirtää tälle Macille.
+
+Myönnä käyttölupa valitsemalla alta <ph name="BUTTON_NAME" />, mikä avaa esteettömyyden asetuspaneelin. Valitse sitten ruutu kohdasta <ph name="SERVICE_SCRIPT_NAME" />.
+
+Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittu, poista valinta ja valitse se uudelleen.</translation>
 <translation id="6441316101718669559">Tämä alusta ei tue työpöydän integraatiota. Voit silti käyttää sovellusta, mutta käyttökokemus on heikompi.</translation>
 <translation id="652218476070540101">Tietokoneen PIN-koodia päivitetään…</translation>
 <translation id="6527303717912515753">Jaa</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Pidä koko etätyöpöytä näkyvissä</translation>
 <translation id="9149992051684092333">Aloita työpöydän jakaminen antamalla käyttökoodi sinua avustavalle henkilölle.</translation>
 <translation id="916856682307586697">Käynnistä XSession-oletuskäyttökerta</translation>
+<translation id="9187628920394877737">Myönnä Näytön tallennus ‑käyttölupa: <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Valtuuta</translation>
 <translation id="9213184081240281106">Isännän omistajan määritykset ovat virheelliset.</translation>
 <translation id="951991426597076286">Hylkää</translation>

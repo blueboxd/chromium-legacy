@@ -49,11 +49,6 @@ Polymer({
 
     isPdf: Boolean,
 
-    newPrintPreviewLayout: {
-      type: Boolean,
-      reflectToAttribute: true,
-    },
-
     pageCount: Number,
 
     /** @type {!print_preview.State} */

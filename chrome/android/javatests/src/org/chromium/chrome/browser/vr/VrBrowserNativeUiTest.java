@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-webvr"})
+        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserNativeUiTest {
     // We need to make sure the port is constant, otherwise the URL changes between test runs, which

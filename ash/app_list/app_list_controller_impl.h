@@ -275,6 +275,8 @@ class ASH_EXPORT AppListControllerImpl
   void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,
                                              bool launcher_will_show) override;
   bool IsHomeScreenVisible() override;
+  gfx::Rect GetInitialAppListItemScreenBoundsForWindow(
+      aura::Window* window) override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 

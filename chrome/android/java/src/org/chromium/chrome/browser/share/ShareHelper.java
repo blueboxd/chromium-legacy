@@ -52,6 +52,8 @@ import org.chromium.chrome.R;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid.IntentCallback;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -91,7 +93,6 @@ public class ShareHelper {
     private static final String PACKAGE_NAME_KEY = "last_shared_package_name";
     private static final String CLASS_NAME_KEY = "last_shared_class_name";
     private static final String EXTRA_SHARE_SCREENSHOT_AS_STREAM = "share_screenshot_as_stream";
-    private static final long COMPONENT_INFO_READ_TIMEOUT_IN_MS = 1000;
 
     /**
      * Directory name for shared images.
@@ -122,16 +123,20 @@ public class ShareHelper {
     /**
      * Fire the intent to share content with the target app.
      *
-     * @param activity The current activity.
+     * @param window The current window.
      * @param intent The intent to fire.
-     * @param allowIdentification Allow the target app to identify Chrome as the source.
+     * @param callback The callback to be triggered when the calling activity has finished.  This
+     *                 allows the target app to identify Chrome as the source.
      */
-    private static void fireIntent(Activity activity, Intent intent, boolean allowIdentification) {
+    private static void fireIntent(
+            WindowAndroid window, Intent intent, @Nullable IntentCallback callback) {
         if (sFakeIntentReceiverForTesting != null) {
             sFakeIntentReceiverForTesting.fireIntent(ContextUtils.getApplicationContext(), intent);
-        } else if (allowIdentification) {
-            activity.startActivityForResult(intent, 0);
+        } else if (callback != null) {
+            window.showIntent(intent, callback, null);
         } else {
+            // TODO(tedchoc): Allow startActivity w/o intent via Window.
+            Activity activity = window.getActivity().get();
             activity.startActivity(intent);
         }
     }
@@ -191,7 +196,7 @@ public class ShareHelper {
     /**
      * Receiver to record the chosen component when sharing an Intent.
      */
-    static class TargetChosenReceiver extends BroadcastReceiver {
+    static class TargetChosenReceiver extends BroadcastReceiver implements IntentCallback {
         private static final String EXTRA_RECEIVER_TOKEN = "receiver_token";
         private static final String EXTRA_SOURCE_PACKAGE_NAME = "source_package_name";
         private static final Object LOCK = new Object();
@@ -200,7 +205,8 @@ public class ShareHelper {
         private static TargetChosenReceiver sLastRegisteredReceiver;
 
         private final boolean mSaveLastUsed;
-        @Nullable private final TargetChosenCallback mCallback;
+        @Nullable
+        private TargetChosenCallback mCallback;
 
         private TargetChosenReceiver(boolean saveLastUsed,
                                      @Nullable TargetChosenCallback callback) {
@@ -214,12 +220,14 @@ public class ShareHelper {
         }
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
-        static void sendChooserIntent(boolean saveLastUsed, Activity activity, Intent sharingIntent,
-                @Nullable TargetChosenCallback callback, @Nullable String sourcePackageName) {
+        static void sendChooserIntent(boolean saveLastUsed, WindowAndroid window,
+                Intent sharingIntent, @Nullable TargetChosenCallback callback,
+                @Nullable String sourcePackageName) {
+            final String packageName = ContextUtils.getApplicationContext().getPackageName();
             synchronized (LOCK) {
                 if (sTargetChosenReceiveAction == null) {
-                    sTargetChosenReceiveAction = activity.getPackageName() + "/"
-                            + TargetChosenReceiver.class.getName() + "_ACTION";
+                    sTargetChosenReceiveAction =
+                            packageName + "/" + TargetChosenReceiver.class.getName() + "_ACTION";
                 }
                 Context context = ContextUtils.getApplicationContext();
                 if (sLastRegisteredReceiver != null) {
@@ -236,9 +244,10 @@ public class ShareHelper {
             }
 
             Intent intent = new Intent(sTargetChosenReceiveAction);
-            intent.setPackage(activity.getPackageName());
+            intent.setPackage(packageName);
             intent.putExtra(EXTRA_RECEIVER_TOKEN, sLastRegisteredReceiver.hashCode());
             intent.putExtra(EXTRA_SOURCE_PACKAGE_NAME, sourcePackageName);
+            Activity activity = window.getActivity().get();
             final PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 0, intent,
                     PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
             Intent chooserIntent = Intent.createChooser(sharingIntent,
@@ -247,7 +256,7 @@ public class ShareHelper {
             if (sFakeIntentReceiverForTesting != null) {
                 sFakeIntentReceiverForTesting.setIntentToSendBack(intent);
             }
-            fireIntent(activity, chooserIntent, false);
+            fireIntent(window, chooserIntent, sLastRegisteredReceiver);
         }
 
         @Override
@@ -266,15 +275,24 @@ public class ShareHelper {
             String sourcePackageName = intent.getStringExtra(EXTRA_SOURCE_PACKAGE_NAME);
             if (mCallback != null) {
                 mCallback.onTargetChosen(target);
+                mCallback = null;
             }
             if (mSaveLastUsed && target != null) {
                 setLastShareComponentName(target, sourcePackageName);
             }
         }
 
+        @Override
+        public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
+            if (resultCode == Activity.RESULT_CANCELED) {
+                cancel();
+            }
+        }
+
         private void cancel() {
             if (mCallback != null) {
                 mCallback.onCancel();
+                mCallback = null;
             }
         }
     }
@@ -386,37 +404,40 @@ public class ShareHelper {
 
     /**
      * Share an image URI with an activity identified by the provided Component Name.
-     * @param activity The current activity
+     * @param window The current window.
      * @param name The component name of the activity to share the image with.
      * @param imageUri The url to share with the external activity.
      */
-    public static void shareImage(final Activity activity, final ComponentName name, Uri imageUri) {
+    public static void shareImage(
+            final WindowAndroid window, final ComponentName name, Uri imageUri) {
         Intent shareIntent = getShareImageIntent(imageUri);
         if (name == null) {
             if (TargetChosenReceiver.isSupported()) {
-                TargetChosenReceiver.sendChooserIntent(true, activity, shareIntent, null, null);
+                TargetChosenReceiver.sendChooserIntent(true, window, shareIntent, null, null);
             } else {
-                Intent chooserIntent = Intent.createChooser(
-                        shareIntent, activity.getString(R.string.share_link_chooser_title));
-                fireIntent(activity, chooserIntent, false);
+                Intent chooserIntent = Intent.createChooser(shareIntent,
+                        window.getActivity().get().getString(R.string.share_link_chooser_title));
+                fireIntent(window, chooserIntent, null);
             }
         } else {
             shareIntent.setComponent(name);
-            fireIntent(activity, shareIntent, false);
+            fireIntent(window, shareIntent, null);
         }
     }
 
     /**
      * Share an image URI with Google Lens.
-     * @param activity The current activity
+     * @param window The current window.
      * @param imageUri The url to share with the app.
      * @param isIncognito Whether the current tab is in incognito mode.
      */
     public static void shareImageWithGoogleLens(
-            final Activity activity, Uri imageUri, boolean isIncognito) {
+            final WindowAndroid window, Uri imageUri, boolean isIncognito) {
         Intent shareIntent = LensUtils.getShareWithGoogleLensIntent(imageUri, isIncognito);
         try {
-            fireIntent(activity, shareIntent, /* allowIdentification= */ true);
+            // Pass an empty callback to ensure the triggered activity can identify the source
+            // of the intent (startActivityForResult allows app identification).
+            fireIntent(window, shareIntent, (w, resultCode, data) -> {});
         } catch (ActivityNotFoundException e) {
             // The initial version check should guarantee that the activity is available. However,
             // the exception may be thrown in test environments after mocking out the version check.
@@ -492,7 +513,7 @@ public class ShareHelper {
      * @param params The container holding the share parameters.
      */
     private static void showShareDialog(final ShareParams params) {
-        Activity activity = params.getActivity();
+        Activity activity = params.getWindow().getActivity().get();
         final TargetChosenCallback callback = params.getCallback();
         Intent intent = getShareLinkAppCompatibilityIntent();
         PackageManager manager = activity.getPackageManager();
@@ -556,10 +577,10 @@ public class ShareHelper {
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         intent.setComponent(component);
         if (intent.getComponent() != null) {
-            fireIntent(params.getActivity(), intent, false);
+            fireIntent(params.getWindow(), intent, null);
         } else {
             assert TargetChosenReceiver.isSupported();
-            TargetChosenReceiver.sendChooserIntent(params.saveLastUsed(), params.getActivity(),
+            TargetChosenReceiver.sendChooserIntent(params.saveLastUsed(), params.getWindow(),
                     intent, params.getCallback(), params.getSourcePackageName());
         }
     }
@@ -657,7 +678,7 @@ public class ShareHelper {
                 isMultipleFileShare ? Intent.ACTION_SEND_MULTIPLE : Intent.ACTION_SEND;
         Intent intent = new Intent(action);
         intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
-        intent.putExtra(EXTRA_TASK_ID, params.getActivity().getTaskId());
+        intent.putExtra(EXTRA_TASK_ID, params.getWindow().getActivity().get().getTaskId());
 
         Uri screenshotUri = params.getScreenshotUri();
         if (screenshotUri != null) {

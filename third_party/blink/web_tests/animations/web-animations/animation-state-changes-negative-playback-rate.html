@@ -82,7 +82,7 @@ test(function() {
 
 test(function() {
   var animation = finishedAnimation();
-  assert_times_equal(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
+  assert_equals(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
   assert_equals(animation.currentTime, 0);
   assert_false(animation.pending);
   assert_equals(animation.playState, 'finished');
@@ -118,7 +118,7 @@ test(function() {
 test(function() {
   var animation = idleAnimation();
   animation.finish();
-  assert_times_equal(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
+  assert_equals(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
   assert_equals(animation.currentTime, 0);
   assert_false(animation.pending);
   assert_equals(animation.playState, 'finished');
@@ -221,7 +221,7 @@ test(function() {
   animation.play();
   assert_equals(animation.startTime, startTime);
   assert_equals(animation.currentTime, currentTime);
-  assert_false(animation.pending);
+  assert_true(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Calling play() on a running animation");
 

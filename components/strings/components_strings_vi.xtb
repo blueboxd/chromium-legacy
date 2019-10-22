@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Tải trang vào lúc khác</translation>
 <translation id="1015730422737071372">Cung cấp chi tiết bổ sung</translation>
 <translation id="1021110881106174305">Thẻ được chấp nhận</translation>
-<translation id="1023523064224774104">Chromium phát hiện thấy bạn vừa nhập mật khẩu vào một trang web
-          đáng ngờ. Vui lòng đặt lại mật khẩu của bạn ngay bây giờ!</translation>
 <translation id="1032854598605920125">Xoay theo chiều kim đồng hồ</translation>
 <translation id="1035334672863811645">đăng nhập vào Chrome</translation>
 <translation id="1036348656032585052">Tắt</translation>
@@ -552,7 +550,6 @@
 <translation id="3655670868607891010">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="HELP_LINK" /> sau.</translation>
 <translation id="3658742229777143148">Bản sửa đổi</translation>
 <translation id="366077651725703012">Cập nhật thẻ tín dụng</translation>
-<translation id="3672525478985456967">Tên trang web này trông giống với <ph name="LOOKALIKE_DOMAIN" />. Kẻ tấn công đôi khi bắt chước các trang web bằng cách thực hiện các thay đổi nhỏ đối với tên miền mà bạn khó phát hiện ra.</translation>
 <translation id="3676592649209844519">ID thiết bị:</translation>
 <translation id="3677008721441257057">Ý bạn là &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Không thể ký yêu cầu</translation>
@@ -876,7 +873,6 @@
 <translation id="5230733896359313003">Địa chỉ giao hàng</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Loại bỏ</translation>
 <translation id="5250209940322997802">"Kết nối với mạng"</translation>
 <translation id="5251803541071282808">Đám mây</translation>
 <translation id="5252000469029418751">C7 (Phong bì)</translation>
@@ -1018,7 +1014,6 @@
 <translation id="5946937721014915347">Đang mở <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Có, thêm</translation>
 <translation id="5951495562196540101">Không thể đăng ký bằng tài khoản người dùng thông thường (có sẵn giấy phép theo gói).</translation>
-<translation id="5966900314707961320">Khi tính năng này đang bật, các trang web không thể dùng cookie theo dõi bạn trên web</translation>
 <translation id="5967592137238574583">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="5967867314010545767">Xóa khỏi lịch sử</translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>
@@ -1114,7 +1109,6 @@
 <translation id="6433490469411711332">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> đã từ chối kết nối.</translation>
 <translation id="6434309073475700221">Hủy</translation>
-<translation id="6435221585574090192">Chia sẻ với Quản trị viên các dữ liệu về những sự kiện bảo mật mà tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise đã gắn cờ. Các dữ liệu này có thể bao gồm cả URL trang, tên tệp và siêu dữ liệu tệp, tên người dùng Chrome và tên người dùng thiết bị của bạn.</translation>
 <translation id="6440503408713884761">Bị bỏ qua</translation>
 <translation id="6446163441502663861">Kahu (Phong bì)</translation>
 <translation id="6446608382365791566">Thêm thông tin khác</translation>
@@ -1458,7 +1452,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8184538546369750125">Sử dụng cài đặt mặc định chung (Cho phép)</translation>
 <translation id="8194797478851900357">&amp;Hoàn tác di chuyển</translation>
 <translation id="8197543752516192074">Dịch trang</translation>
-<translation id="8197899142098070286">Chrome phát hiện thấy bạn vừa nhập mật khẩu vào một trang web đáng ngờ. Vui lòng đặt lại mật khẩu của bạn ngay bây giờ!</translation>
 <translation id="8201077131113104583">URL cập nhật không hợp lệ cho tiện ích có ID "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Tóm tắt đơn đặt hàng</translation>
 <translation id="8202370299023114387">Xung đột</translation>
@@ -1546,7 +1539,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8718314106902482036">Thanh toán chưa hoàn tất</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, đề xuất tìm kiếm</translation>
 <translation id="8719528812645237045">Đục nhiều lỗ trên cùng</translation>
-<translation id="8723954843026426558">Tôi đồng ý với điều khoản và điều kiện, chính sách quyền riêng tư, cũng như quyền rút lui của <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728672262656704056">Bạn đã chuyển sang chế độ ẩn danh</translation>
 <translation id="8730621377337864115">Xong</translation>

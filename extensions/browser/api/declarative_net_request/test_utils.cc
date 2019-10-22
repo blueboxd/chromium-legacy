@@ -48,27 +48,6 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
                            rhs.response_headers_to_remove);
 }
 
-bool AreRequestActionsEqual(const std::vector<RequestAction>& lhs,
-                            const std::vector<RequestAction>& rhs) {
-  std::set<const RequestAction*> unmatched_rhs_actions;
-  for (const auto& action : rhs)
-    unmatched_rhs_actions.insert(&action);
-
-  for (const auto& lhs_action : lhs) {
-    auto iter =
-        std::find_if(unmatched_rhs_actions.begin(), unmatched_rhs_actions.end(),
-                     [&lhs_action](const RequestAction* rhs_action) {
-                       return lhs_action == *rhs_action;
-                     });
-
-    if (iter == unmatched_rhs_actions.end())
-      return false;
-    unmatched_rhs_actions.erase(iter);
-  }
-
-  return true;
-}
-
 bool HasValidIndexedRuleset(const Extension& extension,
                             content::BrowserContext* browser_context) {
   int expected_checksum;

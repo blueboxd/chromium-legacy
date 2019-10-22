@@ -9,8 +9,14 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chromecast/media/audio/mixer_service/audio_socket_service.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace chromecast {
 namespace media {
@@ -31,18 +37,30 @@ class Receiver : public AudioSocketService::Delegate {
   virtual void CreateControlConnection(std::unique_ptr<MixerSocket> socket,
                                        const Generic& message) = 0;
 
+  // Creates a local (in-process) connection to this receiver. May be called on
+  // any thread; the returned MixerSocket can only be used on the calling
+  // thread. The returned socket must have its delegate set immediately.
+  std::unique_ptr<MixerSocket> LocalConnect();
+
  private:
   class InitialSocket;
 
-  void RemoveInitialSocket(InitialSocket* socket);
-
   // AudioSocketService::Delegate implementation:
   void HandleAcceptedSocket(std::unique_ptr<net::StreamSocket> socket) override;
+
+  void HandleLocalConnection(std::unique_ptr<MixerSocket> socket);
+
+  void AddInitialSocket(std::unique_ptr<InitialSocket> initial_socket);
+  void RemoveInitialSocket(InitialSocket* socket);
+
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   AudioSocketService socket_service_;
 
   base::flat_map<InitialSocket*, std::unique_ptr<InitialSocket>>
       initial_sockets_;
+
+  base::WeakPtrFactory<Receiver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Receiver);
 };

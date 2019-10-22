@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minut tagasi}other{# minutit tagasi}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1m}other{#m}}</translation>
 <translation id="1181037720776840403">Eemalda</translation>
+<translation id="1201402288615127009">Edasi</translation>
 <translation id="1243314992276662751">Laadi üles</translation>
 <translation id="1266864766717917324">Üksust <ph name="CONTENT_TYPE" /> ei õnnestunud jagada</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Puudutage ekraanil puutesihtmärke.</translation>
 <translation id="2295140143284145483">Küsitlus</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Interneti-ühenduse kontrollimine</translation>
 <translation id="2388990488038464401">Kas soovite telefonist sellele numbrile helistada?</translation>
 <translation id="24452542372838207">Laienda märguannet</translation>
 <translation id="2445449901874883781">Kasuta kõrget tihedust</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekund on jäänud}other{# sekundit on jäänud}}</translation>
 <translation id="5941711191222866238">Minimeeri</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 tund}other{# tundi}}</translation>
+<translation id="5946629889255121107">Number lähtestati saidil <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Leht <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Kustuta otsingukastis olev tekst</translation>
 <translation id="6040143037577758943">Sulge</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Faili salvestamine</translation>
 <translation id="6656912866303152668">Veenduge, et seadmes <ph name="TARGET_DEVICE_NAME" /> oleks Chrome'i sünkroonimine sisse lülitatud, ja proovige siis uuesti saata.</translation>
 <translation id="6699343763173986273">Meediumi järgmine lugu</translation>
+<translation id="6710213216561001401">Eelmine</translation>
 <translation id="6779314412797872738">Selleks et number siit teie Android-telefoni saata, tehke mõlema seadme puhul seadetes järgmist: <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">Kausta sulgemine</translation>
 <translation id="6808150112686056157">Meediumi peatamine</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min on jäänud}other{# min on jäänud}}</translation>
 <translation id="7319740667687257810">Käivitusprogramm, osaline vaade</translation>
+<translation id="7352651011704765696">Midagi läks valesti</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min tagasi}other{# min tagasi}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut on jäänud}other{# minutit on jäänud}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 tund tagasi}other{# tundi tagasi}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s on jäänud}other{# s on jäänud}}</translation>
+<translation id="8134065097954893699">Lehe uuesti laadimine</translation>
 <translation id="8144660977431427332">Teie otsingud toimuvad Google'i assistendi toel. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automaatne täitmine</translation>
 <translation id="815598010540052116">Keri alla</translation>

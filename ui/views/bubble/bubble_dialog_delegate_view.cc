@@ -94,11 +94,11 @@ Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
   bubble_params.remove_standard_frame = true;
   // Use a window default shadow if the bubble doesn't provides its own.
   if (bubble->GetShadow() == BubbleBorder::NO_ASSETS)
-    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_DEFAULT;
+    bubble_params.shadow_type = Widget::InitParams::ShadowType::kDefault;
   else if (CustomShadowsSupported())
-    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+    bubble_params.shadow_type = Widget::InitParams::ShadowType::kNone;
   else
-    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
+    bubble_params.shadow_type = Widget::InitParams::ShadowType::kDrop;
   if (bubble->parent_window())
     bubble_params.parent = bubble->parent_window();
   else if (bubble->anchor_widget())

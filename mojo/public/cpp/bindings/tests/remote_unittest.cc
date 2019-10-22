@@ -22,8 +22,10 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
+#include "mojo/public/cpp/bindings/tests/remote_unittest.test-mojom.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/interfaces/bindings/tests/math_calculator.mojom.h"
@@ -34,6 +36,7 @@
 
 namespace mojo {
 namespace test {
+namespace remote_unittest {
 namespace {
 
 class MathCalculatorImpl : public math::Calculator {
@@ -934,6 +937,60 @@ TEST_P(RemoteTest, SharedRemoteWithTaskRunner) {
   shared_remote.reset();
 }
 
+constexpr int32_t kMagicNumber = 42;
+
+class SharedRemoteSyncTestImpl : public mojom::SharedRemoteSyncTest {
+ public:
+  SharedRemoteSyncTestImpl() = default;
+  ~SharedRemoteSyncTestImpl() override = default;
+
+  // mojom::SharedRemoteSyncTest implementation:
+  void Fetch(FetchCallback callback) override {
+    // Post an async task to our current task runner to respond to this message.
+    // Because the Remote and Receiver are bound to the same sequence, this will
+    // only run if the Remote doesn't block the sequence on the sync call made
+    // by the test below.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), kMagicNumber));
+  }
+};
+
+TEST_P(RemoteTest, SharedRemoteSyncOnlyBlocksCallingSequence) {
+  // Verifies that a sync call on a SharedRemote only blocks the calling
+  // sequence, not the sequence to which the underlying Remote is bound.
+  // See https://crbug.com/1016022.
+
+  const scoped_refptr<base::SequencedTaskRunner> bound_task_runner =
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::WithBaseSyncPrimitives()});
+
+  PendingRemote<mojom::SharedRemoteSyncTest> pending_remote;
+  auto receiver = pending_remote.InitWithNewPipeAndPassReceiver();
+
+  SharedRemote<mojom::SharedRemoteSyncTest> remote(std::move(pending_remote),
+                                                   bound_task_runner);
+  bound_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](mojo::PendingReceiver<mojom::SharedRemoteSyncTest> receiver) {
+            mojo::MakeSelfOwnedReceiver(
+                std::make_unique<SharedRemoteSyncTestImpl>(),
+                std::move(receiver));
+          },
+          std::move(receiver)));
+
+  int32_t value = 0;
+  remote->Fetch(&value);
+  EXPECT_EQ(kMagicNumber, value);
+
+  remote.reset();
+
+  // Resetting |remote| above will ultimately post a task to |bound_task_runner|
+  // to signal a connection error and trigger the self-owned Receiver's
+  // destruction. This ensures that the task will run, avoiding leaks.
+  task_environment()->RunUntilIdle();
+}
+
 TEST_P(RemoteTest, RemoteSet) {
   std::vector<base::Optional<MathCalculatorImpl>> impls(3);
 
@@ -1023,5 +1080,6 @@ TEST_P(RemoteTest, RemoteSet) {
 INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(RemoteTest);
 
 }  // namespace
+}  // namespace remote_unittest
 }  // namespace test
 }  // namespace mojo

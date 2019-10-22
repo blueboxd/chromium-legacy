@@ -311,7 +311,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   ScrollArrowView* right_arrow_ = nullptr;
   ShelfContainerView* shelf_container_view_ = nullptr;
 
-  // Available space to accommodate child views.
+  // Available space to accommodate child views. It is mirrored for horizontal
+  // shelf under RTL.
   gfx::Rect available_space_;
 
   // Visible space of |shelf_container_view| in ScrollableShelfView's local

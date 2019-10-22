@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 
+#include "base/callback_helpers.h"
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -141,7 +142,34 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return nullptr;
   }
   virtual void SetSnapContainerData(base::Optional<cc::SnapContainerData>) {}
-  virtual void SnapAfterScrollbarScrolling(ScrollbarOrientation) {}
+  void SnapAfterScrollbarScrolling(ScrollbarOrientation);
+
+  // SnapAtCurrentPosition(), SnapForEndPosition(), SnapForDirection(), and
+  // SnapForEndAndDirection() return true if snapping was performed, and false
+  // otherwise. Note that this does not necessarily mean that any scrolling was
+  // performed as a result e.g., if we are already at the snap point.
+  // The scroll callback parameter is used to set the hover state dirty and
+  // send a scroll end event when the scroll ends without snap or the snap
+  // point is the same as the scroll position.
+  //
+  // SnapAtCurrentPosition() calls SnapForEndPosition() with the current
+  // scroll position.
+  bool SnapAtCurrentPosition(
+      bool scrolled_x,
+      bool scrolled_y,
+      base::ScopedClosureRunner on_finish = base::ScopedClosureRunner());
+  bool SnapForEndPosition(
+      const FloatPoint& end_position,
+      bool scrolled_x,
+      bool scrolled_y,
+      base::ScopedClosureRunner on_finish = base::ScopedClosureRunner());
+  bool SnapForDirection(
+      const ScrollOffset& delta,
+      base::ScopedClosureRunner on_finish = base::ScopedClosureRunner());
+  bool SnapForEndAndDirection(const ScrollOffset& delta);
+
+  base::Optional<FloatPoint> GetSnapPosition(
+      const cc::SnapSelectionStrategy& strategy) const;
 
   void FinishCurrentScrollAnimations() const;
 
@@ -498,6 +526,11 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual int PageStep(ScrollbarOrientation) const;
   virtual int DocumentStep(ScrollbarOrientation) const;
   virtual float PixelStep(ScrollbarOrientation) const;
+
+  // Returns true if a snap point was found.
+  bool PerformSnapping(
+      const cc::SnapSelectionStrategy& strategy,
+      base::ScopedClosureRunner on_finish = base::ScopedClosureRunner());
 
   mutable Member<ScrollAnimatorBase> scroll_animator_;
   mutable Member<ProgrammaticScrollAnimator> programmatic_scroll_animator_;

@@ -84,12 +84,12 @@ class ToolbarManager {
     this.lastMovementTimestamp = null;
 
     /** @private {boolean} */
-    this.reverseSideToolbar_ = false;
+    this.isPrintPreview_ = zoomToolbar.isPrintPreview;
 
     this.window_.addEventListener('resize', this.resizeDropdowns_.bind(this));
     this.resizeDropdowns_();
 
-    if (zoomToolbar.isPrintPreview()) {
+    if (this.isPrintPreview_) {
       this.zoomToolbar_.addEventListener('keyboard-navigation-active', e => {
         this.keyboardNavigationActive = e.detail;
       });
@@ -100,7 +100,7 @@ class ToolbarManager {
   handleMouseMove(e) {
     this.isMouseNearTopToolbar_ = !!this.toolbar_ && isMouseNearTopToolbar(e);
     this.isMouseNearSideToolbar_ =
-        isMouseNearSideToolbar(e, this.window_, this.reverseSideToolbar_);
+        isMouseNearSideToolbar(e, this.window_, this.isPrintPreview_);
 
     this.keyboardNavigationActive = false;
     const touchInteractionActive =
@@ -274,11 +274,6 @@ class ToolbarManager {
     this.sideToolbarAllowedOnlyTimer_ = this.window_.setTimeout(() => {
       this.sideToolbarAllowedOnlyTimer_ = null;
     }, FORCE_HIDE_TIMEOUT);
-  }
-
-  /** Reverse the position of the side toolbar. */
-  reverseSideToolbar() {
-    this.reverseSideToolbar_ = true;
   }
 
   /**

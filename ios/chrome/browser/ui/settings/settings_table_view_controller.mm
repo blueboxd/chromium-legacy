@@ -1007,7 +1007,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
         IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_DISABLBED_BY_ADMINISTRATOR_STATUS);
     googleServicesItem.image =
         [UIImage imageNamed:kSyncAndGoogleServicesSyncOffImageName];
-  } else if (!syncSetupService->HasFinishedInitialSetup()) {
+  } else if (!syncSetupService->IsFirstSetupComplete()) {
     googleServicesItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
     googleServicesItem.image =

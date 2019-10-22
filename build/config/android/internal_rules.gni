@@ -1030,7 +1030,13 @@ if (enable_java_templates) {
             rebase_path(_expected_configs_file, root_build_dir),
           ]
           if (check_android_configuration) {
-            args += [ "--verify-expected-configs" ]
+            _failed_proguard_expectation_file =
+                "$android_configuration_failure_dir/" +
+                "${invoker.failed_proguard_expectation_file}"
+            args += [
+              "--proguard-expectations-failure-file",
+              rebase_path(_failed_proguard_expectation_file, root_build_dir),
+            ]
           }
         }
       }
@@ -1172,6 +1178,7 @@ if (enable_java_templates) {
                                  "build_config",
                                  "disable_r8_outlining",
                                  "deps",
+                                 "failed_proguard_expectation_file",
                                  "proguard_expectations_file",
                                  "proguard_jar_path",
                                  "proguard_mapping_path",
@@ -2400,7 +2407,14 @@ if (enable_java_templates) {
           rebase_path(_normalized_output, root_build_dir),
         ]
         if (check_android_configuration) {
-          args += [ "--fail-if-unexpected-android-manifest" ]
+          _manfiest_expectations_failure_filepath =
+              "$android_configuration_failure_dir/" +
+              "${invoker.failed_manifest_expectation_file}"
+          args += [
+            "--android-manifest-expectations-failure-file",
+            rebase_path(_manfiest_expectations_failure_filepath,
+                        root_build_dir),
+          ]
         }
       }
       if (defined(invoker.manifest_package)) {

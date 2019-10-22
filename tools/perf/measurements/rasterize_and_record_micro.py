@@ -71,8 +71,8 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
     paint_op_memory_usage = data.get('paint_op_memory_usage', 0)
     paint_op_count = data.get('paint_op_count', 0)
 
-    results.AddMeasurement('pixels_recorded', 'pixels', pixels_recorded)
-    results.AddMeasurement('pixels_rasterized', 'pixels', pixels_rasterized)
+    results.AddMeasurement('pixels_recorded', 'count', pixels_recorded)
+    results.AddMeasurement('pixels_rasterized', 'count', pixels_rasterized)
     results.AddMeasurement('rasterize_time', 'ms', rasterize_time)
     results.AddMeasurement('record_time', 'ms', record_time)
     results.AddMeasurement('painter_memory_usage', 'bytes',
@@ -111,8 +111,8 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
       total_picture_layers_off_screen = data['total_picture_layers_off_screen']
 
       results.AddMeasurement('pixels_rasterized_with_non_solid_color',
-                             'pixels', pixels_rasterized_with_non_solid_color)
-      results.AddMeasurement('pixels_rasterized_as_opaque', 'pixels',
+                             'count', pixels_rasterized_with_non_solid_color)
+      results.AddMeasurement('pixels_rasterized_as_opaque', 'count',
                              pixels_rasterized_as_opaque)
       results.AddMeasurement('total_layers', 'count', total_layers)
       results.AddMeasurement('total_picture_layers', 'count',

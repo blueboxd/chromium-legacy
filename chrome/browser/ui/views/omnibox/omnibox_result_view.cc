@@ -53,7 +53,6 @@ OmniboxResultView::OmniboxResultView(
       popup_contents_view_(popup_contents_view),
       model_index_(model_index),
       theme_provider_(theme_provider),
-      is_hovered_(false),
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
 
@@ -107,11 +106,6 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   suggestion_view_->OnMatchUpdate(this, match_);
   keyword_view_->OnMatchUpdate(this, match_);
   suggestion_tab_switch_button_->SetVisible(match.ShouldShowTabMatchButton());
-  // To avoid clutter, don't show the Remove button for matches with keyword.
-  remove_suggestion_button_->SetVisible(
-      match_.SupportsDeletion() && !match.associated_keyword &&
-      base::FeatureList::IsEnabled(
-          omnibox::kOmniboxSuggestionTransparencyOptions));
 
   suggestion_view_->content()->SetText(match_.contents, match_.contents_class);
   if (match_.answer) {
@@ -277,9 +271,14 @@ void OmniboxResultView::Layout() {
     keyword_view_->SetBounds(suggestion_width, 0, width() - suggestion_width,
                              height());
   }
-
   // Add buttons from right to left, shrinking the suggestion width as we go.
+  // To avoid clutter, don't show either button for matches with keyword.
   // TODO(tommycli): We should probably use a layout manager here.
+  remove_suggestion_button_->SetVisible(
+      match_.SupportsDeletion() && !match_.associated_keyword &&
+      IsMouseHovered() && !match_.ShouldShowTabMatchButton() &&
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxSuggestionTransparencyOptions));
   if (remove_suggestion_button_->GetVisible()) {
     const gfx::Size button_size = remove_suggestion_button_->GetPreferredSize();
     suggestion_width -=
@@ -292,6 +291,7 @@ void OmniboxResultView::Layout() {
                                          button_size.width(),
                                          button_size.height());
   }
+
   if (match_.ShouldShowTabMatchButton()) {
     suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);
     const gfx::Size ts_button_size =
@@ -454,6 +454,7 @@ void OmniboxResultView::SetHovered(bool hovered) {
   if (is_hovered_ != hovered) {
     is_hovered_ = hovered;
     Invalidate();
+    InvalidateLayout();
   }
 }
 

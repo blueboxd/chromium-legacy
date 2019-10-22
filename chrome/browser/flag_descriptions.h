@@ -365,6 +365,9 @@ extern const char kEnableDeferAllScriptDescription[];
 extern const char kEnableDeferAllScriptWithoutOptimizationHintsName[];
 extern const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[];
 
+extern const char kEnableEduCoexistenceName[];
+extern const char kEnableEduCoexistenceDescription[];
+
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
 
@@ -388,6 +391,9 @@ extern const char kEnableDataReductionProxyNetworkServiceName[];
 extern const char kEnableDataReductionProxyNetworkServiceDescription[];
 extern const char kEnableDataReductionProxyServerExperimentName[];
 extern const char kEnableDataReductionProxyServerExperimentDescription[];
+
+extern const char kDesktopMinimalUIName[];
+extern const char kDesktopMinimalUIDescription[];
 
 extern const char kEnableDesktopPWAsName[];
 extern const char kEnableDesktopPWAsDescription[];
@@ -799,9 +805,6 @@ extern const char kOnlyNewPasswordFormParsingDescription[];
 
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
-
-extern const char kNewPrintPreviewLayoutName[];
-extern const char kNewPrintPreviewLayoutDescription[];
 
 extern const char kUseSurfaceLayerForVideoName[];
 extern const char kUseSurfaceLayerForVideoDescription[];
@@ -1315,15 +1318,6 @@ extern const char kWebrtcHwDecodingDescription[];
 extern const char kWebrtcHwEncodingName[];
 extern const char kWebrtcHwEncodingDescription[];
 
-extern const char kWebrtcHwH264EncodingName[];
-extern const char kWebrtcHwH264EncodingDescription[];
-
-extern const char kWebrtcHwVP8EncodingName[];
-extern const char kWebrtcHwVP8EncodingDescription[];
-
-extern const char kWebrtcHwVP9EncodingName[];
-extern const char kWebrtcHwVP9EncodingDescription[];
-
 extern const char kWebrtcNewEncodeCpuLoadEstimatorName[];
 extern const char kWebrtcNewEncodeCpuLoadEstimatorDescription[];
 
@@ -1336,11 +1330,13 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kWebUITabStripName[];
 extern const char kWebUITabStripDescription[];
 
-extern const char kWebvrName[];
-extern const char kWebvrDescription[];
+extern const char kWebUITabStripDemoOptionsName[];
+extern const char kWebUITabStripDemoOptionsDescription[];
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 extern const char kWebXrName[];
 extern const char kWebXrDescription[];
@@ -1923,6 +1919,9 @@ extern const char kAshNotificationStackingBarRedesignDescription[];
 
 extern const char kAshSwapSideVolumeButtonsForOrientationName[];
 extern const char kAshSwapSideVolumeButtonsForOrientationDescription[];
+
+extern const char kAshSwipingFromLeftEdgeToGoBackName[];
+extern const char kAshSwipingFromLeftEdgeToGoBackDescription[];
 
 extern const char kBluetoothAggressiveAppearanceFilterName[];
 extern const char kBluetoothAggressiveAppearanceFilterDescription[];

@@ -286,15 +286,15 @@ TEST_F(RulesetMatcherTest, RemoveHeadersMultipleRules) {
   rule_2_action.request_headers_to_remove.push_back(
       net::HttpRequestHeaders::kCookie);
 
-  std::vector<RequestAction> expected_actions;
-  expected_actions.push_back(std::move(rule_1_action));
-  expected_actions.push_back(std::move(rule_2_action));
-
   std::vector<RequestAction> remove_header_actions;
   EXPECT_EQ(kRemoveHeadersMask_Referer | kRemoveHeadersMask_Cookie,
             matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
                                           &remove_header_actions));
-  EXPECT_TRUE(AreRequestActionsEqual(expected_actions, remove_header_actions));
+
+  EXPECT_THAT(remove_header_actions,
+              ::testing::UnorderedElementsAre(
+                  ::testing::Eq(::testing::ByRef(rule_1_action)),
+                  ::testing::Eq(::testing::ByRef(rule_2_action))));
 }
 
 // Tests a rule to redirect to an extension path.

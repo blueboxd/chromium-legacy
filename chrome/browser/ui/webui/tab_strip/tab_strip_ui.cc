@@ -11,6 +11,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
 #include "chrome/common/webui_url_constants.h"
@@ -430,6 +432,11 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
   html_source->AddString("frameColor",
                          color_utils::SkColorToRgbaString(
                              tp.GetColor(ThemeProperties::COLOR_FRAME)));
+
+  html_source->AddBoolean(
+      "showDemoOptions",
+      base::FeatureList::IsEnabled(features::kWebUITabStripDemoOptions));
+  html_source->UseStringsJs();
 
   content::WebUIDataSource::Add(profile, html_source);
 

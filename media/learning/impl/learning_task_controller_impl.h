@@ -58,6 +58,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion) override;
   void CancelObservation(base::UnguessableToken id) override;
+  void UpdateDefaultTarget(
+      base::UnguessableToken id,
+      const base::Optional<TargetValue>& default_target) override;
   const LearningTask& GetLearningTask() override;
 
  private:

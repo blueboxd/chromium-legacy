@@ -1519,6 +1519,10 @@ void LayerTreeHost::UpdateHudLayer(bool show_hud_info) {
   }
 }
 
+bool LayerTreeHost::is_hud_layer(const Layer* layer) const {
+  return hud_layer() == layer;
+}
+
 void LayerTreeHost::SetNeedsFullTreeSync() {
   needs_full_tree_sync_ = true;
   property_trees_.needs_rebuild = true;

@@ -24,6 +24,7 @@
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -1755,6 +1756,19 @@ TEST_F(PasswordAutofillAgentTest, TouchToFillSuppressesPopups) {
 
 TEST_F(PasswordAutofillAgentTest, DontTryToShowTouchToFillReadonlyPassword) {
   SetElementReadOnly(password_element_, true);
+  SimulateOnFillPasswordForm(fill_data_);
+
+  EXPECT_FALSE(
+      password_autofill_agent_->TryToShowTouchToFill(password_element_));
+}
+
+TEST_F(PasswordAutofillAgentTest, DontShowTouchToFillOnSecurePageIfParamIsSet) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kAutofillTouchToFill, {{"insecure-origins-only", "true"}});
+
+  // Reload the page with a secure origin.
+  LoadHTMLWithUrlOverride(kFormHTML, "https://example.com");
   SimulateOnFillPasswordForm(fill_data_);
 
   EXPECT_FALSE(

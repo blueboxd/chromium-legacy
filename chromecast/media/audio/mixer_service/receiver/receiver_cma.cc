@@ -119,7 +119,7 @@ class ReceiverCma::Stream : public MixerSocket::Delegate,
       last_send_time_ = base::TimeTicks::Now();
     }
 
-    socket_->ReceiveMessages();
+    socket_->ReceiveMoreMessages();
   }
 
   void PlayedEos() override {

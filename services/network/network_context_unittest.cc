@@ -1666,10 +1666,32 @@ TEST_F(NetworkContextTest, ClearEmptyHttpAuthCache) {
   EXPECT_EQ(0u, cache->GetEntriesSizeForTesting());
 }
 
-TEST_F(NetworkContextTest, LookupBasicAuthCredentials) {
+base::Optional<net::AuthCredentials> GetAuthCredentials(
+    NetworkContext* network_context,
+    const GURL& origin,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  base::RunLoop run_loop;
+  base::Optional<net::AuthCredentials> result;
+  network_context->LookupServerBasicAuthCredentials(
+      origin, network_isolation_key,
+      base::BindLambdaForTesting(
+          [&](const base::Optional<net::AuthCredentials>& credentials) {
+            result = credentials;
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  return result;
+}
+
+TEST_F(NetworkContextTest, LookupServerBasicAuthCredentials) {
+  network_service_->SetSplitAuthCacheByNetworkIsolationKey(true);
   GURL origin("http://foo.test");
   GURL origin2("http://bar.test");
   GURL origin3("http://baz.test");
+  net::NetworkIsolationKey network_isolation_key1(url::Origin::Create(origin),
+                                                  url::Origin::Create(origin));
+  net::NetworkIsolationKey network_isolation_key2(url::Origin::Create(origin2),
+                                                  url::Origin::Create(origin2));
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
   net::HttpAuthCache* cache = network_context->url_request_context()
@@ -1680,49 +1702,26 @@ TEST_F(NetworkContextTest, LookupBasicAuthCredentials) {
   base::string16 user = base::ASCIIToUTF16("user");
   base::string16 password = base::ASCIIToUTF16("pass");
   cache->Add(origin, net::HttpAuth::AUTH_SERVER, "Realm",
-             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             net::HttpAuth::AUTH_SCHEME_BASIC, network_isolation_key1,
              "basic realm=Realm", net::AuthCredentials(user, password), "/");
   cache->Add(origin2, net::HttpAuth::AUTH_PROXY, "Realm",
-             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             net::HttpAuth::AUTH_SCHEME_BASIC, network_isolation_key1,
              "basic realm=Realm", net::AuthCredentials(user, password), "/");
 
-  base::RunLoop run_loop1;
-  base::Optional<net::AuthCredentials> result;
-  network_context->LookupBasicAuthCredentials(
-      origin, base::BindLambdaForTesting(
-                  [&](const base::Optional<net::AuthCredentials>& credentials) {
-                    result = credentials;
-                    run_loop1.Quit();
-                  }));
-  run_loop1.Run();
+  base::Optional<net::AuthCredentials> result =
+      GetAuthCredentials(network_context.get(), origin, network_isolation_key1);
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(user, result->username());
   EXPECT_EQ(password, result->password());
 
-  // Proxy credentials should not be returned
-  base::RunLoop run_loop2;
-  result = base::nullopt;
-  network_context->LookupBasicAuthCredentials(
-      origin2,
-      base::BindLambdaForTesting(
-          [&](const base::Optional<net::AuthCredentials>& credentials) {
-            result = credentials;
-            run_loop2.Quit();
-          }));
-  run_loop2.Run();
-  EXPECT_FALSE(result.has_value());
+  // Nothing should be returned when using a different NIK.
+  EXPECT_FALSE(
+      GetAuthCredentials(network_context.get(), origin, network_isolation_key2)
+          .has_value());
 
-  // Empty credentials.
-  base::RunLoop run_loop3;
-  result = base::nullopt;
-  network_context->LookupBasicAuthCredentials(
-      origin3,
-      base::BindLambdaForTesting(
-          [&](const base::Optional<net::AuthCredentials>& credentials) {
-            result = credentials;
-            run_loop3.Quit();
-          }));
-  run_loop3.Run();
+  // Proxy credentials should not be returned
+  result = GetAuthCredentials(network_context.get(), origin2,
+                              network_isolation_key1);
   EXPECT_FALSE(result.has_value());
 }
 

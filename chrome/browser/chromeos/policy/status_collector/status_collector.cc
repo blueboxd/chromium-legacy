@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -28,7 +29,8 @@ namespace ent_mgmt = ::enterprise_management;
 std::unique_ptr<DeviceLocalAccount> GetCurrentKioskDeviceLocalAccount(
     chromeos::CrosSettings* settings) {
   if (!user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
+      !user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp()) {
     return nullptr;
   }
   const user_manager::User* const user =
@@ -122,8 +124,13 @@ StatusCollector::GetAutoLaunchedKioskSessionInfo() {
       chromeos::ArcKioskAppManager::Get()
           ->current_app_was_auto_launched_with_zero_delay();
 
+  bool web_app_auto_launched_with_zero_delay =
+      chromeos::WebKioskAppManager::Get()
+          ->current_app_was_launched_with_zero_delay();
+
   return regular_app_auto_launched_with_zero_delay ||
-                 arc_app_auto_launched_with_zero_delay
+                 arc_app_auto_launched_with_zero_delay ||
+                 web_app_auto_launched_with_zero_delay
              ? std::move(account)
              : nullptr;
 }

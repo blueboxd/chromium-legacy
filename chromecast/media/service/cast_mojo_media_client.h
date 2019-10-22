@@ -15,7 +15,6 @@ namespace chromecast {
 namespace media {
 
 class CmaBackendFactory;
-class MediaResourceTracker;
 class VideoModeSwitcher;
 class VideoResolutionPolicy;
 
@@ -28,8 +27,7 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
   CastMojoMediaClient(CmaBackendFactory* backend_factory,
                       const CreateCdmFactoryCB& create_cdm_factory_cb,
                       VideoModeSwitcher* video_mode_switcher,
-                      VideoResolutionPolicy* video_resolution_policy,
-                      MediaResourceTracker* media_resource_tracker);
+                      VideoResolutionPolicy* video_resolution_policy);
   ~CastMojoMediaClient() override;
 
   // MojoMediaClient implementation:
@@ -55,7 +53,6 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
   const CreateCdmFactoryCB create_cdm_factory_cb_;
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
-  MediaResourceTracker* media_resource_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMojoMediaClient);
 };

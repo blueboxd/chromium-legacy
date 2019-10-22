@@ -27,6 +27,7 @@
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
@@ -182,6 +183,13 @@ SharingService::SharingService(
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kClickToCallMessage,
         &click_to_call_message_handler_);
+  }
+
+  if (sharing_device_registration_->IsSmsFetcherSupported()) {
+    sms_fetch_request_handler_ = std::make_unique<SmsFetchRequestHandler>();
+    fcm_handler_->AddSharingHandler(
+        chrome_browser_sharing::SharingMessage::kSmsFetchRequest,
+        sms_fetch_request_handler_.get());
   }
 #endif  // defined(OS_ANDROID)
 

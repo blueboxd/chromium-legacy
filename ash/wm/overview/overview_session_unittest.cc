@@ -3820,6 +3820,92 @@ TEST_P(SplitViewOverviewSessionTest, DraggingUnsnappableAppWithSplitView) {
   EXPECT_EQ(expected_grid_bounds, GetGridBounds());
 }
 
+TEST_P(SplitViewOverviewSessionTest, Clipping) {
+  // Helper to check if two rectangles have roughly the same aspect ratio. They
+  // may be off by a bit due to insets and overview headers, but should have
+  // roughly the same shape.
+  auto aspect_ratio_near = [](const gfx::Rect& rect1, const gfx::Rect& rect2) {
+    DCHECK_GT(rect1.height(), 0);
+    DCHECK_GT(rect2.height(), 0);
+    constexpr float kEpsilon = 0.1f;
+    const float rect1_aspect_ratio =
+        float{rect1.width()} / float{rect1.height()};
+    const float rect2_aspect_ratio =
+        float{rect2.width()} / float{rect2.height()};
+    return std::abs(rect2_aspect_ratio - rect1_aspect_ratio) < kEpsilon;
+  };
+
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+
+  for (bool portrait : {false, true}) {
+    SCOPED_TRACE(portrait ? "Portrait" : "Landscape");
+    if (portrait) {
+      ScreenOrientationControllerTestApi test_api(
+          Shell::Get()->screen_orientation_controller());
+      test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                                  display::Display::RotationSource::ACTIVE);
+    }
+
+    const gfx::Rect clipping1 = window1->layer()->clip_rect();
+    const gfx::Rect clipping2 = window2->layer()->clip_rect();
+    const gfx::Rect maximized_bounds =
+        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+            window1.get());
+    const gfx::Rect split_view_bounds_right =
+        split_view_controller()->GetSnappedWindowBoundsInScreen(
+            SplitViewController::SnapPosition::RIGHT);
+
+    ToggleOverview();
+    // Tests that in regular overview, the clipping is unchanged.
+    ASSERT_TRUE(overview_controller()->InOverviewSession());
+    EXPECT_EQ(clipping1, window1->layer()->clip_rect());
+    EXPECT_EQ(clipping2, window2->layer()->clip_rect());
+
+    OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+    OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+    overview_session()->InitiateDrag(item1,
+                                     item1->target_bounds().CenterPoint(),
+                                     /*is_touch_dragging=*/false);
+
+    // Tests that after we drag to a preview area, the items target bounds have
+    // a matching aspect ratio to what the window would have if it were to be
+    // snapped in splitview. The window clipping should match this, but the
+    // windows regular bounds remain unchanged (maximized).
+    overview_session()->Drag(item1, gfx::PointF());
+    EXPECT_EQ(IndicatorState::kPreviewAreaLeft,
+              overview_session()
+                  ->split_view_drag_indicators()
+                  ->current_indicator_state());
+    EXPECT_FALSE(window2->layer()->clip_rect().IsEmpty());
+    EXPECT_TRUE(aspect_ratio_near(window2->layer()->clip_rect(),
+                                  split_view_bounds_right));
+    EXPECT_TRUE(aspect_ratio_near(gfx::ToEnclosedRect(item2->target_bounds()),
+                                  split_view_bounds_right));
+    EXPECT_TRUE(
+        aspect_ratio_near(window2->GetBoundsInScreen(), maximized_bounds));
+
+    // Tests that after snapping, the aspect ratios should be the same as being
+    // in the preview area.
+    overview_session()->CompleteDrag(item1, gfx::PointF());
+    ASSERT_EQ(SplitViewController::State::kLeftSnapped,
+              split_view_controller()->state());
+    EXPECT_FALSE(window2->layer()->clip_rect().IsEmpty());
+    EXPECT_TRUE(aspect_ratio_near(window2->layer()->clip_rect(),
+                                  split_view_bounds_right));
+    EXPECT_TRUE(aspect_ratio_near(gfx::ToEnclosedRect(item2->target_bounds()),
+                                  split_view_bounds_right));
+    EXPECT_TRUE(
+        aspect_ratio_near(window2->GetBoundsInScreen(), maximized_bounds));
+
+    // Tests that the clipping is reset after exiting overview.
+    EndSplitView();
+    ToggleOverview();
+    EXPECT_EQ(clipping1, window1->layer()->clip_rect());
+    EXPECT_EQ(clipping2, window1->layer()->clip_rect());
+  }
+}
+
 // Tests that if there is only one window in the MRU window list in the overview
 // mode, snapping the window to one side of the screen will not end the overview
 // mode even if there is no more window left in the overview window grid.

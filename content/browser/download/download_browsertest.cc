@@ -794,6 +794,12 @@ class TestRequestPauseHandler {
 };
 
 class DownloadContentTest : public ContentBrowserTest {
+ public:
+  DownloadContentTest() {
+    feature_list_.InitAndDisableFeature(
+        download::features::kAllowDownloadResumptionWithoutStrongValidators);
+  }
+
  protected:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
@@ -1018,6 +1024,7 @@ class DownloadContentTest : public ContentBrowserTest {
   std::unique_ptr<TestShellDownloadManagerDelegate> test_delegate_;
   TestDownloadResponseHandler test_response_handler_;
   TestDownloadHttpResponse::InjectErrorCallback inject_error_callback_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 constexpr int kValidationLength = 1024;

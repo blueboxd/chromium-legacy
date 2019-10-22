@@ -26,16 +26,14 @@ void EmptyPredictor::Update(const InputData& cur_input) {
 }
 
 bool EmptyPredictor::HasPrediction() const {
-  return last_input_ != base::nullopt;
+  return last_input_.has_value();
 }
 
-bool EmptyPredictor::GeneratePrediction(base::TimeTicks predict_time,
-                                        InputData* result) const {
+std::unique_ptr<InputPredictor::InputData> EmptyPredictor::GeneratePrediction(
+    base::TimeTicks predict_time) const {
   if (!HasPrediction())
-    return false;
-
-  result->pos = last_input_.value().pos;
-  return true;
+    return nullptr;
+  return std::make_unique<InputData>(last_input_.value());
 }
 
 base::TimeDelta EmptyPredictor::TimeInterval() const {

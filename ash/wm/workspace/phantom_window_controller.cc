@@ -77,7 +77,7 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "PhantomWindow";
   params.layer_type = ui::LAYER_SOLID_COLOR;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
   params.shadow_elevation = ::wm::kShadowElevationActiveWindow;
   params.parent = root_window->GetChildById(kShellWindowId_ShelfContainer);
   phantom_widget->set_focus_on_creation(false);

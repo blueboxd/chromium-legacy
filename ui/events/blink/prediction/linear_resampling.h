@@ -35,8 +35,8 @@ class LinearResampling : public InputPredictor {
 
   // Generate the prediction based on stored points and given frame_time.
   // Return false if no prediction available.
-  bool GeneratePrediction(base::TimeTicks frame_time,
-                          InputData* result) const override;
+  std::unique_ptr<InputData> GeneratePrediction(
+      base::TimeTicks frame_time) const override;
 
   // Return the average time delta in the event queue.
   base::TimeDelta TimeInterval() const override;

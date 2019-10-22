@@ -59,6 +59,7 @@ class SessionTerminationManager;
 class ShutdownPolicyForwarder;
 class SystemTokenCertDBInitializer;
 class WakeOnWifiManager;
+class WebKioskAppManager;
 class WilcoDtcSupportdManager;
 
 namespace default_app_order {
@@ -142,6 +143,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<LowDiskNotification> low_disk_notification_;
   std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;
+  std::unique_ptr<WebKioskAppManager> web_kiosk_app_manager_;
 
   std::unique_ptr<memory::MemoryKillsMonitor::Handle> memory_kills_monitor_;
 

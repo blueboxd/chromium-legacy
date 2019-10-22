@@ -64,7 +64,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   bool is_u2f_only = false;
   bool is_incognito_mode = false;
 
-  base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list;
+  std::vector<PublicKeyCredentialDescriptor> exclude_list;
   base::Optional<std::vector<uint8_t>> pin_auth;
   base::Optional<uint8_t> pin_protocol;
   AttestationConveyancePreference attestation_preference =

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -32,8 +33,14 @@ public interface TasksSurface {
     TabSwitcher.TabListDelegate getTabListDelegate();
 
     /**
-     * Get the container {@link ViewGroup} of the surface.
-     * @return The surface's container {@link ViewGroup}.
+     * Get the view container {@link ViewGroup} of the tasks surface body.
+     * @return The tasks surface body view container {@link ViewGroup}.
      */
-    ViewGroup getContainerView();
+    ViewGroup getBodyViewContainer();
+
+    /**
+     * Get the view {@link View} of the surface.
+     * @return The surface's container {@link View}.
+     */
+    View getView();
 }

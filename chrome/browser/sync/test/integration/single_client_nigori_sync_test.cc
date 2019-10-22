@@ -365,7 +365,7 @@ class SingleClientNigoriWithWebApiTest : public SyncTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
-                       ShouldAcceptEncryptionKeysFromTheWeb) {
+                       ShouldAcceptEncryptionKeysFromTheWebWhileSignedIn) {
   const std::string kTestEncryptionKey = "testpassphrase1";
 
   const GURL retrieval_url =
@@ -396,6 +396,46 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   ASSERT_TRUE(TrustedVaultKeyRequiredStateChecker(GetSyncService(0),
                                                   /*desired_state=*/false)
                   .Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
+                       PRE_ShouldAcceptEncryptionKeysFromTheWebBeforeSignIn) {
+  const std::string kTestEncryptionKey = "testpassphrase1";
+  const GURL retrieval_url =
+      GetTrustedVaultRetrievalURL(*embedded_test_server(), kTestEncryptionKey);
+
+  ASSERT_TRUE(SetupClients());
+
+  // Mimic opening a web page where the user can interact with the retrieval
+  // flow, while the user is signed out.
+  ui_test_utils::NavigateToURLWithDisposition(
+      GetBrowser(0), retrieval_url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // Wait until the title changes to "OK" via Javascript, which indicates
+  // completion.
+  PageTitleChecker title_checker(
+      /*expected_title=*/"OK",
+      GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(title_checker.Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
+                       ShouldAcceptEncryptionKeysFromTheWebBeforeSignIn) {
+  const std::string kTestEncryptionKey = "testpassphrase1";
+
+  // Mimic the account being already using a trusted vault passphrase.
+  encryption_helper::SetNigoriInFakeServer(
+      GetFakeServer(), BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}));
+
+  // Sign in and start sync.
+  EXPECT_TRUE(SetupSync());
+
+  ASSERT_EQ(syncer::PassphraseType::kTrustedVaultPassphrase,
+            GetSyncService(0)->GetUserSettings()->GetPassphraseType());
+  EXPECT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
 }
 
 // Same as SingleClientNigoriWithWebApiTest but does NOT override

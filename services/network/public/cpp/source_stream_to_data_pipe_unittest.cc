@@ -196,4 +196,20 @@ TEST_P(SourceStreamToDataPipeTest, ConsumerClosed) {
   EXPECT_EQ(*CallbackResult(), net::ERR_ABORTED);
 }
 
+TEST_P(SourceStreamToDataPipeTest, MayHaveMoreBytes) {
+  const char message[] = "Hello, world!";
+
+  // Test that having the SourceStream properly report when !MayHaveMoreBytes
+  // shortcuts extra work and still reports things properly.
+  Init();
+  source()->set_always_report_has_more_bytes(false);
+  // Unlike other test reads (see "Simple" test), there is only one result here.
+  source()->AddReadResult(message, sizeof(message) - 1, net::OK,
+                          GetParam().mode);
+  adapter()->Start(callback());
+
+  std::string output;
+  EXPECT_EQ(ReadPipe(&output), net::OK);
+  EXPECT_EQ(output, message);
+}
 }  // namespace network

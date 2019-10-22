@@ -36,4 +36,9 @@ interface LearningTaskController {
 
   // Cancel observation |id|.  Deleting |this| will do the same.
   CancelObservation(mojo_base.mojom.UnguessableToken id);
+
+  // Update the default target for |id| to |default_target|.  May also unset it,
+  // so that the observation will be cancelled if the controller is destroyed.
+  UpdateDefaultTarget(mojo_base.mojom.UnguessableToken id,
+          TargetValue? default_target);
 };

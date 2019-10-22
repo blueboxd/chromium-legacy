@@ -1517,9 +1517,7 @@ public class Tab {
     }
 
     /** This is currently called when committing a pre-rendered page. */
-    @VisibleForTesting
-    public void swapWebContents(
-            WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
+    void swapWebContents(WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
         int originalWidth = 0;
         int originalHeight = 0;
         if (mContentView != null && mWebContents != null) {

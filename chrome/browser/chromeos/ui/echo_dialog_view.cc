@@ -21,6 +21,21 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
+namespace {
+
+std::unique_ptr<views::ImageButton> CreateLearnMoreButton(
+    views::ButtonListener* listener) {
+  auto learn_more_button = views::CreateVectorImageButton(listener);
+  views::SetImageFromVectorIcon(learn_more_button.get(),
+                                vector_icons::kHelpOutlineIcon);
+  learn_more_button->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
+  learn_more_button->SetFocusForPlatform();
+  return learn_more_button;
+}
+
+}  // namespace
+
 namespace chromeos {
 
 EchoDialogView::EchoDialogView(EchoDialogListener* listener)
@@ -28,6 +43,8 @@ EchoDialogView::EchoDialogView(EchoDialogListener* listener)
       learn_more_button_(nullptr),
       ok_button_label_id_(0),
       cancel_button_label_id_(0) {
+  learn_more_button_ =
+      DialogDelegate::SetExtraView(CreateLearnMoreButton(this));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ECHO);
 }
 
@@ -73,17 +90,6 @@ void EchoDialogView::Show(gfx::NativeWindow parent) {
   views::DialogDelegate::CreateDialogWidget(this, parent, parent);
   GetWidget()->SetSize(GetWidget()->GetRootView()->GetPreferredSize());
   GetWidget()->Show();
-}
-
-std::unique_ptr<views::View> EchoDialogView::CreateExtraView() {
-  auto learn_more_button = views::CreateVectorImageButton(this);
-  views::SetImageFromVectorIcon(learn_more_button.get(),
-                                vector_icons::kHelpOutlineIcon);
-  learn_more_button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
-  learn_more_button->SetFocusForPlatform();
-  learn_more_button_ = learn_more_button.get();
-  return learn_more_button;
 }
 
 int EchoDialogView::GetDialogButtons() const {

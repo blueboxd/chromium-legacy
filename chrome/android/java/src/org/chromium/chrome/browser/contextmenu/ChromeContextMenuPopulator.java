@@ -539,7 +539,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_share_link) {
             ContextMenuUma.record(params, ContextMenuUma.Action.SHARE_LINK);
             ShareParams linkShareParams =
-                    new ShareParams.Builder(helper.getActivity(), params.getUrl(), params.getUrl())
+                    new ShareParams.Builder(helper.getWindow(), params.getUrl(), params.getUrl())
                             .setShareDirectly(false)
                             .setSaveLastUsed(true)
                             .build();

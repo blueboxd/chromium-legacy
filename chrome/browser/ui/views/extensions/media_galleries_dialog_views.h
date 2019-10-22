@@ -47,7 +47,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   views::View* GetContentsView() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;
 

@@ -76,7 +76,7 @@ runInAnimationWorklet(
     scroller.scrollTop = 0.5 * maxScroll;
 
     if (window.testRunner) {
-      waitTwoAnimationFrames(_ => {
+      waitForAnimationFrames(3, _ => {
         testRunner.notifyDone();
       });
     }

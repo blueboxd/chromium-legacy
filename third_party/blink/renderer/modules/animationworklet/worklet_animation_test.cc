@@ -202,62 +202,6 @@ TEST_F(WorkletAnimationTest,
   EXPECT_TIME_NEAR(70, worklet_animation->currentTime(is_null));
 }
 
-TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
-  WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
-
-  SimulateFrame(111.0);
-  worklet_animation_->play(ASSERT_NO_EXCEPTION);
-  worklet_animation_->UpdateCompositingState();
-
-  // Only peek if animation is running on compositor.
-  worklet_animation_->SetRunningOnMainThreadForTesting(false);
-
-  std::unique_ptr<AnimationWorkletDispatcherInput> state =
-      std::make_unique<AnimationWorkletDispatcherInput>();
-  worklet_animation_->UpdateInputState(state.get());
-  std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(id.worklet_id);
-  EXPECT_EQ(input->peeked_animations.size(), 1u);
-  EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
-  EXPECT_EQ(input->updated_animations.size(), 0u);
-  EXPECT_EQ(input->removed_animations.size(), 0u);
-  state.reset(new AnimationWorkletDispatcherInput);
-
-  // Local times not set yet. Need to peek again.
-  AnimationWorkletOutput::AnimationState output(id);
-  worklet_animation_->SetOutputState(output);
-  worklet_animation_->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.worklet_id);
-  EXPECT_EQ(input->peeked_animations.size(), 1u);
-  EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
-  EXPECT_EQ(input->updated_animations.size(), 0u);
-  EXPECT_EQ(input->removed_animations.size(), 0u);
-  state.reset(new AnimationWorkletDispatcherInput);
-
-  // Last peek request fulfilled. No need to peek.
-  WebVector<base::Optional<base::TimeDelta>> local_times;
-  local_times.emplace_back(base::TimeDelta());
-  AnimationWorkletOutput::AnimationState output_with_value(id);
-  output_with_value.local_times = local_times.ReleaseVector();
-  worklet_animation_->SetOutputState(output_with_value);
-  worklet_animation_->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.worklet_id);
-  EXPECT_FALSE(input);
-  state.reset(new AnimationWorkletDispatcherInput);
-
-  // Input time changes. Need to peek again.
-  GetDocument().GetAnimationClock().UpdateTime(
-      GetDocument().Timeline().ZeroTime() + ToTimeDelta(111.0 + 123.4));
-
-  worklet_animation_->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.worklet_id);
-  EXPECT_EQ(input->peeked_animations.size(), 1u);
-  EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
-  EXPECT_EQ(input->updated_animations.size(), 0u);
-  EXPECT_EQ(input->removed_animations.size(), 0u);
-  state.reset(new AnimationWorkletDispatcherInput);
-}
-
 // Verifies correctness of current time when playback rate is set while the
 // animation is in idle state.
 TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {

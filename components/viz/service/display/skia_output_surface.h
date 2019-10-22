@@ -39,7 +39,7 @@ struct RenderPassGeometry;
 class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
                                              public ExternalUseClient {
  public:
-  SkiaOutputSurface();
+  explicit SkiaOutputSurface(OutputSurface::Type type);
   ~SkiaOutputSurface() override;
 
   SkiaOutputSurface* AsSkiaOutputSurface() override;

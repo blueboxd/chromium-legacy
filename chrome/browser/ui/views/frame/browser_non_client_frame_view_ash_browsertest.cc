@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/web_application_info.h"
@@ -801,17 +802,16 @@ class WebAppNonClientFrameViewAshTest
   // |SetUpWebApp()| must be called after |SetUpOnMainThread()| to make sure
   // the Network Service process has been setup properly.
   void SetUpWebApp() {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = GetAppURL();
-    web_app_info.scope = GetAppURL().GetWithoutFilename();
-    web_app_info.theme_color = GetThemeColor();
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = GetAppURL();
+    web_app_info->scope = GetAppURL().GetWithoutFilename();
+    web_app_info->theme_color = GetThemeColor();
 
-    // TODO(alancutter): Use web_app::InstallManager instead of Extensions
-    // specific install path.
-    const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+    web_app::AppId app_id =
+        web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
     content::TestNavigationObserver navigation_observer(GetAppURL());
     navigation_observer.StartWatchingNewWebContents();
-    app_browser_ = LaunchAppBrowser(app);
+    app_browser_ = web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
     navigation_observer.WaitForNavigationFinished();
 
     browser_view_ = BrowserView::GetBrowserViewForBrowser(app_browser_);

@@ -198,9 +198,6 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     }
   } else if (method == "Inspector.targetCrashed") {
     loading_state_ = kNotLoading;
-  } else if (method == "Page.interstitialShown") {
-    client_->SendCommandAndIgnoreResponse("Page.stopLoading", {});
-    return Status(kUnexpectedAlertOpen, "Interstitial popups not supported");
   }
   if (timed_out_)
     loading_state_ = kNotLoading;

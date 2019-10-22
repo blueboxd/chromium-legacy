@@ -39,8 +39,6 @@ MediaRouterBaseBrowserTest::~MediaRouterBaseBrowserTest() {
 }
 
 void MediaRouterBaseBrowserTest::SetUp() {
-  if (BrowserTestBase::ShouldSkipManualTests())
-    GTEST_SKIP();
   ParseCommandLine();
   ExtensionBrowserTest::SetUp();
 }

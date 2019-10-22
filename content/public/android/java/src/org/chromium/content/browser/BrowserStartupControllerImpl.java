@@ -39,7 +39,7 @@ import java.util.List;
  */
 @JNINamespace("content")
 public class BrowserStartupControllerImpl implements BrowserStartupController {
-    private static final String TAG = "cr.BrowserStartup";
+    private static final String TAG = "BrowserStartup";
 
     // Helper constants for {@link #executeEnqueuedCallbacks(int, boolean)}.
     @VisibleForTesting
@@ -430,7 +430,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     @VisibleForTesting
     void prepareToStartBrowserProcess(
             final boolean singleProcess, final Runnable completionCallback) {
-        Log.i(TAG, "Initializing chromium process, singleProcess=%b", singleProcess);
+        Log.d(TAG, "Initializing chromium process, singleProcess=%b", singleProcess);
 
         // This strictmode exception is to cover the case where the browser process is being started
         // asynchronously but not in the main browser flow.  The main browser flow will trigger

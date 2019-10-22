@@ -44,6 +44,7 @@ jumbo_static_library("weblayer_lib") {
     "browser/browser_main_parts_impl.h",
     "browser/content_browser_client_impl.cc",
     "browser/content_browser_client_impl.h",
+    "browser/isolated_world_ids.h",
     "browser/navigation_controller_impl.cc",
     "browser/navigation_controller_impl.h",
     "browser/navigation_impl.cc",

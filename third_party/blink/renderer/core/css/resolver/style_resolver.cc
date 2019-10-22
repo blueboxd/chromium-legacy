@@ -127,8 +127,6 @@ bool HasAnimationsOrTransitions(const StyleResolverState& state) {
 
 }  // namespace
 
-using namespace html_names;
-
 static CSSPropertyValueSet* LeftToRightDeclaration() {
   DEFINE_STATIC_LOCAL(
       Persistent<MutableCSSPropertyValueSet>, left_to_right_decl,

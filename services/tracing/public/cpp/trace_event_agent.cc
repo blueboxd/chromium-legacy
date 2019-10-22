@@ -24,12 +24,6 @@
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
-namespace {
-
-const char kTraceEventLabel[] = "traceEvents";
-
-}  // namespace
-
 namespace tracing {
 
 // static
@@ -38,11 +32,7 @@ TraceEventAgent* TraceEventAgent::GetInstance() {
   return instance.get();
 }
 
-TraceEventAgent::TraceEventAgent()
-    : BaseAgent(kTraceEventLabel,
-                mojom::TraceDataType::ARRAY,
-                base::trace_event::TraceLog::GetInstance()->process_id()),
-      enabled_tracing_modes_(0) {
+TraceEventAgent::TraceEventAgent() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // These filters are used by TraceLog in the legacy tracing system and JSON
@@ -76,64 +66,6 @@ void TraceEventAgent::AddMetadataGeneratorFunction(
   metadata_generator_functions_.push_back(generator);
 
   TraceEventMetadataSource::GetInstance()->AddGeneratorFunction(generator);
-}
-
-void TraceEventAgent::StartTracing(const std::string& config,
-                                   base::TimeTicks coordinator_time,
-                                   StartTracingCallback callback) {
-  DCHECK(!IsBoundForTesting());
-  DCHECK(!recorder_);
-#if defined(__native_client__)
-  // NaCl and system times are offset by a bit, so subtract some time from
-  // the captured timestamps. The value might be off by a bit due to messaging
-  // latency.
-  base::TimeDelta time_offset = TRACE_TIME_TICKS_NOW() - coordinator_time;
-  TraceLog::GetInstance()->SetTimeOffset(time_offset);
-#endif
-  enabled_tracing_modes_ = base::trace_event::TraceLog::RECORDING_MODE;
-  const base::trace_event::TraceConfig trace_config(config);
-  if (!trace_config.event_filters().empty())
-    enabled_tracing_modes_ |= base::trace_event::TraceLog::FILTERING_MODE;
-  base::trace_event::TraceLog::GetInstance()->SetEnabled(
-      trace_config, enabled_tracing_modes_);
-  std::move(callback).Run(true);
-}
-
-void TraceEventAgent::StopAndFlush(
-    mojo::PendingRemote<mojom::Recorder> recorder) {
-  DCHECK(!IsBoundForTesting());
-  DCHECK(!recorder_);
-
-  recorder_.Bind(std::move(recorder));
-  base::trace_event::TraceLog::GetInstance()->SetDisabled(
-      enabled_tracing_modes_);
-  enabled_tracing_modes_ = 0;
-  for (const auto& generator : metadata_generator_functions_) {
-    auto metadata = generator.Run();
-    if (metadata)
-      recorder_->AddMetadata(std::move(*metadata));
-  }
-
-  base::trace_event::TraceLog::GetInstance()->Flush(base::BindRepeating(
-      &TraceEventAgent::OnTraceLogFlush, base::Unretained(this)));
-}
-
-void TraceEventAgent::RequestBufferStatus(
-    RequestBufferStatusCallback callback) {
-  DCHECK(!IsBoundForTesting());
-  base::trace_event::TraceLogStatus status =
-      base::trace_event::TraceLog::GetInstance()->GetStatus();
-  std::move(callback).Run(status.event_capacity, status.event_count);
-}
-
-void TraceEventAgent::OnTraceLogFlush(
-    const scoped_refptr<base::RefCountedString>& events_str,
-    bool has_more_events) {
-  if (!events_str->data().empty())
-    recorder_->AddChunk(events_str->data());
-  if (!has_more_events) {
-    recorder_.reset();
-  }
 }
 
 }  // namespace tracing

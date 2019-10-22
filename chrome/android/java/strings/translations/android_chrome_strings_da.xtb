@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Aktivér også notifikationer i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome tilladelse til at sende dig notifikationer.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> har også data i Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Ændring af filtypen kan medføre uventet adfærd og være skadeligt for enheden.</translation>
 <translation id="2056878612599315956">Websitet er sat på pause</translation>
 <translation id="2063713494490388661">Tryk for at søge</translation>
 <translation id="2067805253194386918">tekst</translation>
@@ -263,6 +262,7 @@
 <translation id="2913331724188855103">Tillad, at websites gemmer og læser cookiedata (anbefales)</translation>
 <translation id="2923908459366352541">Navnet er ugyldigt</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-lagerplads</translation>
+<translation id="2942036813789421260">Fanen forhåndsvisning er lukket</translation>
 <translation id="2956410042958133412">Denne konto administreres af <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Skiftet til inkognitofaner</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
@@ -388,6 +388,7 @@
 <translation id="3988466920954086464">Se direkte søgeresultater i dette panel</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3997476611815694295">Lagerplads, der ikke er vigtig</translation>
+<translation id="4000212216660919741">Hjemmet er offline</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Tillad cookies for et bestemt website.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# t.}one{# t.}other{# t.}}</translation>
@@ -767,6 +768,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6697947395630195233">Chrome skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>
 <translation id="6699370405921460408">Google-serverne optimerer de sider, du besøger.</translation>
+<translation id="6706288973712894588">Du er i øjeblikket offline.\n<ph name="BEGIN_LINK" />Gå på opdagelse i dit offline feed<ph name="END_LINK" />.</translation>
 <translation id="6709133671862442373">Nyheder</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="671481426037969117">Din timer for <ph name="FQDN" /> udløb. Den starter igen i morgen.</translation>
@@ -866,6 +868,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7475688122056506577">SD-kortet blev fundet. Nogle af dine filer mangler muligvis.</translation>
 <translation id="7479104141328977413">Faneadministration</translation>
 <translation id="7481312909269577407">Frem</translation>
+<translation id="7482656565088326534">Fanen forhåndsvisning</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Opdateret <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">databesparelse</translation>
 <translation id="7498271377022651285">Vent…</translation>
@@ -915,7 +918,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7810647596859435254">Åbn med…</translation>
 <translation id="7821588508402923572">Din databesparelse vises her</translation>
 <translation id="7837721118676387834">Tillad automatisk afspilning af videoer, hvor lyden er slået fra, for et bestemt website.</translation>
-<translation id="7838340937077326045">Er du sikker på, at du vil ændre filtypen?</translation>
 <translation id="7846076177841592234">Annuller valg</translation>
 <translation id="784934925303690534">Tidsinterval</translation>
 <translation id="7851858861565204677">Andre enheder</translation>
@@ -996,6 +998,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8380167699614421159">Dette website viser påtrængende eller vildledende annoncer</translation>
 <translation id="8393700583063109961">Send en besked</translation>
 <translation id="8413126021676339697">Vis hele historikken</translation>
+<translation id="8427875596167638501">Fanen forhåndsvisning er åbnet halvt</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8438566539970814960">Gør søgninger og browsing endnu bedre</translation>
 <translation id="8441146129660941386">Spol tilbage</translation>
@@ -1086,7 +1089,9 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="9086455579313502267">Der kunne ikke opnås adgang til netværket</translation>
 <translation id="9100505651305367705">Tilbyd enkel visning af artikler, når det understøttes</translation>
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
+<translation id="9102803872260866941">Fanen forhåndsvisning er åben</translation>
 <translation id="9104217018994036254">Liste over enheder, der skal deles en fane med.</translation>
+<translation id="9133397713400217035">Udforsk offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9139068048179869749">Spørg, før websites sender notifikationer (anbefales)</translation>

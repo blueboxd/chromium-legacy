@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Učitaj stranicu kasnije</translation>
 <translation id="1015730422737071372">Navedite dodatne pojedinosti</translation>
 <translation id="1021110881106174305">Prihvaćene kartice</translation>
-<translation id="1023523064224774104">Chromium je otkrio da ste upravo unijeli zaporku na web-lokaciju koja je
-          sumnjiva. Odmah poništite zaporku!</translation>
 <translation id="1032854598605920125">Zakretanje u smjeru kazaljke na satu</translation>
 <translation id="1035334672863811645">prijavite se na Chrome</translation>
 <translation id="1036348656032585052">Isključi</translation>
@@ -123,6 +121,7 @@
 <translation id="1501859676467574491">Prikaži kartice s Google računa</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ta će se pogreška prikazati ako upotrebljavate Wi-Fi portal na koji se morate prijaviti da biste se povezali s internetom.&lt;/p&gt;
     &lt;p&gt;Da biste ispravili tu pogrešku, kliknite &lt;strong&gt;Poveži se&lt;/strong&gt; na stranici koju pokušavate otvoriti.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Popis povijesnih unosa</translation>
 <translation id="1517433312004943670">Telefonski je broj obavezan</translation>
 <translation id="1517500485252541695">Prihvaćene kreditne i debitne kartice</translation>
 <translation id="1519264250979466059">Datum međuverzije</translation>
@@ -308,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je opozvan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="2438874542388153331">Četverostruko bušenje s desne strane</translation>
+<translation id="245044156129055925">Upravo ste unijeli zaporku na obmanjujuću web-lokaciju. Chromium preporučuje da odmah promijenite zaporku.</translation>
 <translation id="2463193859425327265">Promijeni početnu stranicu</translation>
 <translation id="2463739503403862330">Ispuni</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -551,7 +551,6 @@
 <translation id="3655670868607891010">Ako se to često događa, pokušajte <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Izmjena</translation>
 <translation id="366077651725703012">Ažuriraj kreditnu karticu</translation>
-<translation id="3672525478985456967">Naziv te web-lokacije sličan je nazivu <ph name="LOOKALIKE_DOMAIN" />. Napadači ponekad oponašaju web-lokacije unoseći male, teško uočljive promjene u naziv domene.</translation>
 <translation id="3676592649209844519">ID uređaja:</translation>
 <translation id="3677008721441257057">Jeste li mislili &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Zahtjev nije bilo moguće potpisati</translation>
@@ -617,6 +616,9 @@
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> je blokiran</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> je u pregledniku omogućio funkciju Zaštite od prijetnji u Chromeu za poduzeća. Zaštita od prijetnji u Chromeu za poduzeća ima pristup nekim vašim podacima.</translation>
+<translation id="3987405730340719549">Chrome je utvrdio da je ta web-lokacija možda lažna ili joj je cilj prevara.
+
+    Ako smatrate da se ova poruka prikazuje pogreškom, posjetite stranicu https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Manje od 1 MB</translation>
 <translation id="3990250421422698716">Pomak u načinu rada Jog</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web-stranica u blizini}one{# web-stranica u blizini}few{# web-stranice u blizini}other{# web-stranica u blizini}}</translation>
@@ -875,7 +877,6 @@
 <translation id="5230733896359313003">Adresa za dostavu</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Odbaci</translation>
 <translation id="5250209940322997802">"Povezivanje s mrežom"</translation>
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5252000469029418751">C7 (omotnica)</translation>
@@ -995,6 +996,9 @@
 <translation id="5813119285467412249">&amp;Ponovi dodavanje</translation>
 <translation id="583281660410589416">Nepoznato</translation>
 <translation id="5838278095973806738">Na ovu web-lokaciju nemojte unositi osjetljive podatke (na primjer, zaporke ili kreditne kartice) jer su je možda ukrali napadači.</translation>
+<translation id="5855253129151731373">Naziv hosta te web-lokacije sličan je nazivu <ph name="LOOKALIKE_DOMAIN" />. Napadači ponekad oponašaju web-lokacije unoseći male, teško uočljive promjene u naziv domene.
+
+    Ako smatrate da se ova poruka prikazuje pogreškom, posjetite stranicu https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Isključeno</translation>
 <translation id="5863847714970149516">Stranica koja će se otvoriti može vam pokušati nešto naplatiti</translation>
 <translation id="5866257070973731571">Dodajte telefonski broj</translation>
@@ -1017,7 +1021,6 @@
 <translation id="5946937721014915347">Otvaranje web-lokacije <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Da, dodaj</translation>
 <translation id="5951495562196540101">Prijava s računom potrošača nije moguća (dostupna je paketna licenca).</translation>
-<translation id="5966900314707961320">Kad je ta značajka uključena, web-lokacije ne mogu upotrebljavati kolačiće koji vas prate na webu</translation>
 <translation id="5967592137238574583">Uredite podatke za kontakt</translation>
 <translation id="5967867314010545767">Ukloni iz povijesti</translation>
 <translation id="5975083100439434680">Smanji</translation>
@@ -1106,6 +1109,7 @@
 <translation id="6401136357288658127">Pravilo je ukinuto. Trebali biste koristiti pravilo <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Uredi oznaku</translation>
 <translation id="6406765186087300643">C0 (omotnica)</translation>
+<translation id="6409754798200046165">Upravo ste unijeli zaporku na obmanjujuću web-lokaciju. Chrome preporučuje da odmah promijenite zaporku.</translation>
 <translation id="6410264514553301377">Unesite datum isteka i CVC za karticu <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium vam može pomoći da zaštitite svoj Google račun i promijenite zaporku.</translation>
 <translation id="6427730057873428458">Presavijanje u obliku prozora</translation>
@@ -1113,7 +1117,6 @@
 <translation id="6433490469411711332">Uređivanje podataka za kontakt</translation>
 <translation id="6433595998831338502">Host <ph name="HOST_NAME" /> odbio je povezivanje.</translation>
 <translation id="6434309073475700221">Odbaci</translation>
-<translation id="6435221585574090192">Podijelite s administratorom podatke o sigurnosnim događajima koji su označeni pomoću funkcije zaštite od prijetnji u Chromeu za poduzeća. Oni mogu obuhvaćati URL-ove stranica, naziv datoteke i metapodatke datoteke, korisničko ime uređaja i korisničko ime za Chrome.</translation>
 <translation id="6440503408713884761">Zanemareno</translation>
 <translation id="6446163441502663861">Kahu (omotnica)</translation>
 <translation id="6446608382365791566">Dodajte još podataka</translation>
@@ -1403,6 +1406,7 @@ Dodatne pojedinosti:
 <translation id="7932579305932748336">Omot</translation>
 <translation id="79338296614623784">Unesite važeći telefonski broj</translation>
 <translation id="7934052535022478634">Plaćanje je izvršeno</translation>
+<translation id="7935031712718413217">Mogući URL za lažiranje pošiljatelja</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Istječe <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Certifkat poslužitelja još nije valjan.</translation>
@@ -1457,7 +1461,6 @@ Dodatne pojedinosti:
 <translation id="8184538546369750125">Upotrijebi globalnu zadanu vrijednost (dopusti)</translation>
 <translation id="8194797478851900357">&amp;Poništi premještanje</translation>
 <translation id="8197543752516192074">Prevedi stranicu</translation>
-<translation id="8197899142098070286">Chrome je otkrio da ste upravo unijeli zaporku na web-lokaciju koja je sumnjiva. Odmah poništite zaporku!</translation>
 <translation id="8201077131113104583">Nevažeći URL ažuriranja za proširenje s ID-om "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Sažetak narudžbe</translation>
 <translation id="8202370299023114387">Sukob</translation>
@@ -1545,7 +1548,6 @@ Dodatne pojedinosti:
 <translation id="8718314106902482036">Plaćanje nije dovršeno</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, prijedlog za pretraživanje</translation>
 <translation id="8719528812645237045">Višestruko bušenje pri vrhu</translation>
-<translation id="8723954843026426558">Prihvaćam uvjete i odredbe, pravila o privatnosti i pravo na odustajanje domene <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="8728672262656704056">Radite u anonimnom načinu</translation>
 <translation id="8730621377337864115">Gotovo</translation>

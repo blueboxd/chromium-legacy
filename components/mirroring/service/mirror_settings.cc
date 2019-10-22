@@ -28,7 +28,7 @@ constexpr base::TimeDelta kMinPlayoutDelay =
 // Maximum end-to-end latency.  Currently, this is kMinPlayoutDelay, effectively
 // disabling adaptive latency control, because of audio playout regressions
 // (b/32876644).
-// TODO(https://crbug.com/openscreen/44): Re-enable in port to Open Screen.
+// TODO(openscreen/44): Re-enable in port to Open Screen.
 constexpr base::TimeDelta kMaxPlayoutDelay =
     base::TimeDelta::FromMilliseconds(400);
 

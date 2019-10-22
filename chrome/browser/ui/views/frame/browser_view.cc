@@ -1126,8 +1126,8 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
 }
 
 void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
-  if (toolbar_->reload_button()) {
-    toolbar_->reload_button()->ChangeMode(
+  if (toolbar_button_provider_->GetReloadButton()) {
+    toolbar_button_provider_->GetReloadButton()->ChangeMode(
         is_loading ? ReloadButton::Mode::kStop : ReloadButton::Mode::kReload,
         force);
   }

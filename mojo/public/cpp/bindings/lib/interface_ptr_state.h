@@ -61,6 +61,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
     return endpoint_client_ && endpoint_client_->has_pending_responders();
   }
 
+  void force_outgoing_messages_async(bool force) {
+    DCHECK(endpoint_client_);
+    endpoint_client_->force_outgoing_messages_async(force);
+  }
+
 #if DCHECK_IS_ON()
   void SetNextCallLocation(const base::Location& location) {
     endpoint_client_->SetNextCallLocation(location);

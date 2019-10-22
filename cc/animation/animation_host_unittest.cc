@@ -177,7 +177,7 @@ TEST_F(AnimationHostTest, FastLayerTreeMutatorUpdateTakesEffectInSameFrame) {
 
   // Ticking host should cause layer tree mutator to update output state which
   // should take effect in the same animation frame.
-  TickAnimationsTransferEvents(base::TimeTicks(), 0u);
+  TickAnimationsTransferEvents(base::TimeTicks(), 1u);
 
   // Emulate behavior in PrepareToDraw. Animation worklet updates are best
   // effort, and the animation tick is deferred until draw to allow time for the

@@ -2254,28 +2254,6 @@ TEST_F(ShelfViewTest, TabletModeStartAndEndClosesContextMenu) {
   EXPECT_FALSE(test_api_->CloseMenu());
 }
 
-// Tests that the back button does not show a context menu.
-TEST_F(ShelfViewTest, NoContextMenuOnBackButton) {
-  ui::test::EventGenerator* generator = GetEventGenerator();
-
-  // Enable tablet mode to show the back button. Wait for tablet mode animations
-  // to finish in order for the BackButton to move out from under the
-  // HomeButton.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-
-  // We need to wait for the navigation widget's animation to be done.
-  test_api_->RunMessageLoopUntilAnimationsDone(
-      shelf_view_->shelf_widget()
-          ->navigation_widget()
-          ->get_bounds_animator_for_testing());
-
-  views::View* back_button = shelf_view_->shelf_widget()->GetBackButton();
-  generator->MoveMouseTo(back_button->GetBoundsInScreen().CenterPoint());
-  generator->PressRightButton();
-
-  EXPECT_FALSE(test_api_->CloseMenu());
-}
-
 // Tests that the overflow button does not show a context menu.
 TEST_F(ShelfViewTestNotScrollable, NoContextMenuOnOverflowButton) {
   ui::test::EventGenerator* generator = GetEventGenerator();

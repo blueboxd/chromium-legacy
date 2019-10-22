@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
-<translation id="1135993792949700405">Chrome sender personopplysningene du har valgt, til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Vil du åpne den eksterne linken?</translation>
 <translation id="1699570257714336246">Informasjon mangler</translation>
 <translation id="2203046366315513658">Reduser verdien</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Google-assistenten i Chrome er åpnet i halv høyde.</translation>
 <translation id="6973932557599545801">Beklager, jeg kan ikke hjelpe deg. Fortsett på egen hånd.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
-<translation id="7871791972254842204">Les og godta vilkårene på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> senere</translation>
 <translation id="8253702004019660079">Google-assistenten i Chrome.</translation>
 <translation id="9138504265731110181">Google-assistenten sparer tid ved å hjelpe deg med betalinger på nettet</translation>
 <translation id="945522503751344254">Gi tilbakemelding</translation>

@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Mala</translation>
 <translation id="1152528166145813711">Selecciona...</translation>
 <translation id="1199593201721843963">Inhabilitar conexiones remotas</translation>
+<translation id="1201402288615127009">Siguiente</translation>
 <translation id="1291443878853470558">Debes habilitar las conexiones remotas si deseas usar Chromoting para acceder a esta computadora.</translation>
 <translation id="1297009705180977556">Se produjo un error al conectarse a <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(Esta función aún no está disponible para tu computadora).</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Escritorio remoto de Chrome ahora está disponible en la Web. Prueba nuestra <ph name="LINK_BEGIN" />aplicación web<ph name="LINK_END" />; es rápida y gratuita, con más funciones, como la capacidad mejorada de conectarse a varios monitores.</translation>
 <translation id="1643640058022401035">Al abandonar esta página, se cerrará tu sesión en Chromoting.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas para esta computadora…</translation>
+<translation id="1697532407822776718">¡Listo!</translation>
 <translation id="170207782578677537">No se pudo registrar esta computadora.</translation>
 <translation id="174018511426417793">No tienes ninguna computadora registrada. Para habilitar conexiones remotas con una computadora, instala allí Escritorio remoto de Chrome y haz clic en "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Conectando…</translation>

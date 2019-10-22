@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Schlecht</translation>
 <translation id="1152528166145813711">Auswählen...</translation>
 <translation id="1199593201721843963">Remote-Verbindungen deaktivieren</translation>
+<translation id="1201402288615127009">Weiter</translation>
 <translation id="1291443878853470558">Aktivieren Sie die Remote-Verbindungen, wenn Sie mit Chromoting auf diesen Computer zugreifen möchten.</translation>
 <translation id="1297009705180977556">Fehler beim Herstellen der Verbindung mit <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">Diese Funktion ist noch nicht für Ihren Computer verfügbar.</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Remote Desktop ist jetzt im Web verfügbar. Testen Sie unsere <ph name="LINK_BEGIN" />Web-App<ph name="LINK_END" />: Sie ist schnell, kostenlos und bietet noch mehr Funktionen. So wurde zum Beispiel die Unterstützung für mehrere Bildschirme verbessert.</translation>
 <translation id="1643640058022401035">Wenn Sie diese Seite verlassen, wird Ihre Chromoting-Sitzung beendet.</translation>
 <translation id="1654128982815600832">Remote-Verbindungen für diesen Computer werden aktiviert…</translation>
+<translation id="1697532407822776718">Fertig!</translation>
 <translation id="170207782578677537">Fehler beim Registrieren dieses Computers</translation>
 <translation id="174018511426417793">Sie haben noch keine Computer registriert. Um Remote-Verbindungen zu einem Computer zu ermöglichen, installieren Sie Chrome Remote Desktop auf dem betreffenden Computer und klicken Sie auf "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Verbindung wird hergestellt…</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Host-Prozess</translation>
 <translation id="20876857123010370">Touchpadmodus</translation>
 <translation id="2089514346391228378">Die Remote-Verbindungen für diesen Computer wurden aktiviert.</translation>
+<translation id="2198363917176605566">Sie müssen eine Berechtigung für die Bildschirmaufzeichnung erteilen, um <ph name="PRODUCT_NAME" /> zu verwenden. Erst dann können die Bildschirminhalte dieses Mac an den Remote-Computer gesendet werden.
+
+Klicken Sie zum Erteilen dieser Berechtigung unten auf "<ph name="BUTTON_NAME" />", um die Einstellungen für Bildschirmaufzeichnungen zu öffnen. Klicken Sie dann das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" an.
+
+Falls neben "<ph name="SERVICE_SCRIPT_NAME" />" schon ein Haken gesetzt ist, entfernen Sie diesen und klicken Sie noch einmal auf das Kästchen.</translation>
 <translation id="2208514473086078157">Gemäß den Richtlinieneinstellungen können Sie diesen Computer nicht als Chrome Remote Desktop-Host verwenden. Wenden Sie sich für weitere Hilfe an Ihren Systemadministrator.</translation>
 <translation id="2220529011494928058">Problem melden</translation>
 <translation id="2221097377466213233">Rechte Strg-Taste für Windows-Taste (⌘ auf einem Mac) verwenden</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Zuletzt online: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Diese App wird nicht mehr unterstützt. Damit Ihnen immer die aktuellen Funktionen und Sicherheitsupdates zur Verfügung stehen, verwenden Sie bitte die Web-App <ph name="LINK_BEGIN" />Chrome Remote Desktop<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
+<translation id="2504109125669302160"><ph name="PRODUCT_NAME" /> Berechtigung für die Bedienungshilfen erteilen</translation>
 <translation id="2509394361235492552">Verbunden mit <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">HINWEIS: Sie können in Chrome Remote Desktop die Option zum Öffnen als Fenster einstellen, damit alle Tastenkombinationen verfügbar sind.</translation>
 <translation id="2540992418118313681">Möchten Sie diesen Computer für einen anderen Nutzer zur Ansicht und Steuerung freigeben?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Zentrale Bibliothek</translation>
 <translation id="4430435636878359009">Remote-Verbindungen zu diesem Computer deaktivieren</translation>
 <translation id="4430915108080446161">Zugriffscode wird generiert...</translation>
+<translation id="443560535555262820">Einstellungen für Bedienungshilfen öffnen</translation>
 <translation id="4450893287417543264">Nicht mehr anzeigen</translation>
 <translation id="4472575034687746823">Jetzt starten</translation>
 <translation id="4481276415609939789">Sie haben noch keine Computer registriert. Um Remote-Verbindungen zu einem Computer zu ermöglichen, installieren Sie Chromoting auf dem betreffenden Computer und klicken Sie auf "<ph name="BUTTON_NAME" />".</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">PIN ändern</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (veraltet)</translation>
 <translation id="6221358653751391898">Sie sind nicht in Chrome angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
+<translation id="6223301979382383752">Einstellungen für Bildschirmaufzeichnung öffnen</translation>
 <translation id="6227369581881558336">Chrome Remote Desktop ist jetzt im Web verfügbar und bietet neue Funktionen wie die Dateiübertragung. <ph name="LINK_BEGIN" />Hier gehts zur Web App.<ph name="LINK_END" /></translation>
 <translation id="6284412385303060032">Der Host, der auf dem Anmeldebildschirm für die Konsole ausgeführt wird, wurde heruntergefahren, um den Vorhangmodus zu unterstützen, indem zu einem Host in einer nutzerspezfischen Sitzung gewechselt wurde.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Sonstige</translation>
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
+<translation id="6411861157501911556">Sie müssen eine Berechtigung für die Bedienungshilfen erteilen, um <ph name="PRODUCT_NAME" /> zu verwenden. Erst dann kann die Eingabe vom Remote-Computer auf diesem Mac eingefügt werden.
+
+Klicken Sie zum Erteilen dieser Berechtigung auf "<ph name="BUTTON_NAME" />" unten, um die Einstellungen für die "Bedienungshilfen" zu öffnen. Klicken Sie dann das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" an.
+
+Falls neben "<ph name="SERVICE_SCRIPT_NAME" />" schon ein Haken gesetzt ist, entfernen Sie diesen und klicken Sie noch einmal auf das Kästchen.</translation>
 <translation id="6441316101718669559">Die Desktop-Integration wird auf dieser Plattform nicht unterstützt. Sie können die App weiterhin verwenden, allerdings ist die Nutzerfreundlichkeit beeinträchtigt.</translation>
 <translation id="652218476070540101">Die PIN für diesen Computer wird aktualisiert…</translation>
 <translation id="6527303717912515753">Teilen</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Der gesamte Remote-Desktop soll sichtbar bleiben</translation>
 <translation id="9149992051684092333">Teilen Sie zur Freigabe Ihres Desktops zunächst der Person, die Sie unterstützen wird, den unten stehenden Zugriffscode mit.</translation>
 <translation id="916856682307586697">Standard-XSession starten</translation>
+<translation id="9187628920394877737"><ph name="PRODUCT_NAME" /> die Berechtigung zur Bildschirmaufzeichnung erteilen</translation>
 <translation id="9188433529406846933">Autorisieren</translation>
 <translation id="9213184081240281106">Ungültige Hostkonfiguration</translation>
 <translation id="951991426597076286">Ablehnen</translation>

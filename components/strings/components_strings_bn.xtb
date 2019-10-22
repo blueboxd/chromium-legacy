@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">পৃষ্ঠা পরে দেখার জন্য লোড করে রাখুন</translation>
 <translation id="1015730422737071372">অতিরিক্ত বিবরণ দিন</translation>
 <translation id="1021110881106174305">এই কার্ডগুলি গ্রহণ করা হয়</translation>
-<translation id="1023523064224774104">Chromium বুঝতে পেরেছে যে আপনি একটি সন্দেহজনক সাইটে
-          পাসওয়ার্ড লিখেছেন। এখনই আপনার পাসওয়ার্ড রিসেট করুন!</translation>
 <translation id="1032854598605920125">ঘড়ির কাঁটার দিকে ঘোরান</translation>
 <translation id="1035334672863811645">Chrome-এ সাইন-ইন করুন</translation>
 <translation id="1036348656032585052">বন্ধ করুন</translation>
@@ -553,7 +551,6 @@
 <translation id="3655670868607891010">আপনি যদি এটি প্রায়শই দেখতে পান, তাহলে <ph name="HELP_LINK" /> চেষ্টা করে দেখুন৷</translation>
 <translation id="3658742229777143148">পুনর্বিবেচনা</translation>
 <translation id="366077651725703012">ক্রেডিট কার্ড আপডেট করুন</translation>
-<translation id="3672525478985456967">এই সাইটের নামের সাথে <ph name="LOOKALIKE_DOMAIN" />-এর মিল আছে। ডোমেনের নামের মধ্যে সামান্য বা সহজে দেখা যায় না এমন পরিবর্তন করে হ্যাকাররা সাইট নকল করে।</translation>
 <translation id="3676592649209844519">ডিভাইস আইডি:</translation>
 <translation id="3677008721441257057">আপনি কি &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; বোঝাতে চাইছেন?</translation>
 <translation id="3678029195006412963">অনুরোধটি স্বাক্ষরিত করা যায়নি</translation>
@@ -877,7 +874,6 @@
 <translation id="5230733896359313003">শিপিংয়ের ঠিকানা</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">খারিজ</translation>
 <translation id="5250209940322997802">"নেটওয়ার্কে কানেক্ট করুন"</translation>
 <translation id="5251803541071282808">ক্লাউড</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
@@ -1019,7 +1015,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> খুলছে…</translation>
 <translation id="5947933617628957894">হ্যাঁ, সেভ করে রাখুন</translation>
 <translation id="5951495562196540101">ক্রেতার অ্যাকাউন্টের মাধ্যমে এনরোল করা যাচ্ছে না (প্যাকেজ লাইসেন্স পাওয়া যাবে)৷</translation>
-<translation id="5966900314707961320">এটি চালু করা থাকলে যেসব কুকি ওয়েব জুড়ে আপনার অ্যাক্টিভিটি ট্র্যাক করে সেগুলি সাইট ব্যবহার করতে পারবে না</translation>
 <translation id="5967592137238574583">পরিচিতির তথ্য সম্পাদনা করুন</translation>
 <translation id="5967867314010545767">ইতিহাস থেকে সরান</translation>
 <translation id="5975083100439434680">ছোট করুন</translation>
@@ -1114,7 +1109,6 @@
 <translation id="6433490469411711332">পরিচিতি তথ্য সম্পাদনা করুন</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> সংযোগ করতে প্রত্যাখ্যান করেছে।</translation>
 <translation id="6434309073475700221">বাতিল</translation>
-<translation id="6435221585574090192">আপনার অ্যাডমিনিস্ট্রেটরের সাথে Chrome এন্টারপ্রাইজ থ্রেট প্রোটেকশন দ্বারা ফ্ল্যাগ করা হয়েছে এমন নিরাপত্তা সংক্রান্ত ঘটনা সম্পর্কিত ডেটা শেয়ার করুন। এর মধ্যে পৃষ্ঠার ইউআরএল, ফাইলের নাম ও মেটাডেটা, আপনার ডিভাইসের ব্যবহারকারীর নাম এবং Chrome-এর ব্যবহারকারীর নাম থাকতে পারে।</translation>
 <translation id="6440503408713884761">এড়ানো হয়েছে</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">আরও তথ্য যোগ করুন</translation>
@@ -1458,7 +1452,6 @@
 <translation id="8184538546369750125">বিশ্বব্যাপী ডিফল্ট ব্যবহার করুন (অনুমতি দিন)</translation>
 <translation id="8194797478851900357">&amp;সরানোকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="8197543752516192074">পৃষ্ঠাটি অনুবাদ করুন</translation>
-<translation id="8197899142098070286">Chrome বুঝতে পেরেছে যে আপনি একটি সন্দেহজনক সাইটে পাসওয়ার্ড লিখেছেন। এখনই আপনার পাসওয়ার্ড রিসেট করুন!</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" ID যুক্ত এক্সটেনশনের ভুল আপডেট ইউআরএল।</translation>
 <translation id="8202097416529803614">অর্ডারের সারসংক্ষেপ</translation>
 <translation id="8202370299023114387">দ্বন্দ্ব</translation>
@@ -1545,7 +1538,6 @@
 <translation id="8718314106902482036">পেমেন্ট করা যায়নি</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, সার্চ সাজেশন</translation>
 <translation id="8719528812645237045">উপরে মাল্টিপল পাঞ্চ</translation>
-<translation id="8723954843026426558">আমি <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-এর নিয়ম ও শর্তাবলী, গোপনীয়তা নীতি এবং প্রত্যাহার করার অধিকারের বিষয়ে সম্মতি দিচ্ছি</translation>
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="8728672262656704056">আপনি গুপ্ত মোডে চলে গেছেন</translation>
 <translation id="8730621377337864115">হয়ে গেছে</translation>

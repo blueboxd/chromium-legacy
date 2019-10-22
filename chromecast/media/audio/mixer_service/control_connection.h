@@ -15,10 +15,6 @@
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
 #include "chromecast/public/volume_control.h"
 
-namespace net {
-class StreamSocket;
-}  // namespace net
-
 namespace chromecast {
 namespace media {
 namespace mixer_service {
@@ -71,7 +67,7 @@ class ControlConnection : public MixerConnection, public MixerSocket::Delegate {
 
  private:
   // MixerConnection implementation:
-  void OnConnected(std::unique_ptr<net::StreamSocket> socket) override;
+  void OnConnected(std::unique_ptr<MixerSocket> socket) override;
   void OnConnectionError() override;
 
   // MixerSocket::Delegate implementation:

@@ -10,8 +10,6 @@
 
 namespace blink {
 
-using namespace css_test_helpers;
-
 namespace {
 
 class CSSPropertyRefTest : public PageTestBase {};
@@ -25,7 +23,8 @@ TEST_F(CSSPropertyRefTest, LookupUnregistred) {
 }
 
 TEST_F(CSSPropertyRefTest, LookupRegistered) {
-  RegisterProperty(GetDocument(), "--x", "<length>", "42px", false);
+  css_test_helpers::RegisterProperty(GetDocument(), "--x", "<length>", "42px",
+                                     false);
   CSSPropertyRef ref("--x", GetDocument());
   EXPECT_TRUE(ref.IsValid());
   EXPECT_EQ(CSSPropertyID::kVariable, ref.GetProperty().PropertyID());
@@ -86,7 +85,8 @@ TEST_F(CSSPropertyRefTest, GetResolvedPropertyAlias) {
 }
 
 TEST_F(CSSPropertyRefTest, FromCSSPropertyNameCustom) {
-  RegisterProperty(GetDocument(), "--x", "<length>", "42px", false);
+  css_test_helpers::RegisterProperty(GetDocument(), "--x", "<length>", "42px",
+                                     false);
   CSSPropertyRef ref(CSSPropertyName("--x"), GetDocument());
   EXPECT_EQ(CSSPropertyID::kVariable, ref.GetProperty().PropertyID());
 }

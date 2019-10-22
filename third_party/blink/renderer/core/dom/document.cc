@@ -155,7 +155,7 @@
 #include "third_party/blink/renderer/core/execution_context/agent_metrics_collector.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
-#include "third_party/blink/renderer/core/feature_policy/document_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/dom_document_policy.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
@@ -8188,7 +8188,7 @@ scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
 
 DOMFeaturePolicy* Document::featurePolicy() {
   if (!policy_)
-    policy_ = MakeGarbageCollected<DocumentPolicy>(this);
+    policy_ = MakeGarbageCollected<DOMDocumentPolicy>(this);
   return policy_.Get();
 }
 

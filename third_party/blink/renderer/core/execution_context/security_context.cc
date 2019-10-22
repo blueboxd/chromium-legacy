@@ -169,6 +169,11 @@ void SecurityContext::AddReportOnlyFeaturePolicy(
   report_only_feature_policy_->SetHeaderPolicy(parsed_report_only_header);
 }
 
+void SecurityContext::SetDocumentPolicyForTesting(
+    std::unique_ptr<DocumentPolicy> document_policy) {
+  document_policy_ = std::move(document_policy);
+}
+
 bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
                                        ReportOptions report_on_failure,
                                        const String& message,
@@ -192,9 +197,14 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
     CountPotentialFeaturePolicyViolation(feature);
   }
 
+  bool document_policy_result =
+      !(RuntimeEnabledFeatures::DocumentPolicyEnabled() && document_policy_) ||
+      (document_policy_->IsFeatureSupported(feature) &&
+       document_policy_->IsFeatureEnabled(feature, threshold_value));
+
   FeatureEnabledState state = GetFeatureEnabledState(feature, threshold_value);
   if (state == FeatureEnabledState::kEnabled)
-    return true;
+    return document_policy_result;
   if (report_on_failure == ReportOptions::kReportOnFailure) {
     ReportFeaturePolicyViolation(
         feature,
@@ -203,7 +213,7 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
              : mojom::FeaturePolicyDisposition::kEnforce),
         message, source_file);
   }
-  return (state != FeatureEnabledState::kDisabled);
+  return (state != FeatureEnabledState::kDisabled) && document_policy_result;
 }
 
 FeatureEnabledState SecurityContext::GetFeatureEnabledState(

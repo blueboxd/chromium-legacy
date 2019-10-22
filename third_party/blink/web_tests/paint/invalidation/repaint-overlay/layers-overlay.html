@@ -60,7 +60,6 @@ var expected = {
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 20],
       "transform": 1
     },
     {
@@ -74,12 +73,12 @@ var expected = {
           "reason": "background"
         }
       ],
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='scrollable'",
       "bounds": [302, 302],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='transform'",
@@ -93,19 +92,24 @@ var expected = {
           "reason": "background"
         }
       ],
-      "transform": 7
+      "transform": 6
     },
     {
       "name": "Horizontal Scrollbar Layer",
       "position": [1, 301],
       "bounds": [300, 0],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [301, 1],
       "bounds": [0, 300],
-      "transform": 4
+      "transform": 3
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [800, 0],
+      "bounds": [0, 600]
     }
   ],
   "transforms": [
@@ -120,11 +124,12 @@ var expected = {
     },
     {
       "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -20, 0, 1]
+        [40, 50, 0, 1]
       ]
     },
     {
@@ -134,7 +139,7 @@ var expected = {
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [40, 50, 0, 1]
+        [64, 53, 0, 1]
       ]
     },
     {
@@ -144,7 +149,7 @@ var expected = {
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [64, 53, 0, 1]
+        [0, -30, 0, 1]
       ]
     },
     {
@@ -154,22 +159,12 @@ var expected = {
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -30, 0, 1]
+        [89, 78, 0, 1]
       ]
     },
     {
       "id": 6,
       "parent": 5,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [89, 78, 0, 1]
-      ]
-    },
-    {
-      "id": 7,
-      "parent": 6,
       "transform": [
         [3.53553390593274, 3.53553390593274, 0, 0],
         [-3.53553390593274, 3.53553390593274, 0, 0],
@@ -188,7 +183,6 @@ var actual = {
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 20],
       "transform": 1
     },
     {
@@ -202,12 +196,12 @@ var actual = {
           "reason": "background"
         }
       ],
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='scrollable'",
       "bounds": [302, 302],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='transform'",
@@ -221,19 +215,24 @@ var actual = {
           "reason": "background"
         }
       ],
-      "transform": 7
+      "transform": 6
     },
     {
       "name": "Horizontal Scrollbar Layer",
       "position": [1, 301],
       "bounds": [300, 0],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [301, 1],
       "bounds": [0, 300],
-      "transform": 4
+      "transform": 3
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [800, 0],
+      "bounds": [0, 600]
     }
   ],
   "transforms": [
@@ -248,11 +247,12 @@ var actual = {
     },
     {
       "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -20, 0, 1]
+        [40, 50, 0, 1]
       ]
     },
     {
@@ -262,7 +262,7 @@ var actual = {
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [40, 50, 0, 1]
+        [64, 53, 0, 1]
       ]
     },
     {
@@ -272,7 +272,7 @@ var actual = {
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [64, 53, 0, 1]
+        [0, -30, 0, 1]
       ]
     },
     {
@@ -282,22 +282,12 @@ var actual = {
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -30, 0, 1]
+        [89, 78, 0, 1]
       ]
     },
     {
       "id": 6,
       "parent": 5,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [89, 78, 0, 1]
-      ]
-    },
-    {
-      "id": 7,
-      "parent": 6,
       "transform": [
         [3.53553390593274, 3.53553390593274, 0, 0],
         [-3.53553390593274, 3.53553390593274, 0, 0],

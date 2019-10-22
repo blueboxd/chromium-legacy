@@ -349,14 +349,23 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
   ready_to_start_authentication_.Reset();
   unmask_details_request_in_progress_ = false;
 
+  bool fido_auth_suggested =
+      get_unmask_details_returned && unmask_details_.unmask_auth_method ==
+                                         AutofillClient::UnmaskAuthMethod::FIDO;
+
   // Do not use FIDO if card is not listed in unmask details, as each Card must
-  // be CVC authed at least once per device.
+  // be CVC authed at least once per device. Logging decision.
   bool card_is_eligible_for_fido =
-      get_unmask_details_returned &&
-      unmask_details_.unmask_auth_method ==
-          AutofillClient::UnmaskAuthMethod::FIDO &&
+      fido_auth_suggested &&
       unmask_details_.fido_eligible_card_ids.find(card_->server_id()) !=
           unmask_details_.fido_eligible_card_ids.end();
+
+  if (fido_auth_suggested) {
+    AutofillMetrics::LogCardUnmaskTypeDecision(
+        card_is_eligible_for_fido
+            ? AutofillMetrics::CardUnmaskTypeDecisionMetric::kFidoOnly
+            : AutofillMetrics::CardUnmaskTypeDecisionMetric::kCvcThenFido);
+  }
 
   if (card_is_eligible_for_fido) {
 #if defined(OS_IOS)

@@ -382,6 +382,8 @@ cast_source_set("browser") {
       "exo/cast_wm_helper.h",
       "exo/wayland_server_controller.cc",
       "exo/wayland_server_controller.h",
+      "webview/platform_views_rpc_instance.cc",
+      "webview/platform_views_rpc_instance.h",
       "webview/web_content_controller.cc",
       "webview/web_content_controller.h",
       "webview/webview_controller.cc",
@@ -392,6 +394,8 @@ cast_source_set("browser") {
       "webview/webview_layout_manager.h",
       "webview/webview_navigation_throttle.cc",
       "webview/webview_navigation_throttle.h",
+      "webview/webview_rpc_instance.cc",
+      "webview/webview_rpc_instance.h",
       "webview/webview_window_manager.cc",
       "webview/webview_window_manager.h",
     ]

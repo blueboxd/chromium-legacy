@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{قبل دقيقة واحدة}zero{قبل # دقيقة}two{قبل دقيقتين (#)}few{قبل # دقائق}many{قبل # دقيقة}other{قبل # دقيقة}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{دقيقة واحدة}zero{# دقيقة}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# دقيقة}}</translation>
 <translation id="1181037720776840403">إزالة</translation>
+<translation id="1201402288615127009">التالي</translation>
 <translation id="1243314992276662751">تحميل</translation>
 <translation id="1266864766717917324">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1269641567813814718">الفوز</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">انقر على أهداف اللمس على شاشتك.</translation>
 <translation id="2295140143284145483">الاستطلاع</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> تيرابايت/ثانية</translation>
+<translation id="2353636109065292463">التحقُّق من اتصال الإنترنت</translation>
 <translation id="2388990488038464401">هل تريد الاتصال بهذا الرقم من هاتفك؟</translation>
 <translation id="24452542372838207">توسيع الإشعار</translation>
 <translation id="2445449901874883781">استخدام كثافة عالية</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثانية}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>
 <translation id="5941711191222866238">تصغير</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{ساعة واحدة}zero{# من الساعات}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# من الساعات}}</translation>
+<translation id="5946629889255121107">طُلب الرقم من <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">صفحة <ph name="SELECTED_PAGE" /> من <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">محو نص مربع البحث</translation>
 <translation id="6040143037577758943">إغلاق</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">حفظ الملف</translation>
 <translation id="6656912866303152668">‏يُرجى التأكّد من تفعيل إعداد مزامنة الجهاز <ph name="TARGET_DEVICE_NAME" /> في Chrome، ثم محاولة الإرسال مرة أخرى.</translation>
 <translation id="6699343763173986273">المقطع الصوتي التالي للوسائط</translation>
+<translation id="6710213216561001401">السابق</translation>
 <translation id="6779314412797872738">‏لإرسال رقم من هنا إلى هاتف Android، يمكنك <ph name="TROUBLESHOOT_LINK" /> لكلا الجهازين في الإعدادات.</translation>
 <translation id="6786750046913594791">إغلاق المجلد</translation>
 <translation id="6808150112686056157">إيقاف الوسائط</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{يتبقى دقيقة واحدة}zero{يتبقى # من الدقائق}two{يتبقى دقيقتان (#)}few{يتبقى # دقائق}many{يتبقى # دقيقة}other{يتبقى # من الدقائق}}</translation>
 <translation id="7319740667687257810">‏Launcher، عرض جزئي</translation>
+<translation id="7352651011704765696">حدث خطأ ما</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{قبل دقيقة واحدة}zero{قبل # من الدقاق}two{قبل دقيقتين (#)}few{قبل # دقائق}many{قبل # دقيقة}other{قبل # من الدقائق}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{يتبقى دقيقة واحدة}zero{يتبقى # من الدقائق}two{يتبقى دقيقتان (#)}few{يتبقى # دقائق}many{يتبقى # دقيقة}other{يتبقى # من الدقائق}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{قبل ساعة واحدة}zero{قبل # من الساعات}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # من الساعات}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثوانٍ}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>
+<translation id="8134065097954893699">إعادة تحميل هذه الصفحة</translation>
 <translation id="8144660977431427332">‏عمليات بحثك يوفّرها "مساعد Google". <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />، الإكمال التلقائي</translation>
 <translation id="815598010540052116">التمرير إلى أسفل</translation>

@@ -51,6 +51,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     uint8_t bio_enrollment_samples_required = 4;
     bool cred_protect_support = false;
 
+    // max_credential_count_in_list, if non-zero, is the value to return for
+    // maxCredentialCountInList in the authenticatorGetInfo reponse.
+    // CTAP2_ERR_LIMIT_EXCEEDED will be returned for requests with an allow or
+    // exclude list exceeding this limit. Note that the request handler
+    // implementations require maxCredentialIdLength be set in order for
+    // maxCredentialCountInList to be respected.
+    uint32_t max_credential_count_in_list = 0;
+
+    // max_credential_id_length, if non-zero, is the value to return for
+    // maxCredentialIdLength in the authenticatorGetInfo reponse.
+    // CTAP2_ERR_LIMIT_EXCEEDED will be returned for requests with an allow or
+    // exclude list containing a credential ID exceeding this limit.
+    uint32_t max_credential_id_length = 0;
+
     // resident_credential_storage is the number of resident credentials that
     // the device will store before returning KEY_STORE_FULL.
     size_t resident_credential_storage = 3;
@@ -68,7 +82,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
 
     // reject_large_allow_and_exclude_lists causes the authenticator to respond
     // with an error if an allowList or an excludeList contains more than one
-    // credential ID.
+    // credential ID. This can be used to simulate errors with oversized
+    // credential lists in an authenticator that does not support batching (i.e.
+    // maxCredentialCountInList and maxCredentialIdSize).
     bool reject_large_allow_and_exclude_lists = false;
 
     // reject_silent_authenticator_requests causes the authenticator to return

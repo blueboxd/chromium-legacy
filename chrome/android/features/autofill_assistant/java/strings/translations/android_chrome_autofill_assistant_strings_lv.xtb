@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
-<translation id="1135993792949700405">Chrome sūtīs jūsu atlasītos personas datus uz <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Vai atvērt ārējo saiti?</translation>
 <translation id="1699570257714336246">Trūkst informācijas</translation>
 <translation id="2203046366315513658">Samazināt vērtību</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Google asistents pārlūkprogrammā Chrome ir atvērts pusekrāna augstumā.</translation>
 <translation id="6973932557599545801">Diemžēl nevaru palīdzēt. Lūdzu, turpiniet patstāvīgi.</translation>
 <translation id="7658239707568436148">Atcelt</translation>
-<translation id="7871791972254842204">Vēlāk izlasīt <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> pakalpojumu sniegšanas noteikumus un piekrist tiem</translation>
 <translation id="8253702004019660079">Google asistents pārlūkprogrammā Chrome.</translation>
 <translation id="9138504265731110181">Google asistents ietaupa jūsu laiku, palīdzot jums norēķināties tīmeklī</translation>
 <translation id="945522503751344254">Sūtīt atsauksmes</translation>

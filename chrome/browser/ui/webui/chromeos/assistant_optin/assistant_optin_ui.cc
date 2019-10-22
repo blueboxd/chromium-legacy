@@ -31,6 +31,9 @@
 #include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -40,9 +43,16 @@ namespace {
 
 AssistantOptInDialog* g_dialog = nullptr;
 
-constexpr int kAssistantOptInDialogWidth = 768;
-constexpr int kAssistantOptInDialogHeight = 640;
 constexpr int kCaptionBarHeight = 32;
+constexpr int kDialogMargin = 48;
+constexpr gfx::Size kDialogMaxSize = gfx::Size(768, 768);
+constexpr gfx::Size kDialogMinSize = gfx::Size(544, 464);
+constexpr gfx::Insets kDialogInsets =
+    gfx::Insets(kDialogMargin + kCaptionBarHeight,
+                kDialogMargin,
+                kDialogMargin,
+                kDialogMargin);
+
 constexpr char kFlowTypeParamKey[] = "flow-type";
 constexpr char kCaptionBarHeightParamKey[] = "caption-bar-height";
 
@@ -174,8 +184,12 @@ void AssistantOptInDialog::AdjustWidgetInitParams(
 }
 
 void AssistantOptInDialog::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(kAssistantOptInDialogWidth,
-                kAssistantOptInDialogHeight - kCaptionBarHeight);
+  auto bounds = display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  bounds.Inset(kDialogInsets);
+  auto dialog_size = bounds.size();
+  dialog_size.SetToMin(kDialogMaxSize);
+  dialog_size.SetToMax(kDialogMinSize);
+  size->SetSize(dialog_size.width(), dialog_size.height());
 }
 
 std::string AssistantOptInDialog::GetDialogArgs() const {

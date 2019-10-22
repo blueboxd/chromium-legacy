@@ -1,8 +1,8 @@
 {
   "comments": [
-    "Runs tests on FYI on the latest simulators."
+    "Runs tests on FYI on iOS12 simulators."
   ],
-  "xcode build version": "11a420a",
+  "xcode build version": "11a1027",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",

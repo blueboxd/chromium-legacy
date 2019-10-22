@@ -18,6 +18,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "components/ukm/scheme_constants.h"
 #include "components/variations/variations_associated_data.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_decode.h"
@@ -32,14 +33,6 @@
 namespace ukm {
 
 namespace {
-
-// Note: kChromeUIScheme is defined in content, which this code can't
-// depend on - since it's used by iOS too. kExtensionScheme is defined
-// in extensions which also isn't always available here. kAppScheme
-// will be defined in code that isn't available here.
-const char kChromeUIScheme[] = "chrome";
-const char kExtensionScheme[] = "chrome-extension";
-const char kAppScheme[] = "app";
 
 const base::Feature kUkmSamplingRateFeature{"UkmSamplingRate",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -159,7 +152,7 @@ void AppendWhitelistedUrls(
   }
 }
 
-bool HasUnknownMetrics(const ukm::builders::DecodeMap& decode_map,
+bool HasUnknownMetrics(const builders::DecodeMap& decode_map,
                        const mojom::UkmEntry& entry) {
   const auto it = decode_map.find(entry.event_hash);
   if (it == decode_map.end())
@@ -260,6 +253,32 @@ void UkmRecorderImpl::Purge() {
   recording_is_continuous_ = false;
 }
 
+void UkmRecorderImpl::PurgeExtensionRecordings() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Discard all sources that have an extension URL as well as all the entries
+  // related to any of these sources.
+  std::unordered_set<SourceId> extension_source_ids;
+  for (const auto& kv : recordings_.sources) {
+    if (kv.second->url().SchemeIs(kExtensionScheme)) {
+      extension_source_ids.insert(kv.first);
+    }
+  }
+  for (const auto source_id : extension_source_ids) {
+    recordings_.sources.erase(source_id);
+  }
+
+  std::vector<mojom::UkmEntryPtr>& events = recordings_.entries;
+
+  events.erase(
+      std::remove_if(events.begin(), events.end(),
+                     [&](const auto& event) {
+                       return extension_source_ids.count(event->source_id);
+                     }),
+      events.end());
+
+  recording_is_continuous_ = false;
+}
+
 void UkmRecorderImpl::MarkSourceForDeletion(SourceId source_id) {
   if (source_id == kInvalidSourceId)
     return;
@@ -295,7 +314,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
 
   // Number of sources discarded due to not matching a navigation URL.
   int num_sources_unmatched = 0;
-  std::unordered_map<ukm::SourceIdType, int> serialized_source_type_counts;
+  std::unordered_map<SourceIdType, int> serialized_source_type_counts;
 
   for (const auto& kv : recordings_.sources) {
     // Don't keep sources of these types after current report because their
@@ -385,15 +404,14 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.UnmatchedSourcesCount",
                             num_sources_unmatched);
 
-  UMA_HISTOGRAM_COUNTS_1000(
-      "UKM.Sources.SerializedCount2.Ukm",
-      serialized_source_type_counts[ukm::SourceIdType::UKM]);
+  UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.SerializedCount2.Ukm",
+                            serialized_source_type_counts[SourceIdType::UKM]);
   UMA_HISTOGRAM_COUNTS_1000(
       "UKM.Sources.SerializedCount2.Navigation",
-      serialized_source_type_counts[ukm::SourceIdType::NAVIGATION_ID]);
+      serialized_source_type_counts[SourceIdType::NAVIGATION_ID]);
   UMA_HISTOGRAM_COUNTS_1000(
       "UKM.Sources.SerializedCount2.App",
-      serialized_source_type_counts[ukm::SourceIdType::APP_ID]);
+      serialized_source_type_counts[SourceIdType::APP_ID]);
 
   // We record a UMA metric specifically for the number of serialized events
   // with the FCP metric. This is for data quality verification.
@@ -482,12 +500,10 @@ int UkmRecorderImpl::PruneOldSources(size_t max_kept_sources) {
   if (recordings_.sources.size() <= max_kept_sources)
     return 0;
 
-  std::vector<std::pair<base::TimeTicks, ukm::SourceId>>
-      timestamp_source_id_pairs;
+  std::vector<std::pair<base::TimeTicks, SourceId>> timestamp_source_id_pairs;
   for (const auto& kv : recordings_.sources) {
     timestamp_source_id_pairs.push_back(
-        std::pair<base::TimeTicks, ukm::SourceId>(kv.second->creation_time(),
-                                                  kv.first));
+        std::make_pair(kv.second->creation_time(), kv.first));
   }
   // Partially sort so that the last |max_kept_sources| elements are the
   // newest.
@@ -740,7 +756,7 @@ void UkmRecorderImpl::StoreWhitelistedEntries() {
                         base::SPLIT_WANT_NONEMPTY);
   for (const auto& entry_string : entries)
     whitelisted_entry_hashes_.insert(base::HashMetricName(entry_string));
-  decode_map_ = ::ukm::builders::CreateDecodeMap();
+  decode_map_ = builders::CreateDecodeMap();
 }
 
 }  // namespace ukm

@@ -3392,21 +3392,6 @@ void Internals::simulateRasterUnderInvalidations(bool enable) {
   RasterInvalidationTracking::SimulateRasterUnderInvalidations(enable);
 }
 
-void Internals::BypassLongCompileThresholdOnce(
-    ExceptionState& exception_state) {
-  LocalFrame* frame = GetFrame();
-  DCHECK(frame);
-  PerformanceMonitor* performance_monitor = frame->GetPerformanceMonitor();
-  if (!performance_monitor) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "PerformanceObserver should be observing 'longtask' while "
-        "calling BypassLongCompileThresholdOnce.");
-    return;
-  }
-  return performance_monitor->BypassLongCompileThresholdOnceForTesting();
-}
-
 unsigned Internals::LifecycleUpdateCount() const {
   return document_->View()->LifecycleUpdateCountForTesting();
 }

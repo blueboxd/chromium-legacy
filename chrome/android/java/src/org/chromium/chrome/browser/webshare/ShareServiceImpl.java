@@ -42,7 +42,7 @@ import java.util.Set;
  * third_party/blink/public/mojom/webshare/webshare.mojom.
  */
 public class ShareServiceImpl implements ShareService {
-    private final Activity mActivity;
+    private final WindowAndroid mWindow;
 
     private static final String TAG = "share";
 
@@ -142,7 +142,7 @@ public class ShareServiceImpl implements ShareService {
             PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
 
     public ShareServiceImpl(@Nullable WebContents webContents) {
-        mActivity = activityFromWebContents(webContents);
+        mWindow = webContents.getTopLevelNativeWindow();
     }
 
     @Override
@@ -157,7 +157,7 @@ public class ShareServiceImpl implements ShareService {
         RecordHistogram.recordEnumeratedHistogram("WebShare.ApiCount", WEBSHARE_METHOD_SHARE,
                 WEBSHARE_METHOD_COUNT);
 
-        if (mActivity == null) {
+        if (mWindow.getActivity().get() == null) {
             RecordHistogram.recordEnumeratedHistogram("WebShare.ShareOutcome",
                     WEBSHARE_OUTCOME_UNKNOWN_FAILURE, WEBSHARE_OUTCOME_COUNT);
             callback.call(ShareError.INTERNAL_ERROR);
@@ -180,7 +180,7 @@ public class ShareServiceImpl implements ShareService {
             }
         };
 
-        final ShareParams.Builder paramsBuilder = new ShareParams.Builder(mActivity, title, url.url)
+        final ShareParams.Builder paramsBuilder = new ShareParams.Builder(mWindow, title, url.url)
                                                           .setText(text)
                                                           .setCallback(innerCallback);
 

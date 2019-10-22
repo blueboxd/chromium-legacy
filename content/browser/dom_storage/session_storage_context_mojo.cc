@@ -24,8 +24,7 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_area_impl.h"
@@ -210,7 +209,8 @@ void SessionStorageContextMojo::CloneSessionNamespace(
         DCHECK_EQ(connection_state_, CONNECTION_FINISHED);
         // The namespace exists on disk but is not in-use, so do the appropriate
         // metadata operations to clone the namespace and set up the new object.
-        std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+        std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
+            save_tasks;
         auto source_namespace_entry =
             metadata_.GetOrCreateNamespaceEntry(clone_from_namespace_id);
         auto namespace_entry =
@@ -320,7 +320,7 @@ void SessionStorageContextMojo::DeleteStorage(const url::Origin& origin,
   } else {
     // If we don't have the namespace loaded, then we can delete it all
     // using the metadata.
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks;
     metadata_.DeleteArea(namespace_id, origin, &tasks);
     if (database_) {
       database_->RunBatchDatabaseTasks(
@@ -458,7 +458,7 @@ void SessionStorageContextMojo::ScavengeUnusedNamespaces(
     }
     namespaces_to_delete.push_back(namespace_id);
   }
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
   for (const auto& namespace_id : namespaces_to_delete)
     metadata_.DeleteNamespace(namespace_id, &save_tasks);
 
@@ -545,7 +545,7 @@ scoped_refptr<SessionStorageMetadata::MapData>
 SessionStorageContextMojo::RegisterNewAreaMap(
     SessionStorageMetadata::NamespaceEntry namespace_entry,
     const url::Origin& origin) {
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
   scoped_refptr<SessionStorageMetadata::MapData> map_entry =
       metadata_.RegisterNewMap(namespace_entry, origin, &save_tasks);
 
@@ -619,7 +619,7 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
     SessionStorageMetadata::NamespaceEntry source_namespace_entry,
     const std::string& new_namespace_id,
     const SessionStorageNamespaceImplMojo::OriginAreas& clone_from_areas) {
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
 
   bool found = false;
   auto it = namespaces_.find(new_namespace_id);
@@ -671,7 +671,7 @@ SessionStorageContextMojo::CreateSessionStorageNamespaceImplMojo(
 void SessionStorageContextMojo::DoDatabaseDelete(
     const std::string& namespace_id) {
   DCHECK_EQ(connection_state_, CONNECTION_FINISHED);
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks;
   metadata_.DeleteNamespace(namespace_id, &tasks);
   if (database_) {
     database_->RunBatchDatabaseTasks(
@@ -724,7 +724,7 @@ void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
     options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
 
     in_memory_ = false;
-    database_ = leveldb::LevelDBDatabaseImpl::OpenDirectory(
+    database_ = storage::AsyncDomStorageDatabase::OpenDirectory(
         std::move(options), partition_directory_, leveldb_name_,
         memory_dump_id_, leveldb_task_runner_,
         base::BindOnce(&SessionStorageContextMojo::OnDatabaseOpened,
@@ -734,7 +734,7 @@ void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
 
   // We were not given a subdirectory. Use a memory backed database.
   in_memory_ = true;
-  database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
+  database_ = storage::AsyncDomStorageDatabase::OpenInMemory(
       memory_dump_id_, "SessionStorageDatabase", leveldb_task_runner_,
       base::BindOnce(&SessionStorageContextMojo::OnDatabaseOpened,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -814,7 +814,8 @@ void SessionStorageContextMojo::OnGotDatabaseMetadata(
     ValueAndStatus version,
     KeyValuePairsAndStatus namespaces,
     ValueAndStatus next_map_id) {
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> migration_tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
+      migration_tasks;
 
   MetadataParseResult version_parse =
       ParseDatabaseVersion(std::move(version), &migration_tasks);
@@ -846,7 +847,7 @@ void SessionStorageContextMojo::OnGotDatabaseMetadata(
 SessionStorageContextMojo::MetadataParseResult
 SessionStorageContextMojo::ParseDatabaseVersion(
     ValueAndStatus version,
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>*
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
         migration_tasks) {
   if (version.status.ok()) {
     if (!metadata_.ParseDatabaseVersion(std::move(version.value),
@@ -876,7 +877,7 @@ SessionStorageContextMojo::ParseDatabaseVersion(
 SessionStorageContextMojo::MetadataParseResult
 SessionStorageContextMojo::ParseNamespaces(
     KeyValuePairsAndStatus namespaces,
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
         migration_tasks) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
 

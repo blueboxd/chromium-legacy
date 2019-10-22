@@ -517,6 +517,7 @@ if (!is_ios) {
       "blink/prediction/linear_predictor_unittest.cc",
       "blink/prediction/linear_resampling_unittest.cc",
       "blink/prediction/one_euro_filter_unittests.cc",
+      "blink/prediction/prediction_metrics_handler_unittest.cc",
       "blink/scroll_predictor_unittest.cc",
       "blink/web_input_event_traits_unittest.cc",
       "blink/web_input_event_unittest.cc",

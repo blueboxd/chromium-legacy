@@ -18,14 +18,12 @@ CastMojoMediaClient::CastMojoMediaClient(
     CmaBackendFactory* backend_factory,
     const CreateCdmFactoryCB& create_cdm_factory_cb,
     VideoModeSwitcher* video_mode_switcher,
-    VideoResolutionPolicy* video_resolution_policy,
-    MediaResourceTracker* media_resource_tracker)
+    VideoResolutionPolicy* video_resolution_policy)
     : connector_(nullptr),
       backend_factory_(backend_factory),
       create_cdm_factory_cb_(create_cdm_factory_cb),
       video_mode_switcher_(video_mode_switcher),
-      video_resolution_policy_(video_resolution_policy),
-      media_resource_tracker_(media_resource_tracker) {
+      video_resolution_policy_(video_resolution_policy) {
   DCHECK(backend_factory_);
 }
 
@@ -50,8 +48,7 @@ std::unique_ptr<::media::Renderer> CastMojoMediaClient::CreateCastRenderer(
   // |overlay_plane_id|s.
   return std::make_unique<CastRenderer>(
       backend_factory_, task_runner, video_mode_switcher_,
-      video_resolution_policy_, media_resource_tracker_, connector_,
-      host_interfaces);
+      video_resolution_policy_, connector_, host_interfaces);
 }
 #endif
 
@@ -62,8 +59,7 @@ std::unique_ptr<::media::Renderer> CastMojoMediaClient::CreateRenderer(
     const std::string& audio_device_id) {
   return std::make_unique<CastRenderer>(
       backend_factory_, task_runner, video_mode_switcher_,
-      video_resolution_policy_, media_resource_tracker_, connector_,
-      host_interfaces);
+      video_resolution_policy_, connector_, host_interfaces);
 }
 
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(

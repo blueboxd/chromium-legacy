@@ -598,13 +598,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidLoadResourceFromMemoryCache(const WebURLRequest&,
                                               const WebURLResponse&) {}
 
-  // This frame has displayed inactive content (such as an image) from an
-  // insecure source.  Inactive content cannot spread to other frames.
-  virtual void DidDisplayInsecureContent() {}
-
-  // This frame contains a form that submits to an insecure target url.
-  virtual void DidContainInsecureFormAction() {}
-
   // The indicated security origin has run active content (such as a
   // script) from an insecure source.  Note that the insecure content can
   // spread to other frames in the same origin.

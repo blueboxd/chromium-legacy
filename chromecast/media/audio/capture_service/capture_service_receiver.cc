@@ -44,7 +44,7 @@
 namespace chromecast {
 namespace media {
 
-class CaptureServiceReceiver::Socket : public SmallMessageSocket {
+class CaptureServiceReceiver::Socket : public SmallMessageSocket::Delegate {
  public:
   Socket(std::unique_ptr<net::StreamSocket> socket, int channels);
   ~Socket() override;
@@ -52,7 +52,7 @@ class CaptureServiceReceiver::Socket : public SmallMessageSocket {
   void Start(::media::AudioInputStream::AudioInputCallback* input_callback);
 
  private:
-  // SmallMessageSocket implementation:
+  // SmallMessageSocket::Delegate implementation:
   void OnError(int error) override;
   void OnEndOfStream() override;
   bool OnMessage(char* data, int size) override;
@@ -60,6 +60,8 @@ class CaptureServiceReceiver::Socket : public SmallMessageSocket {
   void OnInactivityTimeout();
   bool HandleAudio(std::unique_ptr<::media::AudioBus> audio, int64_t timestamp);
   void ReportErrorAndStop();
+
+  SmallMessageSocket socket_;
 
   // Number of audio capture channels that audio manager defines.
   const int channels_;
@@ -72,7 +74,7 @@ class CaptureServiceReceiver::Socket : public SmallMessageSocket {
 CaptureServiceReceiver::Socket::Socket(
     std::unique_ptr<net::StreamSocket> socket,
     int channels)
-    : SmallMessageSocket(std::move(socket)),
+    : socket_(this, std::move(socket)),
       channels_(channels),
       input_callback_(nullptr) {
   DCHECK_GT(channels_, 0);
@@ -84,7 +86,7 @@ CaptureServiceReceiver::Socket::~Socket() = default;
 void CaptureServiceReceiver::Socket::Start(
     ::media::AudioInputStream::AudioInputCallback* input_callback) {
   input_callback_ = input_callback;
-  ReceiveMessages();
+  socket_.ReceiveMessages();
 }
 
 void CaptureServiceReceiver::Socket::ReportErrorAndStop() {

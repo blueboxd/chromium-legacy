@@ -399,7 +399,7 @@ public class LibraryLoader {
 
             long stopTime = SystemClock.uptimeMillis();
             mLibraryLoadTimeMs = stopTime - startTime;
-            Log.i(TAG, "Time to load native libraries: %d ms", mLibraryLoadTimeMs);
+            Log.d(TAG, "Time to load native libraries: %d ms", mLibraryLoadTimeMs);
 
             mLoaded = true;
         } catch (UnsatisfiedLinkError e) {
@@ -497,12 +497,17 @@ public class LibraryLoader {
         }
 
         // Check that the version of the library we have loaded matches the version we expect
-        Log.i(TAG,
-                "Expected native library version number \"%s\", "
-                        + "actual native library version number \"%s\"",
-                NativeLibraries.sVersionNumber, LibraryLoaderJni.get().getVersionNumber());
         if (!NativeLibraries.sVersionNumber.equals(LibraryLoaderJni.get().getVersionNumber())) {
+            Log.e(TAG,
+                    "Expected native library version number \"%s\", "
+                            + "actual native library version number \"%s\"",
+                    NativeLibraries.sVersionNumber, LibraryLoaderJni.get().getVersionNumber());
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_WRONG_VERSION);
+        } else {
+            // Log the version anyway as this is often helpful, but word it differently so it's
+            // clear that it isn't an error.
+            Log.i(TAG, "Loaded native library version number \"%s\"",
+                    NativeLibraries.sVersionNumber);
         }
 
         // From now on, keep tracing in sync with native.

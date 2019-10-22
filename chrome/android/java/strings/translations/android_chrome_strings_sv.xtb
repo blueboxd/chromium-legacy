@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Om du vill få aviseringar från Chrome måste du även aktivera aviseringar i <ph name="BEGIN_LINK" />inställningarna för Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Data för <ph name="APP_NAME" /> finns även i Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Att ändra filnamnstillägg kan leda till oväntat beteende. Detta kan vara skadligt för enheten.</translation>
 <translation id="2056878612599315956">Webbplatsen har pausats</translation>
 <translation id="2063713494490388661">Tryck för att söka</translation>
 <translation id="2067805253194386918">text</translation>
@@ -263,6 +262,7 @@
 <translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
 <translation id="2923908459366352541">Namnet är ogiltigt</translation>
 <translation id="2932150158123903946">Lagring för Google <ph name="APP_NAME" /></translation>
+<translation id="2942036813789421260">Fliken Förhandsgranskning har stängts</translation>
 <translation id="2956410042958133412">Det här kontot hanteras av <ph name="PARENT_NAME_1" /> och <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Byter till inkognitoflikar</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
@@ -388,6 +388,7 @@
 <translation id="3988466920954086464">Visa snabba sökresultat i panelen</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3997476611815694295">Oviktig lagring</translation>
+<translation id="4000212216660919741">Startsida offline</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Tillåt cookies för en enskild webbplats.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# tim}other{# tim}}</translation>
@@ -767,6 +768,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6697947395630195233">Du behöver ge Chrome åtkomstbehörighet till din plats om den ska kunna delas med webbplatsen.</translation>
 <translation id="6698801883190606802">Hantera synkroniserad data</translation>
 <translation id="6699370405921460408">Googles servrar optimerar sidor du besöker.</translation>
+<translation id="6706288973712894588">Du är offline just nu.\n<ph name="BEGIN_LINK" />Utforska offlineflödet.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Nyheter</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="671481426037969117">Timern för <ph name="FQDN" /> har löpt ut. Den börjar om igen i morgon.</translation>
@@ -866,6 +868,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7475688122056506577">Det gick inte att hitta SD-kortet. Det kan saknas filer.</translation>
 <translation id="7479104141328977413">Flikhantering</translation>
 <translation id="7481312909269577407">Framåt</translation>
+<translation id="7482656565088326534">Fliken Förhandsgranskning</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (uppdaterades <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">Sparad data</translation>
 <translation id="7498271377022651285">Vänta …</translation>
@@ -915,7 +918,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7810647596859435254">Öppna med …</translation>
 <translation id="7821588508402923572">Här visas hur mycket data du har sparat</translation>
 <translation id="7837721118676387834">Tillåt automatisk uppspelning av videor utan ljud för en specifik webbplats.</translation>
-<translation id="7838340937077326045">Vill du ändra filnamnstillägget?</translation>
 <translation id="7846076177841592234">Rensa val</translation>
 <translation id="784934925303690534">Tidsintervall</translation>
 <translation id="7851858861565204677">Andra enheter</translation>
@@ -996,6 +998,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8380167699614421159">Påträngande eller vilseledande annonser visas på den här webbplatsen</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>
 <translation id="8413126021676339697">Visa fullständig historik</translation>
+<translation id="8427875596167638501">Fliken Förhandsgranskning visas på halva skärmen</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
 <translation id="8441146129660941386">Sök bakåt</translation>
@@ -1086,7 +1089,9 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="9086455579313502267">Det går inte att ansluta till nätverket</translation>
 <translation id="9100505651305367705">Fråga om artiklarna ska visas i en förenklad vy när detta stöds</translation>
 <translation id="9100610230175265781">Lösenfras krävs</translation>
+<translation id="9102803872260866941">Fliken Förhandsgranskning har öppnats</translation>
 <translation id="9104217018994036254">Lista över enheter som fliken kan delas med.</translation>
+<translation id="9133397713400217035">Utforska offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9139068048179869749">Fråga innan webbplatser tillåts att skicka aviseringar (rekommenderas)</translation>

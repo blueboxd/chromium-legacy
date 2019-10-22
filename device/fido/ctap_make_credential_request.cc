@@ -48,9 +48,9 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
   cbor_map[cbor::Value(2)] = AsCBOR(request.rp);
   cbor_map[cbor::Value(3)] = AsCBOR(request.user);
   cbor_map[cbor::Value(4)] = AsCBOR(request.public_key_credential_params);
-  if (request.exclude_list) {
+  if (!request.exclude_list.empty()) {
     cbor::Value::ArrayValue exclude_list_array;
-    for (const auto& descriptor : *request.exclude_list) {
+    for (const auto& descriptor : request.exclude_list) {
       exclude_list_array.push_back(AsCBOR(descriptor));
     }
     cbor_map[cbor::Value(5)] = cbor::Value(std::move(exclude_list_array));

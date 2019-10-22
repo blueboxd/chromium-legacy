@@ -7,8 +7,14 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
+#include "base/sequenced_task_runner.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/audio/mixer_service/constants.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
@@ -32,15 +38,54 @@ std::string GetEndpoint() {
   return path;
 }
 
+class LocalReceiverInstance {
+ public:
+  LocalReceiverInstance() = default;
+
+  void SetInstance(Receiver* receiver) {
+    base::AutoLock lock(lock_);
+    receiver_ = receiver;
+  }
+
+  void RemoveInstance(Receiver* receiver) {
+    base::AutoLock lock(lock_);
+    if (receiver_ == receiver) {
+      receiver_ = nullptr;
+    }
+  }
+
+  std::unique_ptr<MixerSocket> CreateLocalSocket() {
+    base::AutoLock lock(lock_);
+    if (receiver_) {
+      return receiver_->LocalConnect();
+    }
+    return nullptr;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LocalReceiverInstance);
+
+  base::Lock lock_;
+  Receiver* receiver_ = nullptr;
+};
+
+LocalReceiverInstance* GetLocalReceiver() {
+  static base::NoDestructor<LocalReceiverInstance> instance;
+  return instance.get();
+}
+
 }  // namespace
+
+std::unique_ptr<MixerSocket> CreateLocalMixerServiceConnection() {
+  return GetLocalReceiver()->CreateLocalSocket();
+}
 
 class Receiver::InitialSocket : public MixerSocket::Delegate {
  public:
-  InitialSocket(Receiver* receiver, std::unique_ptr<net::StreamSocket> socket)
-      : receiver_(receiver),
-        socket_(std::make_unique<MixerSocket>(std::move(socket), this)) {
+  InitialSocket(Receiver* receiver, std::unique_ptr<MixerSocket> socket)
+      : receiver_(receiver), socket_(std::move(socket)) {
     DCHECK(receiver_);
-    socket_->ReceiveMessages();
+    socket_->SetDelegate(this);
   }
 
   ~InitialSocket() override = default;
@@ -79,20 +124,49 @@ class Receiver::InitialSocket : public MixerSocket::Delegate {
 };
 
 Receiver::Receiver()
-    : socket_service_(
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      socket_service_(
           GetEndpoint(),
           GetSwitchValueNonNegativeInt(switches::kMixerServiceEndpoint,
                                        mixer_service::kDefaultTcpPort),
           kMaxAcceptLoop,
-          this) {
+          this),
+      weak_factory_(this) {
   socket_service_.Accept();
+  GetLocalReceiver()->SetInstance(this);
 }
 
-Receiver::~Receiver() = default;
+Receiver::~Receiver() {
+  GetLocalReceiver()->RemoveInstance(this);
+}
+
+std::unique_ptr<MixerSocket> Receiver::LocalConnect() {
+  std::unique_ptr<MixerSocket> receiver_socket(new MixerSocket);
+  std::unique_ptr<MixerSocket> caller_socket(new MixerSocket);
+
+  receiver_socket->SetLocalCounterpart(caller_socket->GetWeakPtr(),
+                                       base::SequencedTaskRunnerHandle::Get());
+  caller_socket->SetLocalCounterpart(receiver_socket->GetWeakPtr(),
+                                     task_runner_);
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Receiver::HandleLocalConnection,
+                     weak_factory_.GetWeakPtr(), std::move(receiver_socket)));
+
+  return caller_socket;
+}
 
 void Receiver::HandleAcceptedSocket(std::unique_ptr<net::StreamSocket> socket) {
-  auto initial_socket =
-      std::make_unique<InitialSocket>(this, std::move(socket));
+  AddInitialSocket(std::make_unique<InitialSocket>(
+      this, std::make_unique<MixerSocket>(std::move(socket))));
+}
+
+void Receiver::HandleLocalConnection(std::unique_ptr<MixerSocket> socket) {
+  AddInitialSocket(std::make_unique<InitialSocket>(this, std::move(socket)));
+}
+
+void Receiver::AddInitialSocket(std::unique_ptr<InitialSocket> initial_socket) {
   InitialSocket* ptr = initial_socket.get();
   initial_sockets_[ptr] = std::move(initial_socket);
 }

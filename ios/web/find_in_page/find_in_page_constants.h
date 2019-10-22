@@ -19,6 +19,9 @@ extern const char kSelectAndScrollResultMatches[];
 // Dictionary key that holds value of currently selected index in
 // kFindInPageSelectAndScrollToMatch resoonse.
 extern const char kSelectAndScrollResultIndex[];
+// Dictionary key in kFindInPageSelectAndScrollToMatch response that
+// holds the value of the context for the currently selected match.
+extern const char kSelectAndScrollResultContextString[];
 // The name of JavaScript function which stops Find in Page.
 extern const char kFindInPageStop[];
 

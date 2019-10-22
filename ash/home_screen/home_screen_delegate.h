@@ -64,6 +64,16 @@ class HomeScreenDelegate {
   // True if home screen is visible.
   virtual bool IsHomeScreenVisible() = 0;
 
+  // Returns bounds rect in screen coordinates for the app list item associated
+  // with the provided window in the apps grid shown in the home screen,
+  // assuming the initial app list grid page is selected.
+  // If the window is not associated with an app, or the app item is not shown
+  // in the initial home screen page, it returns 1x1 rectangle centered in the
+  // home screen's apps grid.
+  // If the home screen is not yet shown, returns an empty rect.
+  virtual gfx::Rect GetInitialAppListItemScreenBoundsForWindow(
+      aura::Window* window) = 0;
+
   // Triggered when dragging launcher in tablet mode starts/proceeds/ends. They
   // cover both dragging launcher to show and hide.
   virtual void OnHomeLauncherDragStart() {}

@@ -243,7 +243,8 @@ interface Camera3CallbackOps {
 interface Camera3DeviceOps {
   // Initialize() is called once after the camera device is opened to register
   // the Camera3CallbackOps handle.
-  Initialize@0(Camera3CallbackOps callback_ops) => (int32 result);
+  Initialize@0(pending_remote<Camera3CallbackOps> callback_ops)
+      => (int32 result);
 
   // ConfigureStreams() is called every time the client needs to set up new set
   // of streams.

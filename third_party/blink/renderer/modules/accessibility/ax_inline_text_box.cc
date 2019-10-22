@@ -131,6 +131,13 @@ void AXInlineTextBox::GetWordBoundaries(Vector<int>& word_starts,
   }
 }
 
+unsigned AXInlineTextBox::TextOffsetInContainer(unsigned offset) const {
+  if (!inline_text_box_)
+    return 0;
+
+  return inline_text_box_->TextOffsetInContainer(offset);
+}
+
 String AXInlineTextBox::GetName(ax::mojom::NameFrom& name_from,
                                 AXObject::AXObjectVector* name_objects) const {
   if (!inline_text_box_)

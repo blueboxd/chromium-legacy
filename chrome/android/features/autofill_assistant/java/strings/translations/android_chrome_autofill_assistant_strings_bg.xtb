@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
-<translation id="1135993792949700405">Chrome ще изпрати избраните от вас лични данни до <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Да се отвори ли външната връзка?</translation>
 <translation id="1699570257714336246">Липсва информация</translation>
 <translation id="2203046366315513658">Намаляване на стойността</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Google Асистент в Chrome е отворен на половината височина.</translation>
 <translation id="6973932557599545801">За съжаление, не мога да помогна. Моля, продължете ръчно.</translation>
 <translation id="7658239707568436148">Отказ</translation>
-<translation id="7871791972254842204">Четене и приемане на общите условия на <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> по-късно</translation>
 <translation id="8253702004019660079">Google Асистент в Chrome.</translation>
 <translation id="9138504265731110181">Google Асистент ви спестява време, като ви помага с плащанията в мрежата</translation>
 <translation id="945522503751344254">Изпращане на отзиви</translation>

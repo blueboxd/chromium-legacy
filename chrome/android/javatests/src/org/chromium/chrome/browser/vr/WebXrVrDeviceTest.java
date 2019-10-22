@@ -46,7 +46,7 @@ import java.util.concurrent.Callable;
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-webvr"})
+        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
 public class WebXrVrDeviceTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
@@ -117,7 +117,7 @@ public class WebXrVrDeviceTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
@@ -140,7 +140,7 @@ public class WebXrVrDeviceTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
@@ -178,7 +178,7 @@ public class WebXrVrDeviceTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR is only supported on L+
@@ -213,7 +213,7 @@ public class WebXrVrDeviceTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR is only supported on L+

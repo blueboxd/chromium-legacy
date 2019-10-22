@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
-#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
@@ -308,11 +307,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_point), true, true);
   if (GetLayoutBox()) {
-    end_point = GetLayoutBox()
-                    ->GetDocument()
-                    .GetSnapCoordinator()
-                    .GetSnapPosition(*GetLayoutBox(), *strategy)
-                    .value_or(end_point);
+    end_point = GetSnapPosition(*strategy).value_or(end_point);
     new_scroll_offset = ScrollPositionToOffset(end_point);
   }
 

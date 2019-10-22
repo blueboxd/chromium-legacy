@@ -90,7 +90,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
   current_pos_ = ScrollableAreaCurrentPos();
 }
 
-Scrollbar::~Scrollbar() =default;
+Scrollbar::~Scrollbar() = default;
 
 void Scrollbar::Trace(blink::Visitor* visitor) {
   visitor->Trace(scrollable_area_);
@@ -511,7 +511,14 @@ void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
   if (scrollable_area_) {
     if (is_captured)
       scrollable_area_->MouseReleasedScrollbar();
-    scrollable_area_->SnapAfterScrollbarScrolling(orientation_);
+
+    ScrollableArea* scrollable_area_for_snapping =
+        scrollable_area_->GetLayoutBox()->IsLayoutView()
+            ? scrollable_area_->GetLayoutBox()
+                  ->GetFrameView()
+                  ->GetScrollableArea()
+            : scrollable_area_.Get();
+    scrollable_area_for_snapping->SnapAfterScrollbarScrolling(orientation_);
 
     ScrollbarPart part = GetTheme().HitTest(
         *this, FlooredIntPoint(mouse_event.PositionInRootFrame()));

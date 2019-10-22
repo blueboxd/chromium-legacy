@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -33,21 +33,17 @@ class WebAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
   // TODO(https://crbug.com/863278): Force Aero glass on Windows 7 for this
   // test.
   bool InstallAndLaunchWebApp() {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = GetAppURL();
-    web_app_info.scope = GetAppURL().GetWithoutFilename();
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = GetAppURL();
+    web_app_info->scope = GetAppURL().GetWithoutFilename();
     if (theme_color_)
-      web_app_info.theme_color = *theme_color_;
+      web_app_info->theme_color = *theme_color_;
 
-    // TODO(alancutter): Use web_app::InstallManager instead of Extensions
-    // specific install path.
-    const extensions::Extension* app =
-        extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
-                                                         web_app_info);
+    web_app::AppId app_id =
+        web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
     content::TestNavigationObserver navigation_observer(GetAppURL());
     navigation_observer.StartWatchingNewWebContents();
-    app_browser_ = extensions::browsertest_util::LaunchAppBrowser(
-        browser()->profile(), app);
+    app_browser_ = web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
     navigation_observer.WaitForNavigationFinished();
 
     browser_view_ = BrowserView::GetBrowserViewForBrowser(app_browser_);

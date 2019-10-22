@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,6 +22,7 @@
 #include "media/base/android/media_url_interceptor.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/auth.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/http_auth.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -123,10 +125,19 @@ void MediaResourceGetterImpl::GetAuthCredentials(
     return;
   }
 
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id_, render_frame_id_);
+  // Can't get a NetworkIsolationKey to get credentials if the RenderFrameHost
+  // has already been destroyed.
+  if (!render_frame_host) {
+    GetAuthCredentialsCallback(std::move(callback), base::nullopt);
+    return;
+  }
+
   BrowserContext::GetDefaultStoragePartition(browser_context_)
       ->GetNetworkContext()
-      ->LookupBasicAuthCredentials(
-          url,
+      ->LookupServerBasicAuthCredentials(
+          url, render_frame_host->network_isolation_key(),
           base::BindOnce(&MediaResourceGetterImpl::GetAuthCredentialsCallback,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/feature_policy/document_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/dom_document_policy.h"
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,11 +41,11 @@ class PolicyTest : public testing::Test {
   Persistent<DOMFeaturePolicy> policy_;
 };
 
-class DocumentPolicyTest : public PolicyTest {
+class DOMDocumentPolicyTest : public PolicyTest {
  public:
   void SetUp() override {
     PolicyTest::SetUp();
-    policy_ = MakeGarbageCollected<DocumentPolicy>(document_);
+    policy_ = MakeGarbageCollected<DOMDocumentPolicy>(document_);
   }
 };
 
@@ -59,7 +59,7 @@ class IFramePolicyTest : public PolicyTest {
   }
 };
 
-TEST_F(DocumentPolicyTest, TestAllowsFeature) {
+TEST_F(DOMDocumentPolicyTest, TestAllowsFeature) {
   EXPECT_FALSE(GetPolicy()->allowsFeature(nullptr, "badfeature"));
   EXPECT_FALSE(GetPolicy()->allowsFeature(nullptr, "midi"));
   EXPECT_FALSE(GetPolicy()->allowsFeature(nullptr, "midi", kSelfOrigin));
@@ -78,7 +78,7 @@ TEST_F(DocumentPolicyTest, TestAllowsFeature) {
   EXPECT_TRUE(GetPolicy()->allowsFeature(nullptr, "sync-xhr", kOriginA));
 }
 
-TEST_F(DocumentPolicyTest, TestGetAllowList) {
+TEST_F(DOMDocumentPolicyTest, TestGetAllowList) {
   EXPECT_THAT(GetPolicy()->getAllowlistForFeature(nullptr, "camera"),
               UnorderedElementsAre(kSelfOrigin, kOriginA, kOriginB));
   EXPECT_THAT(GetPolicy()->getAllowlistForFeature(nullptr, "payment"),
@@ -94,7 +94,7 @@ TEST_F(DocumentPolicyTest, TestGetAllowList) {
               UnorderedElementsAre("*"));
 }
 
-TEST_F(DocumentPolicyTest, TestAllowedFeatures) {
+TEST_F(DOMDocumentPolicyTest, TestAllowedFeatures) {
   Vector<String> allowed_features = GetPolicy()->allowedFeatures(nullptr);
   EXPECT_TRUE(allowed_features.Contains("fullscreen"));
   EXPECT_TRUE(allowed_features.Contains("payment"));

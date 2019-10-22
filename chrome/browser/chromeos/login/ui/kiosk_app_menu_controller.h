@@ -12,13 +12,15 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 
 namespace chromeos {
 
 // Observer class to update the Kiosk app menu when Kiosk app data is changed.
 class KioskAppMenuController
     : public KioskAppManagerObserver,
-      public ArcKioskAppManager::ArcKioskAppManagerObserver {
+      public ArcKioskAppManager::ArcKioskAppManagerObserver,
+      public WebKioskAppManager::WebKioskAppManagerObserver {
  public:
   KioskAppMenuController();
   ~KioskAppMenuController() override;
@@ -34,6 +36,9 @@ class KioskAppMenuController
   // ArcKioskAppManagerObserver:
   void OnArcKioskAppsChanged() override;
 
+  // WebKioskAppManagerObserver:
+  void OnWebKioskAppsChanged() override;
+
  private:
   void LaunchApp(const ash::KioskAppMenuEntry& app);
 
@@ -42,6 +47,8 @@ class KioskAppMenuController
   ScopedObserver<ArcKioskAppManager,
                  ArcKioskAppManager::ArcKioskAppManagerObserver>
       arc_kiosk_observer_{this};
+  ScopedObserver<WebKioskAppManager, KioskAppMenuController>
+      web_kiosk_observer_{this};
 
   base::WeakPtrFactory<KioskAppMenuController> weak_factory_{this};
 

@@ -214,6 +214,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "ash-swiping-from-left-edge-to-go-back",
+    "owners": [ "minch" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "audio-worklet-realtime-thread",
     "owners": [ "//third_party/blink/renderer/modules/webaudio/OWNERS" ],
     "expiry_milestone": 80
@@ -826,7 +831,7 @@
   {
     "name": "enable-accessibility-object-model",
     "owners": [ "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-advanced-ppd-attributes",
@@ -1175,6 +1180,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-desktop-minimal-ui",
+    "owners": [ "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "enable-desktop-pwas-local-updating",
     "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 80
@@ -1194,6 +1204,11 @@
     "name": "enable-display-locking",
     "owners": [ "//third_party/blink/renderer/core/display_lock/OWNERS" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "enable-edu-coexistence",
+    "owners": [ "anastasiian@chromium.org", "sinhak@chromium.org" ],
+    "expiry_milestone": 83
   },
   {
     "name": "enable-encryption-migration",
@@ -1218,7 +1233,7 @@
   {
     "name": "enable-experimental-accessibility-chromevox-language-switching",
     "owners": [ "akihiroota", "dmazzoni", "dtseng" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "enable-experimental-accessibility-chromevox-sub-node-language-switching",
@@ -1228,7 +1243,7 @@
   {
     "name": "enable-experimental-accessibility-features",
     "owners": [ "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-experimental-accessibility-language-detection",
@@ -1238,12 +1253,12 @@
   {
     "name": "enable-experimental-accessibility-switch-access",
     "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 85
   },
   {
     "name": "enable-experimental-accessibility-switch-access-text",
     "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-experimental-fling-animation",
@@ -2019,11 +2034,6 @@
     "name": "enable-webrtc-stun-origin",
     "owners": [ "qingsi", "jeroendb" ],
     "expiry_milestone": 78
-  },
-  {
-    "name": "enable-webvr",
-    "owners": [ "//third_party/blink/renderer/modules/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 80
   },
   {
     "name": "enable-winrt-geolocation-implementation",
@@ -3472,6 +3482,11 @@
   {
     "name": "webui-tab-strip",
     "owners": [ "johntlee", "pbos" ],
+    "expiry_milestone": 82
+  },
+  {
+    "name": "webui-tab-strip-demo-options",
+    "owners": [ "johntlee", "dpapad" ],
     "expiry_milestone": 82
   },
   {

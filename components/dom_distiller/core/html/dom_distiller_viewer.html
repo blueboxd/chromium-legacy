@@ -77,10 +77,26 @@ found in the LICENSE file.
               <input id="fontSizeSelection"
                      type="range"
                      name="fontSize"
-                     min="14"
-                     max="48"
-                     step="2"
-                     value="16">
+                     list="tickmarks"
+                     min="0"
+                     max="9"
+                     value="2">
+              <datalist class="tickmarks">
+                <option value="0" class="beforeThumb" aria-labelledby="slider-label-min"></option>
+                <option value="1" class="beforeThumb"></option>
+                <option value="2" class="afterThumb"></option>
+                <option value="3" class="afterThumb"></option>
+                <option value="4" class="afterThumb"></option>
+                <option value="5" class="afterThumb"></option>
+                <option value="6" class="afterThumb"></option>
+                <option value="7" class="afterThumb"></option>
+                <option value="8" class="afterThumb"></option>
+                <option value="9" class="afterThumb" aria-labelledby="slider-label-max"></option>
+              </datalist>
+              <div class="label-container">
+                <span id="slider-label-min">Small</span>
+                <span id="slider-label-max">Large</span>
+              </div>
             </div>
           </div>
         </dialog>

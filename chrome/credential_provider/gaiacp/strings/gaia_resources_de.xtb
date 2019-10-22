@@ -11,7 +11,6 @@
 <translation id="2831078752570172210">Ihr Konto wurde gesperrt. Bitte wenden Sie sich an Ihren Systemadministrator.</translation>
 <translation id="2844349213149998955">Die Anmeldung mit einem privaten Konto ist auf diesem Gerät nicht zulässig. Melden Sie sich bitte mit einem Arbeitskonto an.</translation>
 <translation id="3306357053520292004">Ein Nutzer dieses Computers wurde bereits über dieses Konto hinzugefügt. Bitte melden Sie sich mit einem anderen Konto an.</translation>
-<translation id="3968372833844047539">Nur G Suite Enterprise-Nutzer dürfen sich anmelden.</translation>
 <translation id="4057329986137569701">Ein interner Fehler ist aufgetreten.</translation>
 <translation id="4267670563222825190">Für Ihr Konto wurde kein Domainnutzer gefunden. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="4300229033992784001">Das Passwort für Ihr Konto wurde geändert. Geben Sie Ihr aktuelles Windows-Passwort ein, um Ihr Windows-Konto mit Ihrem Arbeitskonto zu synchronisieren.</translation>
@@ -25,7 +24,6 @@
 <translation id="7357241217513796177">Sorgen Sie dafür, dass Sie eine Netzwerkverbindung haben, und versuchen Sie es dann noch einmal.</translation>
 <translation id="7536769223115622137">Arbeitskonto hinzufügen</translation>
 <translation id="7856245195110636219">Fortfahren ohne Eingabe des aktuellen Windows-Passworts nicht möglich. Bitte setzen Sie sich mit einem Systemadministrator in Verbindung.</translation>
-<translation id="7996763357529480810">Melden Sie sich mit Ihrem G Suite-Arbeitskonto an.</translation>
 <translation id="8639729688781680518">Windows-Passwort vergessen</translation>
 <translation id="866458870819756755">Ein Nutzer konnte nicht erstellt werden.</translation>
 <translation id="8875753657315897487">Mit Ihrem Arbeitskonto anmelden</translation>

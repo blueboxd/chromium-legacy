@@ -320,6 +320,8 @@ void InspectorLayerTreeAgent::GatherLayers(
     int scrolling_layer_id) {
   if (client_->IsInspectorLayer(layer))
     return;
+  if (layer->layer_tree_host()->is_hud_layer(layer))
+    return;
   int layer_id = layer->id();
   layers->emplace_back(BuildObjectForLayer(
       RootLayer(), layer,

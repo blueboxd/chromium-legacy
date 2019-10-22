@@ -36,9 +36,6 @@ bool AnimationWorkletInput::ValidateId(int worklet_id) const {
                      }) &&
          std::all_of(
              removed_animations.cbegin(), removed_animations.cend(),
-             [worklet_id](auto& it) { return it.worklet_id == worklet_id; }) &&
-         std::all_of(
-             peeked_animations.cbegin(), peeked_animations.cend(),
              [worklet_id](auto& it) { return it.worklet_id == worklet_id; });
 }
 #endif
@@ -78,12 +75,6 @@ void MutatorInputState::Remove(WorkletAnimationId worklet_animation_id) {
   AnimationWorkletInput& worklet_input =
       EnsureWorkletEntry(worklet_animation_id.worklet_id);
   worklet_input.removed_animations.push_back(worklet_animation_id);
-}
-
-void MutatorInputState::Peek(WorkletAnimationId worklet_animation_id) {
-  AnimationWorkletInput& worklet_input =
-      EnsureWorkletEntry(worklet_animation_id.worklet_id);
-  worklet_input.peeked_animations.push_back(worklet_animation_id);
 }
 
 std::unique_ptr<AnimationWorkletInput> MutatorInputState::TakeWorkletState(

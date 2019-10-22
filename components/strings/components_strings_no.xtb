@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Last inn siden senere</translation>
 <translation id="1015730422737071372">Oppgi flere detaljer</translation>
 <translation id="1021110881106174305">Godkjente kort</translation>
-<translation id="1023523064224774104">Chromium har oppdaget at du nettopp skrev inn passordet ditt på et nettsted som er
-          mistenkelig. Tilbakestill passordet nå!</translation>
 <translation id="1032854598605920125">Rotér med klokken</translation>
 <translation id="1035334672863811645">logg på Chrome</translation>
 <translation id="1036348656032585052">Slå av</translation>
@@ -123,6 +121,7 @@
 <translation id="1501859676467574491">Vis kredittkort fra Google-kontoen din</translation>
 <translation id="1507202001669085618">&lt;p&gt;Du ser denne feilmeldingen hvis du bruker en Wi-Fi-portal hvor du må logge på før du kommer deg på nettet.&lt;/p&gt;
     &lt;p&gt;For å fikse feilen, klikk på &lt;strong&gt;Koble til&lt;/strong&gt; på siden du prøver å åpne.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Liste over loggoppføringer</translation>
 <translation id="1517433312004943670">Det kreves et telefonnummer</translation>
 <translation id="1517500485252541695">Godkjente kreditt- og debetkort</translation>
 <translation id="1519264250979466059">Versjonsdato</translation>
@@ -308,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan være trukket tilbake. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="2438874542388153331">Fire hull høyre</translation>
+<translation id="245044156129055925">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chromium anbefaler deg å bytte passord nå.</translation>
 <translation id="2463193859425327265">Endre startsiden</translation>
 <translation id="2463739503403862330">Fyll ut</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -552,7 +552,6 @@ brukere av denne nettleseren.</translation>
 <translation id="3655670868607891010">Hvis du ser denne meldingen ofte, kan du prøve disse <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Versjon</translation>
 <translation id="366077651725703012">Oppdater kredittkortet</translation>
-<translation id="3672525478985456967">Navnet på dette nettstedet ligner på <ph name="LOOKALIKE_DOMAIN" />. Noen ganger etterligner angripere nettsteder ved å gjøre små endringer i domenenavnet som er vanskelige å se.</translation>
 <translation id="3676592649209844519">Enhets-ID:</translation>
 <translation id="3677008721441257057">Mente du &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Forespørselen kunne ikke undertegnes</translation>
@@ -618,6 +617,9 @@ brukere av denne nettleseren.</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokkert</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> har slått på beskyttelsesfunksjoner for bedrifter i Chrome-nettleseren din. Beskyttelsesfunksjoner for bedrifter i Chrome har tilgang til noen av dataene dine.</translation>
+<translation id="3987405730340719549">Chrome har funnet ut at dette nettstedet kan være falskt eller prøve å svindle deg.
+
+    Hvis du mener at dette er en feil, kan du besøke https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Under 1 MB</translation>
 <translation id="3990250421422698716">Støtforskyvning</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Like ved-nettside}other{# Like ved-nettsider}}</translation>
@@ -876,7 +878,6 @@ brukere av denne nettleseren.</translation>
 <translation id="5230733896359313003">Leveringsadresse</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Lukk</translation>
 <translation id="5250209940322997802">«Koble til nettverk»</translation>
 <translation id="5251803541071282808">Nettsky</translation>
 <translation id="5252000469029418751">C7 (konvolutt)</translation>
@@ -996,6 +997,9 @@ brukere av denne nettleseren.</translation>
 <translation id="5813119285467412249">&amp;Legg til likevel</translation>
 <translation id="583281660410589416">Ukjent</translation>
 <translation id="5838278095973806738">Du bør ikke oppgi sensitiv informasjon på dette nettstedet (for eksempel passord eller kredittkort) fordi den kan bli stjålet av angripere.</translation>
+<translation id="5855253129151731373">Vertsnavnet til dette nettstedet ligner på <ph name="LOOKALIKE_DOMAIN" />. Noen ganger etterligner angripere nettsteder ved å gjøre små endringer i domenenavnet som er vanskelige å se.
+
+    Hvis du mener at dette er en feil, kan du besøke https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5863847714970149516">Den neste siden kan prøve å belaste deg for penger</translation>
 <translation id="5866257070973731571">Legg til telefonnummer</translation>
@@ -1018,7 +1022,6 @@ brukere av denne nettleseren.</translation>
 <translation id="5946937721014915347">Åpner <ph name="SITE_NAME" /> …</translation>
 <translation id="5947933617628957894">Ja, legg til</translation>
 <translation id="5951495562196540101">Kan ikke registrere med en forbrukerkonto (medfølgende lisens er tilgjengelig).</translation>
-<translation id="5966900314707961320">Når dette er påslått, kan ikke nettsteder bruke informasjonskapsler som sporer deg overalt på nettet</translation>
 <translation id="5967592137238574583">Endre kontaktinformasjonen</translation>
 <translation id="5967867314010545767">Fjern fra loggen</translation>
 <translation id="5975083100439434680">Zoom ut</translation>
@@ -1107,6 +1110,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6401136357288658127">Denne regelen er avviklet. Du bør bruke den nye regelen <ph name="NEW_POLICY" /> i stedet.</translation>
 <translation id="6404511346730675251">Rediger bokmerket</translation>
 <translation id="6406765186087300643">C0 (konvolutt)</translation>
+<translation id="6409754798200046165">Du har nettopp skrevet inn passordet ditt på et bedragersk nettsted. Chrome anbefaler deg å bytte passord nå.</translation>
 <translation id="6410264514553301377">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium kan hjelpe deg med å beskytte Google-kontoen din og endre passordet ditt.</translation>
 <translation id="6427730057873428458">Vindusfals</translation>
@@ -1114,7 +1118,6 @@ brukere av denne nettleseren.</translation>
 <translation id="6433490469411711332">Endre kontaktinformasjonen</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avviste tilkoblingsforsøket.</translation>
 <translation id="6434309073475700221">Forkast</translation>
-<translation id="6435221585574090192">Del data om sikkerhetshendelser som er rapportert av beskyttelsesfunksjoner for bedrifter i Chrome, med administratoren din. Dette kan inkludere nettadresser, filnavn eller -metadata samt brukernavnet ditt på enheten og i Chrome.</translation>
 <translation id="6440503408713884761">Ignorert</translation>
 <translation id="6446163441502663861">Kahu (konvolutt)</translation>
 <translation id="6446608382365791566">Legg til mer informasjon</translation>
@@ -1403,6 +1406,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7932579305932748336">Belegg</translation>
 <translation id="79338296614623784">Angi et gyldig telefonnummer</translation>
 <translation id="7934052535022478634">Betalingen er fullført</translation>
+<translation id="7935031712718413217">Nettadresse med mulig forfalskning</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Utløper <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Tjenerens sertifikat er ikke gyldig ennå.</translation>
@@ -1457,7 +1461,6 @@ brukere av denne nettleseren.</translation>
 <translation id="8184538546369750125">Bruk global standardinnstilling (Tillat)</translation>
 <translation id="8194797478851900357">&amp;Angre flyttingen</translation>
 <translation id="8197543752516192074">Oversett siden</translation>
-<translation id="8197899142098070286">Chrome har oppdaget at du nettopp skrev inn passordet ditt på et nettsted som er mistenkelig. Tilbakestill passordet nå!</translation>
 <translation id="8201077131113104583">Ugyldig oppdaterings-URL for utvidelse med ID «<ph name="EXTENSION_ID" />».</translation>
 <translation id="8202097416529803614">Bestillingssammendrag</translation>
 <translation id="8202370299023114387">Konflikt</translation>
@@ -1544,7 +1547,6 @@ Mer informasjon:
 <translation id="8718314106902482036">Betalingen er ikke fullført</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, søkeforslag</translation>
 <translation id="8719528812645237045">Flere hull topp</translation>
-<translation id="8723954843026426558">Jeg godtar vilkårene, personvernreglene og angreretten for <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8728672262656704056">Du er nå i inkognitomodus</translation>
 <translation id="8730621377337864115">Ferdig</translation>

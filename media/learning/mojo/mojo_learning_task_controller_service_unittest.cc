@@ -39,6 +39,13 @@ class MojoLearningTaskControllerServiceTest : public ::testing::Test {
       cancel_args_.id_ = id;
     }
 
+    void UpdateDefaultTarget(
+        base::UnguessableToken id,
+        const base::Optional<TargetValue>& default_target) override {
+      update_default_args_.id_ = id;
+      update_default_args_.default_target_ = default_target;
+    }
+
     const LearningTask& GetLearningTask() override {
       return LearningTask::Empty();
     }
@@ -57,6 +64,11 @@ class MojoLearningTaskControllerServiceTest : public ::testing::Test {
     struct {
       base::UnguessableToken id_;
     } cancel_args_;
+
+    struct {
+      base::UnguessableToken id_;
+      base::Optional<TargetValue> default_target_;
+    } update_default_args_;
   };
 
  public:
@@ -157,6 +169,28 @@ TEST_F(MojoLearningTaskControllerServiceTest, CancelWithoutBeginFails) {
   base::UnguessableToken id = base::UnguessableToken::Create();
   service_->CancelObservation(id);
   EXPECT_NE(id, controller_raw_->cancel_args_.id_);
+}
+
+TEST_F(MojoLearningTaskControllerServiceTest, UpdateDefaultTargetToValue) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  FeatureVector features = {FeatureValue(123), FeatureValue(456)};
+  service_->BeginObservation(id, features, base::nullopt);
+  TargetValue default_target(987);
+  service_->UpdateDefaultTarget(id, default_target);
+  EXPECT_EQ(id, controller_raw_->update_default_args_.id_);
+  EXPECT_EQ(default_target,
+            controller_raw_->update_default_args_.default_target_);
+}
+
+TEST_F(MojoLearningTaskControllerServiceTest, UpdateDefaultTargetToNoValue) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  FeatureVector features = {FeatureValue(123), FeatureValue(456)};
+  TargetValue default_target(987);
+  service_->BeginObservation(id, features, default_target);
+  service_->UpdateDefaultTarget(id, base::nullopt);
+  EXPECT_EQ(id, controller_raw_->update_default_args_.id_);
+  EXPECT_EQ(base::nullopt,
+            controller_raw_->update_default_args_.default_target_);
 }
 
 }  // namespace learning

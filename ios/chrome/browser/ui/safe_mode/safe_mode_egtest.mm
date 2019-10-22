@@ -32,8 +32,7 @@ namespace {
 // Verifies that |message| is displayed.
 void AssertMessageOnPage(NSString* message) {
   id<GREYMatcher> messageMatcher =
-      grey_allOf(grey_text(message), grey_kindOfClass([UILabel class]),
-                 grey_sufficientlyVisible(), nil);
+      grey_allOf(grey_text(message), grey_kindOfClass([UILabel class]), nil);
   [[EarlGrey selectElementWithMatcher:messageMatcher]
       assertWithMatcher:grey_notNil()];
 }

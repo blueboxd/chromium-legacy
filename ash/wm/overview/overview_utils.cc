@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
@@ -216,6 +217,58 @@ void MaximizeIfSnapped(aura::Window* window) {
     WMEvent event(WM_EVENT_MAXIMIZE);
     window_state->OnWMEvent(&event);
   }
+}
+
+// Get the grid bounds if a window is snapped in splitview, or what they will be
+// when snapped based on |indicator_state|.
+gfx::Rect GetGridBoundsInScreenForSplitview(
+    aura::Window* window,
+    base::Optional<IndicatorState> indicator_state) {
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  auto state = split_view_controller->state();
+
+  // If we are in splitview mode already just use the given state, otherwise
+  // convert |indicator_state| to a splitview state.
+  if (!split_view_controller->InSplitViewMode() && indicator_state) {
+    if (*indicator_state == IndicatorState::kPreviewAreaLeft)
+      state = SplitViewController::State::kLeftSnapped;
+    else if (*indicator_state == IndicatorState::kPreviewAreaRight)
+      state = SplitViewController::State::kRightSnapped;
+  }
+
+  switch (state) {
+    case SplitViewController::State::kLeftSnapped:
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          SplitViewController::RIGHT);
+    case SplitViewController::State::kRightSnapped:
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          SplitViewController::LEFT);
+    default:
+      return screen_util::
+          GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(window);
+  }
+}
+
+base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
+    aura::Window* window) {
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    return base::nullopt;
+  auto* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  DCHECK(overview_session);
+  // TODO(sammiequon): This does not work for drag from top as they have
+  // different drag indicators object as regular overview.
+  auto indicator_state =
+      overview_session->split_view_drag_indicators()->current_indicator_state();
+  if (!SplitViewController::Get(Shell::GetPrimaryRootWindow())
+           ->InSplitViewMode() &&
+      !SplitViewDragIndicators::IsPreviewAreaState(indicator_state)) {
+    return base::nullopt;
+  }
+
+  return base::make_optional(gfx::RectF(GetGridBoundsInScreenForSplitview(
+      window, base::make_optional(indicator_state))));
 }
 
 bool ShouldUseTabletModeGridLayout() {

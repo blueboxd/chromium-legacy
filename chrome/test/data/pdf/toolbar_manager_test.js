@@ -104,9 +104,7 @@ var tests = [
     var mockWindow = new MockWindow(1920, 1080);
     var mockZoomToolbar = {
       clientHeight: 400,
-      isPrintPreview: function() {
-        return false;
-      }
+      isPrintPreview: false,
     };
     var toolbar = document.getElementById('toolbar');
     var bookmarksDropdown = toolbar.$.bookmarks;
@@ -173,7 +171,7 @@ var tests = [
     var mockWindow = new MockWindow(1920, 1080);
 
     var zoomToolbar = document.createElement('viewer-zoom-toolbar');
-    zoomToolbar.setIsPrintPreview(true);
+    zoomToolbar.isPrintPreview = true;
     document.body.appendChild(zoomToolbar);
     var toolbarManager = new ToolbarManager(mockWindow, null, zoomToolbar);
     toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;

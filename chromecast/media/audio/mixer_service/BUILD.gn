@@ -24,6 +24,7 @@ cast_source_set("common") {
 
   deps = [
     "//base",
+    "//chromecast/net:io_buffer_pool",
     "//chromecast/public",
     "//chromecast/public/media",
     "//net",

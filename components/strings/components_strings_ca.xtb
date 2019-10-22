@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Carrega la pàgina més tard</translation>
 <translation id="1015730422737071372">Proporcioneu més informació</translation>
 <translation id="1021110881106174305">Targetes acceptades</translation>
-<translation id="1023523064224774104">Chromium ha detectat que has escrit la contrasenya en un lloc
-          sospitós. Restableix la contrasenya ara.</translation>
 <translation id="1032854598605920125">Gira en sentit horari</translation>
 <translation id="1035334672863811645">Inicia la sessió a Chrome</translation>
 <translation id="1036348656032585052">Desactiva</translation>
@@ -542,7 +540,6 @@
 <translation id="3655670868607891010">Si aquest missatge apareix sovint, proveu aquests <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisió</translation>
 <translation id="366077651725703012">Actualitza la targeta de crèdit</translation>
-<translation id="3672525478985456967">El nom d'aquest lloc web s'assembla a <ph name="LOOKALIKE_DOMAIN" />. De vegades, els atacants imiten llocs web introduint petits canvis difícils de veure al nom del domini.</translation>
 <translation id="3676592649209844519">Identificador del dispositiu:</translation>
 <translation id="3677008721441257057">Volies dir &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">La sol·licitud no s'ha pogut signar</translation>
@@ -860,7 +857,6 @@
 <translation id="5230733896359313003">Adreça d'enviament</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Omet</translation>
 <translation id="5250209940322997802">"Connecteu-vos a la xarxa"</translation>
 <translation id="5251803541071282808">Núvol</translation>
 <translation id="5252000469029418751">C7 (sobre)</translation>
@@ -1002,7 +998,6 @@
 <translation id="5946937721014915347">S'està obrint <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sí, afegeix</translation>
 <translation id="5951495562196540101">El dispositiu no es pot inscriure amb un compte de consumidor (hi ha una llicència associada disponible).</translation>
-<translation id="5966900314707961320">Quan està activada, els llocs web no poden utilitzar galetes que facin un seguiment de la teva activitat al web</translation>
 <translation id="5967592137238574583">Edita la informació de contacte</translation>
 <translation id="5967867314010545767">Elimina de l'historial</translation>
 <translation id="5975083100439434680">Redueix</translation>
@@ -1098,7 +1093,6 @@
 <translation id="6433490469411711332">Edita la informació de contacte</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> no ens ha permès establir la connexió.</translation>
 <translation id="6434309073475700221">Descarta</translation>
-<translation id="6435221585574090192">Comparteix amb el teu administrador les dades sobre esdeveniments de seguretat que marqui la protecció contra amenaces de Chrome Enterprise. Per exemple, URL de pàgines, noms i metadades de fitxers, el nom d'usuari del dispositiu i el nom d'usuari de Chrome.</translation>
 <translation id="6440503408713884761">Ignorada</translation>
 <translation id="6446163441502663861">Kahu (sobre)</translation>
 <translation id="6446608382365791566">Afegeix més informació</translation>
@@ -1442,7 +1436,6 @@ Detalls addicionals:
 <translation id="8184538546369750125">Utilitza l'opció predeterminada global (Permet)</translation>
 <translation id="8194797478851900357">&amp;Desfés el moviment</translation>
 <translation id="8197543752516192074">Tradueix la pàgina</translation>
-<translation id="8197899142098070286">Chrome ha detectat que has escrit la contrasenya en un lloc sospitós. Restableix la contrasenya ara.</translation>
 <translation id="8201077131113104583">L'URL d'actualització per a l'extensió amb identificador "<ph name="EXTENSION_ID" />" no és vàlid.</translation>
 <translation id="8202097416529803614">Resum de la comanda</translation>
 <translation id="8202370299023114387">Conflicte</translation>
@@ -1529,7 +1522,6 @@ Detalls addicionals:
 <translation id="8718314106902482036">No s'ha completat el pagament</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, suggeriment de cerca</translation>
 <translation id="8719528812645237045">Encunyació múltiple a la part superior</translation>
-<translation id="8723954843026426558">Accepto els termes i condicions, la política de privadesa i el dret de desistiment establerts pel domini <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8728672262656704056">Has passat al mode d'incògnit</translation>
 <translation id="8730621377337864115">Fet</translation>

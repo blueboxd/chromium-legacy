@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">تمت إضافة جهاز <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">لم يتم العثور على أي شبكات.</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">خلوي: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">أشعر بالملل</translation>
 <translation id="1104084341931202936">عرض إعدادات إمكانية الوصول</translation>
 <translation id="1104621072296271835">تعمل أجهزتك بشكل أفضل وهي مرتبطة معًا</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
 <translation id="119944043368869598">محو الكل</translation>
 <translation id="1247372569136754018">ميكروفون (داخلي)</translation>
+<translation id="1249456112629248620">فرض المشرف هذا الإعداد <ph name="FEATURE_NAME" />.</translation>
 <translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">ما حالة الطقس؟</translation>
 <translation id="1267032506238418139">تغيير الاختصار</translation>
 <translation id="1270290102613614947">تم إيقاف لوحة المفاتيح على الشاشة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
+<translation id="1275285675049378717">تشغيل <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">يمكنك العودة يوم <ph name="COME_BACK_DAY_OF_WEEK" /> في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">إشارة ضعيفة</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">وضع التباين العالي</translation>
 <translation id="2542089167727451762">انقر على صورة الملف الشخصي.</translation>
 <translation id="255671100581129685">‏لا يتوفَّر "مساعد Google" في جلسة عامة.</translation>
+<translation id="256712445991462162">المكبِّر الذي تم إرساؤه</translation>
 <translation id="2575685495496069081">تمّ إيقاف الدخول المتعدّد</translation>
 <translation id="2582112259361606227">إعادة التشغيل للتحديث</translation>
 <translation id="2617342710774726426">‏تم قفل شريحة SIM</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">أدوات قلم الشاشة</translation>
 <translation id="3368922792935385530">متصل</translation>
 <translation id="3371140690572404006">‏جهاز USB-C (المنفذ الأمامي الأيمن)</translation>
+<translation id="3386978599540877378">المكبِّر بملء الشاشة</translation>
 <translation id="3400357268283240774">إعدادات إضافية</translation>
 <translation id="3413817803639110246">ليس لديك شيء للمشاهدة حتى الآن</translation>
 <translation id="343571671045587506">تعديل التذكير</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">‏نظام تشغيل Chrome</translation>
 <translation id="4338109981321384717">العدسة المكبرة</translation>
 <translation id="4351433414020964307">جارٍ تحميل المساعد...</translation>
+<translation id="4356930093361201197">وضع التباين العالي</translation>
 <translation id="4378551569595875038">جارٍ الاتصال...</translation>
 <translation id="4379531060876907730">هذه هي أدوات قلم الشاشة</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">لقد ضغطت على اختصار لوحة المفاتيح للمُكبِّر الذي تم إرساؤه. هل ترغب في تفعيله؟</translation>
 <translation id="4421231901400348175">مشاركة التحكم في شاشتك مع <ph name="HELPER_NAME" /> عن طريق المساعدة عن بُعد.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">هل تريد فعلاً إيقاف النقرات التلقائية؟</translation>
 <translation id="4849058404725798627">تمييز الكائن باستخدام تركيز لوحة المفاتيح</translation>
 <translation id="485592688953820832">عدم اتخاذ أي إجراء (إيقاف مؤقَّت)</translation>
+<translation id="4868492592575313542">مفعّلة</translation>
 <translation id="4872237917498892622">‏Alt+مفتاح البحث أو Shift</translation>
 <translation id="4890187583552566966">‏تم إيقاف مساعد Google من قِبل المشرف.</translation>
 <translation id="4895488851634969361">البطارية مملوءة.</translation>
@@ -392,6 +400,7 @@
 <translation id="6727969043791803658">البلوتوث متصل، ومستوى شحن البطارية: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">تتبّع الأداء قيْد التفعيل</translation>
 <translation id="6752912906630585008">تمت إزالة سطح المكتب <ph name="REMOVED_DESK" /> ودمجه مع سطح المكتب <ph name="RECEIVE_DESK" />.</translation>
+<translation id="6777216307882431711">‏تشغيل أجهزة USB-C المتصلة</translation>
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
 <translation id="6820676911989879663">حان وقت الاستراحة</translation>
@@ -443,6 +452,7 @@
 <translation id="7568294522609223312">إيقاف النقرات التلقائية</translation>
 <translation id="7569509451529460200">‏تم تفعيل Braille وChromeVox</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
+<translation id="7600875258240007829">الاطّلاع على جميع الإشعارات</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (المالك)</translation>
 <translation id="7647488630410863958">إلغاء قفل الجهاز لعرض الإشعارات</translation>
 <translation id="7649070708921625228">مساعدة</translation>
@@ -507,6 +517,7 @@
 <translation id="8452135315243592079">‏شريحة SIM مفقودة</translation>
 <translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
 <translation id="847056008324733326">عرض إعدادات المقياس</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> لديه <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">‏اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift للإلغاء.</translation>
 <translation id="8513108775083588393">التدوير تلقائي</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>
@@ -535,6 +546,7 @@
 <translation id="8909138438987180327">مستوى طاقة البطارية عند <ph name="PERCENTAGE" /> في المئة.</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏لا يتحدث مساعد Google هذه اللغة.</translation>
+<translation id="8936501819958976551">غير مفعّل</translation>
 <translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
 <translation id="8940956008527784070">طاقة البطارية منخفضة (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>

@@ -9,6 +9,7 @@
 #include "base/containers/span.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/util/type_safety/strong_alias.h"
+#include "url/gurl.h"
 
 namespace password_manager {
 struct CredentialPair;
@@ -31,7 +32,7 @@ class TouchToFillView {
   // After user interaction either OnCredentialSelected() or OnDismiss() gets
   // invoked.
   virtual void Show(
-      base::StringPiece16 formatted_url,
+      const GURL& url,
       IsOriginSecure is_origin_secure,
       base::span<const password_manager::CredentialPair> credentials) = 0;
 

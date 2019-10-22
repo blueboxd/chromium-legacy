@@ -160,9 +160,13 @@ class ChromeLauncherController
   // web page (see IDC_CREATE_SHORTCUT).
   void UpdateV1AppState(const std::string& app_id);
 
-  // Returns ShelfID for |contents|. If |contents| is not an app or is not
+  // Returns associated app ID for |contents|. If |contents| is not an app,
+  // returns the browser app id.
+  std::string GetAppIDForWebContents(content::WebContents* contents);
+
+  // Returns ShelfID for |app_id|. If |app_id| is empty, or the app is not
   // pinned, returns the id of browser shrotcut.
-  ash::ShelfID GetShelfIDForWebContents(content::WebContents* contents);
+  ash::ShelfID GetShelfIDForAppId(const std::string& app_id);
 
   // Limits application refocusing to urls that match |url| for |id|.
   void SetRefocusURLPatternForTest(const ash::ShelfID& id, const GURL& url);

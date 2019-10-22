@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">较差</translation>
 <translation id="1152528166145813711">请选择…</translation>
 <translation id="1199593201721843963">停用远程连接</translation>
+<translation id="1201402288615127009">下一步</translation>
 <translation id="1291443878853470558">如果您想使用 Chrome 远程访问来访问此计算机，就必须启用远程连接。</translation>
 <translation id="1297009705180977556">连接到“<ph name="HOSTNAME" />”时出错</translation>
 <translation id="1324095856329524885">（您的计算机尚不支持该功能）</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome 远程桌面现已推出网页版。欢迎试用我们的这款<ph name="LINK_BEGIN" />网络应用<ph name="LINK_END" />，它既快捷又免费，而且添加了更多功能，包括更好地支持同时使用多个显示器。</translation>
 <translation id="1643640058022401035">如果您离开此页，那么您的 Chrome 远程访问会话就会结束。</translation>
 <translation id="1654128982815600832">正在对此计算机启用远程连接…</translation>
+<translation id="1697532407822776718">搞定了！</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
 <translation id="174018511426417793">您未注册任何计算机。要启用到某台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME" />”。</translation>
 <translation id="1742469581923031760">正在连接…</translation>

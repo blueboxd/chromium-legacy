@@ -319,6 +319,7 @@
 <translation id="1468571364034902819">આ પ્રોફાઇલનો ઉપયોગ કરી શકતાં નથી</translation>
 <translation id="1470811252759861213">તમારા તમામ કમ્પ્યુટર્સ પર તમારા એક્સ્ટેન્શન્સ મેળવવા માટે, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1470967055429794975">પિન સહિત સુરક્ષા કોડ પર રહેલા બધા ડેટાને આ કાઢી નાખશે</translation>
+<translation id="1472675084647422956">વધુ બતાવો</translation>
 <translation id="1475502736924165259">તમારી પાસે ફાઇલ પર પ્રમાણપત્રો છે જે અન્ય કોઈપણ કૅટેગરીઝમાં ફિટ થતાં નથી</translation>
 <translation id="1476088332184200792">તમારા ડિવાઇસ પર કૉપિ કરો</translation>
 <translation id="1476607407192946488">&amp;ભાષા સેટિંગ્સ</translation>
@@ -333,7 +334,6 @@
 <translation id="1486096554574027028">પાસવર્ડ્સ શોધો</translation>
 <translation id="1487335504823219454">ચાલુ - કસ્ટમ સેટિંગ્સ</translation>
 <translation id="1489664337021920575">બીજો વિકલ્પ પસંદ કરો</translation>
-<translation id="1489956991149850859">તમે અહીં ફિંગરપ્રિન્ટ ઉમેરી શકશો, કાઢી નાખી શકશો અથવા તેનું નામ બદલી શકશો.</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> માટે પ્રતીક્ષારત...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> અન્ય ઉપલબ્ધ ઉપકરણો.</translation>
 <translation id="1495677929897281669">ટૅબ પર પાછા જાઓ</translation>
@@ -893,7 +893,6 @@
 <translation id="2280486287150724112">જમણો હાસિયો</translation>
 <translation id="2282146716419988068">GPU પ્રક્રિયા</translation>
 <translation id="2282155092769082568">સ્વતઃગોઠવણી URL:</translation>
-<translation id="228758327756499171"><ph name="NUMBER_OF_MORE_APPS" /> ઍપ</translation>
 <translation id="2288181517385084064">વીડિયો રેકોર્ડર પર સ્વિચ કરો</translation>
 <translation id="2288735659267887385">ઍક્સેસિબિલિટી સેટિંગ્સ</translation>
 <translation id="2289270750774289114">જ્યારે કોઈ સાઇટ નજીકના બ્લૂટૂથ ડિવાઇસને શોધવા માગે ત્યારે પૂછો (સુઝાવ આપેલ)</translation>
@@ -1480,7 +1479,6 @@
 <translation id="3151539355209957474">પ્રારંભ સમય</translation>
 <translation id="3151562827395986343">ઇતિહાસ કુકી, કૅશ અને વધુ સાફ કરો</translation>
 <translation id="3151786313568798007">ઓરિએન્ટેશન</translation>
-<translation id="3153862085237805241">કાર્ડ સાચવો</translation>
 <translation id="3154351730702813399">ડિવાઇસ વ્યવસ્થાપક તમારી બ્રાઉઝિંગ પ્રવૃત્તિને મોનિટર કરી શકે છે.</translation>
 <translation id="3154429428035006212">એક મહિના કરતા વધુ માટે ઑફલાઇન</translation>
 <translation id="3156531245809797194">Chromeનો ઉપયોગ કરવા માટે કૃપા કરીને સાઇન ઇન કરો</translation>
@@ -1622,10 +1620,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">વિભાજક</translation>
 <translation id="3387614642886316601">વધુ સારી બનાવાયેલી જોડણીની તપાસનો ઉપયોગ કરો</translation>
-<translation id="3391459139089708789">આ ડિવાઇસને <ph name="MONTH_AND_YEAR" /> સુધી ઑટોમૅટિક સૉફ્ટવેર અને સુરક્ષા અપડેટ મળશે.
-      <ph name="LINK_BEGIN" />
-        વધુ જાણો
-      <ph name="LINK_END" /></translation>
 <translation id="3396800784455899911">"સ્વીકારો અને ચાલુ રાખો" બટન પર ક્લિક કરીને, તમે આ Google સેવાઓ માટે ઉપર વર્ણવેલી પ્રક્રિયા સાથે સંમત થાઓ છો.</translation>
 <translation id="3399432415385675819">સૂચનાઓ અક્ષમ કરવામાં આવશે</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> હર્ટ્ઝ) - ઇન્ટર્લેસ</translation>
@@ -2261,7 +2255,6 @@
 <translation id="428565720843367874">એન્ટી-વાયરસ સૉફ્ટવેર આ ફાઇલ સ્કેન કરતી વખતે અનપેક્ષિત રીતે નિષ્ફળ થયું.</translation>
 <translation id="4287502004382794929">તમારી પાસે આ ડિવાઇસની નોંધણી કરવા માટે પૂરતું સૉફ્ટવેર લાઇસન્સ નથી. કૃપા કરીને વધુ ખરીદવા માટે વેચાણનો સંપર્ક કરો. જો તમે માનતા હો કે આ સંદેશ તમને ભૂલથી દેખાઈ રહ્યો છે, તો કૃપા કરીને સપોર્ટનો સંપર્ક કરો.</translation>
 <translation id="4289540628985791613">વિહંગાવલોકન</translation>
-<translation id="4291934469232591280">વર્ઝન: <ph name="VERSION" /></translation>
 <translation id="4295072614469448764">ઍપ તમારા ટર્મિનલમાં ઉપલબ્ધ છે. ત્યાં તમારા લૉન્ચરમાં આઇકન પણ હોઈ શકે છે.</translation>
 <translation id="4295979599050707005">તમારા એકાઉન્ટ <ph name="USER_EMAIL" />નો ઉપયોગ Chrome અને Google Playમાં રહેલી વેબસાઇટ, ઍપ અને એક્સ્ટેંશન સાથે કરી શકાય છે તે કન્ફર્મ કરવા માટે કૃપા કરીને ફરી સાઇન ઇન કરો. તમે આ એકાઉન્ટને કાઢી નાખી પણ શકો છો. <ph name="LINK_BEGIN" />વધુ જાણો<ph name="LINK_END" /></translation>
 <translation id="4296575653627536209">નિરીક્ષિત વપરાશકર્તા ઉમેરો</translation>
@@ -2539,7 +2532,6 @@
 <translation id="4736292055110123391">તમારા બધા ડિવાઇસ પર તમારા બુકમાર્ક, પાસવર્ડ, ઇતિહાસ અને વધુ સિંક કરો</translation>
 <translation id="4737715515457435632">કૃપા કરીને નેટવર્કથી કનેક્ટ કરો</translation>
 <translation id="473775607612524610">અપડેટ કરો</translation>
-<translation id="4739098340603978916">કદ: <ph name="APP_SIZE" /></translation>
 <translation id="4739639199548674512">ટિકિટ</translation>
 <translation id="4742746985488890273">શેલ્ફ પર પિન કરો</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ઍપ્લિકેશનો કેવી રીતે અપલોડ કરવી તે જાણો<ph name="END_LINK" /></translation>
@@ -2559,7 +2551,6 @@
 <translation id="4765582662863429759">Android Messagesને તમારા ફોન પરથી તમારી Chromebook પર ટેક્સ્ટને પ્રસારિત કરવાની મંજૂરી આપે છે</translation>
 <translation id="4768332406694066911">તમારી પાસે આ સંસ્થાઓના પ્રમાણપત્ર છે કે જે તમને ઓળખે છે</translation>
 <translation id="4774824109040330448">તમારા ફોન પરની કોઈ સુસંગત પ્રમાણીકરણ ઍપ વડે QR કોડ સ્કૅન કરો.</translation>
-<translation id="4776146737004271126">Android સેટિંગ ખોલો</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> માટેનો પાસવર્ડ </translation>
 <translation id="4777825441726637019">Play સ્ટોર</translation>
 <translation id="4779083564647765204">ઝૂમ કરો</translation>
@@ -2582,7 +2573,6 @@
 <translation id="480990236307250886">હોમ પેજ ખોલો</translation>
 <translation id="4813136279048157860">મારી છબીઓ</translation>
 <translation id="4813512666221746211">નેટવર્ક ભૂલ</translation>
-<translation id="4816492930507672669">પૃષ્ઠ પર ફિટ</translation>
 <translation id="4820236583224459650">સક્રિય ટિકિટ તરીકે સેટ કરો</translation>
 <translation id="4821935166599369261">&amp;પ્રોફાઇલિંગ સક્ષમ</translation>
 <translation id="4823484602432206655">વપરાશકર્તા અને ઉપકરણ સેટિંગ્સ વાંચો અને બદલો</translation>
@@ -2806,7 +2796,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="5135085122826131075">તમે "ઓકે Google" બોલીને તમારા આસિસ્ટંટને ઍક્સેસ કરો.</translation>
 <translation id="5135533361271311778">બુકમાર્ક આઇટમ બનાવી શકાઈ નથી.</translation>
 <translation id="5137501176474113045">આ આઇટમ ડિલીટ કરો</translation>
-<translation id="5138227688689900538">ઓછું બતાવો</translation>
 <translation id="5139955368427980650">&amp;ખોલો</translation>
 <translation id="5142961317498132443">પ્રમાણીકરણ</translation>
 <translation id="5143374789336132547">જ્યારે તમે હોમ બટન ક્લિક કરો છો ત્યારે જે પૃષ્ઠ દર્શાવવામાં આવે છે તે <ph name="EXTENSION_NAME" /> એક્સટેન્શને બદલ્યું છે.</translation>
@@ -2886,7 +2875,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="5265797726250773323">ઇન્સ્ટૉલ કરતી વખતે ભૂલ આવી</translation>
 <translation id="5266113311903163739">પ્રમાણન અધિકારી આયાત ભૂલ</translation>
 <translation id="5269977353971873915">પ્રિન્ટ કાઢવામાં નિષ્ફળ</translation>
-<translation id="5270167208902136840">વધુ <ph name="NUMBER_OF_MORE_APPS" /> ઍપ બતાવો</translation>
 <translation id="5275352920323889391">કૂતરું</translation>
 <translation id="5275776633505022322">બાકી રહેલ પ્રયત્નો: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="527605982717517565"><ph name="HOST" /> પર JavaScript ને હંમેશા મંજૂરી આપો </translation>
@@ -3784,7 +3772,6 @@ USB ડિવાઇસ</translation>
 <translation id="6555810572223193255">ક્લીન અપ હાલમાં અનુપલબ્ધ છે</translation>
 <translation id="6556866813142980365">ફરી કરો</translation>
 <translation id="6557290421156335491">મારા શૉર્ટકટ</translation>
-<translation id="6559023360691182159">{COUNT,plural, =0{કોઈ નહીં}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> અને <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> અને <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> અને 1 અન્ય ઍપ}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> અને <ph name="EXTRA_APPS" /> અન્ય ઍપ}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> અને <ph name="EXTRA_APPS" /> અન્ય ઍપ}}</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">ફાઇલ પાથ અથવા નામ ખૂબ લાંબા છે. કૃપા કરીને ટૂંકા નામથી બીજી જગ્યાએ સાચવો.</translation>
 <translation id="6563469144985748109">તમારા સંચાલકે હજી સુધી તેને મંજૂર કરેલ નથી</translation>
@@ -3914,7 +3901,6 @@ USB ડિવાઇસ</translation>
 <translation id="677965093459947883">ખૂબ નાનું</translation>
 <translation id="6781284683813954823">ડૂડલ લિંક</translation>
 <translation id="6781978626986383437">Linuxનું બૅકઅપ રદ કર્યું</translation>
-<translation id="6782111308708962316">તૃતીય-પક્ષ વેબસાઇટને કુકી ડેટા સાચવવા અને વાંચવાથી અટકાવો</translation>
 <translation id="6786747875388722282">એક્સ્ટેન્શન્સ</translation>
 <translation id="6787839852456839824">કીબોર્ડ શોર્ટકટ્સ</translation>
 <translation id="6788210894632713004">અનપૅક કરેલ એક્સ્ટેન્શન</translation>
@@ -5047,7 +5033,6 @@ USB ડિવાઇસ</translation>
 <translation id="8398877366907290961">કોઈપણ રીતે આગળ વધારો</translation>
 <translation id="8400146488506985033">લોકોને સંચાલિત કરો</translation>
 <translation id="8401432541486058167">તમારા સ્માર્ટ કાર્ડ સાથે સંકળાયેલો હોય તે પિન પ્રદાન કરો.</translation>
-<translation id="8401839918915644121">કાગળના કદમાં બંધબેસતું કરો</translation>
 <translation id="8405046151008197676">એકદમ નવી અપડેટની હાઇલાઇટ મેળવો</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">પહેલા પૂછો (ભલામણ કરેલ)</translation>
@@ -5279,7 +5264,6 @@ USB ડિવાઇસ</translation>
 <translation id="8743390665131937741">પૂર્ણસ્ક્રીન ઝૂમ લેવલ:</translation>
 <translation id="8743864605301774756">1 કલાક પહેલા અપડેટ કર્યું</translation>
 <translation id="874689135111202667">{0,plural, =1{આ સાઇટ પર એક ફાઇલ અપલોડ કરીએ?}one{આ સાઇટ પર # ફાઇલો અપલોડ કરીએ?}other{આ સાઇટ પર # ફાઇલો અપલોડ કરીએ?}}</translation>
-<translation id="8747503242566427664">આ ઍપ્લિકેશન આ કરી શકે છે:</translation>
 <translation id="8748384418490037181">Smart Lock સુવિધાના વિકલ્પો</translation>
 <translation id="8749863574775030885">અજાણ્યા વિક્રેતા પાસેથી USB ઉપકરણો ઍક્સેસ કરો</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> સિરીઅલ પોર્ટ સાથે કનેક્ટ કરવા માગે છે</translation>
@@ -5351,7 +5335,6 @@ USB ડિવાઇસ</translation>
 <translation id="883062543841130884">અવેજીઓ</translation>
 <translation id="8830796635868321089">વર્તમાન પ્રૉક્સી સેટિંગનો ઉપયોગ કરીને અપડેટ ચકાસણી નિષ્ફળ ગઈ. કૃપા કરીને તમારું <ph name="PROXY_SETTINGS_LINK_START" />પ્રૉક્સી સેટિંગ<ph name="PROXY_SETTINGS_LINK_END" /> ગોઠવો.</translation>
 <translation id="8831140208248705279">તમારું <ph name="DEVICE_TYPE" /> અને Android ફોન એકસાથે સારી રીતે કામ કરે છે. તેમને કનેક્ટ કરો જેથી તમે તમારા કમ્પ્યુટર પરથી ટેક્સ્ટ કરી શકો, તમારું ઇન્ટરનેટ કનેક્શન શેર કરી શકો તેમજ તમારા ફોન વડે તમારા <ph name="DEVICE_TYPE" />ને અનલૉક કરી શકો.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />વધુ જાણો<ph name="LINK_END" /></translation>
-<translation id="8831664945713891930">એક્સ્ટેંશન સેટિંગ ખોલો</translation>
 <translation id="8834039744648160717">નેટવર્ક ગોઠવણી, <ph name="USER_EMAIL" /> દ્વારા નિયંત્રિત થાય છે.</translation>
 <translation id="8838601485495657486">અપારદર્શક</translation>
 <translation id="8838770651474809439">હૅમ્બર્ગર</translation>
@@ -5474,7 +5457,6 @@ USB ડિવાઇસ</translation>
 <translation id="9008201768610948239">અવગણો</translation>
 <translation id="9009369504041480176">અપલોડ થઈ રહ્યું છે (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">હંમેશાં આઇકન બતાવો</translation>
-<translation id="9011424611726486705">સાઇટની સેટિંગ ખોલો</translation>
 <translation id="9013707997379828817">તમારા વ્યવસ્થાપકે આ ઉપકરણને રોલ બૅક કર્યું છે. કૃપા કરીને મહત્ત્વપૂર્ણ ફાઇલો સાચવી લો પછી ફરી શરૂ કરો. ઉપકરણમાંનો બધો ડેટા ડિલીટ કરવામાં આવશે.</translation>
 <translation id="9018218886431812662">ઇન્સ્ટૉલેશન પૂર્ણ</translation>
 <translation id="901834265349196618">ઇમેઇલ</translation>

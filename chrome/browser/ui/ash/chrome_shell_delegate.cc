@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"
 
@@ -51,6 +52,18 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
                         ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   Navigate(&params);
+}
+
+bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForNativeWindow(window);
+  if (!browser_view)
+    return true;
+  content::WebContents* contents =
+      browser_view->browser()->tab_strip_model()->GetActiveWebContents();
+  if (!contents)
+    return false;
+  return contents->GetController().CanGoBack();
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {

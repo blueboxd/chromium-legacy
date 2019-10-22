@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -734,8 +735,8 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
       GetSecurityDescription(identity_info);
 
-  // Set the bubble title, update the title label text, then apply color.
   set_window_title(security_description->summary);
+  set_security_description_type(security_description->type);
   GetBubbleFrameView()->UpdateWindowTitle();
   int text_style = views::style::STYLE_PRIMARY;
   switch (security_description->summary_style) {
@@ -934,6 +935,7 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse() const {
       GetPasswordProtectionService(profile_);
   security_description->details = service->GetWarningDetailText(
       service->reused_password_account_type_for_last_shown_warning());
+  security_description->type = SecurityDescriptionType::SAFE_BROWSING;
   return security_description;
 }
 #endif
@@ -993,12 +995,16 @@ void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                 int event_flags) {
   switch (label->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS:
-      web_contents()->OpenURL(content::OpenURLParams(
-          GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
-          WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-          false));
-      presenter_->RecordPageInfoAction(
-          PageInfo::PAGE_INFO_CONNECTION_HELP_OPENED);
+      if (GetSecurityDescriptionType() == SecurityDescriptionType::SAFETY_TIP) {
+        safety_tips::OpenHelpCenter(web_contents());
+      } else {
+        web_contents()->OpenURL(content::OpenURLParams(
+            GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
+            WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+            false));
+        presenter_->RecordPageInfoAction(
+            PageInfo::PAGE_INFO_CONNECTION_HELP_OPENED);
+      }
       break;
     case PageInfoBubbleView::
         VIEW_ID_PAGE_INFO_LABEL_RESET_CERTIFICATE_DECISIONS:

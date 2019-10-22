@@ -38,7 +38,19 @@ TEST_F(CompositingReasonFinderTest, CompositingReasonDependencies) {
                CompositingReason::kComboAllStyleDeterminedReasons);
 }
 
-TEST_F(CompositingReasonFinderTest, DontPromoteTrivial3D) {
+class CompositingReasonFinderTestWithDoNotCompositeTrivial3D
+    : public CompositingReasonFinderTest {
+ public:
+  CompositingReasonFinderTestWithDoNotCompositeTrivial3D() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kDoNotCompositeTrivial3D);
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(CompositingReasonFinderTestWithDoNotCompositeTrivial3D,
+       DontPromoteTrivial3D) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
       style='width: 100px; height: 100px; transform: translateZ(0)'></div>

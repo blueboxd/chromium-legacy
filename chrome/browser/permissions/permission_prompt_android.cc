@@ -23,7 +23,6 @@ PermissionPromptAndroid::PermissionPromptAndroid(
     : web_contents_(web_contents),
       delegate_(delegate),
       permission_request_notification_(nullptr),
-      permission_infobar_(nullptr),
       weak_factory_(this) {
   DCHECK(web_contents);
 
@@ -32,8 +31,8 @@ PermissionPromptAndroid::PermissionPromptAndroid(
   if (infobar_service &&
       GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
           GetContentSettingType(0u /* position */))) {
-    permission_infobar_ = GroupedPermissionInfoBarDelegate::Create(
-        weak_factory_.GetWeakPtr(), infobar_service);
+    GroupedPermissionInfoBarDelegate::Create(weak_factory_.GetWeakPtr(),
+                                             infobar_service);
     return;
   }
 
@@ -47,14 +46,7 @@ PermissionPromptAndroid::PermissionPromptAndroid(
   PermissionDialogDelegate::Create(web_contents_, this);
 }
 
-PermissionPromptAndroid::~PermissionPromptAndroid() {
-  if (permission_infobar_) {
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents_);
-
-    infobar_service->RemoveInfoBar(permission_infobar_);
-  }
-}
+PermissionPromptAndroid::~PermissionPromptAndroid() {}
 
 void PermissionPromptAndroid::UpdateAnchorPosition() {
   NOTREACHED() << "UpdateAnchorPosition is not implemented";

@@ -32,6 +32,7 @@ class LayerTreeHost;
 class KeyframeEffect;
 class ScrollOffsetAnimations;
 class ScrollOffsetAnimationsImpl;
+class WorkletAnimation;
 
 enum class ThreadInstance { MAIN, IMPL };
 
@@ -234,6 +235,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       base::TimeTicks timeline_time,
       const ScrollTree& scroll_tree,
       bool is_active_tree);
+
+  // Returns a pointer to a worklet animation by worklet animation id or null
+  // if there is no match.
+  WorkletAnimation* FindWorkletAnimation(WorkletAnimationId id);
 
   ElementToAnimationsMap element_to_animations_map_;
   AnimationsList ticking_animations_;

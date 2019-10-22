@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/mojom/traced_process.mojom.h"
-#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace tracing {
 
@@ -54,7 +53,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TracedProcessImpl
   // Lock protecting binding_.
   base::Lock lock_;
   std::set<BaseAgent*> agents_;
-  mojo::Remote<tracing::mojom::AgentRegistry> agent_registry_;
   mojo::Receiver<tracing::mojom::TracedProcess> receiver_{this};
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

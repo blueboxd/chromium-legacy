@@ -14,6 +14,7 @@
 #include "net/base/net_errors.h"
 
 namespace media_router {
+
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -267,4 +268,5 @@ TEST(NetworkServiceQuicPacketWriterTest, TooManyPacketsCausesWriteBlockage) {
 
   ASSERT_FALSE(test_writer.writer->IsWriteBlocked());
 }
+
 }  // namespace media_router

@@ -31,7 +31,7 @@
 <translation id="1302880136325416935">Mostra la configuració del Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Mostra sempre el prestatge</translation>
 <translation id="1341651618736211726">Menú addicional</translation>
-<translation id="1346748346194534595">A la dreta</translation>
+<translation id="1346748346194534595">Dreta</translation>
 <translation id="1351937230027495976">Replega el menú</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1419738280318246476">Desbloqueja el dispositiu per dur a terme l'acció que indica la notificació</translation>
@@ -39,7 +39,7 @@
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1455242230282523554">Mostra la configuració d'idioma</translation>
 <translation id="1460620680449458626">El volum està silenciat.</translation>
-<translation id="1467432559032391204">A l'esquerra</translation>
+<translation id="1467432559032391204">Esquerra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1516740043221086139">El mode No molestis està activat.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostra la configuració de les notificacions. Les notificacions estan desactivades per a una aplicació.}other{Mostra la configuració de les notificacions. Les notificacions estan desactivades per a # aplicacions.}}</translation>
@@ -548,7 +548,7 @@
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">S'està fent servir el micròfon.</translation>
-<translation id="9084606467167974638">Canvia la posició del menú</translation>
+<translation id="9084606467167974638">Commuta la posició del menú</translation>
 <translation id="9089416786594320554">Mètodes d'introducció</translation>
 <translation id="9091626656156419976">S'ha suprimit la pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9151726767154816831">Reinicieu i feu un Powerwash per actualitzar.</translation>

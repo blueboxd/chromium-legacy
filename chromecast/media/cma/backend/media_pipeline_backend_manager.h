@@ -28,6 +28,7 @@ class CastDecoderBuffer;
 class CmaBackend;
 class MediaPipelineBackendWrapper;
 class ActiveMediaPipelineBackendWrapper;
+class MediaResourceTracker;
 
 // This class tracks all created media backends, tracking whether or not volume
 // feedback sounds should be enabled based on the currently active backends.
@@ -82,8 +83,9 @@ class MediaPipelineBackendManager {
     NUM_DECODER_TYPES
   };
 
-  explicit MediaPipelineBackendManager(
-      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
+  MediaPipelineBackendManager(
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      MediaResourceTracker* media_resource_tracker);
   ~MediaPipelineBackendManager();
 
   // Creates a CMA backend. Must be called on the same thread as
@@ -156,6 +158,7 @@ class MediaPipelineBackendManager {
   void EnterPowerSaveMode();
 
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  MediaResourceTracker* const media_resource_tracker_;
 
   // Total count of decoders created
   int decoder_count_[NUM_DECODER_TYPES];

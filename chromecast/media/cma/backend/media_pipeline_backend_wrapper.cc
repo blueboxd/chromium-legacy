@@ -78,7 +78,8 @@ class ActiveMediaPipelineBackendWrapper : public DecoderCreatorCmaBackend {
   ActiveMediaPipelineBackendWrapper(
       const media::MediaPipelineDeviceParams& params,
       MediaPipelineBackendWrapper* wrapping_backend,
-      MediaPipelineBackendManager* backend_manager);
+      MediaPipelineBackendManager* backend_manager,
+      MediaResourceTracker* media_resource_tracker);
   ~ActiveMediaPipelineBackendWrapper() override;
 
   // DecoderCreatorCmaBackend implementation:
@@ -115,6 +116,10 @@ class ActiveMediaPipelineBackendWrapper : public DecoderCreatorCmaBackend {
   const MediaPipelineDeviceParams::AudioStreamType audio_stream_type_;
   const AudioContentType content_type_;
 
+  // Acquire the media resource at construction. The resource will be released
+  // when this class is destructed.
+  MediaResourceTracker::ScopedUsage media_resource_usage_;
+
   bool playing_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveMediaPipelineBackendWrapper);
@@ -123,7 +128,8 @@ class ActiveMediaPipelineBackendWrapper : public DecoderCreatorCmaBackend {
 ActiveMediaPipelineBackendWrapper::ActiveMediaPipelineBackendWrapper(
     const media::MediaPipelineDeviceParams& params,
     MediaPipelineBackendWrapper* wrapping_backend,
-    MediaPipelineBackendManager* backend_manager)
+    MediaPipelineBackendManager* backend_manager,
+    MediaResourceTracker* media_resource_tracker)
     : audio_decoder_ptr_(nullptr),
       video_decoder_created_(false),
       backend_(base::WrapUnique(
@@ -132,6 +138,7 @@ ActiveMediaPipelineBackendWrapper::ActiveMediaPipelineBackendWrapper(
       backend_manager_(backend_manager),
       audio_stream_type_(params.audio_type),
       content_type_(params.content_type),
+      media_resource_usage_(media_resource_tracker),
       playing_(false) {
   DCHECK(backend_);
   DCHECK(backend_manager_);
@@ -277,12 +284,13 @@ void ActiveMediaPipelineBackendWrapper::SetPlaying(bool playing) {
 
 MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
     const media::MediaPipelineDeviceParams& params,
-    MediaPipelineBackendManager* backend_manager)
+    MediaPipelineBackendManager* backend_manager,
+    MediaResourceTracker* media_resource_tracker)
     : revoked_(false),
       backend_manager_(backend_manager),
       content_type_(params.content_type) {
   backend_ = std::make_unique<ActiveMediaPipelineBackendWrapper>(
-      params, this, backend_manager);
+      params, this, backend_manager, media_resource_tracker);
 }
 
 MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {

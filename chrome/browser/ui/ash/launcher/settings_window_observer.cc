@@ -50,6 +50,7 @@ void SettingsWindowObserver::OnNewSettingsWindow(Browser* settings_browser) {
   window->SetTitle(l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
   const ash::ShelfID shelf_id(ash::kInternalAppIdSettings);
   window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
+  window->SetProperty(ash::kAppIDKey, shelf_id.app_id);
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
   aura_window_tracker_->Add(window);
 }

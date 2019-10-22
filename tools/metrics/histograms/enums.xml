@@ -3789,6 +3789,23 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Preflight call ignored"/>
 </enum>
 
+<enum name="AutofillCreditCardUnmaskDecisionMetric">
+  <int value="0" label="WebAuthn only"/>
+  <int value="1" label="CVC followed by WebAuthn"/>
+</enum>
+
+<enum name="AutofillCreditCardUploadFeedback">
+  <int value="0" label="Loading indicator shown"/>
+  <int value="1" label="Failure icon shown"/>
+  <int value="2" label="Failure bubble shown"/>
+</enum>
+
+<enum name="AutofillCreditCardWebauthnResultMetric">
+  <int value="0" label="Success"/>
+  <int value="1" label="Other error"/>
+  <int value="2" label="Not-Allowed error"/>
+</enum>
+
 <enum name="AutofillDeveloperEngagement">
   <int value="0" label="Fillable form parsed without type hints"/>
   <int value="1" label="Fillable form parsed with type hints"/>
@@ -36425,6 +36442,7 @@ from previous Chrome versions.
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-631614101" label="CameraSystemWebApp:enabled"/>
+  <int value="-626211146" label="DesktopMinimalUI:disabled"/>
   <int value="-625695291" label="AccessibilityExposeARIAAnnotations:enabled"/>
   <int value="-624221121" label="CommandLineOnNonRooted:enabled"/>
   <int value="-623364791" label="ClickToCallReceiver:disabled"/>
@@ -36523,6 +36541,7 @@ from previous Chrome versions.
   <int value="-492864618" label="NTPForeignSessionsSuggestions:disabled"/>
   <int value="-491131428" label="OmniboxNewAnswerLayout:disabled"/>
   <int value="-488779992" label="blink-settings"/>
+  <int value="-483290305" label="WebUITabStripDemoOptions:enabled"/>
   <int value="-482259889" label="MacMDDownloadShelf:disabled"/>
   <int value="-478462945" label="enable-ephemeral-apps"/>
   <int value="-477101783" label="HandwritingGesture:disabled"/>
@@ -36834,6 +36853,7 @@ from previous Chrome versions.
   <int value="-68225452" label="enable-translate-new-ux"/>
   <int value="-67616014" label="PDFAnnotations:enabled"/>
   <int value="-67297229" label="OfflinePagesDescriptivePendingStatus:disabled"/>
+  <int value="-66535194" label="DesktopMinimalUI:enabled"/>
   <int value="-64839201" label="SyncUSSAutofillWalletData:disabled"/>
   <int value="-64824628" label="VizHitTestSurfaceLayer:disabled"/>
   <int value="-59530055" label="ChromeVoxArcSupport:enabled"/>
@@ -36857,6 +36877,7 @@ from previous Chrome versions.
   <int value="-45487487" label="NewTabPageCustomLinks:disabled"/>
   <int value="-45074716" label="SystemDownloadManager:disabled"/>
   <int value="-45067971" label="NewPrintPreview:disabled"/>
+  <int value="-41672681" label="WebUITabStripDemoOptions:disabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-35388407" label="AshNewSystemMenu:disabled"/>
   <int value="-30966385" label="enable-hardware-overlays"/>
@@ -36870,6 +36891,7 @@ from previous Chrome versions.
   <int value="-22544408" label="enable-video-player-chromecast-support"/>
   <int value="-20597579" label="UseMultiloginEndpoint:enabled"/>
   <int value="-20438829" label="SyncUSSAutofillProfile:enabled"/>
+  <int value="-20329017" label="EduCoexistence:disabled"/>
   <int value="-20267582" label="ResourceLoadingHints:disabled"/>
   <int value="-18464041" label="AutofillPrefilledFields:disabled"/>
   <int value="-17698200" label="DoubleTapToZoomInTabletMode:disabled"/>
@@ -37731,6 +37753,7 @@ from previous Chrome versions.
   <int value="1155905651" label="DrawVerticallyEdgeToEdge:disabled"/>
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
+  <int value="1164377197" label="SwipingFromLeftEdgeToGoBack:enabled"/>
   <int value="1165682330" label="AutofillSaveAndFillVPA:disabled"/>
   <int value="1166169237" label="disable-delay-agnostic-aec"/>
   <int value="1166789664" label="SyncPseudoUSSAppList:disabled"/>
@@ -37916,6 +37939,7 @@ from previous Chrome versions.
   <int value="1379571437" label="ExoPointerLock:disabled"/>
   <int value="1379944457" label="EnableMessagesWebPush:disabled"/>
   <int value="1381746642" label="enable-automatic-password-saving"/>
+  <int value="1381817717" label="EduCoexistence:enabled"/>
   <int value="1382107019" label="LevelDBPerformRewrite:disabled"/>
   <int value="1382500494" label="disable-drive-apps-in-app-list"/>
   <int value="1383591631" label="enable-gesture-typing"/>
@@ -38370,6 +38394,7 @@ from previous Chrome versions.
   <int value="1979222611" label="XRSandbox:disabled"/>
   <int value="1980011075" label="debug-packed-apps"/>
   <int value="1980648371" label="PointerEventV1SpecCapturing:enabled"/>
+  <int value="1986031201" label="SwipingFromLeftEdgeToGoBack:disabled"/>
   <int value="1988506961" label="EnableManualSaving:enabled"/>
   <int value="1988810119" label="AutofillDropdownLayout:enabled"/>
   <int value="1989051182" label="view-passwords:enabled"/>
@@ -56252,6 +56277,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Ack"/>
   <int value="3" label="ClickToCall"/>
   <int value="4" label="SharedClipboard"/>
+  <int value="5" label="SmsFetchRequest"/>
 </enum>
 
 <enum name="SharingSendMessageResult">
@@ -62598,6 +62624,7 @@ Full version information for the fingerprint enum values:
   <int value="6" label="Regular Supervised"/>
   <int value="7" label="ARC Kiosk"/>
   <int value="8" label="Active Directory"/>
+  <int value="9" label="Web App Kiosk"/>
 </enum>
 
 <enum name="UserTypeChanged">

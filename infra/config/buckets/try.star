@@ -1550,8 +1550,8 @@ def mac_ios_builder(*, name, executable=luci.recipe(name = 'ios/try'), **kwargs)
       name = name,
       caches = [
           swarming.cache(
-              name = 'xcode_ios_11a420a',
-              path = 'xcode_ios_11a420a.app',
+              name = 'xcode_ios_11a1027',
+              path = 'xcode_ios_11a1027.app',
           ),
       ],
       cores = None,
@@ -1586,7 +1586,7 @@ mac_ios_builder(
     name = 'ios-simulator-cr-recipe',
     executable = luci.recipe(name = 'chromium_trybot'),
     properties = {
-        'xcode_build_version': '11a420a',
+        'xcode_build_version': '11a1027',
     },
 )
 

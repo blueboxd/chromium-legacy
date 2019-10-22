@@ -62,5 +62,15 @@ void MojoLearningTaskControllerService::CancelObservation(
   impl_->CancelObservation(id);
 }
 
+void MojoLearningTaskControllerService::UpdateDefaultTarget(
+    const base::UnguessableToken& id,
+    const base::Optional<TargetValue>& default_target) {
+  auto iter = in_flight_observations_.find(id);
+  if (iter == in_flight_observations_.end())
+    return;
+
+  impl_->UpdateDefaultTarget(id, default_target);
+}
+
 }  // namespace learning
 }  // namespace media

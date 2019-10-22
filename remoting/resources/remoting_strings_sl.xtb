@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Slaba</translation>
 <translation id="1152528166145813711">Izberite …</translation>
 <translation id="1199593201721843963">Onemogoči oddaljene povezave</translation>
+<translation id="1201402288615127009">Naprej</translation>
 <translation id="1291443878853470558">Če želite do računalnika dostopati z Oddaljenim povezovanjem s Chromom, omogočite oddaljene povezave.</translation>
 <translation id="1324095856329524885">(ta funkcija še ni na voljo za vaš računalnik)</translation>
 <translation id="1342297293546459414">Ogled in nadziranje računalnika v skupni rabi.</translation>
@@ -18,6 +19,7 @@
 <translation id="1624185583382384493">Oddaljeno namizje za Chrome je zdaj v spletu. Preizkusite <ph name="LINK_BEGIN" />spletno aplikacijo<ph name="LINK_END" />— je hitra in brezplačna s še več funkcijami, vključno z izboljšano podporo za več monitorjev.</translation>
 <translation id="1643640058022401035">Če zapustite to stran, se bo seja Oddaljenega povezovanja s Chromom končala.</translation>
 <translation id="1654128982815600832">Omogočanje oddaljenih povezav za ta računalnik ...</translation>
+<translation id="1697532407822776718">Pripravljeni ste.</translation>
 <translation id="170207782578677537">Računalnika ni bilo mogoče registrirati.</translation>
 <translation id="174018511426417793">Nimate registriranih računalnikov. Če želite omogočiti oddaljene povezave z računalnikom, vanj namestite Oddaljeno namizje za Chrome in kliknite »<ph name="BUTTON_NAME" />«.</translation>
 <translation id="1742469581923031760">Vzpostavljanje povezave ...</translation>
@@ -36,6 +38,11 @@
 <translation id="2078880767960296260">Gostiteljski postopek</translation>
 <translation id="20876857123010370">Način s sledilno ploščico</translation>
 <translation id="2089514346391228378">Oddaljene povezave za računalnik so omogočene.</translation>
+<translation id="2198363917176605566">Če želite uporabljati izdelek <ph name="PRODUCT_NAME" />, morate odobriti dovoljenje »Snemanje zaslona«, da bo mogoče poslati vsebino zaslona tega Maca v oddaljeni računalnik.
+
+Če želite odobriti to dovoljenje, spodaj kliknite »<ph name="BUTTON_NAME" />«, da odprete podokno z nastavitvami možnosti »Snemanje zaslona«, nato označite polje zraven »<ph name="SERVICE_SCRIPT_NAME" />«.
+
+Če je »<ph name="SERVICE_SCRIPT_NAME" />« že označeno, ga odznačite in znova označite.</translation>
 <translation id="2208514473086078157">Nastavitve pravilnika ne dovoljujejo skupne rabe tega računalnika kot gostitelja Oddaljenega namizja za Chrome. Če želite pomoč, se obrnite na sistemskega skrbnika.</translation>
 <translation id="2220529011494928058">Prijavite težavo</translation>
 <translation id="2221097377466213233">Uporabi desno tipko Ctrl kot tipko Windows (⌘ v sistemu Mac OS)</translation>
@@ -53,6 +60,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Zadnji odziv z vzpostavljeno povezavo: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ta aplikacija ni več podprta. Zaradi prejemanja najnovejših funkcij in varnostnih posodobitev uporabljajte <ph name="LINK_BEGIN" />spletno aplikacijo Oddaljeno namizje za Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Pomagajte nam izboljšati Oddaljeno namizje za Chrome, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
+<translation id="2504109125669302160">Odobritev dovoljenja »Dostopnost« izdelku <ph name="PRODUCT_NAME" /></translation>
 <translation id="2512228156274966424">OPOMBA: Če želite zagotoviti, da bodo na voljo vse bližnjične tipke, lahko Oddaljeno namizje za Chrome konfigurirate na »Odpri kot okno«.</translation>
 <translation id="2540992418118313681">Ali želite ta računalnik deliti z drugimi, tako da bo imel drug uporabnik do njega dostop in ga bo lahko nadziral?</translation>
 <translation id="2579271889603567289">Gostitelj se je zrušil ali ga ni bilo mogoče zagnati.</translation>
@@ -132,6 +140,7 @@
 <translation id="4405930547258349619">Knjižnica jedra</translation>
 <translation id="4430435636878359009">Onemogočanje oddaljenih povezav za računalnik</translation>
 <translation id="4430915108080446161">Ustvarjanje kode za dostop ...</translation>
+<translation id="443560535555262820">Odpri nastavitve dostopnosti</translation>
 <translation id="4450893287417543264">Tega ne prikaži več</translation>
 <translation id="4472575034687746823">Kako začeti</translation>
 <translation id="4481276415609939789">Nimate registriranih računalnikov. Če želite omogočiti oddaljene povezave z računalnikom, vanj namestite Oddaljeno povezovanje s Chromom in kliknite »<ph name="BUTTON_NAME" />«.</translation>
@@ -202,12 +211,18 @@
 <translation id="6198252989419008588">Spremeni PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (zastarelo)</translation>
 <translation id="6221358653751391898">Niste prijavljeni v Chrome. Prijavite se in poskusite znova.</translation>
+<translation id="6223301979382383752">Odpri nastavitve snemanja zaslona</translation>
 <translation id="6227369581881558336">Oddaljeno namizje za Chrome je zdaj v spletu z novimi funkcijami, vključno s prenosom datotek. Obiščite <ph name="LINK_BEGIN" />spletno aplikacijo<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Gostitelj, ki se je izvajal na zaslonu za prijavo v konzolo, se je zaustavil zaradi podpore načinu zavese, tako da je preklopil na gostitelja, ki se izvaja v seji uporabnika.</translation>
 <translation id="629730747756840877">Račun</translation>
 <translation id="6304318647555713317">Odjemalec</translation>
 <translation id="6381670701864002291">Nekaj drugega.</translation>
 <translation id="6398765197997659313">Izhod iz celozaslonskega načina</translation>
+<translation id="6411861157501911556">Če želite uporabljati izdelek <ph name="PRODUCT_NAME" />, morate odobriti dovoljenje »Dostopnost«, da bo mogoče v tem Macu vstavljati vnose iz oddaljenega računalnika.
+
+Če želite odobriti to dovoljenje, spodaj kliknite »<ph name="BUTTON_NAME" />«, da odprete podokno z nastavitvami možnosti »Dostopnost«, nato označite polje zraven »<ph name="SERVICE_SCRIPT_NAME" />«.
+
+Če je »<ph name="SERVICE_SCRIPT_NAME" />« že označeno, ga odznačite in znova označite.</translation>
 <translation id="6441316101718669559">Integracija namizja v tem okolju ni podprta. Aplikacijo lahko še vedno uporabljate, vendar bo uporabniška izkušnja okrnjena.</translation>
 <translation id="652218476070540101">PIN za ta računalnik se posodablja ...</translation>
 <translation id="6527303717912515753">Skupna raba</translation>
@@ -309,6 +324,7 @@
 <translation id="9126115402994542723">Pri povezovanju s tem gostiteljem iz tega računalnika ne zahtevaj več kode PIN.</translation>
 <translation id="9149992051684092333">Če želite začeti skupno rabo namizja, pošljite spodnjo kodo za dostop osebi, ki vam bo pomagala.</translation>
 <translation id="916856682307586697">Zagon privzete seje XSession</translation>
+<translation id="9187628920394877737">Odobritev dovoljenja »Snemanje zaslona« izdelku <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Pooblasti</translation>
 <translation id="9213184081240281106">Neveljavna konfiguracija gostitelja.</translation>
 <translation id="951991426597076286">Zavrni</translation>

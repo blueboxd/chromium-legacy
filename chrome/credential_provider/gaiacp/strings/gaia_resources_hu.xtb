@@ -11,7 +11,6 @@
 <translation id="2831078752570172210">Fiókja ki lett zárva a rendszerből. Kérjük, forduljon a rendszergazdához.</translation>
 <translation id="2844349213149998955">Ezen az eszközön nem engedélyezett a személyes fiókkal való bejelentkezés. Jelentkezzen be munkahelyi fiókkal.</translation>
 <translation id="3306357053520292004">A számítógép egyik felhasználója már hozzá lett adva ezzel a fiókkal. Jelentkezzen be másik fiókkal.</translation>
-<translation id="3968372833844047539">Csak G Suite Enterprise-felhasználók jelentkezhetnek be.</translation>
 <translation id="4057329986137569701">Belső hiba történt.</translation>
 <translation id="4267670563222825190">Nem található domainfelhasználó a fiókjához. Forduljon az adminisztrátorhoz.</translation>
 <translation id="4300229033992784001">A fiók jelszava megváltozott. Adja meg jelenlegi Windows-jelszavát Windows-fiókjának és munkahelyi fiókjának a szinkronizálásához.</translation>
@@ -25,7 +24,6 @@
 <translation id="7357241217513796177">Győződjön meg róla, hogy rendelkezik hálózati kapcsolattal, majd próbálja újra.</translation>
 <translation id="7536769223115622137">Munkahelyi fiók hozzáadása</translation>
 <translation id="7856245195110636219">A jelenlegi Windows-jelszó megadása nélkül nem lehet továbblépni. Forduljon a rendszergazdához.</translation>
-<translation id="7996763357529480810">Bejelentkezés munkahelyi G Suite-fiókkal</translation>
 <translation id="8639729688781680518">Elfelejtett Windows-jelszó</translation>
 <translation id="866458870819756755">Nem sikerült létrehozni a felhasználót.</translation>
 <translation id="8875753657315897487">Bejelentkezés munkahelyi fiókkal</translation>

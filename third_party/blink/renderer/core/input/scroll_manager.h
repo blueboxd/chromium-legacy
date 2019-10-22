@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "cc/input/snap_fling_controller.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -141,7 +142,8 @@ class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
   WebGestureEvent SynthesizeGestureScrollBegin(
       const WebGestureEvent& update_event);
 
-  bool SnapAtGestureScrollEnd(const WebGestureEvent& end_event);
+  bool SnapAtGestureScrollEnd(const WebGestureEvent& end_event,
+                              base::ScopedClosureRunner callback);
 
   void NotifyScrollPhaseBeginForCustomizedScroll(const ScrollState&);
   void NotifyScrollPhaseEndForCustomizedScroll();

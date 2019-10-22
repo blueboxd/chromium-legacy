@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Fa 1 minut}other{Fa # minuts}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
+<translation id="1201402288615127009">Següent</translation>
 <translation id="1243314992276662751">Penja</translation>
 <translation id="1266864766717917324">No s'ha pogut compartir <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Toca els elements tàctils a la pantalla.</translation>
 <translation id="2295140143284145483">Enquesta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">S'està comprovant la connexió a Internet</translation>
 <translation id="2388990488038464401">Vols trucar a aquest número des del telèfon?</translation>
 <translation id="24452542372838207">Desplega la notificació</translation>
 <translation id="2445449901874883781">Utilitza una densitat alta</translation>
@@ -162,6 +164,7 @@
 <translation id="6620110761915583480">Desa el fitxer</translation>
 <translation id="6656912866303152668">Comprova que <ph name="TARGET_DEVICE_NAME" /> tingui la sincronització activada a Chrome i després prova de tornar a fer l'enviament.</translation>
 <translation id="6699343763173986273">Fitxer multimèdia: pista següent</translation>
+<translation id="6710213216561001401">Anterior</translation>
 <translation id="6779314412797872738">Per enviar un número des d'aquest dispositiu al telèfon Android, <ph name="TROUBLESHOOT_LINK" /> a la configuració de tots dos dispositius.</translation>
 <translation id="6786750046913594791">Tanca la carpeta</translation>
 <translation id="6808150112686056157">Fitxer multimèdia: atura</translation>
@@ -179,6 +182,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min restant}other{# min restants}}</translation>
 <translation id="7319740667687257810">Menú d'aplicacions, visualització parcial</translation>
+<translation id="7352651011704765696">S'ha produït un error</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{fa 1 min}other{fa # min}}</translation>
 <translation id="7389409599945284130">: <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut restant}other{# minuts restants}}</translation>

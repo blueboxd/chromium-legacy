@@ -161,10 +161,7 @@ cr.define('invalid_settings_browsertest', function() {
 
       return test_util.waitBeforeNextRender(page)
           .then(() => {
-            const parentElement =
-                loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
-                sidebar.$$('print-preview-button-strip') :
-                sidebar.$$('print-preview-header');
+            const parentElement = sidebar.$$('print-preview-button-strip');
             printButton = parentElement.$$('.action-button');
 
             return Promise.all([
@@ -278,10 +275,7 @@ cr.define('invalid_settings_browsertest', function() {
 
       return test_util.waitBeforeNextRender(page)
           .then(() => {
-            const parentElement =
-                loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
-                sidebar.$$('print-preview-button-strip') :
-                sidebar.$$('print-preview-header');
+            const parentElement = sidebar.$$('print-preview-button-strip');
             printButton = parentElement.$$('.action-button');
             return Promise.all([
               print_preview.Model.whenReady(),
@@ -370,10 +364,7 @@ cr.define('invalid_settings_browsertest', function() {
 
           return test_util.waitBeforeNextRender(page)
               .then(() => {
-                const parentElement =
-                    loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
-                    sidebar.$$('print-preview-button-strip') :
-                    sidebar.$$('print-preview-header');
+                const parentElement = sidebar.$$('print-preview-button-strip');
                 printButton = parentElement.$$('.action-button');
                 return Promise.all([
                   print_preview.Model.whenReady(),

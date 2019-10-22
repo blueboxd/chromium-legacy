@@ -37,6 +37,10 @@ enum class BackdropWindowMode {
 
 // Alphabetical sort.
 
+// A property key to store the app ID for the window's associated app.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
+    kAppIDKey;
+
 // A property key to store the ARC package name for a window's associated
 // ARC app.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const

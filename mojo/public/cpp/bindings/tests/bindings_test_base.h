@@ -34,6 +34,9 @@ class BindingsTestBase
   // Helper which other test fixtures can use.
   static void SetupSerializationBehavior(BindingsTestSerializationMode mode);
 
+ protected:
+  base::test::TaskEnvironment* task_environment() { return &task_environment_; }
+
  private:
   base::test::TaskEnvironment task_environment_;
 };

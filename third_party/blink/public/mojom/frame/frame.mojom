@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
+import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 // Implemented in Browser, this interface defines frame-specific methods that will
@@ -42,6 +43,15 @@ interface LocalFrameHost {
   // |user_gesture| indicates if the javascript API was called in context of
   // having an active transient user gesture.
   UnregisterProtocolHandler(string scheme, url.mojom.Url url, bool user_gesture);
+
+  // Indication that the associated frame has displayed inactive content
+  // (such as an image) from an insecure source. Inactive content cannot spread
+  // to other frames.
+  DidDisplayInsecureContent();
+
+  // Indication that the associated frame contains a form that submits to an
+  // insecure target url.
+  DidContainInsecureFormAction();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

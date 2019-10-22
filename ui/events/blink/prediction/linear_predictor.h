@@ -39,8 +39,8 @@ class LinearPredictor : public InputPredictor {
 
   // Generate the prediction based on stored points and given time_stamp.
   // Return false if no prediction available.
-  bool GeneratePrediction(base::TimeTicks predict_time,
-                          InputData* result) const override;
+  std::unique_ptr<InputData> GeneratePrediction(
+      base::TimeTicks predict_time) const override;
 
   // Return the average time delta in the event queue.
   base::TimeDelta TimeInterval() const override;
@@ -49,11 +49,9 @@ class LinearPredictor : public InputPredictor {
   size_t NumberOfEventsNeeded();
 
  private:
-  // Add the velocity term to the current prediction
-  void GeneratePredictionFirstOrder(float pred_dt, InputData* result) const;
+  gfx::PointF GeneratePredictionFirstOrder(float pred_dt) const;
 
-  // Add the acceleration term to the current prediction
-  void GeneratePredictionSecondOrder(float pred_dt, InputData* result) const;
+  gfx::PointF GeneratePredictionSecondOrder(float pred_dt) const;
 
   // Store the last events received
   std::deque<InputData> events_queue_;

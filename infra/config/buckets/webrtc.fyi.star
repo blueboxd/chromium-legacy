@@ -140,8 +140,8 @@ builder(
     name = 'WebRTC Chromium FYI ios-device',
     caches = [
         swarming.cache(
-            name = 'xcode_ios_11a420a',
-            path = 'xcode_ios_11a420a.app',
+            name = 'xcode_ios_11a1027',
+            path = 'xcode_ios_11a1027.app',
         ),
     ],
     executable = luci.recipe(name = 'webrtc/chromium_ios'),
@@ -152,8 +152,8 @@ builder(
     name = 'WebRTC Chromium FYI ios-simulator',
     caches = [
         swarming.cache(
-            name = 'xcode_ios_11a420a',
-            path = 'xcode_ios_11a420a.app',
+            name = 'xcode_ios_11a1027',
+            path = 'xcode_ios_11a1027.app',
         ),
     ],
     executable = luci.recipe(name = 'webrtc/chromium_ios'),

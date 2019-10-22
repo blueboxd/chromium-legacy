@@ -139,7 +139,10 @@ if (is_linux) {
     if (is_chromeos) {
       # NaCl is not working with compiler-rt in ChromeOS.
       # Force libgcc as a workaround. See https://crbug.com/761103
-      ldflags = [ "-rtlib=libgcc" ]
+      ldflags = [
+        "-rtlib=libgcc",
+        "--unwindlib=libgcc",
+      ]
 
       # nacl_helper needs to link with libgcc_s. We already have -lgcc_s in
       # the final link command line, but it was placed within "--as-needed"

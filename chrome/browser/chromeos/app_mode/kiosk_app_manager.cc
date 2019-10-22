@@ -857,18 +857,19 @@ void KioskAppManager::UpdateExternalCachePrefs() {
   external_cache_->UpdateExtensionsList(std::move(prefs));
 }
 
-void KioskAppManager::GetKioskAppIconCacheDir(base::FilePath* cache_dir) {
+void KioskAppManager::GetKioskAppIconCacheDir(base::FilePath* cache_dir) const {
   base::FilePath user_data_dir;
   CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   *cache_dir = user_data_dir.AppendASCII(kIconCacheDir);
 }
 
-void KioskAppManager::OnKioskAppDataChanged(const std::string& app_id) {
+void KioskAppManager::OnKioskAppDataChanged(const std::string& app_id) const {
   for (auto& observer : observers_)
     observer.OnKioskAppDataChanged(app_id);
 }
 
-void KioskAppManager::OnKioskAppDataLoadFailure(const std::string& app_id) {
+void KioskAppManager::OnKioskAppDataLoadFailure(
+    const std::string& app_id) const {
   for (auto& observer : observers_)
     observer.OnKioskAppDataLoadFailure(app_id);
 }

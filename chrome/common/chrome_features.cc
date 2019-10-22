@@ -238,6 +238,10 @@ const base::Feature kTerminalSystemApp{"TerminalSystemApp",
 const base::Feature kDesktopCaptureTabSharingInfobar{
     "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables new Desktop PWA support for minimal-ui display mode.
+const base::Feature kDesktopMinimalUI{"DesktopMinimalUI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables new Desktop PWAs implementation that does not use
 // extensions.
 const base::Feature kDesktopPWAsWithoutExtensions{
@@ -606,11 +610,6 @@ const base::Feature kFlashDeprecationWarning{"FlashDeprecationWarning",
 // https://crbug.com/829414.
 const base::Feature kCloudPrinterHandler{"CloudPrinterHandler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, the Print Preview UI will use a different layout. See
-// https://crbug.com/945619
-const base::Feature kNewPrintPreviewLayout{"NewPrintPreviewLayout",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables push subscriptions keeping Chrome running in the

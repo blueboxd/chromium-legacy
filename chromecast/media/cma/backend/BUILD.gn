@@ -40,6 +40,7 @@ cast_source_set("backend") {
     "//chromecast:chromecast_buildflags",
     "//chromecast/base/metrics:metrics",
     "//chromecast/media:libcast_media",
+    "//chromecast/media/base:media_resource_tracker",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",
   ]

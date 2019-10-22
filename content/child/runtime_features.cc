@@ -431,7 +431,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
        switches::kEnableNetworkInformationDownlinkMax, true},
       {wrf::EnablePermissionsAPI, switches::kDisablePermissionsAPI, false},
       {wrf::EnableWebGPU, switches::kEnableUnsafeWebGPU, true},
-      {wrf::EnableWebVR, switches::kEnableWebVR, true},
       {wrf::EnablePresentationAPI, switches::kDisablePresentationAPI, false},
       {wrf::EnableRemotePlaybackAPI, switches::kDisableRemotePlaybackAPI,
        false},

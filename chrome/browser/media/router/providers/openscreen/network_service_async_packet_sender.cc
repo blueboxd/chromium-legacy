@@ -11,6 +11,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace media_router {
+
 NetworkServiceAsyncPacketSender::NetworkServiceAsyncPacketSender(
     network::mojom::NetworkContext* network_context) {
   network_context->CreateUDPSocket(socket_.BindNewPipeAndPassReceiver(),

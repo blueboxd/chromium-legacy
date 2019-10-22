@@ -445,7 +445,7 @@ void TaskEnvironment::InitializeThreadPool() {
   auto task_tracker = std::make_unique<TestTaskTracker>();
   task_tracker_ = task_tracker.get();
   auto thread_pool = std::make_unique<internal::ThreadPoolImpl>(
-      std::string(), std::move(task_tracker));
+      "TaskEnvironment", std::move(task_tracker));
   if (mock_time_domain_)
     mock_time_domain_->SetThreadPool(thread_pool.get(), task_tracker_);
   ThreadPoolInstance::Set(std::move(thread_pool));
@@ -718,7 +718,7 @@ void TaskEnvironment::DescribePendingMainThreadTasks() const {
 }
 
 TaskEnvironment::TestTaskTracker::TestTaskTracker()
-    : internal::ThreadPoolImpl::TaskTrackerImpl(std::string()),
+    : internal::ThreadPoolImpl::TaskTrackerImpl("TaskEnvironment"),
       can_run_tasks_cv_(&lock_),
       task_completed_(&lock_) {}
 

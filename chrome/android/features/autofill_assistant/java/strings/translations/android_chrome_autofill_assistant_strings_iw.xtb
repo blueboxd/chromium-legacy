@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
-<translation id="1135993792949700405">‏Chrome ישלח את המידע האישי שבחרת אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">לפתוח את הקישור החיצוני?</translation>
 <translation id="1699570257714336246">חסר מידע</translation>
 <translation id="2203046366315513658">הפחתת ערך</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">‏Google Assistant ב-Chrome נפתח בחצי גובה.</translation>
 <translation id="6973932557599545801">לצערי אין לי אפשרות לעזור. עליך להמשיך בעצמך.</translation>
 <translation id="7658239707568436148">ביטול</translation>
-<translation id="7871791972254842204">אקרא ואאשר את התנאים וההגבלות ב-<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מאוחר יותר</translation>
 <translation id="8253702004019660079">‏Google Assistant ב-Chrome.</translation>
 <translation id="9138504265731110181">‏Google Assistant יכול לקצר את תהליך התשלום באינטרנט ולחסוך לך זמן</translation>
 <translation id="945522503751344254"> שליחת משוב</translation>

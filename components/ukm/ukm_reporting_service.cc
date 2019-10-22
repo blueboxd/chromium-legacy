@@ -111,4 +111,4 @@ void UkmReportingService::LogSuccess(size_t log_size) {
 
 void UkmReportingService::LogLargeRejection(size_t log_size) {}
 
-}  // namespace metrics
+}  // namespace ukm

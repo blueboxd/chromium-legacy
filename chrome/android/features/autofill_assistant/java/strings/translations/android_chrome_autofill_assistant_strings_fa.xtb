@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="1135993792949700405">‏Chrome داده‌های شخصی را که انتخاب کرده‌اید به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ارسال می‌کند</translation>
 <translation id="1625889395409731085">پیوند خارجی باز شود؟</translation>
 <translation id="1699570257714336246">اطلاعات از دست می‌رود</translation>
 <translation id="2203046366315513658">کاهش مقدار</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">‏«دستیار Google» به‌صورت نیمه در Chrome باز شد.</translation>
 <translation id="6973932557599545801">متأسفم، نمی‌توانم کمک کنم، لطفاً خودتان ادامه دهید.</translation>
 <translation id="7658239707568436148">لغو</translation>
-<translation id="7871791972254842204">خواندن و موافقت با شرایط خدمات مربوط به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> در فرصتی دیگر</translation>
 <translation id="8253702004019660079">‏«دستیار Google» در Chrome.</translation>
 <translation id="9138504265731110181">‏«دستیار Google» با کمک به شما برای تسویه‌حساب در وب، در زمانتان صرفه‌جویی می‌کند</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>

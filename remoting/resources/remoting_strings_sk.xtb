@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Slabé</translation>
 <translation id="1152528166145813711">Vyberte…</translation>
 <translation id="1199593201721843963">Zakázať vzdialené pripojenia</translation>
+<translation id="1201402288615127009">Ďalej</translation>
 <translation id="1291443878853470558">Ak chcete použiť na prístup k tomuto počítaču aplikáciu Chromoting, musíte povoliť vzdialené pripojenia.</translation>
 <translation id="1297009705180977556">Pri pripájaní k zariadeniu <ph name="HOSTNAME" /> sa vyskytla chyba</translation>
 <translation id="1324095856329524885">(táto funkcia zatiaľ nie je k dispozícii pre váš počítač)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Vzdialená plocha Chrome je teraz k dispozícii na internete. Vyskúšajte našu <ph name="LINK_BEGIN" />webovú aplikáciu<ph name="LINK_END" />. Je rýchla, zdarma a obsahuje ešte viac funkcií vrátane vylepšenej podpory viacerých monitorov.</translation>
 <translation id="1643640058022401035">Ak opustíte túto stránku, relácia aplikácie Chromoting sa ukončí.</translation>
 <translation id="1654128982815600832">Prebieha povoľovanie vzdialených pripojení pre tento počítač...</translation>
+<translation id="1697532407822776718">Všetko je nastavené!</translation>
 <translation id="170207782578677537">Registrácia tohto počítača zlyhala.</translation>
 <translation id="174018511426417793">Nie sú zaregistrované žiadne počítače. Ak chcete povoliť vzdialené pripojenie k inému počítaču, nainštalujte na ňom Vzdialenú plochu Chrome a potom kliknite na tlačidlo <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Prebieha pripájanie...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Proces hostiteľa</translation>
 <translation id="20876857123010370">Režim trackpadu</translation>
 <translation id="2089514346391228378">Vzdialené pripojenia k tomuto počítaču boli povolené.</translation>
+<translation id="2198363917176605566">Ak chcete používať <ph name="PRODUCT_NAME" />, musíte povoliť nahrávanie obrazovky, aby bolo možné obsah obrazovky tohto Macu odosielať do vzdialeného počítača.
+
+Toto povolenie udelíte tak, že kliknutím na <ph name="BUTTON_NAME" /> nižšie otvoríte panel predvolieb nahrávania obrazovky a potom začiarknete políčko <ph name="SERVICE_SCRIPT_NAME" />.
+
+Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už začiarknuté, začiarknutie zrušte a potom ho znova začiarknite.</translation>
 <translation id="2208514473086078157">Nastavenia pravidiel nepovoľujú zdieľanie tohto počítača ako hostiteľa Vzdialenej plochy Chrome. Požiadajte o pomoc svojho správcu systému.</translation>
 <translation id="2220529011494928058">Nahlásiť problém</translation>
 <translation id="2221097377466213233">Použitím pravého klávesa Ctrl vyvoláte kláves Win (kláves ⌘ na počítači Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Naposledy bol(a) online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Táto aplikácia už nie je podporovaná. Použite <ph name="LINK_BEGIN" />webovú aplikáciu Vzdialená plocha Chrome<ph name="LINK_END" />, čím zaistíte, že budete získavať najnovšie funkcie aj bezpečnostné aktualizácie.</translation>
 <translation id="2499160551253595098">Pomôžte nám vylepšiť službu Vzdialená plocha Chrome tým, že nám umožníte zhromažďovať štatistiky používania a správy o zlyhaní.</translation>
+<translation id="2504109125669302160">Povolenie prístupu službe <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Pripojené k zariadeniu <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">POZNÁMKA: Ak chcete mať k dispozícii všetky klávesové skratky, povoľte v konfigurácii Vzdialenej plochy Chrome možnosť Otvoriť ako okno.</translation>
 <translation id="2540992418118313681">Chcete tento počítač zdieľať s ďalším používateľom, aby ho mohol zobraziť a ovládať?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Základná knižnica</translation>
 <translation id="4430435636878359009">Zakázať vzdialené pripojenia k tomuto počítaču</translation>
 <translation id="4430915108080446161">Prebieha generovanie prístupového kódu...</translation>
+<translation id="443560535555262820">Otvoriť predvoľby prístupu</translation>
 <translation id="4450893287417543264">Nabudúce nezobrazovať</translation>
 <translation id="4472575034687746823">Začíname</translation>
 <translation id="4481276415609939789">Nie sú zaregistrované žiadne počítače. Ak chcete povoliť vzdialené pripojenie k inému počítaču, nainštalujte na ňom aplikáciu Chromoting a potom kliknite na tlačidlo <ph name="BUTTON_NAME" />.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Zmeniť PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (zastarané)</translation>
 <translation id="6221358653751391898">Nie ste prihlásený/-á do prehliadača Chrome. Prihláste sa a skúste to znova.</translation>
+<translation id="6223301979382383752">Otvoriť predvoľby nahrávania obrazovky</translation>
 <translation id="6227369581881558336">Vzdialená plocha Chrome je teraz k dispozícii na internete s novými funkciami vrátane prenosu súborov! Vyskúšajte našu <ph name="LINK_BEGIN" />webovú aplikáciu<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Hostiteľ spustený na obrazovke logiky konzoly bol ukončený, aby sa tým zaistil režim opony (curtain mode), a to prepnutím na hostiteľa spúšťaného v relácii konkrétneho používateľa</translation>
 <translation id="629730747756840877">Účet</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Niečo iné.</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
+<translation id="6411861157501911556">Ak chcete používať <ph name="PRODUCT_NAME" />, musíte povoliť prístup, aby bolo možné vstup zo vzdialeného počítača vkladať v tomto Macu.
+
+Toto povolenie udelíte tak, že kliknutím na <ph name="BUTTON_NAME" /> nižšie otvoríte panel predvolieb prístupu a začiarknete políčko <ph name="SERVICE_SCRIPT_NAME" />.
+
+Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už začiarknuté, začiarknutie zrušte a potom ho znova začiarknite.</translation>
 <translation id="6441316101718669559">Táto platforma nepodporuje integráciu stolných počítačov. Aplikáciu môžete stále používať, avšak používateľské prostredie bude znehodnotené.</translation>
 <translation id="652218476070540101">Prebieha aktualizácia kódu PIN pre tento počítač...</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Ponechať celú vzdialenú plochu viditeľnú</translation>
 <translation id="9149992051684092333">Ak chcete začať zdieľať svoju pracovnú plochu, poskytnite nižšie uvedený prístupový kód osobe, ktorá vám bude pomáhať.</translation>
 <translation id="916856682307586697">Spustenie predvolenej relácie XSession</translation>
+<translation id="9187628920394877737">Povolenie nahrávania obrazovky službe <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Autorizácia</translation>
 <translation id="9213184081240281106">Neplatná konfigurácia hostiteľa</translation>
 <translation id="951991426597076286">Odmietnuť</translation>

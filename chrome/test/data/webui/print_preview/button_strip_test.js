@@ -17,9 +17,6 @@ cr.define('button_strip_test', function() {
 
     /** @override */
     setup(function() {
-      loadTimeData.overrideValues({
-        newPrintPreviewLayoutEnabled: true,
-      });
       PolymerTest.clearBody();
       buttonStrip = document.createElement('print-preview-button-strip');
 

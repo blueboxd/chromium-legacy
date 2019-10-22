@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{minutę temu}few{# minuty temu}many{# minut temu}other{# minuty temu}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Usuń</translation>
+<translation id="1201402288615127009">Dalej</translation>
 <translation id="1243314992276662751">Prześlij</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> – nie udało się udostępnić</translation>
 <translation id="1269641567813814718">Windows</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Kliknij docelowe obszary kliknięcia na ekranie.</translation>
 <translation id="2295140143284145483">Ankieta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Sprawdzanie połączenia z internetem</translation>
 <translation id="2388990488038464401">Zadzwonić pod ten numer z Twojego telefonu?</translation>
 <translation id="24452542372838207">Rozwiń powiadomienie</translation>
 <translation id="2445449901874883781">Użyj dużej gęstości</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Pozostała 1 sekunda}few{Pozostały # sekundy}many{Pozostało # sekund}other{Pozostało # sekundy}}</translation>
 <translation id="5941711191222866238">Minimalizuj</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 godzina}few{# godziny}many{# godzin}other{# godziny}}</translation>
+<translation id="5946629889255121107">Numer zainicjowany z <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Strona <ph name="SELECTED_PAGE" /> z <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Wyczyść tekst w polu wyszukiwania</translation>
 <translation id="6040143037577758943">Zamknij</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Zapisz plik</translation>
 <translation id="6656912866303152668">Upewnij się, że <ph name="TARGET_DEVICE_NAME" /> ma w Chrome włączoną synchronizację, a potem spróbuj wysłać ponownie.</translation>
 <translation id="6699343763173986273">Następny utwór multimedialny</translation>
+<translation id="6710213216561001401">Wstecz</translation>
 <translation id="6779314412797872738">Aby przesłać stąd numer na swój telefon z Androidem, <ph name="TROUBLESHOOT_LINK" /> obu urządzeń w ustawieniach.</translation>
 <translation id="6786750046913594791">Zamknij folder</translation>
 <translation id="6808150112686056157">Zatrzymaj multimedia</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Pozostała 1 min}few{Pozostały # min}many{Pozostało # min}other{Pozostało # min}}</translation>
 <translation id="7319740667687257810">Menu z aplikacjami, widok częściowy</translation>
+<translation id="7352651011704765696">Coś poszło nie tak</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min temu}few{# min temu}many{# min temu}other{# min temu}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Pozostała 1 minuta}few{Pozostały # minuty}many{Pozostały # minut}other{Pozostało # minuty}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 godzinę temu}few{# godziny temu}many{# godzin temu}other{# godziny temu}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Pozostała 1 s}few{Pozostały # s}many{Pozostało # s}other{Pozostało # s}}</translation>
+<translation id="8134065097954893699">Wczytaj ponownie tę stronę</translation>
 <translation id="8144660977431427332">Twoje wyszukiwania obsługuje Asystent Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autouzupełnianie</translation>
 <translation id="815598010540052116">Przewiń w dół</translation>

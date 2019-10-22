@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">بار کردن صفحه در فرصتی دیگر</translation>
 <translation id="1015730422737071372">جزئیات بیشتری ارائه دهید</translation>
 <translation id="1021110881106174305">کارت‌های قابل‌ قبول</translation>
-<translation id="1023523064224774104">‏Chromium تشخیص داده است که اخیراً گذرواژه‌تان را در سایتی
-          مشکوک وارد کرده‌اید. لطفاً همین‌الان گذرواژه‌تان را بازنشانی کنید!</translation>
 <translation id="1032854598605920125">چرخش در جهت عقربه‌های ساعت</translation>
 <translation id="1035334672863811645">‏ورود به سیستم Chrome</translation>
 <translation id="1036348656032585052">خاموش کردن</translation>
@@ -551,7 +549,6 @@
 <translation id="3655670868607891010">اگر مکرراً با این مشکل مواجه می‌شوید، <ph name="HELP_LINK" /> را امتحان کنید.</translation>
 <translation id="3658742229777143148">ویرایش</translation>
 <translation id="366077651725703012">کارت اعتباری را به‌روزرسانی کنید</translation>
-<translation id="3672525478985456967">نام این سایت شبیه به نام <ph name="LOOKALIKE_DOMAIN" /> است. گاهی‌اوقات مهاجمان با ایجاد تغییراتی کوچک در نام دامنه که به‌آسانی قابل‌دیدن نیست، سایت‌ها را جعل می‌کنند.</translation>
 <translation id="3676592649209844519">شناسه دستگاه:</translation>
 <translation id="3677008721441257057">‏منظورتان &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; است؟</translation>
 <translation id="3678029195006412963">درخواست امضا نشد</translation>
@@ -875,7 +872,6 @@
 <translation id="5230733896359313003">نشانی تحویل کالا</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">لغو کردن</translation>
 <translation id="5250209940322997802">«به شبکه متصل شوید»</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
@@ -1017,7 +1013,6 @@
 <translation id="5946937721014915347">درحال باز کردن <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">بله، اضافه شود</translation>
 <translation id="5951495562196540101">نمی‌توان با حساب مصرف‌کننده ثبت‌نام کرد (مجوز بسته‌بندی دردسترس است).</translation>
-<translation id="5966900314707961320">وقتی روشن باشد، سایت‌ها نمی‌توانند از کوکی‌هایی استفاده کنند که شما را در وب ردیابی می‌کند</translation>
 <translation id="5967592137238574583">ویرایش اطلاعات تماس</translation>
 <translation id="5967867314010545767">حذف از سابقه</translation>
 <translation id="5975083100439434680">دورنمایی کردن</translation>
@@ -1113,7 +1108,6 @@
 <translation id="6433490469411711332">ویرایش اطلاعات تماس</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> از اتصال خودداری کرد.</translation>
 <translation id="6434309073475700221">رد کردن</translation>
-<translation id="6435221585574090192">‏داده‌های مربوط به رویدادهای امنیتی‌ای را که «محافظت از تهدیدهای شرکتی در Chrome» پرچم‌گذاری کرده‌ است، با «سرپرست» به اشتراک بگذارید. این کار ممکن است شامل نشانی وب صفحه‌ها، نام فایل و فراداده فایل، نام کاربری دستگاه، و نام کاربری Chrome باشد.</translation>
 <translation id="6440503408713884761">نادیده گرفته شد</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">افزودن اطلاعات بیشتر</translation>
@@ -1457,7 +1451,6 @@
 <translation id="8184538546369750125">استفاده از پیش‌فرض جهانی (مجاز)</translation>
 <translation id="8194797478851900357">&amp;واگرد انتقال</translation>
 <translation id="8197543752516192074">ترجمه صفحه</translation>
-<translation id="8197899142098070286">‏Chrome تشخیص داده است که اخیراً گذرواژه‌تان را در سایتی مشکوک وارد کرده‌اید. لطفاً همین‌الان گذرواژه‌تان را بازنشانی کنید!</translation>
 <translation id="8201077131113104583">نشانی وب به‌روزرسانی نامعتبر برای برنامه افزودنی با شناسه «<ph name="EXTENSION_ID" />».</translation>
 <translation id="8202097416529803614">خلاصه سفارش</translation>
 <translation id="8202370299023114387">اختلال</translation>
@@ -1544,7 +1537,6 @@
 <translation id="8718314106902482036">پرداخت کامل نشد</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />، <ph name="DESCRIPTION" />، پیشنهاد جستجو</translation>
 <translation id="8719528812645237045">چند سوراخ در بالا</translation>
-<translation id="8723954843026426558">با شرایط خدمات، خط‌مشی رازداری و حق فسخ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> موافقت می‌کنم</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8728672262656704056">اکنون در حالت ناشناس هستید</translation>
 <translation id="8730621377337864115">تمام</translation>

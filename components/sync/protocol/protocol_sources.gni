@@ -28,6 +28,7 @@ sync_protocol_bases = [
   "get_updates_caller_info",
   "history_delete_directive_specifics",
   "history_status",
+  "local_trusted_vault",
   "loopback_server",
   "managed_user_setting_specifics",
   "managed_user_shared_setting_specifics",

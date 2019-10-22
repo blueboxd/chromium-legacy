@@ -48,8 +48,8 @@ import java.util.Collections;
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class TouchToFillIntegrationTest {
-    private static final String EXAMPLE_URL = "www.example.xyz";
-    private static final String MOBILE_URL = "m.example.xyz";
+    private static final String EXAMPLE_URL = "https://www.example.xyz";
+    private static final String MOBILE_URL = "https://m.example.xyz";
     private static final Credential ANA =
             new Credential("Ana", "S3cr3t", "Ana", EXAMPLE_URL, false);
     private static final Credential BOB = new Credential("Bob", "*****", "Bob", MOBILE_URL, true);
@@ -88,7 +88,7 @@ public class TouchToFillIntegrationTest {
         TouchCommon.singleClickView(getCredentials().getChildAt(0));
 
         waitForEvent(mMockBridge).onCredentialSelected(ANA);
-        verify(mMockBridge).fetchFavicon(eq(ANA.getOriginUrl()), anyInt(), any());
+        verify(mMockBridge).fetchFavicon(eq(ANA.getOriginUrl()), EXAMPLE_URL, anyInt(), any());
         verify(mMockBridge, never()).onDismissed();
     }
 

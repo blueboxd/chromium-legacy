@@ -6,6 +6,7 @@ syntax = "proto3";
 
 import "click_to_call_message.proto";
 import "shared_clipboard_message.proto";
+import "sms_fetch_request.proto";
 
 package chrome_browser_sharing;
 
@@ -22,9 +23,11 @@ enum MessageType {
   ACK_MESSAGE = 2;
   CLICK_TO_CALL_MESSAGE = 3;
   SHARED_CLIPBOARD_MESSAGE = 4;
+  SMS_FETCH_REQUEST = 5;
 }
 
 // Message for sending between devices in Sharing.
+// Next tag: 9
 message SharingMessage {
   // Identifier of sender. required except for AckMessage.
   string sender_guid = 1;
@@ -35,6 +38,7 @@ message SharingMessage {
     AckMessage ack_message = 3;
     ClickToCallMessage click_to_call_message = 4;
     SharedClipboardMessage shared_clipboard_message = 5;
+    SmsFetchRequest sms_fetch_request = 8;
   }
 
   // RecipientInfo for responding an AckMessage to the sender. optional.

@@ -315,13 +315,6 @@ void CollectedCookiesViews::DeleteDelegate() {
   }
 }
 
-std::unique_ptr<views::View> CollectedCookiesViews::CreateExtraView() {
-  // The code in |Init|, which runs before this does, needs the button pane to
-  // already exist, so it is created there and this class holds ownership until
-  // this method is called.
-  return std::move(buttons_pane_);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, views::ButtonListener implementation:
 
@@ -429,7 +422,7 @@ void CollectedCookiesViews::Init() {
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   infobar_ = layout->AddView(std::make_unique<InfobarView>());
 
-  buttons_pane_ = CreateButtonsPane();
+  DialogDelegate::SetExtraView(CreateButtonsPane());
 
   EnableControls();
   ShowCookieInfo();

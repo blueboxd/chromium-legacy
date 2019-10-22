@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/button_utils.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
@@ -81,7 +82,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
@@ -146,7 +146,6 @@ ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
   chrome::AddCommandObserver(browser_, IDC_RELOAD, this);
   chrome::AddCommandObserver(browser_, IDC_HOME, this);
   chrome::AddCommandObserver(browser_, IDC_SHOW_AVATAR_MENU, this);
-  chrome::AddCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 
   UpgradeDetector::GetInstance()->AddObserver(this);
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
@@ -163,7 +162,6 @@ ToolbarView::~ToolbarView() {
   chrome::RemoveCommandObserver(browser_, IDC_RELOAD, this);
   chrome::RemoveCommandObserver(browser_, IDC_HOME, this);
   chrome::RemoveCommandObserver(browser_, IDC_SHOW_AVATAR_MENU, this);
-  chrome::RemoveCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 }
 
 void ToolbarView::Init() {
@@ -187,55 +185,13 @@ void ToolbarView::Init() {
     return;
   }
 
-  auto back = std::make_unique<ToolbarButton>(
-      this,
-      std::make_unique<BackForwardMenuModel>(
-          browser_, BackForwardMenuModel::ModelType::kBackward),
-      browser_->tab_strip_model());
-  back->set_hide_ink_drop_when_showing_context_menu(false);
-  back->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                    ui::EF_MIDDLE_MOUSE_BUTTON);
-  back->set_tag(IDC_BACK);
-  back->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
-  back->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
-  back->GetViewAccessibility().OverrideDescription(
-      l10n_util::GetStringUTF8(IDS_ACCDESCRIPTION_BACK));
-  back->SetID(VIEW_ID_BACK_BUTTON);
-  back->Init();
+  std::unique_ptr<ToolbarButton> back = CreateBackButton(this, browser_);
 
-  auto forward = std::make_unique<ToolbarButton>(
-      this,
-      std::make_unique<BackForwardMenuModel>(
-          browser_, BackForwardMenuModel::ModelType::kForward),
-      browser_->tab_strip_model());
-  forward->set_hide_ink_drop_when_showing_context_menu(false);
-  forward->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                       ui::EF_MIDDLE_MOUSE_BUTTON);
-  forward->set_tag(IDC_FORWARD);
-  forward->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
-  forward->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
-  forward->GetViewAccessibility().OverrideDescription(
-      l10n_util::GetStringUTF8(IDS_ACCDESCRIPTION_FORWARD));
-  forward->SetID(VIEW_ID_FORWARD_BUTTON);
-  forward->Init();
+  std::unique_ptr<ToolbarButton> forward = CreateForwardButton(this, browser_);
 
-  auto reload = std::make_unique<ReloadButton>(browser_->command_controller());
-  reload->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                      ui::EF_MIDDLE_MOUSE_BUTTON);
-  reload->set_tag(IDC_RELOAD);
-  reload->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
-  reload->SetID(VIEW_ID_RELOAD_BUTTON);
-  reload->Init();
+  std::unique_ptr<ReloadButton> reload = CreateReloadButton(browser_);
 
-  auto home = std::make_unique<HomeButton>(this, browser_);
-  home->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                    ui::EF_MIDDLE_MOUSE_BUTTON);
-  home->set_tag(IDC_HOME);
-  home->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME));
-  home->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
-  home->SetID(VIEW_ID_HOME_BUTTON);
-  home->Init();
-  home->SizeToPreferredSize();
+  std::unique_ptr<HomeButton> home = CreateHomeButton(this, browser_);
 
   std::unique_ptr<ExtensionsToolbarContainer> extensions_container;
   std::unique_ptr<BrowserActionsContainer> browser_actions;
@@ -867,6 +823,14 @@ AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {
   return nullptr;
 }
 
+ToolbarButton* ToolbarView::GetBackButton() {
+  return back_;
+}
+
+ReloadButton* ToolbarView::GetReloadButton() {
+  return reload_;
+}
+
 BrowserRootView::DropIndex ToolbarView::GetDropIndex(
     const ui::DropTargetEvent& event) {
   return {browser_->tab_strip_model()->active_index(), false};
@@ -938,7 +902,7 @@ void ToolbarView::LoadImages() {
 
   app_menu_button_->UpdateIcon();
 
-  reload_->LoadImages();
+  reload_->SetColors(normal_color, disabled_color);
 }
 
 void ToolbarView::ShowCriticalNotification() {

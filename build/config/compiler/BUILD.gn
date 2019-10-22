@@ -1524,9 +1524,6 @@ config("default_warnings") {
           # also fires in only 4 files.
           "-Wno-c99-designator",
 
-          # This is a side effect of -Wc99-designator; easier to clean up.
-          "-Wno-reorder-init-list",
-
           # TODO(https://crbug.com/999886): Clean up, enable.
           "-Wno-final-dtor-non-final-class",
 

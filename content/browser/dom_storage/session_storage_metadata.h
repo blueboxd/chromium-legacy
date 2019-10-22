@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
@@ -87,7 +87,7 @@ class CONTENT_EXPORT SessionStorageMetadata {
 
   // For a new database, this saves the database version, clears the metadata,
   // and returns the operations needed to save to disk.
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
   SetupNewDatabase();
 
   // This parses the database version from the bytes that were stored on
@@ -100,7 +100,7 @@ class CONTENT_EXPORT SessionStorageMetadata {
   // Returns |true| if the parsing is correct and we support the version read.
   bool ParseDatabaseVersion(
       base::Optional<std::vector<uint8_t>> value,
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>*
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
           upgrade_tasks);
 
   // Parses all namespaces and maps, and stores all metadata locally. This
@@ -111,7 +111,7 @@ class CONTENT_EXPORT SessionStorageMetadata {
   // databases.
   bool ParseNamespaces(
       std::vector<storage::DomStorageDatabase::KeyValuePair> values,
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>*
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
           upgrade_tasks);
 
   // Parses the next map id from the given bytes. If that fails, then it uses
@@ -129,7 +129,8 @@ class CONTENT_EXPORT SessionStorageMetadata {
   scoped_refptr<MapData> RegisterNewMap(
       NamespaceEntry namespace_entry,
       const url::Origin& origin,
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>* save_tasks);
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
+          save_tasks);
 
   // Registers an origin-map in the |destination_namespace| from every
   // origin-map in the |source_namespace|. The |destination_namespace| must have
@@ -139,7 +140,8 @@ class CONTENT_EXPORT SessionStorageMetadata {
   void RegisterShallowClonedNamespace(
       NamespaceEntry source_namespace,
       NamespaceEntry destination_namespace,
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>* save_tasks);
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
+          save_tasks);
 
   // Deletes the given namespace and any maps that no longer have any
   // references. This will invalidate all NamespaceEntry objects for the
@@ -148,7 +150,8 @@ class CONTENT_EXPORT SessionStorageMetadata {
   // deletions to disk if run.
   void DeleteNamespace(
       const std::string& namespace_id,
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>* save_tasks);
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
+          save_tasks);
 
   // This returns a BatchDatabaseTask to remove the metadata entry for this
   // namespace-origin area. If the map at this entry isn't referenced by any
@@ -157,7 +160,8 @@ class CONTENT_EXPORT SessionStorageMetadata {
   void DeleteArea(
       const std::string& namespace_id,
       const url::Origin& origin,
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>* save_tasks);
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
+          save_tasks);
 
   NamespaceEntry GetOrCreateNamespaceEntry(const std::string& namespace_id);
 

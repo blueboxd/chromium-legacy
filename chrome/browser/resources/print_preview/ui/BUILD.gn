@@ -20,7 +20,6 @@ js_type_check("closure_compile") {
     ":dpi_settings",
     ":duplex_settings",
     ":header",
-    ":header_new",
     ":highlight_utils",
     ":input_behavior",
     ":layout_settings",
@@ -78,7 +77,6 @@ js_library("sidebar") {
     ":dpi_settings",
     ":duplex_settings",
     ":header",
-    ":header_new",
     ":layout_settings",
     ":link_container",
     ":margins_settings",
@@ -112,15 +110,6 @@ js_library("button_strip") {
 }
 
 js_library("header") {
-  deps = [
-    ":settings_behavior",
-    "../data:destination",
-    "../data:state",
-    "//ui/webui/resources/js:cr",
-  ]
-}
-
-js_library("header_new") {
   deps = [
     ":settings_behavior",
     "../data:destination",

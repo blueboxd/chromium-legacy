@@ -265,6 +265,8 @@ void CrostiniAppWindowShelfController::RegisterAppWindow(
     const std::string& shelf_app_id) {
   window->SetProperty(aura::client::kAppType,
                       static_cast<int>(ash::AppType::CROSTINI_APP));
+  window->SetProperty(ash::kAppIDKey, shelf_app_id);
+
   const ash::ShelfID shelf_id(shelf_app_id);
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   aura_window_to_app_window_[window] =

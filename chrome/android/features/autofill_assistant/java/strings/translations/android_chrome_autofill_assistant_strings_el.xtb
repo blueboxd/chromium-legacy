@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="1135993792949700405">Το Chrome θα στείλει τα προσωπικά δεδομένα που επιλέξατε στον τομέα <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Άνοιγμα εξωτερικού συνδέσμου;</translation>
 <translation id="1699570257714336246">Λείπουν πληροφορίες</translation>
 <translation id="2203046366315513658">Μείωση αξίας</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Ο Βοηθός Google στο Chrome άνοιξε στο μισό ύψος.</translation>
 <translation id="6973932557599545801">Δυστυχώς, δεν μπορώ να σας βοηθήσω, θα πρέπει να συνεχίσετε μόνοι σας.</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
-<translation id="7871791972254842204">Ανάγνωση και αποδοχή των όρων και προϋποθέσεων στο <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> αργότερα</translation>
 <translation id="8253702004019660079">Βοηθός Google στο Chrome.</translation>
 <translation id="9138504265731110181">Ο Βοηθός Google σας εξοικονομεί χρόνο επειδή σας βοηθάει με τη διαδικασία ολοκλήρωσης αγορών στον ιστό</translation>
 <translation id="945522503751344254">Αποστολή σχολίων</translation>

@@ -8,6 +8,7 @@ import {getFavicon} from 'chrome://resources/js/icon.m.js';
 import {AlertIndicatorsElement} from './alert_indicators.js';
 import {CustomElement} from './custom_element.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
+import {tabStripOptions} from './tab_strip_options.js';
 import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
 
 export const DEFAULT_ANIMATION_DURATION = 125;
@@ -87,7 +88,7 @@ export class TabElement extends CustomElement {
             tab.networkState === TabNetworkState.LOADING);
     this.toggleAttribute('pinned', tab.pinned);
     this.toggleAttribute('blocked_', tab.blocked);
-    this.setAttribute('draggable', tab.pinned);
+    this.setAttribute('draggable', true);
     this.toggleAttribute('crashed_', tab.crashed);
 
     if (!this.tab_ || this.tab_.title !== tab.title) {
@@ -140,7 +141,10 @@ export class TabElement extends CustomElement {
     }
 
     this.tabsApi_.activateTab(this.tab_.id);
-    this.embedderApi_.closeContainer();
+
+    if (tabStripOptions.autoCloseEnabled) {
+      this.embedderApi_.closeContainer();
+    }
   }
 
   /** @private */

@@ -53,8 +53,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 class MediaDocumentParser : public RawDataDocumentParser {
  public:
   explicit MediaDocumentParser(Document* document)
@@ -88,17 +86,18 @@ void MediaDocumentParser::CreateDocumentStructure() {
 
   auto* head = MakeGarbageCollected<HTMLHeadElement>(*GetDocument());
   auto* meta = MakeGarbageCollected<HTMLMetaElement>(*GetDocument());
-  meta->setAttribute(kNameAttr, "viewport");
-  meta->setAttribute(kContentAttr, "width=device-width");
+  meta->setAttribute(html_names::kNameAttr, "viewport");
+  meta->setAttribute(html_names::kContentAttr, "width=device-width");
   head->AppendChild(meta);
 
   auto* media = MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
-  media->setAttribute(kControlsAttr, "");
-  media->setAttribute(kAutoplayAttr, "");
-  media->setAttribute(kNameAttr, "media");
+  media->setAttribute(html_names::kControlsAttr, "");
+  media->setAttribute(html_names::kAutoplayAttr, "");
+  media->setAttribute(html_names::kNameAttr, "media");
 
   auto* source = MakeGarbageCollected<HTMLSourceElement>(*GetDocument());
-  source->setAttribute(kSrcAttr, AtomicString(GetDocument()->Url()));
+  source->setAttribute(html_names::kSrcAttr,
+                       AtomicString(GetDocument()->Url()));
 
   if (DocumentLoader* loader = GetDocument()->Loader())
     source->setType(loader->MimeType());

@@ -396,6 +396,11 @@ void AssistantUiController::OnAssistantControllerDestroying() {
 void AssistantUiController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
+  // This method only handles web deep links, which will be handled separately
+  // in |AssistantWebUiController| when Assistant web container is enabled.
+  if (chromeos::assistant::features::IsAssistantWebContainerEnabled())
+    return;
+
   if (!assistant::util::IsWebDeepLinkType(type, params))
     return;
 

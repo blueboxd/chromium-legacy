@@ -910,11 +910,6 @@ IPC_MESSAGE_ROUTED0(ExtensionHostMsg_IncrementLazyKeepaliveCount)
 // alive.
 IPC_MESSAGE_ROUTED0(ExtensionHostMsg_DecrementLazyKeepaliveCount)
 
-// Fetches a globally unique ID (for the lifetime of the browser) from the
-// browser process.
-IPC_SYNC_MESSAGE_CONTROL0_1(ExtensionHostMsg_GenerateUniqueID,
-                            int /* unique_id */)
-
 // Notify the browser that an app window is ready and can resume resource
 // requests.
 IPC_MESSAGE_ROUTED0(ExtensionHostMsg_AppWindowReady)

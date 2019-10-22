@@ -537,16 +537,29 @@ void ChromeLauncherController::UpdateV1AppState(const std::string& app_id) {
   }
 }
 
-ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(
+std::string ChromeLauncherController::GetAppIDForWebContents(
     content::WebContents* contents) {
   std::string app_id = launcher_controller_helper_->GetAppID(contents);
-  if (app_id.empty() && crostini::CrostiniFeatures::Get()->IsEnabled(profile()))
-    app_id = GetCrostiniAppIdFromContents(contents);
-  if (app_id.empty() && ContentCanBeHandledByGmailApp(contents))
-    app_id = kGmailAppId;
+  if (!app_id.empty())
+    return app_id;
 
+  if (crostini::CrostiniFeatures::Get()->IsEnabled(profile()))
+    app_id = GetCrostiniAppIdFromContents(contents);
+
+  if (!app_id.empty())
+    return app_id;
+
+  if (ContentCanBeHandledByGmailApp(contents))
+    return kGmailAppId;
+
+  return kChromeAppId;
+}
+
+ash::ShelfID ChromeLauncherController::GetShelfIDForAppId(
+    const std::string& app_id) {
   // If there is no dedicated app item, use the browser shortcut item.
-  const ash::ShelfItem* item = GetItem(ash::ShelfID(app_id));
+  const ash::ShelfItem* item =
+      !app_id.empty() ? GetItem(ash::ShelfID(app_id)) : nullptr;
   return item ? item->id : ash::ShelfID(kChromeAppId);
 }
 

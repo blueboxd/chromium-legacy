@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> hinzugefügt</translation>
 <translation id="1056775291175587022">Keine Netzwerke</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">Mobil: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Mir ist langweilig</translation>
 <translation id="1104084341931202936">Einstellungen für Bedienungshilfen anzeigen</translation>
 <translation id="1104621072296271835">Vorteile durch das Verbinden Ihrer Geräte</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">Overscan</translation>
 <translation id="119944043368869598">Alle löschen</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
 <translation id="1252999807265626933">Wird über ein <ph name="POWER_SOURCE" /> aufgeladen</translation>
 <translation id="1255033239764210633">Wie ist das Wetter?</translation>
 <translation id="1267032506238418139">Änderung der Tastenkombination</translation>
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
 <translation id="1272079795634619415">Stopp</translation>
+<translation id="1275285675049378717">Stromversorgung für <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Du darfst das Gerät am <ph name="COME_BACK_DAY_OF_WEEK" /> um <ph name="COME_BACK_TIME" /> wieder verwenden.</translation>
 <translation id="1290331692326790741">Schwaches Signal</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">Modus mit hohem Kontrast</translation>
 <translation id="2542089167727451762">Tippen Sie auf Ihr Profilbild</translation>
 <translation id="255671100581129685">In öffentlichen Sitzungen ist Google Assistant nicht verfügbar.</translation>
+<translation id="256712445991462162">die angedockte Lupe</translation>
 <translation id="2575685495496069081">Mehrfachanmeldung wurde deaktiviert</translation>
 <translation id="2582112259361606227">Zum Aktualisieren neu starten</translation>
 <translation id="2617342710774726426">SIM-Karte ist gesperrt</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">Eingabestift-Tools</translation>
 <translation id="3368922792935385530">Verbunden</translation>
 <translation id="3371140690572404006">USB-C-Gerät (Port vorne rechts)</translation>
+<translation id="3386978599540877378">die Vollbildlupe</translation>
 <translation id="3400357268283240774">Zusätzliche Einstellungen</translation>
 <translation id="3413817803639110246">Noch nichts zu sehen</translation>
 <translation id="343571671045587506">Erinnerung bearbeiten</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupe</translation>
 <translation id="4351433414020964307">Assistant wird geladen…</translation>
+<translation id="4356930093361201197">Modus mit hohem Kontrast</translation>
 <translation id="4378551569595875038">Verbindung wird hergestellt...</translation>
 <translation id="4379531060876907730">Dies sind Ihre Eingabestift-Tools</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Sie haben die Tastenkombination für den Modus "Angedockte Lupe" gedrückt. Möchten Sie ihn aktivieren?</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">Möchten Sie automatische Klicks wirklich deaktivieren?</translation>
 <translation id="4849058404725798627">Objekt mit Tastaturfokus hervorheben</translation>
 <translation id="485592688953820832">Keine Aktion (Pause)</translation>
+<translation id="4868492592575313542">aktiviert</translation>
 <translation id="4872237917498892622">Alt+Suchen oder Umschalttaste</translation>
 <translation id="4890187583552566966">Google Assistant wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">Verbunden, Akkustand bei <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Leistungsverfolgung ist aktiviert</translation>
 <translation id="6752912906630585008">Arbeitsbereich <ph name="REMOVED_DESK" /> wurde entfernt und mit Arbeitsbereich <ph name="RECEIVE_DESK" /> zusammengeführt</translation>
+<translation id="6777216307882431711">Stromversorgung für verbundene USB-C-Geräte</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>
 <translation id="6820676911989879663">Zeit für eine Pause.</translation>
@@ -442,6 +451,7 @@
 <translation id="7568294522609223312">Automatische Klicks deaktivieren</translation>
 <translation id="7569509451529460200">Braille und ChromeVox sind aktiviert</translation>
 <translation id="7593891976182323525">Suchen oder Umschalttaste</translation>
+<translation id="7600875258240007829">Alle Benachrichtigungen ansehen</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (Eigentümer)</translation>
 <translation id="7647488630410863958">Gerät entsperren, um Benachrichtigungen zu sehen</translation>
 <translation id="7649070708921625228">Hilfe</translation>
@@ -506,6 +516,7 @@
 <translation id="8452135315243592079">Keine SIM-Karte vorhanden</translation>
 <translation id="8454013096329229812">WLAN ist aktiviert.</translation>
 <translation id="847056008324733326">Einstellungen für Displaymaßstab</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> hat <ph name="FEATURE_NAME" /> <ph name="FEATURE_STATE" />.</translation>
 <translation id="8477270416194247200">Drücken Sie Alt + Such-Taste oder Umschalttaste, um die Aktivierung aufzuheben.</translation>
 <translation id="8513108775083588393">Automatisch drehen</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
@@ -534,6 +545,7 @@
 <translation id="8909138438987180327">Akkustand: <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant spricht diese Sprache nicht.</translation>
+<translation id="8936501819958976551">deaktiviert</translation>
 <translation id="8938800817013097409">USB-C-Gerät (rechter Port hinten)</translation>
 <translation id="8940956008527784070">Niedriger Akkustand (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8983038754672563810">HSPA</translation>

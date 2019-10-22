@@ -7,24 +7,20 @@
         android:propertyName="fillColor"
         android:duration="1000"
         android:valueFrom="@color/default_icon_color_white"
-        android:valueTo="@color/default_icon_color_white"
-        android:valueType="intType" />
+        android:valueTo="@color/default_icon_color_white"/>
     <objectAnimator
         android:propertyName="fillColor"
         android:duration="300"
         android:valueFrom="@color/google_blue_50"
-        android:valueTo="@color/google_blue_50"
-        android:valueType="intType" />
+        android:valueTo="@color/google_blue_50"/>
     <objectAnimator
         android:propertyName="fillColor"
         android:duration="2350"
         android:valueFrom="@color/google_blue_50"
-        android:valueTo="@color/google_blue_50"
-        android:valueType="intType" />
+        android:valueTo="@color/google_blue_50"/>
     <objectAnimator
         android:propertyName="fillColor"
         android:duration="300"
         android:valueFrom="@color/default_icon_color_white"
-        android:valueTo="@color/default_icon_color_white"
-        android:valueType="intType" />
+        android:valueTo="@color/default_icon_color_white"/>
 </set>

@@ -65,9 +65,15 @@ TEST(ThreadPoolServiceThreadIntegrationTest, HeartbeatLatencyReport) {
       "ThreadPool.HeartbeatLatencyMicroseconds.Test."
       "UserBlockingTaskPriority",
       "ThreadPool.HeartbeatLatencyMicroseconds.Test."
+      "UserBlockingTaskPriority_MayBlock",
+      "ThreadPool.HeartbeatLatencyMicroseconds.Test."
       "UserVisibleTaskPriority",
       "ThreadPool.HeartbeatLatencyMicroseconds.Test."
-      "BackgroundTaskPriority"};
+      "UserVisibleTaskPriority_MayBlock",
+      "ThreadPool.HeartbeatLatencyMicroseconds.Test."
+      "BackgroundTaskPriority",
+      "ThreadPool.HeartbeatLatencyMicroseconds.Test."
+      "BackgroundTaskPriority_MayBlock"};
 
   // Each report hits a single histogram above (randomly selected). But 1000
   // reports should touch all histograms at least once the vast majority of the

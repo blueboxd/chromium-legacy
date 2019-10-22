@@ -31,7 +31,6 @@ class FirstRunDialog : public views::DialogDelegateView,
   void Done();
 
   // views::DialogDelegate:
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool Accept() override;
   int GetDialogButtons() const override;
 

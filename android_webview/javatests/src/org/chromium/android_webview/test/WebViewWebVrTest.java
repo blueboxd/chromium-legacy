@@ -44,7 +44,7 @@ public class WebViewWebVrTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-webvr")
+    @CommandLineFlags.Add("enable-blink-features=WebVR")
     public void testWebVrNotFunctional() throws Throwable {
         mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(),

@@ -33,7 +33,9 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -1515,6 +1517,15 @@ void AppListControllerImpl::NotifyHomeLauncherAnimationTransition(
 
 bool AppListControllerImpl::IsHomeScreenVisible() {
   return IsTabletMode() && IsVisible();
+}
+
+gfx::Rect AppListControllerImpl::GetInitialAppListItemScreenBoundsForWindow(
+    aura::Window* window) {
+  if (!presenter_.GetView())
+    return gfx::Rect();
+  std::string* app_id = window->GetProperty(kAppIDKey);
+  return presenter_.GetView()->GetItemScreenBoundsInFirstGridPage(
+      app_id ? *app_id : std::string());
 }
 
 }  // namespace ash

@@ -72,7 +72,7 @@
 
 - (BadgeButton*)saveCardBadgeButton {
   BadgeButton* button =
-      [self createButtonForType:BadgeType::kBadgeTypePasswordUpdate
+      [self createButtonForType:BadgeType::kBadgeTypeSaveCard
                      imageNamed:@"infobar_save_card_icon"
                   renderingMode:UIImageRenderingModeAlwaysTemplate];
   [button addTarget:self.delegate

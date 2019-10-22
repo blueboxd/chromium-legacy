@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> ajouté</translation>
 <translation id="1056775291175587022">Aucun réseau</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" /> : <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">Mobile : <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Je m'ennuie</translation>
 <translation id="1104084341931202936">Afficher les paramètres d'accessibilité</translation>
 <translation id="1104621072296271835">Vos appareils fonctionnent encore mieux ensemble</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">Surbalayage</translation>
 <translation id="119944043368869598">Tout effacer</translation>
 <translation id="1247372569136754018">Micro (interne)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Ce paramètre est appliqué par votre administrateur.</translation>
 <translation id="1252999807265626933">Charge à partir de la source "<ph name="POWER_SOURCE" />"</translation>
 <translation id="1255033239764210633">Quel temps fait-il ?</translation>
 <translation id="1267032506238418139">Modification du raccourci</translation>
 <translation id="1270290102613614947">Clavier à l'écran désactivé</translation>
 <translation id="1272079795634619415">Arrêter</translation>
+<translation id="1275285675049378717">En cours d'alimentation : <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Revenez <ph name="COME_BACK_DAY_OF_WEEK" /> à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Signal de faible intensité</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">Mode Contraste élevé</translation>
 <translation id="2542089167727451762">Appuyez sur votre image de profil</translation>
 <translation id="255671100581129685">L'Assistant Google n'est pas disponible dans une session publique.</translation>
+<translation id="256712445991462162">la loupe ancrée</translation>
 <translation id="2575685495496069081">La connexion multicompte a été désactivée</translation>
 <translation id="2582112259361606227">Redémarrer pour mettre à jour</translation>
 <translation id="2617342710774726426">La carte SIM est verrouillée</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">Outils de stylet</translation>
 <translation id="3368922792935385530">Connecté</translation>
 <translation id="3371140690572404006">Appareil USB de type C (port situé sur la droite de l'appareil, à l'avant)</translation>
+<translation id="3386978599540877378">la loupe plein écran</translation>
 <translation id="3400357268283240774">Autres paramètres</translation>
 <translation id="3413817803639110246">Aucune notification</translation>
 <translation id="343571671045587506">Modifier le rappel</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Système d’exploitation Google Chrome</translation>
 <translation id="4338109981321384717">Loupe</translation>
 <translation id="4351433414020964307">Chargement de l'Assistant…</translation>
+<translation id="4356930093361201197">le mode de contraste élevé</translation>
 <translation id="4378551569595875038">Connexion</translation>
 <translation id="4379531060876907730">Voici vos outils de stylet</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Vous avez appuyé sur le raccourci clavier de la loupe ancrée. Voulez-vous l'activer ?</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">Voulez-vous vraiment désactiver les clics automatiques ?</translation>
 <translation id="4849058404725798627">Mettre l'objet sélectionné au clavier en surbrillance</translation>
 <translation id="485592688953820832">Aucune action (pause)</translation>
+<translation id="4868492592575313542">a activé</translation>
 <translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
 <translation id="4890187583552566966">L'administrateur a désactivé l'Assistant Google.</translation>
 <translation id="4895488851634969361">La batterie est pleine.</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">Connecté, batterie à <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Le suivi des performances est activé</translation>
 <translation id="6752912906630585008">Bureau <ph name="REMOVED_DESK" /> supprimé et fusionné avec le Bureau <ph name="RECEIVE_DESK" /></translation>
+<translation id="6777216307882431711">En cours d'alimentation : plusieurs appareils USB-C connectés</translation>
 <translation id="6790428901817661496">Lire</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
 <translation id="6820676911989879663">Faites une pause !</translation>
@@ -442,6 +451,7 @@
 <translation id="7568294522609223312">Désactiver les clics automatiques</translation>
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
+<translation id="7600875258240007829">Afficher toutes les notifications</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>
 <translation id="7647488630410863958">Déverrouiller l'appareil pour consulter vos notifications</translation>
 <translation id="7649070708921625228">Aide</translation>
@@ -506,6 +516,7 @@
 <translation id="8452135315243592079">Carte SIM manquante</translation>
 <translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
 <translation id="847056008324733326">Paramètres de l'échelle d'affichage</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> a <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Appuyez sur Alt+Rechercher ou Maj pour annuler.</translation>
 <translation id="8513108775083588393">Rotation automatique</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
@@ -534,6 +545,7 @@
 <translation id="8909138438987180327">Niveau de charge de la batterie : <ph name="PERCENTAGE" /> %.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">L'Assistant Google ne parle pas cette langue.</translation>
+<translation id="8936501819958976551">a désactivé</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8983038754672563810">3G+</translation>

@@ -20,6 +20,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.ui.widget.ContextMenuDialog;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
@@ -66,10 +67,11 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     }
 
     @Override
-    public void displayMenu(final Activity activity, ContextMenuParams params,
+    public void displayMenu(final WindowAndroid window, ContextMenuParams params,
             List<Pair<Integer, List<ContextMenuItem>>> items, Callback<Integer> onItemClicked,
             final Runnable onMenuShown, final Callback<Boolean> onMenuClosed) {
         mOnMenuClosed = onMenuClosed;
+        Activity activity = window.getActivity().get();
         final float density = activity.getResources().getDisplayMetrics().density;
         final float touchPointXPx = params.getTriggeringTouchXDp() * density;
         final float touchPointYPx = params.getTriggeringTouchYDp() * density;
@@ -83,7 +85,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(activity, params);
 
         // The Integer here specifies the {@link ListItemType}.
-        ModelList listItems = getItemList(activity, items, params);
+        ModelList listItems = getItemList(window, items, params);
 
         ModelListAdapter adapter = new ModelListAdapter(listItems) {
             @Override
@@ -167,8 +169,9 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     }
 
     @VisibleForTesting
-    ModelList getItemList(Activity activity, List<Pair<Integer, List<ContextMenuItem>>> items,
+    ModelList getItemList(WindowAndroid window, List<Pair<Integer, List<ContextMenuItem>>> items,
             ContextMenuParams params) {
+        Activity activity = window.getActivity().get();
         ModelList itemList = new ModelList();
 
         // TODO(sinansahin): We should be able to remove this conversion once we can get the items
@@ -196,7 +199,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
                                     .with(RevampedContextMenuShareItemProperties.CONTENT_DESC,
                                             shareInfo.second)
                                     .with(RevampedContextMenuShareItemProperties.CLICK_LISTENER,
-                                            getShareItemClickListener(activity, shareItem, params))
+                                            getShareItemClickListener(window, shareItem, params))
                                     .build();
                     itemList.add(new ListItem(ListItemType.CONTEXT_MENU_SHARE_ITEM, itemModel));
                 } else {
@@ -216,7 +219,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     }
 
     private View.OnClickListener getShareItemClickListener(
-            Activity activity, ShareContextMenuItem item, ContextMenuParams params) {
+            WindowAndroid window, ShareContextMenuItem item, ContextMenuParams params) {
         return (v) -> {
             ChromeContextMenuPopulator.ContextMenuUma.record(params,
                     item.isShareLink()
@@ -226,7 +229,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
             mDialog.dismiss();
             if (item.isShareLink()) {
                 final ShareParams shareParams =
-                        new ShareParams.Builder(activity, params.getUrl(), params.getUrl())
+                        new ShareParams.Builder(window, params.getUrl(), params.getUrl())
                                 .setShareDirectly(true)
                                 .setSaveLastUsed(false)
                                 .build();

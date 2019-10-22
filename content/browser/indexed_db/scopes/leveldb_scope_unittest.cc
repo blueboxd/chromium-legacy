@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "content/browser/indexed_db/scopes/leveldb_scope.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes.h"

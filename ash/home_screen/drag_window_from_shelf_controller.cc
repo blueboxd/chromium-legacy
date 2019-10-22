@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
@@ -124,10 +125,66 @@ class WindowTransformToHomeScreenAnimation
 
 }  // namespace
 
+// Hide all visible windows expect the dragged windows or the window showing in
+// splitview during dragging.
+class DragWindowFromShelfController::WindowsHider
+    : public aura::WindowObserver {
+ public:
+  explicit WindowsHider(aura::Window* dragged_window)
+      : dragged_window_(dragged_window) {
+    std::vector<aura::Window*> windows =
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
+    for (auto* window : windows) {
+      if (window == dragged_window_)
+        continue;
+      if (!window->IsVisible())
+        continue;
+      if (SplitViewController::Get(window)->IsWindowInSplitView(window))
+        continue;
+
+      hidden_windows_.push_back(window);
+      {
+        ScopedAnimationDisabler disabler(window);
+        // Minimize so that they can show up correctly in overview.
+        WindowState::Get(window)->Minimize();
+        window->Hide();
+      }
+      window->AddObserver(this);
+    }
+  }
+
+  ~WindowsHider() override {
+    for (auto* window : hidden_windows_)
+      window->RemoveObserver(this);
+    hidden_windows_.clear();
+  }
+
+  void RestoreWindowsVisibility() {
+    for (auto* window : hidden_windows_) {
+      window->RemoveObserver(this);
+      ScopedAnimationDisabler disabler(window);
+      window->Show();
+    }
+    hidden_windows_.clear();
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    window->RemoveObserver(this);
+    hidden_windows_.erase(
+        std::find(hidden_windows_.begin(), hidden_windows_.end(), window));
+  }
+
+ private:
+  aura::Window* dragged_window_;
+  std::vector<aura::Window*> hidden_windows_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowsHider);
+};
+
 DragWindowFromShelfController::DragWindowFromShelfController(
-    aura::Window* window,
-    const std::vector<aura::Window*>& hidden_windows)
-    : window_(window), hidden_windows_(hidden_windows) {}
+    aura::Window* window)
+    : window_(window) {}
 
 DragWindowFromShelfController::~DragWindowFromShelfController() {
   CancelDrag();
@@ -194,10 +251,8 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
 void DragWindowFromShelfController::EndDrag(
     const gfx::Point& location_in_screen,
     base::Optional<float> velocity_y) {
-  if (!drag_started_) {
-    ReshowHiddenWindowsOnDragEnd();
+  if (!drag_started_)
     return;
-  }
 
   drag_started_ = false;
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -234,10 +289,8 @@ void DragWindowFromShelfController::EndDrag(
 }
 
 void DragWindowFromShelfController::CancelDrag() {
-  if (!drag_started_) {
-    ReshowHiddenWindowsOnDragEnd();
+  if (!drag_started_)
     return;
-  }
 
   drag_started_ = false;
   // Reset the window's transform to identity transform.
@@ -268,6 +321,9 @@ void DragWindowFromShelfController::OnDragStarted(
   // Disable the backdrop on the dragged window during dragging.
   original_backdrop_mode_ = window_->GetProperty(kBackdropWindowMode);
   window_->SetProperty(kBackdropWindowMode, BackdropWindowMode::kDisabled);
+
+  // Hide all visible windows behind the dragged window during dragging.
+  windows_hider_ = std::make_unique<WindowsHider>(window_);
 
   // Hide the home launcher until it's eligible to show it.
   Shell::Get()->home_screen_controller()->OnWindowDragStarted();
@@ -336,7 +392,6 @@ void DragWindowFromShelfController::OnDragEnded(
   }
 
   WindowState::Get(window_)->DeleteDragDetails();
-  hidden_windows_.clear();
 }
 
 void DragWindowFromShelfController::UpdateDraggedWindow(
@@ -481,11 +536,7 @@ bool DragWindowFromShelfController::ShouldDropWindowInOverview(
 }
 
 void DragWindowFromShelfController::ReshowHiddenWindowsOnDragEnd() {
-  for (auto* window : hidden_windows_) {
-    ScopedAnimationDisabler disable(window);
-    window->Show();
-  }
-  hidden_windows_.clear();
+  windows_hider_->RestoreWindowsVisibility();
 }
 
 void DragWindowFromShelfController::ShowOverviewDuringOrAfterDrag() {

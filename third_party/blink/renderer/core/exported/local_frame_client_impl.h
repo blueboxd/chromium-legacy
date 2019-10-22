@@ -142,8 +142,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                    network::mojom::RedirectMode) override;
   bool NavigateBackForward(int offset) const override;
   void DidAccessInitialDocument() override;
-  void DidDisplayInsecureContent() override;
-  void DidContainInsecureFormAction() override;
   void DidRunInsecureContent(const SecurityOrigin*,
                              const KURL& insecure_url) override;
   void DidDispatchPingLoader(const KURL&) override;

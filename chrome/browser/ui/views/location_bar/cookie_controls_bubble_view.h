@@ -64,7 +64,6 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void Init() override;
   base::string16 GetWindowTitle() const override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;

@@ -297,8 +297,15 @@ std::vector<std::string> HintsFetcher::GetSizeLimitedHostsDueForHintsRefresh(
   target_hosts.reserve(hosts.size());
 
   for (const auto& host : hosts) {
-    // TODO(b/968542): Skip origins that are local hosts (e.g., IP addresses,
-    // localhost:8080 etc.).
+    // Skip over localhosts, IP addresses, and invalid hosts.
+    if (net::HostStringIsLocalhost(host))
+      continue;
+    url::CanonHostInfo host_info;
+    std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
+    if (host_info.IsIPAddress() ||
+        !net::IsCanonicalizedHostCompliant(canonicalized_host)) {
+      continue;
+    }
 
     bool host_hints_due_for_refresh = true;
 

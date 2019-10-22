@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
@@ -34,10 +35,10 @@ public class TasksSurfaceCoordinator implements TasksSurface {
                 PropertyModelChangeProcessor.create(propertyModel, mView, TasksViewBinder::bind);
         if (isTabCarousel) {
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createCarouselTabSwitcher(
-                    activity, mView.getTabSwitcherContainer());
+                    activity, mView.getCarouselTabSwitcherContainer());
         } else {
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
-                    activity, mView.getTabSwitcherContainer());
+                    activity, mView.getBodyViewContainer());
         }
 
         mMediator =
@@ -64,7 +65,12 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     }
 
     @Override
-    public ViewGroup getContainerView() {
+    public ViewGroup getBodyViewContainer() {
+        return mView.getBodyViewContainer();
+    }
+
+    @Override
+    public View getView() {
         return mView;
     }
 }

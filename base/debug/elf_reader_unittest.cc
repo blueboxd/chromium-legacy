@@ -59,7 +59,7 @@ TEST(ElfReaderTest, ReadElfBuildIdLowercase) {
 TEST(ElfReaderTest, ReadElfLibraryName) {
 #if defined(OS_ANDROID)
   // On Android the library loader memory maps the full so file.
-  const char kLibraryName[] = "lib_base_unittests__library";
+  const char kLibraryName[] = "libbase_unittests__library";
   const void* addr = &__executable_start;
 #else
   const char kLibraryName[] = MALLOC_WRAPPER_LIB;

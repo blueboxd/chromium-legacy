@@ -40,7 +40,7 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    newPrintPreview: {
+    isPrintPreview: {
       type: Boolean,
       reflectToAttribute: true,
     },

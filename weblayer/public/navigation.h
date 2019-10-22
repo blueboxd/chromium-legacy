@@ -34,6 +34,8 @@ class Navigation {
   };
 
   virtual State GetState() = 0;
+
+  // TODO(jam): add IsSameDocument
 };
 
 }  // namespace weblayer

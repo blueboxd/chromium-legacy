@@ -6,7 +6,6 @@ package org.chromium.weblayer.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
@@ -58,6 +57,7 @@ public class NavigationTest {
         public NavigationCallbackHelper onStartedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCommittedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCompletedCallback = new NavigationCallbackHelper();
+        public CallbackHelper onFirstContentfulPaintCallback = new CallbackHelper();
 
         @Override
         public void navigationStarted(Navigation navigation) {
@@ -73,50 +73,43 @@ public class NavigationTest {
         public void navigationCompleted(Navigation navigation) {
             onCompletedCallback.notifyCalled(navigation.getUri());
         }
+
+        @Override
+        public void onFirstContentfulPaint() {
+            onFirstContentfulPaintCallback.notifyCalled();
+        }
     }
 
     private final Observer mObserver = new Observer();
 
     @Test
     @SmallTest
-    public void testBaseStartup() {
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
-
-        assertNotNull(activity);
-
-        mActivityTestRule.waitForNavigation(URL1);
-    }
-
-    @Test
-    @SmallTest
     public void testNavigationEvents() throws Exception {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
-        mActivityTestRule.waitForNavigation(URL1);
 
         setNavigationObserver(activity);
         int curStartedCount = mObserver.onStartedCallback.getCallCount();
         int curCommittedCount = mObserver.onCommittedCallback.getCallCount();
         int curCompletedCount = mObserver.onCompletedCallback.getCallCount();
+        int curOnFirstContentfulPaintCount =
+                mObserver.onFirstContentfulPaintCallback.getCallCount();
 
-        mActivityTestRule.loadUrl(URL2);
-        mActivityTestRule.waitForNavigation(URL2);
+        mActivityTestRule.navigateAndWait(URL2);
 
         mObserver.onStartedCallback.assertCalledWith(curStartedCount, URL2);
         mObserver.onCommittedCallback.assertCalledWith(curCommittedCount, URL2);
         mObserver.onCompletedCallback.assertCalledWith(curCompletedCount, URL2);
+        mObserver.onFirstContentfulPaintCallback.waitForCallback(curOnFirstContentfulPaintCount);
     }
 
     @Test
     @SmallTest
     public void testGoBackAndForward() throws Exception {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
-        mActivityTestRule.waitForNavigation(URL1);
         setNavigationObserver(activity);
 
-        mActivityTestRule.loadUrl(URL2);
-        mActivityTestRule.waitForNavigation(URL2);
-        mActivityTestRule.loadUrl(URL3);
-        mActivityTestRule.waitForNavigation(URL3);
+        mActivityTestRule.navigateAndWait(URL2);
+        mActivityTestRule.navigateAndWait(URL3);
 
         NavigationController navigationController =
                     activity.getBrowserController().getNavigationController();

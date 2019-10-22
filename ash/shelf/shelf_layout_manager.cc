@@ -1067,7 +1067,12 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
             return HotseatState::kShown;
           if (Shell::Get()->overview_controller() &&
               Shell::Get()->overview_controller()->InOverviewSession()) {
-            return HotseatState::kShown;
+            auto* split_view_controller =
+                SplitViewController::Get(Shell::GetPrimaryRootWindow());
+            return split_view_controller &&
+                           split_view_controller->InSplitViewMode()
+                       ? HotseatState::kHidden
+                       : HotseatState::kExtended;
           }
           if (visibility_state == SHELF_AUTO_HIDE) {
             if (auto_hide_state == SHELF_AUTO_HIDE_HIDDEN ||
@@ -1099,20 +1104,41 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
 
       if (shelf_widget_->hotseat_widget()->IsDraggedToExtended())
         return HotseatState::kExtended;
+      // |drag_amount_| is relative to the top of the hotseat when the drag
+      // begins with an extended hotseat. Correct for this to get
+      // |total_amount_dragged|.
+      const int drag_base = (state_.hotseat_state == HotseatState::kExtended &&
+                             state_.visibility_state == SHELF_VISIBLE)
+                                ? (ShelfConfig::Get()->hotseat_size() +
+                                   ShelfConfig::Get()->hotseat_bottom_padding())
+                                : 0;
+      const float total_amount_dragged = drag_base + drag_amount_;
+      const float end_of_drag_in_screen =
+          drag_start_point_in_screen_.y() + total_amount_dragged;
+      const int screen_bottom =
+          display::Screen::GetScreen()
+              ->GetDisplayNearestView(shelf_widget_->GetNativeView())
+              .bounds()
+              .bottom();
+      const bool dragged_to_bezel =
+          std::ceil(end_of_drag_in_screen) >= screen_bottom;
+
+      const int top_of_hotseat_to_screen_bottom =
+          screen_bottom -
+          shelf_widget_->hotseat_widget()->GetWindowBoundsInScreen().y();
+      const bool dragged_over_half_hotseat_size =
+          top_of_hotseat_to_screen_bottom <
+          ShelfConfig::Get()->hotseat_size() / 2;
+
+      // Drags to the bezel may have large velocities, even if the drag is slow.
+      // Decide the state based on position first, before checking
+      // |last_drag_velocity_|.
+      if (dragged_to_bezel || dragged_over_half_hotseat_size)
+        return HotseatState::kHidden;
       if (std::abs(last_drag_velocity_) >= 120) {
         if (last_drag_velocity_ > 0)
           return HotseatState::kHidden;
         return HotseatState::kExtended;
-      }
-      const int top_of_hotseat_to_screen_bottom =
-          display::Screen::GetScreen()
-              ->GetDisplayNearestView(shelf_widget_->GetNativeView())
-              .bounds()
-              .bottom() -
-          shelf_widget_->hotseat_widget()->GetWindowBoundsInScreen().y();
-      if (top_of_hotseat_to_screen_bottom <
-          ShelfConfig::Get()->hotseat_size() / 2) {
-        return HotseatState::kHidden;
       }
       return HotseatState::kExtended;
     }
@@ -2107,6 +2133,8 @@ void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
     launcher_above_shelf_bottom_amount_ =
         shelf_bounds.bottom() - event_in_screen.location().y();
   } else {
+    if (drag_start_point_in_screen_ == gfx::Point())
+      drag_start_point_in_screen_ = event_in_screen.location();
     drag_amount_ += PrimaryAxisValue(scroll_y, scroll_x);
     if (event_in_screen.type() == ui::ET_SCROLL_FLING_START) {
       last_drag_velocity_ =
@@ -2137,6 +2165,7 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
   UpdateVisibilityState();
   drag_status_ = kDragNone;
   hotseat_is_in_drag_ = false;
+  drag_start_point_in_screen_ = gfx::Point();
 }
 
 void ShelfLayoutManager::CompleteAppListDrag(
@@ -2191,6 +2220,7 @@ void ShelfLayoutManager::CancelDrag() {
   }
   hotseat_is_in_drag_ = false;
   drag_status_ = kDragNone;
+  drag_start_point_in_screen_ = gfx::Point();
 }
 
 float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {

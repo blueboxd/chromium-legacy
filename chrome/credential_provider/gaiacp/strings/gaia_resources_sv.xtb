@@ -11,7 +11,6 @@
 <translation id="2831078752570172210">Kontot är utelåst. Kontakta systemadministratören.</translation>
 <translation id="2844349213149998955">Det är inte tillåtet att logga in med ett personligt konto på den här enheten. Logga in med ett jobbkonto.</translation>
 <translation id="3306357053520292004">En användare på den här datorn har redan lagts till med det här kontot. Logga in med ett annat konto.</translation>
-<translation id="3968372833844047539">Endast G Suite Enterprise-användare får logga in.</translation>
 <translation id="4057329986137569701">Ett internt fel uppstod.</translation>
 <translation id="4267670563222825190">Ingen domänanvändare hittades för kontot. Kontakta administratören.</translation>
 <translation id="4300229033992784001">Kontots lösenord har ändrats Ange ditt nuvarande lösenord för Windows för att synkronisera Windows-kontot med jobbkontot.</translation>
@@ -25,7 +24,6 @@
 <translation id="7357241217513796177">Kontrollera nätverksanslutningen och försök igen.</translation>
 <translation id="7536769223115622137">Lägg till jobbkonto</translation>
 <translation id="7856245195110636219">Det går inte att fortsätta utan att ange det nuvarande lösenordet för Windows. Kontakta systemadministratören.</translation>
-<translation id="7996763357529480810">Logga in med ditt jobbkonto i G Suite</translation>
 <translation id="8639729688781680518">Jag har glömt lösenordet för Windows</translation>
 <translation id="866458870819756755">Det gick inte att skapa en användare.</translation>
 <translation id="8875753657315897487">Logga in med ditt jobbkonto</translation>

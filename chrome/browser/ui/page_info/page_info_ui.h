@@ -43,6 +43,19 @@ class PageInfoUI {
     GREEN,
   };
 
+  enum class SecurityDescriptionType {
+    // The UI describes whether the connection is secure, e.g. secure
+    // HTTPS, non-secure HTTP.
+    CONNECTION,
+    // The UI describes e.g. an internal (chrome://) page or extension page.
+    INTERNAL,
+    // The UI describes a Safe Browsing warning, e.g. site deceptive or contains
+    // malware.
+    SAFE_BROWSING,
+    // The UI shows a Safety Tip.
+    SAFETY_TIP,
+  };
+
   struct SecurityDescription {
     // The text style for |summary| used to color it. This provides an
     // opinionated guide to the user on the overall security state of the site.
@@ -52,6 +65,9 @@ class PageInfoUI {
     // A short paragraph with more details about the state, and how
     // the user should treat it.
     base::string16 details;
+    // The category of the security description, used to determine which help
+    // center article to link to.
+    SecurityDescriptionType type;
   };
 
   // |CookieInfo| contains information about the cookies from a specific source.

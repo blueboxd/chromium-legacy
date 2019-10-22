@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -338,6 +339,32 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
   if (prefetch_url_.has_value()) {
     MaybePrefetch();
   }
+}
+
+void NavigationPredictor::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
+  // Don't start new prerenders.
+  next_navigation_started_ = true;
+
+  // If there is no ongoing prerender, there is nothing to do.
+  if (!prefetch_url_.has_value())
+    return;
+
+  // Let the prerender continue if it matches the navigation URL.
+  if (navigation_handle->GetURL() == prefetch_url_.value())
+    return;
+
+  if (!prerender_handle_)
+    return;
+
+  // Stop prerender to reduce network contention during main frame fetch.
+  prerender_handle_->OnNavigateAway();
+  prerender_handle_.reset();
 }
 
 void NavigationPredictor::RecordAction(Action log_action) {
@@ -901,6 +928,10 @@ void NavigationPredictor::MaybePrefetch() {
       current_visibility_ == content::Visibility::HIDDEN) {
     return;
   }
+
+  // Don't prerender if the next navigation started.
+  if (next_navigation_started_)
+    return;
 
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(

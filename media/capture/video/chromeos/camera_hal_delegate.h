@@ -20,6 +20,7 @@
 #include "media/capture/video/chromeos/vendor_tag_ops_delegate.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -72,9 +73,10 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // This method may be called on any thread; |callback| will run on
   // |ipc_task_runner_|.
   using OpenDeviceCallback = base::OnceCallback<void(int32_t)>;
-  void OpenDevice(int32_t camera_id,
-                  cros::mojom::Camera3DeviceOpsRequest device_ops_request,
-                  OpenDeviceCallback callback);
+  void OpenDevice(
+      int32_t camera_id,
+      mojo::PendingReceiver<cros::mojom::Camera3DeviceOps> device_ops_receiver,
+      OpenDeviceCallback callback);
 
   // Gets camera id from device id. Returns -1 on error.
   int GetCameraIdFromDeviceId(const std::string& device_id);
@@ -125,7 +127,7 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // This method runs on |ipc_task_runner_|.
   void OpenDeviceOnIpcThread(
       int32_t camera_id,
-      cros::mojom::Camera3DeviceOpsRequest device_ops_request,
+      mojo::PendingReceiver<cros::mojom::Camera3DeviceOps> device_ops_receiver,
       OpenDeviceCallback callback);
 
   // CameraModuleCallbacks implementation. Operates on |ipc_task_runner_|.

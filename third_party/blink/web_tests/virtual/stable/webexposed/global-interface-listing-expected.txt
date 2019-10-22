@@ -1447,7 +1447,6 @@ interface Document : Node
     method queryCommandValue
     method querySelector
     method querySelectorAll
-    method registerElement
     method releaseEvents
     method webkitCancelFullScreen
     method webkitExitFullscreen
@@ -1656,7 +1655,6 @@ interface Element : Node
     method closest
     method computedStyleMap
     method constructor
-    method createShadowRoot
     method getAttribute
     method getAttributeNS
     method getAttributeNames
@@ -1664,7 +1662,6 @@ interface Element : Node
     method getAttributeNodeNS
     method getBoundingClientRect
     method getClientRects
-    method getDestinationInsertionPoints
     method getElementsByClassName
     method getElementsByTagName
     method getElementsByTagNameNS
@@ -6872,7 +6869,6 @@ interface Text : CharacterData
     getter assignedSlot
     getter wholeText
     method constructor
-    method getDestinationInsertionPoints
     method splitText
 interface TextDecoder
     attribute @@toStringTag

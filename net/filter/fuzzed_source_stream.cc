@@ -73,6 +73,10 @@ std::string FuzzedSourceStream::Description() const {
   return "";
 }
 
+bool FuzzedSourceStream::MayHaveMoreBytes() const {
+  return !end_returned_;
+}
+
 void FuzzedSourceStream::OnReadComplete(CompletionOnceCallback callback,
                                         const std::string& fuzzed_data,
                                         scoped_refptr<IOBuffer> read_buf,

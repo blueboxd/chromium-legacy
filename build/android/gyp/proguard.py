@@ -93,10 +93,9 @@ def _ParseOptions():
       '--expected-configs-file',
       help='Path to a file containing the expected merged ProGuard configs')
   parser.add_argument(
-      '--verify-expected-configs',
-      action='store_true',
-      help='Fail if the expected merged ProGuard configs differ from the '
-      'generated merged ProGuard configs.')
+      '--proguard-expectations-failure-file',
+      help='Path to file written to if the expected merged ProGuard configs '
+      'differ from the generated merged ProGuard configs.')
   parser.add_argument(
       '--classpath',
       action='append',
@@ -137,17 +136,23 @@ def _ParseOptions():
   return options
 
 
-def _VerifyExpectedConfigs(expected_path, actual_path, fail_on_exit):
+def _VerifyExpectedConfigs(expected_path, actual_path, failure_file_path):
   msg = diff_utils.DiffFileContents(expected_path, actual_path)
   if not msg:
     return
 
-  sys.stderr.write("""\
+  msg_header = """\
 ProGuard flag expectations file needs updating. For details see:
 https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-""")
+"""
+  sys.stderr.write(msg_header)
   sys.stderr.write(msg)
-  if fail_on_exit:
+  if failure_file_path:
+    build_utils.MakeDirectory(os.path.dirname(failure_file_path))
+    with open(failure_file_path, 'w') as f:
+      f.write(msg_header)
+      f.write(msg)
+    #TODO(mheikal): remove once trybot reciepe handles the failure files.
     sys.exit(1)
 
 
@@ -394,7 +399,7 @@ def main():
     if options.expected_configs_file:
       _VerifyExpectedConfigs(options.expected_configs_file,
                              options.output_config,
-                             options.verify_expected_configs)
+                             options.proguard_expectations_failure_file)
 
   if options.r8_path:
     _OptimizeWithR8(options, options.proguard_configs, libraries,

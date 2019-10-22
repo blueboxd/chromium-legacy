@@ -2482,8 +2482,9 @@ bool PlaceContent::ParseShorthand(
   const CSSValue* justify_content_value = nullptr;
   if (range.AtEnd()) {
     if (is_baseline) {
-      justify_content_value = MakeGarbageCollected<CSSContentDistributionValue>(
-          CSSValueID::kInvalid, CSSValueID::kStart, CSSValueID::kInvalid);
+      justify_content_value =
+          MakeGarbageCollected<cssvalue::CSSContentDistributionValue>(
+              CSSValueID::kInvalid, CSSValueID::kStart, CSSValueID::kInvalid);
     } else {
       range = range_copy;
     }

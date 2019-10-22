@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './strings.m.js';
 import './tab.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
+import {tabStripOptions} from './tab_strip_options.js';
 import {TabData, TabsApiProxy} from './tabs_api_proxy.js';
 
 /**
@@ -84,6 +87,23 @@ class TabListElement extends CustomElement {
         'dragover', (e) => this.onDragOver_(/** @type {!DragEvent} */ (e)));
     document.addEventListener(
         'visibilitychange', () => this.moveOrScrollToActiveTab_());
+
+    if (loadTimeData.getBoolean('showDemoOptions')) {
+      this.shadowRoot.querySelector('#demoOptions').style.display = 'block';
+
+      const mruCheckbox = this.shadowRoot.querySelector('#mruCheckbox');
+      mruCheckbox.checked = tabStripOptions.mruEnabled;
+      mruCheckbox.addEventListener('change', () => {
+        tabStripOptions.mruEnabled = mruCheckbox.checked;
+      });
+
+      const autoCloseCheckbox =
+          this.shadowRoot.querySelector('#autoCloseCheckbox');
+      autoCloseCheckbox.checked = tabStripOptions.autoCloseEnabled;
+      autoCloseCheckbox.addEventListener('change', () => {
+        tabStripOptions.autoCloseEnabled = autoCloseCheckbox.checked;
+      });
+    }
   }
 
   /**
@@ -178,7 +198,8 @@ class TabListElement extends CustomElement {
       return;
     }
 
-    if (!this.tabStripEmbedderProxy_.isVisible() && !activeTab.tab.pinned &&
+    if (tabStripOptions.mruEnabled &&
+        !this.tabStripEmbedderProxy_.isVisible() && !activeTab.tab.pinned &&
         this.tabsContainerElement_.firstChild !== activeTab) {
       this.tabsApi_.moveTab(
           activeTab.tab.id, this.pinnedTabsContainerElement_.childElementCount);
@@ -210,14 +231,19 @@ class TabListElement extends CustomElement {
       return pathItem !== this.draggedItem_ && isTabElement(pathItem);
     });
 
-    if (!dragOverItem || !this.draggedItem_ || !dragOverItem.tab.pinned) {
+    if (!dragOverItem || !this.draggedItem_ ||
+        dragOverItem.tab.pinned !== this.draggedItem_.tab.pinned) {
       return;
     }
 
     event.dataTransfer.dropEffect = 'move';
 
-    const dragOverIndex =
+    let dragOverIndex =
         Array.from(dragOverItem.parentNode.children).indexOf(dragOverItem);
+    if (!this.draggedItem_.tab.pinned) {
+      dragOverIndex += this.pinnedTabsContainerElement_.childElementCount;
+    }
+
     this.tabsApi_.moveTab(this.draggedItem_.tab.id, dragOverIndex);
   }
 
@@ -231,7 +257,16 @@ class TabListElement extends CustomElement {
       return;
     }
 
-    assert(draggedItem.tab.pinned);
+    if (tabStripOptions.mruEnabled && !draggedItem.tab.pinned) {
+      // If MRU is enabled, unpinned tabs should not be draggable.
+      event.preventDefault();
+      return;
+    }
+
+    if (tabStripOptions.mruEnabled) {
+      assert(draggedItem.tab.pinned);
+    }
+
     this.draggedItem_ = /** @type {!TabElement} */ (draggedItem);
     this.draggedItem_.setDragging(true);
     event.dataTransfer.effectAllowed = 'move';
@@ -273,7 +308,7 @@ class TabListElement extends CustomElement {
   onTabCreated_(tab) {
     const tabElement = this.createTabElement_(tab);
 
-    if (tab.active && !tab.pinned &&
+    if (tabStripOptions.mruEnabled && tab.active && !tab.pinned &&
         tab.index !== this.pinnedTabsContainerElement_.childElementCount) {
       // Newly created active tabs should first be moved to the very beginning
       // of the tab strip to enforce the tab strip's most recently used ordering

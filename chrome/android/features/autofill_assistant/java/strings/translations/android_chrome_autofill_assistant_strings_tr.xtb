@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
-<translation id="1135993792949700405">Chrome, seçtiğiniz kişisel verileri <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sitesine gönderecektir</translation>
 <translation id="1625889395409731085">Harici bağlantı açılsın mı?</translation>
 <translation id="1699570257714336246">Bilgi eksik</translation>
 <translation id="2203046366315513658">Değeri azaltma</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Chrome'da Google Asistan yarım yükseklikte açıldı.</translation>
 <translation id="6973932557599545801">Maalesef daha fazla yardımcı olamıyorum, lütfen kendiniz devam edin.</translation>
 <translation id="7658239707568436148">İptal</translation>
-<translation id="7871791972254842204"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sitesindeki şartlar ve koşulları daha sonra okuyup kabul edin</translation>
 <translation id="8253702004019660079">Chrome'da Google Asistan.</translation>
 <translation id="9138504265731110181">Google Asistan, internette ödeme yapmanıza yardımcı olarak size zaman kazandırır.</translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>

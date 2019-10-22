@@ -362,9 +362,9 @@ public class TabState {
         tabState.tabLaunchTypeAtCreation = tab.getLaunchTypeAtInitialTabCreation();
         // Don't save the actual default theme color because it could change on night mode state
         // changed.
-        tabState.themeColor = TabThemeColorHelper.isDefaultColorUsed(tab)
-                ? TabState.UNSPECIFIED_THEME_COLOR
-                : TabThemeColorHelper.getColor(tab);
+        tabState.themeColor = TabThemeColorHelper.isUsingColorFromTabContents(tab)
+                ? TabThemeColorHelper.getColor(tab)
+                : TabState.UNSPECIFIED_THEME_COLOR;
         tabState.rootId = tab.getRootId();
         return tabState;
     }

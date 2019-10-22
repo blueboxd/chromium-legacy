@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 นาทีที่ผ่านมา}other{# นาทีที่ผ่านมา}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 นาที}other{# นาที}}</translation>
 <translation id="1181037720776840403">นำออก</translation>
+<translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1243314992276662751">อัปโหลด</translation>
 <translation id="1266864766717917324">แชร์<ph name="CONTENT_TYPE" />ไม่ได้</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">แตะเป้าหมายการสัมผัสในหน้าจอ</translation>
 <translation id="2295140143284145483">แบบสำรวจ</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/วินาที</translation>
+<translation id="2353636109065292463">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="2388990488038464401">โทรหาหมายเลขนี้จากโทรศัพท์ของคุณใช่ไหม</translation>
 <translation id="24452542372838207">ขยายการแจ้งเตือน</translation>
 <translation id="2445449901874883781">ใช้ความหนาแน่นสูง</translation>
@@ -162,6 +164,7 @@
 <translation id="6620110761915583480">บันทึกไฟล์</translation>
 <translation id="6656912866303152668">ตรวจสอบว่าการซิงค์ <ph name="TARGET_DEVICE_NAME" /> ใน Chrome เปิดอยู่ แล้วลองส่งอีกครั้ง</translation>
 <translation id="6699343763173986273">แทร็กถัดไปของสื่อ</translation>
+<translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6779314412797872738">หากต้องการส่งหมายเลขจากอุปกรณ์นี้ไปยังโทรศัพท์ Android ให้<ph name="TROUBLESHOOT_LINK" />ของอุปกรณ์ทั้งสองในการตั้งค่า</translation>
 <translation id="6786750046913594791">ปิดโฟลเดอร์</translation>
 <translation id="6808150112686056157">หยุดสื่อ</translation>
@@ -179,6 +182,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{เหลือ 1 นาที}other{เหลือ # นาที}}</translation>
 <translation id="7319740667687257810">Launcher มุมมองบางส่วน</translation>
+<translation id="7352651011704765696">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 นาทีที่ผ่านมา}other{# นาทีที่ผ่านมา}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{เหลือ 1 นาที}other{เหลือ # นาที}}</translation>

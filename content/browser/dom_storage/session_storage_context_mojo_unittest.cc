@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_database.h"
@@ -39,9 +38,19 @@
 
 namespace content {
 namespace {
-using leveldb::StdStringToUint8Vector;
-using leveldb::String16ToUint8Vector;
-using leveldb::Uint8VectorToStdString;
+
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
+
+std::vector<uint8_t> StringPieceToUint8Vector(base::StringPiece s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
+
+std::vector<uint8_t> String16ToUint8Vector(const base::string16& s) {
+  auto bytes = base::as_bytes(base::make_span(s));
+  return std::vector<uint8_t>(bytes.begin(), bytes.end());
+}
 
 static const char kSessionStorageDirectory[] = "Session Storage";
 static const int kTestProcessId = 0;
@@ -134,9 +143,9 @@ class SessionStorageContextMojoTest : public testing::Test {
                                   ss_namespace.BindNewPipeAndPassReceiver());
     mojo::AssociatedRemote<blink::mojom::StorageArea> area;
     ss_namespace->OpenArea(origin, area.BindNewEndpointAndPassReceiver());
-    EXPECT_TRUE(test::PutSync(
-        area.get(), leveldb::StringPieceToUint8Vector(key),
-        leveldb::StringPieceToUint8Vector(value), base::nullopt, source));
+    EXPECT_TRUE(test::PutSync(area.get(), StringPieceToUint8Vector(key),
+                              StringPieceToUint8Vector(value), base::nullopt,
+                              source));
     context()->DeleteSessionNamespace(namespace_id, true);
   }
 
@@ -157,7 +166,7 @@ class SessionStorageContextMojoTest : public testing::Test {
     EXPECT_TRUE(test::GetAllSync(area.get(), &data));
     context()->DeleteSessionNamespace(namespace_id, true);
 
-    std::vector<uint8_t> key_as_bytes = leveldb::StringPieceToUint8Vector(key);
+    std::vector<uint8_t> key_as_bytes = StringPieceToUint8Vector(key);
     for (const auto& key_value : data) {
       if (key_value->key == key_as_bytes) {
         return key_value->value;
@@ -264,9 +273,9 @@ TEST_F(SessionStorageContextMojoTest, StartupShutdownSave) {
   EXPECT_EQ(0ul, data.size());
 
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area_n1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n1.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
 
   // Verify data is there.
   EXPECT_TRUE(test::GetAllSync(area_n1.get(), &data));
@@ -321,9 +330,9 @@ TEST_F(SessionStorageContextMojoTest, CloneBeforeBrowserClone) {
   ss_namespace1->OpenArea(origin1, area_n1.BindNewEndpointAndPassReceiver());
 
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area_n1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n1.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
 
   ss_namespace1->Clone(namespace_id2);
   area_n1.FlushForTesting();
@@ -366,9 +375,9 @@ TEST_F(SessionStorageContextMojoTest, Cloning) {
       SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
 
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area_n1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n1.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
 
   ss_namespace1->Clone(namespace_id2);
   area_n1.FlushForTesting();
@@ -394,9 +403,9 @@ TEST_F(SessionStorageContextMojoTest, Cloning) {
   EXPECT_EQ(1ul, data.size());
 
   // Put some data in namespace 2.
-  EXPECT_TRUE(test::PutSync(
-      area_n2.get(), leveldb::StringPieceToUint8Vector("key2"),
-      leveldb::StringPieceToUint8Vector("value2"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n2.get(), StringPieceToUint8Vector("key2"),
+                            StringPieceToUint8Vector("value2"), base::nullopt,
+                            "source1"));
   EXPECT_TRUE(test::GetAllSync(area_n2.get(), &data));
   EXPECT_EQ(2ul, data.size());
 
@@ -447,9 +456,9 @@ TEST_F(SessionStorageContextMojoTest, ImmediateCloning) {
   context()->DeleteSessionNamespace(namespace_id2, false);
 
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area_n1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value2"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n1.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value2"), base::nullopt,
+                            "source1"));
 
   context()->CloneSessionNamespace(
       namespace_id1, namespace_id2,
@@ -510,9 +519,9 @@ TEST_F(SessionStorageContextMojoTest, Scavenging) {
                                 ss_namespace1.BindNewPipeAndPassReceiver());
   mojo::AssociatedRemote<blink::mojom::StorageArea> area_n1;
   ss_namespace1->OpenArea(origin1, area_n1.BindNewEndpointAndPassReceiver());
-  EXPECT_TRUE(test::PutSync(
-      area_n1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n1.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
   area_n1.reset();
   ss_namespace1.reset();
 
@@ -580,7 +589,7 @@ TEST_F(SessionStorageContextMojoTest, InvalidVersionOnDisk) {
   base::Optional<std::vector<uint8_t>> opt_value =
       DoTestGet(namespace_id, origin, "key");
   ASSERT_TRUE(opt_value);
-  EXPECT_EQ(leveldb::StringPieceToUint8Vector("value"), opt_value.value());
+  EXPECT_EQ(StringPieceToUint8Vector("value"), opt_value.value());
 
   ShutdownContext();
   {
@@ -606,7 +615,7 @@ TEST_F(SessionStorageContextMojoTest, InvalidVersionOnDisk) {
   // Data should have been preserved now.
   opt_value = DoTestGet(namespace_id, origin, "key");
   ASSERT_TRUE(opt_value);
-  EXPECT_EQ(leveldb::StringPieceToUint8Vector("value"), opt_value.value());
+  EXPECT_EQ(StringPieceToUint8Vector("value"), opt_value.value());
   ShutdownContext();
 }
 
@@ -619,7 +628,7 @@ TEST_F(SessionStorageContextMojoTest, CorruptionOnDisk) {
   base::Optional<std::vector<uint8_t>> opt_value =
       DoTestGet(namespace_id, origin, "key");
   ASSERT_TRUE(opt_value);
-  EXPECT_EQ(leveldb::StringPieceToUint8Vector("value"), opt_value.value());
+  EXPECT_EQ(StringPieceToUint8Vector("value"), opt_value.value());
 
   ShutdownContext();
   // Also flush Task Scheduler tasks to make sure the leveldb is fully closed.
@@ -645,7 +654,7 @@ TEST_F(SessionStorageContextMojoTest, CorruptionOnDisk) {
   // Data should have been preserved now.
   opt_value = DoTestGet(namespace_id, origin, "key");
   ASSERT_TRUE(opt_value);
-  EXPECT_EQ(leveldb::StringPieceToUint8Vector("value"), opt_value.value());
+  EXPECT_EQ(StringPieceToUint8Vector("value"), opt_value.value());
   ShutdownContext();
 }
 
@@ -709,8 +718,8 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   // a lot of data on the first origin. This put operation should result in a
   // pending commit that will get cancelled when the database connection is
   // closed.
-  auto value = leveldb::StringPieceToUint8Vector("avalue");
-  area_o3->Put(leveldb::StringPieceToUint8Vector("w3key"), value, base::nullopt,
+  auto value = StringPieceToUint8Vector("avalue");
+  area_o3->Put(StringPieceToUint8Vector("w3key"), value, base::nullopt,
                "source",
                base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
 
@@ -722,7 +731,7 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
     // change to commit.
     std::vector<uint8_t> old_value = value;
     value[0]++;
-    area_o1->Put(leveldb::StringPieceToUint8Vector("key"), value, base::nullopt,
+    area_o1->Put(StringPieceToUint8Vector("key"), value, base::nullopt,
                  "source", base::BindLambdaForTesting([&](bool success) {
                    EXPECT_TRUE(success);
                  }));
@@ -757,8 +766,8 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   bool success = true;
   test::MockLevelDBObserver observer4;
   area_o1->AddObserver(observer4.Bind());
-  area_o1->Delete(leveldb::StringPieceToUint8Vector("key"), base::nullopt,
-                  "source", base::BindLambdaForTesting([&](bool success_in) {
+  area_o1->Delete(StringPieceToUint8Vector("key"), base::nullopt, "source",
+                  base::BindLambdaForTesting([&](bool success_in) {
                     success = success_in;
                     delete_loop.Quit();
                   }));
@@ -776,7 +785,7 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
     base::Optional<std::vector<uint8_t>> opt_value =
         DoTestGet(namespace_id, origin1, "key");
     ASSERT_TRUE(opt_value);
-    EXPECT_EQ(leveldb::StringPieceToUint8Vector("value"), opt_value.value());
+    EXPECT_EQ(StringPieceToUint8Vector("value"), opt_value.value());
   }
 }
 
@@ -830,15 +839,14 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   }));
 
   // Repeatedly write data to the database, to trigger enough commit errors.
-  auto value = leveldb::StringPieceToUint8Vector("avalue");
+  auto value = StringPieceToUint8Vector("avalue");
   base::Optional<std::vector<uint8_t>> old_value = base::nullopt;
   while (area.is_connected()) {
     // Every write needs to be different to make sure there actually is a
     // change to commit.
-    area->Put(leveldb::StringPieceToUint8Vector("key"), value, old_value,
-              "source", base::BindLambdaForTesting([&](bool success) {
-                EXPECT_TRUE(success);
-              }));
+    area->Put(StringPieceToUint8Vector("key"), value, old_value, "source",
+              base::BindLambdaForTesting(
+                  [&](bool success) { EXPECT_TRUE(success); }));
     area.FlushForTesting();
     RunUntilIdle();
     // And we need to flush after every change. Otherwise changes get batched up
@@ -871,10 +879,9 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   for (int i = 0; i < 64; ++i) {
     // Every write needs to be different to make sure there actually is a
     // change to commit.
-    area->Put(leveldb::StringPieceToUint8Vector("key"), value, old_value,
-              "source", base::BindLambdaForTesting([&](bool success) {
-                EXPECT_TRUE(success);
-              }));
+    area->Put(StringPieceToUint8Vector("key"), value, old_value, "source",
+              base::BindLambdaForTesting(
+                  [&](bool success) { EXPECT_TRUE(success); }));
     area.FlushForTesting();
     RunUntilIdle();
     // And we need to flush after every change. Otherwise changes get batched up
@@ -904,9 +911,9 @@ TEST_F(SessionStorageContextMojoTest, GetUsage) {
   mojo::AssociatedRemote<blink::mojom::StorageArea> area;
   ss_namespace1->OpenArea(origin1, area.BindNewEndpointAndPassReceiver());
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
 
   base::RunLoop loop;
   context()->GetStorageUsage(base::BindLambdaForTesting(
@@ -933,9 +940,9 @@ TEST_F(SessionStorageContextMojoTest, DeleteStorage) {
   ss_namespace1->OpenArea(origin1, area.BindNewEndpointAndPassReceiver());
 
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
 
   context()->DeleteStorage(origin1, namespace_id1, base::DoNothing());
 
@@ -945,9 +952,9 @@ TEST_F(SessionStorageContextMojoTest, DeleteStorage) {
 
   // Next, test that it deletes the data even if there isn't a namespace open.
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
   area.reset();
   ss_namespace1.reset();
 
@@ -983,9 +990,9 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
   ss_namespace1->OpenArea(origin1, area.BindNewEndpointAndPassReceiver());
 
   // Put some data in both.
-  EXPECT_TRUE(test::PutSync(
-      area.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
   context()->FlushAreaForTesting(namespace_id1, origin1);
 
   ss_namespace1.reset();
@@ -994,7 +1001,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
   // Clear all the data from the backing database.
   base::RunLoop loop;
   context()->DatabaseForTesting()->DeletePrefixed(
-      leveldb::StringPieceToUint8Vector("map"),
+      StringPieceToUint8Vector("map"),
       base::BindLambdaForTesting([&](leveldb::Status status) {
         loop.Quit();
         EXPECT_TRUE(status.ok());
@@ -1045,9 +1052,9 @@ TEST_F(SessionStorageContextMojoTest, ClearDiskState) {
   EXPECT_EQ(0ul, data.size());
 
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
   area.reset();
   ss_namespace1.reset();
 
@@ -1214,12 +1221,12 @@ TEST_F(SessionStorageContextMojoTest, PurgeMemoryDoesNotCrashOrHang) {
   ss_namespace2->OpenArea(origin1, area_n2.BindNewEndpointAndPassReceiver());
 
   // Put some data in both.
-  EXPECT_TRUE(test::PutSync(
-      area_n1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
-  EXPECT_TRUE(test::PutSync(
-      area_n2.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value2"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n1.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
+  EXPECT_TRUE(test::PutSync(area_n2.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value2"), base::nullopt,
+                            "source1"));
 
   context()->FlushAreaForTesting(namespace_id1, origin1);
 
@@ -1247,7 +1254,7 @@ TEST_F(SessionStorageContextMojoTest, PurgeMemoryDoesNotCrashOrHang) {
   base::Optional<std::vector<uint8_t>> opt_value2 =
       DoTestGet(namespace_id2, origin1, "key1");
   ASSERT_TRUE(opt_value2);
-  EXPECT_EQ(leveldb::StringPieceToUint8Vector("value2"), opt_value2.value());
+  EXPECT_EQ(StringPieceToUint8Vector("value2"), opt_value2.value());
 }
 
 TEST_F(SessionStorageContextMojoTest, DeleteWithPersistBeforeBrowserClone) {
@@ -1263,9 +1270,9 @@ TEST_F(SessionStorageContextMojoTest, DeleteWithPersistBeforeBrowserClone) {
   ss_namespace1->OpenArea(origin1, area_n1.BindNewEndpointAndPassReceiver());
 
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area_n1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n1.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
 
   // Delete the origin namespace, but save it.
   context()->DeleteSessionNamespace(namespace_id1, true);
@@ -1302,9 +1309,9 @@ TEST_F(SessionStorageContextMojoTest, DeleteWithoutPersistBeforeBrowserClone) {
   ss_namespace1->OpenArea(origin1, area_n1.BindNewEndpointAndPassReceiver());
 
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area_n1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n1.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
 
   // Delete the origin namespace and don't save it.
   context()->DeleteSessionNamespace(namespace_id1, false);
@@ -1341,9 +1348,9 @@ TEST_F(SessionStorageContextMojoTest, DeleteAfterCloneWithoutMojoClone) {
   ss_namespace1->OpenArea(origin1, area_n1.BindNewEndpointAndPassReceiver());
 
   // Put some data.
-  EXPECT_TRUE(test::PutSync(
-      area_n1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(area_n1.get(), StringPieceToUint8Vector("key1"),
+                            StringPieceToUint8Vector("value1"), base::nullopt,
+                            "source1"));
 
   // Do the browser-side clone.
   context()->CloneSessionNamespace(

@@ -332,15 +332,6 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
       base::FeatureList::IsEnabled(features::kCloudPrinterHandler);
   source->AddBoolean("cloudPrinterHandlerEnabled",
                      cloud_printer_handler_enabled);
-  bool new_print_preview_layout_enabled =
-      base::FeatureList::IsEnabled(features::kNewPrintPreviewLayout);
-  source->AddBoolean("newPrintPreviewLayoutEnabled",
-                     new_print_preview_layout_enabled);
-  // The key for the string below needs to be all lowercase, since it is used
-  // as an attribute and attributes are lowercased when the page is bundled.
-  source->AddString("newprintpreviewlayout", new_print_preview_layout_enabled
-                                                 ? "new-print-preview-layout"
-                                                 : "");
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {

@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">ಪುಟವನ್ನು ನಂತರ ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="1015730422737071372">ಹೆಚ್ಚುವರಿ ವಿವರಗಳನ್ನು ಒದಗಿಸಿ</translation>
 <translation id="1021110881106174305">ಸ್ವೀಕೃತ ಕಾರ್ಡ್‌ಗಳು</translation>
-<translation id="1023523064224774104">ನೀವು ಈಗಷ್ಟೇ ಅನುಮಾನಾಸ್ಪದ ಸೈಟ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಮೂದಿಸಿದ್ದೀರಿ ಎಂಬುದನ್ನು Chromium
-          ಪತ್ತೆಹಚ್ಚಿದೆ. ದಯವಿಟ್ಟು ಈಗಲೇ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಮರುಹೊಂದಿಸಿ!</translation>
 <translation id="1032854598605920125">ಪ್ರದಕ್ಷಿಣಾಕಾರದಲ್ಲಿ ತಿರುಗಿಸು</translation>
 <translation id="1035334672863811645">Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="1036348656032585052">ಆಫ್ ಮಾಡು</translation>
@@ -538,7 +536,6 @@
 <translation id="3655670868607891010">ಇದು ನಿಮಗೆ ಪದೇ ಪದೇ ಎದುರಾಗುತ್ತಿದ್ದರೆ, <ph name="HELP_LINK" /> ಇವುಗಳನ್ನು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3658742229777143148">ಪರಿಷ್ಕರಣೆ</translation>
 <translation id="366077651725703012">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಮಾಹಿತಿಯನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
-<translation id="3672525478985456967">ಈ ಸೈಟ್‌ನ ಹೆಸರು <ph name="LOOKALIKE_DOMAIN" /> ಹೆಸರಿಗೆ ಹೋಲುವಂತಿದೆ. ಡೊಮೇನ್‌ ಹೆಸರಿಗೆ ಸಣ್ಣ ಪ್ರಮಾಣದ ಅಥವಾ ಗುರುತಿಸಲು ಸಾಧ್ಯವಾಗದ ರೀತಿಯಲ್ಲಿ ಬದಲಾವಣೆಗಳನ್ನು ಮಾಡುವ ಮೂಲಕ ದಾಳಿಕೋರರು ಕೆಲವೊಮ್ಮೆ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ಅನುಕರಣೆ ಮಾಡುತ್ತಾರೆ.</translation>
 <translation id="3676592649209844519">ಸಾಧನದ ಐಡಿ:</translation>
 <translation id="3677008721441257057">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; ಎಂಬುದು ನಿಮ್ಮ ಮಾತಿನ ಅರ್ಥವೇ?</translation>
 <translation id="3678029195006412963">ವಿನಂತಿಗೆ ಸಹಿ ಮಾಡಲಾಗುವುದಿಲ್ಲ</translation>
@@ -856,7 +853,6 @@
 <translation id="5230733896359313003">ಶಿಪ್ಪಿಂಗ್ ವಿಳಾಸ</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">ವಜಾಗೊಳಿಸಿ</translation>
 <translation id="5250209940322997802">"ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ"</translation>
 <translation id="5251803541071282808">ಕ್ಲೌಡ್</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
@@ -998,7 +994,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> ತೆರೆಯಲಾಗುತ್ತಿದೆ…</translation>
 <translation id="5947933617628957894">ಹೌದು, ಸೇರಿಸಿ</translation>
 <translation id="5951495562196540101">ಗ್ರಾಹಕರ ಖಾತೆಯ ಮೂಲಕ ನೋಂದಣಿ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ (ಪ್ಯಾಕೇಜ್ ಮಾಡಲಾದ ಪರವಾನಗಿ ಲಭ್ಯವಿದೆ).</translation>
-<translation id="5966900314707961320">ಆನ್ ಮಾಡಿದಾಗ, ನಿಮ್ಮನ್ನು ವೆಬ್‌ನಾದ್ಯಂತ ಟ್ರ್ಯಾಕ್ ಮಾಡುವ ಕುಕೀಗಳನ್ನು ಬಳಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ</translation>
 <translation id="5967592137238574583">ಸಂಪರ್ಕ ಮಾಹಿತಿಯನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="5967867314010545767">ಇತಿಹಾಸದಿಂದ ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="5975083100439434680">ಝೂಮ್ ಔಟ್</translation>
@@ -1093,7 +1088,6 @@
 <translation id="6433490469411711332">ಸಂಪರ್ಕ ಮಾಹಿತಿ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ಸಂಪರ್ಕಗೊಳ್ಳಲು ನಿರಾಕರಿಸಿದೆ.</translation>
 <translation id="6434309073475700221">ತಿರಸ್ಕರಿಸಿ</translation>
-<translation id="6435221585574090192">ನಿಮ್ಮ ನಿರ್ವಾಹಕರೊಂದಿಗೆ Chrome ಎಂಟರ್‌ಪ್ರೈಸ್ ಬೆದರಿಕೆ ರಕ್ಷಣೆಯಿಂದ ಫ್ಲ್ಯಾಗ್ ಮಾಡಲಾದ ಭದ್ರತಾ ಈವೆಂಟ್‌ಗಳ ಕುರಿತು ಡೇಟಾವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ. ಪುಟ URL ಗಳು, ಫೈಲ್ ಹೆಸರು ಮತ್ತು ಫೈಲ್ ಮೆಟಾಡೇಟಾ, ನಿಮ್ಮ ಸಾಧನದ ಬಳಕೆದಾರರ ಹೆಸರು ಮತ್ತು Chrome ಬಳಕೆದಾರರ ಹೆಸರುಗಳನ್ನು ಇವು ಒಳಗೊಂಡಿರಬಹುದು.</translation>
 <translation id="6440503408713884761">ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">ಇನ್ನಷ್ಟು ಮಾಹಿತಿಯನ್ನು ಸೇರಿಸಿ</translation>
@@ -1436,7 +1430,6 @@
 <translation id="8184538546369750125">ಜಾಗತಿಕ ಡಿಫಾಲ್ಟ್ ಬಳಸಿ (ಅನುಮತಿಸಿ)</translation>
 <translation id="8194797478851900357">&amp;ಸರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸು</translation>
 <translation id="8197543752516192074">ಪುಟವನ್ನು ಅನುವಾದಿಸಿ</translation>
-<translation id="8197899142098070286">ನೀವು ಈಗಷ್ಟೇ ಅನುಮಾನಾಸ್ಪದ ಸೈಟ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಮೂದಿಸಿದ್ದೀರಿ ಎಂಬುದನ್ನು Chrome ಪತ್ತೆಹಚ್ಚಿದೆ. ದಯವಿಟ್ಟು ಈಗಲೇ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಮರುಹೊಂದಿಸಿ!</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" ಜೊತೆಗಿನ ವಿಸ್ತರಣೆಗೆ ಅಮಾನ್ಯವಾದ ಅಪ್‌ಡೇಟ್‌‌ URL.</translation>
 <translation id="8202097416529803614">ಆರ್ಡರ್ ಸಾರಾಂಶ</translation>
 <translation id="8202370299023114387">ಸಂಘರ್ಷ</translation>
@@ -1524,7 +1517,6 @@
 <translation id="8718314106902482036">ಪಾವತಿ ಪೂರ್ಣಗೊಂಡಿಲ್ಲ</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, ಹುಡುಕಾಟ ಸಲಹೆ</translation>
 <translation id="8719528812645237045">ಮೇಲ್ಭಾಗದಲ್ಲಿ ಅನೇಕ ತೂತುಗಳನ್ನು ಮಾಡಿ</translation>
-<translation id="8723954843026426558">ನಾನು <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />ಡೊಮೇನ್‌ನ ನಿಯಮಗಳು ಮತ್ತು ನಿಬಂಧನೆಗಳು, ಗೌಪ್ಯತಾ ಕಾರ್ಯನೀತಿ, ಮತ್ತು ಹಿಂತೆಗೆದುಕೊಳ್ಳುವ ಹಕ್ಕಿಗೆ ಸಮ್ಮತಿಸುತ್ತೇನೆ.</translation>
 <translation id="8725066075913043281">ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="8728672262656704056">ನೀವು ಅದೃಶ್ಯರಾಗಿರುವಿರಿ</translation>
 <translation id="8730621377337864115">ಮುಗಿದಿದೆ</translation>

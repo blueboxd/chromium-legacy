@@ -144,12 +144,11 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   ScriptPromise ready(ScriptState*);
 
   bool Paused() const {
-    return CalculateAnimationPlayState() == kPaused && !is_paused_for_testing_;
+    return GetPlayState() == kPaused && !is_paused_for_testing_;
   }
 
   bool Playing() const override {
-    return CalculateAnimationPlayState() == kRunning && !Limited() &&
-           !is_paused_for_testing_;
+    return GetPlayState() == kRunning && !Limited() && !is_paused_for_testing_;
   }
 
   // Indicates if the animation is out of sync with the compositor. A change to
@@ -337,9 +336,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void ScheduleAsyncFinish();
   void AsyncFinishMicrotask();
   void CommitFinishNotification();
-  void CommitPendingPause(double ready_time);
-  void CommitPendingPlay(double ready_time);
-  void ApplyUpdates(double ready_time);
 
   // Tracking the state of animations in dev tools.
   void NotifyProbe();

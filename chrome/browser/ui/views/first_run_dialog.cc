@@ -48,6 +48,14 @@ void InitCrashReporterIfEnabled(bool enabled) {
 #endif
 }
 
+std::unique_ptr<views::View> CreateLearnMoreLink(
+    views::LinkListener* listener) {
+  auto link =
+      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  link->set_listener(listener);
+  return link;
+}
+
 }  // namespace
 
 namespace first_run {
@@ -69,6 +77,8 @@ void FirstRunDialog::Show(Profile* profile) {
 }
 
 FirstRunDialog::FirstRunDialog(Profile* profile) : profile_(profile) {
+  DialogDelegate::SetExtraView(CreateLearnMoreLink(this));
+
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   views::GridLayout* layout =
@@ -103,13 +113,6 @@ FirstRunDialog::~FirstRunDialog() {
 void FirstRunDialog::Done() {
   CHECK(!quit_runloop_.is_null());
   quit_runloop_.Run();
-}
-
-std::unique_ptr<views::View> FirstRunDialog::CreateExtraView() {
-  auto link =
-      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  link->set_listener(this);
-  return link;
 }
 
 bool FirstRunDialog::Accept() {

@@ -318,6 +318,7 @@ class WindowCycleView : public views::WidgetDelegateView {
 
   void DestroyContents() {
     window_view_map_.clear();
+    target_window_ = nullptr;
     RemoveAllChildViews(true);
   }
 

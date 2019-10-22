@@ -19,10 +19,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) DataPipeToSourceStream final
   explicit DataPipeToSourceStream(mojo::ScopedDataPipeConsumerHandle body);
   ~DataPipeToSourceStream() override;
 
+  // net::SourceStream implementation.
   int Read(net::IOBuffer* buf,
            int buf_size,
            net::CompletionOnceCallback callback) override;
   std::string Description() const override;
+  bool MayHaveMoreBytes() const override;
 
  private:
   void OnReadable(MojoResult result);
@@ -32,6 +34,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) DataPipeToSourceStream final
   mojo::SimpleWatcher handle_watcher_;
 
   bool inside_read_ = false;
+  bool complete_ = false;
 
   scoped_refptr<net::IOBuffer> output_buf_;
   int output_buf_size_ = 0;

@@ -319,6 +319,7 @@
 <translation id="1468571364034902819">无法使用这份个人资料</translation>
 <translation id="1470811252759861213">要将您的扩展程序同步到您所有的设备上，请<ph name="SIGN_IN_LINK" />。</translation>
 <translation id="1470967055429794975">这会清空该安全密钥上的所有数据，包括它的 PIN 码</translation>
+<translation id="1472675084647422956">显示更多</translation>
 <translation id="1475502736924165259">您有一些证书不属于前面的任何类别</translation>
 <translation id="1476088332184200792">复制到您的设备</translation>
 <translation id="1476607407192946488">语言设置(&amp;L)</translation>
@@ -333,7 +334,6 @@
 <translation id="1486096554574027028">搜索密码</translation>
 <translation id="1487335504823219454">开启 - 自定义设置</translation>
 <translation id="1489664337021920575">选择其他选项</translation>
-<translation id="1489956991149850859">您可以在此处添加、移除或重命名指纹。</translation>
 <translation id="1493892686965953381">正在等待<ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">另外<ph name="NUM_PRINTERS" />个可用的设备。</translation>
 <translation id="1495677929897281669">返回到标签页</translation>
@@ -894,7 +894,6 @@
 <translation id="2280486287150724112">右侧页边距</translation>
 <translation id="2282146716419988068">GPU 进程</translation>
 <translation id="2282155092769082568">自动配置网址：</translation>
-<translation id="228758327756499171"><ph name="NUMBER_OF_MORE_APPS" /> 个应用</translation>
 <translation id="2288181517385084064">切换到录像机</translation>
 <translation id="2288735659267887385">无障碍设置</translation>
 <translation id="2289270750774289114">在网站想发现附近的蓝牙设备时询问您（推荐）</translation>
@@ -1480,7 +1479,6 @@
 <translation id="3151539355209957474">开始时间</translation>
 <translation id="3151562827395986343">清除浏览记录、Cookie、缓存及其他数据</translation>
 <translation id="3151786313568798007">方向</translation>
-<translation id="3153862085237805241">保存卡片</translation>
 <translation id="3154351730702813399">此设备的管理员可能会监控您的浏览活动。</translation>
 <translation id="3154429428035006212">离线超过 1 个月</translation>
 <translation id="3156531245809797194">若想使用 Chrome，请登录</translation>
@@ -1622,8 +1620,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔符</translation>
 <translation id="3387614642886316601">使用增强的“拼写检查”功能</translation>
-<translation id="3391459139089708789">此设备将会获得自动的软件更新和安全更新，直至 <ph name="MONTH_AND_YEAR" />为止。
-      <ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="3396800784455899911">点击“接受并继续”按钮，即表示您同意上述针对这些 Google 服务的处理方式。</translation>
 <translation id="3399432415385675819">通知将被停用</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" />（<ph name="REFRESH_RATE" /> 赫兹） - 交错</translation>
@@ -2258,7 +2254,6 @@
 <translation id="428565720843367874">防病毒软件在扫描此文件时意外失败。</translation>
 <translation id="4287502004382794929">您没有足够的软件许可来注册此设备。请与销售代表联系，以购买更多软件许可。如果您认为自己不应看到此讯息，请与支持人员联系。</translation>
 <translation id="4289540628985791613">概述</translation>
-<translation id="4291934469232591280">版本号：<ph name="VERSION" /></translation>
 <translation id="4295072614469448764">应用已可在您的终端上使用，且可能在启动器中显示图标。</translation>
 <translation id="4295979599050707005">请重新登录，以确认您的帐号 (<ph name="USER_EMAIL" />) 可用于 Chrome 和 Google Play 中的网站、应用和扩展程序。您还可以移除此帐号。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="4296575653627536209">添加受监管用户</translation>
@@ -2536,7 +2531,6 @@
 <translation id="4736292055110123391">将您的书签、密码、历史记录等信息同步到您的所有设备上</translation>
 <translation id="4737715515457435632">请连接到网络</translation>
 <translation id="473775607612524610">更新</translation>
-<translation id="4739098340603978916">大小：<ph name="APP_SIZE" /></translation>
 <translation id="4739639199548674512">票据</translation>
 <translation id="4742746985488890273">固定到任务栏</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />了解如何更新应用<ph name="END_LINK" /></translation>
@@ -2556,7 +2550,6 @@
 <translation id="4765582662863429759">允许 Android 信息将短信从手机转送到 Chromebook</translation>
 <translation id="4768332406694066911">您有以下组织发给您的身份证书</translation>
 <translation id="4774824109040330448">在手机上使用兼容的身份验证器应用扫描二维码。</translation>
-<translation id="4776146737004271126">打开 Android 设置</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
 <translation id="4777825441726637019">Play 商店</translation>
 <translation id="4779083564647765204">缩放</translation>
@@ -2579,7 +2572,6 @@
 <translation id="480990236307250886">打开主页</translation>
 <translation id="4813136279048157860">我的图片</translation>
 <translation id="4813512666221746211">网络错误</translation>
-<translation id="4816492930507672669">适合页面大小</translation>
 <translation id="4820236583224459650">设为当前所用票据</translation>
 <translation id="4821935166599369261">分析已启用(&amp;P)</translation>
 <translation id="4823484602432206655">读取和更改用户设置与设备设置</translation>
@@ -2803,7 +2795,6 @@
 <translation id="5135085122826131075">只需说“Ok Google”即可访问您的 Google 助理。</translation>
 <translation id="5135533361271311778">无法创建书签项。</translation>
 <translation id="5137501176474113045">删除此项</translation>
-<translation id="5138227688689900538">收起</translation>
 <translation id="5139955368427980650">打开(&amp;O)</translation>
 <translation id="5142961317498132443">身份验证</translation>
 <translation id="5143374789336132547">“<ph name="EXTENSION_NAME" />”扩展程序更改了您点击“主页”按钮后系统显示的页面。</translation>
@@ -2883,7 +2874,6 @@
 <translation id="5265797726250773323">安装时出错</translation>
 <translation id="5266113311903163739">证书授权中心导入错误</translation>
 <translation id="5269977353971873915">打印失败</translation>
-<translation id="5270167208902136840">显示另外 <ph name="NUMBER_OF_MORE_APPS" /> 个应用</translation>
 <translation id="5275352920323889391">狗</translation>
 <translation id="5275776633505022322">剩余尝试次数：<ph name="ATTEMPTS_LEFT" /> 次</translation>
 <translation id="527605982717517565">始终允许使用 <ph name="HOST" /> 上的 JavaScript</translation>
@@ -3779,7 +3769,6 @@
 <translation id="6555810572223193255">目前无法进行清理</translation>
 <translation id="6556866813142980365">重做</translation>
 <translation id="6557290421156335491">我的快捷方式</translation>
-<translation id="6559023360691182159">{COUNT,plural, =0{无}=1{<ph name="APP_1" />}=2{<ph name="APP_1" />和<ph name="APP_2" />}=3{<ph name="APP_1" />、<ph name="APP_2" />和<ph name="APP_3" />}=4{<ph name="APP_1" />、<ph name="APP_2" />、<ph name="APP_3" />及另外 1 个应用}other{<ph name="APP_1" />、<ph name="APP_2" />、<ph name="APP_3" />及另外 <ph name="EXTRA_APPS" /> 个应用}}</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">该文件的路径或名称过长。请以较短的名称保存或保存到其他位置。</translation>
 <translation id="6563469144985748109">您的管理员尚未批准此网站</translation>
@@ -3909,7 +3898,6 @@
 <translation id="677965093459947883">特小</translation>
 <translation id="6781284683813954823">涂鸦链接</translation>
 <translation id="6781978626986383437">已取消 Linux 备份</translation>
-<translation id="6782111308708962316">阻止第三方网站保存和读取 Cookie 数据</translation>
 <translation id="6786747875388722282">扩展程序</translation>
 <translation id="6787839852456839824">键盘快捷键</translation>
 <translation id="6788210894632713004">未封装的扩展程序</translation>
@@ -5047,7 +5035,6 @@
 <translation id="8398877366907290961">仍然继续</translation>
 <translation id="8400146488506985033">管理用户</translation>
 <translation id="8401432541486058167">请提供与您的智能卡关联的 PIN 码。</translation>
-<translation id="8401839918915644121">适合纸张大小</translation>
 <translation id="8405046151008197676">了解最近更新的主要内容</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">先询问（推荐）</translation>
@@ -5279,7 +5266,6 @@
 <translation id="8743390665131937741">全屏放大镜的缩放级别：</translation>
 <translation id="8743864605301774756">上次更新时间：1 小时前</translation>
 <translation id="874689135111202667">{0,plural, =1{将 1 个文件上传到此网站？}other{将 # 个文件上传到此网站？}}</translation>
-<translation id="8747503242566427664">此应用可以：</translation>
 <translation id="8748384418490037181">Smart Lock 选项</translation>
 <translation id="8749863574775030885">访问来自未知供应商的 USB 设备</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> 想连接到串行端口</translation>
@@ -5351,7 +5337,6 @@
 <translation id="883062543841130884">替换</translation>
 <translation id="8830796635868321089">无法使用当前代理设置来检查更新，请调整您的<ph name="PROXY_SETTINGS_LINK_START" />代理设置<ph name="PROXY_SETTINGS_LINK_END" />。</translation>
 <translation id="8831140208248705279">您的 <ph name="DEVICE_TYPE" /> 与 Android 手机可协同工作、相得益彰。您只需将它们相互连接，便可通过计算机收发短信、共享互联网连接以及利用手机解锁 <ph name="DEVICE_TYPE" />。<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
-<translation id="8831664945713891930">打开扩展程序设置</translation>
 <translation id="8834039744648160717">网络配置由 <ph name="USER_EMAIL" /> 控制。</translation>
 <translation id="8838601485495657486">不透明</translation>
 <translation id="8838770651474809439">汉堡</translation>
@@ -5474,7 +5459,6 @@
 <translation id="9008201768610948239">忽略</translation>
 <translation id="9009369504041480176">正在上传 (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">始终显示图标</translation>
-<translation id="9011424611726486705">打开网站设置</translation>
 <translation id="9013707997379828817">您的管理员已回滚此设备。请保存重要文件，然后重启。此设备上的所有数据都将被删除。</translation>
 <translation id="9018218886431812662">安装完成</translation>
 <translation id="901834265349196618">电子邮件</translation>

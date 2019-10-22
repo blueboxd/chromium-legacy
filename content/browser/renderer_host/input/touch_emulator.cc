@@ -182,6 +182,8 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event,
   if (!enabled() || mode_ != Mode::kEmulatingTouchFromMouse)
     return false;
 
+  UpdateCursor();
+
   if (mouse_event.button == WebMouseEvent::Button::kRight &&
       mouse_event.GetType() == WebInputEvent::kMouseDown) {
     client_->ShowContextMenuAtPoint(

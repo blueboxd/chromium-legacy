@@ -43,17 +43,15 @@ IndependentOTRProfileManager* IndependentOTRProfileManager::GetInstance() {
 
 std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>
 IndependentOTRProfileManager::CreateFromOriginalProfile(
-    Profile* profile,
+    Profile* original_profile,
     ProfileDestroyedCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(profile);
-  DCHECK(!profile->IsOffTheRecord());
+  DCHECK(original_profile);
+  DCHECK(!original_profile->IsOffTheRecord());
   DCHECK(!callback.is_null());
-  if (!HasDependentProfiles(profile)) {
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   content::Source<Profile>(profile));
-  }
-  auto* otr_profile = profile->CreateOffTheRecordProfile();
+  if (!HasDependentProfiles(original_profile))
+    observed_original_profiles_.Add(original_profile);
+  auto* otr_profile = original_profile->CreateOffTheRecordProfile();
   auto entry = refcounts_map_.emplace(otr_profile, 1);
   auto callback_entry =
       callbacks_map_.emplace(otr_profile, std::move(callback));
@@ -97,10 +95,8 @@ void IndependentOTRProfileManager::OnBrowserRemoved(Browser* browser) {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, entry->first);
     auto* original_profile = entry->first->GetOriginalProfile();
     refcounts_map_.erase(entry);
-    if (!HasDependentProfiles(original_profile)) {
-      registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                        content::Source<Profile>(original_profile));
-    }
+    if (!HasDependentProfiles(original_profile))
+      observed_original_profiles_.Remove(original_profile);
   }
 }
 
@@ -138,28 +134,22 @@ void IndependentOTRProfileManager::UnregisterProfile(Profile* profile) {
     auto* original_profile = profile->GetOriginalProfile();
     ProfileDestroyer::DestroyProfileWhenAppropriate(entry->first);
     refcounts_map_.erase(entry);
-    if (!HasDependentProfiles(original_profile)) {
-      registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                        content::Source<Profile>(original_profile));
-    }
+    if (!HasDependentProfiles(original_profile))
+      observed_original_profiles_.Remove(original_profile);
   }
 }
 
-void IndependentOTRProfileManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
+void IndependentOTRProfileManager::OnProfileWillBeDestroyed(Profile* profile) {
   for (auto it = callbacks_map_.begin(); it != callbacks_map_.end();) {
-    if (source != content::Source<Profile>(it->first->GetOriginalProfile())) {
+    if (profile != it->first->GetOriginalProfile()) {
       ++it;
       continue;
     }
     // If the registration is destroyed from within this callback, we don't want
     // to double-erase.  If it isn't, we still need to erase the callback entry.
-    auto* profile = it->first;
+    auto* otr_profile = it->first;
     auto callback = std::move(it->second);
     it = callbacks_map_.erase(it);
-    std::move(callback).Run(profile);
+    std::move(callback).Run(otr_profile);
   }
 }

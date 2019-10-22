@@ -21,7 +21,9 @@ class CloudManagementEnrollmentTokenTest(ChromeEnterpriseTestCase):
 
   @test
   def test_browser_enrolled(self):
-    token = '4841902b-07f7-491f-b29d-154c4bab9555'
+    path = "gs://%s/secrets/enrollToken" % self.gsbucket
+    cmd = r'gsutil cat ' + path
+    token = self.RunCommand('win2012-dc', cmd).rstrip()
     self.SetPolicy('win2012-dc', r'CloudManagementEnrollmentToken', token,
                    'String')
     self.RunCommand('client2012', 'gpupdate /force')

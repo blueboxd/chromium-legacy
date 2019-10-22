@@ -2424,6 +2424,7 @@ if (enable_java_templates) {
                              [
                                "aapt_locale_whitelist",
                                "app_as_shared_lib",
+                               "failed_manifest_expectation_file",
                                "manifest_package",
                                "max_sdk_version",
                                "no_xml_namespaces",
@@ -3467,6 +3468,8 @@ if (enable_java_templates) {
                                "deps",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
+                               "failed_manifest_expectation_file",
+                               "failed_proguard_expectation_file",
                                "generate_buildconfig_java",
                                "generate_final_jni",
                                "input_jars_paths",
@@ -4560,6 +4563,7 @@ if (enable_java_templates) {
           proguard_mapping_path = _proguard_mapping_path
           forward_variables_from(invoker,
                                  [
+                                   "failed_proguard_expectation_file",
                                    "proguard_jar_path",
                                    "min_sdk_version",
                                  ])

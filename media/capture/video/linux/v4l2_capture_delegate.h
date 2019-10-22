@@ -100,7 +100,9 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
   // enqueues it (VIDIOC_QBUF) back into V4L2.
   bool MapAndQueueBuffer(int index);
 
+  bool StartStream();
   void DoCapture();
+  bool StopStream();
 
   void SetErrorState(VideoCaptureError error,
                      const base::Location& from_here,

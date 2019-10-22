@@ -19,7 +19,6 @@
 <link rel="import" href="dpi_settings.html">
 <link rel="import" href="duplex_settings.html">
 <link rel="import" href="header.html">
-<link rel="import" href="header_new.html">
 <link rel="import" href="layout_settings.html">
 <link rel="import" href="media_size_settings.html">
 <link rel="import" href="margins_settings.html">
@@ -43,14 +42,9 @@
     <style include="cr-hidden-style cr-shared-style">
       :host {
         background-color: white;
-        border-inline-end: var(--print-preview-settings-border);
+        border-inline-start: var(--print-preview-settings-border);
         display: flex;
         flex-direction: column;
-      }
-
-      :host([new-print-preview-layout]) {
-        border-inline-end: none;
-        border-inline-start: var(--print-preview-settings-border);
       }
 
       @media (prefers-color-scheme: dark) {
@@ -65,18 +59,14 @@
         overflow: overlay;
       }
 
-      :host(:not([new-print-preview-layout])) #container {
-        padding-bottom: 16px;
-      }
-
-      :host([new-print-preview-layout]) #destinationSettings {
+      :host #destinationSettings {
         margin-top: 12px;
       }
 
       /* Print Preview uses lighter box-shadows compared to the default
        * styling. */
-      :host([new-print-preview-layout]) #cr-container-shadow-top,
-      :host([new-print-preview-layout]) #cr-container-shadow-bottom {
+      :host #cr-container-shadow-top,
+      :host #cr-container-shadow-bottom {
         box-shadow: inset 0 5px 3px -3px rgba(0, 0, 0, .2);
       }
 
@@ -85,29 +75,13 @@
         margin-bottom: 16px;
         margin-top: 16px;
       }
-
-<if expr="not chromeos">
-      :host(:not([new-print-preview-layout])) print-preview-link-container {
-        border-top: var(--print-preview-settings-border);
-      }
-</if>
     </style>
-    <template is="dom-if" if="[[newPrintPreviewLayout]]">
-      <print-preview-header-new id="header" destination="[[destination]]"
-          cloud-print-error-message="[[cloudPrintErrorMessage]]"
-          error="[[error]]" state="[[state]]"
-          settings="[[settings]]" managed="[[controlsManaged]]">
-      </print-preview-header-new>
-    </template>
-    <template is="dom-if" if="[[!newPrintPreviewLayout]]">
-      <print-preview-header id="header" destination="[[destination]]"
-          cloud-print-error-message="[[cloudPrintErrorMessage]]"
-          error="[[error]]" first-load="[[firstLoad_]]" state="[[state]]"
-          settings="[[settings]]" managed="[[controlsManaged]]"
-          on-print-button-focused="onPrintButtonFocused_">
-      </print-preview-header>
-    </template>
-    <div id="container" show-bottom-shadow$="[[newPrintPreviewLayout]]">
+    <print-preview-header id="header" destination="[[destination]]"
+        cloud-print-error-message="[[cloudPrintErrorMessage]]"
+        error="[[error]]" state="[[state]]"
+        settings="[[settings]]" managed="[[controlsManaged]]">
+    </print-preview-header>
+    <div id="container" show-bottom-shadow>
       <print-preview-destination-settings id="destinationSettings"
           cloud-print-interface="[[cloudPrintInterface]]" dark="[[inDarkMode]]"
           destination="{{destination}}" destination-state="{{destinationState}}"
@@ -189,29 +163,17 @@
             class="settings-section">
         </print-preview-advanced-options-settings>
 <if expr="not chromeos">
-        <template is="dom-if" if="[[newPrintPreviewLayout]]">
-          <print-preview-link-container destination="[[destination]]"
-              app-kiosk-mode="[[isInAppKioskMode_]]"
-              disabled="[[controlsDisabled_]]">
-          </print-preview-link-container>
-        </template>
+        <print-preview-link-container destination="[[destination]]"
+            app-kiosk-mode="[[isInAppKioskMode_]]"
+            disabled="[[controlsDisabled_]]">
+        </print-preview-link-container>
 </if>
       </iron-collapse>
-<if expr="not chromeos">
-    <template is="dom-if" if="[[!newPrintPreviewLayout]]">
-      <print-preview-link-container destination="[[destination]]"
-          app-kiosk-mode="[[isInAppKioskMode_]]"
-          disabled="[[controlsDisabled_]]">
-      </print-preview-link-container>
-    </template>
-</if>
     </div>
-    <template is="dom-if" if="[[newPrintPreviewLayout]]">
-      <print-preview-button-strip destination="[[destination]]"
-          state="[[state]]" first-load="[[firstLoad_]]"
-          on-print-button-focused="onPrintButtonFocused_">
-      </print-preview-button-strip>
-    </template>
+    <print-preview-button-strip destination="[[destination]]"
+        state="[[state]]" first-load="[[firstLoad_]]"
+        on-print-button-focused="onPrintButtonFocused_">
+    </print-preview-button-strip>
   </template>
   <script src="sidebar.js"></script>
 </dom-module>

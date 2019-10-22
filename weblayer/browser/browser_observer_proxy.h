@@ -29,7 +29,6 @@ class BrowserObserverProxy : public BrowserObserver {
   void LoadingStateChanged(bool is_loading,
                            bool to_different_document) override;
   void LoadProgressChanged(double progress) override;
-  void FirstContentfulPaint() override;
 
  private:
   BrowserController* browser_controller_;

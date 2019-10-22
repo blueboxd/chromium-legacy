@@ -5,12 +5,9 @@
 package org.chromium.chrome.features.start_surface;
 
 import android.app.Activity;
-import android.support.v4.widget.NestedScrollView;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
-
-import androidx.annotation.Nullable;
 
 import com.google.android.libraries.feed.api.client.stream.Stream;
 
@@ -47,18 +44,12 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
     }
 
     ExploreSurfaceCoordinator(ChromeActivity activity, ViewGroup parentView,
-            @Nullable ViewGroup headerContainerView, PropertyModel containerPropertyModel) {
+            PropertyModel containerPropertyModel, boolean hasHeader) {
         mActivity = activity;
-        mHasHeader = (headerContainerView != null);
+        mHasHeader = hasHeader;
 
-        mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(containerPropertyModel,
-                new ExploreSurfaceViewBinder.ViewHolder(parentView,
-                        !mHasHeader
-                                ? null
-                                : (NestedScrollView) LayoutInflater.from(activity).inflate(
-                                        R.layout.ss_explore_scroll_container, parentView, false),
-                        headerContainerView),
-                ExploreSurfaceViewBinder::bind);
+        mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
+                containerPropertyModel, parentView, ExploreSurfaceViewBinder::bind);
         mFeedSurfaceCreator = new FeedSurfaceCreator() {
             @Override
             public FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isInNightMode) {

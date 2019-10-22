@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Dålig</translation>
 <translation id="1152528166145813711">Välj …</translation>
 <translation id="1199593201721843963">Inaktivera fjärranslutningar</translation>
+<translation id="1201402288615127009">Nästa</translation>
 <translation id="1291443878853470558">Du måste aktivera fjärranslutningar om du vill använda Chromoting för att få åtkomst till den här datorn.</translation>
 <translation id="1297009705180977556">Det gick inte att ansluta till <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(den här funktionen är ännu inte tillgänglig för din dator)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Nu finns Chrome Remote Desktop på webben. Testa vår <ph name="LINK_BEGIN" />webbapp<ph name="LINK_END" /> – snabb, kostnadsfri och med ännu fler funktioner, däribland stöd för flera skärmar.</translation>
 <translation id="1643640058022401035">Om du lämnar sidan avslutas sessionen i Chromoting.</translation>
 <translation id="1654128982815600832">Fjärranslutningar aktiveras för den här datorn ...</translation>
+<translation id="1697532407822776718">Färdigt!</translation>
 <translation id="170207782578677537">Det gick inte att registrera datorn.</translation>
 <translation id="174018511426417793">Du har inte registrerat några datorer. Om du vill aktivera fjärranslutningar till en dator installerar du Chrome Remote Desktop på datorn och klickar på <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Anslutningen upprättas …</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Värdprocess</translation>
 <translation id="20876857123010370">Styrplatteläge</translation>
 <translation id="2089514346391228378">Fjärranslutningar har aktiverats för den här datorn.</translation>
+<translation id="2198363917176605566">Om du vill använda <ph name="PRODUCT_NAME" /> måste du bevilja behörigheten Skärminspelning så att skärminnehållet på denna Mac kan skickas till fjärrdatorn.
+
+Du beviljar behörigheten genom att klicka på <ph name="BUTTON_NAME" /> nedan och öppna inställningsrutan för Skärminspelning och sedan markera kryssrutan vid <ph name="SERVICE_SCRIPT_NAME" />.
+
+Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och markerar den på nytt.</translation>
 <translation id="2208514473086078157">Enligt policyinställningarna får du inte dela den här datorn som en Chrome Remote Desktop-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
 <translation id="2220529011494928058">Rapportera ett problem</translation>
 <translation id="2221097377466213233">Använd höger Ctrl-tangent för Windows-tangenten (⌘ på Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Var senast uppe på webben <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Den här appen stöds inte längre. Använd <ph name="LINK_BEGIN" />webbappen Chrome Remote Desktop<ph name="LINK_END" /> så att du får de senaste funktionerna och säkerhetsuppdateringarna.</translation>
 <translation id="2499160551253595098">Hjälp oss att förbättra Chrome Remote Desktop genom att låta oss samla in användningsstatistik och felrapporter.</translation>
+<translation id="2504109125669302160">Ge behörigheten Tillgänglighet till <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Ansluten till <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Obs! Om du vill vara säker på att alla kortkommandon är tillgängliga kan du ställa in Chrome Remote Desktop på Öppna som fönster.</translation>
 <translation id="2540992418118313681">Vill du dela den här datorn så att en annan användare kan visa och styra den?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Huvudbibliotek</translation>
 <translation id="4430435636878359009">Inaktivera fjärranslutningar till den här datorn</translation>
 <translation id="4430915108080446161">Åtkomstkod genereras ...</translation>
+<translation id="443560535555262820">Öppna tillgänglighetsinställningarna</translation>
 <translation id="4450893287417543264">Visa inte igen</translation>
 <translation id="4472575034687746823">Kom igång</translation>
 <translation id="4481276415609939789">Du har inte registrerat några datorer. Om du vill aktivera fjärranslutningar till en annan dator installerar du Chromoting på datorn och klickar på <ph name="BUTTON_NAME" />.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Byt PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (inaktuellt)</translation>
 <translation id="6221358653751391898">Du är inte inloggad i Chrome. Logga in och försök igen.</translation>
+<translation id="6223301979382383752">Öppna inställningarna för skärminspelning</translation>
 <translation id="6227369581881558336">Nu finns Chrome Remote Desktop på webben med nya funktioner, däribland filöverföring! Kolla in vår <ph name="LINK_BEGIN" />webbapp<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Värden som kördes på konsolens inloggningsskärm har avslutats för att stödja Curtain Mode genom att byta till en värd som körs i en användarspecifik session.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Något annat.</translation>
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
+<translation id="6411861157501911556">Om du vill använda <ph name="PRODUCT_NAME" /> måste du ge behörigheten Tillgänglighet så att indata från fjärrdatorn kan injiceras på denna Mac.
+
+Du beviljar behörigheten genom att klicka på <ph name="BUTTON_NAME" /> nedan och öppna inställningsrutan för Tillgänglighet och sedan markera kryssrutan vid <ph name="SERVICE_SCRIPT_NAME" />.
+
+Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och markerar den på nytt.</translation>
 <translation id="6441316101718669559">Integrering med skrivbordet stöds inte på den här plattformen. Du kan använda appen ändå, men användarupplevelsen försämras.</translation>
 <translation id="652218476070540101">PIN-koden för den här datorn uppdateras …</translation>
 <translation id="6527303717912515753">Dela</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Låt hela fjärrskrivbordet vara synligt</translation>
 <translation id="9149992051684092333">Om du vill dela ditt skrivbord ger du åtkomstkoden nedan till den som ska hjälpa dig.</translation>
 <translation id="916856682307586697">Starta XSession med standardinställningar</translation>
+<translation id="9187628920394877737">Ge <ph name="PRODUCT_NAME" /> behörigheten Skärminspelning</translation>
 <translation id="9188433529406846933">Auktorisera</translation>
 <translation id="9213184081240281106">Ogiltig värdkonfiguration.</translation>
 <translation id="951991426597076286">Godkänn inte</translation>

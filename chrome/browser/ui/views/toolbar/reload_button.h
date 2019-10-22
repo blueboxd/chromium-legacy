@@ -42,7 +42,7 @@ class ReloadButton : public ToolbarButton,
   // Enable reload drop-down menu.
   void set_menu_enabled(bool enable) { menu_enabled_ = enable; }
 
-  void LoadImages();
+  void SetColors(SkColor normal_color, SkColor disabled_color);
 
   // ToolbarButton:
   void OnMouseExited(const ui::MouseEvent& event) override;
@@ -94,6 +94,9 @@ class ReloadButton : public ToolbarButton,
   // them.
   base::TimeDelta double_click_timer_delay_;
   base::TimeDelta mode_switch_timer_delay_;
+
+  SkColor normal_color_;
+  SkColor disabled_color_;
 
   // Indicates if reload menu is enabled.
   bool menu_enabled_ = false;

@@ -1024,7 +1024,10 @@ void ChromeMetricsServiceClient::OnSyncPrefsChanged(bool must_purge) {
   if (must_purge) {
     ukm_service_->Purge();
     ukm_service_->ResetClientState(ukm::ResetReason::kOnSyncPrefsChanged);
+  } else if (!SyncStateAllowsExtensionUkm()) {
+    ukm_service_->PurgeExtensions();
   }
+
   // Signal service manager to enable/disable UKM based on new state.
   UpdateRunningServices();
 }

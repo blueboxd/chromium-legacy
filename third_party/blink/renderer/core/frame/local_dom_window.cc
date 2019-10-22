@@ -92,7 +92,6 @@
 #include "third_party/blink/renderer/core/page/create_window.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
-#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
@@ -1036,10 +1035,7 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
       cc::SnapSelectionStrategy::CreateForEndAndDirection(
           gfx::ScrollOffset(current_position), gfx::ScrollOffset(scaled_delta));
   new_scaled_position =
-      document()
-          ->GetSnapCoordinator()
-          .GetSnapPosition(*document()->GetLayoutView(), *strategy)
-          .value_or(new_scaled_position);
+      viewport->GetSnapPosition(*strategy).value_or(new_scaled_position);
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
@@ -1103,10 +1099,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
           gfx::ScrollOffset(new_scaled_position), scroll_to_options->hasLeft(),
           scroll_to_options->hasTop());
   new_scaled_position =
-      document()
-          ->GetSnapCoordinator()
-          .GetSnapPosition(*document()->GetLayoutView(), *strategy)
-          .value_or(new_scaled_position);
+      viewport->GetSnapPosition(*strategy).value_or(new_scaled_position);
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);

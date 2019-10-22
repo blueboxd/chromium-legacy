@@ -128,9 +128,9 @@ void NativeWidgetAura::AssignIconToAuraWindow(aura::Window* window,
 void NativeWidgetAura::SetShadowElevationFromInitParams(
     aura::Window* window,
     const Widget::InitParams& params) {
-  if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_NONE) {
+  if (params.shadow_type == Widget::InitParams::ShadowType::kNone) {
     wm::SetShadowElevation(window, wm::kShadowElevationNone);
-  } else if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP &&
+  } else if (params.shadow_type == Widget::InitParams::ShadowType::kDrop &&
              params.shadow_elevation) {
     wm::SetShadowElevation(window, *params.shadow_elevation);
   }
@@ -175,7 +175,7 @@ void NativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   window_->SetTransparent(
       params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW);
 
-  // Check for SHADOW_TYPE_NONE before aura::Window::Init() to ensure observers
+  // Check for ShadowType::kNone before aura::Window::Init() to ensure observers
   // do not add useless shadow layers by deriving one from the window type.
   SetShadowElevationFromInitParams(window_, params);
 

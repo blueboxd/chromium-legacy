@@ -1574,6 +1574,7 @@ jumbo_source_set("unit_tests") {
     "testing/sim/sim_test.cc",
     "testing/sim/sim_test.h",
     "timing/memory_info_test.cc",
+    "timing/performance_mark_test.cc",
     "timing/performance_navigation_timing_test.cc",
     "timing/performance_observer_test.cc",
     "timing/performance_resource_timing_test.cc",

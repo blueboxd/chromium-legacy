@@ -498,6 +498,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DraggedActiveWindow) {
 // Tests that in kDragWindowToHomeOrOverview mode, we may hide different sets
 // of windows in different scenarios.
 TEST_F(HomeLauncherGestureHandlerTest, HideWindowDuringWindowDragging) {
+  UpdateDisplay("400x400");
   const gfx::Rect shelf_bounds =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
 
@@ -510,6 +511,7 @@ TEST_F(HomeLauncherGestureHandlerTest, HideWindowDuringWindowDragging) {
 
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 1.f, 1.f);
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_FALSE(window2->IsVisible());
   EXPECT_FALSE(window3->IsVisible());
@@ -526,6 +528,7 @@ TEST_F(HomeLauncherGestureHandlerTest, HideWindowDuringWindowDragging) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
   EXPECT_EQ(GetGestureHandler()->GetActiveWindow(), window1.get());
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 1.f, 1.f);
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_FALSE(window3->IsVisible());
@@ -537,6 +540,7 @@ TEST_F(HomeLauncherGestureHandlerTest, HideWindowDuringWindowDragging) {
 
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_right());
+  GetGestureHandler()->OnScrollEvent(gfx::Point(400, 200), 1.f, 1.f);
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_FALSE(window3->IsVisible());
@@ -608,8 +612,8 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   // windows.
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
-  EXPECT_FALSE(window2->IsVisible());
   GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
+  EXPECT_FALSE(window2->IsVisible());
   GetGestureHandler()->OnReleaseEvent(shelf_bounds.CenterPoint(),
                                       base::nullopt);
   EXPECT_TRUE(window2->IsVisible());
@@ -617,8 +621,8 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   // If fling to homescreen, do not reshow the hidden windows.
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
-  EXPECT_FALSE(window2->IsVisible());
   GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
+  EXPECT_FALSE(window2->IsVisible());
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(200, 200),
       -DragWindowFromShelfController::kVelocityToHomeScreenThreshold);
@@ -631,8 +635,8 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   window1->Show();
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
-  EXPECT_FALSE(window2->IsVisible());
   GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
+  EXPECT_FALSE(window2->IsVisible());
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(200, 200), base::nullopt);
@@ -648,8 +652,8 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   window1->Show();
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
-  EXPECT_FALSE(window2->IsVisible());
   GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 0.f, 1.f);
+  EXPECT_FALSE(window2->IsVisible());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 200), base::nullopt);
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -671,14 +675,17 @@ TEST_F(HomeLauncherGestureHandlerTest, MinimizedWindowsShowInOverview) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   EXPECT_TRUE(window1->IsVisible());
-  EXPECT_FALSE(window2->IsVisible());
-  EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
-  EXPECT_FALSE(window3->IsVisible());
-  EXPECT_TRUE(WindowState::Get(window3.get())->IsMinimized());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
   // Drag it far enough so overview should be open behind the dragged window.
   GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
+  EXPECT_FALSE(window3->IsVisible());
+  EXPECT_TRUE(WindowState::Get(window3.get())->IsMinimized());
   EXPECT_FALSE(overview_controller->overview_session()->IsWindowInOverview(
       window1.get()));
   EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(

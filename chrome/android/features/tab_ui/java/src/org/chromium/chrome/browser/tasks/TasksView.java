@@ -6,25 +6,27 @@ package org.chromium.chrome.browser.tasks;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.v4.view.MarginLayoutParamsCompat;
+import android.support.design.widget.AppBarLayout;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.tab_ui.R;
 
 // The view of the tasks surface.
-class TasksView extends LinearLayout {
+class TasksView extends CoordinatorLayoutForPointer {
     private final Context mContext;
-    private FrameLayout mTabSwitcherContainer;
+    private FrameLayout mBodyViewContainer;
+    private FrameLayout mCarouselTabSwitcherContainer;
+    private AppBarLayout mHeaderView;
     private View mSearchBox;
     private TextView mSearchBoxText;
 
@@ -38,13 +40,22 @@ class TasksView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mTabSwitcherContainer = (FrameLayout) findViewById(R.id.tab_switcher_container);
+        mCarouselTabSwitcherContainer =
+                (FrameLayout) findViewById(R.id.carousel_tab_switcher_container);
         mSearchBox = findViewById(R.id.search_box);
+        mHeaderView = (AppBarLayout) findViewById(R.id.task_surface_header);
+        AppBarLayout.LayoutParams layoutParams =
+                (AppBarLayout.LayoutParams) mSearchBox.getLayoutParams();
+        layoutParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
         mSearchBoxText = (TextView) mSearchBox.findViewById(R.id.search_box_text);
     }
 
-    ViewGroup getTabSwitcherContainer() {
-        return mTabSwitcherContainer;
+    ViewGroup getCarouselTabSwitcherContainer() {
+        return mCarouselTabSwitcherContainer;
+    }
+
+    ViewGroup getBodyViewContainer() {
+        return findViewById(R.id.tasks_surface_body);
     }
 
     /**
@@ -55,16 +66,7 @@ class TasksView extends LinearLayout {
         if (isTabCarousel) {
             // TODO(crbug.com/982018): Change view according to incognito and dark mode.
             findViewById(R.id.tab_switcher_title).setVisibility(View.VISIBLE);
-
-            // Add negative margin to start so as to reduce the first Tab card's visual distance to
-            // the start edge to ~16dp.
-            // TODO(crbug.com/982018): Add test to guard the visual expectation.
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            MarginLayoutParamsCompat.setMarginStart(layoutParams,
-                    mContext.getResources().getDimensionPixelSize(
-                            R.dimen.tab_carousel_start_margin));
-            mTabSwitcherContainer.setLayoutParams(layoutParams);
+            mCarouselTabSwitcherContainer.setVisibility(View.VISIBLE);
         }
     }
 
@@ -128,7 +130,9 @@ class TasksView extends LinearLayout {
      */
     void setIncognitoMode(boolean isIncognito) {
         Resources resources = mContext.getResources();
-        setBackgroundColor(ColorUtils.getPrimaryBackgroundColor(resources, isIncognito));
+        int backgroundColor = ColorUtils.getPrimaryBackgroundColor(resources, isIncognito);
+        setBackgroundColor(backgroundColor);
+        mHeaderView.setBackgroundColor(backgroundColor);
         mSearchBox.setBackgroundResource(
                 isIncognito ? R.drawable.fake_search_box_bg_incognito : R.drawable.ntp_search_box);
         int hintTextColor = isIncognito

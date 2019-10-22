@@ -250,6 +250,11 @@ class TestingProfile : public Profile {
   // This is NOT invoked from CreateHistoryService.
   void BlockUntilHistoryIndexIsRefreshed();
 
+  // Blocks until the HistoryBackend is completely destroyed. This is mostly
+  // useful to ensure the destruction tasks do not outlive this class on which
+  // they depend.
+  void BlockUntilHistoryBackendDestroyed();
+
   // Allow setting a profile as Guest after-the-fact to simplify some tests.
   void SetGuestSession(bool guest);
 

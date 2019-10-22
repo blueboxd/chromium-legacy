@@ -153,7 +153,8 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
             base::BindRepeating(&content::GetNetworkConnectionTracker)),
       policy_update_callback_(policy_update_callback),
       resource_cache_task_runner_(resource_cache_task_runner) {
-  if (account.type != DeviceLocalAccount::TYPE_ARC_KIOSK_APP) {
+  if (account.type != DeviceLocalAccount::TYPE_ARC_KIOSK_APP &&
+      account.type != DeviceLocalAccount::TYPE_WEB_KIOSK_APP) {
     extension_tracker_.reset(new DeviceLocalAccountExtensionTracker(
         account, store_.get(), &schema_registry_));
   }

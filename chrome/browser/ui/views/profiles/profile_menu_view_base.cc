@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
@@ -283,6 +282,8 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
   constexpr int kImageBottomMargin = 8;
   constexpr int kBadgeSize = 16;
   constexpr int kBadgePadding = 1;
+  const SkColor kBadgeBackgroundColor = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleBackground);
 
   identity_info_container_->RemoveAllChildViews(/*delete_children=*/true);
   identity_info_container_->SetLayoutManager(
@@ -301,7 +302,7 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
                                   GetDefaultIconColor())
           : CropCircle(SizeImage(image, kIdentityImageSize));
   gfx::ImageSkia sized_badge =
-      AddCircularBackground(SizeImage(badge, kBadgeSize), SK_ColorWHITE,
+      AddCircularBackground(SizeImage(badge, kBadgeSize), kBadgeBackgroundColor,
                             kBadgeSize + 2 * kBadgePadding);
   gfx::ImageSkia badged_image =
       gfx::ImageSkiaOperations::CreateIconWithBadge(sized_image, sized_badge);
@@ -575,8 +576,7 @@ void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* link,
 
 void ProfileMenuViewBase::OnClick(views::View* clickable_view) {
   DCHECK(!click_actions_[clickable_view].is_null());
-  base::RecordAction(
-      base::UserMetricsAction("ProfileMenu_ActionableItemClicked"));
+  signin_ui_util::RecordProfileMenuClick(browser()->profile());
   click_actions_[clickable_view].Run();
 }
 

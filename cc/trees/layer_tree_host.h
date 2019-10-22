@@ -510,6 +510,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // position. If a HUD layer exists but is no longer needed, it is destroyed.
   void UpdateHudLayer(bool show_hud_info);
   HeadsUpDisplayLayer* hud_layer() const { return hud_layer_.get(); }
+  bool is_hud_layer(const Layer*) const;
 
   virtual void SetNeedsFullTreeSync();
   bool needs_full_tree_sync() const { return needs_full_tree_sync_; }

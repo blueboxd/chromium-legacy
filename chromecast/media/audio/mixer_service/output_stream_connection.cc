@@ -125,10 +125,9 @@ void OutputStreamConnection::Resume() {
   }
 }
 
-void OutputStreamConnection::OnConnected(
-    std::unique_ptr<net::StreamSocket> socket) {
-  socket_ = std::make_unique<MixerSocket>(std::move(socket), this);
-  socket_->ReceiveMessages();
+void OutputStreamConnection::OnConnected(std::unique_ptr<MixerSocket> socket) {
+  socket_ = std::move(socket);
+  socket_->SetDelegate(this);
 
   Generic message;
   *(message.mutable_output_stream_params()) = params_;

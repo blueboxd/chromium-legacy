@@ -6592,6 +6592,12 @@ if (is_win) {
     sources = [
       "delayload/delayloads_unittest.cc",
     ]
+
+    defines = []
+    if (is_multi_dll_chrome) {
+      defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
+    }
+
     include_dirs = [ "$target_gen_dir" ]
     deps = [
       "//base",

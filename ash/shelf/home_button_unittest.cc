@@ -27,7 +27,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 
@@ -37,13 +37,24 @@ ui::GestureEvent CreateGestureEvent(ui::GestureEventDetails details) {
   return ui::GestureEvent(0, 0, ui::EF_NONE, base::TimeTicks(), details);
 }
 
-class HomeButtonTest : public AshTestBase {
+class HomeButtonTest : public AshTestBase,
+                       public testing::WithParamInterface<bool> {
  public:
   HomeButtonTest() = default;
   ~HomeButtonTest() override = default;
 
   // AshTestBase:
-  void SetUp() override { AshTestBase::SetUp(); }
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          chromeos::features::kShelfHotseat);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          chromeos::features::kShelfHotseat);
+    }
+
+    AshTestBase::SetUp();
+  }
 
   void SendGestureEvent(ui::GestureEvent* event) {
     GetPrimaryShelf()->shelf_widget()->GetHomeButton()->OnGestureEvent(event);
@@ -70,10 +81,15 @@ class HomeButtonTest : public AshTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(HomeButtonTest);
 };
 
-TEST_F(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
+// The parameter indicates whether the kShelfHotseat feature is enabled.
+INSTANTIATE_TEST_SUITE_P(, HomeButtonTest, testing::Bool());
+
+TEST_P(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
 
@@ -108,7 +124,7 @@ TEST_F(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
 }
 
-TEST_F(HomeButtonTest, ClickToOpenAppList) {
+TEST_P(HomeButtonTest, ClickToOpenAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
 
@@ -143,7 +159,7 @@ TEST_F(HomeButtonTest, ClickToOpenAppList) {
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
 }
 
-TEST_F(HomeButtonTest, ButtonPositionInTabletMode) {
+TEST_P(HomeButtonTest, ButtonPositionInTabletMode) {
   // Finish all setup tasks. In particular we want to finish the
   // GetSwitchStates post task in (Fake)PowerManagerClient which is triggered
   // by TabletModeController otherwise this will cause tablet mode to exit
@@ -152,6 +168,23 @@ TEST_F(HomeButtonTest, ButtonPositionInTabletMode) {
 
   ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  // When hotseat is enabled, home button position changes between in-app shelf
+  // and home shelf, so test in-app when hotseat is enabled.
+  if (GetParam()) {
+    // Wait for the navigation widget's animation.
+    test_api.RunMessageLoopUntilAnimationsDone(
+        GetPrimaryShelf()
+            ->shelf_widget()
+            ->navigation_widget()
+            ->get_bounds_animator_for_testing());
+
+    EXPECT_EQ(home_button()->bounds().x(), 0);
+
+    // Switch to in-app shelf.
+    std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  }
+
   // Wait for the navigation widget's animation.
   test_api.RunMessageLoopUntilAnimationsDone(
       GetPrimaryShelf()
@@ -171,7 +204,7 @@ TEST_F(HomeButtonTest, ButtonPositionInTabletMode) {
   EXPECT_EQ(0, home_button()->bounds().x());
 }
 
-TEST_F(HomeButtonTest, LongPressGesture) {
+TEST_P(HomeButtonTest, LongPressGesture) {
   ui::ScopedAnimationDurationScaleMode animation_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   // Simulate two user with primary user as active.
@@ -205,7 +238,7 @@ TEST_F(HomeButtonTest, LongPressGesture) {
                                                ->visibility());
 }
 
-TEST_F(HomeButtonTest, LongPressGestureWithSecondaryUser) {
+TEST_P(HomeButtonTest, LongPressGestureWithSecondaryUser) {
   // Disallowed by secondary user.
   assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER);
@@ -232,7 +265,7 @@ TEST_F(HomeButtonTest, LongPressGestureWithSecondaryUser) {
                                                ->visibility());
 }
 
-TEST_F(HomeButtonTest, LongPressGestureWithSettingsDisabled) {
+TEST_P(HomeButtonTest, LongPressGestureWithSettingsDisabled) {
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 

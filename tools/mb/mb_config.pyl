@@ -204,7 +204,7 @@
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'afl_asan_shared_release_bot',
 
-      'android-code-coverage': 'android_debug_static_bot_arm64_minimal_symbols_coverage',
+      'android-code-coverage': 'android_release_bot_minimal_symbols_arm64_coverage',
       'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
       'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk_headless_ozone',
       'chromeos-vm-code-coverage': 'cros_chrome_sdk_headless_ozone_coverage',
@@ -1063,11 +1063,6 @@
       'android', 'debug_static_bot', 'arm64',
     ],
 
-    'android_debug_static_bot_arm64_minimal_symbols_coverage': [
-      'android', 'debug_static_bot', 'arm64', 'minimal_symbols', 'java_coverage',
-      'strip_debug_info',
-    ],
-
     'android_debug_static_bot_x64': [
       'android', 'debug_static_bot', 'x64',
     ],
@@ -1120,6 +1115,11 @@
     'android_release_bot_minimal_symbols_arm64': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
       'strip_debug_info',
+    ],
+
+    'android_release_bot_minimal_symbols_arm64_coverage': [
+      'android', 'release_bot', 'minimal_symbols', 'arm64',
+      'strip_debug_info', 'java_coverage',
     ],
 
     'android_release_bot_minimal_symbols_arm64_webview_google': [

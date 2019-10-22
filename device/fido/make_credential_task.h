@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
   void StartTask() final;
 
   void MakeCredential();
-  CtapGetAssertionRequest NextSilentSignRequest();
+  CtapGetAssertionRequest NextSilentRequest();
   void HandleResponseToSilentSignRequest(
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorGetAssertionResponse> response_data);
@@ -69,10 +69,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
       base::Optional<AuthenticatorMakeCredentialResponse> response);
 
   CtapMakeCredentialRequest request_;
+  std::vector<std::vector<PublicKeyCredentialDescriptor>> exclude_list_batches_;
+  size_t current_exclude_list_batch_ = 0;
+
   std::unique_ptr<RegisterOperation> register_operation_;
   std::unique_ptr<SignOperation> silent_sign_operation_;
   MakeCredentialTaskCallback callback_;
-  size_t current_credential_ = 0;
+
   // probing_alternative_rp_id_ is true if |app_id| is set in |request_| and
   // thus the exclude list is being probed a second time with the alternative RP
   // ID.
@@ -83,6 +86,21 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
 
   DISALLOW_COPY_AND_ASSIGN(MakeCredentialTask);
 };
+
+// FilterAndBatchCredentialDescriptors splits a list of
+// PublicKeyCredentialDescriptors such that each chunk is guaranteed to fit into
+// an allowList parameter of a GetAssertion request for the given |device|.
+//
+// |device| must be a fully initialized CTAP2 device, i.e. its device_info()
+// method must return an AuthenticatorGetInfoResponse.
+//
+// If |in| contains only credential descriptors with IDs longer than the
+// device's |max_credential_id_length|, the result will be empty (rather than
+// containing a single empty vector).
+std::vector<std::vector<PublicKeyCredentialDescriptor>>
+FilterAndBatchCredentialDescriptors(
+    const std::vector<PublicKeyCredentialDescriptor>& in,
+    const FidoDevice& device);
 
 }  // namespace device
 

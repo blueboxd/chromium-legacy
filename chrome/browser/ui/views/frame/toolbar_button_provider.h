@@ -11,7 +11,9 @@ class AppMenuButton;
 class AvatarToolbarButton;
 class BrowserActionsContainer;
 class PageActionIconView;
+class ReloadButton;
 class ToolbarActionView;
+class ToolbarButton;
 
 namespace gfx {
 class Rect;
@@ -64,6 +66,12 @@ class ToolbarButtonProvider {
 
   // Returns the avatar button.
   virtual AvatarToolbarButton* GetAvatarToolbarButton() = 0;
+
+  // Returns the back button.
+  virtual ToolbarButton* GetBackButton() = 0;
+
+  // Returns the reload button.
+  virtual ReloadButton* GetReloadButton() = 0;
 
   // TODO(calamity): Move other buttons and button actions into here.
  protected:

@@ -118,8 +118,8 @@ void MenuHost::InitMenuHost(Widget* parent,
   bool rounded_border = menu_config.CornerRadiusForMenu(menu_controller) != 0;
   bool bubble_border = submenu_->GetScrollViewContainer() &&
                        submenu_->GetScrollViewContainer()->HasBubbleBorder();
-  params.shadow_type = bubble_border ? Widget::InitParams::SHADOW_TYPE_NONE
-                                     : Widget::InitParams::SHADOW_TYPE_DROP;
+  params.shadow_type = bubble_border ? Widget::InitParams::ShadowType::kNone
+                                     : Widget::InitParams::ShadowType::kDrop;
   params.opacity = (bubble_border || rounded_border) ?
       Widget::InitParams::TRANSLUCENT_WINDOW :
       Widget::InitParams::OPAQUE_WINDOW;

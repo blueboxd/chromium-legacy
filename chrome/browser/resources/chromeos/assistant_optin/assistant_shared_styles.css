@@ -9,17 +9,16 @@ a {
 }
 
 oobe-dialog {
-  height: calc(var(--oobe-dialog-host-height, 640px) -
-               var(--caption-bar-height));
+  height: 100%;
 }
 
 .container {
   box-sizing: border-box;
   height: 100%;
   padding-bottom: 0;
-  padding-inline-end: var(--oobe-dialog-content-padding, 64px);
-  padding-inline-start: var(--oobe-dialog-content-padding, 64px);
-  padding-top: calc(var(--oobe-dialog-content-padding, 60px) -
+  padding-inline-end: var(--oobe-dialog-content-padding);
+  padding-inline-start: var(--oobe-dialog-content-padding);
+  padding-top: calc(var(--oobe-dialog-content-padding) -
                     var(--caption-bar-height));
   position: absolute;
   width: 100%;

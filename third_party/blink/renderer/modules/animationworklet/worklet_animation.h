@@ -114,6 +114,8 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void NotifyAnimationStarted(double monotonic_time, int group) override {}
   void NotifyAnimationFinished(double monotonic_time, int group) override {}
   void NotifyAnimationAborted(double monotonic_time, int group) override {}
+  void NotifyLocalTimeUpdated(
+      base::Optional<base::TimeDelta> local_time) override;
 
   Document* GetDocument() const override { return document_.Get(); }
   AnimationTimeline* GetTimeline() const override { return timeline_; }
@@ -124,8 +126,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
     return id_;
   }
   bool IsActiveAnimation() const override;
-
-  bool NeedsPeek(base::TimeDelta current_time);
 
   void UpdateInputState(AnimationWorkletDispatcherInput* input_state) override;
   void SetOutputState(
@@ -218,8 +218,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // We use this to skip updating if current time has not changed since last
   // update.
   base::Optional<base::TimeDelta> last_input_update_current_time_;
-  // Time the main thread sends a peek request.
-  base::Optional<base::TimeDelta> last_peek_request_time_;
 
   Member<Document> document_;
 

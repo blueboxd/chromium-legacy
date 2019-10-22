@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Касније учитај страницу</translation>
 <translation id="1015730422737071372">Наведите додатне детаље</translation>
 <translation id="1021110881106174305">Прихваћене картице</translation>
-<translation id="1023523064224774104">Chromium је открио да сте управо унели лозинку на сајту који је
-          сумњив. Одмах ресетујте лозинку!</translation>
 <translation id="1032854598605920125">Окрените у смеру казаљке на сату</translation>
 <translation id="1035334672863811645">пријавите се у Chrome</translation>
 <translation id="1036348656032585052">Искључи</translation>
@@ -123,6 +121,7 @@
 <translation id="1501859676467574491">Приказуј картице са мог Google налога</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ова грешка се приказује ако користите Wi-Fi портал на коме морате да се пријавите да бисте се повезали на интернет.&lt;/p&gt;
     &lt;p&gt;Да бисте отклонили ту грешку, кликните на &lt;strong&gt;Повежи се&lt;/strong&gt; на страници коју покушавате да отворите.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Листа уноса у историји</translation>
 <translation id="1517433312004943670">Број телефона је обавезан</translation>
 <translation id="1517500485252541695">Платне и кредитне картице које се прихватају</translation>
 <translation id="1519264250979466059">Датум верзије</translation>
@@ -308,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат ће можда бити опозван. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="2438874542388153331">Четвороструко бушење на десној страни</translation>
+<translation id="245044156129055925">Управо сте унели лозинку на обмањујућем сајту. Chromium препоручује да одмах промените лозинку.</translation>
 <translation id="2463193859425327265">Промените почетну страницу</translation>
 <translation id="2463739503403862330">Попуни</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -552,7 +552,6 @@
 <translation id="3655670868607891010">Ако вам се ово често приказује, можда вам помогну следећи <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Ревизија</translation>
 <translation id="366077651725703012">Ажурирајте кредитну картицу</translation>
-<translation id="3672525478985456967">Назив овог сајта делује слично као <ph name="LOOKALIKE_DOMAIN" />. Нападачи понекад имитирају сајтове тако што незнатно и скоро неприметно измене име домена.</translation>
 <translation id="3676592649209844519">ИД уређаја:</translation>
 <translation id="3677008721441257057">Да ли сте мислили &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Потписивање захтева није успело</translation>
@@ -618,6 +617,9 @@
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> је блокиран</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> је у прегледачу омогућио Chrome заштиту од претњи за предузећа. Chrome заштита од претњи за предузећа има приступ неким вашим подацима.</translation>
+<translation id="3987405730340719549">Chrome је утврдио да је овај сајт можда лажан или служи за превару.
+
+    Ако мислите да је ово приказано грешком, посетите https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Мање од 1 MB</translation>
 <translation id="3990250421422698716">Протресање ради поравнања</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница у околини}one{# веб-страница у околини}few{# веб-странице у околини}other{# веб-страница у околини}}</translation>
@@ -876,7 +878,6 @@
 <translation id="5230733896359313003">Адреса за испоруку</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Одбаци</translation>
 <translation id="5250209940322997802">„Повежите се на мрежу“</translation>
 <translation id="5251803541071282808">Клауд</translation>
 <translation id="5252000469029418751">C7 (коверат)</translation>
@@ -996,6 +997,9 @@
 <translation id="5813119285467412249">&amp;Понови додавање</translation>
 <translation id="583281660410589416">Непознато</translation>
 <translation id="5838278095973806738">Немојте да уносите осетљиве информације на овом сајту (на пример, лозинке или кредитне картице) јер нападачи могу да их украду.</translation>
+<translation id="5855253129151731373">Име хоста овог сајта делује слично као <ph name="LOOKALIKE_DOMAIN" />. Нападачи понекад имитирају сајтове тако што незнатно и скоро неприметно измене име домена.
+
+    Ако мислите да је ово приказано грешком, посетите https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Искључено</translation>
 <translation id="5863847714970149516">Следећа страница може да покуша да вам нешто наплати</translation>
 <translation id="5866257070973731571">Додајте број телефона</translation>
@@ -1018,7 +1022,6 @@
 <translation id="5946937721014915347">Отвара се <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Да, додај</translation>
 <translation id="5951495562196540101">Регистрација корисничког налога није успела (доступна је лиценца пакета).</translation>
-<translation id="5966900314707961320">Када је ово укључено, сајтови не могу да користе колачиће који вас прате по вебу</translation>
 <translation id="5967592137238574583">Измените контакт информације</translation>
 <translation id="5967867314010545767">Уклони из историје</translation>
 <translation id="5975083100439434680">Умањивање</translation>
@@ -1106,6 +1109,7 @@
 <translation id="6401136357288658127">Ове смернице су застареле. Уместо њих треба да користите нове смернице <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Измена обележивача</translation>
 <translation id="6406765186087300643">C0 (коверат)</translation>
+<translation id="6409754798200046165">Управо сте унели лозинку на обмањујућем сајту. Chrome препоручује да одмах промените лозинку.</translation>
 <translation id="6410264514553301377">Унесите датум истека и CVC за картицу <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium може да вам помогне да заштитите Google налог и промените лозинку.</translation>
 <translation id="6427730057873428458">Пресавијање у облику прозора</translation>
@@ -1113,7 +1117,6 @@
 <translation id="6433490469411711332">Измените контакт информације</translation>
 <translation id="6433595998831338502">Хост <ph name="HOST_NAME" /> је одбио повезивање.</translation>
 <translation id="6434309073475700221">Одбаци</translation>
-<translation id="6435221585574090192">Делите са администатором податке о безбедносним догађајима које је пријавила Chrome заштита од претњи за предузећа. Они могу да обухватају URL-ове страница, називе датотека и метаподатке датотека, корисничко име за уређај и корисничко име за Chrome.</translation>
 <translation id="6440503408713884761">Занемарено</translation>
 <translation id="6446163441502663861">Kahu (коверат)</translation>
 <translation id="6446608382365791566">Додајте још информација</translation>
@@ -1403,6 +1406,7 @@
 <translation id="7932579305932748336">Омот</translation>
 <translation id="79338296614623784">Унесите важећи број телефона</translation>
 <translation id="7934052535022478634">Плаћање је довршено</translation>
+<translation id="7935031712718413217">URL који се можда лажно представља</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Истиче <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Сертификат сервера још увек није важећи.</translation>
@@ -1457,7 +1461,6 @@
 <translation id="8184538546369750125">Користи глобалну подразумевану вредност (Дозволи)</translation>
 <translation id="8194797478851900357">&amp;Опозови премештање</translation>
 <translation id="8197543752516192074">Преведи страницу</translation>
-<translation id="8197899142098070286">Chrome је открио да сте управо унели лозинку на сајту који је сумњив. Одмах ресетујте лозинку!</translation>
 <translation id="8201077131113104583">Неважећи URL за ажурирање за додатак са ИД-ом „<ph name="EXTENSION_ID" />“.</translation>
 <translation id="8202097416529803614">Резиме поруџбине</translation>
 <translation id="8202370299023114387">Неусаглашеност</translation>
@@ -1545,7 +1548,6 @@
 <translation id="8718314106902482036">Плаћање није довршено</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, предлог за претрагу</translation>
 <translation id="8719528812645237045">Вишеструко бушење на врху</translation>
-<translation id="8723954843026426558">Прихватам услове и одредбе, политику приватности и право на одустајање за <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Пробајте поново</translation>
 <translation id="8728672262656704056">Прешли сте у режим Без архивирања</translation>
 <translation id="8730621377337864115">Готово</translation>

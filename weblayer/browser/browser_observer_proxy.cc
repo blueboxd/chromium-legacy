@@ -46,8 +46,6 @@ void BrowserObserverProxy::LoadProgressChanged(double progress) {
   Java_BrowserObserverProxy_loadProgressChanged(env, java_observer_, progress);
 }
 
-void BrowserObserverProxy::FirstContentfulPaint() {}
-
 static jlong JNI_BrowserObserverProxy_CreateBrowserObserverProxy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& proxy,

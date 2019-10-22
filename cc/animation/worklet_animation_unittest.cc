@@ -112,6 +112,52 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWhenTicking) {
                                        expected_opacity);
 }
 
+// Test generation of animation events by worklet animations.
+TEST_F(WorkletAnimationTest, AnimationEventLocalTimeUpdate) {
+  AttachWorkletAnimation();
+
+  base::Optional<base::TimeDelta> local_time = base::TimeDelta::FromSecondsD(1);
+  MutatorOutputState::AnimationState state(worklet_animation_id_);
+  state.local_times.push_back(local_time);
+  worklet_animation_->SetOutputState(state);
+
+  std::unique_ptr<MutatorEvents> mutator_events = host_->CreateEvents();
+  auto* animation_events = static_cast<AnimationEvents*>(mutator_events.get());
+  worklet_animation_->UpdateState(true, animation_events);
+
+  // One event is generated as a result of update state.
+  EXPECT_EQ(1u, animation_events->events_.size());
+  AnimationEvent event = animation_events->events_[0];
+  EXPECT_EQ(AnimationEvent::TIME_UPDATED, event.type);
+  EXPECT_EQ(worklet_animation_id_, event.worklet_animation_id);
+  EXPECT_EQ(local_time, event.local_time);
+
+  // If the state is not updated no more events is generated.
+  mutator_events = host_->CreateEvents();
+  animation_events = static_cast<AnimationEvents*>(mutator_events.get());
+  worklet_animation_->UpdateState(true, animation_events);
+  EXPECT_EQ(0u, animation_events->events_.size());
+
+  // If local time is set to the same value no event is generated.
+  worklet_animation_->SetOutputState(state);
+  mutator_events = host_->CreateEvents();
+  animation_events = static_cast<AnimationEvents*>(mutator_events.get());
+  worklet_animation_->UpdateState(true, animation_events);
+  EXPECT_EQ(0u, animation_events->events_.size());
+
+  // If local time is set to null value, an animation event with null local
+  // time is generated.
+  state.local_times.clear();
+  local_time = base::nullopt;
+  state.local_times.push_back(local_time);
+  worklet_animation_->SetOutputState(state);
+  mutator_events = host_->CreateEvents();
+  animation_events = static_cast<AnimationEvents*>(mutator_events.get());
+  worklet_animation_->UpdateState(true, animation_events);
+  EXPECT_EQ(1u, animation_events->events_.size());
+  EXPECT_EQ(local_time, animation_events->events_[0].local_time);
+}
+
 TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
   auto scroll_timeline = std::make_unique<MockScrollTimeline>();
   EXPECT_CALL(*scroll_timeline, IsActive(_, _)).WillRepeatedly(Return(true));

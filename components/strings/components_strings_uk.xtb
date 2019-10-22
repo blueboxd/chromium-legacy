@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Завантажити сторінку пізніше</translation>
 <translation id="1015730422737071372">Надати додаткову інформацію</translation>
 <translation id="1021110881106174305">Прийняті картки</translation>
-<translation id="1023523064224774104">Chromium виявив, що ви щойно ввели пароль на підозрілому
-          сайті. Негайно скиньте пароль.</translation>
 <translation id="1032854598605920125">Обернути за годинниковою стрілкою</translation>
 <translation id="1035334672863811645">увійдіть в обліковий запис Chrome</translation>
 <translation id="1036348656032585052">Вимкнути</translation>
@@ -123,6 +121,7 @@
 <translation id="1501859676467574491">Показує картки з облікового запису Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Це повідомлення про помилку з’являється, якщо ви користуєтеся порталом Wi-Fi, на який потрібно ввійти, перш ніж підключитися до мережі.&lt;/p&gt;
     &lt;p&gt;Щоб виправити цю помилку, натисніть &lt;strong&gt;Підключитися&lt;/strong&gt; на сторінці, яку ви намагаєтеся відкрити.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Список записів в історії</translation>
 <translation id="1517433312004943670">Введіть номер телефону</translation>
 <translation id="1517500485252541695">Прийнятні кредитні та дебетові картки</translation>
 <translation id="1519264250979466059">Дата створення версії</translation>
@@ -308,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Можливо, його сертифікат безпеки відкликано. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="2438874542388153331">Пробити чотири отвори праворуч</translation>
+<translation id="245044156129055925">Щойно ви ввели пароль на оманливому сайті. Chromium радить змінити пароль.</translation>
 <translation id="2463193859425327265">Змінити домашню сторінку</translation>
 <translation id="2463739503403862330">Заповнити</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -542,7 +542,6 @@
 <translation id="3655670868607891010">Якщо ви бачите це часто, спробуйте <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Редакція</translation>
 <translation id="366077651725703012">Оновити кредитну картку</translation>
-<translation id="3672525478985456967">Назва цього сайту схожа на назву сайту <ph name="LOOKALIKE_DOMAIN" />. Іноді зловмисники імітують сайти, вносячи незначні, майже непомітні зміни в доменне ім'я.</translation>
 <translation id="3676592649209844519">Ідентифікатор пристрою:</translation>
 <translation id="3677008721441257057">Ви мали на увазі &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Не вдалося підписати запит</translation>
@@ -603,6 +602,9 @@
 <translation id="397105322502079400">Обчислення...</translation>
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> заблокований</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> вмикає Захист від загроз Chrome Enterprise у вашому веб-переглядачі. Захист від загроз має доступ до деяких ваших даних.</translation>
+<translation id="3987405730340719549">Веб-переглядач Chrome визначив, що цей сайт може бути підробленим або шахрайським.
+
+    Якщо ви вважаєте, що сталася помилка, перейдіть на сторінку https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Менше 1 МБ</translation>
 <translation id="3990250421422698716">Поступове зміщення</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-сторінка поруч}one{# веб-сторінка поруч}few{# веб-сторінки поруч}many{# веб-сторінок поруч}other{# веб-сторінки поруч}}</translation>
@@ -860,7 +862,6 @@
 <translation id="5230733896359313003">Адреса доставки</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Відхилити</translation>
 <translation id="5250209940322997802">"Під’єднайте пристрій до мережі"</translation>
 <translation id="5251803541071282808">Хмара</translation>
 <translation id="5252000469029418751">C7 (конверт)</translation>
@@ -980,6 +981,9 @@
 <translation id="5813119285467412249">&amp;Повторити додавання</translation>
 <translation id="583281660410589416">Невідомий</translation>
 <translation id="5838278095973806738">Не вводьте конфіденційну інформацію на цьому сайті (як-от паролі й дані кредитних карток). Зловмисники можуть викрасти її.</translation>
+<translation id="5855253129151731373">Ім'я хосту цього сайту схоже на ім'я хосту сайту <ph name="LOOKALIKE_DOMAIN" />. Іноді зловмисники імітують сайти, вносячи незначні, майже непомітні зміни в доменне ім'я.
+
+    Якщо ви вважаєте, що сталася помилка, перейдіть на сторінку https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="5863847714970149516">Наступна сторінка може спробувати стягнути плату</translation>
 <translation id="5866257070973731571">Додайте номер телефону</translation>
@@ -1002,7 +1006,6 @@
 <translation id="5946937721014915347">Відкривається <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Так, додати</translation>
 <translation id="5951495562196540101">Не вдається зареєструватися за допомогою особистого облікового запису користувача (ліцензію отримано в комплекті з пристроєм).</translation>
-<translation id="5966900314707961320">Якщо цей параметр увімкнено, сайти не можуть використовувати файли cookie, через які відстежуються ваші дії в Інтернеті</translation>
 <translation id="5967592137238574583">Змініть контактну інформацію</translation>
 <translation id="5967867314010545767">Видалити з історії</translation>
 <translation id="5975083100439434680">Зменшити масштаб</translation>
@@ -1091,6 +1094,7 @@
 <translation id="6401136357288658127">Це правило не підтримується. Натомість потрібно застосувати правило <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Редагувати закладку</translation>
 <translation id="6406765186087300643">C0 (конверт)</translation>
+<translation id="6409754798200046165">Щойно ви ввели пароль на оманливому сайті. Chrome радить змінити пароль.</translation>
 <translation id="6410264514553301377">Введіть дату закінчення терміну дії та код CVC картки <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium допоможе захистити обліковий запис Google і змінити пароль.</translation>
 <translation id="6427730057873428458">Зігнути за типом "ворота"</translation>
@@ -1098,7 +1102,6 @@
 <translation id="6433490469411711332">Змінити контактні дані</translation>
 <translation id="6433595998831338502">Хост <ph name="HOST_NAME" /> відхилив запит на з’єднання.</translation>
 <translation id="6434309073475700221">Скасувати</translation>
-<translation id="6435221585574090192">Діліться з адміністратором даними про події системи безпеки, про які повідомляє Захист від загроз Chrome Enterprise. Це можуть бути URL-адреси сторінок, назви й метадані файлів, імена користувачів пристрою та Chrome.</translation>
 <translation id="6440503408713884761">Ігнорується</translation>
 <translation id="6446163441502663861">Kahu (конверт)</translation>
 <translation id="6446608382365791566">Додати більше інформації</translation>
@@ -1388,6 +1391,7 @@
 <translation id="7932579305932748336">Вкрити обкладинкою</translation>
 <translation id="79338296614623784">Введіть дійсний номер телефону</translation>
 <translation id="7934052535022478634">Платіж виконано</translation>
+<translation id="7935031712718413217">Імовірно, що цю URL-адресу підмінено</translation>
 <translation id="7935318582918952113">Дистилятор DOM</translation>
 <translation id="7937554595067888181">Діє до <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Сертифікат сервера ще не дійсний.</translation>
@@ -1442,7 +1446,6 @@
 <translation id="8184538546369750125">Використовувати глобальне налаштування за умовчанням (Дозволяти)</translation>
 <translation id="8194797478851900357">&amp;Відмінити переміщення</translation>
 <translation id="8197543752516192074">Перекласти сторінку</translation>
-<translation id="8197899142098070286">Chrome виявив, що ви щойно ввели пароль на підозрілому сайті. Негайно скиньте пароль.</translation>
 <translation id="8201077131113104583">Недійсна URL-адреса для оновлення розширення з ідентифікатором "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Підсумок замовлення</translation>
 <translation id="8202370299023114387">Конфлікт</translation>
@@ -1530,7 +1533,6 @@
 <translation id="8718314106902482036">Оплату не завершено</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, пропозиція пошуку</translation>
 <translation id="8719528812645237045">Пробити кілька отворів угорі</translation>
-<translation id="8723954843026426558">Я приймаю умови використання, політику конфіденційності й право на відмову від <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8728672262656704056">Ви перейшли в режим анонімного перегляду</translation>
 <translation id="8730621377337864115">Готово</translation>

@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Πριν από 1 λεπτό}other{Πριν από # λεπτά}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1λ.}other{#λ.}}</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
+<translation id="1201402288615127009">Επόμενο</translation>
 <translation id="1243314992276662751">Μεταφόρτωση</translation>
 <translation id="1266864766717917324">Δεν ήταν δυνατή η κοινοποίηση <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Πατήστε τους στόχους αφής στην οθόνη σας.</translation>
 <translation id="2295140143284145483">Έρευνα</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Έλεγχος της σύνδεσής σας στο διαδίκτυο</translation>
 <translation id="2388990488038464401">Θέλετε να καλέσετε αυτόν τον αριθμό στο τηλέφωνό σας;</translation>
 <translation id="24452542372838207">Ανάπτυξη ειδοποίησης</translation>
 <translation id="2445449901874883781">Χρήση υψηλής πυκνότητας</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>
 <translation id="5941711191222866238">Ελαχιστοποίηση</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ώρα}other{# ώρες}}</translation>
+<translation id="5946629889255121107">Ο αριθμός προέρχεται από <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Σελίδα <ph name="SELECTED_PAGE" /> από <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Διαγραφή κειμένου πλαισίου αναζήτησης</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Αποθήκευση Αρχείου</translation>
 <translation id="6656912866303152668">Βεβαιωθείτε ότι ο συγχρονισμός στο Chrome έχει ενεργοποιηθεί για τη συσκευή <ph name="TARGET_DEVICE_NAME" /> και έπειτα δοκιμάστε ξανά την αποστολή.</translation>
 <translation id="6699343763173986273">Επόμενο κομμάτι πολυμέσων</translation>
+<translation id="6710213216561001401">Προηγούμενο</translation>
 <translation id="6779314412797872738">Για να στείλετε έναν αριθμό από εδώ στο τηλέφωνό σας, <ph name="TROUBLESHOOT_LINK" /> και για τις δύο συσκευές στις ρυθμίσεις.</translation>
 <translation id="6786750046913594791">Κλείσιμο φακέλου</translation>
 <translation id="6808150112686056157">Διακοπή πολυμέσων</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Απομένει 1 λεπτό}other{Απομένουν # λεπτά}}</translation>
 <translation id="7319740667687257810">Εφαρμογή εκκίνησης, μερική προβολή</translation>
+<translation id="7352651011704765696">Παρουσιάστηκε κάποιο πρόβλημα</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Πριν από 1 λεπτό}other{Πριν από # λεπτά}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Απομένει 1 λεπτό}other{Απομένουν # λεπτά}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Πριν από 1 ώρα}other{Πριν από # ώρες}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>
+<translation id="8134065097954893699">Επαναφόρτωση αυτής της σελίδας</translation>
 <translation id="8144660977431427332">Οι αναζητήσεις σας παρέχονται από τον Βοηθό Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, αυτόματη συμπλήρωση</translation>
 <translation id="815598010540052116">Κύλιση κάτω</translation>

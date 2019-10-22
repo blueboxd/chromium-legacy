@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/extensions/system_web_app_manager_browsertest.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/web_application_info.h"
@@ -43,21 +43,21 @@ class BrowserNonClientFrameViewBrowserTest
   // Note: A "bookmark app" is a type of hosted app. All of these tests apply
   // equally to hosted and bookmark apps, but it's easier to install a bookmark
   // app in a test.
+  // TODO: Add tests for non-bookmark hosted apps, as bookmark apps will no
+  // longer be hosted apps when BMO ships.
   void InstallAndLaunchBookmarkApp(
       base::Optional<GURL> app_url = base::nullopt) {
     if (!app_url)
       app_url = GetAppURL();
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = *app_url;
-    web_app_info.scope = app_url->GetWithoutFilename();
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = *app_url;
+    web_app_info->scope = app_url->GetWithoutFilename();
     if (app_theme_color_)
-      web_app_info.theme_color = *app_theme_color_;
+      web_app_info->theme_color = *app_theme_color_;
 
-    const extensions::Extension* app =
-        extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
-                                                         web_app_info);
-    app_browser_ = extensions::browsertest_util::LaunchAppBrowser(
-        browser()->profile(), app);
+    web_app::AppId app_id =
+        web_app::InstallWebApp(profile(), std::move(web_app_info));
+    app_browser_ = web_app::LaunchWebAppBrowser(profile(), app_id);
     web_contents_ = app_browser_->tab_strip_model()->GetActiveWebContents();
     // Ensure the main page has loaded and is ready for ExecJs DOM manipulation.
     ASSERT_TRUE(content::NavigateToURL(web_contents_, *app_url));

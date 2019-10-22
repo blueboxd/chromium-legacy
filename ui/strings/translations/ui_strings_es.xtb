@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Hace 1 minuto}other{Hace # minutos}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Quitar</translation>
+<translation id="1201402288615127009">Siguiente</translation>
 <translation id="1243314992276662751">Subir</translation>
 <translation id="1266864766717917324">No se ha podido compartir: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Toca los elementos táctiles en la pantalla.</translation>
 <translation id="2295140143284145483">Encuesta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Comprobar tu conexión a Internet</translation>
 <translation id="2388990488038464401">¿Quieres llamar a este número desde tu teléfono?</translation>
 <translation id="24452542372838207">Mostrar notificación</translation>
 <translation id="2445449901874883781">Usar alta densidad</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Queda 1 segundo}other{Quedan # segundos}}</translation>
 <translation id="5941711191222866238">Minimizar</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hora}other{# horas}}</translation>
+<translation id="5946629889255121107">Número iniciado desde <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Página <ph name="SELECTED_PAGE" /> de <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Borrar el texto del cuadro de búsqueda</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Guardar archivo</translation>
 <translation id="6656912866303152668">Asegúrate de que la sincronización de <ph name="TARGET_DEVICE_NAME" /> está activada en Chrome y, a continuación, intenta hacer el envío de nuevo.</translation>
 <translation id="6699343763173986273">Siguiente pista multimedia</translation>
+<translation id="6710213216561001401">Anterior</translation>
 <translation id="6779314412797872738">Para enviar un número desde aquí a tu teléfono Android, <ph name="TROUBLESHOOT_LINK" /> en los ajustes de ambos dispositivos.</translation>
 <translation id="6786750046913594791">Cerrar carpeta</translation>
 <translation id="6808150112686056157">Detener contenido multimedia</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Queda 1 min}other{Quedan # min}}</translation>
 <translation id="7319740667687257810">Menú de aplicaciones, vista parcial</translation>
+<translation id="7352651011704765696">Se ha producido un problema</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Hace 1 min}other{Hace # min}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Queda 1 minuto}other{Quedan # minutos}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Hace 1 hora}other{Hace # horas}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Queda 1 s}other{Quedan # s}}</translation>
+<translation id="8134065097954893699">Vuelve a cargar esta página</translation>
 <translation id="8144660977431427332">Tus búsquedas usan la tecnología del Asistente de Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autocompletar</translation>
 <translation id="815598010540052116">Desplazar hacia abajo</translation>

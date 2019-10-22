@@ -249,6 +249,70 @@ TEST_F(UkmServiceTest, Purge) {
   EXPECT_EQ(0, GetPersistedLogCount());
 }
 
+TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
+  auto* unsent_log_store = service.reporting_service_.ukm_log_store();
+
+  // Initialize a Report to be saved to the log store.
+  ukm::Report report;
+  report.set_client_id(1);
+  report.set_session_id(1);
+  report.set_report_id(1);
+
+  std::string non_extension_url = "https://www.google.ca";
+  std::string extension_url =
+      "chrome-extension://bmnlcjabgnpnenekpadlanbbkooimhnj/manifest.json";
+
+  // Add both extension- and non-extension-related sources to the Report.
+  ukm::Source* proto_source_1 = report.add_sources();
+  ukm::SourceId source_id_1 =
+      ukm::ConvertToSourceId(1, ukm::SourceIdType::NAVIGATION_ID);
+  proto_source_1->set_id(source_id_1);
+  proto_source_1->add_urls()->set_url(non_extension_url);
+  ukm::Source* proto_source_2 = report.add_sources();
+  ukm::SourceId source_id_2 =
+      ukm::ConvertToSourceId(2, ukm::SourceIdType::NAVIGATION_ID);
+  proto_source_2->set_id(source_id_2);
+  proto_source_2->add_urls()->set_url(extension_url);
+
+  // Add some entries for both sources.
+  ukm::Entry* entry_1 = report.add_entries();
+  entry_1->set_source_id(source_id_2);
+  ukm::Entry* entry_2 = report.add_entries();
+  entry_2->set_source_id(source_id_1);
+  ukm::Entry* entry_3 = report.add_entries();
+  entry_3->set_source_id(source_id_2);
+
+  // Save the Report to the store.
+  std::string serialized_log;
+  report.SerializeToString(&serialized_log);
+  unsent_log_store->StoreLog(serialized_log);
+
+  // Do extension purging.
+  service.PurgeExtensions();
+
+  // Get the Report in the log store and verify extension-related data have been
+  // filtered.
+  unsent_log_store->StageNextLog();
+  const std::string& compressed_log_data = unsent_log_store->staged_log();
+
+  std::string uncompressed_log_data;
+  compression::GzipUncompress(compressed_log_data, &uncompressed_log_data);
+  ukm::Report filtered_report;
+  filtered_report.ParseFromString(uncompressed_log_data);
+
+  // Only proto_source_1  with non-extension URL is kept.
+  EXPECT_EQ(1, filtered_report.sources_size());
+  EXPECT_EQ(source_id_1, filtered_report.sources(0).id());
+  EXPECT_EQ(non_extension_url, filtered_report.sources(0).urls(0).url());
+
+  // Only entry_2 from the non-extension source is kept.
+  EXPECT_EQ(1, filtered_report.entries_size());
+  EXPECT_EQ(source_id_1, filtered_report.entries(0).source_id());
+}
+
 TEST_F(UkmServiceTest, SourceSerialization) {
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */,

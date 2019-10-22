@@ -178,7 +178,7 @@ Refer to README.md for content description and update process.
  <item id="omnibox_suggest_deletion" hash_code="84212388" type="0" content_hash_code="24981550" os_list="linux,windows" file_path="components/omnibox/browser/base_search_provider.cc"/>
  <item id="omnibox_zerosuggest" hash_code="7687691" type="0" content_hash_code="119419625" os_list="linux,windows" file_path="components/omnibox/browser/remote_suggestions_service.cc"/>
  <item id="one_google_bar_service" hash_code="78917933" type="0" content_hash_code="46527252" os_list="linux,windows" file_path="chrome/browser/search/one_google_bar/one_google_bar_loader_impl.cc"/>
- <item id="open_screen_message" hash_code="95250780" type="0" deprecated="2019-09-05" content_hash_code="39027953" file_path=""/>
+ <item id="open_screen_message" hash_code="95250780" type="0" content_hash_code="39027953" os_list="linux" file_path="chrome/browser/media/router/providers/openscreen/platform/chrome_udp_socket.cc"/>
  <item id="open_search" hash_code="107267424" type="0" content_hash_code="83025542" os_list="linux,windows" file_path="components/search_engines/template_url_fetcher.cc"/>
  <item id="optimization_guide_model" hash_code="106373593" type="0" content_hash_code="32403047" os_list="linux,windows" file_path="chrome/browser/optimization_guide/prediction/prediction_model_fetcher.cc"/>
  <item id="origin_policy_loader" hash_code="6483617" type="0" content_hash_code="20680909" os_list="linux,windows" file_path="services/network/origin_policy/origin_policy_fetcher.cc"/>

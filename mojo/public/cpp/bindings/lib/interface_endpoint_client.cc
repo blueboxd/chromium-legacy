@@ -319,7 +319,7 @@ bool InterfaceEndpointClient::SendMessageWithResponder(
   if (!is_control_message && idle_handler_)
     ++num_unacked_messages_;
 
-  if (!is_sync) {
+  if (!is_sync || force_outgoing_messages_async_) {
     async_responders_[request_id] = std::move(responder);
     return true;
   }
@@ -531,7 +531,8 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
   } else if (message->has_flag(Message::kFlagIsResponse)) {
     uint64_t request_id = message->request_id();
 
-    if (message->has_flag(Message::kFlagIsSync)) {
+    if (message->has_flag(Message::kFlagIsSync) &&
+        !force_outgoing_messages_async_) {
       auto it = sync_responses_.find(request_id);
       if (it == sync_responses_.end())
         return false;

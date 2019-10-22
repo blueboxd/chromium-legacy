@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Buruk</translation>
 <translation id="1152528166145813711">Pilih…</translation>
 <translation id="1199593201721843963">Nonaktifkan sambungan jarak jauh</translation>
+<translation id="1201402288615127009">Berikutnya</translation>
 <translation id="1291443878853470558">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chromoting untuk mengakses komputer ini.</translation>
 <translation id="1297009705180977556">Terjadi error saat menghubungkan ke <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(Fitur ini belum tersedia untuk komputer Anda)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Desktop Jarak Jauh kini tersedia di web. Coba <ph name="LINK_BEGIN" />aplikasi web<ph name="LINK_END" /> kami—cepat dan gratis, dengan lebih banyak fitur, termasuk dukungan yang ditingkatkan untuk beberapa monitor.</translation>
 <translation id="1643640058022401035">Dengan meninggalkan halaman ini, Anda akan mengakhiri sesi Chromoting.</translation>
 <translation id="1654128982815600832">Mengaktifkan sambungan jarak jauh untuk komputer ini...</translation>
+<translation id="1697532407822776718">Anda sudah siap!</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
 <translation id="174018511426417793">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, instal Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Menyambungkan...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Proses Host</translation>
 <translation id="20876857123010370">Mode trackpad</translation>
 <translation id="2089514346391228378">Sambungan jarak jauh untuk komputer ini telah diaktifkan.</translation>
+<translation id="2198363917176605566">Untuk menggunakan <ph name="PRODUCT_NAME" />, Anda harus memberikan izin ke 'Screen Recording' agar konten layar di Mac ini dapat dikirim ke komputer jarak jauh.
+
+Untuk memberikan izin ini, klik '<ph name="BUTTON_NAME" />' di bawah guna membuka panel preferensi 'Screen Recording', lalu centang kotak di samping '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah dicentang, hapus centangnya, lalu centang kembali.</translation>
 <translation id="2208514473086078157">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai inang Chrome Desktop Jarak Jauh. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
 <translation id="2220529011494928058">Laporkan masalah</translation>
 <translation id="2221097377466213233">Gunakan Ctrl kanan untuk tombol Win (⌘ di Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Terakhir terlihat online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Aplikasi ini tidak lagi didukung. Untuk memastikan Anda mendapatkan update fitur dan keamanan terbaru, gunakan <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Bantu kami meningkatkan Chrome Desktop Jarak Jauh dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>
+<translation id="2504109125669302160">Beri izin 'Accessibility' ke <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Terhubung ke <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">CATATAN: Untuk memastikan bahwa semua pintasan keyboard tersedia, Anda dapat mengonfigurasi Chrome Desktop Jarak Jauh menjadi ‘Buka sebagai jendela’.</translation>
 <translation id="2540992418118313681">Ingin membagikan komputer ini agar dapat dilihat dan dikontrol oleh pengguna lain?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Pustaka Inti</translation>
 <translation id="4430435636878359009">Nonaktifkan sambungan jarak jauh ke komputer ini</translation>
 <translation id="4430915108080446161">Membuat kode akses...</translation>
+<translation id="443560535555262820">Buka Preferensi Accessibility</translation>
 <translation id="4450893287417543264">Jangan tampilkan lagi</translation>
 <translation id="4472575034687746823">Memulai</translation>
 <translation id="4481276415609939789">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan ke komputer, instal Chromoting di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Ubah PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (kedaluwarsa)</translation>
 <translation id="6221358653751391898">Anda tidak masuk ke Chrome. Login dan coba lagi.</translation>
+<translation id="6223301979382383752">Buka Preferensi Screen Recording</translation>
 <translation id="6227369581881558336">Chrome Desktop Jarak Jauh kini tersedia di web dengan fitur baru termasuk transfer file! Lihat <ph name="LINK_BEGIN" />aplikasi web<ph name="LINK_END" /> kami.</translation>
 <translation id="6284412385303060032">Host yang berjalan di layar logika konsol telah dinonaktifkan untuk mendukung mode tirai dengan beralih ke host yang berjalan di sesi khusus pengguna.</translation>
 <translation id="629730747756840877">Akun</translation>
 <translation id="6304318647555713317">Klien</translation>
 <translation id="6381670701864002291">Lainnya.</translation>
 <translation id="6398765197997659313">Keluar dari tampilan layar penuh</translation>
+<translation id="6411861157501911556">Untuk menggunakan <ph name="PRODUCT_NAME" />, Anda harus memberikan izin ke 'Accessibility' agar input dari perangkat jarak jauh dapat dimasukkan ke Mac ini.
+
+Untuk memberikan izin ini, klik '<ph name="BUTTON_NAME" />' di bawah guna membuka panel preferensi 'Accessibility', lalu centang kotak di samping '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah dicentang, hapus centangnya, lalu centang kembali.</translation>
 <translation id="6441316101718669559">Penggabungan desktop tidak didukung pada platform ini. Anda masih dapat menggunakan aplikasi, namun pengalaman pengguna akan terdegradasi.</translation>
 <translation id="652218476070540101">PIN untuk komputer ini sedang diperbarui...</translation>
 <translation id="6527303717912515753">Bagikan</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Pertahankan agar keseluruhan desktop jarak jauh tetap terlihat</translation>
 <translation id="9149992051684092333">Untuk mulai berbagi desktop, berikan kode akses di bawah kepada orang yang akan membantu Anda.</translation>
 <translation id="916856682307586697">Luncurkan XSession default</translation>
+<translation id="9187628920394877737">Beri izin 'Screen Recording' ke <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Beri Otorisasi</translation>
 <translation id="9213184081240281106">Konfigurasi host tidak valid.</translation>
 <translation id="951991426597076286">Tolak</translation>

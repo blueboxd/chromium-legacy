@@ -27,7 +27,7 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
-    newPrintPreview: {
+    isPrintPreview: {
       type: Boolean,
       reflectToAttribute: true,
     },
@@ -41,7 +41,7 @@ Polymer({
     /** @private */
     showOnLeft_: {
       type: Boolean,
-      computed: 'computeShowOnLeft_(newPrintPreview)',
+      computed: 'computeShowOnLeft_(isPrintPreview)',
       reflectToAttribute: true,
     },
   },
@@ -53,20 +53,7 @@ Polymer({
   },
 
   /** @private {boolean} */
-  isPrintPreview_: false,
-
-  /** @private {boolean} */
   visible_: true,
-
-  /** @param {boolean} isPrintPreview */
-  setIsPrintPreview: function(isPrintPreview) {
-    this.isPrintPreview_ = isPrintPreview;
-  },
-
-  /** @return {boolean} */
-  isPrintPreview: function() {
-    return this.isPrintPreview_;
-  },
 
   /** @return {boolean} */
   isVisible: function() {
@@ -78,7 +65,7 @@ Polymer({
     // This can only happen when the plugin is shown within Print Preview using
     // keyboard navigation.
     if (!this.visible_) {
-      assert(this.isPrintPreview_);
+      assert(this.isPrintPreview);
       this.fire('keyboard-navigation-active', true);
       this.show();
     }
@@ -86,7 +73,7 @@ Polymer({
 
   /** @private */
   onKeyUp_: function() {
-    if (this.isPrintPreview_) {
+    if (this.isPrintPreview) {
       this.fire('keyboard-navigation-active', true);
     }
     this.keyboardNavigationActive_ = true;
@@ -94,7 +81,7 @@ Polymer({
 
   /** @private */
   onPointerDown_: function() {
-    if (this.isPrintPreview_) {
+    if (this.isPrintPreview) {
       this.fire('keyboard-navigation-active', false);
     }
     this.keyboardNavigationActive_ = false;
@@ -106,7 +93,7 @@ Polymer({
    * @private
    */
   computeShowOnLeft_: function() {
-    return isRTL() !== this.newPrintPreview;
+    return isRTL() !== this.isPrintPreview;
   },
 
   /**

@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">Muat halaman nanti</translation>
 <translation id="1015730422737071372">Berikan detail tambahan</translation>
 <translation id="1021110881106174305">Kartu yang diterima</translation>
-<translation id="1023523064224774104">Chromium telah mendeteksi bahwa Anda baru saja memasukkan sandi ke sebuah situs yang mencurigakan. Setel ulang sandi Anda sekarang.</translation>
 <translation id="1032854598605920125">Putar searah jarum jam</translation>
 <translation id="1035334672863811645">login ke Chrome</translation>
 <translation id="1036348656032585052">Matikan</translation>
@@ -122,6 +121,7 @@
 <translation id="1501859676467574491">Tampilkan kartu dari Akun Google Anda</translation>
 <translation id="1507202001669085618">&lt;p&gt;Anda akan melihat error ini jika menggunakan portal Wi-Fi yang mengharuskan Anda login sebelum terhubung online.&lt;/p&gt;
     &lt;p&gt;Untuk memperbaiki error, klik &lt;strong&gt;Sambungkan&lt;/strong&gt; di halaman yang ingin Anda buka.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Daftar entri histori</translation>
 <translation id="1517433312004943670">Perlu nomor telepon</translation>
 <translation id="1517500485252541695">Kartu kredit dan debit yang diterima</translation>
 <translation id="1519264250979466059">Tanggal Dibuat</translation>
@@ -307,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin dicabut. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="2438874542388153331">Empat lubang di kanan</translation>
+<translation id="245044156129055925">Anda baru saja memasukkan sandi ke situs yang berisi penipuan. Chromium merekomendasikan untuk mengubah sandi saat ini.</translation>
 <translation id="2463193859425327265">Ubah Halaman Beranda</translation>
 <translation id="2463739503403862330">Isi</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -550,7 +551,6 @@
 <translation id="3655670868607891010">Jika Anda sering melihatnya, coba <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisi</translation>
 <translation id="366077651725703012">Perbarui Kartu Kredit</translation>
-<translation id="3672525478985456967">Situs ini terlihat mirip dengan <ph name="LOOKALIKE_DOMAIN" />. Penyerang terkadang meniru situs dengan membuat perubahan kecil dan sulit terlihat pada nama domain.</translation>
 <translation id="3676592649209844519">ID Perangkat:</translation>
 <translation id="3677008721441257057">Maksud Anda &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Permintaan tidak dapat ditandatangani</translation>
@@ -616,6 +616,9 @@
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> diblokir.</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> telah mengaktifkan Perlindungan Ancaman Chrome Enterprise di browser Anda. Perlindungan Ancaman Chrome Enterprise memiliki akses ke beberapa data Anda.</translation>
+<translation id="3987405730340719549">Chrome telah menetapkan bahwa situs ini mungkin palsu atau menipu.
+
+    Jika Anda yakin ini ditampilkan dalam error, kunjungi https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Kurang dari 1 MB</translation>
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 halaman web di sekitar}other{# halaman web di sekitar}}</translation>
@@ -874,7 +877,6 @@
 <translation id="5230733896359313003">Alamat Pengiriman</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Tutup</translation>
 <translation id="5250209940322997802">"Sambungkan ke jaringan"</translation>
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
@@ -994,6 +996,9 @@
 <translation id="5813119285467412249">&amp;Ulangi Penambahan</translation>
 <translation id="583281660410589416">Tidak dikenal</translation>
 <translation id="5838278095973806738">Jangan masukkan informasi sensitif apa pun di situs ini (misalnya, sandi atau kartu kredit), karena penyerang dapat mencurinya.</translation>
+<translation id="5855253129151731373">Hostname situs ini terlihat mirip dengan <ph name="LOOKALIKE_DOMAIN" />. Penyerang terkadang meniru situs dengan membuat perubahan kecil dan sulit terlihat pada nama domain.
+
+    Jika Anda yakin ini ditampilkan dalam error, kunjungi https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
 <translation id="5863847714970149516">Halaman berikutnya mungkin mencoba menagih Anda.</translation>
 <translation id="5866257070973731571">Tambahkan Nomor Telepon</translation>
@@ -1016,7 +1021,6 @@
 <translation id="5946937721014915347">Membuka <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Ya, tambahkan</translation>
 <translation id="5951495562196540101">Tidak dapat mendaftar dengan akun konsumen (tersedia paket lisensi).</translation>
-<translation id="5966900314707961320">Jika diaktifkan, situs tidak dapat menggunakan cookie yang akan melacak Anda di web</translation>
 <translation id="5967592137238574583">Edit Info Kontak</translation>
 <translation id="5967867314010545767">Hapus dari histori</translation>
 <translation id="5975083100439434680">Perkecil</translation>
@@ -1105,6 +1109,7 @@
 <translation id="6401136357288658127">Kebijakan ini tidak digunakan lagi. Sebaiknya Anda menggunakan kebijakan <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6406765186087300643">C0 (Envelope)</translation>
+<translation id="6409754798200046165">Anda baru saja memasukkan sandi ke situs yang berisi penipuan. Chrome merekomendasikan untuk mengubah sandi saat ini.</translation>
 <translation id="6410264514553301377">Masukkan tanggal kedaluwarsa dan CVC <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium dapat membantu Anda melindungi Akun Google dan mengubah sandi Anda.</translation>
 <translation id="6427730057873428458">Gate fold</translation>
@@ -1112,7 +1117,6 @@
 <translation id="6433490469411711332">Edit info kontak</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> menolak untuk tersambung.</translation>
 <translation id="6434309073475700221">Tutup</translation>
-<translation id="6435221585574090192">Bagikan data tentang peristiwa keamanan yang telah ditandai oleh Perlindungan Ancaman Chrome Enterprise kepada Administrator Anda. Ini mungkin termasuk URL halaman, nama file dan metadata file, nama pengguna perangkat, dan nama pengguna Chrome Anda.</translation>
 <translation id="6440503408713884761">Diabaikan</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Tambahkan informasi lainnya</translation>
@@ -1400,6 +1404,7 @@
 <translation id="7932579305932748336">Lapisan</translation>
 <translation id="79338296614623784">Masukkan nomor telepon yang valid</translation>
 <translation id="7934052535022478634">Pembayaran selesai</translation>
+<translation id="7935031712718413217">Kemungkinan spoofing URL</translation>
 <translation id="7935318582918952113">Penyaring DOM</translation>
 <translation id="7937554595067888181">Masa berlaku habis pada <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Sertifikat server belum valid.</translation>
@@ -1454,7 +1459,6 @@
 <translation id="8184538546369750125">Gunakan default global (Izinkan)</translation>
 <translation id="8194797478851900357">&amp;Urungkan Pemindahan</translation>
 <translation id="8197543752516192074">Terjemahkan Halaman</translation>
-<translation id="8197899142098070286">Chrome telah mendeteksi bahwa Anda baru saja memasukkan sandi ke situs yang mencurigakan. Setel ulang sandi Anda sekarang.</translation>
 <translation id="8201077131113104583">URL pembaruan tidak valid untuk ekstensi dengan ID "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Ringkasan pesanan</translation>
 <translation id="8202370299023114387">Konflik</translation>
@@ -1539,7 +1543,6 @@
 <translation id="8718314106902482036">Pembayaran belum selesai</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, saran penelusuran</translation>
 <translation id="8719528812645237045">Beberapa lubang di atas</translation>
-<translation id="8723954843026426558">Saya menyetujui persyaratan &amp; ketentuan, kebijakan privasi, dan hak untuk menarik diri dari <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Coba lagi</translation>
 <translation id="8728672262656704056">Anda masuk mode samaran</translation>
 <translation id="8730621377337864115">Selesai</translation>

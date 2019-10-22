@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{for 1 minutt siden}other{for # minutter siden}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Fjern</translation>
+<translation id="1201402288615127009">Neste</translation>
 <translation id="1243314992276662751">Last opp</translation>
 <translation id="1266864766717917324">Kunne ikke dele <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Trykk på berøringsmålene på skjermen.</translation>
 <translation id="2295140143284145483">Undersøkelse</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB per sek</translation>
+<translation id="2353636109065292463">Sjekker internettilkoblingen din</translation>
 <translation id="2388990488038464401">Vil du ringe dette nummeret fra telefonen?</translation>
 <translation id="24452542372838207">Vis varselet</translation>
 <translation id="2445449901874883781">Bruk høy tetthet</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekund igjen}other{# sekunder igjen}}</translation>
 <translation id="5941711191222866238">Minimer</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 time}other{# timer}}</translation>
+<translation id="5946629889255121107">Nummeret kommer fra <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Side <ph name="SELECTED_PAGE" /> av <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Fjern teksten i søkefeltet</translation>
 <translation id="6040143037577758943">Lukk</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Lagre fil</translation>
 <translation id="6656912866303152668">Kontrollér at <ph name="TARGET_DEVICE_NAME" /> har synkronisering påslått i Chrome, og prøv deretter å sende på nytt.</translation>
 <translation id="6699343763173986273">Media – neste spor</translation>
+<translation id="6710213216561001401">Forrige</translation>
 <translation id="6779314412797872738">For å sende numre herfra til Android-telefonen din, <ph name="TROUBLESHOOT_LINK" /> for begge enhetene i innstillingene.</translation>
 <translation id="6786750046913594791">Lukk mappen</translation>
 <translation id="6808150112686056157">Media – stopp</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min igjen}other{# min igjen}}</translation>
 <translation id="7319740667687257810">Appoversikt, delvis visning</translation>
+<translation id="7352651011704765696">Noe gikk galt</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{For 1 min siden}other{For # min siden}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minutt igjen}other{# minutter igjen}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{For 1 time siden}other{For # timer siden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek igjen}other{# sek igjen}}</translation>
+<translation id="8134065097954893699">Laster inn denne siden på nytt</translation>
 <translation id="8144660977431427332">Søkene er drevet av Google-assistenten. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autofullføring</translation>
 <translation id="815598010540052116">Rull ned</translation>

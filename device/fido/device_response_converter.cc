@@ -38,6 +38,15 @@ ProtocolVersion ConvertStringToProtocolVersion(base::StringPiece version) {
   return ProtocolVersion::kUnknown;
 }
 
+// Converts a CBOR unsigned integer value to a uint32_t. The conversion is
+// clamped at uint32_max.
+uint32_t CBORUnsignedToUint32Safe(const cbor::Value& value) {
+  DCHECK(value.is_unsigned());
+  constexpr uint32_t uint32_max = std::numeric_limits<uint32_t>::max();
+  const int64_t n = value.GetUnsigned();
+  return n > uint32_max ? uint32_max : n;
+}
+
 }  // namespace
 
 using CBOR = cbor::Value;
@@ -337,7 +346,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     if (!it->second.is_unsigned())
       return base::nullopt;
 
-    response.max_msg_size = it->second.GetUnsigned();
+    response.max_msg_size = CBORUnsignedToUint32Safe(it->second);
   }
 
   it = response_map.find(CBOR(6));
@@ -353,6 +362,23 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       supported_pin_protocols.push_back(protocol.GetUnsigned());
     }
     response.pin_protocols = std::move(supported_pin_protocols);
+  }
+
+  it = response_map.find(CBOR(7));
+  if (it != response_map.end()) {
+    if (!it->second.is_unsigned())
+      return base::nullopt;
+
+    response.max_credential_count_in_list =
+        CBORUnsignedToUint32Safe(it->second);
+  }
+
+  it = response_map.find(CBOR(8));
+  if (it != response_map.end()) {
+    if (!it->second.is_unsigned())
+      return base::nullopt;
+
+    response.max_credential_id_length = CBORUnsignedToUint32Safe(it->second);
   }
 
   return base::Optional<AuthenticatorGetInfoResponse>(std::move(response));

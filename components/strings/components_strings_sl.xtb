@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Naloži stran pozneje</translation>
 <translation id="1015730422737071372">Navedite dodatne podrobnosti</translation>
 <translation id="1021110881106174305">Sprejete kartice</translation>
-<translation id="1023523064224774104">Chromium je zaznal, da ste pravkar vnesli geslo na spletnem mestu, ki je
-          sumljivo. Takoj ponastavite geslo.</translation>
 <translation id="1032854598605920125">Sukanje v smeri urnega kazalca</translation>
 <translation id="1035334672863811645">se prijavite v Chrome</translation>
 <translation id="1036348656032585052">Izklop</translation>
@@ -123,6 +121,7 @@
 <translation id="1501859676467574491">Prikaz kartic iz Google Računa</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ta napaka se prikaže, če uporabljate portal Wi-Fi, ki pred uporabo spleta zahteva prijavo.&lt;/p&gt;
     &lt;p&gt;Napravo odpravite tako, da na strani, ki jo poskušate odpreti, kliknete &lt;strong&gt;Poveži&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Seznam vnosov v zgodovino</translation>
 <translation id="1517433312004943670">Telefonska številka je obvezna</translation>
 <translation id="1517500485252541695">Sprejete kreditne in debetne kartice</translation>
 <translation id="1519264250979466059">Datum gradnje</translation>
@@ -308,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda preklicano. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="2438874542388153331">Četverno luknjanje na desni</translation>
+<translation id="245044156129055925">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da takoj spremenite geslo.</translation>
 <translation id="2463193859425327265">Spremeni domačo stran</translation>
 <translation id="2463739503403862330">Izpolni</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -552,7 +552,6 @@
 <translation id="3655670868607891010">Če se to pogosto zgodi, poskusite <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Različica</translation>
 <translation id="366077651725703012">Posodobi kreditno kartico</translation>
-<translation id="3672525478985456967">Ime tega spletnega mesta je podobno imenu <ph name="LOOKALIKE_DOMAIN" />. Napadalci včasih poskušajo posnemati spletna mesta, tako da skoraj neopazno spremenijo ime domene.</translation>
 <translation id="3676592649209844519">ID naprave:</translation>
 <translation id="3677008721441257057">Ali ste mislili &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Zahteve ni bilo mogoče podpisati</translation>
@@ -618,6 +617,9 @@
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="3973234410852337861">Spletno mesto <ph name="HOST_NAME" /> je blokirano</translation>
 <translation id="3981540111851280311">Domena <ph name="ENROLLMENT_DOMAIN" /> je v brskalniku omogočila Chromovo funkcijo zaščite pred grožnjami za podjetja. Chromova funkcija zaščite pred grožnjami za podjetja ima dostop do nekaterih vaših podatkov.</translation>
+<translation id="3987405730340719549">Chrome je ugotovil, da je to spletno mesto morda lažni ali goljufivo.
+
+    Če menite, da je opozorilo prikazano pomotoma, obiščite https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Manj kot 1 MB</translation>
 <translation id="3990250421422698716">Zamik v načinu dela »jog«</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 spletna stran v bližini}one{# spletna stran v bližini}two{# spletni strani v bližini}few{# spletne strani v bližini}other{# spletnih strani v bližini}}</translation>
@@ -876,7 +878,6 @@
 <translation id="5230733896359313003">Naslov za pošiljanje</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Opusti</translation>
 <translation id="5250209940322997802">»Vzpostavite povezavo z omrežjem«</translation>
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
@@ -996,6 +997,9 @@
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
 <translation id="583281660410589416">Neznano</translation>
 <translation id="5838278095973806738">Na tem spletnem mestu ne vnašajte občutljivih informacij (npr. gesel ali številk kreditnih kartic), ker jih lahko ukradejo napadalci.</translation>
+<translation id="5855253129151731373">Ime gostitelja tega spletnega mesta je podobno imenu <ph name="LOOKALIKE_DOMAIN" />. Napadalci včasih poskušajo posnemati spletna mesta, tako da skoraj neopazno spremenijo ime domene.
+
+    Če menite, da je opozorilo prikazano pomotoma, obiščite https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5863847714970149516">Stran, ki se bo odprla, vam bo morda poskusila kaj zaračunati</translation>
 <translation id="5866257070973731571">Dodajanje telefonske številke</translation>
@@ -1018,7 +1022,6 @@
 <translation id="5946937721014915347">Odpiranje spletnega mesta <ph name="SITE_NAME" /> …</translation>
 <translation id="5947933617628957894">Da, dodaj</translation>
 <translation id="5951495562196540101">S potrošniškim računom se ni mogoče včlaniti (na voljo je pridružena licenca).</translation>
-<translation id="5966900314707961320">Ko je to omogočeno, vam spletna mesta ne morejo slediti po spletu na podlagi piškotkov</translation>
 <translation id="5967592137238574583">Urejanje podatkov o stiku</translation>
 <translation id="5967867314010545767">Odstrani iz zgodovine</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
@@ -1107,6 +1110,7 @@
 <translation id="6401136357288658127">Ta pravilnik je zastarel. Uporabite pravilnik <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Uredi zaznamek</translation>
 <translation id="6406765186087300643">C0 (Envelope)</translation>
+<translation id="6409754798200046165">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da takoj spremenite geslo.</translation>
 <translation id="6410264514553301377">Vnesite datum poteka veljavnosti in kodo CVC za kartico <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium vam lahko pomaga zaščititi račun za Google in spremeniti geslo.</translation>
 <translation id="6427730057873428458">Prepogibanje v obliki okna</translation>
@@ -1114,7 +1118,6 @@
 <translation id="6433490469411711332">Uredi informacije o stiku</translation>
 <translation id="6433595998831338502">Spletno mesto <ph name="HOST_NAME" /> ni dovolilo povezave.</translation>
 <translation id="6434309073475700221">Zavrzi</translation>
-<translation id="6435221585574090192">Skrbniku posredujte podatke o varnostnih dogodkih, ki jih je označila Chromova funkcija zaščite pred grožnjami za podjetja. Ti lahko vključujejo URL-je strani, ime datoteke in metapodatke o datoteki, uporabniško ime v napravi in uporabniško ime v Chromu.</translation>
 <translation id="6440503408713884761">Prezrto</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Dodajanje več podatkov</translation>
@@ -1404,6 +1407,7 @@ Dodatne podrobnosti:
 <translation id="7932579305932748336">Prevleka</translation>
 <translation id="79338296614623784">Vnesite veljavno telefonsko številko</translation>
 <translation id="7934052535022478634">Plačilo je dokončano</translation>
+<translation id="7935031712718413217">Morebiten URL z lažnim predstavljanjem</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Poteče <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Potrdilo strežnika še ni veljavno.</translation>
@@ -1458,7 +1462,6 @@ Dodatne podrobnosti:
 <translation id="8184538546369750125">Uporabi globalno privzeto (Dovoli)</translation>
 <translation id="8194797478851900357">&amp;Razveljavi premik</translation>
 <translation id="8197543752516192074">Prevedi stran</translation>
-<translation id="8197899142098070286">Chrome je zaznal, da ste pravkar vnesli geslo na spletnem mestu, ki je sumljivo. Takoj ponastavite geslo.</translation>
 <translation id="8201077131113104583">Neveljaven posodobitveni URL za razširitev z ID-jem »<ph name="EXTENSION_ID" />«.</translation>
 <translation id="8202097416529803614">Povzetek naročila</translation>
 <translation id="8202370299023114387">Spor</translation>
@@ -1545,7 +1548,6 @@ Dodatne podrobnosti:
 <translation id="8718314106902482036">Plačilo ni končano</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, predlog iskanja</translation>
 <translation id="8719528812645237045">Večkratno luknjanje zgoraj</translation>
-<translation id="8723954843026426558">Strinjam se s pogoji in določili, pravilnikom o zasebnosti in pravico do umika za <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8728672262656704056">Uporabljate način brez beleženja zgodovine</translation>
 <translation id="8730621377337864115">Končano</translation>

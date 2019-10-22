@@ -199,6 +199,9 @@ class CreditCardFIDOAuthenticator
   // Returns true if |request_options| contains a challenge.
   bool IsValidCreationOptions(const base::Value& creation_options);
 
+  // Logs the result of a WebAuthn prompt.
+  void LogWebauthnResult(AuthenticatorStatus status);
+
   // Card being unmasked.
   const CreditCard* card_;
 

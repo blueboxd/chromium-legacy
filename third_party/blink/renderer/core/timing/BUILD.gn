@@ -52,8 +52,6 @@ blink_core_sources("timing") {
     "profiler.h",
     "profiler_group.cc",
     "profiler_group.h",
-    "sub_task_attribution.cc",
-    "sub_task_attribution.h",
     "task_attribution_timing.cc",
     "task_attribution_timing.h",
     "time_clamper.cc",

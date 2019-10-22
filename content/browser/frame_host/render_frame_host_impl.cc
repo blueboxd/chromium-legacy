@@ -3511,6 +3511,14 @@ void RenderFrameHostImpl::UnregisterProtocolHandler(const std::string& scheme,
   delegate_->UnregisterProtocolHandler(this, scheme, url, user_gesture);
 }
 
+void RenderFrameHostImpl::DidDisplayInsecureContent() {
+  delegate_->DidDisplayInsecureContent();
+}
+
+void RenderFrameHostImpl::DidContainInsecureFormAction() {
+  delegate_->DidContainInsecureFormAction();
+}
+
 void RenderFrameHostImpl::LifecycleStateChanged(
     blink::mojom::FrameLifecycleState state) {
   frame_lifecycle_state_ = state;

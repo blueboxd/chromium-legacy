@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Má</translation>
 <translation id="1152528166145813711">Selecionar...</translation>
 <translation id="1199593201721843963">Desativar ligações remotas</translation>
+<translation id="1201402288615127009">Seguinte</translation>
 <translation id="1291443878853470558">Se pretende utilizar o Chromoting para aceder a este computador, é necessário ativar as ligações remotas.</translation>
 <translation id="1297009705180977556">Erro ao ligar a <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(esta funcionalidade ainda não está disponível para o seu computador)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Agora, o Ambiente de Trabalho Remoto do Chrome está na Web. Experimente a nossa <ph name="LINK_BEGIN" />aplicação Web<ph name="LINK_END" />, que é rápida, gratuita e tem ainda mais funcionalidades, incluindo a compatibilidade melhorada com vários monitores.</translation>
 <translation id="1643640058022401035">Se sair desta página, terminará a sessão do Chromoting.</translation>
 <translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
+<translation id="1697532407822776718">O processo está concluído!</translation>
 <translation id="170207782578677537">Falha ao registar o computador.</translation>
 <translation id="174018511426417793">Não existem computadores registados. Para ativar as ligações remotas a um computador, instale o Ambiente de Trabalho Remoto do Chrome aí e clique em “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">A ligar...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Processo do Anfitrião</translation>
 <translation id="20876857123010370">Modo de trackpad</translation>
 <translation id="2089514346391228378">Foram ativadas as ligações remotas neste computador.</translation>
+<translation id="2198363917176605566">Para utilizar o <ph name="PRODUCT_NAME" />, tem de conceder a autorização "Gravação de ecrã" para que o conteúdo do ecrã neste Mac possa ser enviado para o computador remoto.
+
+Para conceder esta autorização, clique no botão "<ph name="BUTTON_NAME" />" abaixo para abrir o painel de preferências "Gravação de ecrã" e, em seguida, selecione a caixa junto a "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver selecionado, desselecione-o e volte a selecioná-lo.</translation>
 <translation id="2208514473086078157">As definições da política não permitem a partilha deste computador como um anfitrião do Ambiente de Trabalho Remoto do Chrome. Contacte o gestor do sistema para obter assistência.</translation>
 <translation id="2220529011494928058">Comunicar um problema</translation>
 <translation id="2221097377466213233">Utilizar a tecla Ctrl direita para a tecla Win (⌘ no Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Última atividade online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Esta aplicação já não é suportada. Para garantir que recebe as mais recentes funcionalidades e atualizações de segurança, utilize a <ph name="LINK_BEGIN" />aplicação Web do Ambiente de Trabalho Remoto do Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar o Ambiente de Trabalho Remoto do Chrome, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
+<translation id="2504109125669302160">Conceda a autorização "Acessibilidade" ao <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Ligado a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Para garantir que todos os atalhos de teclado estão disponíveis, pode configurar o Ambiente de Trabalho Remoto do Chrome para "Abrir como janela".</translation>
 <translation id="2540992418118313681">Pretende partilhar este computador e permitir que outro utilizador o veja e controle?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Biblioteca Principal</translation>
 <translation id="4430435636878359009">Desativar as ligações remotas a este computador</translation>
 <translation id="4430915108080446161">A gerar código de acesso...</translation>
+<translation id="443560535555262820">Abrir as Preferências de acessibilidade</translation>
 <translation id="4450893287417543264">Não mostrar de novo</translation>
 <translation id="4472575034687746823">Começar</translation>
 <translation id="4481276415609939789">Não existem computadores registados. Para ativar as ligações remotas a um computador, instale o Chromoting aí e clique em “<ph name="BUTTON_NAME" />”.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Alterar PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (desatualizado)</translation>
 <translation id="6221358653751391898">Não tem sessão iniciada no Chrome. Inicie sessão e tente novamente.</translation>
+<translation id="6223301979382383752">Abrir as preferências Gravação de ecrã</translation>
 <translation id="6227369581881558336">Agora, o Ambiente de Trabalho Remoto do Chrome está na Web com novas funcionalidades, incluindo a transferência de ficheiros. Veja a nossa <ph name="LINK_BEGIN" />aplicação Web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">O anfitrião em execução no ecrã de início de sessão da consola foi encerrado para suportar o modo de cortina ao alternar para um anfitrião em execução numa sessão específica de utilizador.</translation>
 <translation id="629730747756840877">Conta</translation>
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Outro.</translation>
 <translation id="6398765197997659313">Sair do modo de ecrã inteiro</translation>
+<translation id="6411861157501911556">Para utilizar o <ph name="PRODUCT_NAME" />, tem de conceder a autorização "Acessibilidade" para que a entrada do computador remoto possa ser inserida neste Mac.
+
+Para conceder esta autorização, clique no botão "<ph name="BUTTON_NAME" />" abaixo para abrir o painel de preferências "Acessibilidade" e, em seguida, selecione a caixa junto a "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver selecionado, desselecione-o e volte a selecioná-lo.</translation>
 <translation id="6441316101718669559">A integração do ambiente de trabalho não é suportada nesta plataforma. Pode continuar a utilizar a aplicação, mas a experiência de utilizador não é a ideal.</translation>
 <translation id="652218476070540101">O PIN para este computador está a ser atualizado...</translation>
 <translation id="6527303717912515753">Partilhar</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Manter todo o ambiente de trabalho remoto visível</translation>
 <translation id="9149992051684092333">Para começar a partilhar o seu ambiente de trabalho, forneça o código de acesso abaixo à pessoa que o irá ajudar.</translation>
 <translation id="916856682307586697">Inicie a XSession predefinida.</translation>
+<translation id="9187628920394877737">Conceda a autorização "Gravação de ecrã" ao <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="9213184081240281106">Configuração de anfitrião inválida.</translation>
 <translation id="951991426597076286">Recusar</translation>

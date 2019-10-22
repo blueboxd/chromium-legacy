@@ -33,7 +33,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/updater/chrome_update_client_config.h"
-#include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -520,11 +519,7 @@ ChromeExtensionsBrowserClient::GetSystemNetworkContext() {
 }
 
 UserScriptListener* ChromeExtensionsBrowserClient::GetUserScriptListener() {
-  // Create lazily since this accesses g_browser_process which may not be set up
-  // when ChromeExtensionsBrowserClient is created.
-  if (!user_script_listener_)
-    user_script_listener_ = std::make_unique<UserScriptListener>();
-  return user_script_listener_.get();
+  return &user_script_listener_;
 }
 
 std::string ChromeExtensionsBrowserClient::GetUserAgent() const {

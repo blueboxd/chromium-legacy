@@ -1623,9 +1623,11 @@ public class AwContents implements SmartClipProvider {
 
     public void findAllAsync(String searchString) {
         if (TRACE) Log.i(TAG, "%s findAllAsync", this);
-        if (!isDestroyed(WARN)) {
-            AwContentsJni.get().findAllAsync(mNativeAwContents, AwContents.this, searchString);
+        if (isDestroyed(WARN)) return;
+        if (searchString == null) {
+            throw new IllegalArgumentException("Search string shouldn't be null");
         }
+        AwContentsJni.get().findAllAsync(mNativeAwContents, AwContents.this, searchString);
     }
 
     public void findNext(boolean forward) {

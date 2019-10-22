@@ -62,7 +62,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-webvr"})
+        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserNavigationTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
@@ -218,7 +218,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void test2dToWebXr() throws IllegalArgumentException, TimeoutException {
         impl2dToWeb(Page.PAGE_WEBXR, mWebXrVrTestFramework);
@@ -249,7 +249,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void test2dFullscreenToWebXr()
             throws IllegalArgumentException, TimeoutException {
@@ -282,7 +282,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrTo2d() throws IllegalArgumentException, TimeoutException {
         webTo2dImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
@@ -313,7 +313,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrToWebXr() throws IllegalArgumentException, TimeoutException {
         webToWebImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
@@ -344,7 +344,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrPresentingTo2d()
             throws IllegalArgumentException, TimeoutException {
@@ -377,7 +377,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrPresentingToWebXr()
             throws IllegalArgumentException, TimeoutException {
@@ -410,7 +410,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrFullscreenTo2d()
             throws IllegalArgumentException, TimeoutException {
@@ -443,7 +443,7 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrFullscreenToWebXr()
             throws IllegalArgumentException, TimeoutException {

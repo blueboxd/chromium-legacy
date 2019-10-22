@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Ahhoz, hogy a Chrome értesítéseket küldhessen, az értesítéseket az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
 <translation id="204321170514947529">A(z) <ph name="APP_NAME" /> a Chrome-ban is rendelkezik adatokkal</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">A fájlkiterjesztés módosítása váratlan viselkedést eredményezhet, és károsíthatja az eszközt.</translation>
 <translation id="2056878612599315956">A webhely szüneteltetve van</translation>
 <translation id="2063713494490388661">A Keresés koppintással funkció</translation>
 <translation id="2067805253194386918">szöveg</translation>
@@ -263,6 +262,7 @@
 <translation id="2913331724188855103">Cookie-adatok mentésének és olvasásának engedélyezése a webhelyeken (ajánlott)</translation>
 <translation id="2923908459366352541">A név érvénytelen</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-tárhely</translation>
+<translation id="2942036813789421260">Az előnézeti lap zárva van</translation>
 <translation id="2956410042958133412">A fiók kezelői: <ph name="PARENT_NAME_1" /> és <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Átváltva az inkognitómódban használt lapokra</translation>
 <translation id="2968755619301702150">Tanúsítványmegtekintő</translation>
@@ -388,6 +388,7 @@
 <translation id="3988466920954086464">Azonnali keresési találatok megtekintése ezen a panelen</translation>
 <translation id="3991845972263764475">? / <ph name="BYTES_DOWNLOADED_WITH_UNITS" /></translation>
 <translation id="3997476611815694295">Nem fontos tárhely</translation>
+<translation id="4000212216660919741">Offline kezdőlap</translation>
 <translation id="4002066346123236978">Cím</translation>
 <translation id="4008040567710660924">Adott webhely cookie-jainak engedélyezése.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# órája}other{# órája}}</translation>
@@ -767,6 +768,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6697947395630195233">A Chrome-nak hozzáférésre van szüksége a helyadatokra ahhoz, hogy megoszthassa a webhellyel az Ön tartózkodási helyét.</translation>
 <translation id="6698801883190606802">Szinkronizálás kezelése</translation>
 <translation id="6699370405921460408">A Google szerverei optimalizálni fogják a megnyitott weboldalakat.</translation>
+<translation id="6706288973712894588">Jelenleg offline állapotban van.\n<ph name="BEGIN_LINK" />Fedezze fel offline hírcsatornáját.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Hírek</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="671481426037969117">A(z) <ph name="FQDN" /> alkalmazás időzítése lejárt. Holnap újraindul.</translation>
@@ -866,6 +868,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="7475688122056506577">Az SD-kártya nem található. Előfordulhat, hogy egyes fájlok hiányoznak.</translation>
 <translation id="7479104141328977413">Lapkezelés</translation>
 <translation id="7481312909269577407">Előre</translation>
+<translation id="7482656565088326534">Előnézeti lap</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Frissítve: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">megtakarított adatmennyiség</translation>
 <translation id="7498271377022651285">Kérjük, várjon…</translation>
@@ -915,7 +918,6 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="7810647596859435254">Megnyitás ezzel:</translation>
 <translation id="7821588508402923572">Itt látható a megtakarított adatmennyiség</translation>
 <translation id="7837721118676387834">A némított videók automatikus lejátszásának engedélyezése az adott webhelyen.</translation>
-<translation id="7838340937077326045">Biztosan módosítja a fájlkiterjesztést?</translation>
 <translation id="7846076177841592234">Kijelölés törlése</translation>
 <translation id="784934925303690534">Időszak</translation>
 <translation id="7851858861565204677">Egyéb eszközök</translation>
@@ -996,6 +998,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8380167699614421159">Ez a webhely tolakodó vagy félrevezető hirdetéseket jelenít meg</translation>
 <translation id="8393700583063109961">Üzenet küldése</translation>
 <translation id="8413126021676339697">Az összes előzmény</translation>
+<translation id="8427875596167638501">Félmagasságban megnyitott előnézeti ablak</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8438566539970814960">Keresések és böngészés javítása</translation>
 <translation id="8441146129660941386">Ugrás visszafelé</translation>
@@ -1086,7 +1089,9 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="9086455579313502267">Nem sikerült elérni a hálózatot</translation>
 <translation id="9100505651305367705">Felajánlja, hogy egyszerűsített nézetben jeleníti meg a cikkeket (ha támogatott a funkció)</translation>
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
+<translation id="9102803872260866941">Az előnézeti lap meg van nyitva</translation>
 <translation id="9104217018994036254">Lap megosztására szolgáló eszközök listája.</translation>
+<translation id="9133397713400217035">Offline felfedezés</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9139068048179869749">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára az értesítések küldését (ajánlott)</translation>

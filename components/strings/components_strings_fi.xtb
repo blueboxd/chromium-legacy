@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Lataa sivu myöhemmin</translation>
 <translation id="1015730422737071372">Lisätietoja</translation>
 <translation id="1021110881106174305">Hyväksytyt kortit</translation>
-<translation id="1023523064224774104">Chromium on havainnut, että syötit juuri salasanasi epäilyttävälle
-          sivustolle. Vaihda salasana heti.</translation>
 <translation id="1032854598605920125">Käännä myötäpäivään</translation>
 <translation id="1035334672863811645">Kirjaudu Chromeen</translation>
 <translation id="1036348656032585052">Poista käytöstä</translation>
@@ -123,6 +121,7 @@
 <translation id="1501859676467574491">Näytä Google-tilin kortit</translation>
 <translation id="1507202001669085618">&lt;p&gt;Näet tämän virheen, jos käyttämäsi Wi-Fi-portaali edellyttää kirjautumista ennen verkon käyttöä.&lt;/p&gt;
     &lt;p&gt;Korjaa virhe valitsemalla &lt;strong&gt;Yhdistä&lt;/strong&gt; sivulla, jota yrität avata.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Luettelo historiamerkinnöistä</translation>
 <translation id="1517433312004943670">Puhelinnumero vaaditaan</translation>
 <translation id="1517500485252541695">Hyväksytyt luotto- ja maksukortit</translation>
 <translation id="1519264250979466059">Koontipäivä</translation>
@@ -308,6 +307,7 @@
 <translation id="2410754574180102685">Viranomaiset-lakiasiat</translation>
 <translation id="2413528052993050574">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne ei välttämättä ole voimassa. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="2438874542388153331">Neljä reikää oikealla</translation>
+<translation id="245044156129055925">Lisäsit juuri salasanasi harhaanjohtavalle sivustolle. Chromium suosittelee salasanan vaihtamista välittömästi.</translation>
 <translation id="2463193859425327265">Vaihda etusivua</translation>
 <translation id="2463739503403862330">Täytä</translation>
 <translation id="2465402087343596252">Arkkitehti-E</translation>
@@ -553,7 +553,6 @@
 <translation id="3655670868607891010">Jos näet tämän usein, kokeile näitä <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Päivitetty versio</translation>
 <translation id="366077651725703012">Päivitä luottokortti</translation>
-<translation id="3672525478985456967">Sivuston nimi on samankaltainen kuin <ph name="LOOKALIKE_DOMAIN" />. Hyökkääjät jäljittelevät joskus sivustoja tekemällä verkkotunnukseen pieniä muutoksia, joita on vaikea havaita.</translation>
 <translation id="3676592649209844519">Laitteen tunnus:</translation>
 <translation id="3677008721441257057">Tarkoititko &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Pyynnön allekirjoittaminen epäonnistui.</translation>
@@ -619,6 +618,9 @@
 <translation id="397105322502079400">Lasketaan...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> on estetty</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> on ottanut Chrome Enterprisen uhkientorjunnan käyttöön selaimellesi. Chrome Enterprisen uhkientorjunnalla on pääsy osaan datastasi.</translation>
+<translation id="3987405730340719549">Chrome epäilee tätä sivustoa vilpilliseksi tai valesivustoksi.
+
+    Jos uskot, että ilmoitus on virheellinen, siirry osoitteeseen https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Alle 1 Mt</translation>
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 verkkosivu lähistöllä}other{# verkkosivua lähistöllä}}</translation>
@@ -877,7 +879,6 @@
 <translation id="5230733896359313003">Toimitusosoite</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Piilota</translation>
 <translation id="5250209940322997802">Yhdistä verkkoon</translation>
 <translation id="5251803541071282808">Pilvi</translation>
 <translation id="5252000469029418751">C7 (kirjekuori)</translation>
@@ -997,6 +998,9 @@
 <translation id="5813119285467412249">&amp;Toista lisäys</translation>
 <translation id="583281660410589416">Tuntematon</translation>
 <translation id="5838278095973806738">Älä anna tälle sivustolle salasanoja, luottokorttinumeroita tai muita arkaluonteisia tietoja, sillä hyökkääjät saattavat varastaa ne.</translation>
+<translation id="5855253129151731373">Sivuston isäntänimi on samankaltainen kuin <ph name="LOOKALIKE_DOMAIN" />. Hyökkääjät jäljittelevät joskus sivustoja tekemällä verkkotunnukseen pieniä muutoksia, joita on vaikea havaita.
+
+    Jos uskot, että ilmoitus on virheellinen, siirry osoitteeseen https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
 <translation id="5863847714970149516">Avaamasi sivu voi yrittää veloittaa sinulta rahaa</translation>
 <translation id="5866257070973731571">Lisää puhelinnumero</translation>
@@ -1019,7 +1023,6 @@
 <translation id="5946937721014915347">Avataan <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Kyllä, lisää</translation>
 <translation id="5951495562196540101">Liittyminen kuluttajatilillä ei onnistu (pakettilisenssi saatavilla).</translation>
-<translation id="5966900314707961320">Kun tämä on käytössä, sivustot eivät voi seurata sinua verkossa evästeiden avulla</translation>
 <translation id="5967592137238574583">Muokkaa yhteystietoja</translation>
 <translation id="5967867314010545767">Poista historiasta</translation>
 <translation id="5975083100439434680">Loitonna</translation>
@@ -1108,6 +1111,7 @@
 <translation id="6401136357288658127">Tämä käytäntö on vanhentunut. Käytä <ph name="NEW_POLICY" /> ‑käytäntöä sen sijaan.</translation>
 <translation id="6404511346730675251">Muokkaa kirjanmerkkiä</translation>
 <translation id="6406765186087300643">C0 (kirjekuori)</translation>
+<translation id="6409754798200046165">Lisäsit juuri salasanasi harhaanjohtavalle sivustolle. Chrome suosittelee salasanan vaihtamista välittömästi.</translation>
 <translation id="6410264514553301377">Anna kortin <ph name="CREDIT_CARD" /> vanhentumispäivä ja CVC</translation>
 <translation id="6415778972515849510">Chromium voi auttaa suojaamaan Google-tiliäsi ja vaihtamaan salasanasi.</translation>
 <translation id="6427730057873428458">Lehtitaite</translation>
@@ -1115,7 +1119,6 @@
 <translation id="6433490469411711332">Muokkaa yhteystietoja</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> kieltäytyi muodostamasta yhteyttä.</translation>
 <translation id="6434309073475700221">Hylkää</translation>
-<translation id="6435221585574090192">Jaa järjestelmänvalvojalle dataa Chrome Enterprisen uhkientorjunnan merkitsemistä tietoturvatapahtumista. Dataan voi sisältyä sivujen URL-osoitteita, tiedostojen nimiä ja sisällönkuvaustietoja, laitteesi käyttäjänimi ja Chromen käyttäjänimi.</translation>
 <translation id="6440503408713884761">Ohitettu</translation>
 <translation id="6446163441502663861">Kahu (kirjekuori)</translation>
 <translation id="6446608382365791566">Lisää tietoja</translation>
@@ -1405,6 +1408,7 @@ Lisätietoja:
 <translation id="7932579305932748336">Päällystys</translation>
 <translation id="79338296614623784">Anna kelvollinen puhelinnumero.</translation>
 <translation id="7934052535022478634">Maksu valmis</translation>
+<translation id="7935031712718413217">Mahdollinen väärennetty URL-osoite</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Vanhenee <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Palvelimen varmenne ei ole vielä voimassa.</translation>
@@ -1459,7 +1463,6 @@ Lisätietoja:
 <translation id="8184538546369750125">Käytä yleistä oletusasetusta (salli)</translation>
 <translation id="8194797478851900357">K&amp;umoa siirto</translation>
 <translation id="8197543752516192074">Käännä sivu</translation>
-<translation id="8197899142098070286">Chrome on havainnut, että syötit juuri salasanasi epäilyttävälle sivustolle. Vaihda salasana heti.</translation>
 <translation id="8201077131113104583">Laajennuksella, jonka tunnus on <ph name="EXTENSION_ID" />, on virheellinen päivitys-URL-osoite.</translation>
 <translation id="8202097416529803614">Tilauksen yhteenveto</translation>
 <translation id="8202370299023114387">Ristiriita</translation>
@@ -1547,7 +1550,6 @@ Lisätietoja:
 <translation id="8718314106902482036">Maksua ei suoritettu loppuun</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, hakuehdotus</translation>
 <translation id="8719528812645237045">Useita reikiä yläreunassa</translation>
-<translation id="8723954843026426558">Hyväksyn palvelun <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> käyttöehdot, tietosuojakäytännön ja peruutusoikeuden.</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8728672262656704056">Olet muuttunut näkymättömäksi</translation>
 <translation id="8730621377337864115">Valmis</translation>

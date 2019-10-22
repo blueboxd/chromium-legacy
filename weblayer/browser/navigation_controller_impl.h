@@ -91,6 +91,7 @@ class NavigationControllerImpl : public NavigationController,
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFirstVisuallyNonEmptyPaint() override;
 
   BrowserControllerImpl* browser_controller_;
   base::ObserverList<NavigationObserver>::Unchecked observers_;

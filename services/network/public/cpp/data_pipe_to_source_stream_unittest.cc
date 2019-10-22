@@ -96,13 +96,19 @@ class DataPipeToSourceStreamTest
         WriteToPipe();
         rv = callback.WaitForResult();
       }
-      if (rv == net::OK)
+      if (rv == net::OK) {
+        EXPECT_FALSE(adapter_->MayHaveMoreBytes());
         break;
-      if (rv < net::OK)
+      }
+      if (rv < net::OK) {
+        EXPECT_FALSE(adapter_->MayHaveMoreBytes());
         return rv;
+      }
       EXPECT_GT(rv, net::OK);
       output->append(output_buffer_->data(), rv);
+      EXPECT_TRUE(adapter_->MayHaveMoreBytes());
     }
+    EXPECT_FALSE(adapter_->MayHaveMoreBytes());
     return 0;
   }
 

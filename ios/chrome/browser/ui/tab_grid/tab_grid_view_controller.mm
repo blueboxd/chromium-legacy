@@ -1118,6 +1118,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // the incognito tabs.
     if (count == 0 && self.currentPage == TabGridPageIncognitoTabs) {
       // Show the regular tabs to the user if the last incognito tab is closed.
+      self.activePage = TabGridPageRegularTabs;
       if (self.viewLoaded && self.view.window) {
         // Visibly scroll to the regular tabs panel after a slight delay when
         // the user is already in the tab switcher.

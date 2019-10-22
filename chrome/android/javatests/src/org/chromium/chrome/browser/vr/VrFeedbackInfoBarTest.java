@@ -34,7 +34,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-webvr"})
+        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
 @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_SVR})
 public class VrFeedbackInfoBarTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
@@ -144,7 +144,7 @@ public class VrFeedbackInfoBarTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testFeedbackOnlyOnVrBrowsing_WebXr() {
         feedbackOnlyOnVrBrowsingImpl(TEST_PAGE_WEBXR_URL, mWebXrVrTestFramework);
@@ -182,7 +182,7 @@ public class VrFeedbackInfoBarTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             public void testExitPresentationInVr_WebXr() {

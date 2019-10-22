@@ -212,7 +212,7 @@ test(function(t) {
   animation.play();
   assert_equals(animation.startTime, startTime);
   assert_equals(animation.currentTime, currentTime);
-  assert_false(animation.pending);
+  assert_true(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting play() on a running animation");
 

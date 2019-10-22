@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.share;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -18,6 +19,9 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.ui.base.WindowAndroid;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Tests sharing URLs in reader mode (DOM distiller)
@@ -32,8 +36,15 @@ public class ShareUrlTest {
 
     private void assertCorrectUrl(final String originalUrl, final String sharedUrl) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            ShareParams params =
-                    new ShareParams.Builder(new Activity(), "", sharedUrl).setText("").build();
+            Activity activity = new Activity();
+            WindowAndroid window = new WindowAndroid(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext()) {
+                @Override
+                public WeakReference<Activity> getActivity() {
+                    return new WeakReference<>(activity);
+                }
+            };
+            ShareParams params = new ShareParams.Builder(window, "", sharedUrl).setText("").build();
             Intent intent = ShareHelper.getShareLinkIntent(params);
             Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT));
             String url = intent.getStringExtra(Intent.EXTRA_TEXT);

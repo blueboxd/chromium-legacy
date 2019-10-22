@@ -596,15 +596,20 @@ const FeatureEntry::FeatureParam
     kInterestFeedLargerImagesFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"}};
 const FeatureEntry::FeatureParam
-    kInterestFeedSnippetsEnabledFeatureVariationConstant[] = {
+    kInterestFeedSnippetsFeatureVariationConstant[] = {
+        {"snippets_enabled", "true"}};
+const FeatureEntry::FeatureParam
+    kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"},
         {"snippets_enabled", "true"}};
 const FeatureEntry::FeatureVariation kInterestFeedFeatureVariations[] = {
     {"(larger images)", kInterestFeedLargerImagesFeatureVariationConstant,
      base::size(kInterestFeedLargerImagesFeatureVariationConstant), nullptr},
+    {"(snippets)", kInterestFeedSnippetsFeatureVariationConstant,
+     base::size(kInterestFeedSnippetsFeatureVariationConstant), nullptr},
     {"(larger images and snippets)",
-     kInterestFeedSnippetsEnabledFeatureVariationConstant,
-     base::size(kInterestFeedSnippetsEnabledFeatureVariationConstant),
+     kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant,
+     base::size(kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant),
      nullptr}};
 
 const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
@@ -1424,14 +1429,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableReaderModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(dom_distiller::kReaderMode)},
 #endif  // !defined(OS_ANDROID)
-    {"enable-webrtc-hw-h264-encoding",
-     flag_descriptions::kWebrtcHwH264EncodingName,
-     flag_descriptions::kWebrtcHwH264EncodingDescription, kOsAndroid | kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWH264Encoding)},
-    {"enable-webrtc-hw-vp8-encoding",
-     flag_descriptions::kWebrtcHwVP8EncodingName,
-     flag_descriptions::kWebrtcHwVP8EncodingDescription, kOsAndroid | kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP8Encoding)},
 #if defined(WEBRTC_USE_PIPEWIRE)
     {"enable-webrtc-pipewire-capturer",
      flag_descriptions::kWebrtcPipeWireCapturerName,
@@ -1656,6 +1653,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"webui-tab-strip", flag_descriptions::kWebUITabStripName,
      flag_descriptions::kWebUITabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebUITabStrip)},
+    {"webui-tab-strip-demo-options",
+     flag_descriptions::kWebUITabStripDemoOptionsName,
+     flag_descriptions::kWebUITabStripDemoOptionsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebUITabStripDemoOptions)},
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
     {"focus-mode", flag_descriptions::kFocusMode,
      flag_descriptions::kFocusModeDescription, kOsDesktop,
@@ -2199,9 +2200,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kViewsTaskManager)},
 #endif  // OS_MACOSX
 #if BUILDFLAG(ENABLE_VR)
-    {"enable-webvr", flag_descriptions::kWebvrName,
-     flag_descriptions::kWebvrDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
     {"webxr", flag_descriptions::kWebXrName,
      flag_descriptions::kWebXrDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXr)},
@@ -2488,10 +2486,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeInputLogicFstName,
      flag_descriptions::kImeInputLogicFstDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicFst)},
-    {"enable-experimental-accessibility-autoclick",
-     flag_descriptions::kExperimentalAccessibilityAutoclickName,
-     flag_descriptions::kExperimentalAccessibilityAutoclickDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(::switches::kEnableExperimentalAccessibilityAutoclick)},
     {"enable-experimental-accessibility-switch-access",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessName,
      flag_descriptions::kExperimentalAccessibilitySwitchAccessDescription,
@@ -2642,10 +2636,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCloudPrinterHandlerName,
      flag_descriptions::kCloudPrinterHandlerDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kCloudPrinterHandler)},
-    {"enable-new-print-preview-layout",
-     flag_descriptions::kNewPrintPreviewLayoutName,
-     flag_descriptions::kNewPrintPreviewLayoutDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNewPrintPreviewLayout)},
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -3474,12 +3464,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableSearchBoxSelection)},
 #endif  // OS_CHROMEOS
 
-    {"enable-accessibility-image-descriptions",
-     flag_descriptions::kEnableAccessibilityImageDescriptionsName,
-     flag_descriptions::kEnableAccessibilityImageDescriptionsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
-
     {"enable-accessibility-expose-aria-annotations",
      flag_descriptions::kAccessibilityExposeARIAAnnotationsName,
      flag_descriptions::kAccessibilityExposeARIAAnnotationsDescription, kOsAll,
@@ -3931,6 +3915,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableOverviewRoundedCornersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableOverviewRoundedCorners)},
 
+    {"ash-swiping-from-left-edge-to-go-back",
+     flag_descriptions::kAshSwipingFromLeftEdgeToGoBackName,
+     flag_descriptions::kAshSwipingFromLeftEdgeToGoBackDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kSwipingFromLeftEdgeToGoBack)},
+
     {"use-fake-device-for-media-stream",
      flag_descriptions::kUseFakeDeviceForMediaStreamName,
      flag_descriptions::kUseFakeDeviceForMediaStreamDescription, kOsCrOS,
@@ -3972,11 +3961,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebContentsOcclusion)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
-    {"enable-webrtc-hw-vp9-encoding",
-     flag_descriptions::kWebrtcHwVP9EncodingName,
-     flag_descriptions::kWebrtcHwVP9EncodingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP9Encoding)},
 
 #if defined(OS_ANDROID)
     {"manual-password-generation-android",
@@ -4414,6 +4398,12 @@ const FeatureEntry kFeatureEntries[] = {
          previews::switches::kEnableDeferAllScriptWithoutOptimizationHints)},
 
 #if defined(OS_CHROMEOS)
+    {"enable-edu-coexistence", flag_descriptions::kEnableEduCoexistenceName,
+     flag_descriptions::kEnableEduCoexistenceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEduCoexistence)},
+#endif  // OS_CHROMEOS
+
+#if defined(OS_CHROMEOS)
     {"enable-assistant-routines",
      flag_descriptions::kEnableAssistantRoutinesName,
      flag_descriptions::kEnableAssistantRoutinesDescription, kOsCrOS,
@@ -4681,6 +4671,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMixedContentSiteSetting)},
 #endif  // !defined(OS_ANDROID)
 
+    {"enable-desktop-minimal-ui", flag_descriptions::kDesktopMinimalUIName,
+     flag_descriptions::kDesktopMinimalUIDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopMinimalUI)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -4690,7 +4684,9 @@ const FeatureEntry kFeatureEntries[] = {
 class FlagsStateSingleton {
  public:
   FlagsStateSingleton()
-      : flags_state_(kFeatureEntries, base::size(kFeatureEntries)) {}
+      : flags_state_(std::make_unique<flags_ui::FlagsState>(
+            kFeatureEntries,
+            base::size(kFeatureEntries))) {}
   ~FlagsStateSingleton() {}
 
   static FlagsStateSingleton* GetInstance() {
@@ -4698,11 +4694,16 @@ class FlagsStateSingleton {
   }
 
   static flags_ui::FlagsState* GetFlagsState() {
-    return &GetInstance()->flags_state_;
+    return GetInstance()->flags_state_.get();
+  }
+
+  void RebuildState(const std::vector<flags_ui::FeatureEntry>& entries) {
+    flags_state_ =
+        std::make_unique<flags_ui::FlagsState>(entries.data(), entries.size());
   }
 
  private:
-  flags_ui::FlagsState flags_state_;
+  std::unique_ptr<flags_ui::FlagsState> flags_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsStateSingleton);
 };
@@ -4901,9 +4902,25 @@ namespace testing {
 
 const base::HistogramBase::Sample kBadSwitchFormatHistogramId = 0;
 
+std::vector<FeatureEntry>* GetEntriesForTesting() {
+  static base::NoDestructor<std::vector<FeatureEntry>> entries;
+  return entries.get();
+}
+
 const FeatureEntry* GetFeatureEntries(size_t* count) {
+  if (!GetEntriesForTesting()->empty()) {
+    *count = GetEntriesForTesting()->size();
+    return GetEntriesForTesting()->data();
+  }
   *count = base::size(kFeatureEntries);
   return kFeatureEntries;
+}
+
+void SetFeatureEntries(const std::vector<FeatureEntry>& entries) {
+  GetEntriesForTesting()->clear();
+  for (const auto& entry : entries)
+    GetEntriesForTesting()->push_back(entry);
+  FlagsStateSingleton::GetInstance()->RebuildState(*GetEntriesForTesting());
 }
 
 }  // namespace testing

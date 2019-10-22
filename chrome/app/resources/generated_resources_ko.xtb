@@ -319,6 +319,7 @@
 <translation id="1468571364034902819">이 프로필을 사용할 수 없음</translation>
 <translation id="1470811252759861213">모든 컴퓨터에서 확장 프로그램을 사용하려면 <ph name="SIGN_IN_LINK" />에 로그인하세요.</translation>
 <translation id="1470967055429794975">PIN을 포함하여 보안 키에 저장된 모든 데이터가 삭제됩니다.</translation>
+<translation id="1472675084647422956">자세히 보기</translation>
 <translation id="1475502736924165259">모든 기타 카테고리에 맞지 않는 인증서가 등록되어 있습니다.</translation>
 <translation id="1476088332184200792">기기로 복사</translation>
 <translation id="1476607407192946488">언어 설정(&amp;L)</translation>
@@ -333,7 +334,6 @@
 <translation id="1486096554574027028">비밀번호 검색</translation>
 <translation id="1487335504823219454">사용 - 맞춤 설정</translation>
 <translation id="1489664337021920575">다른 옵션 선택</translation>
-<translation id="1489956991149850859">여기에서 지문을 추가, 삭제하거나 지문 이름을 변경할 수 있습니다.</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" />을(를) 기다리는 중...</translation>
 <translation id="1495486559005647033">사용 가능한 다른 기기가 <ph name="NUM_PRINTERS" />개 있습니다.</translation>
 <translation id="1495677929897281669">탭으로 돌아가기</translation>
@@ -897,7 +897,6 @@
 <translation id="2280486287150724112">오른쪽 여백</translation>
 <translation id="2282146716419988068">GPU 프로세스</translation>
 <translation id="2282155092769082568">자동설정 URL:</translation>
-<translation id="228758327756499171">앱 <ph name="NUMBER_OF_MORE_APPS" />개</translation>
 <translation id="2288181517385084064">동영상 녹화로 전환</translation>
 <translation id="2288735659267887385">접근성 설정</translation>
 <translation id="2289270750774289114">사이트가 주변 블루투스 기기를 조회하려고 할 때 확인(권장)</translation>
@@ -1484,7 +1483,6 @@
 <translation id="3151539355209957474">시작 시간</translation>
 <translation id="3151562827395986343">방문 기록, 쿠키, 캐시 등을 삭제합니다.</translation>
 <translation id="3151786313568798007">방향</translation>
-<translation id="3153862085237805241">카드 저장</translation>
 <translation id="3154351730702813399">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="3154429428035006212">1달 이상 오프라인 상태</translation>
 <translation id="3156531245809797194">Chrome을 사용하려면 로그인하세요</translation>
@@ -1626,10 +1624,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">구분자</translation>
 <translation id="3387614642886316601">향상된 맞춤법 검사 기능 사용</translation>
-<translation id="3391459139089708789"><ph name="MONTH_AND_YEAR" />까지 이 기기에서 소프트웨어 및 보안 업데이트를 자동으로 받습니다.
-      <ph name="LINK_BEGIN" />
-        자세히 알아보기
-      <ph name="LINK_END" /></translation>
 <translation id="3396800784455899911">'동의 및 계속' 버튼을 클릭하면 이러한 Google 서비스와 관련하여 위에 설명된 처리 방식에 동의하는 것으로 간주됩니다.</translation>
 <translation id="3399432415385675819">알림이 사용 중지됩니다.</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" />x<ph name="HEIGHT" />(<ph name="REFRESH_RATE" />Hz) - 인터레이스</translation>
@@ -2263,7 +2257,6 @@
 <translation id="428565720843367874">파일을 검사하는 동안 바이러스 백신 소프트웨어에 예기치 않은 오류가 발생했습니다.</translation>
 <translation id="4287502004382794929">이 기기를 등록하기 위한 충분한 소프트웨어 라이선스를 갖고 있지 않습니다. 판매처에 문의하여 더 구입하시기 바랍니다. 이 메시지가 오류라고 판단되는 경우 지원팀에 문의하세요.</translation>
 <translation id="4289540628985791613">개요</translation>
-<translation id="4291934469232591280">버전: <ph name="VERSION" /></translation>
 <translation id="4295072614469448764">단말기에서 앱을 사용할 수 있습니다. 런처에 아이콘이 있을 수도 있습니다.</translation>
 <translation id="4295979599050707005">웹사이트, 앱, Chrome 확장 프로그램 및 Google Play에서 계정(<ph name="USER_EMAIL" />)을 사용하도록 확인하려면 다시 로그인하세요. 계정을 삭제할 수도 있습니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="4296575653627536209">관리 대상 사용자 추가</translation>
@@ -2541,7 +2534,6 @@
 <translation id="4736292055110123391">북마크, 비밀번호, 방문 기록 등을 모든 기기에 동기화</translation>
 <translation id="4737715515457435632">네트워크에 연결하세요.</translation>
 <translation id="473775607612524610">업데이트</translation>
-<translation id="4739098340603978916">크기: <ph name="APP_SIZE" /></translation>
 <translation id="4739639199548674512">티켓</translation>
 <translation id="4742746985488890273">임시보관함에 고정</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />애플리케이션 업데이트 방법 알아보기<ph name="END_LINK" /></translation>
@@ -2561,7 +2553,6 @@
 <translation id="4765582662863429759">Android 메시지가 휴대전화의 문자 메시지를 Chromebook으로 전달하도록 허용합니다.</translation>
 <translation id="4768332406694066911">다음 기관에 사용자의 신원을 확인하는 인증서가 있습니다.</translation>
 <translation id="4774824109040330448">휴대전화에서 호환되는 승인 앱을 사용해 QR 코드를 스캔하세요.</translation>
-<translation id="4776146737004271126">Android 설정 열기</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />의 비밀번호</translation>
 <translation id="4777825441726637019">Play 스토어</translation>
 <translation id="4779083564647765204">글꼴 크기</translation>
@@ -2584,7 +2575,6 @@
 <translation id="480990236307250886">홈페이지 열기</translation>
 <translation id="4813136279048157860">내 이미지</translation>
 <translation id="4813512666221746211">네트워크 오류</translation>
-<translation id="4816492930507672669">페이지 맞춤</translation>
 <translation id="4820236583224459650">활성 티켓으로 설정</translation>
 <translation id="4821935166599369261">프로파일링 사용(&amp;P)</translation>
 <translation id="4823484602432206655">사용자와 기기 설정 확인 및 변경</translation>
@@ -2808,7 +2798,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5135085122826131075">"Ok Google"이라고 말하여 어시스턴트에 액세스합니다.</translation>
 <translation id="5135533361271311778">북마크 항목을 만들지 못했습니다.</translation>
 <translation id="5137501176474113045">이 항목 삭제</translation>
-<translation id="5138227688689900538">간략히</translation>
 <translation id="5139955368427980650">열기(&amp;O)</translation>
 <translation id="5142961317498132443">인증</translation>
 <translation id="5143374789336132547">홈 버튼을 클릭하면 표시되는 페이지가 '<ph name="EXTENSION_NAME" />' 확장 프로그램으로 인해 변경되었습니다.</translation>
@@ -2888,7 +2877,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5265797726250773323">설치 중 오류 발생</translation>
 <translation id="5266113311903163739">인증 기관 가져오기 오류</translation>
 <translation id="5269977353971873915">인쇄 실패</translation>
-<translation id="5270167208902136840"><ph name="NUMBER_OF_MORE_APPS" />개 앱 더 표시</translation>
 <translation id="5275352920323889391">개</translation>
 <translation id="5275776633505022322">남은 시도 횟수: <ph name="ATTEMPTS_LEFT" />회</translation>
 <translation id="527605982717517565"><ph name="HOST" />에서 자바스크립트 항상 허용</translation>
@@ -3784,7 +3772,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="6555810572223193255">현재 정리 기능을 사용할 수 없음</translation>
 <translation id="6556866813142980365">다시실행</translation>
 <translation id="6557290421156335491">내 바로가기</translation>
-<translation id="6559023360691182159">{COUNT,plural, =0{없음}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> 및 <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, 외 앱 1개}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, 외 앱 <ph name="EXTRA_APPS" />개}}</translation>
 <translation id="6561726789132298588">입력</translation>
 <translation id="656293578423618167">파일 경로 또는 이름이 너무 깁니다. 짧은 이름으로 변경하거나 다른 위치에 저장하세요.</translation>
 <translation id="6563469144985748109">관리자가 아직 승인하지 않았습니다.</translation>
@@ -3914,7 +3901,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="677965093459947883">아주 작게</translation>
 <translation id="6781284683813954823">기념일 로고 링크</translation>
 <translation id="6781978626986383437">Linux 백업이 취소됨</translation>
-<translation id="6782111308708962316">타사 웹사이트에서 쿠키 데이터를 저장하거나 읽을 수 없도록 방지</translation>
 <translation id="6786747875388722282">확장 프로그램</translation>
 <translation id="6787839852456839824">단축키</translation>
 <translation id="6788210894632713004">압축해제된 확장 프로그램</translation>
@@ -5053,7 +5039,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8398877366907290961">무시하고 계속하기</translation>
 <translation id="8400146488506985033">사용자 관리</translation>
 <translation id="8401432541486058167">스마트 카드와 연결된 PIN을 입력하세요.</translation>
-<translation id="8401839918915644121">용지 크기에 맞춤</translation>
 <translation id="8405046151008197676">최신 업데이트에서 중요한 사항을 확인하세요.</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">우선 확인(권장)</translation>
@@ -5285,7 +5270,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8743390665131937741">전체화면 돋보기 확대/축소 수준:</translation>
 <translation id="8743864605301774756">1시간 전에 업데이트되었습니다.</translation>
 <translation id="874689135111202667">{0,plural, =1{파일 1개를 이 사이트에 업로드하시겠습니까?}other{파일 #개를 이 사이트에 업로드하시겠습니까?}}</translation>
-<translation id="8747503242566427664">이 앱으로 할 수 있는 작업:</translation>
 <translation id="8748384418490037181">Smart Lock 옵션</translation>
 <translation id="8749863574775030885">알 수 없는 공급업체의 USB 기기에 액세스</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" />에서 시리얼 포트에 연결하려고 합니다.</translation>
@@ -5357,7 +5341,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="883062543841130884">대체 항목</translation>
 <translation id="8830796635868321089">현재 프록시 설정을 사용하여 업데이트를 확인하지 못했습니다. <ph name="PROXY_SETTINGS_LINK_START" />프록시 설정<ph name="PROXY_SETTINGS_LINK_END" />을 조정하세요.</translation>
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> 기기를 Android 휴대전화와 함께 사용하면 더 좋습니다. 두 기기를 연결한 다음 컴퓨터에서 문자 메시지를 보내고, 인터넷 연결을 공유하고, 휴대전화로 <ph name="DEVICE_TYPE" /> 잠금을 해제하세요.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
-<translation id="8831664945713891930">확장 프로그램 설정 열기</translation>
 <translation id="8834039744648160717">네트워크 구성은 <ph name="USER_EMAIL" />님이 관리합니다.</translation>
 <translation id="8838601485495657486">불투명</translation>
 <translation id="8838770651474809439">햄버거</translation>
@@ -5480,7 +5463,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="9008201768610948239">무시</translation>
 <translation id="9009369504041480176">업로드 중(<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">항상 아이콘 표시</translation>
-<translation id="9011424611726486705">사이트 설정 열기</translation>
 <translation id="9013707997379828817">관리자가 이 기기를 롤백했습니다. 중요한 파일을 저장한 후 다시 시작하세요. 기기의 모든 데이터가 삭제됩니다.</translation>
 <translation id="9018218886431812662">설치 완료</translation>
 <translation id="901834265349196618">이메일</translation>

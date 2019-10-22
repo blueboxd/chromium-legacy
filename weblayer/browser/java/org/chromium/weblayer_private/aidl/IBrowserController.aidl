@@ -17,4 +17,6 @@ interface IBrowserController {
   void setDownloadDelegateClient(IDownloadDelegateClient client) = 2;
 
   void setFullscreenDelegateClient(in IFullscreenDelegateClient client) = 3;
+
+  void executeScript(in String script, in IObjectWrapper callback) = 4;
 }

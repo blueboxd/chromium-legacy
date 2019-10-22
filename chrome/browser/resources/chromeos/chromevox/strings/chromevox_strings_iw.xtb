@@ -327,6 +327,7 @@
 <translation id="3241052487511142956">הקישור הקודם שבו ביקרת</translation>
 <translation id="3241638166094654466">תאים בכל שורה:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3260949043575829030">הפריט הדומה הקודם</translation>
 <translation id="3286372614333682499">לאורך</translation>
 <translation id="3286390186030710347">מחוון</translation>
 <translation id="3299925995433437805">אין עוד קישורים שבהם ביקרת.</translation>
@@ -509,6 +510,7 @@
 <translation id="4517854969512651305">הגדלת ערך</translation>
 <translation id="4529987814483543472">מפת מקשים קלאסית</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{קו נטוי}two{# סימני קו נטוי}many{# סימני קו נטוי}other{# סימני קו נטוי}}</translation>
+<translation id="4537277403911487429">הפריט הדומה הבא</translation>
 <translation id="4547556996012970016">הכותרת הבאה של רמה 5</translation>
 <translation id="4562381607973973258">כותרת עליונה</translation>
 <translation id="4569941707103739422">‏מנווטים על-ידי הקשה על החיצים הפונים מעלה או מטה. מפעילים על-ידי הקשה על Enter.</translation>

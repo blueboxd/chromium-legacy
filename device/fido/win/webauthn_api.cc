@@ -267,7 +267,7 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   // Note that entries in |exclude_list_credentials| hold pointers
   // into request.exclude_list.
   std::vector<WEBAUTHN_CREDENTIAL_EX> exclude_list_credentials =
-      ToWinCredentialExVector(&request.exclude_list.value());
+      ToWinCredentialExVector(&request.exclude_list);
   std::vector<WEBAUTHN_CREDENTIAL_EX*> exclude_list_ptrs;
   std::transform(
       exclude_list_credentials.begin(), exclude_list_credentials.end(),

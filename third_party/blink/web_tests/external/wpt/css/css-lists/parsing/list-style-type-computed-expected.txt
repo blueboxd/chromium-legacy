@@ -16,13 +16,13 @@ PASS Property list-style-type value 'lower-alpha' computes to 'lower-alpha'
 PASS Property list-style-type value 'upper-alpha' computes to 'upper-alpha'
 PASS Property list-style-type value '"marker string"' computes to '"marker string"'
 PASS Property list-style-type value '"Note: "' computes to '"Note: "'
-FAIL Property list-style-type value 'counter-Style-Name' computes to 'counter-Style-Name' assert_equals: expected "counter-Style-Name" but got "disc"
-FAIL Property list-style-type value 'CounterStyleName' computes to 'CounterStyleName' assert_equals: expected "CounterStyleName" but got "disc"
-FAIL Property list-style-type value 'symbols(cyclic "string")' computes to 'symbols(cyclic "string")' assert_equals: expected "symbols(cyclic \"string\")" but got "disc"
-FAIL Property list-style-type value 'symbols(cyclic "○" "●")' computes to 'symbols(cyclic "○" "●")' assert_equals: expected "symbols(cyclic \"○\" \"●\")" but got "disc"
-FAIL Property list-style-type value 'symbols(fixed "1")' computes to 'symbols(fixed "1")' assert_equals: expected "symbols(fixed \"1\")" but got "disc"
-FAIL Property list-style-type value 'symbols("string")' computes to 'symbols("string")' assert_equals: expected "symbols(\"string\")" but got "disc"
-FAIL Property list-style-type value 'symbols(alphabetic "first" "second")' computes to 'symbols(alphabetic "first" "second")' assert_equals: expected "symbols(alphabetic \"first\" \"second\")" but got "disc"
-FAIL Property list-style-type value 'symbols(numeric "first" "second")' computes to 'symbols(numeric "first" "second")' assert_equals: expected "symbols(numeric \"first\" \"second\")" but got "disc"
+FAIL Property list-style-type value 'counter-Style-Name' computes to 'counter-Style-Name' assert_true: 'counter-Style-Name' is a supported value for list-style-type. expected true got false
+FAIL Property list-style-type value 'CounterStyleName' computes to 'CounterStyleName' assert_true: 'CounterStyleName' is a supported value for list-style-type. expected true got false
+FAIL Property list-style-type value 'symbols(cyclic "string")' computes to 'symbols(cyclic "string")' assert_true: 'symbols(cyclic "string")' is a supported value for list-style-type. expected true got false
+FAIL Property list-style-type value 'symbols(cyclic "○" "●")' computes to 'symbols(cyclic "○" "●")' assert_true: 'symbols(cyclic "○" "●")' is a supported value for list-style-type. expected true got false
+FAIL Property list-style-type value 'symbols(fixed "1")' computes to 'symbols(fixed "1")' assert_true: 'symbols(fixed "1")' is a supported value for list-style-type. expected true got false
+FAIL Property list-style-type value 'symbols("string")' computes to 'symbols("string")' assert_true: 'symbols("string")' is a supported value for list-style-type. expected true got false
+FAIL Property list-style-type value 'symbols(alphabetic "first" "second")' computes to 'symbols(alphabetic "first" "second")' assert_true: 'symbols(alphabetic "first" "second")' is a supported value for list-style-type. expected true got false
+FAIL Property list-style-type value 'symbols(numeric "first" "second")' computes to 'symbols(numeric "first" "second")' assert_true: 'symbols(numeric "first" "second")' is a supported value for list-style-type. expected true got false
 Harness: the test ran to completion.
 

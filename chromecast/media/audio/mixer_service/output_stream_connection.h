@@ -15,10 +15,6 @@
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
 #include "net/base/io_buffer.h"
 
-namespace net {
-class StreamSocket;
-}  // namespace net
-
 namespace chromecast {
 namespace media {
 namespace mixer_service {
@@ -90,7 +86,7 @@ class OutputStreamConnection : public MixerConnection,
 
  private:
   // MixerConnection implementation:
-  void OnConnected(std::unique_ptr<net::StreamSocket> socket) override;
+  void OnConnected(std::unique_ptr<MixerSocket> socket) override;
   void OnConnectionError() override;
 
   // MixerSocket::Delegate implementation:

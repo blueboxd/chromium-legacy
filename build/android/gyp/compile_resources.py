@@ -69,11 +69,9 @@ def _ParseArgs(args):
   input_opts.add_argument(
       '--android-manifest-normalized', help='Normalized manifest.')
   input_opts.add_argument(
-      '--fail-if-unexpected-android-manifest',
-      action='store_true',
-      help=
-      'Fail if expected manifest contents do not match final manifest contents.'
-  )
+      '--android-manifest-expectations-failure-file',
+      help='Write to this file if expected manifest contents do not match '
+      'final manifest contents.')
   input_opts.add_argument(
       '--r-java-root-package-name',
       default='base',
@@ -476,18 +474,26 @@ def _FixManifest(options, temp_dir):
 
 
 def _VerifyManifest(actual_manifest, expected_manifest, normalized_manifest,
-                    fail_if_unexpected_manifest):
+                    unexpected_manifest_failure_file):
   with build_utils.AtomicOutput(normalized_manifest) as normalized_output:
     normalized_output.write(manifest_utils.NormalizeManifest(actual_manifest))
   msg = diff_utils.DiffFileContents(expected_manifest, normalized_manifest)
-  if msg:
-    sys.stderr.write("""\
+  if not msg:
+    return
+
+  msg_header = """\
 AndroidManifest.xml expectations file needs updating. For details see:
 https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-""")
-    sys.stderr.write(msg)
-    if fail_if_unexpected_manifest:
-      sys.exit(1)
+"""
+  sys.stderr.write(msg_header)
+  sys.stderr.write(msg)
+  if unexpected_manifest_failure_file:
+    build_utils.MakeDirectory(os.path.dirname(unexpected_manifest_failure_file))
+    with open(unexpected_manifest_failure_file, 'w') as f:
+      f.write(msg_header)
+      f.write(msg)
+    #TODO(mheikal): remove once trybot recipe handles failure files.
+    sys.exit(1)
 
 
 def _CreateKeepPredicate(resource_blacklist_regex,
@@ -741,7 +747,7 @@ def _PackageApk(options, build):
   if options.android_manifest_expected:
     _VerifyManifest(fixed_manifest, options.android_manifest_expected,
                     options.android_manifest_normalized,
-                    options.fail_if_unexpected_android_manifest)
+                    options.android_manifest_expectations_failure_file)
 
   link_command += [
       '--manifest', fixed_manifest, '--rename-manifest-package',

@@ -64,7 +64,7 @@ AccountMigrationWelcomeDialog* AccountMigrationWelcomeDialog::Show(
 void AccountMigrationWelcomeDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
   params->z_order = ui::ZOrderLevel::kNormal;
-  params->shadow_type = views::Widget::InitParams::ShadowType::SHADOW_TYPE_DROP;
+  params->shadow_type = views::Widget::InitParams::ShadowType::kDrop;
   params->shadow_elevation = wm::kShadowElevationActiveWindow;
 }
 

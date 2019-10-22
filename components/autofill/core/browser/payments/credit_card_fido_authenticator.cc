@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -269,6 +270,8 @@ void CreditCardFIDOAuthenticator::OptChange(
 void CreditCardFIDOAuthenticator::OnDidGetAssertion(
     AuthenticatorStatus status,
     GetAssertionAuthenticatorResponsePtr assertion_response) {
+  LogWebauthnResult(status);
+
   // End the flow if there was an authentication error.
   if (status != AuthenticatorStatus::SUCCESS) {
     // Report failure to |requester_| if card unmasking was requested.
@@ -309,6 +312,8 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
 void CreditCardFIDOAuthenticator::OnDidMakeCredential(
     AuthenticatorStatus status,
     MakeCredentialAuthenticatorResponsePtr attestation_response) {
+  LogWebauthnResult(status);
+
   // End the flow if there was an authentication error.
   if (status != AuthenticatorStatus::SUCCESS) {
     // Treat failure to perform user verification as a strong signal not to
@@ -585,4 +590,38 @@ bool CreditCardFIDOAuthenticator::IsValidCreationOptions(
          creation_options.FindStringKey("challenge");
 }
 
+void CreditCardFIDOAuthenticator::LogWebauthnResult(
+    AuthenticatorStatus status) {
+  AutofillMetrics::WebauthnFlowEvent event;
+  switch (current_flow_) {
+    case AUTHENTICATION_FLOW:
+      event = AutofillMetrics::WebauthnFlowEvent::kImmediateAuthentication;
+      break;
+    case FOLLOWUP_AFTER_CVC_AUTH_FLOW:
+      event = AutofillMetrics::WebauthnFlowEvent::kAuthenticationAfterCvc;
+      break;
+    case OPT_IN_WITH_CHALLENGE_FLOW:
+      event = card_authorization_token_.empty()
+                  ? AutofillMetrics::WebauthnFlowEvent::kSettingsPageOptIn
+                  : AutofillMetrics::WebauthnFlowEvent::kCheckoutOptIn;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  AutofillMetrics::WebauthnResultMetric metric;
+  switch (status) {
+    case AuthenticatorStatus::SUCCESS:
+      metric = AutofillMetrics::WebauthnResultMetric::kSuccess;
+      break;
+    case AuthenticatorStatus::NOT_ALLOWED_ERROR:
+      metric = AutofillMetrics::WebauthnResultMetric::kNotAllowedError;
+      break;
+    default:
+      metric = AutofillMetrics::WebauthnResultMetric::kOtherError;
+      break;
+  }
+  AutofillMetrics::LogWebauthnResult(event, metric);
+}
 }  // namespace autofill

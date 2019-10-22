@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
-#include "third_party/blink/renderer/core/timing/sub_task_attribution.h"
 #include "third_party/blink/renderer/core/timing/task_attribution_timing.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -19,8 +18,7 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(
     const AtomicString& name,
     const String& culprit_frame_src,
     const String& culprit_frame_id,
-    const String& culprit_frame_name,
-    const SubTaskAttribution::EntriesVector& sub_task_attributions)
+    const String& culprit_frame_name)
     : PerformanceEntry(name, start_time, end_time) {
   // Only one possible container type exists currently: "iframe".
   TaskAttributionTiming* attribution_entry =

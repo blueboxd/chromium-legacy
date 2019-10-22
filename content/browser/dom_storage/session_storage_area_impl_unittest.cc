@@ -16,8 +16,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
@@ -36,8 +35,9 @@ namespace content {
 
 namespace {
 
-using leveldb::StdStringToUint8Vector;
-using leveldb::Uint8VectorToStdString;
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
 
 MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
   return arg.ok();
@@ -61,15 +61,15 @@ class SessionStorageAreaImplTest : public testing::Test {
         test_namespace_id2_(base::GenerateGUID()),
         test_origin1_(url::Origin::Create(GURL("https://host1.com:1/"))),
         test_origin2_(url::Origin::Create(GURL("https://host2.com:2/"))) {
-    leveldb_database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
+    leveldb_database_ = storage::AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "SessionStorageAreaImplTestDatabase",
         base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
         base::DoNothing());
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
                            StdStringToUint8Vector("data1"), base::DoNothing());
 
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks =
-        metadata_.SetupNewDatabase();
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
+        save_tasks = metadata_.SetupNewDatabase();
     auto map_id = metadata_.RegisterNewMap(
         metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
         &save_tasks);
@@ -82,7 +82,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
       SessionStorageMetadata::NamespaceEntry namespace_entry,
       const url::Origin& origin) {
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
     auto map_data =
         metadata_.RegisterNewMap(namespace_entry, origin, &save_tasks);
     leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
@@ -101,7 +101,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
-  std::unique_ptr<leveldb::LevelDBDatabaseImpl> leveldb_database_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> leveldb_database_;
   SessionStorageMetadata metadata_;
 
   testing::StrictMock<MockListener> listener_;
@@ -212,7 +212,7 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
       GetRegisterNewAreaMapCallback());
 
   // Perform a shallow clone.
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
   metadata_.RegisterShallowClonedNamespace(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_), &save_tasks);
@@ -321,7 +321,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
       GetRegisterNewAreaMapCallback());
 
   // Perform a shallow clone.
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
   metadata_.RegisterShallowClonedNamespace(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_), &save_tasks);
@@ -412,7 +412,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBindingOnShared) {
       GetRegisterNewAreaMapCallback());
 
   // Perform a shallow clone.
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
   metadata_.RegisterShallowClonedNamespace(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_), &save_tasks);

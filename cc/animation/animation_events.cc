@@ -13,10 +13,23 @@ AnimationEvent::AnimationEvent(AnimationEvent::Type type,
                                base::TimeTicks monotonic_time)
     : type(type),
       element_id(element_id),
+      worklet_animation_id(),
       group_id(group_id),
       target_property(target_property),
       monotonic_time(monotonic_time),
-      is_impl_only(false) {}
+      is_impl_only(false),
+      local_time() {}
+
+AnimationEvent::AnimationEvent(WorkletAnimationId worklet_animation_id,
+                               base::Optional<base::TimeDelta> local_time)
+    : type(TIME_UPDATED),
+      element_id(),
+      worklet_animation_id(worklet_animation_id),
+      group_id(),
+      target_property(),
+      monotonic_time(),
+      is_impl_only(false),
+      local_time(local_time) {}
 
 AnimationEvent::AnimationEvent(const AnimationEvent& other) {
   type = other.type;
@@ -28,6 +41,8 @@ AnimationEvent::AnimationEvent(const AnimationEvent& other) {
   animation_start_time = other.animation_start_time;
   if (other.curve)
     curve = other.curve->Clone();
+  worklet_animation_id = other.worklet_animation_id;
+  local_time = other.local_time;
 }
 
 AnimationEvent& AnimationEvent::operator=(const AnimationEvent& other) {
@@ -40,6 +55,8 @@ AnimationEvent& AnimationEvent::operator=(const AnimationEvent& other) {
   animation_start_time = other.animation_start_time;
   if (other.curve)
     curve = other.curve->Clone();
+  worklet_animation_id = other.worklet_animation_id;
+  local_time = other.local_time;
   return *this;
 }
 

@@ -114,4 +114,37 @@ TEST_P(AbstractInlineTextBoxTest, GetTextWithLineBreakAtTrailingWhiteSpace) {
   EXPECT_EQ("abc: ", inline_text_box->GetText());
 }
 
+TEST_P(AbstractInlineTextBoxTest, GetTextOffsetInContainer) {
+  // "&#10" is a Line Feed ("\n").
+  SetBodyInnerHTML(
+      R"HTML(<style>p { white-space: pre-line; }</style>
+      <p id="paragraph">First sentence of the &#10; paragraph. Second sentence of &#10; the paragraph.</p>)HTML");
+
+  const Element& paragraph = *GetDocument().getElementById("paragraph");
+  LayoutText& layout_text =
+      *ToLayoutText(paragraph.firstChild()->GetLayoutObject());
+
+  // This test has 5 AbstractInlineTextBox. 1.text 2.\n 3.text 4.\n 5.text.
+  // The AbstractInlineTextBoxes are all child of the same text node and an
+  // an offset calculated in the container node should always be the same for
+  // both LayoutNG and Legacy, even though Legacy doesn't collapse the
+  // white-spaces at the end of an AbstractInlineTextBox.
+  scoped_refptr<AbstractInlineTextBox> inline_text_box =
+      layout_text.FirstAbstractInlineTextBox();
+  String text = "First sentence of the";
+  EXPECT_EQ(LayoutNGEnabled() ? text : text + " ", inline_text_box->GetText());
+  EXPECT_EQ(0u, inline_text_box->TextOffsetInContainer(0));
+
+  // Need to jump over the line break AbstractInlineTextBox.
+  inline_text_box = inline_text_box->NextInlineTextBox()->NextInlineTextBox();
+  text = "paragraph. Second sentence of";
+  EXPECT_EQ(LayoutNGEnabled() ? text : text + " ", inline_text_box->GetText());
+  EXPECT_EQ(22u, inline_text_box->TextOffsetInContainer(0));
+
+  // See comment above.
+  inline_text_box = inline_text_box->NextInlineTextBox()->NextInlineTextBox();
+  EXPECT_EQ("the paragraph.", inline_text_box->GetText());
+  EXPECT_EQ(52u, inline_text_box->TextOffsetInContainer(0));
+}
+
 }  // namespace blink

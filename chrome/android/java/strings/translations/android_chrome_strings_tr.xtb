@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Chrome'un size bildirim gönderebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda da bildirimleri açın.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> uygulamasına ait veriler Chrome'da da mevcut</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Dosya uzantısını değiştirmek, beklenmedik bir davranışla sonuçlanabilir ve cihazınız için zararlı olabilir.</translation>
 <translation id="2056878612599315956">Site duraklatıldı</translation>
 <translation id="2063713494490388661">Dokun ve Ara</translation>
 <translation id="2067805253194386918">Kısa mesaj</translation>
@@ -915,7 +914,6 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="7810647596859435254">Birlikte aç…</translation>
 <translation id="7821588508402923572">Veri tasarruflarınız burada görünür</translation>
 <translation id="7837721118676387834">Belirli bir sitenin, sesi kapatılmış videoları otomatik olarak oynatmasına izin verin.</translation>
-<translation id="7838340937077326045">Dosya uzantısını değiştirmek istediğinizden emin misiniz?</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
 <translation id="784934925303690534">Zaman aralığı</translation>
 <translation id="7851858861565204677">Diğer cihazlar</translation>

@@ -131,6 +131,18 @@ class ArcKioskAppUser : public DeviceLocalAccountUserBase {
   DISALLOW_COPY_AND_ASSIGN(ArcKioskAppUser);
 };
 
+class WebKioskAppUser : public DeviceLocalAccountUserBase {
+ public:
+  explicit WebKioskAppUser(const AccountId& web_kiosk_account_id);
+  ~WebKioskAppUser() override;
+
+  // Overridden from User:
+  UserType GetType() const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebKioskAppUser);
+};
+
 class SupervisedUser : public User {
  public:
   explicit SupervisedUser(const AccountId& account_id);
@@ -243,8 +255,8 @@ bool User::is_active() const {
 }
 
 bool User::has_gaia_account() const {
-  static_assert(user_manager::NUM_USER_TYPES == 9,
-                "NUM_USER_TYPES should equal 9");
+  static_assert(user_manager::NUM_USER_TYPES == 10,
+                "NUM_USER_TYPES should equal 10");
   switch (GetType()) {
     case user_manager::USER_TYPE_REGULAR:
     case user_manager::USER_TYPE_CHILD:
@@ -255,6 +267,7 @@ bool User::has_gaia_account() const {
     case user_manager::USER_TYPE_KIOSK_APP:
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
     case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
       return false;
     default:
       NOTREACHED();
@@ -305,6 +318,10 @@ User* User::CreateKioskAppUser(const AccountId& kiosk_app_account_id) {
 
 User* User::CreateArcKioskAppUser(const AccountId& arc_kiosk_account_id) {
   return new ArcKioskAppUser(arc_kiosk_account_id);
+}
+
+User* User::CreateWebKioskAppUser(const AccountId& web_kiosk_account_id) {
+  return new WebKioskAppUser(web_kiosk_account_id);
 }
 
 User* User::CreateSupervisedUser(const AccountId& account_id) {
@@ -463,6 +480,17 @@ ArcKioskAppUser::~ArcKioskAppUser() {
 
 UserType ArcKioskAppUser::GetType() const {
   return user_manager::USER_TYPE_ARC_KIOSK_APP;
+}
+
+WebKioskAppUser::WebKioskAppUser(const AccountId& web_kiosk_account_id)
+    : DeviceLocalAccountUserBase(web_kiosk_account_id) {
+  set_display_email(web_kiosk_account_id.GetUserEmail());
+}
+
+WebKioskAppUser::~WebKioskAppUser() {}
+
+UserType WebKioskAppUser::GetType() const {
+  return user_manager::USER_TYPE_WEB_KIOSK_APP;
 }
 
 SupervisedUser::SupervisedUser(const AccountId& account_id) : User(account_id) {

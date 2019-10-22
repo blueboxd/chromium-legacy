@@ -28,6 +28,22 @@ namespace chromeos {
 // * Pass the inherited embedded_test_server() into the constructor
 // as well.
 // * Call LogInUser() or SetUpOnMainThreadHelper() to log in.
+// Example:
+/*
+class MyBrowserTestClass : public MixinBasedInProcessBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    // The call below logs in as child user.
+    logged_in_user_mixin_.SetUpOnMainThreadHelper(host_resolver(), this);
+  }
+
+ private:
+  LoggedInUserMixin logged_in_user_mixin_{&mixin_host_,
+                                          LoggedInUserMixin::LogInType::kChild,
+                                          embedded_test_server()};
+};
+*/
 class LoggedInUserMixin {
  public:
   enum class LogInType { kRegular, kChild };

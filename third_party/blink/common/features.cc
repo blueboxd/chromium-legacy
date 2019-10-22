@@ -54,7 +54,7 @@ const base::Feature kCSSBackdropFilter{"CSSBackdropFilter",
 
 // When enabled, the compositing of trivial 3D transforms is disabled.
 const base::Feature kDoNotCompositeTrivial3D{"DoNotCompositeTrivial3D",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
@@ -155,30 +155,6 @@ const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
 // constructor.
 const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables HW VP8 encoding on Android.
-const base::Feature kWebRtcHWVP8Encoding {
-  "WebRtcHWVP8Encoding",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
-// Enables HW VP9 encoding on Android.
-const base::Feature kWebRtcHWVP9Encoding {
-  "WebRtcHWVP9Encoding",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
-// Enables HW H264 encoding on Android.
-const base::Feature kWebRtcHWH264Encoding{"WebRtcHWH264Encoding",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables negotiation of experimental multiplex codec in SDP.
 const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",

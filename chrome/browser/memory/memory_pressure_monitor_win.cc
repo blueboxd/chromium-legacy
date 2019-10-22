@@ -105,9 +105,9 @@ FreeMemoryObservationWindow::Config GetFreeMemoryWindowConfig() {
   }
 
   return {
+      .sample_ratio_to_be_positive = kFreeMemorySampleRatioToBePositive.Get(),
       .low_memory_early_limit_mb = low_memory_early_limit_mb,
       .low_memory_critical_limit_mb = low_memory_critical_limit_mb,
-      .sample_ratio_to_be_positive = kFreeMemorySampleRatioToBePositive.Get(),
   };
 }
 

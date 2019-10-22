@@ -4,6 +4,7 @@
 
 #include "chromeos/services/assistant/public/features.h"
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/feature_list.h"
 
 namespace chromeos {
@@ -75,6 +76,9 @@ const base::Feature kEnableMediaSessionIntegration{
 // Disable voice match for test purpose.
 const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableAssistantWebContainer{
+    "EnableAssistantWebContainer", base::FEATURE_DISABLED_BY_DEFAULT};
 
 int GetProactiveSuggestionsMaxWidth() {
   return kAssistantProactiveSuggestionsMaxWidth.Get();
@@ -150,6 +154,11 @@ bool IsWarmerWelcomeEnabled() {
 
 bool IsVoiceMatchDisabled() {
   return base::FeatureList::IsEnabled(kDisableVoiceMatch);
+}
+
+bool IsAssistantWebContainerEnabled() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled() &&
+         base::FeatureList::IsEnabled(kEnableAssistantWebContainer);
 }
 
 }  // namespace features

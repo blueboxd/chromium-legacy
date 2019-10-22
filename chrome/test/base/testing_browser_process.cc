@@ -70,7 +70,12 @@ TestingBrowserProcess* TestingBrowserProcess::GetGlobal() {
 // static
 void TestingBrowserProcess::CreateInstance() {
   DCHECK(!g_browser_process);
-  g_browser_process = new TestingBrowserProcess;
+  TestingBrowserProcess* process = new TestingBrowserProcess;
+  // Set |g_browser_process| before initializing the TestingBrowserProcess
+  // because some members may depend on |g_browser_process| (in particular,
+  // ChromeExtensionsBrowserClient).
+  g_browser_process = process;
+  process->Init();
 }
 
 // static
@@ -84,28 +89,7 @@ void TestingBrowserProcess::DeleteInstance() {
 TestingBrowserProcess::TestingBrowserProcess()
     : notification_service_(content::NotificationService::Create()),
       app_locale_("en"),
-      is_shutting_down_(false),
-      local_state_(nullptr),
-      rappor_service_(nullptr),
-      platform_part_(new TestingBrowserProcessPlatformPart()),
-      test_network_connection_tracker_(
-          network::TestNetworkConnectionTracker::CreateInstance()) {
-  content::SetNetworkConnectionTrackerForTesting(
-      test_network_connection_tracker_.get());
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions_browser_client_.reset(
-      new extensions::ChromeExtensionsBrowserClient);
-  extensions_browser_client_->AddAPIProvider(
-      std::make_unique<chrome_apps::ChromeAppsBrowserAPIProvider>());
-  extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
-  extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
-#endif
-
-#if !defined(OS_ANDROID)
-  KeepAliveRegistry::GetInstance()->SetIsShuttingDown(false);
-#endif
-}
+      platform_part_(new TestingBrowserProcessPlatformPart()) {}
 
 TestingBrowserProcess::~TestingBrowserProcess() {
   EXPECT_FALSE(local_state_);
@@ -120,6 +104,26 @@ TestingBrowserProcess::~TestingBrowserProcess() {
   // Destructors for some objects owned by TestingBrowserProcess will use
   // g_browser_process if it is not null, so it must be null before proceeding.
   DCHECK_EQ(static_cast<BrowserProcess*>(nullptr), g_browser_process);
+}
+
+void TestingBrowserProcess::Init() {
+  test_network_connection_tracker_ =
+      network::TestNetworkConnectionTracker::CreateInstance();
+  content::SetNetworkConnectionTrackerForTesting(
+      test_network_connection_tracker_.get());
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  extensions_browser_client_ =
+      std::make_unique<extensions::ChromeExtensionsBrowserClient>();
+  extensions_browser_client_->AddAPIProvider(
+      std::make_unique<chrome_apps::ChromeAppsBrowserAPIProvider>());
+  extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
+  extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+#endif
+
+#if !defined(OS_ANDROID)
+  KeepAliveRegistry::GetInstance()->SetIsShuttingDown(false);
+#endif
 }
 
 void TestingBrowserProcess::FlushLocalStateAndReply(base::OnceClosure reply) {

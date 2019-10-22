@@ -1193,8 +1193,11 @@ interface NetworkContext {
                     AuthCredentials credentials) => ();
 
   // Looks up credentials in the HttpAuthCache using the origin and path from
-  // |url|. Only supports basic auth scheme.
-  LookupBasicAuthCredentials(url.mojom.Url url)
+  // |url|. Only supports basic auth scheme. Only looks up server (not proxy)
+  // auth credentials, and only those that are usable in the scope of
+  // |network_isolation_key|.
+  LookupServerBasicAuthCredentials(url.mojom.Url url,
+      NetworkIsolationKey network_isolation_key)
       => (AuthCredentials? credentials);
 
   [Sync]

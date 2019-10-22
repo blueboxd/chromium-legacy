@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
-<translation id="1135993792949700405">Chrome akan mengirimkan data pribadi yang Anda pilih ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Buka link eksternal?</translation>
 <translation id="1699570257714336246">Informasi tidak ada</translation>
 <translation id="2203046366315513658">Menurunkan nilai</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Asisten Google di Chrome terbuka dengan ketinggian separuh.</translation>
 <translation id="6973932557599545801">Maaf, saya tidak bisa membantu lagi. Silakan lanjutkan sendiri.</translation>
 <translation id="7658239707568436148">Batal</translation>
-<translation id="7871791972254842204">Baca dan setujui persyaratan &amp; ketentuan pada <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nanti</translation>
 <translation id="8253702004019660079">Asisten Google di Chrome.</translation>
 <translation id="9138504265731110181">Asisten Google menghemat waktu Anda dengan membantu melakukan pembayaran di web</translation>
 <translation id="945522503751344254">Kirim masukan</translation>

@@ -152,6 +152,11 @@ void XrBrowserTestBase::SetUp() {
   for (const auto& switch_string : append_switches_) {
     cmd_line->AppendSwitch(switch_string);
   }
+
+  for (const auto& blink_feature : enable_blink_features_) {
+    cmd_line->AppendSwitchASCII("enable-blink-features", blink_feature);
+  }
+
   scoped_feature_list_.InitWithFeatures(enable_features_, disable_features_);
 
   InProcessBrowserTest::SetUp();

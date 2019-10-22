@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -15,9 +14,10 @@
   <template>
     <style>
       :host {
-        border-bottom: var(--print-preview-settings-border);
-        display: block;
-        padding: 20px var(--print-preview-sidebar-margin) 8px;
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        padding: 20px var(--print-preview-sidebar-margin) 12px;
       }
 
       @media (prefers-color-scheme: light) {
@@ -26,43 +26,25 @@
         }
       }
 
-      .title-container {
+      #headerContainer {
+        align-items: center;
         display: flex;
-        padding-bottom: 12px;
       }
 
+      .summary,
       .title {
         color: var(--cr-primary-text-color);
-        font-size: calc(16/13 * 1em);
-        font-weight: 400;
-        line-height: 1.54em;
+        line-height: calc(20/13 * 1em);
         margin: 0;
       }
 
+      .title {
+        font-size: calc(16/13 * 1em);
+        font-weight: 400;
+      }
+
       .summary {
-        color: var(--cr-primary-text-color);
-        display: block;
-        height: 1em;
-        min-height: 20px;
-      }
-
-      .summary b {
         font-weight: 500;
-      }
-
-      #button-strip {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-        padding-top: 16px;
-      }
-
-      #button-strip cr-button:first-child {
-        margin-inline-end: 8px;
-      }
-
-      #button-strip cr-button:last-child {
-        margin-inline-end: 0;
       }
 
       iron-icon {
@@ -73,31 +55,13 @@
         width: 16px;
       }
     </style>
-    <div class="title-container">
+    <div id="headerContainer">
       <h1 class="title">$i18n{title}</h1>
       <iron-icon hidden$="[[!managed]]" icon="print-preview:business"
            alt="" title="$i18n{managedSettings}">
       </iron-icon>
     </div>
-    <span class="summary" aria-label$="[[summaryLabel_]]"
-        inner-h-t-m-l="[[summary_]]">
-    </span>
-    <div id="button-strip">
-<if expr="not is_win">
-      <cr-button class="cancel-button" on-click="onCancelClick_">
-        $i18n{cancel}
-      </cr-button>
-</if>
-      <cr-button class="action-button" on-click="onPrintClick_"
-          disabled$="[[!printButtonEnabled_]]">
-        [[printButtonLabel_]]
-      </cr-button>
-<if expr="is_win">
-      <cr-button class="cancel-button" on-click="onCancelClick_">
-        $i18n{cancel}
-      </cr-button>
-</if>
-    </div>
+    <span class="summary">[[summary_]]</span>
   </template>
   <script src="header.js"></script>
 </dom-module>

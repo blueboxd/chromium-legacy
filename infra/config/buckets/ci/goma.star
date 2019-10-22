@@ -156,8 +156,8 @@ fyi_goma_rbe_canary_builder(
     name = 'ios-device-goma-rbe-canary-clobber',
     caches = [
         swarming.cache(
-            name = 'xcode_ios_11a420a',
-            path = 'xcode_ios_11a420a.app',
+            name = 'xcode_ios_11a1027',
+            path = 'xcode_ios_11a1027.app',
         ),
     ],
     cores = None,
@@ -256,8 +256,8 @@ fyi_goma_latest_client_builder(
     name = 'ios-device-goma-latest-clobber',
     caches = [
         swarming.cache(
-            name = 'xcode_ios_11a420a',
-            path = 'xcode_ios_11a420a.app',
+            name = 'xcode_ios_11a1027',
+            path = 'xcode_ios_11a1027.app',
         ),
     ],
     cores = None,
@@ -350,8 +350,8 @@ fyi_goma_rbe_latest_client_builder(
     name = 'ios-device-goma-rbe-latest-clobber',
     caches = [
         swarming.cache(
-            name = 'xcode_ios_11a420a',
-            path = 'xcode_ios_11a420a.app',
+            name = 'xcode_ios_11a1027',
+            path = 'xcode_ios_11a1027.app',
         ),
     ],
     cores = None,

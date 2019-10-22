@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/performance_navigation_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_paint_timing.h"
-#include "third_party/blink/renderer/core/timing/sub_task_attribution.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -79,7 +78,6 @@ class ScriptState;
 class ScriptValue;
 class SecurityOrigin;
 class StringOrPerformanceMeasureOptions;
-class SubTaskAttribution;
 class UserTiming;
 class V8ObjectBuilder;
 
@@ -145,14 +143,12 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull,
                                   kResourcetimingbufferfull)
 
-  void AddLongTaskTiming(
-      base::TimeTicks start_time,
-      base::TimeTicks end_time,
-      const AtomicString& name,
-      const String& culprit_frame_src,
-      const String& culprit_frame_id,
-      const String& culprit_frame_name,
-      const SubTaskAttribution::EntriesVector& sub_task_attributions);
+  void AddLongTaskTiming(base::TimeTicks start_time,
+                         base::TimeTicks end_time,
+                         const AtomicString& name,
+                         const String& culprit_frame_src,
+                         const String& culprit_frame_id,
+                         const String& culprit_frame_name);
 
   // Generates and add a performance entry for the given ResourceTimingInfo.
   // |overridden_initiator_type| allows the initiator type to be overridden to

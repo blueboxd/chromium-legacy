@@ -37,6 +37,12 @@ void MojoLearningTaskController::CancelObservation(base::UnguessableToken id) {
   controller_->CancelObservation(id);
 }
 
+void MojoLearningTaskController::UpdateDefaultTarget(
+    base::UnguessableToken id,
+    const base::Optional<TargetValue>& default_target) {
+  controller_->UpdateDefaultTarget(id, default_target);
+}
+
 const LearningTask& MojoLearningTaskController::GetLearningTask() {
   return task_;
 }

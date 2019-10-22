@@ -35,10 +35,6 @@
         }
       }
 
-      :host([new-print-preview-layout_]) {
-        flex-direction: row-reverse;
-      }
-
       print-preview-sidebar {
         flex: none;
         width: var(--print-preview-sidebar-width);
@@ -48,10 +44,6 @@
         align-items: center;
         background-color: var(--preview-area-background-color);
         flex: 1;
-      }
-
-      :host([new-print-preview-layout_]) #preview-area-container {
-        background-color: var(--preview-area-background-color-new);
       }
     </style>
     <print-preview-state id="state" state="{{state}}" error="{{error_}}">
@@ -68,13 +60,21 @@
         document-settings="{{documentSettings_}}" margins="{{margins_}}"
         page-size="{{pageSize_}}">
     </print-preview-document-info>
+    <div id="preview-area-container">
+      <print-preview-preview-area id="previewArea" settings="[[settings]]"
+          destination="[[destination_]]" error="{{error_}}"
+          document-modifiable="[[documentSettings_.isModifiable]]"
+          margins="[[margins_]]" page-size="[[pageSize_]]" state="[[state]]"
+          measurement-system="[[measurementSystem_]]"
+          preview-state="{{previewState_}}" on-preview-start="onPreviewStart_">
+      </print-preview-preview-area>
+    </div>
     <print-preview-sidebar id="sidebar"
         cloud-print-interface="[[cloudPrintInterface_]]"
         cloud-print-error-message="[[cloudPrintErrorMessage_]]"
         destination-state="{{destinationState_}}"
         controls-managed="[[controlsManaged_]]" destination="{{destination_}}"
         error="{{error_}}" is-pdf="[[documentSettings_.isPdf]]"
-        new-print-preview-layout="[[newPrintPreviewLayout_]]"
         page-count="[[documentSettings_.pageCount]]"
         settings="[[settings]]" state="[[state]]" on-focus="onSidebarFocus_"
 <if expr="is_macosx">
@@ -86,16 +86,6 @@
         on-print-requested="onPrintRequested_"
         on-cancel-requested="onCancelRequested_">
     </print-preview-sidebar>
-    <div id="preview-area-container">
-      <print-preview-preview-area id="previewArea" settings="[[settings]]"
-          destination="[[destination_]]" error="{{error_}}"
-          document-modifiable="[[documentSettings_.isModifiable]]"
-          margins="[[margins_]]" page-size="[[pageSize_]]" state="[[state]]"
-          measurement-system="[[measurementSystem_]]"
-          new-print-preview-layout="[[newPrintPreviewLayout_]]"
-          preview-state="{{previewState_}}" on-preview-start="onPreviewStart_">
-      </print-preview-preview-area>
-    </div>
   </template>
   <script src="app.js"></script>
 </dom-module>

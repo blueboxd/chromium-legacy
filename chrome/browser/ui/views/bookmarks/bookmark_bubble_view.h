@@ -24,7 +24,6 @@ class BookmarkBubbleObserver;
 }
 
 namespace views {
-class LabelButton;
 class Textfield;
 }
 
@@ -64,7 +63,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   std::unique_ptr<views::View> CreateFootnoteView() override;
   bool Cancel() override;
   bool Accept() override;
@@ -126,9 +124,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
 
   // If true, the page was just bookmarked.
   const bool newly_bookmarked_;
-
-  // Button to bring up the editor.
-  views::LabelButton* edit_button_ = nullptr;
 
   // Textfield showing the name of the bookmark.
   views::Textfield* name_field_ = nullptr;

@@ -422,6 +422,7 @@ class MetaBuildWrapper(object):
       'led', 'get-builder', 'luci.chromium.try:%s' % self.args.builder).then(
       'led', 'edit', '-r', 'chromium_trybot_experimental',
         '-p', 'tests=["%s"]' % ninja_target).then(
+      'led', 'edit-system', '--tag=purpose:user-debug-mb-try').then(
       'led', 'edit-cr-cl', issue_data['issue_url']).then(
       'led', 'launch').result
 

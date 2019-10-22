@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">페이지 나중에 로드하기</translation>
 <translation id="1015730422737071372">추가 세부정보 제공</translation>
 <translation id="1021110881106174305">사용할 수 있는 카드</translation>
-<translation id="1023523064224774104">Chromium에서 방금 의심스러운 사이트에 비밀번호를 입력했음을 감지했습니다. 지금 바로 비밀번호를 재설정하세요.</translation>
 <translation id="1032854598605920125">시계 방향으로 회전</translation>
 <translation id="1035334672863811645">Chrome에 로그인</translation>
 <translation id="1036348656032585052">사용 중지</translation>
@@ -549,7 +548,6 @@
 <translation id="3655670868607891010">이 메시지가 자주 표시된다면 다음을 시도해 보세요. <ph name="HELP_LINK" /></translation>
 <translation id="3658742229777143148">개정</translation>
 <translation id="366077651725703012">신용카드 정보 업데이트</translation>
-<translation id="3672525478985456967">이 사이트의 이름이 <ph name="LOOKALIKE_DOMAIN" />과(와) 유사해 보입니다. 일부 공격자는 도메인 이름을 알아채기 어려울 정도로 약간 변경하여 다른 사이트를 모방합니다.</translation>
 <translation id="3676592649209844519">기기 ID:</translation>
 <translation id="3677008721441257057">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;을(를) 찾으셨나요?</translation>
 <translation id="3678029195006412963">요청을 서명할 수 없음</translation>
@@ -873,7 +871,6 @@
 <translation id="5230733896359313003">배송지 주소</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">숨기기</translation>
 <translation id="5250209940322997802">'네트워크에 연결'</translation>
 <translation id="5251803541071282808">클라우드</translation>
 <translation id="5252000469029418751">C7(봉투)</translation>
@@ -1015,7 +1012,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> 여는 중…</translation>
 <translation id="5947933617628957894">예, 추가합니다</translation>
 <translation id="5951495562196540101">일반 계정으로 등록할 수 없습니다(패키지 라이선스 사용 가능).</translation>
-<translation id="5966900314707961320">사용 설정하면 사이트가 웹 전반에서 사용자를 추적하는 쿠키를 사용할 수 없습니다.</translation>
 <translation id="5967592137238574583">연락처 정보 수정</translation>
 <translation id="5967867314010545767">기록에서 삭제</translation>
 <translation id="5975083100439434680">축소</translation>
@@ -1111,7 +1107,6 @@
 <translation id="6433490469411711332">연락처 정보 수정</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" />에서 연결을 거부했습니다.</translation>
 <translation id="6434309073475700221">중지</translation>
-<translation id="6435221585574090192">Chrome Enterprise Threat Protection에서 신고한 보안 이벤트에 관한 데이터를 관리자와 공유합니다. 여기에는 페이지 URL, 파일 이름, 파일 메타데이터, 기기 사용자 이름 및 Chrome 사용자 이름이 포함될 수 있습니다.</translation>
 <translation id="6440503408713884761">무시됨</translation>
 <translation id="6446163441502663861">Kahu(봉투)</translation>
 <translation id="6446608382365791566">자세한 정보 추가</translation>
@@ -1454,7 +1449,6 @@
 <translation id="8184538546369750125">전체 기본값 사용(허용)</translation>
 <translation id="8194797478851900357">이동 실행 취소(&amp;U)</translation>
 <translation id="8197543752516192074">페이지 번역</translation>
-<translation id="8197899142098070286">Chrome에서 방금 의심스러운 사이트에 비밀번호를 입력했음을 감지했습니다. 지금 바로 비밀번호를 재설정하세요.</translation>
 <translation id="8201077131113104583">ID가 '<ph name="EXTENSION_ID" />'인 확장 프로그램에 대한 잘못된 업데이트 URL</translation>
 <translation id="8202097416529803614">주문 요약</translation>
 <translation id="8202370299023114387">충돌</translation>
@@ -1541,7 +1535,6 @@
 <translation id="8718314106902482036">결제가 완료되지 않음</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, 추천 검색어</translation>
 <translation id="8719528812645237045">상단 다공 펀칭</translation>
-<translation id="8723954843026426558"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />의 철회 권리, 이용약관, 개인정보처리방침에 동의합니다.</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8728672262656704056">시크릿 모드로 전환됨</translation>
 <translation id="8730621377337864115">완료</translation>

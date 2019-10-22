@@ -399,11 +399,6 @@
     // be reported as raster under-invalidations.
     void simulateRasterUnderInvalidations(boolean enable);
 
-    // Bypass the threshold of 'script-compile' of long-task attribution in
-    // PerformanceMonitor for testing. "PerformanceObserver should be observing
-    // 'longtask' while calling BypassLongCompileThresholdOnce.
-    [RaisesException] void BypassLongCompileThresholdOnce();
-
     // The number of calls to update the blink lifecycle (see:
     // LocalFrameView::UpdateLifecyclePhasesInternal).
     unsigned long LifecycleUpdateCount();

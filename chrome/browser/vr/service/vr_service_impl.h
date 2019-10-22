@@ -108,7 +108,6 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   void OnWebContentsFocusChanged(content::RenderWidgetHost* host, bool focused);
 
   void ResolvePendingRequests();
-  bool IsSecureContextRequirementSatisfied();
 
   // Returns currently active instance of SessionMetricsHelper from WebContents.
   // If the instance is not present on WebContents, it will be created with the

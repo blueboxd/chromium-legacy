@@ -11,13 +11,17 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
@@ -29,17 +33,22 @@ class AvatarToolbarButton;
 class BrowserView;
 class ExtensionsToolbarContainer;
 class PageActionIconContainerView;
-class WebAppOriginText;
+class ReloadButton;
+class ToolbarButton;
 class WebAppMenuButton;
+class WebAppOriginText;
 
 // A container for web app buttons in the title bar.
 class WebAppFrameToolbarView : public views::AccessiblePaneView,
                                public BrowserActionsContainer::Delegate,
+                               public CommandObserver,
+                               public views::ButtonListener,
                                public ContentSettingImageView::Delegate,
                                public ImmersiveModeController::Observer,
                                public PageActionIconView::Delegate,
                                public ToolbarButtonProvider,
-                               public views::WidgetObserver {
+                               public views::WidgetObserver,
+                               public ui::MaterialDesignControllerObserver {
  public:
   static const char kViewClassName[];
 
@@ -93,6 +102,12 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
       Browser* browser,
       ToolbarActionsBar* main_bar) const override;
 
+  // CommandObserver:
+  void EnabledStateChangedForCommand(int id, bool enabled) override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
   // ContentSettingImageView::Delegate:
   SkColor GetContentSettingInkDropColor() const override;
   content::WebContents* GetContentSettingWebContents() override;
@@ -120,9 +135,14 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   views::View* GetAnchorView(PageActionIconType type) override;
   void ZoomChangedForActiveTab(bool can_show_bubble) override;
   AvatarToolbarButton* GetAvatarToolbarButton() override;
+  ToolbarButton* GetBackButton() override;
+  ReloadButton* GetReloadButton() override;
 
   // views::WidgetObserver:
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+
+  // ui::MaterialDesignControllerObserver:
+  void OnTouchUiChanged() override;
 
   static void DisableAnimationForTesting();
   views::View* GetPageActionIconContainerForTesting();
@@ -158,11 +178,17 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   SkColor GetCaptionColor() const;
   void UpdateChildrenColor();
 
+  void GenerateMinimalUIButtonImages();
+
   // Whether we're waiting for the widget to become visible.
   bool pending_widget_visibility_ = true;
 
   ScopedObserver<views::Widget, views::WidgetObserver> scoped_widget_observer_{
       this};
+
+  ScopedObserver<ui::MaterialDesignController,
+                 ui::MaterialDesignControllerObserver>
+      md_observer_{this};
 
   // Timers for synchronising their respective parts of the titlebar animation.
   base::OneShotTimer animation_start_delay_;
@@ -183,6 +209,10 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions_container_ = nullptr;
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
   WebAppMenuButton* web_app_menu_button_ = nullptr;
+
+  // The following buttons are only created when the display mode is minimal-ui.
+  ToolbarButton* back_ = nullptr;
+  ReloadButton* reload_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppFrameToolbarView);
 };

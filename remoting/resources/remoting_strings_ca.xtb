@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Deficient</translation>
 <translation id="1152528166145813711">Seleccion...</translation>
 <translation id="1199593201721843963">Desactiva les connexions remotes</translation>
+<translation id="1201402288615127009">Següent</translation>
 <translation id="1291443878853470558">Heu d'activar les connexions remotes si voleu utilitzar Chromoting per accedir a aquest ordinador.</translation>
 <translation id="1297009705180977556">S'ha produït un error en connectar amb <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(aquesta funció encara no està disponible al vostre ordinador)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Ara Escriptori remot de Chrome és al web. Prova l'<ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />: és ràpida, gratuïta i ofereix més funcions encara, com la compatibilitat amb diversos monitors.</translation>
 <translation id="1643640058022401035">Si sortiu d'aquesta pàgina, la sessió de Chromoting finalitzarà.</translation>
 <translation id="1654128982815600832">S'estan activant les connexions remotes en aquest ordinador...</translation>
+<translation id="1697532407822776718">Ja estàs a punt!</translation>
 <translation id="170207782578677537">No s'ha pogut registrar aquest ordinador.</translation>
 <translation id="174018511426417793">No teniu cap ordinador registrat. Per activar les connexions remotes a un ordinador, instal·leu-hi l'escriptori remot de Chrome i feu clic a <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">S'està connectant...</translation>

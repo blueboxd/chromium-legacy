@@ -904,6 +904,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     window->SetProperty(ash::kShelfIDKey,
                         new std::string(shelf_id.Serialize()));
     window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
+    window->SetProperty(ash::kAppIDKey, new std::string(app_id));
 
     widget->Show();
     widget->Activate();
@@ -4732,10 +4733,8 @@ TEST_F(ChromeLauncherControllerTest, CrostiniBrowserWindowsRecogniseShelfItem) {
   chrome::NewTab(browser());
   browser()->window()->Show();
 
-  EXPECT_EQ(launcher_controller_
-                ->GetShelfIDForWebContents(
-                    browser()->tab_strip_model()->GetActiveWebContents())
-                .app_id,
+  EXPECT_EQ(launcher_controller_->GetAppIDForWebContents(
+                browser()->tab_strip_model()->GetActiveWebContents()),
             item.id.app_id);
 }
 

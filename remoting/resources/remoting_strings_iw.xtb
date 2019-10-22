@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">איכות גרועה</translation>
 <translation id="1152528166145813711">בחירה…</translation>
 <translation id="1199593201721843963">השבת חיבורים מרוחקים</translation>
+<translation id="1201402288615127009">הבא</translation>
 <translation id="1291443878853470558">‏אם ברצונך להשתמש ב-Chromoting כדי לגשת למחשב זה, עליך להפעיל חיבורים מרוחקים.</translation>
 <translation id="1297009705180977556">אירעה שגיאת התחברות אל <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(התכונה הזו אינה זמינה עדיין בשביל המחשב שלך)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">‏Chrome Remote Desktop זמין עכשיו באינטרנט. כדאי לנסות את <ph name="LINK_BEGIN" />אפליקציית האינטרנט<ph name="LINK_END" /> — היא מהירה וחינמית, ויש בה יותר תכונות, כולל תמיכה משופרת בצגים מרובים.</translation>
 <translation id="1643640058022401035">‏יציאה מדף זה תגרום לסיום ההפעלה של Chromoting.</translation>
 <translation id="1654128982815600832">מפעיל חיבורים מרוחקים למחשב זה...</translation>
+<translation id="1697532407822776718">הכל מוכן!</translation>
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
 <translation id="174018511426417793">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, יש להתקין את Chrome Remote Desktop במחשב היעד וללחוץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="1742469581923031760">מתחבר…</translation>

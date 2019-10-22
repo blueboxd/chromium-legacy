@@ -11,7 +11,6 @@
 <translation id="2831078752570172210">Izgubili ste pristup računu. Obratite se administratoru sustava.</translation>
 <translation id="2844349213149998955">Na ovom uređaju nije dopuštena prijava osobnim računom. Prijavite se poslovnim računom.</translation>
 <translation id="3306357053520292004">Na ovom je računalu već dodan korisnik pomoću tog. Prijavite se nekim drugim računom.</translation>
-<translation id="3968372833844047539">Prijava je dopuštena samo poslovnim korisnicima Gsuitea.</translation>
 <translation id="4057329986137569701">Došlo je do interne pogreške.</translation>
 <translation id="4267670563222825190">Za vaš račun nije pronađen nijedan korisnik domene. Obratite se administratoru.</translation>
 <translation id="4300229033992784001">Promijenjena je zaporka vašeg računa. Unesite svoju trenutačnu zaporku za Windows kako biste sinkronizirali svoj Windows račun s radnim računom.</translation>
@@ -25,7 +24,6 @@
 <translation id="7357241217513796177">Provjerite mrežnu vezu i pokušajte ponovo.</translation>
 <translation id="7536769223115622137">Dodaj radni račun</translation>
 <translation id="7856245195110636219">Ne možete nastaviti bez unošenja trenutačne zaporke za Windows. Obratite se administratoru sustava.</translation>
-<translation id="7996763357529480810">Prijavite se poslovnim računom za GSuite</translation>
 <translation id="8639729688781680518">Zaboravili ste zaporku za Windows</translation>
 <translation id="866458870819756755">Izrada korisnika nije uspjela</translation>
 <translation id="8875753657315897487">Prijavite se radnim računom</translation>

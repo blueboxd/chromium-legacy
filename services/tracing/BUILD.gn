@@ -14,24 +14,16 @@ if (is_android) {
 
 source_set("lib") {
   sources = [
-    "agent_registry.cc",
-    "agent_registry.h",
-    "coordinator.cc",
-    "coordinator.h",
     "perfetto/consumer_host.cc",
     "perfetto/consumer_host.h",
     "perfetto/json_trace_exporter.cc",
     "perfetto/json_trace_exporter.h",
     "perfetto/perfetto_service.cc",
     "perfetto/perfetto_service.h",
-    "perfetto/perfetto_tracing_coordinator.cc",
-    "perfetto/perfetto_tracing_coordinator.h",
     "perfetto/producer_host.cc",
     "perfetto/producer_host.h",
     "perfetto/track_event_json_exporter.cc",
     "perfetto/track_event_json_exporter.h",
-    "recorder.cc",
-    "recorder.h",
     "tracing_service.cc",
     "tracing_service.h",
   ]
@@ -136,23 +128,14 @@ source_set("tests") {
   testonly = true
 
   sources = [
-    "agent_registry_unittest.cc",
-    "coordinator_test_util.cc",
-    "coordinator_test_util.h",
-    "coordinator_unittest.cc",
     "perfetto/consumer_host_unittest.cc",
     "perfetto/json_trace_exporter_unittest.cc",
     "perfetto/perfetto_integration_unittest.cc",
-    "perfetto/perfetto_tracing_coordinator_unittest.cc",
     "perfetto/track_event_json_exporter_unittest.cc",
     "public/cpp/perfetto/task_runner_unittest.cc",
     "public/cpp/perfetto/trace_event_data_source_unittest.cc",
     "public/cpp/perfetto/traced_value_proto_writer_unittest.cc",
     "public/cpp/stack_sampling/tracing_sampler_profiler_unittest.cc",
-    "public/cpp/trace_event_agent_unittest.cc",
-    "recorder_unittest.cc",
-    "test_util.cc",
-    "test_util.h",
   ]
 
   if (!is_android) {

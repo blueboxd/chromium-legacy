@@ -30,13 +30,12 @@ class SecondaryTasksSurfaceViewBinder {
     private static void setVisibility(
             TasksSurfaceViewBinder.ViewHolder viewHolder, PropertyModel model, boolean isShowing) {
         if (isShowing && viewHolder.tasksSurfaceView.getParent() == null) {
+            viewHolder.parentView.addView(viewHolder.tasksSurfaceView);
             MarginLayoutParams layoutParams =
-                    (MarginLayoutParams) viewHolder.scrollContainer.getLayoutParams();
+                    (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
             layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
-            viewHolder.parentView.addView(viewHolder.scrollContainer);
-            viewHolder.scrollContainer.addView(viewHolder.tasksSurfaceView);
         }
 
-        viewHolder.scrollContainer.setVisibility(isShowing ? View.VISIBLE : View.GONE);
+        viewHolder.tasksSurfaceView.setVisibility(isShowing ? View.VISIBLE : View.GONE);
     }
 }

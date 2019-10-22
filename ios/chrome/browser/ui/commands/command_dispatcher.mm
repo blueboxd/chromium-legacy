@@ -71,6 +71,49 @@
   }
 }
 
+- (BOOL)dispatchingForProtocol:(Protocol*)protocol {
+  // Special-case the NSObject protocol.
+  if ([@"NSObject" isEqualToString:NSStringFromProtocol(protocol)]) {
+    return YES;
+  }
+
+  unsigned int methodCount;
+  objc_method_description* requiredInstanceMethods =
+      protocol_copyMethodDescriptionList(protocol, YES /* isRequiredMethod */,
+                                         YES /* isInstanceMethod */,
+                                         &methodCount);
+  BOOL conforming = YES;
+  for (unsigned int i = 0; i < methodCount; i++) {
+    SEL selector = requiredInstanceMethods[i].name;
+    if (_forwardingTargets.find(selector) == _forwardingTargets.end()) {
+      conforming = NO;
+      break;
+    }
+  }
+  free(requiredInstanceMethods);
+  if (!conforming)
+    return NO;
+
+  unsigned int protocolCount;
+  Protocol* __unsafe_unretained _Nonnull* _Nullable conformedProtocols =
+      protocol_copyProtocolList(protocol, &protocolCount);
+  for (unsigned int i = 0; i < protocolCount; i++) {
+    if (![self dispatchingForProtocol:conformedProtocols[i]]) {
+      conforming = NO;
+      break;
+    }
+  }
+
+  free(conformedProtocols);
+  return conforming;
+}
+
+- (CommandDispatcher*)strictCallableForProtocol:(Protocol*)protocol {
+  CHECK([self dispatchingForProtocol:protocol])
+      << "Dispatcher failed protocol confromance";
+  return self;
+}
+
 #pragma mark - NSObject
 
 // Overridden to forward messages to registered handlers.

@@ -40,7 +40,7 @@ struct ArcKioskAppBasicInfo {
 
 // TODO(apotapchuk): Might be expanded to include title and icon_url.
 struct WebKioskAppBasicInfo {
-  WebKioskAppBasicInfo(const std::string& url);
+  explicit WebKioskAppBasicInfo(const std::string& url);
   WebKioskAppBasicInfo();
   ~WebKioskAppBasicInfo();
 

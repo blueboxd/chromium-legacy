@@ -26,7 +26,6 @@ public class RenderingTest {
     @SmallTest
     public void testSetSupportEmbeddingFromCallback() {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
-        Assert.assertNotNull(activity);
 
         CountDownLatch latch = new CountDownLatch(1);
         String url = "data:text,foo";
@@ -38,7 +37,6 @@ public class RenderingTest {
                         activity.getBrowserFragmentController().setSupportsEmbedding(false)
                                 .addCallback((Boolean result2) -> {
                                     Assert.assertTrue(result2);
-                                    mActivityTestRule.loadUrl(url);
                                     latch.countDown();
                                 });
                     });
@@ -49,14 +47,13 @@ public class RenderingTest {
         } catch (InterruptedException e) {
             Assert.fail(e.toString());
         }
-        mActivityTestRule.waitForNavigation(url);
+        mActivityTestRule.navigateAndWait(url);
     }
 
     @Test
     @SmallTest
     public void testRepeatSetSupportEmbeddingGeneratesCallback() {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
-        Assert.assertNotNull(activity);
 
         CountDownLatch latch = new CountDownLatch(2);
         String url = "data:text,foo";

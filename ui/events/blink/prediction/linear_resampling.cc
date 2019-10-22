@@ -71,10 +71,10 @@ bool LinearResampling::HasPrediction() const {
          events_dt_ >= kResampleMinDelta;
 }
 
-bool LinearResampling::GeneratePrediction(base::TimeTicks frame_time,
-                                          InputData* result) const {
+std::unique_ptr<InputPredictor::InputData> LinearResampling::GeneratePrediction(
+    base::TimeTicks frame_time) const {
   if (!HasPrediction())
-    return false;
+    return nullptr;
 
   base::TimeTicks sample_time = frame_time - kResampleLatency;
 
@@ -84,8 +84,8 @@ bool LinearResampling::GeneratePrediction(base::TimeTicks frame_time,
   sample_time =
       std::min(sample_time, events_queue_[0].time_stamp + max_prediction);
 
-  result->pos = lerp(events_queue_[0], events_queue_[1], sample_time);
-  return true;
+  return std::make_unique<InputData>(
+      lerp(events_queue_[0], events_queue_[1], sample_time), sample_time);
 }
 
 base::TimeDelta LinearResampling::TimeInterval() const {

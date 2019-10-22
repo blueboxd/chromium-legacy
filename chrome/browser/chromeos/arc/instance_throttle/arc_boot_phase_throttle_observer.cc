@@ -51,7 +51,6 @@ void ArcBootPhaseThrottleObserver::OnArcStarted() {
 }
 
 void ArcBootPhaseThrottleObserver::OnArcInitialStart() {
-  DCHECK(arc_is_booting_);
   arc_is_booting_ = false;
   MaybeSetActive();
 }

@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Słaba</translation>
 <translation id="1152528166145813711">Wybierz…</translation>
 <translation id="1199593201721843963">Wyłącz połączenia zdalne</translation>
+<translation id="1201402288615127009">Dalej</translation>
 <translation id="1291443878853470558">Jeśli chcesz korzystać z tego komputera przez Chromoting, musisz włączyć połączenia zdalne.</translation>
 <translation id="1297009705180977556">Błąd podczas łączenia z: <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(ta funkcja nie jest jeszcze dostępna na tym komputerze)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Pulpit zdalny Chrome jest teraz dostępny w internecie. Wypróbuj naszą <ph name="LINK_BEGIN" />aplikację internetową<ph name="LINK_END" />. Jest bezpłatna, szybka i oferuje jeszcze więcej funkcji, w tym poprawioną obsługę wielu monitorów.</translation>
 <translation id="1643640058022401035">Jeśli opuścisz tę stronę, sesja Chromoting zostanie zakończona.</translation>
 <translation id="1654128982815600832">Włączam połączenia zdalne z tym komputerem…</translation>
+<translation id="1697532407822776718">Wszystko gotowe.</translation>
 <translation id="170207782578677537">Nie udało się zarejestrować tego komputera.</translation>
 <translation id="174018511426417793">Nie masz zarejestrowanych komputerów. Aby umożliwić zdalne połączenia z komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Łączę…</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Proces hosta</translation>
 <translation id="20876857123010370">Tryb trackpada</translation>
 <translation id="2089514346391228378">Połączenia zdalne z tym komputerem zostały włączone.</translation>
+<translation id="2198363917176605566">Aby korzystać z usługi <ph name="PRODUCT_NAME" />, musisz przyznać jej uprawnienie „Rejestrowanie zawartości ekranu”. Umożliwi to wysyłanie zawartości ekranu z tego Maca na komputer zdalny.
+
+Kliknij przycisk „<ph name="BUTTON_NAME" />” poniżej, by otworzyć okienko ustawień „Rejestrowanie zawartości ekranu”, a potem zaznacz pole obok opcji „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Jeśli opcja „<ph name="SERVICE_SCRIPT_NAME" />” jest już zaznaczona, odznacz ją i zaznacz jeszcze raz.</translation>
 <translation id="2208514473086078157">Ustawienia zasad nie zezwalają na udostępnianie tego komputera jako hosta Pulpitu zdalnego Chrome. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
 <translation id="2220529011494928058">Zgłoś problem</translation>
 <translation id="2221097377466213233">Użyj prawego klawisza Ctrl w systemie Windows (⌘ na Macu)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Ostatnio online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ta aplikacja nie jest już obsługiwana. Aby mieć dostęp do najnowszych funkcji i poprawek zabezpieczeń, używaj <ph name="LINK_BEGIN" />aplikacji internetowej Pulpit zdalny Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Pomóż nam udoskonalić Pulpit zdalny Chrome, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>
+<translation id="2504109125669302160">Przyznaj uprawnienie „Ułatwienia dostępu” usłudze <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Połączono z: <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">UWAGA: aby wszystkie skróty klawiszowe były dostępne, ustaw Pulpit zdalny Chrome na „Otwórz jako okno”.</translation>
 <translation id="2540992418118313681">Chcesz udostępnić ten komputer innemu użytkownikowi, by mógł przeglądać jego zawartość i sterować nim?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Biblioteka główna</translation>
 <translation id="4430435636878359009">Wyłącz połączenia zdalne z tym komputerem</translation>
 <translation id="4430915108080446161">Generuję kod dostępu…</translation>
+<translation id="443560535555262820">Otwórz ustawienia ułatwień dostępu</translation>
 <translation id="4450893287417543264">Nie pokazuj ponownie</translation>
 <translation id="4472575034687746823">Rozpocznij</translation>
 <translation id="4481276415609939789">Nie masz zarejestrowanych komputerów. Aby umożliwić zdalne połączenia z komputerem, zainstaluj na nim Chromoting i kliknij „<ph name="BUTTON_NAME" />”.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Zmień kod PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (nieaktualne)</translation>
 <translation id="6221358653751391898">Nie jesteś zalogowany do Chrome. Zaloguj się i spróbuj ponownie.</translation>
+<translation id="6223301979382383752">Otwórz preferencje rejestrowania zawartości ekranu</translation>
 <translation id="6227369581881558336">Pulpit zdalny Chrome jest teraz dostępny w internecie i oferuje nowe funkcje, w tym możliwość transferu plików. Wypróbuj naszą <ph name="LINK_BEGIN" />aplikację internetową<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Host uruchomiony na ekranie logowania konsoli został zamknięty, by umożliwić włączenie trybu kurtyny, przełączając się na hosta uruchomionego w sesji danego użytkownika.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Inny problem.</translation>
 <translation id="6398765197997659313">Zamknij pełny ekran</translation>
+<translation id="6411861157501911556">Aby korzystać z usługi <ph name="PRODUCT_NAME" />, musisz przyznać uprawnienie „Ułatwienia dostępu”. Umożliwi to przesyłanie danych wejściowych z komputera zdalnego na tego Maca.
+
+Kliknij przycisk „<ph name="BUTTON_NAME" />” poniżej, by otworzyć okienko ustawień „Ułatwienia dostępu”, a potem zaznacz pole obok opcji „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Jeśli opcja „<ph name="SERVICE_SCRIPT_NAME" />” jest już zaznaczona, odznacz ją i zaznacz jeszcze raz.</translation>
 <translation id="6441316101718669559">Integracja pulpitu jest niedostępna na tej platformie. Wciąż możesz używać aplikacji, jednak praca będzie mniej wygodna.</translation>
 <translation id="652218476070540101">Aktualizuję PIN tego komputera…</translation>
 <translation id="6527303717912515753">Udostępnij</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Pulpit zdalny ma być widoczny w całości</translation>
 <translation id="9149992051684092333">Aby udostępnić pulpit, podaj poniższy kod dostępu osobie, która będzie Ci pomagać.</translation>
 <translation id="916856682307586697">Uruchom domyślną sesję X</translation>
+<translation id="9187628920394877737">Przyznaj uprawnienie „Rejestrowanie zawartości ekranu” usłudze <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Autoryzuj</translation>
 <translation id="9213184081240281106">Nieprawidłowa konfiguracja hosta.</translation>
 <translation id="951991426597076286">Odrzuć</translation>

@@ -237,7 +237,7 @@ public class StatusBarColorController
      * @param tab The tab that is currently showing, used to determine whether {@code color} is the
      *            default theme color.
      */
-    private void updateStatusBarColor(@Nullable Tab tab) {
+    public void updateStatusBarColor(@Nullable Tab tab) {
         setStatusBarColor(calculateBaseStatusBarColor(), isDefaultThemeColor(tab));
     }
 

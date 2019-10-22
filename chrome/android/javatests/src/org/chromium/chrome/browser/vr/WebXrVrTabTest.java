@@ -42,7 +42,7 @@ import java.util.concurrent.Callable;
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-webvr"})
+        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR is only supported on K+
 public class WebXrVrTabTest {
     @ClassParameter
@@ -89,7 +89,7 @@ public class WebXrVrTabTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_SVR)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testPoseDataUnfocusedTab_WebXr() {
         testPoseDataUnfocusedTabImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
@@ -117,7 +117,7 @@ public class WebXrVrTabTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testPermissionsInOtherTab() throws InterruptedException {
         testPermissionsInOtherTabImpl(false /* incognito */);
@@ -127,7 +127,7 @@ public class WebXrVrTabTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testPermissionsInOtherTabIncognito() throws InterruptedException {
         testPermissionsInOtherTabImpl(true /* incognito */);

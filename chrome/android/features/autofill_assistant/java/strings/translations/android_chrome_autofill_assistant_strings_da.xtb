@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="1135993792949700405">Chrome sender de personoplysninger, du har valgt, til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Vil du åbne et eksternt link?</translation>
 <translation id="1699570257714336246">Der mangler oplysninger</translation>
 <translation id="2203046366315513658">Sænk værdien</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Google Assistent i Chrome er åbnet i halv højde.</translation>
 <translation id="6973932557599545801">Jeg kan desværre ikke hjælpe. Fortsæt på egen hånd.</translation>
 <translation id="7658239707568436148">Annuller</translation>
-<translation id="7871791972254842204">Læs og acceptér vilkår og betingelser på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> på et senere tidspunkt</translation>
 <translation id="8253702004019660079">Google Assistent i Chrome</translation>
 <translation id="9138504265731110181">Du sparer tid ved at bruge Google-assistenten, da den hjælper dig med betalingsprocessen på nettet</translation>
 <translation id="945522503751344254">Send feedback</translation>

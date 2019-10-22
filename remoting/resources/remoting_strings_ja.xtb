@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">悪い</translation>
 <translation id="1152528166145813711">選択してください…</translation>
 <translation id="1199593201721843963">リモート接続を無効にする</translation>
+<translation id="1201402288615127009">次へ</translation>
 <translation id="1291443878853470558">Chromoting を使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
 <translation id="1297009705180977556"><ph name="HOSTNAME" /> への接続中にエラーが発生しました</translation>
 <translation id="1324095856329524885">（お使いのパソコンはこの機能に未対応です）</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome リモート デスクトップがウェブに対応しました。高速で無料の<ph name="LINK_BEGIN" />ウェブアプリ<ph name="LINK_END" />をお試しください。複数モニターへの対応など、機能がさらに追加されました。</translation>
 <translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
+<translation id="1697532407822776718">設定が完了しました。</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
 <translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="1742469581923031760">接続しています...</translation>

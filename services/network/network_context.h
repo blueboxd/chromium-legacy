@@ -364,9 +364,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                          AddAuthCacheEntryCallback callback) override;
   // TODO(mmenke): Rename this method and update Mojo docs to make it clear this
   // doesn't give proxy auth credentials.
-  void LookupBasicAuthCredentials(
+  void LookupServerBasicAuthCredentials(
       const GURL& url,
-      LookupBasicAuthCredentialsCallback callback) override;
+      const net::NetworkIsolationKey& network_isolation_key,
+      LookupServerBasicAuthCredentialsCallback callback) override;
   void GetOriginPolicyManager(
       mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) override;
 

@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Para permitir que Chrome te envíe notificaciones, actívalas también en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> también tiene datos en Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Si cambias la extensión de archivo, es posible que tu dispositivo tenga un comportamiento inesperado y se dañe.</translation>
 <translation id="2056878612599315956">Se pausó el sitio</translation>
 <translation id="2063713494490388661">Presionar para buscar</translation>
 <translation id="2067805253194386918">texto</translation>
@@ -915,7 +914,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">Aquí aparecerá tu ahorro de datos</translation>
 <translation id="7837721118676387834">Permite la reproducción automática de videos silenciados para un sitio específico.</translation>
-<translation id="7838340937077326045">¿Confirmas que deseas cambiar la extensión de archivo?</translation>
 <translation id="7846076177841592234">Cancelar la selección</translation>
 <translation id="784934925303690534">Intervalo de tiempo</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>

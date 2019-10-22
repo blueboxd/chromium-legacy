@@ -901,10 +901,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisplayInsecureContent,
-                        OnDidDisplayInsecureContent)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidContainInsecureFormAction,
-                        OnDidContainInsecureFormAction)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunInsecureContent,
                         OnDidRunInsecureContent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisplayContentWithCertificateErrors,
@@ -4630,18 +4626,11 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   }
 }
 
-void WebContentsImpl::OnDidDisplayInsecureContent(RenderFrameHostImpl* source) {
-  // Any frame can trigger display of insecure content, so we don't check
-  // |source| here.
-  DidDisplayInsecureContent();
-}
-
 void WebContentsImpl::DidDisplayInsecureContent() {
   controller_.ssl_manager()->DidDisplayMixedContent();
 }
 
-void WebContentsImpl::OnDidContainInsecureFormAction(
-    RenderFrameHostImpl* source) {
+void WebContentsImpl::DidContainInsecureFormAction() {
   controller_.ssl_manager()->DidContainInsecureFormAction();
 }
 

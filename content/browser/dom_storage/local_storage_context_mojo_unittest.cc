@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
@@ -35,12 +34,17 @@
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
-using leveldb::StdStringToUint8Vector;
-using leveldb::Uint8VectorToStdString;
-
 namespace content {
 
 namespace {
+
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
+
+std::string Uint8VectorToStdString(const std::vector<uint8_t>& v) {
+  return std::string(v.begin(), v.end());
+}
 
 void GetStorageUsageCallback(const base::RepeatingClosure& callback,
                              std::vector<StorageUsageInfo>* out_result,
@@ -785,19 +789,19 @@ TEST_F(LocalStorageContextMojoTest, FixUp) {
 
   {
     std::vector<uint8_t> result;
-    bool success = test::GetSync(
-        area.get(), leveldb::StdStringToUint8Vector("\x01key"), &result);
+    bool success =
+        test::GetSync(area.get(), StdStringToUint8Vector("\x01key"), &result);
     EXPECT_TRUE(success);
-    EXPECT_EQ(leveldb::StdStringToUint8Vector("value1"), result);
+    EXPECT_EQ(StdStringToUint8Vector("value1"), result);
   }
   {
     std::vector<uint8_t> result;
     bool success = test::GetSync(area.get(),
-                                 leveldb::StdStringToUint8Vector("\x01"
-                                                                 "foo"),
+                                 StdStringToUint8Vector("\x01"
+                                                        "foo"),
                                  &result);
     EXPECT_TRUE(success);
-    EXPECT_EQ(leveldb::StdStringToUint8Vector("value3"), result);
+    EXPECT_EQ(StdStringToUint8Vector("value3"), result);
   }
 
   // Expect 4 rows in the database: VERSION, meta-data for the origin, and two

@@ -396,6 +396,12 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // the window's bounds if it has been resized.
   void AddDraggedWindowIntoOverviewOnDragEnd(aura::Window* dragged_window);
 
+  // Calculate the width of an item based on |height|. The width tries to keep
+  // the same aspect ratio as the original window, but may be modified if the
+  // bounds of the window are considered extreme, or if the window is in
+  // splitview or entering splitview.
+  int CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item, int height);
+
   // Root window the grid is in.
   aura::Window* root_window_;
 
@@ -464,6 +470,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Records the presentation time of scrolling the grid in overview mode.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
+
+  // Weak pointer to the window that is being dragged from the top, if there is
+  // one.
+  aura::Window* dragged_window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGrid);
 };

@@ -7,10 +7,10 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "url/gurl.h"
-
-class ProtocolDialogDelegate;
+#include "url/origin.h"
 
 namespace content {
 class WebContents;
@@ -24,11 +24,14 @@ namespace views {
 class MessageBoxView;
 }
 
-class ExternalProtocolDialog : public views::DialogDelegateView {
+class ExternalProtocolDialog : public views::DialogDelegateView,
+                               public content::WebContentsObserver {
  public:
   // Show by calling ExternalProtocolHandler::RunExternalProtocolDialog().
-  ExternalProtocolDialog(std::unique_ptr<const ProtocolDialogDelegate> delegate,
-                         content::WebContents* web_contents);
+  ExternalProtocolDialog(content::WebContents* web_contents,
+                         const GURL& url,
+                         const base::string16& program_name,
+                         const base::Optional<url::Origin>& initiating_origin);
 
   ~ExternalProtocolDialog() override;
 
@@ -47,7 +50,9 @@ class ExternalProtocolDialog : public views::DialogDelegateView {
   void ShowRememberSelectionCheckbox();
   void SetRememberSelectionCheckboxCheckedForTesting(bool checked);
 
-  const std::unique_ptr<const ProtocolDialogDelegate> delegate_;
+  const GURL url_;
+  const base::string16 program_name_;
+  const base::Optional<url::Origin> initiating_origin_;
 
   // The message box whose commands we handle.
   views::MessageBoxView* message_box_view_;

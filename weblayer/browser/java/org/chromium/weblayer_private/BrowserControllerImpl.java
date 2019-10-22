@@ -13,6 +13,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.webkit.ValueCallback;
 import android.widget.FrameLayout;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.ViewEventSink;
@@ -161,6 +162,22 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         }
     }
 
+    @Override
+    public void executeScript(String script, IObjectWrapper callback) {
+        Callback<String> nativeCallback = new Callback<String>() {
+            @Override
+            public void onResult(String result) {
+                ValueCallback<String> unwrappedCallback =
+                        (ValueCallback<String>) ObjectWrapper.unwrap(callback, ValueCallback.class);
+                if (unwrappedCallback != null) {
+                    unwrappedCallback.onReceiveValue(result);
+                }
+            }
+        };
+        BrowserControllerImplJni.get().executeScript(
+                mNativeBrowserController, script, nativeCallback);
+    }
+
     public void destroy() {
         BrowserControllerImplJni.get().setTopControlsContainerView(
                 mNativeBrowserController, BrowserControllerImpl.this, 0);
@@ -206,5 +223,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 BrowserControllerImpl caller, long nativeTopControlsContainerView);
         void deleteBrowserController(long browserController);
         WebContents getWebContents(long nativeBrowserControllerImpl, BrowserControllerImpl caller);
+        void executeScript(
+                long nativeBrowserControllerImpl, String script, Callback<String> callback);
     }
 }

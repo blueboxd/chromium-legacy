@@ -65,6 +65,16 @@ std::vector<uint8_t> AuthenticatorGetInfoResponse::EncodeToCBOR(
     device_info_map.emplace(6, ToArrayValue(*response.pin_protocols));
   }
 
+  if (response.max_credential_count_in_list) {
+    device_info_map.emplace(
+        7, base::strict_cast<int64_t>(*response.max_credential_count_in_list));
+  }
+
+  if (response.max_credential_id_length) {
+    device_info_map.emplace(
+        8, base::strict_cast<int64_t>(*response.max_credential_id_length));
+  }
+
   auto encoded_bytes =
       cbor::Writer::Write(cbor::Value(std::move(device_info_map)));
   DCHECK(encoded_bytes);

@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> ታክሏል</translation>
 <translation id="1056775291175587022">ምንም አውታረ መረቦች የሉም</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />፦ <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">ሴሉላር፦ <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">ደብሮኛል</translation>
 <translation id="1104084341931202936">የተደራሽነት ቅንብሮችን አሳይ</translation>
 <translation id="1104621072296271835">የእርስዎ መሣሪያዎች እንዲያውም የተሻለ ይሠራሉ</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">ትርፍ ቅኝት</translation>
 <translation id="119944043368869598">ሁሉንም አጽዳ</translation>
 <translation id="1247372569136754018">ማይክሮፎን (ውስጣዊ)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> ይህ ቅንብር በአስተዳዳሪዎ ነው በግዳጅ እንዲፈጸም የተደረገው።</translation>
 <translation id="1252999807265626933">ኃይል ከ<ph name="POWER_SOURCE" /> በመሙላት ላይ</translation>
 <translation id="1255033239764210633">የአየር ሁኔታው ምንድነው?</translation>
 <translation id="1267032506238418139">የአቋራጭ ለውጥ</translation>
 <translation id="1270290102613614947">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ተሰናክሏል</translation>
 <translation id="1272079795634619415">አቁም</translation>
+<translation id="1275285675049378717"><ph name="POWER_SOURCE" />ን በማጎላበት ላይ</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> <ph name="COME_BACK_TIME" /> ላይ ተመልሰው ይምጡ።</translation>
 <translation id="1290331692326790741">ደካማ ሲግናል</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">ባለከፍተኛ ንፅፅር ሁነታ</translation>
 <translation id="2542089167727451762">የመገለጫ ምስልዎን መታ ያድርጉ</translation>
 <translation id="255671100581129685">የGoogle ረዳቱ በይፋዊ ክፍለ-ጊዜ ውስጥ አይገኝም።</translation>
+<translation id="256712445991462162">የተተከለው ማጉያ</translation>
 <translation id="2575685495496069081">በበርካታ መለያ መግባት ነቅቷል</translation>
 <translation id="2582112259361606227">ለማዘመን ዳግም ያስነሱ</translation>
 <translation id="2617342710774726426">ሲም ካርድ ተዘግቷል</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">የስቲለስ መሣሪያዎች</translation>
 <translation id="3368922792935385530">ተያይዟል</translation>
 <translation id="3371140690572404006">የUSB-C መሣሪያ (የቀኝ ጎን የፊት ወደብ)</translation>
+<translation id="3386978599540877378">የሙሉ ማያ ገጽ ማጉያ</translation>
 <translation id="3400357268283240774">ተጨማሪ ቅንብሮች</translation>
 <translation id="3413817803639110246">ገና ምንም የሚታይ ነገር የለም</translation>
 <translation id="343571671045587506">አስታዋሽን ያርትዑ</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Chrome ስርዓተ ክወና</translation>
 <translation id="4338109981321384717">ማጉያ መነጽር</translation>
 <translation id="4351433414020964307">ረዳት በመጫን ላይ ነው...</translation>
+<translation id="4356930093361201197">ባለከፍተኛ ንፅፅር ሁነታ</translation>
 <translation id="4378551569595875038">በመገናኘት ላይ...</translation>
 <translation id="4379531060876907730">እነዚህ የእርስዎ የስታይለስ መሣሪያዎች ናቸው</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">የተተከለ የማጉያ የቁልፍ ሰሌዳ አቋራጩን ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
 <translation id="4421231901400348175">የማያ ገጽዎን ቁጥጥር በርቀት እርዳታ በኩል ለ<ph name="HELPER_NAME" /> በማጋራት ላይ።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">ራስሰር ጠቅ ማድረጎችን ማጥፋት እንደሚፈልጉ እርግጠኛ ነዎት?</translation>
 <translation id="4849058404725798627">ነገርየውን ከቁልፍ ሰሌዳ ትኩረት ጋር አድምቅ</translation>
 <translation id="485592688953820832">ምንም እርምጃ የለም (ባለበት አቁም)</translation>
+<translation id="4868492592575313542">ገብሯል</translation>
 <translation id="4872237917498892622">Alt+Search ወይም Shift</translation>
 <translation id="4890187583552566966">Google ረዳቱ በአስተዳዳሪዎ ተሰናክሏል።</translation>
 <translation id="4895488851634969361">ባትሪው ሙሉ ነው።</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">ተገናኝቷል፣ <ph name="BATTERY_PERCENTAGE" />% ባትሪ</translation>
 <translation id="6751826523481687655">የአፈጻጸም ክትትል በርቷል</translation>
 <translation id="6752912906630585008">ዴስክ <ph name="REMOVED_DESK" /> ተወግዶ ከዴስክ <ph name="RECEIVE_DESK" /> ጋር ተዋህዷል</translation>
+<translation id="6777216307882431711">የተገናኙ የUSB-C መሣሪያዎችን ኃይል በመሙላት ላይ</translation>
 <translation id="6790428901817661496">አጫውት</translation>
 <translation id="6803622936009808957">ምንም የሚደገፉ ጥራቶች ስላልተገኙ ማሳያዎችን ማሳየት አልተቻለም። ይልቁንስ ወደ የተስፋፋ ዴስክቶፕ ሁነታ ተገብቷል።</translation>
 <translation id="6820676911989879663">እረፍት ይውሰዱ!</translation>
@@ -442,6 +451,7 @@
 <translation id="7568294522609223312">ራስሰር ጠቅ ማድረጎችን ያጥፉ</translation>
 <translation id="7569509451529460200">ብሬይል እና ChromeVox ነቅተዋል</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
+<translation id="7600875258240007829">ሁሉንም ማሳወቂያዎች ይመልከቱ</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ባለቤት)</translation>
 <translation id="7647488630410863958">የእርስዎን ማሳወቂያዎች ለማየት መሣሪያውን ይክፈቱ</translation>
 <translation id="7649070708921625228">እገዛ</translation>
@@ -506,6 +516,7 @@
 <translation id="8452135315243592079">ሲም ካርድ ይጎድላል</translation>
 <translation id="8454013096329229812">Wi-Fi በርቷል።</translation>
 <translation id="847056008324733326">የልኬት ቅንብሮችን አሳይ</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" /> አለው።</translation>
 <translation id="8477270416194247200">ለመሰረዝ Alt+Search ወይም Shift ይጫኑ።</translation>
 <translation id="8513108775083588393">በራስ ሰር አሽከርክር</translation>
 <translation id="8517041960877371778">የእርሰዎ <ph name="DEVICE_TYPE" /> እንደበራ ኃይል መሙላት አይችሉ ይሆናል።</translation>
@@ -534,6 +545,7 @@
 <translation id="8909138438987180327">ባትሪ <ph name="PERCENTAGE" /> መቶኛ ላይ።</translation>
 <translation id="8921554779039049422">ኤች+</translation>
 <translation id="8921624153894383499">የGoogle ረዳቱ ይህን ቋንቋ አይናገርም።</translation>
+<translation id="8936501819958976551">ቦዝኗል</translation>
 <translation id="8938800817013097409">USB-C መሣሪያ (የቀኝ ወደብ ከኋላ በኩል)</translation>
 <translation id="8940956008527784070">ባትሪ ዝቅተኛ ነው (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">ኤችኤስፒኤ</translation>

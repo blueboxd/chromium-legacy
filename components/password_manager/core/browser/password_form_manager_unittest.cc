@@ -1383,8 +1383,7 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
 
-  form_manager_->SetGenerationPopupWasShown(
-      true /* generation_popup_was_shown */, false /* is_manual_generation */);
+  form_manager_->SetGenerationPopupWasShown(false /* is_manual_generation */);
 
   // Check that the generated password is presaved.
   PasswordForm saved_form;
@@ -1439,8 +1438,7 @@ TEST_F(PasswordFormManagerTest, PresaveGenerated_ModifiedUsername) {
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
 
-  form_manager_->SetGenerationPopupWasShown(
-      true /* generation_popup_was_shown */, false /* is_manual_generation */);
+  form_manager_->SetGenerationPopupWasShown(false /* is_manual_generation */);
 
   // Check that the generated password is presaved.
   PasswordForm saved_form;
@@ -1539,8 +1537,7 @@ TEST_F(PasswordFormManagerTest, PasswordNoLongerGenerated) {
   fetcher_->NotifyFetchCompleted();
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
-  form_manager_->SetGenerationPopupWasShown(
-      true /* generation_popup_was_shown */, true /* is_manual_generation */);
+  form_manager_->SetGenerationPopupWasShown(true /* is_manual_generation */);
 
   EXPECT_CALL(form_saver, Save(_, _, _));
 
@@ -1574,8 +1571,7 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPasswordExistingCredential) {
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
 
-  form_manager_->SetGenerationPopupWasShown(
-      true /* generation_popup_was_shown */, false /* is_manual_generation */);
+  form_manager_->SetGenerationPopupWasShown(false /* is_manual_generation */);
 
   // Check that the generated password is presaved.
   PasswordForm saved_form;
@@ -1825,8 +1821,7 @@ TEST_F(PasswordFormManagerTest, GenerationUploadOnNoInteraction) {
 
     if (generation_popup_shown) {
       form_manager_->SetGenerationElement(ASCIIToUTF16("password"));
-      form_manager_->SetGenerationPopupWasShown(
-          true /*generation_popup_was_shown*/, false /*is_manual_generation*/);
+      form_manager_->SetGenerationPopupWasShown(false /*is_manual_generation*/);
     }
     EXPECT_TRUE(
         form_manager_->ProvisionallySave(submitted_form_, &driver_, nullptr));
@@ -1851,8 +1846,7 @@ TEST_F(PasswordFormManagerTest, GenerationUploadOnNeverClicked) {
 
     if (generation_popup_shown) {
       form_manager_->SetGenerationElement(ASCIIToUTF16("password"));
-      form_manager_->SetGenerationPopupWasShown(
-          true /*generation_popup_was_shown*/, false /*is_manual_generation*/);
+      form_manager_->SetGenerationPopupWasShown(false /*is_manual_generation*/);
     }
     EXPECT_TRUE(
         form_manager_->ProvisionallySave(submitted_form_, &driver_, nullptr));

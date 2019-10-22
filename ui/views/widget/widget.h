@@ -199,13 +199,13 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       WIDGET_OWNS_NATIVE_WIDGET
     };
 
-    enum ShadowType {
-      SHADOW_TYPE_DEFAULT,  // Use default shadow setting. It will be one of
-                            // the settings below depending on InitParams::type
-                            // and the native widget's type.
-      SHADOW_TYPE_NONE,     // Don't draw any shadow.
-      SHADOW_TYPE_DROP,     // Draw a drop shadow that emphasizes Z-order
-                            // relationship to other windows.
+    enum class ShadowType {
+      kDefault,  // Use default shadow setting. It will be one of
+                 // the settings below depending on InitParams::type
+                 // and the native widget's type.
+      kNone,     // Don't draw any shadow.
+      kDrop,     // Draw a drop shadow that emphasizes Z-order
+                 // relationship to other windows.
     };
 
     // Default initialization with |type| set to TYPE_WINDOW.
@@ -261,9 +261,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     bool mirror_origin_in_rtl = false;
 
-    ShadowType shadow_type = SHADOW_TYPE_DEFAULT;
+    ShadowType shadow_type = ShadowType::kDefault;
 
-    // A hint about the size of the shadow if the type is SHADOW_TYPE_DROP. May
+    // A hint about the size of the shadow if the type is ShadowType::kDrop. May
     // be ignored on some platforms. No value indicates no preference.
     base::Optional<int> shadow_elevation;
 

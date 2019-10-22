@@ -14,6 +14,8 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/engines/target/sandbox_request_helper.h"
 #include "chrome/chrome_cleaner/mojom/engine_file_requests.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace chrome_cleaner {
 
@@ -24,7 +26,7 @@ class EngineFileRequestsProxy
     : public base::RefCountedThreadSafe<EngineFileRequestsProxy> {
  public:
   EngineFileRequestsProxy(
-      mojom::EngineFileRequestsAssociatedPtr file_requests_ptr,
+      mojo::PendingAssociatedRemote<mojom::EngineFileRequests> file_requests,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Implements synchronous callbacks to be called on arbitrary threads from the
@@ -43,7 +45,7 @@ class EngineFileRequestsProxy
     return task_runner_;
   }
 
-  void UnbindRequestsPtr();
+  void UnbindRequestsRemote();
 
  protected:
   virtual ~EngineFileRequestsProxy();
@@ -70,7 +72,7 @@ class EngineFileRequestsProxy
 
   // A EngineFileRequests that will send the requests over the Mojo
   // connection.
-  mojom::EngineFileRequestsAssociatedPtr file_requests_ptr_;
+  mojo::AssociatedRemote<mojom::EngineFileRequests> file_requests_;
 
   // A task runner for the IPC thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

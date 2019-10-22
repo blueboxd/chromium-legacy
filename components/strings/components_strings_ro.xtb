@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Încarcă pagina mai târziu</translation>
 <translation id="1015730422737071372">Specifică detalii suplimentare</translation>
 <translation id="1021110881106174305">Carduri acceptate</translation>
-<translation id="1023523064224774104">Chromium a detectat că tocmai ai introdus parola pe un site
-          suspect. Resetează parola acum!</translation>
 <translation id="1032854598605920125">Rotește în sensul acelor de ceasornic</translation>
 <translation id="1035334672863811645">conectează-te la Chrome</translation>
 <translation id="1036348656032585052">Dezactivează</translation>
@@ -123,6 +121,7 @@
 <translation id="1501859676467574491">Arată cardurile din Contul Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Această eroare se va afișa dacă folosești un portal Wi-Fi la care trebuie să te conectezi înainte de a putea fi online.&lt;/p&gt;
     &lt;p&gt;Pentru a remedia eroarea, dă clic pe &lt;strong&gt;Conectează-te&lt;/strong&gt;, în pagina pe care încerci să o deschizi.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Lista intrărilor în istoric</translation>
 <translation id="1517433312004943670">Numărul de telefon este obligatoriu</translation>
 <translation id="1517500485252541695">Carduri de credit și de debit acceptate</translation>
 <translation id="1519264250979466059">Dată versiune:</translation>
@@ -308,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fie revocat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="2438874542388153331">Perforare cvadruplă în dreapta</translation>
+<translation id="245044156129055925">Ai introdus parola pe un site înșelător. Chrome recomandă să-ți schimbi acum parola.</translation>
 <translation id="2463193859425327265">Schimbă Pagina principală</translation>
 <translation id="2463739503403862330">Completează</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -550,7 +550,6 @@
 <translation id="3655670868607891010">Dacă această pagină se afișează în mod frecvent, încercați <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Versiune</translation>
 <translation id="366077651725703012">Actualizează cardul de credit</translation>
-<translation id="3672525478985456967">Numele acestui site este similar cu cel al site-ului <ph name="LOOKALIKE_DOMAIN" />. Uneori, atacatorii imită site-uri aducând modificări mici, greu de observat, numelui de domeniu.</translation>
 <translation id="3676592649209844519">ID dispozitiv:</translation>
 <translation id="3677008721441257057">Ai vrut să accesezi &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Solicitarea nu a putut fi semnată</translation>
@@ -616,6 +615,9 @@
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> este blocat</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> a activat în browser Protecția Chrome împotriva amenințărilor la adresa întreprinderilor. Protecția Chrome împotriva amenințărilor la adresa întreprinderilor are acces la o parte din datele tale.</translation>
+<translation id="3987405730340719549">Chrome a identificat acest site ca fiind potențial fals sau fraudulos.
+
+    În cazul în care consideri că este o greșeală, accesează https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Mai puțin de 1 MB</translation>
 <translation id="3990250421422698716">Decalaj de îndoire</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 pagină web în apropiere}few{# pagini web în apropiere}other{# de pagini web în apropiere}}</translation>
@@ -874,7 +876,6 @@
 <translation id="5230733896359313003">Adresă de expediere</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Închide</translation>
 <translation id="5250209940322997802">„Conectează-te la rețea”</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Plic)</translation>
@@ -994,6 +995,9 @@
 <translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
 <translation id="583281660410589416">Necunoscut</translation>
 <translation id="5838278095973806738">Nu ar trebui să introduci informații sensibile pe acest site (de exemplu, parole sau carduri de credit), deoarece ar putea fi furate de atacatori.</translation>
+<translation id="5855253129151731373">Numele de gazdă al acestui site este similar cu cel al site-ului <ph name="LOOKALIKE_DOMAIN" />. Uneori, atacatorii imită site-uri aducând modificări mici, greu de observat, numelui de domeniu.
+
+    În cazul în care consideri că este o greșeală, accesează https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
 <translation id="5863847714970149516">Următoarea pagină poate să genereze costuri</translation>
 <translation id="5866257070973731571">Adaugă un număr de telefon</translation>
@@ -1016,7 +1020,6 @@
 <translation id="5946937721014915347">Se deschide <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Da, adaugă</translation>
 <translation id="5951495562196540101">Nu te poți înscrie cu contul de consumator (este disponibilă o licență din pachet).</translation>
-<translation id="5966900314707961320">Dacă este activat, site-urile nu pot folosi cookie-uri care te urmăresc pe web</translation>
 <translation id="5967592137238574583">Editează informațiile de contact</translation>
 <translation id="5967867314010545767">Eliminați din istoric</translation>
 <translation id="5975083100439434680">Micșorează</translation>
@@ -1105,6 +1108,7 @@
 <translation id="6401136357288658127">Această politică este învechită. Ar trebui să folosești politica <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Modifică marcajul</translation>
 <translation id="6406765186087300643">C0 (Plic)</translation>
+<translation id="6409754798200046165">Ai introdus parola pe un site înșelător. Chrome recomandă să-ți schimbi acum parola.</translation>
 <translation id="6410264514553301377">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium te poate ajuta să îți protejezi Contul Google și să îți schimbi parola.</translation>
 <translation id="6427730057873428458">Îndoire de tip fereastră</translation>
@@ -1112,7 +1116,6 @@
 <translation id="6433490469411711332">Editează informațiile de contact</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> a refuzat conexiunea.</translation>
 <translation id="6434309073475700221">Renunță</translation>
-<translation id="6435221585574090192">Permite administratorului accesul la datele despre evenimentele de securitate semnalate de Protecția Chrome împotriva amenințărilor la adresa întreprinderilor. Între acestea se pot număra adresele URL ale paginilor, numele și metadatele fișierelor, numele de utilizator al dispozitivului și numele de utilizator Chrome.</translation>
 <translation id="6440503408713884761">Ignorat</translation>
 <translation id="6446163441502663861">Kahu (Plic)</translation>
 <translation id="6446608382365791566">Adaugă mai multe informații</translation>
@@ -1402,6 +1405,7 @@ Detalii suplimentare:
 <translation id="7932579305932748336">Acoperire</translation>
 <translation id="79338296614623784">Introdu un număr de telefon valid</translation>
 <translation id="7934052535022478634">Plată efectuată</translation>
+<translation id="7935031712718413217">Posibilă adresă URL care falsifică adresa expeditorului</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Expiră pe <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Certificatul serverului nu este încă valid.</translation>
@@ -1456,7 +1460,6 @@ Detalii suplimentare:
 <translation id="8184538546369750125">Utilizați setarea prestabilită la nivel global (Permiteți)</translation>
 <translation id="8194797478851900357">&amp;Anulați mutarea</translation>
 <translation id="8197543752516192074">Tradu pagina</translation>
-<translation id="8197899142098070286">Chrome a detectat că tocmai ai introdus parola pe un site suspect. Resetează parola acum!</translation>
 <translation id="8201077131113104583">Adresa URL pentru actualizarea extensiei cu ID-ul „<ph name="EXTENSION_ID" />” nu este validă.</translation>
 <translation id="8202097416529803614">Rezumatul comenzii</translation>
 <translation id="8202370299023114387">Conflict</translation>
@@ -1544,7 +1547,6 @@ Detalii suplimentare:
 <translation id="8718314106902482036">Plata nu a fost finalizată</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, sugestie de căutare</translation>
 <translation id="8719528812645237045">Perforare multiplă în partea de sus</translation>
-<translation id="8723954843026426558">Sunt de acord cu termenii și condițiile, politica de confidențialitate și dreptul de retragere ale <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8728672262656704056">Ai trecut în modul incognito</translation>
 <translation id="8730621377337864115">Terminat</translation>

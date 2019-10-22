@@ -34,7 +34,8 @@ constexpr std::initializer_list<StreamType> kYUVReprocessStreams = {
 }  // namespace
 
 RequestManager::RequestManager(
-    cros::mojom::Camera3CallbackOpsRequest callback_ops_request,
+    mojo::PendingReceiver<cros::mojom::Camera3CallbackOps>
+        callback_ops_receiver,
     std::unique_ptr<StreamCaptureInterface> capture_interface,
     CameraDeviceContext* device_context,
     VideoCaptureBufferType buffer_type,
@@ -42,7 +43,7 @@ RequestManager::RequestManager(
     BlobifyCallback blobify_callback,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
     CameraAppDeviceImpl* camera_app_device)
-    : callback_ops_(this, std::move(callback_ops_request)),
+    : callback_ops_(this, std::move(callback_ops_receiver)),
       capture_interface_(std::move(capture_interface)),
       device_context_(device_context),
       video_capture_use_gmb_(buffer_type ==

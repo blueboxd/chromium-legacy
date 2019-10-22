@@ -30,10 +30,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLAudioElement::HTMLAudioElement(Document& document)
-    : HTMLMediaElement(kAudioTag, document) {
+    : HTMLMediaElement(html_names::kAudioTag, document) {
   EnsureUserAgentShadowRoot();
   UpdateStateIfNeeded();
 }

@@ -57,7 +57,7 @@ class PulsingBlockView;
 class GhostImageView;
 
 // Represents the index to an item view in the grid.
-struct GridIndex {
+struct APP_LIST_EXPORT GridIndex {
   GridIndex() : page(-1), slot(-1) {}
   GridIndex(int page, int slot) : page(page), slot(slot) {}
 
@@ -281,6 +281,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // This will update all app list items (as the icon sizes and bounds might
   // need updating), so it should be used sparingly.
   void OnAppListConfigUpdated();
+
+  // Returns the expected bounds rect in grid coordinates for the item with the
+  // provided id, if the item is in the first page.
+  // If the item is not in the current page (or cannot be found), this will
+  // return 1x1 rectangle in the apps grid center.
+  gfx::Rect GetExpectedItemBoundsInFirstPage(const std::string& id) const;
 
   // Helper for getting current app list config from the parents in the app list
   // view hierarchy.
@@ -617,7 +623,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void CalculateIdealBounds();
 
   // Returns model index of the item view of the specified item.
-  int GetModelIndexOfItem(const AppListItem* item);
+  int GetModelIndexOfItem(const AppListItem* item) const;
 
   // Returns the target model index based on item index. (Item index is the
   // index of an item in item list.) This should be used when the item is

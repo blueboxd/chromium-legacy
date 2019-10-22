@@ -122,13 +122,13 @@ TEST_F(ImageElementTimingTest, TestIsExplicitlyRegisteredForTiming) {
   LayoutObject* with_undefined_attribute =
       GetLayoutObjectById("unset-attribute");
   actual = internal::IsExplicitlyRegisteredForTiming(with_undefined_attribute);
-  EXPECT_FALSE(actual) << "Nodes with undefined 'elementtiming' attribute "
-                          "should not be explicitly registered.";
+  EXPECT_TRUE(actual) << "Nodes with undefined 'elementtiming' attribute "
+                         "should be explicitly registered.";
 
   LayoutObject* with_empty_attribute = GetLayoutObjectById("empty-attribute");
   actual = internal::IsExplicitlyRegisteredForTiming(with_empty_attribute);
-  EXPECT_FALSE(actual) << "Nodes with an empty 'elementtiming' attribute "
-                          "should not be explicitly registered.";
+  EXPECT_TRUE(actual) << "Nodes with an empty 'elementtiming' attribute "
+                         "should be explicitly registered.";
 
   LayoutObject* with_explicit_element_timing =
       GetLayoutObjectById("valid-attribute");

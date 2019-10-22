@@ -102,13 +102,6 @@ class BrowserTestBase : public testing::Test {
   // This is meant to be inherited only by the test harness.
   virtual void PostRunTestOnMainThread() = 0;
 
-  // Returns true if this test should be skipped. Tests starting with 'MANUAL_'
-  // are skipped unless the command line flag "--run-manual" is supplied.
-  // In case overriding SetUp() breaks, add:
-  // if (ShouldSkipManualTest())
-  //    GTEST_SKIP();
-  bool ShouldSkipManualTests();
-
   // Sets expected browser exit code, in case it's different than 0 (success).
   void set_expected_exit_code(int code) { expected_exit_code_ = code; }
 

@@ -6,11 +6,16 @@
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/test/app_list_test_view_delegate.h"
+#include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/app_list/views/apps_container_view.h"
+#include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/ime/ime_controller.h"
@@ -20,6 +25,7 @@
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -427,6 +433,104 @@ TEST_F(AppListControllerImplTest,
 
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
+}
+
+// Tests for HomeScreenDelegate::GetInitialAppListItemScreenBoundsForWindow
+// implemtenation.
+TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
+  // Populate app list model with 25 items, of which items at indices in
+  // |folders| are folders containing a single item.
+  const std::set<int> folders = {5, 23};
+  AppListModel* model = Shell::Get()->app_list_controller()->GetModel();
+  for (int i = 0; i < 25; ++i) {
+    if (folders.count(i)) {
+      const std::string folder_id = base::StringPrintf("fake_folder_%d", i);
+      auto folder = std::make_unique<AppListFolderItem>(folder_id);
+      model->AddItem(std::move(folder));
+      auto item = std::make_unique<AppListItem>(
+          base::StringPrintf("fake_id_in_folder_%d", i));
+      model->AddItemToFolder(std::move(item), folder_id);
+    } else {
+      auto item =
+          std::make_unique<AppListItem>(base::StringPrintf("fake_id_%d", i));
+      model->AddItem(std::move(item));
+    }
+  }
+  // Enable tablet mode - this should also show the app list.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  AppsGridView* apps_grid_view = GetAppListView()
+                                     ->app_list_main_view()
+                                     ->contents_view()
+                                     ->GetAppsContainerView()
+                                     ->apps_grid_view();
+  auto apps_grid_test_api =
+      std::make_unique<test::AppsGridViewTestApi>(apps_grid_view);
+
+  const struct {
+    // The kAppIDKey property value for the test window.
+    std::string window_app_id;
+    // If set the grid position of the app list item whose screen bounds should
+    // be returned by GetInitialAppListItemScreenBoundsForWindow().
+    // If nullopt, GetInitialAppListItemScreenBoundsForWindow() is expected to
+    // return the apps grid center rect.
+    base::Optional<GridIndex> grid_position;
+  } kTestCases[] = {{"fake_id_0", GridIndex(0, 0)},
+                    {"fake_id_2", GridIndex(0, 2)},
+                    {"fake_id_in_folder_5", base::nullopt},
+                    {"fake_id_15", GridIndex(0, 15)},
+                    {"fake_id_in_folder_23", base::nullopt},
+                    {"non_existent", base::nullopt},
+                    {"", base::nullopt},
+                    {"fake_id_22", base::nullopt}};
+
+  HomeScreenDelegate* const home_screen_delegate =
+      Shell::Get()->home_screen_controller()->delegate();
+  const gfx::Rect apps_grid_bounds = apps_grid_view->GetBoundsInScreen();
+  const gfx::Rect apps_grid_center =
+      gfx::Rect(apps_grid_bounds.CenterPoint(), gfx::Size(1, 1));
+
+  // Tests the case app ID property is not set on the window.
+  std::unique_ptr<aura::Window> window_without_app_id(CreateTestWindow());
+  EXPECT_EQ(apps_grid_center,
+            home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
+                window_without_app_id.get()));
+
+  // Run tests cases, both for when the first and the second apps grid page is
+  // selected - the returned bounds should be the same in both cases, as
+  // GetInitialAppListItemScreenBoundsForWindow() always returns bounds state
+  // for the first page.
+  for (int selected_page = 0; selected_page < 2; ++selected_page) {
+    GetAppListView()->GetAppsPaginationModel()->SelectPage(selected_page,
+                                                           false);
+    for (const auto& test_case : kTestCases) {
+      SCOPED_TRACE(::testing::Message()
+                   << "Test case: {" << test_case.window_app_id << ", "
+                   << (test_case.grid_position.has_value()
+                           ? test_case.grid_position->ToString()
+                           : "null")
+                   << "} with selected page " << selected_page);
+
+      std::unique_ptr<aura::Window> window(CreateTestWindow());
+      window->SetProperty(ash::kAppIDKey,
+                          new std::string(test_case.window_app_id));
+
+      const gfx::Rect item_bounds =
+          home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
+              window.get());
+      if (!test_case.grid_position.has_value()) {
+        EXPECT_EQ(apps_grid_center, item_bounds);
+      } else {
+        const int kItemsPerRow = 5;
+        gfx::Rect expected_bounds =
+            apps_grid_test_api->GetItemTileRectOnCurrentPageAt(
+                test_case.grid_position->slot / kItemsPerRow,
+                test_case.grid_position->slot % kItemsPerRow);
+        expected_bounds.Offset(apps_grid_bounds.x(), apps_grid_bounds.y());
+        EXPECT_EQ(expected_bounds, item_bounds);
+      }
+    }
+  }
 }
 
 // The test parameter indicates whether the shelf should auto-hide. In either

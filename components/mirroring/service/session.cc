@@ -153,10 +153,9 @@ bool IsHardwareVP8EncodingSupported(
 bool IsHardwareH264EncodingSupported(
     const std::vector<media::VideoEncodeAccelerator::SupportedProfile>&
         profiles) {
-// TODO(miu): Look into why H.264 hardware encoder on MacOS is broken.
-// http://crbug.com/596674
-// TODO(emircan): Look into HW encoder initialization issues on Win.
-// https://crbug.com/636064
+// TODO(crbug.com/1015482): Look into why H.264 hardware encoder on MacOS is
+// broken.
+// TODO(crbug.com/1015482): Look into HW encoder initialization issues on Win.
 #if !defined(OS_MACOSX) && !defined(OS_WIN)
   for (const auto& vea_profile : profiles) {
     if (vea_profile.profile >= media::H264PROFILE_MIN &&
@@ -317,7 +316,7 @@ media::mojom::RemotingSinkMetadata ToRemotingSinkMetadata(
 
   // Enable remoting 1080p 30fps or higher resolution/fps content for Chromecast
   // Ultra receivers only.
-  // TODO(xjz): Receiver should report this capability.
+  // TODO(crbug.com/1015467): Receiver should report this capability.
   if (params.receiver_model_name == "Chromecast Ultra") {
     sink_metadata.video_capabilities.push_back(
         RemotingSinkVideoCapability::SUPPORT_4K);
@@ -352,8 +351,8 @@ class Session::AudioCapturingCallback final
                base::TimeTicks audio_capture_time,
                double volume,
                bool key_pressed) override {
-    // TODO(xjz): Don't copy the audio data. Instead, send |audio_bus| directly
-    // to the encoder.
+    // TODO(crbug.com/1015467): Don't copy the audio data. Instead, send
+    // |audio_bus| directly to the encoder.
     std::unique_ptr<media::AudioBus> captured_audio =
         media::AudioBus::Create(audio_bus->channels(), audio_bus->frames());
     audio_bus->CopyTo(captured_audio.get());
@@ -520,8 +519,8 @@ void Session::OnEncoderStatusChange(OperationalStatus status) {
     case OperationalStatus::STATUS_UNINITIALIZED:
     case OperationalStatus::STATUS_CODEC_REINIT_PENDING:
     // Not an error.
-    // TODO(miu): As an optimization, signal the client to pause sending more
-    // frames until the state becomes STATUS_INITIALIZED again.
+    // TODO(crbug.com/1015467): As an optimization, signal the client to pause
+    // sending more frames until the state becomes STATUS_INITIALIZED again.
     case OperationalStatus::STATUS_INITIALIZED:
       break;
     case OperationalStatus::STATUS_INVALID_CONFIGURATION:
@@ -707,9 +706,9 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
       audio_stream_ = std::make_unique<AudioRtpStream>(
           std::move(audio_sender), weak_factory_.GetWeakPtr());
       DCHECK(!audio_capturing_callback_);
-      // TODO(xjz): Elliminate the thread hops. The audio data is thread-hopped
-      // from the audio thread, and later thread-hopped again to the encoding
-      // thread.
+      // TODO(crbug.com/1015467): Eliminate the thread hops. The audio data is
+      // thread-hopped from the audio thread, and later thread-hopped again to
+      // the encoding thread.
       audio_capturing_callback_ = std::make_unique<AudioCapturingCallback>(
           media::BindToCurrentLoop(base::BindRepeating(
               &AudioRtpStream::InsertAudio, audio_stream_->AsWeakPtr())),
@@ -787,7 +786,7 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
 }
 
 void Session::OnResponseParsingError(const std::string& error_message) {
-  // TODO(xjz): Log the |error_message| in the mirroring logs.
+  // TODO(crbug.com/1015467): Log the |error_message| in the mirroring logs.
 }
 
 void Session::CreateAudioStream(

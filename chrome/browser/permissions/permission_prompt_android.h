@@ -17,9 +17,6 @@
 namespace content {
 class WebContents;
 }
-namespace infobars {
-class InfoBar;
-}
 class PermissionRequestNotificationAndroid;
 
 class PermissionPromptAndroid : public PermissionPrompt {
@@ -57,10 +54,6 @@ class PermissionPromptAndroid : public PermissionPrompt {
   // request, if displayed in that format.
   std::unique_ptr<PermissionRequestNotificationAndroid>
       permission_request_notification_;
-
-  // The infobar used to display the permission request, if displayed in that
-  // format. Never assume that this pointer is currently alive.
-  infobars::InfoBar* permission_infobar_;
 
   base::WeakPtrFactory<PermissionPromptAndroid> weak_factory_{this};
 

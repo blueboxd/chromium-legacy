@@ -151,6 +151,12 @@ unsigned NGAbstractInlineTextBox::Len() const {
   return PhysicalTextFragment().TextLength();
 }
 
+unsigned NGAbstractInlineTextBox::TextOffsetInContainer(unsigned offset) const {
+  if (!fragment_)
+    return 0;
+  return PhysicalTextFragment().StartOffset() + offset;
+}
+
 AbstractInlineTextBox::Direction NGAbstractInlineTextBox::GetDirection() const {
   if (!fragment_ || !GetLineLayoutItem())
     return kLeftToRight;

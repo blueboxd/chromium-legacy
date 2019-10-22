@@ -16,8 +16,8 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
-namespace leveldb {
-class LevelDBDatabaseImpl;
+namespace storage {
+class AsyncDomStorageDatabase;
 }
 
 namespace content {
@@ -48,12 +48,12 @@ class CONTENT_EXPORT SessionStorageDataMap final
   static scoped_refptr<SessionStorageDataMap> CreateFromDisk(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_data,
-      leveldb::LevelDBDatabaseImpl* database);
+      storage::AsyncDomStorageDatabase* database);
 
   static scoped_refptr<SessionStorageDataMap> CreateEmpty(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_data,
-      leveldb::LevelDBDatabaseImpl* database);
+      storage::AsyncDomStorageDatabase* database);
 
   static scoped_refptr<SessionStorageDataMap> CreateClone(
       Listener* listener,
@@ -85,7 +85,7 @@ class CONTENT_EXPORT SessionStorageDataMap final
   SessionStorageDataMap(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_entry,
-      leveldb::LevelDBDatabaseImpl* database,
+      storage::AsyncDomStorageDatabase* database,
       bool is_empty);
   SessionStorageDataMap(
       Listener* listener,

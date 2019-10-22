@@ -245,7 +245,7 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   PasswordFormManager* form_manager = GetMatchedManager(driver, form);
   if (form_manager) {
     form_manager->SetGenerationElement(generation_element);
-    form_manager->SetGenerationPopupWasShown(true, is_manually_triggered);
+    form_manager->SetGenerationPopupWasShown(is_manually_triggered);
   }
 }
 

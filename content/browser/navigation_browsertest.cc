@@ -16,6 +16,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -2577,19 +2578,47 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
   console_delegate_2->Wait();
 }
 
+// Tests for cookies. Provides an HTTPS server.
+class NavigationCookiesBrowserTest : public NavigationBaseBrowserTest {
+ protected:
+  NavigationCookiesBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    NavigationBaseBrowserTest::SetUpCommandLine(command_line);
+
+    // This is necessary to use https with arbitrary hostnames.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+  void SetUpOnMainThread() override {
+    https_server()->AddDefaultHandlers(GetTestDataFilePath());
+    NavigationBaseBrowserTest::SetUpOnMainThread();
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  net::EmbeddedTestServer https_server_;
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         NavigationCookiesBrowserTest,
+                         ::testing::Bool());
+
 // Test how cookies are inherited in about:srcdoc iframes.
 //
 // Regression test: https://crbug.com/1003167.
-IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedSrcDoc) {
+IN_PROC_BROWSER_TEST_P(NavigationCookiesBrowserTest, CookiesInheritedSrcDoc) {
   using Response = net::test_server::ControllableHttpResponse;
-  Response response_1(embedded_test_server(), "/response_1");
-  Response response_2(embedded_test_server(), "/response_2");
-  Response response_3(embedded_test_server(), "/response_3");
+  Response response_1(https_server(), "/response_1");
+  Response response_2(https_server(), "/response_2");
+  Response response_3(https_server(), "/response_3");
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
 
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
 
   EXPECT_TRUE(ExecJs(shell(), R"(
@@ -2646,7 +2675,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedSrcDoc) {
   EXPECT_EQ("", EvalJs(sub_document_2, "document.cookie"));
 
   // 6. Set a cookie in the child. It doesn't affect its parent.
-  EXPECT_TRUE(ExecJs(sub_document_2, "document.cookie = 'd=0';"));
+  EXPECT_TRUE(ExecJs(sub_document_2,
+                     "document.cookie = 'd=0; SameSite=none; Secure';"));
 
   EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
   EXPECT_EQ("d=0", EvalJs(sub_document_2, "document.cookie"));
@@ -2693,20 +2723,21 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedSrcDoc) {
 }
 
 // Test how cookies are inherited in about:blank iframes.
-IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank) {
+IN_PROC_BROWSER_TEST_P(NavigationCookiesBrowserTest,
+                       CookiesInheritedAboutBlank) {
   // This test expects several cross-site navigation to happen.
   if (!AreAllSitesIsolatedForTesting())
     return;
 
   using Response = net::test_server::ControllableHttpResponse;
-  Response response_1(embedded_test_server(), "/response_1");
-  Response response_2(embedded_test_server(), "/response_2");
-  Response response_3(embedded_test_server(), "/response_3");
+  Response response_1(https_server(), "/response_1");
+  Response response_2(https_server(), "/response_2");
+  Response response_3(https_server(), "/response_3");
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
 
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
 
   EXPECT_TRUE(
@@ -2748,7 +2779,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank) {
   EXPECT_EQ("a=0; b=0", EvalJs(sub_document_1, "document.cookie"));
 
   // 3. Checks cookies are sent while requesting resources.
-  GURL url_response_1 = embedded_test_server()->GetURL("a.com", "/response_1");
+  GURL url_response_1 = https_server()->GetURL("a.com", "/response_1");
   EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("fetch($1)", url_response_1)));
   response_1.WaitForRequest();
   EXPECT_EQ("a=0; b=0", response_1.http_request()->headers.at("Cookie"));
@@ -2769,7 +2800,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank) {
   EXPECT_EQ("", EvalJs(sub_document_2, "document.cookie"));
 
   // 6. Set a cookie in the child. It doesn't affect its parent.
-  EXPECT_TRUE(ExecJs(sub_document_2, "document.cookie = 'd=0';"));
+  EXPECT_TRUE(ExecJs(sub_document_2,
+                     "document.cookie = 'd=0; SameSite=none; Secure';"));
 
   EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
   EXPECT_EQ("d=0", EvalJs(sub_document_2, "document.cookie"));
@@ -2816,23 +2848,25 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank) {
 
 // Test how cookies are inherited in about:blank iframes.
 //
-// This is a variation of NavigationBaseBrowserTest.CookiesInheritedAboutBlank.
-// Instead of requesting an history navigation, a new navigation is requested
-// from the main frame. The navigation is cross-site instead of being same-site.
-IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank2) {
+// This is a variation of
+// NavigationCookiesBrowserTest.CookiesInheritedAboutBlank. Instead of
+// requesting an history navigation, a new navigation is requested from the main
+// frame. The navigation is cross-site instead of being same-site.
+IN_PROC_BROWSER_TEST_P(NavigationCookiesBrowserTest,
+                       CookiesInheritedAboutBlank2) {
   // This test expects several cross-site navigation to happen.
   if (!AreAllSitesIsolatedForTesting())
     return;
 
   using Response = net::test_server::ControllableHttpResponse;
-  Response response_1(embedded_test_server(), "/response_1");
-  Response response_2(embedded_test_server(), "/response_2");
-  Response response_3(embedded_test_server(), "/response_3");
+  Response response_1(https_server(), "/response_1");
+  Response response_2(https_server(), "/response_2");
+  Response response_3(https_server(), "/response_3");
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
 
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
 
   EXPECT_TRUE(
@@ -2893,7 +2927,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank2) {
   EXPECT_EQ("", EvalJs(sub_document_2, "document.cookie"));
 
   // 6. Set a cookie in the child. It doesn't affect its parent.
-  EXPECT_TRUE(ExecJs(sub_document_2, "document.cookie = 'd=0';"));
+  EXPECT_TRUE(ExecJs(sub_document_2,
+                     "document.cookie = 'd=0; SameSite=none; Secure';"));
 
   EXPECT_EQ("a=0; b=0; c=0", EvalJs(main_document, "document.cookie"));
   EXPECT_EQ("d=0", EvalJs(sub_document_2, "document.cookie"));
@@ -2941,16 +2976,16 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedAboutBlank2) {
 }
 
 // Test how cookies are inherited in data-URL iframes.
-IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedDataUrl) {
+IN_PROC_BROWSER_TEST_P(NavigationCookiesBrowserTest, CookiesInheritedDataUrl) {
   using Response = net::test_server::ControllableHttpResponse;
-  Response response_1(embedded_test_server(), "/response_1");
-  Response response_2(embedded_test_server(), "/response_2");
-  Response response_3(embedded_test_server(), "/response_3");
+  Response response_1(https_server(), "/response_1");
+  Response response_2(https_server(), "/response_2");
+  Response response_3(https_server(), "/response_3");
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
 
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
 
   EXPECT_TRUE(ExecJs(shell(), R"(
@@ -2991,7 +3026,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedDataUrl) {
   // the data-URL.
   EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'a=0;SameSite=Lax'"));
   EXPECT_TRUE(ExecJs(main_document, "document.cookie = 'b=0;SameSite=Strict'"));
-  GURL url_response_1 = embedded_test_server()->GetURL("a.com", "/response_1");
+  GURL url_response_1 = https_server()->GetURL("a.com", "/response_1");
   EXPECT_TRUE(ExecJs(sub_document_1, JsReplace("fetch($1)", url_response_1)));
   response_1.WaitForRequest();
   EXPECT_EQ(0u, response_1.http_request()->headers.count("Cookie"));
@@ -3028,7 +3063,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest, CookiesInheritedDataUrl) {
   console_delegate_4->Wait();
 
   // 7. No cookies are sent when requested from the data-URL.
-  GURL url_response_2 = embedded_test_server()->GetURL("a.com", "/response_2");
+  GURL url_response_2 = https_server()->GetURL("a.com", "/response_2");
   EXPECT_TRUE(ExecJs(sub_document_2, JsReplace("fetch($1)", url_response_2)));
   response_2.WaitForRequest();
   EXPECT_EQ(0u, response_2.http_request()->headers.count("Cookie"));

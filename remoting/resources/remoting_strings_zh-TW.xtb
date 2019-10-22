@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">不佳</translation>
 <translation id="1152528166145813711">選取…</translation>
 <translation id="1199593201721843963">停用遠端連線</translation>
+<translation id="1201402288615127009">繼續</translation>
 <translation id="1291443878853470558">你必須啟用遠端連線，才能透過 Chromoting 存取這台電腦。</translation>
 <translation id="1297009705180977556">連線至「<ph name="HOSTNAME" />」時發生錯誤</translation>
 <translation id="1324095856329524885">(您的電腦目前暫不支援這項功能)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome 遠端桌面現已推出網路版。歡迎試試我們的<ph name="LINK_BEGIN" />網路應用程式<ph name="LINK_END" />！不僅快速、免費，還提供更多功能，包括更完善的多螢幕支援。</translation>
 <translation id="1643640058022401035">如果離開這個頁面，你的 Chromoting 工作階段也會結束。</translation>
 <translation id="1654128982815600832">正在啟用這台電腦的遠端連線...</translation>
+<translation id="1697532407822776718">大功告成！</translation>
 <translation id="170207782578677537">無法註冊這台電腦。</translation>
 <translation id="174018511426417793">你尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>
 <translation id="1742469581923031760">連線中...</translation>

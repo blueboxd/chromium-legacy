@@ -170,8 +170,19 @@ TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTestImpl) {
 
   HMODULE chrome_module_handle = ::LoadLibrary(dll.value().c_str());
   ASSERT_TRUE(chrome_module_handle != nullptr);
+
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
   // Loading chrome.dll should not load user32.dll.
   EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
+#else
+  // Loading chrome.dll should not load user32.dll on Win10.
+  // On Win7, chains of system dlls and lack of apisets result in it loading.
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
+    EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
+  } else {
+    EXPECT_NE(nullptr, ::GetModuleHandle(L"user32.dll"));
+  }
+#endif  // CHROME_MULTIPLE_DLL_BROWSER
 }
 
 #if defined(CHROME_MULTIPLE_DLL_BROWSER)

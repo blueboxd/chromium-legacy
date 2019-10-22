@@ -35,7 +35,7 @@ interface EngineCleanupResults {
 // target process.
 interface EngineCommands {
   // Runs the engine's initialization routine.
-  Initialize(associated EngineFileRequests file_requests,
+  Initialize(pending_associated_remote<EngineFileRequests> file_requests,
              FilePath log_directory) => (uint32 result_code);
 
   // Starts scanning the user's system.
@@ -56,7 +56,7 @@ interface EngineCommands {
     array<uint32> enabled_uws,
     array<TraceLocation> enabled_trace_locations,
     bool include_details,
-    associated EngineFileRequests file_requests,
+    pending_associated_remote<EngineFileRequests> file_requests,
     associated EngineRequests sandboxed_engine_requests,
     pending_associated_remote<EngineScanResults> results) =>
       (uint32 result_code);
@@ -70,7 +70,7 @@ interface EngineCommands {
   // interface.
   StartCleanup(
     array<uint32> enabled_uws,
-    associated EngineFileRequests file_requests,
+    pending_associated_remote<EngineFileRequests> file_requests,
     associated EngineRequests sandboxed_engine_requests,
     associated CleanerEngineRequests sandboxed_cleaner_engine_requests,
     pending_associated_remote<EngineCleanupResults> results) =>

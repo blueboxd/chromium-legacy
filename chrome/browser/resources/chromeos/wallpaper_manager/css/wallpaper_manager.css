@@ -420,10 +420,9 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.24), 0 0 24px rgba(0, 0, 0, 0.12);
   display: flex;
   height: 48px;
-  position: absolute;
   top: 0;
   visibility: hidden;  /* Need this for correct positioning. */
-  width: 698px;
+  width: 100%;
 }
 
 .preview-mode:not(.wallpaper-set-successfully) #top-header {

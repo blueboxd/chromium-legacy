@@ -111,11 +111,10 @@ TEST_F(KalmanPredictorTest, PredictLinearValue) {
   std::vector<double> t = {0, 8, 16, 24, 32, 40, 48, 60};
   for (size_t i = 0; i < t.size(); i++) {
     if (predictor_->HasPrediction()) {
-      ui::InputPredictor::InputData result;
-      EXPECT_TRUE(
-          predictor_->GeneratePrediction(FromMilliseconds(t[i]), &result));
-      EXPECT_NEAR(result.pos.x(), x[i], kEpsilon);
-      EXPECT_NEAR(result.pos.y(), y[i], kEpsilon);
+      auto result = predictor_->GeneratePrediction(FromMilliseconds(t[i]));
+      EXPECT_TRUE(result);
+      EXPECT_NEAR(result->pos.x(), x[i], kEpsilon);
+      EXPECT_NEAR(result->pos.y(), y[i], kEpsilon);
     }
     InputPredictor::InputData data = {gfx::PointF(x[i], y[i]),
                                       FromMilliseconds(t[i])};
@@ -168,13 +167,13 @@ TEST_F(KalmanPredictorTest, HeuristicApproach) {
   for (size_t i = 0; i < t.size(); i++) {
     gfx::PointF point(x[i], y[i]);
     if (heuristic_predictor->HasPrediction() && predictor_->HasPrediction()) {
-      ui::InputPredictor::InputData result, heuristic_result;
-      EXPECT_TRUE(heuristic_predictor->GeneratePrediction(
-          FromMilliseconds(t[i]), &heuristic_result));
-      EXPECT_TRUE(
-          predictor_->GeneratePrediction(FromMilliseconds(t[i]), &result));
-      EXPECT_LE((heuristic_result.pos - point).Length(),
-                (result.pos - point).Length());
+      auto heuristic_result =
+          heuristic_predictor->GeneratePrediction(FromMilliseconds(t[i]));
+      auto result = predictor_->GeneratePrediction(FromMilliseconds(t[i]));
+      EXPECT_TRUE(heuristic_result);
+      EXPECT_TRUE(result);
+      EXPECT_LE((heuristic_result->pos - point).Length(),
+                (result->pos - point).Length());
     }
     InputPredictor::InputData data = {point, FromMilliseconds(t[i])};
     heuristic_predictor->Update(data);

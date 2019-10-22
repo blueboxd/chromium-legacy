@@ -85,6 +85,10 @@ const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kDriveFsMirroring{"DriveFsMirroring",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, allows Unicorn users to add secondary EDU accounts.
+const base::Feature kEduCoexistence{"EduCoexistence",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled shows the visual signals feedback panel.
 const base::Feature kEnableFileManagerFeedbackPanel{
     "EnableFeedbackPanel", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -252,6 +256,10 @@ const base::Feature kVideoPlayerNativeControls{
 
 bool IsAmbientModeEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModeFeature);
+}
+
+bool IsEduCoexistenceEnabled() {
+  return base::FeatureList::IsEnabled(kEduCoexistence);
 }
 
 bool IsImeDecoderWithSandboxEnabled() {

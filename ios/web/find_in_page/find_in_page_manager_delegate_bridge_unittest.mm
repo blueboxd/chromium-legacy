@@ -41,9 +41,10 @@ TEST_F(FindInPageManagerDelegateBridgeTest, DidHighlightMatches) {
 // Tests that CRWFindInPageManagerDelegate properly receives values from
 // DidSelectMatch().
 TEST_F(FindInPageManagerDelegateBridgeTest, DidSelectMatch) {
-  bridge_->DidSelectMatch(&test_web_state_, 1);
+  bridge_->DidSelectMatch(&test_web_state_, 1, @"match context");
   EXPECT_EQ(1, delegate_.index);
   EXPECT_EQ(&test_web_state_, delegate_.webState);
+  EXPECT_EQ(@"match context", delegate_.contextString);
 }
 
 }  // namespace web

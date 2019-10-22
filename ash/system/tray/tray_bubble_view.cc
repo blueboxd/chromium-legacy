@@ -351,7 +351,7 @@ void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                               Widget* bubble_widget) const {
   if (bubble_border_->shadow() == BubbleBorder::NO_ASSETS) {
     // Apply a WM-provided shadow (see ui/wm/core/).
-    params->shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
+    params->shadow_type = Widget::InitParams::ShadowType::kDrop;
     params->shadow_elevation = wm::kShadowElevationActiveWindow;
   }
 }

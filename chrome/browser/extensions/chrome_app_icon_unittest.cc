@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
-#include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -332,23 +331,6 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
   // Now compare with app list icon snapshot.
   EXPECT_TRUE(
       AreEqual(reference_icon_app_list.image_skia(), app_list_item_image));
-
-  // Load reference icon sized for the search result.
-  TestAppIcon reference_icon_search(
-      profile(), kTestAppId,
-      ash::AppListConfig::instance().suggestion_chip_icon_dimension(),
-      resize_function);
-
-  // Wait until reference data is loaded.
-  reference_icon_search.image_skia().EnsureRepsForSupportedScales();
-  reference_icon_search.WaitForIconUpdates();
-  EXPECT_FALSE(IsBlankImage(reference_icon_search.image_skia()));
-
-  app_list::ExtensionAppResult search(profile(), kTestAppId,
-                                      app_list_controller(),
-                                      /* is_recommendation */ true);
-  WaitForIconUpdates(search.chip_icon());
-  EXPECT_TRUE(AreEqual(reference_icon_search.image_skia(), search.chip_icon()));
 
   // Load reference icon sized for the shelf.
   TestAppIcon reference_icon_shelf(profile(), kTestAppId,

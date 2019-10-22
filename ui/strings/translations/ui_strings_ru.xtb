@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{минуту назад}one{# минуту назад}few{# минуты назад}many{# минут назад}other{# минуты назад}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 мин.}one{# мин.}few{# мин.}many{# мин.}other{# мин.}}</translation>
 <translation id="1181037720776840403">Удалить</translation>
+<translation id="1201402288615127009">Далее</translation>
 <translation id="1243314992276662751">Загрузить</translation>
 <translation id="1266864766717917324">Не удалось отправить: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Коснитесь интерактивных элементов на экране.</translation>
 <translation id="2295140143284145483">Опрос</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/с</translation>
+<translation id="2353636109065292463">Проверка подключения к Интернету</translation>
 <translation id="2388990488038464401">Позвонить на этот номер со своего телефона?</translation>
 <translation id="24452542372838207">Развернуть уведомление</translation>
 <translation id="2445449901874883781">Показывать больше окон</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Осталась 1 секунда}one{Осталась # секунда}few{Осталось # секунды}many{Осталось # секунд}other{Осталось # секунды}}</translation>
 <translation id="5941711191222866238">Свернуть</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 час}one{# час}few{# часа}many{# часов}other{# часа}}</translation>
+<translation id="5946629889255121107">Источник номера: <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> из <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Удалить текст из окна поиска</translation>
 <translation id="6040143037577758943">Закрыть</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Сохранить файл</translation>
 <translation id="6656912866303152668">Проверьте, включена ли в Chrome на устройстве <ph name="TARGET_DEVICE_NAME" /> синхронизация. Затем повторите попытку.</translation>
 <translation id="6699343763173986273">Следующий трек</translation>
+<translation id="6710213216561001401">Назад</translation>
 <translation id="6779314412797872738">Чтобы отправить номер на телефон Android, <ph name="TROUBLESHOOT_LINK" /> в настройках обоих устройств.</translation>
 <translation id="6786750046913594791">Закрыть папку.</translation>
 <translation id="6808150112686056157">Остановить</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Осталась 1 мин.}one{Осталась # мин.}few{Осталось # мин.}many{Осталось # мин.}other{Осталось # мин.}}</translation>
 <translation id="7319740667687257810">Панель запуска, частичный список приложений</translation>
+<translation id="7352651011704765696">Ошибка</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 мин. назад}one{# мин. назад}few{# мин. назад}many{# мин. назад}other{# мин. назад}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Осталась 1 минута}one{Осталась # минута}few{Осталось # минуты}many{Осталось # минут}other{Осталось # минуты}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Осталась 1 сек.}one{Осталась # сек.}few{Осталось # сек.}many{Осталось # сек.}other{Осталось # сек.}}</translation>
+<translation id="8134065097954893699">Обновить страницу</translation>
 <translation id="8144660977431427332">Ваши поисковые запросы обрабатывает Google Ассистент. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автозаполнение</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>

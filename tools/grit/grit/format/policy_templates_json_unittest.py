@@ -45,6 +45,7 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
             {
               'name': 'MainPolicy',
               'type': 'main',
+              'owners': ['foo@bar.com'],
               'schema': {
                 'properties': {
                   'default_launch_container': {
@@ -155,6 +156,7 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
       "example_value": true,
       "features": {"can_be_recommended": true, "dynamic_refresh": true},
       "name": "MainPolicy",
+      "owners": ["foo@bar.com"],
       "schema": {
         "properties": {
           "default_launch_container": {

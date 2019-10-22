@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Chrome に通知の送信を許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でも通知をオンにしてください。</translation>
 <translation id="204321170514947529">Chrome にも <ph name="APP_NAME" /> のデータがあります</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">ファイル拡張子を変更すると、予期しない動作が発生し、デバイスに損害を及ぼす可能性があります。</translation>
 <translation id="2056878612599315956">サイト一時停止中</translation>
 <translation id="2063713494490388661">タップして検索</translation>
 <translation id="2067805253194386918">テキスト</translation>
@@ -915,7 +914,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7810647596859435254">アプリで開く…</translation>
 <translation id="7821588508402923572">データ節約量がここに表示されます</translation>
 <translation id="7837721118676387834">特定のサイトに対し、ミュートされた動画の自動再生を許可します。</translation>
-<translation id="7838340937077326045">ファイル拡張子を変更してもよろしいですか？</translation>
 <translation id="7846076177841592234">選択解除</translation>
 <translation id="784934925303690534">期間</translation>
 <translation id="7851858861565204677">他のデバイス</translation>

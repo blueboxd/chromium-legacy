@@ -41,8 +41,10 @@ constexpr base::TimeDelta kPowerSaveWaitTime = base::TimeDelta::FromSeconds(5);
 }  // namespace
 
 MediaPipelineBackendManager::MediaPipelineBackendManager(
-    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    MediaResourceTracker* media_resource_tracker)
     : media_task_runner_(std::move(media_task_runner)),
+      media_resource_tracker_(media_resource_tracker),
       playing_audio_streams_count_({{AudioContentType::kMedia, 0},
                                     {AudioContentType::kAlarm, 0},
                                     {AudioContentType::kCommunication, 0},
@@ -76,7 +78,8 @@ MediaPipelineBackendManager::~MediaPipelineBackendManager() {
 std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateCmaBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  return std::make_unique<MediaPipelineBackendWrapper>(params, this);
+  return std::make_unique<MediaPipelineBackendWrapper>(params, this,
+                                                       media_resource_tracker_);
 }
 
 void MediaPipelineBackendManager::BackendDestroyed(

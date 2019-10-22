@@ -41,8 +41,8 @@
 
 namespace blink {
 
-using namespace css_test_helpers;
-using namespace cssvalue;
+using css_test_helpers::RegisterProperty;
+using cssvalue::CSSPendingInterpolationValue;
 using Origin = StyleCascade::Origin;
 using Priority = StyleCascade::Priority;
 using UnitType = CSSPrimitiveValue::UnitType;
@@ -157,7 +157,7 @@ class TestCascade {
     const CSSValue* value = GetCSSValue(name);
     // Per spec, CSSPendingSubstitutionValue serializes as an empty string,
     // but for testing purposes it's nice to see the actual value.
-    if (const auto* v = DynamicTo<CSSPendingSubstitutionValue>(value))
+    if (const auto* v = DynamicTo<cssvalue::CSSPendingSubstitutionValue>(value))
       return v->ShorthandValue()->CssText();
     if (DynamicTo<CSSPendingInterpolationValue>(value))
       return "<interpolation>";
@@ -1511,7 +1511,7 @@ TEST_F(StyleCascadeTest, ValidEnvInUsedFallback) {
 class RecordingAnimator : public StyleCascade::Animator {
  public:
   void Apply(const CSSProperty& property,
-             const cssvalue::CSSPendingInterpolationValue&,
+             const CSSPendingInterpolationValue&,
              StyleCascade::Resolver& resolver) override {
     record.push_back(property.GetCSSPropertyName());
   }

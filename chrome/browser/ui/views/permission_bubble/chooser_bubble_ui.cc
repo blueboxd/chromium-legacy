@@ -53,7 +53,6 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
   // views::DialogDelegate:
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
@@ -104,6 +103,8 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
       new DeviceChooserContentView(this, std::move(chooser_controller));
   AddChildView(device_chooser_content_view_);
 
+  DialogDelegate::SetExtraView(device_chooser_content_view_->CreateExtraView());
+
   UpdateAnchor(browser);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER_UI);
 }
@@ -127,11 +128,6 @@ views::View* ChooserBubbleUiViewDelegate::GetInitiallyFocusedView() {
 bool ChooserBubbleUiViewDelegate::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return device_chooser_content_view_->IsDialogButtonEnabled(button);
-}
-
-std::unique_ptr<views::View> ChooserBubbleUiViewDelegate::CreateExtraView() {
-  auto extra_view = device_chooser_content_view_->CreateExtraView();
-  return extra_view;
 }
 
 bool ChooserBubbleUiViewDelegate::Accept() {

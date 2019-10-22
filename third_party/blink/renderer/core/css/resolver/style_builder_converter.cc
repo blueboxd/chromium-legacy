@@ -65,8 +65,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 namespace {
 
 static GridLength ConvertGridTrackBreadth(const StyleResolverState& state,
@@ -97,7 +95,7 @@ scoped_refptr<StyleReflection> StyleBuilderConverter::ConvertBoxReflect(
     return ComputedStyleInitialValues::InitialBoxReflect();
   }
 
-  const auto& reflect_value = To<CSSReflectValue>(value);
+  const auto& reflect_value = To<cssvalue::CSSReflectValue>(value);
   scoped_refptr<StyleReflection> reflection = StyleReflection::Create();
   reflection->SetDirection(
       reflect_value.Direction()->ConvertTo<CSSReflectionDirection>());
@@ -125,7 +123,7 @@ Color StyleBuilderConverter::ConvertColor(StyleResolverState& state,
 scoped_refptr<StyleSVGResource> StyleBuilderConverter::ConvertElementReference(
     StyleResolverState& state,
     const CSSValue& value) {
-  const auto* url_value = DynamicTo<CSSURIValue>(value);
+  const auto* url_value = DynamicTo<cssvalue::CSSURIValue>(value);
   if (!url_value)
     return nullptr;
   SVGResource* resource =
@@ -149,7 +147,7 @@ scoped_refptr<ClipPathOperation> StyleBuilderConverter::ConvertClipPath(
     const CSSValue& value) {
   if (value.IsBasicShapeValue())
     return ShapeClipPathOperation::Create(BasicShapeForValue(state, value));
-  if (const auto* url_value = DynamicTo<CSSURIValue>(value)) {
+  if (const auto* url_value = DynamicTo<cssvalue::CSSURIValue>(value)) {
     SVGResource* resource =
         state.GetElementStyleResources().GetSVGResourceFromValue(
             state.GetTreeScope(), *url_value);
@@ -274,7 +272,7 @@ StyleBuilderConverter::ConvertFontFeatureSettings(StyleResolverState& state,
   scoped_refptr<FontFeatureSettings> settings = FontFeatureSettings::Create();
   int len = list.length();
   for (int i = 0; i < len; ++i) {
-    const auto& feature = To<CSSFontFeatureValue>(list.Item(i));
+    const auto& feature = To<cssvalue::CSSFontFeatureValue>(list.Item(i));
     settings->Append(FontFeature(feature.Tag(), feature.Value()));
   }
   return settings;
@@ -292,7 +290,7 @@ StyleBuilderConverter::ConvertFontVariationSettings(StyleResolverState& state,
       FontVariationSettings::Create();
   int len = list.length();
   for (int i = 0; i < len; ++i) {
-    const auto& feature = To<CSSFontVariationValue>(list.Item(i));
+    const auto& feature = To<cssvalue::CSSFontVariationValue>(list.Item(i));
     settings->Append(FontVariationAxis(feature.Tag(), feature.Value()));
   }
   return settings;
@@ -441,7 +439,7 @@ FontSelectionValue StyleBuilderConverterBase::ConvertFontStyle(
         return NormalSlopeValue();
     }
   } else if (const auto* style_range_value =
-                 DynamicTo<CSSFontStyleRangeValue>(value)) {
+                 DynamicTo<cssvalue::CSSFontStyleRangeValue>(value)) {
     const CSSValueList* values = style_range_value->GetObliqueValues();
     CHECK_LT(values->length(), 2u);
     if (values->length()) {
@@ -707,8 +705,8 @@ StyleContentAlignmentData StyleBuilderConverter::ConvertContentAlignmentData(
     const CSSValue& value) {
   StyleContentAlignmentData alignment_data =
       ComputedStyleInitialValues::InitialContentAlignment();
-  const CSSContentDistributionValue& content_value =
-      To<CSSContentDistributionValue>(value);
+  const cssvalue::CSSContentDistributionValue& content_value =
+      To<cssvalue::CSSContentDistributionValue>(value);
   if (IsValidCSSValueID(content_value.Distribution())) {
     alignment_data.SetDistribution(
         CSSIdentifierValue::Create(content_value.Distribution())
@@ -898,7 +896,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
 
   for (auto curr_value : To<CSSValueList>(value)) {
     if (auto* grid_auto_repeat_value =
-            DynamicTo<CSSGridAutoRepeatValue>(curr_value.Get())) {
+            DynamicTo<cssvalue::CSSGridAutoRepeatValue>(curr_value.Get())) {
       DCHECK(auto_repeat_track_sizes.IsEmpty());
       size_t auto_repeat_index = 0;
       CSSValueID auto_repeat_id = grid_auto_repeat_value->AutoRepeatID();
@@ -923,7 +921,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
     }
 
     if (auto* repeated_values =
-            DynamicTo<CSSGridIntegerRepeatValue>(curr_value.Get())) {
+            DynamicTo<cssvalue::CSSGridIntegerRepeatValue>(curr_value.Get())) {
       size_t repetitions = repeated_values->Repetitions();
       for (size_t i = 0; i < repetitions; ++i) {
         for (auto curr_value : *repeated_values)
@@ -1304,7 +1302,8 @@ ShadowData StyleBuilderConverter::ConvertShadow(
       // For OffScreen canvas, we default to black and only parse non
       // Document dependent CSS colors.
       color = StyleColor(Color::kBlack);
-      if (auto* color_value = DynamicTo<CSSColorValue>(shadow.color.Get())) {
+      if (auto* color_value =
+              DynamicTo<cssvalue::CSSColorValue>(shadow.color.Get())) {
         color = color_value->Value();
       } else {
         CSSValueID value_id =
@@ -1634,7 +1633,8 @@ Rotation StyleBuilderConverter::ConvertRotation(const CSSValue& value) {
   double z = 1;
   if (list.length() == 2) {
     // axis angle
-    const CSSAxisValue& axis = To<CSSAxisValue>(list.Item(0));
+    const cssvalue::CSSAxisValue& axis =
+        To<cssvalue::CSSAxisValue>(list.Item(0));
     x = axis.X();
     y = axis.Y();
     z = axis.Z();
@@ -1691,7 +1691,7 @@ RespectImageOrientationEnum StyleBuilderConverter::ConvertImageOrientation(
 scoped_refptr<StylePath> StyleBuilderConverter::ConvertPathOrNone(
     StyleResolverState& state,
     const CSSValue& value) {
-  if (auto* path_value = DynamicTo<CSSPathValue>(value))
+  if (auto* path_value = DynamicTo<cssvalue::CSSPathValue>(value))
     return path_value->GetStylePath();
   DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNone);
   return nullptr;
@@ -1794,11 +1794,11 @@ static const CSSValue& ComputeRegisteredPropertyValue(
           state ? state->Style()->UsedColorScheme() : WebColorScheme::kLight;
       Color color = document.GetTextLinkColors().ColorFromCSSValue(
           value, Color(), scheme, false);
-      return *CSSColorValue::Create(color.Rgb());
+      return *cssvalue::CSSColorValue::Create(color.Rgb());
     }
   }
 
-  if (const auto* uri_value = DynamicTo<CSSURIValue>(value))
+  if (const auto* uri_value = DynamicTo<cssvalue::CSSURIValue>(value))
     return *uri_value->ValueWithURLMadeAbsolute(KURL(base_url), charset);
 
   return value;

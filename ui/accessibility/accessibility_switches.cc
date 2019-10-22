@@ -46,11 +46,6 @@ const char kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching[] =
     "enable-experimental-accessibility-chromevox-sub-node-language-"
     "switching";
 
-bool AreExperimentalAccessibilityFeaturesEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableExperimentalAccessibilityFeatures);
-}
-
 bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);

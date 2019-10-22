@@ -20,8 +20,8 @@
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
 
-namespace leveldb {
-class LevelDBDatabaseImpl;
+namespace storage {
+class AsyncDomStorageDatabase;
 }
 
 namespace content {
@@ -126,14 +126,14 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // Called when this is a new namespace, or when the namespace was loaded from
   // disk. Should be called before |Bind|.
   void PopulateFromMetadata(
-      leveldb::LevelDBDatabaseImpl* database,
+      storage::AsyncDomStorageDatabase* database,
       SessionStorageMetadata::NamespaceEntry namespace_metadata);
 
   // Can either be called before |Bind|, or if the source namespace isn't
   // available yet, |SetWaitingForClonePopulation| can be called. Then |Bind|
   // will work, and hold onto the request until after this method is called.
   void PopulateAsClone(
-      leveldb::LevelDBDatabaseImpl* database,
+      storage::AsyncDomStorageDatabase* database,
       SessionStorageMetadata::NamespaceEntry namespace_metadata,
       const OriginAreas& areas_to_clone);
 
@@ -188,7 +188,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // * If the parent is populated
   // * If the parent has a parent.
   void CloneAllNamespacesWaitingForClone(
-      leveldb::LevelDBDatabaseImpl* database,
+      storage::AsyncDomStorageDatabase* database,
       SessionStorageMetadata* metadata,
       const std::map<std::string,
                      std::unique_ptr<SessionStorageNamespaceImplMojo>>&
@@ -204,7 +204,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
 
   const std::string namespace_id_;
   SessionStorageMetadata::NamespaceEntry namespace_entry_;
-  leveldb::LevelDBDatabaseImpl* database_ = nullptr;
+  storage::AsyncDomStorageDatabase* database_ = nullptr;
 
   SessionStorageDataMap::Listener* data_map_listener_;
   SessionStorageAreaImpl::RegisterNewAreaMap register_new_map_callback_;

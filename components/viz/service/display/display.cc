@@ -580,12 +580,20 @@ bool Display::DrawAndSwap() {
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
                          current_surface_size, sdr_white_level_);
-    if (software_renderer_) {
-      UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.Software.DrawFrameUs",
-                              draw_timer->Elapsed().InMicroseconds());
-    } else {
-      UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
-                              draw_timer->Elapsed().InMicroseconds());
+    switch (output_surface_->type()) {
+      case OutputSurface::Type::kSoftware:
+        UMA_HISTOGRAM_COUNTS_1M(
+            "Compositing.DirectRenderer.Software.DrawFrameUs",
+            draw_timer->Elapsed().InMicroseconds());
+        break;
+      case OutputSurface::Type::kOpenGL:
+        UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
+                                draw_timer->Elapsed().InMicroseconds());
+        break;
+      case OutputSurface::Type::kVulkan:
+        UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.VK.DrawFrameUs",
+                                draw_timer->Elapsed().InMicroseconds());
+        break;
     }
 
     PresentationGroupTiming presentation_group_timing;

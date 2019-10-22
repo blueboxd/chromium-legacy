@@ -369,7 +369,7 @@ void CastRemotingConnector::StartRemotingIfPermitted() {
       remoter_->Start();
     }
   } else {
-    // TODO(xjz): Add an extra reason for this failure.
+    // TODO(crbug.com/1015486): Add an extra reason for this failure.
     active_bridge_->OnStartFailed(RemotingStartFailReason::ROUTE_TERMINATED);
     active_bridge_->OnSinkGone();
     active_bridge_ = nullptr;

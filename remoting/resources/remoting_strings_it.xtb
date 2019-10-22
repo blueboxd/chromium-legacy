@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Scadente</translation>
 <translation id="1152528166145813711">Seleziona…</translation>
 <translation id="1199593201721843963">Disattiva connessioni remote</translation>
+<translation id="1201402288615127009">Avanti</translation>
 <translation id="1291443878853470558">Per accedere a questo computer utilizzando Chromoting devi attivare le connessioni remote.</translation>
 <translation id="1297009705180977556">Errore durante la connessione a <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(questa funzione non è ancora disponibile per il tuo computer)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Remote Desktop è ora sul Web. Prova la nostra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />: è veloce e gratuita, con ancora più funzionalità, tra cui il supporto migliorato di più monitor.</translation>
 <translation id="1643640058022401035">Se esci da questa pagina, la sessione Chromoting verrà terminata.</translation>
 <translation id="1654128982815600832">Attivazione connessioni remote per questo computer in corso…</translation>
+<translation id="1697532407822776718">Ecco fatto!</translation>
 <translation id="170207782578677537">Impossibile registrare il computer.</translation>
 <translation id="174018511426417793">Non sono presenti computer registrati. Per attivare le connessioni remote su un computer, installa Chrome Remote Desktop sul computer e fai clic su "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Connessione in corso...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Processo host</translation>
 <translation id="20876857123010370">Modalità trackpad</translation>
 <translation id="2089514346391228378">Le connessioni remote per questo computer sono state attivate.</translation>
+<translation id="2198363917176605566">Per poter usare <ph name="PRODUCT_NAME" />, devi concedere l'autorizzazione "Registrazione dello schermo" per consentire di inviare al computer remoto i contenuti sullo schermo di questo Mac.
+
+Per concedere questa autorizzazione, fai clic su "<ph name="BUTTON_NAME" />" sotto per aprire il riquadro delle preferenze "Registrazione dello schermo", quindi seleziona la casella "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Se la casella "<ph name="SERVICE_SCRIPT_NAME" />" è già selezionata, deselezionala e selezionala di nuovo.</translation>
 <translation id="2208514473086078157">Le impostazioni criterio non consentono la condivisione di questo computer come host Chrome Remote Desktop. Contatta l'amministratore di sistema per ricevere assistenza.</translation>
 <translation id="2220529011494928058">Segnala un problema</translation>
 <translation id="2221097377466213233">Utilizza il tasto Ctrl di destra e il tasto Windows (⌘ su Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Visto l'ultima volta online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Questa app non è più supportata. Per essere sicuro di ricevere le funzioni più recenti e gli ultimi aggiornamenti della sicurezza, usa l'<ph name="LINK_BEGIN" />app web Chrome Remote Desktop<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Aiutaci a migliorare Chrome Remote Desktop consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>
+<translation id="2504109125669302160">Concedi l'autorizzazione "Accessibilità" a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Connessione a <ph name="HOSTNAME" /> effettuata</translation>
 <translation id="2512228156274966424">NOTA. Per assicurarti che siano disponibili tutte le scorciatoie da tastiera, puoi configurare l'opzione "Apri in una finestra" per Chrome Remote Desktop.</translation>
 <translation id="2540992418118313681">Vuoi condividere questo computer con un altro utente che potrà accedervi e controllarlo?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Core Library</translation>
 <translation id="4430435636878359009">Disattiva le connessioni remote a questo computer</translation>
 <translation id="4430915108080446161">Generazione codice di accesso in corso...</translation>
+<translation id="443560535555262820">Apri preferenze Accessibilità</translation>
 <translation id="4450893287417543264">Non mostrare più</translation>
 <translation id="4472575034687746823">Come iniziare</translation>
 <translation id="4481276415609939789">Non sono presenti computer registrati. Per attivare le connessioni remote su un computer, installa Chromoting sul computer e fai clic su "<ph name="BUTTON_NAME" />".</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Modifica PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (obsoleto)</translation>
 <translation id="6221358653751391898">Non hai eseguito l'accesso a Chrome. Accedi e riprova.</translation>
+<translation id="6223301979382383752">Apri preferenze Registrazione dello schermo</translation>
 <translation id="6227369581881558336">Chrome Remote Desktop è ora sul Web con nuove funzionalità, tra cui il trasferimento file. Prova la nostra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">L'esecuzione dell'host nella schermata di accesso alla console si è interrotta per supportare la modalità Curtain, pertanto l'host viene ora eseguito in una sessione specifica dell'utente.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Qualcos'altro.</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
+<translation id="6411861157501911556">Per poter usare <ph name="PRODUCT_NAME" />, devi concedere l'autorizzazione "Accessibilità" in modo da poter inserire su questo Mac quanto inserito sul computer remoto.
+
+Per concedere questa autorizzazione, fai clic su "<ph name="BUTTON_NAME" />" sotto per aprire il riquadro delle preferenze "Accessibilità", quindi seleziona la casella "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Se la casella "<ph name="SERVICE_SCRIPT_NAME" />" è già selezionata, deselezionala e selezionala di nuovo.</translation>
 <translation id="6441316101718669559">L'integrazione desktop non è supportata su questa piattaforma. Puoi comunque utilizzare l'applicazione, ma l'esperienza utente sarà peggiore.</translation>
 <translation id="652218476070540101">Aggiornamento PIN del computer in corso…</translation>
 <translation id="6527303717912515753">Condividi</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Mantieni visibile l'intero desktop remoto</translation>
 <translation id="9149992051684092333">Per iniziare a condividere il desktop, fornisci il seguente codice di accesso alla persona che ti aiuterà.</translation>
 <translation id="916856682307586697">Viene avviata la XSession predefinita</translation>
+<translation id="9187628920394877737">Concedi l'autorizzazione "Registrazione dello schermo" a <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Autorizza</translation>
 <translation id="9213184081240281106">Configurazione host non valida.</translation>
 <translation id="951991426597076286">Rifiuta</translation>

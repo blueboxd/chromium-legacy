@@ -155,7 +155,14 @@ class MODULES_EXPORT IDBTransaction final
   // Called when deleting an index whose IDBIndex had been created.
   void IndexDeleted(IDBIndex*);
 
-  void SetActive(bool);
+  // Called during event dispatch.
+  //
+  // This can trigger transaction auto-commit.
+  void SetActive(bool new_is_active);
+
+  // Called right before and after structured serialization.
+  void SetActiveDuringSerialization(bool new_is_active);
+
   void SetError(DOMException*);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort)

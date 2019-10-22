@@ -376,6 +376,8 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
       int target_property,
       base::TimeTicks animation_start_time,
       std::unique_ptr<cc::AnimationCurve> curve) override {}
+  void NotifyLocalTimeUpdated(
+      base::Optional<base::TimeDelta> local_time) override {}
 
   // Implementation of LayerThreadedAnimationDelegate.
   void AddThreadedAnimation(

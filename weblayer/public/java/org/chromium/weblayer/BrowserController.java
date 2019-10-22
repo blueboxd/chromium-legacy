@@ -8,6 +8,9 @@ import android.net.Uri;
 import android.os.RemoteException;
 import android.webkit.ValueCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
@@ -17,6 +20,9 @@ import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 public final class BrowserController {
+    /** The top level key of the JSON object returned by executeScript(). */
+    public static final String SCRIPT_RESULT_KEY = "result";
+
     private final IBrowserController mImpl;
     private FullscreenDelegateClientImpl mFullscreenDelegateClient;
     private final NavigationController mNavigationController;
@@ -64,6 +70,32 @@ public final class BrowserController {
 
     public DownloadDelegate getDownloadDelegate() {
         return mDownloadDelegateClient != null ? mDownloadDelegateClient.getDelegate() : null;
+    }
+
+    /**
+     * Executes the script in an isolated world, and returns the result as a JSON object to the
+     * callback if provided. The object passed to the callback will have a single key
+     * SCRIPT_RESULT_KEY which will hold the result of running the script.
+     */
+    public void executeScript(String script, ValueCallback<JSONObject> callback) {
+        try {
+            ValueCallback<String> stringCallback = (String result) -> {
+                if (callback == null) {
+                    return;
+                }
+
+                try {
+                    callback.onReceiveValue(
+                            new JSONObject("{\"" + SCRIPT_RESULT_KEY + "\":" + result + "}"));
+                } catch (JSONException e) {
+                    // This should never happen since the result should be well formed.
+                    throw new RuntimeException(e);
+                }
+            };
+            mImpl.executeScript(script, ObjectWrapper.wrap(stringCallback));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 
     public FullscreenDelegate getFullscreenDelegate() {

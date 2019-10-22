@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="1135993792949700405">Chrome 会将您选择的个人数据发送到 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">打开外部链接？</translation>
 <translation id="1699570257714336246">缺少信息</translation>
 <translation id="2203046366315513658">将值减小</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Chrome 中的 Google 助理已半屏打开。</translation>
 <translation id="6973932557599545801">抱歉，我已是爱莫能助，请您自行继续操作。</translation>
 <translation id="7658239707568436148">取消</translation>
-<translation id="7871791972254842204">以后再阅读并同意 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 的条款及条件</translation>
 <translation id="8253702004019660079">Chrome 中的 Google 助理。</translation>
 <translation id="9138504265731110181">Google 助理可帮助您在网络上进行结算，从而节省您的时间</translation>
 <translation id="945522503751344254">发送反馈</translation>

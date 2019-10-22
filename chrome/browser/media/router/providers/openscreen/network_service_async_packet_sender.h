@@ -15,6 +15,7 @@
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
 namespace media_router {
+
 class AsyncPacketSender {
  public:
   virtual ~AsyncPacketSender() {}

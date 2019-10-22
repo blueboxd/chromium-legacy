@@ -29,16 +29,16 @@ class ProcessMemoryDump;
 }
 }  // namespace base
 
-namespace leveldb {
-class LevelDBDatabaseImpl;
+namespace storage {
+class AsyncDomStorageDatabase;
 }
 
 namespace content {
 
-// This is a wrapper around a leveldb::LevelDBDatabaseImpl. Multiple interface
-// endpoints can be bound to the same object. The wrapper adds a couple of
-// features not found directly in leveldb:
-// 1) Adds the given prefix, if any, to all keys. This allows the sharing of one
+// This is a wrapper around a storage::AsyncDomStorageDatabase. Multiple
+// interface endpoints can be bound to the same object. The wrapper adds a
+// couple of features not found directly in leveldb: 1) Adds the given prefix,
+// if any, to all keys. This allows the sharing of one
 //    database across many, possibly untrusted, consumers and ensuring that they
 //    can't access each other's values.
 // 2) Enforces a max_size constraint.
@@ -97,11 +97,11 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
 
   // |Delegate::OnNoBindings| will be called when this object has no more
   // bindings and all pending modifications have been processed.
-  StorageAreaImpl(leveldb::LevelDBDatabaseImpl* database,
+  StorageAreaImpl(storage::AsyncDomStorageDatabase* database,
                   const std::string& prefix,
                   Delegate* delegate,
                   const Options& options);
-  StorageAreaImpl(leveldb::LevelDBDatabaseImpl* database,
+  StorageAreaImpl(storage::AsyncDomStorageDatabase* database,
                   std::vector<uint8_t> prefix,
                   Delegate* delegate,
                   const Options& options);
@@ -158,7 +158,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
 
   const std::vector<uint8_t>& prefix() { return prefix_; }
 
-  leveldb::LevelDBDatabaseImpl* database() { return database_; }
+  storage::AsyncDomStorageDatabase* database() { return database_; }
 
   // Commence aggressive flushing. This should be called early during startup,
   // before any localStorage writing. Currently scheduled writes will not be
@@ -328,7 +328,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   mojo::ReceiverSet<blink::mojom::StorageArea> receivers_;
   mojo::AssociatedRemoteSet<blink::mojom::StorageAreaObserver> observers_;
   Delegate* delegate_;
-  leveldb::LevelDBDatabaseImpl* database_;
+  storage::AsyncDomStorageDatabase* database_;
 
   // For commits to work correctly the map loaded state (keys vs keys & values)
   // must stay consistent for a given commit batch.

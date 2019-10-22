@@ -68,6 +68,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // Deletes stored recordings.
   void Purge();
 
+  // Deletes stored recordings related to Chrome extensions.
+  void PurgeExtensionRecordings();
+
   // Marks a source as no longer needed to be kept alive in memory. The source
   // with given id will be removed from in-memory recordings at the next
   // reporting cycle.
@@ -131,6 +134,7 @@ class UkmRecorderImpl : public UkmRecorder {
   friend ::ukm::UkmRecorderImplTest;
   friend ::ukm::UkmUtilsForTest;
   FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, IsSampledIn);
+  FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, PurgeExtensionRecordings);
 
   struct MetricAggregate {
     uint64_t total_count = 0;

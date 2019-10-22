@@ -25,6 +25,7 @@
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
 #include "media/capture/video/chromeos/request_manager.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 
@@ -202,17 +203,15 @@ void CameraDeviceDelegate::AllocateAndStart(
   }
   device_context_->SetSensorOrientation(sensor_orientation[0]);
 
-  // |device_ops_| is bound after the MakeRequest call.
-  cros::mojom::Camera3DeviceOpsRequest device_ops_request =
-      mojo::MakeRequest(&device_ops_);
-  device_ops_.set_connection_error_handler(base::BindOnce(
-      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
+  // |device_ops_| is bound after the BindNewPipeAndPassReceiver call.
   camera_hal_delegate_->OpenDevice(
       camera_hal_delegate_->GetCameraIdFromDeviceId(
           device_descriptor_.device_id),
-      std::move(device_ops_request),
+      device_ops_.BindNewPipeAndPassReceiver(),
       BindToCurrentLoop(
           base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
+  device_ops_.set_disconnect_handler(base::BindOnce(
+      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
 }
 
 void CameraDeviceDelegate::StopAndDeAllocate(
@@ -478,11 +477,9 @@ void CameraDeviceDelegate::Initialize() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(device_context_->GetState(), CameraDeviceContext::State::kStarting);
 
-  cros::mojom::Camera3CallbackOpsPtr callback_ops_ptr;
-  cros::mojom::Camera3CallbackOpsRequest callback_ops_request =
-      mojo::MakeRequest(&callback_ops_ptr);
+  mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops;
   request_manager_ = std::make_unique<RequestManager>(
-      std::move(callback_ops_request),
+      callback_ops.InitWithNewPipeAndPassReceiver(),
       std::make_unique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
       device_context_, chrome_capture_params_.buffer_type,
       std::make_unique<CameraBufferFactory>(),
@@ -491,7 +488,7 @@ void CameraDeviceDelegate::Initialize() {
   camera_3a_controller_ = std::make_unique<Camera3AController>(
       static_metadata_, request_manager_.get(), ipc_task_runner_);
   device_ops_->Initialize(
-      std::move(callback_ops_ptr),
+      std::move(callback_ops),
       base::BindOnce(&CameraDeviceDelegate::OnInitialized, GetWeakPtr()));
 }
 

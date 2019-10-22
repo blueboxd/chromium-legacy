@@ -74,8 +74,7 @@ TEST_F(LSQPredictorTest, ConstantTimeStampNotCrash) {
   }
   // Expect false because the matrix is singular
   // and the predictor cannot compute a prediction
-  ui::InputPredictor::InputData result;
-  EXPECT_FALSE(predictor_->GeneratePrediction(FromMilliseconds(42), &result));
+  EXPECT_FALSE(predictor_->GeneratePrediction(FromMilliseconds(42)));
 
   x = {100, 100, 100};
   y = {100, 100, 100};
@@ -85,7 +84,7 @@ TEST_F(LSQPredictorTest, ConstantTimeStampNotCrash) {
                                       FromMilliseconds(t[i])};
     predictor_->Update(data);
   }
-  EXPECT_TRUE(predictor_->GeneratePrediction(FromMilliseconds(142), &result));
+  EXPECT_TRUE(predictor_->GeneratePrediction(FromMilliseconds(142)));
 }
 
 // Tests the LSQ predictor produce the time interval correctly.

@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">Pagina later laden</translation>
 <translation id="1015730422737071372">Aanvullende gegevens verzenden</translation>
 <translation id="1021110881106174305">Geaccepteerde passen</translation>
-<translation id="1023523064224774104">Chromium heeft gedetecteerd dat je zojuist je wachtwoord hebt opgegeven op een verdachte site. Reset je wachtwoord meteen.</translation>
 <translation id="1032854598605920125">Rechtsom draaien</translation>
 <translation id="1035334672863811645">inloggen bij Chrome</translation>
 <translation id="1036348656032585052">Uitschakelen</translation>
@@ -122,6 +121,7 @@
 <translation id="1501859676467574491">Passen uit je Google-account weergeven</translation>
 <translation id="1507202001669085618">&lt;p&gt;J​e ​zi​et​ d​ez​e ​fo​ut​ a​ls​ j​e ​ee​n ​wi​fi​-p​or​ta​l ​ge​br​ui​kt​ w​aa​ro​p ​je​ m​oe​t ​in​lo​gg​en​ v​oo​rd​at​ j​e ​on​li​ne​ k​un​t ​ga​an​.&lt;/p&gt;
    &lt;p&gt;​K​li​k ​op​ &lt;​st​ro​ng​&gt;V​er​bi​nd​in​g ​ma​ke​n&lt;​/s​tr​on​g&gt;​ o​p ​de​ p​ag​in​a ​di​e ​je​ p​ro​be​er​t ​te​ o​pe​ne​n ​om​ d​ez​e ​fo​ut​ o​p ​te​ l​os​se​n.​&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Lijst met geschiedenisitems</translation>
 <translation id="1517433312004943670">Telefoonnummer vereist</translation>
 <translation id="1517500485252541695">Geaccepteerde creditcards en betaalpassen</translation>
 <translation id="1519264250979466059">Datum van build</translation>
@@ -307,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk ingetrokken. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="2438874542388153331">Vier perforaties rechts</translation>
+<translation id="245044156129055925">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="2463193859425327265">Homepage wijzigen</translation>
 <translation id="2463739503403862330">Invullen</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -536,7 +537,6 @@
 <translation id="3655670868607891010">Als je deze melding vaker ziet, probeer je deze <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisie</translation>
 <translation id="366077651725703012">Creditcard updaten</translation>
-<translation id="3672525478985456967">De naam van deze site lijkt op <ph name="LOOKALIKE_DOMAIN" />. Aanvallers maken sites soms na door kleine wijzigingen in de domeinnaam aan te brengen die je moeilijk kunt zien.</translation>
 <translation id="3676592649209844519">Apparaat-ID:</translation>
 <translation id="3677008721441257057">Bedoelde je &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Verzoek kan niet worden ondertekend</translation>
@@ -597,6 +597,9 @@
 <translation id="397105322502079400">Berekenen...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> wordt geblokkeerd</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> heeft Chrome Enterprise Threat Protection ingeschakeld in je browser. Chrome Enterprise Threat Protection heeft toegang tot sommige van je gegevens.</translation>
+<translation id="3987405730340719549">Chrome heeft vastgesteld dat deze site mogelijk nep of bedrieglijk is.
+
+    Als je denkt dat deze waarschuwing onterecht is, ga je naar https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Minder dan 1 MB</translation>
 <translation id="3990250421422698716">Sorteren</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webpagina in de buurt}other{# webpagina's in de buurt}}</translation>
@@ -854,7 +857,6 @@
 <translation id="5230733896359313003">Verzendadres</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Sluiten</translation>
 <translation id="5250209940322997802">'Verbinding maken met netwerk'</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (envelop)</translation>
@@ -974,6 +976,9 @@
 <translation id="5813119285467412249">&amp;Opnieuw toevoegen</translation>
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5838278095973806738">Geef geen gevoelige gegevens op op deze site (zoals wachtwoorden of creditcards), want deze kunnen worden gestolen door cybercriminelen.</translation>
+<translation id="5855253129151731373">De hostnaam van deze site lijkt op <ph name="LOOKALIKE_DOMAIN" />. Aanvallers maken sites soms na door kleine wijzigingen in de domeinnaam aan te brengen die je moeilijk kunt zien.
+
+    Als je denkt dat deze waarschuwing onterecht is, ga je naar https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Uit</translation>
 <translation id="5863847714970149516">De komende pagina probeert misschien kosten in rekening te brengen</translation>
 <translation id="5866257070973731571">Telefoonnummer toevoegen</translation>
@@ -996,7 +1001,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> openen…</translation>
 <translation id="5947933617628957894">Ja, toevoegen</translation>
 <translation id="5951495562196540101">Kan consumentenaccount niet inschrijven (verpakte licentie beschikbaar).</translation>
-<translation id="5966900314707961320">Als deze optie is ingeschakeld, kunnen sites geen cookies gebruiken die je volgen op internet</translation>
 <translation id="5967592137238574583">Contactgegevens bewerken</translation>
 <translation id="5967867314010545767">Verwijderen uit geschiedenis</translation>
 <translation id="5975083100439434680">Uitzoomen</translation>
@@ -1084,6 +1088,7 @@
 <translation id="6401136357288658127">Dit beleid is beëindigd. Gebruik in plaats daarvan dit beleid: <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Bladwijzer bewerken</translation>
 <translation id="6406765186087300643">C0 (envelop)</translation>
+<translation id="6409754798200046165">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chrome raadt je aan om je wachtwoord nu te wijzigen.</translation>
 <translation id="6410264514553301377">Geef de vervaldatum en CVC-code op voor <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium kan je helpen je Google-account te beschermen en je wachtwoord te wijzigen.</translation>
 <translation id="6427730057873428458">Luikvouw</translation>
@@ -1091,7 +1096,6 @@
 <translation id="6433490469411711332">Contactgegevens bewerken</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> heeft de verbinding geweigerd.</translation>
 <translation id="6434309073475700221">Annuleren</translation>
-<translation id="6435221585574090192">Deel gegevens over beveiligingsgebeurtenissen die zijn gemarkeerd door Chrome Enterprise Threat Protection met je beheerder. Dit kunnen pagina-URL's, bestandsnamen, bestandsmetadata, de gebruikersnaam van je apparaat en je Chrome-gebruikersnaam zijn.</translation>
 <translation id="6440503408713884761">Genegeerd</translation>
 <translation id="6446163441502663861">Kahu (envelop)</translation>
 <translation id="6446608382365791566">Meer informatie toevoegen</translation>
@@ -1381,6 +1385,7 @@ Aanvullende informatie:
 <translation id="7932579305932748336">Coaten</translation>
 <translation id="79338296614623784">Geef een geldig telefoonnummer op</translation>
 <translation id="7934052535022478634">Betaling voltooid</translation>
+<translation id="7935031712718413217">Mogelijke spoofing-URL</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Verloopt op <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Het servercertificaat is nog niet geldig.</translation>
@@ -1435,7 +1440,6 @@ Aanvullende informatie:
 <translation id="8184538546369750125">Algemene standaardinstelling gebruiken (Toestaan)</translation>
 <translation id="8194797478851900357">&amp;Verplaatsen ongedaan maken</translation>
 <translation id="8197543752516192074">Pagina vertalen</translation>
-<translation id="8197899142098070286">Chrome heeft gedetecteerd dat je zojuist je wachtwoord hebt opgegeven op een verdachte site. Reset je wachtwoord meteen.</translation>
 <translation id="8201077131113104583">Ongeldige update-URL voor de extensie met de ID '<ph name="EXTENSION_ID" />'.</translation>
 <translation id="8202097416529803614">Besteloverzicht</translation>
 <translation id="8202370299023114387">Conflict</translation>
@@ -1522,7 +1526,6 @@ Aanvullende informatie:
 <translation id="8718314106902482036">Betaling niet voltooid</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, zoeksuggestie</translation>
 <translation id="8719528812645237045">Meerdere perforaties boven</translation>
-<translation id="8723954843026426558">Ik ga akkoord met de algemene voorwaarden, het privacybeleid en het herroepingsrecht van <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8728672262656704056">Je bent incognito</translation>
 <translation id="8730621377337864115">Gereed</translation>

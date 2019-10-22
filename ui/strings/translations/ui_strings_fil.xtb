@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minuto ang nakalipas}one{# minuto ang nakalipas}other{# na minuto ang nakalipas}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 minuto}one{# minuto}other{# na minuto}}</translation>
 <translation id="1181037720776840403">Alisin</translation>
+<translation id="1201402288615127009">Susunod</translation>
 <translation id="1243314992276662751">I-upload</translation>
 <translation id="1266864766717917324">Hindi maibahagi ang <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">I-tap ang mga target sa pagpindot sa iyong screen.</translation>
 <translation id="2295140143284145483">Survey</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> (na) TB/s</translation>
+<translation id="2353636109065292463">Sinusuri ang iyong koneksyon sa internet</translation>
 <translation id="2388990488038464401">Tawagan ang numerong ito mula sa iyong telepono?</translation>
 <translation id="24452542372838207">Palawakin ang notification</translation>
 <translation id="2445449901874883781">Gumamit ng mataas na density</translation>
@@ -162,6 +164,7 @@
 <translation id="6620110761915583480">I-save ang File</translation>
 <translation id="6656912866303152668">Tiyaking naka-on sa <ph name="TARGET_DEVICE_NAME" /> ang pag-sync sa Chrome, at pagkatapos ay subukang ipadala ulit.</translation>
 <translation id="6699343763173986273">Susunod na Track ng Media</translation>
+<translation id="6710213216561001401">Nakaraan</translation>
 <translation id="6779314412797872738">Para magpadala ng numero sa iyong Android phone mula rito, <ph name="TROUBLESHOOT_LINK" /> para sa parehong device sa mga setting.</translation>
 <translation id="6786750046913594791">Isara ang folder</translation>
 <translation id="6808150112686056157">Media Ihinto</translation>
@@ -179,6 +182,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 minuto na lang ang natitira}one{# minuto na lang ang natitira}other{# na minuto na lang ang natitira}}</translation>
 <translation id="7319740667687257810">Launcher, hindi kumpletong view</translation>
+<translation id="7352651011704765696">Nagkaroon ng problema</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 minuto ang nakalipas}one{# minuto ang nakalipas}other{# na minuto ang nakalipas}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuto na lang ang natitira}one{# minuto na lang ang natitira}other{# na minuto na lang ang natitira}}</translation>

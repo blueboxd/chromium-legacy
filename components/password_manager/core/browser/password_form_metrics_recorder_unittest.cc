@@ -675,8 +675,8 @@ struct FillingAssistanceTestCase {
     std::string value;
     std::string typed_value;
     bool user_typed = false;
-    bool manually_filled = false;
     bool automatically_filled = false;
+    bool manually_filled = false;
     bool is_password = false;
   };
 
@@ -885,8 +885,8 @@ TEST(PasswordFormMetricsRecorder, FillingAssistanceUserTypedPassword) {
       {.description_for_logging = "The user typed into password field",
        .fields = {{.value = "user2", .automatically_filled = true},
                   {.typed_value = "password2",
-                   .automatically_filled = true,
                    .user_typed = true,
+                   .automatically_filled = true,
                    .is_password = true}},
        .saved_usernames = {"user1", "user2"},
        .saved_passwords = {"password1", "password2"},
@@ -917,8 +917,8 @@ TEST(PasswordFormMetricsRecorder, FillingAssistanceUserTypedNewCredentials) {
                       .automatically_filled = true,
                   },
                   {.typed_value = "password3",
-                   .automatically_filled = true,
                    .user_typed = true,
+                   .automatically_filled = true,
                    .is_password = true}},
        .saved_usernames = {"user1", "user2"},
        .saved_passwords = {"password1", "password2"},
@@ -988,9 +988,9 @@ TEST(PasswordFormMetricsRecorder,
 TEST(PasswordFormMetricsRecorder, FillingAssistanceBlacklistedDomain) {
   CheckFillingAssistanceTestCase(
       {.description_for_logging = "Submission while domain is blacklisted",
+       .is_blacklisted = true,
        .fields = {{.value = "user1"},
                   {.value = "password1", .is_password = true}},
-       .is_blacklisted = true,
        .saved_usernames = {},
        .saved_passwords = {},
        .expectation = PasswordFormMetricsRecorder::FillingAssistance::
@@ -1002,11 +1002,13 @@ TEST(PasswordFormMetricsRecorder,
   CheckFillingAssistanceTestCase(
       {.description_for_logging =
            "Submission while domain is blacklisted but a credential is stored",
-       .fields = {{.value = "user1", .automatically_filled = true},
-                  {.value = "password1",
-                   .is_password = true,
-                   .automatically_filled = true}},
        .is_blacklisted = true,
+       .fields = {{.value = "user1", .automatically_filled = true},
+                  {
+                      .value = "password1",
+                      .automatically_filled = true,
+                      .is_password = true,
+                  }},
        .saved_usernames = {"user1"},
        .saved_passwords = {"password1"},
        .expectation =

@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Kötü</translation>
 <translation id="1152528166145813711">Seç...</translation>
 <translation id="1199593201721843963">Uzaktan bağlantıları devre dışı bırak</translation>
+<translation id="1201402288615127009">İleri</translation>
 <translation id="1291443878853470558">Bu bilgisayara erişmek için Chromoting'i kullanmak istiyorsanız uzaktan bağlantıları etkinleştirmelisiniz.</translation>
 <translation id="1297009705180977556"><ph name="HOSTNAME" /> adlı ana makineye bağlanırken hata oluştu</translation>
 <translation id="1324095856329524885">(bu özellik henüz bilgisayarınız için kullanılamıyor)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Uzaktan Masaüstü artık web'de kullanılabiliyor. <ph name="LINK_BEGIN" />Web uygulamamızı<ph name="LINK_END" /> deneyin. Uygulama hızlı ve ücretsiz olmasının yanı sıra, birden fazla monitör için iyileştirilmiş destek de dahil olmak üzere pek çok yeni özellik sunuyor.</translation>
 <translation id="1643640058022401035">Bu sayfadan ayrılırsanız Chromoting oturumunuz sonlandırılır.</translation>
 <translation id="1654128982815600832">Bu bilgisayara uzaktan bağlantılar etkinleştiriliyor…</translation>
+<translation id="1697532407822776718">Artık hazırsınız!</translation>
 <translation id="170207782578677537">Bu bilgisayar kaydettirilemedi.</translation>
 <translation id="174018511426417793">Kayıtlı bilgisayarınız yok. Bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü uygulamasını o bilgisayara yükleyin ve “<ph name="BUTTON_NAME" />” düğmesini tıklayın.</translation>
 <translation id="1742469581923031760">Bağlanıyor...</translation>

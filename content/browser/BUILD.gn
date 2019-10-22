@@ -69,7 +69,6 @@ jumbo_source_set("browser") {
     "//components/payments/mojom",
     "//components/rappor",
     "//components/services/filesystem:lib",
-    "//components/services/leveldb:lib",
     "//components/services/quarantine:quarantine",
     "//components/services/storage",
     "//components/tracing",

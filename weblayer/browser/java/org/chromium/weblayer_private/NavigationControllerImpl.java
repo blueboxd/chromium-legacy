@@ -142,6 +142,15 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
         }
     }
 
+    @CalledByNative
+    private void onFirstContentfulPaint() {
+        try {
+            mNavigationControllerClient.onFirstContentfulPaint();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     @NativeMethods
     interface Natives {
         void setNavigationControllerImpl(

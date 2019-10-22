@@ -71,10 +71,7 @@ TEST_F(AssistantContainerViewTest, InitialAnchoring) {
 
   // We expect the view to appear in the work area where new windows will open.
   gfx::Rect expected_work_area =
-      display::Screen::GetScreen()
-          ->GetDisplayMatching(
-              Shell::Get()->GetRootWindowForNewWindows()->GetBoundsInScreen())
-          .work_area();
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
   // We expect the view to be horizontally centered and bottom aligned.
   gfx::Rect expected_bounds = gfx::Rect(expected_work_area);

@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.GURLUtils;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,12 +87,11 @@ public class ShareMenuActionHandler {
 
         if (!classesToEnable.isEmpty()) {
             OptionalShareTargetsManager.getInstance().enableOptionalShareActivities(activity,
-                    classesToEnable,
-                    () -> triggerShare(activity, currentTab, shareDirectly, isIncognito));
+                    classesToEnable, () -> triggerShare(currentTab, shareDirectly, isIncognito));
             return;
         }
 
-        triggerShare(activity, currentTab, shareDirectly, isIncognito);
+        triggerShare(currentTab, shareDirectly, isIncognito);
     }
 
     @VisibleForTesting
@@ -154,18 +154,19 @@ public class ShareMenuActionHandler {
         }
     }
 
-    private void triggerShare(final Activity activity, final Tab currentTab,
-            final boolean shareDirectly, boolean isIncognito) {
+    private void triggerShare(
+            final Tab currentTab, final boolean shareDirectly, boolean isIncognito) {
         ScreenshotTabObserver tabObserver = ScreenshotTabObserver.from(currentTab);
         if (tabObserver != null) {
             tabObserver.onActionPerformedAfterScreenshot(
                     ScreenshotTabObserver.SCREENSHOT_ACTION_SHARE);
         }
 
-        OfflinePageUtils.maybeShareOfflinePage(activity, currentTab, (ShareParams p) -> {
+        OfflinePageUtils.maybeShareOfflinePage(currentTab, (ShareParams p) -> {
             if (p != null) {
                 mDelegate.share(p);
             } else {
+                WindowAndroid window = currentTab.getWindowAndroid();
                 // Could not share as an offline page.
                 if (shouldFetchCanonicalUrl(currentTab)) {
                     WebContents webContents = currentTab.getWebContents();
@@ -176,12 +177,12 @@ public class ShareMenuActionHandler {
                         public void onResult(String result) {
                             logCanonicalUrlResult(visibleUrl, result);
 
-                            triggerShareWithCanonicalUrlResolved(activity, webContents, title,
+                            triggerShareWithCanonicalUrlResolved(window, webContents, title,
                                     visibleUrl, result, shareDirectly, isIncognito);
                         }
                     });
                 } else {
-                    triggerShareWithCanonicalUrlResolved(activity, currentTab.getWebContents(),
+                    triggerShareWithCanonicalUrlResolved(window, currentTab.getWebContents(),
                             currentTab.getTitle(), currentTab.getUrl(), null, shareDirectly,
                             isIncognito);
                 }
@@ -189,17 +190,16 @@ public class ShareMenuActionHandler {
         });
     }
 
-    private void triggerShareWithCanonicalUrlResolved(final Activity mainActivity,
+    private void triggerShareWithCanonicalUrlResolved(final WindowAndroid window,
             final WebContents webContents, final String title, final String visibleUrl,
             final String canonicalUrl, final boolean shareDirectly, boolean isIncognito) {
         // Share an empty blockingUri in place of screenshot file. The file ready notification is
         // sent by onScreenshotReady call below when the file is written.
         final Uri blockingUri = (isIncognito || webContents == null)
                 ? null
-                : ChromeFileProvider.generateUriAndBlockAccess(mainActivity);
+                : ChromeFileProvider.generateUriAndBlockAccess();
         ShareParams.Builder builder =
-                new ShareParams
-                        .Builder(mainActivity, title, getUrlToShare(visibleUrl, canonicalUrl))
+                new ShareParams.Builder(window, title, getUrlToShare(visibleUrl, canonicalUrl))
                         .setShareDirectly(shareDirectly)
                         .setSaveLastUsed(!shareDirectly)
                         .setScreenshotUri(blockingUri);

@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">‏للسماح لمتصفِّح Chrome بإرسال الإشعارات إليك، يمكنك أيضًا تفعيل الإشعارات في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">‏تتوفَّر بيانات<ph name="APP_NAME" /> أيضًا في Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">قد يؤدي تغيير امتداد الملف إلى حدوث سلوك غير متوقع وإلحاق ضرر بجهازك.</translation>
 <translation id="2056878612599315956">تم إيقاف الموقع الإلكتروني مؤقتًا</translation>
 <translation id="2063713494490388661">ميزة "البحث بالنقر"</translation>
 <translation id="2067805253194386918">نص</translation>
@@ -263,6 +262,7 @@
 <translation id="2913331724188855103">السماح لمواقع الويب بحفظ بيانات ملفات تعريف الارتباط وقراءتها (موصى به)</translation>
 <translation id="2923908459366352541">الاسم غير صحيح</translation>
 <translation id="2932150158123903946">‏مساحة تخزين <ph name="APP_NAME" /> Google</translation>
+<translation id="2942036813789421260">يتم إغلاق علامة تبويب المعاينة</translation>
 <translation id="2956410042958133412">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">تم التبديل إلى علامات تبويب التصفح المتخفي</translation>
 <translation id="2968755619301702150">عارض الشهادات</translation>
@@ -388,6 +388,7 @@
 <translation id="3988466920954086464">الاطلاع على نتائج البحث الفورية في هذه اللوحة</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">مساحة تخزين غير مهمة</translation>
+<translation id="4000212216660919741">الصفحة الرئيسية في وضع عدم الاتصال</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4008040567710660924">السماح لموقع ويب معيّن بتشغيل ملفات تعريف الارتباط</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{ساعة واحدة (#)}zero{# ساعة}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# ساعة}}</translation>
@@ -767,6 +768,7 @@
 <translation id="6697947395630195233">‏يحتاج Chrome إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
 <translation id="6699370405921460408">‏ستعمل خوادم Google على تحسين الصفحات التي تزورها.</translation>
+<translation id="6706288973712894588">‏أنت غير متصل بالإنترنت حاليًا.\n<ph name="BEGIN_LINK" />تعرّف على الخلاصة بلا إنترنت.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">الأخبار</translation>
 <translation id="6710213216561001401">السابق</translation>
 <translation id="671481426037969117">انقضى وقت موقّت <ph name="FQDN" />، وسيبدأ عمله مرّةً أخرى غدًا.</translation>
@@ -866,6 +868,7 @@
 <translation id="7475688122056506577">‏لم يتم العثور على بطاقة SD. قد يكون بعض الملفات مفقودًا.</translation>
 <translation id="7479104141328977413">إدارة علامات التبويب</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
+<translation id="7482656565088326534">علامة تبويب المعاينة</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">حجم البيانات التي تم توفيرها</translation>
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
@@ -915,7 +918,6 @@
 <translation id="7810647596859435254">فتح باستخدام...</translation>
 <translation id="7821588508402923572">سيظهر توفير البيانات هنا</translation>
 <translation id="7837721118676387834">السماح لموقع ويب معيّن بالتشغيل التلقائي للفيديوهات المكتومة الصوت</translation>
-<translation id="7838340937077326045">هل تريد فعلاً تغيير امتداد الملف؟</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
@@ -996,6 +998,7 @@
 <translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="8393700583063109961">إرسال رسالة</translation>
 <translation id="8413126021676339697">عرض السجلّ بكامله</translation>
+<translation id="8427875596167638501">علامة تبويب المعاينة مفتوحة جزئيًا</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8438566539970814960">تحسين عمليات البحث والتصفُّح</translation>
 <translation id="8441146129660941386">الرجوع للوراء</translation>
@@ -1086,7 +1089,9 @@
 <translation id="9086455579313502267">تعذر الدخول إلى الشبكة</translation>
 <translation id="9100505651305367705">اقتراح مشاهدة المقالات في العرض المبسَّط إذا كان ذلك متاحًا</translation>
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
+<translation id="9102803872260866941">يتم فتح علامة تبويب المعاينة</translation>
 <translation id="9104217018994036254">قائمة الأجهزة التي يمكن مشاركة علامة تبويب معها.</translation>
+<translation id="9133397713400217035">الاطّلاع في وضع عدم الاتصال بالإنترنت</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9139068048179869749">السؤال قبل السماح لمواقع الويب بإرسال الإشعارات (موصى به)</translation>

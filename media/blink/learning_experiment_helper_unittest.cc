@@ -34,6 +34,9 @@ class MockLearningTaskController : public LearningTaskController {
                void(base::UnguessableToken id,
                     const ObservationCompletion& completion));
   MOCK_METHOD1(CancelObservation, void(base::UnguessableToken id));
+  MOCK_METHOD2(UpdateDefaultTarget,
+               void(base::UnguessableToken id,
+                    const base::Optional<TargetValue>& default_target));
 
   const LearningTask& GetLearningTask() { return task_; }
 

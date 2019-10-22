@@ -103,6 +103,7 @@ void InternalAppWindowShelfController::OnWindowVisibilityChanging(
     shelf_id = ash::ShelfID(plugin_vm::kPluginVmAppId);
     window->SetProperty(ash::kShelfIDKey,
                         new std::string(shelf_id.Serialize()));
+    window->SetProperty(ash::kAppIDKey, new std::string(shelf_id.app_id));
   }
 
   if (!app_list::IsInternalApp(shelf_id.app_id))

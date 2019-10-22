@@ -62,7 +62,14 @@ class UnsentLogStore : public LogStore {
   // Adds a log to the list.
   void StoreLog(const std::string& log_data);
 
-  // Delete all logs, in memory and on disk.
+  // Gets log data at the given index in the list.
+  const std::string& GetLogAtIndex(size_t index);
+
+  // Replaces the compressed log at |index| in the store with given log data
+  // reusing the same timestamp from the original log, and returns old log data.
+  std::string ReplaceLogAtIndex(size_t index, const std::string& new_log_data);
+
+  // Deletes all logs, in memory and on disk.
   void Purge();
 
   // Returns the timestamp of the element in the front of the list.

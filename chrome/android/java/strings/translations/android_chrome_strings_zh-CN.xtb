@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">要让 Chrome 向您发送通知，您还需要在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启通知。</translation>
 <translation id="204321170514947529">Chrome 中也有<ph name="APP_NAME" />的数据</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">更改文件扩展名可能会导致意外行为并对您的设备造成损害。</translation>
 <translation id="2056878612599315956">网站已被暂停</translation>
 <translation id="2063713494490388661">点按搜索</translation>
 <translation id="2067805253194386918">文本</translation>
@@ -915,7 +914,6 @@
 <translation id="7810647596859435254">打开方式…</translation>
 <translation id="7821588508402923572">您的数据流量节省情况将显示在这里</translation>
 <translation id="7837721118676387834">允许特定网站自动播放静音的视频。</translation>
-<translation id="7838340937077326045">确定要更改文件扩展名吗？</translation>
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="784934925303690534">时间范围</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>

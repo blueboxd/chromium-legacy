@@ -654,7 +654,16 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
+
   int adjusted_coded_width = stride * 8 / plane_horiz_bits_per_pixel;
+  // If this is the first picture, then adjust the EGL width.
+  // Otherwise just check that it remains the same.
+  if (decoder_state_ == kAwaitingPictureBuffers) {
+    DCHECK_GE(adjusted_coded_width, egl_image_size_.width());
+    egl_image_size_.set_width(adjusted_coded_width);
+  }
+  DCHECK_EQ(egl_image_size_.width(), adjusted_coded_width);
+
   if (image_processor_device_ && !image_processor_) {
     DCHECK_EQ(kAwaitingPictureBuffers, decoder_state_);
     // This is the first buffer import. Create the image processor and change
@@ -663,12 +672,9 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     // width to create the image processor.
     DVLOGF(3) << "Original egl_image_size=" << egl_image_size_.ToString()
               << ", adjusted coded width=" << adjusted_coded_width;
-    DCHECK_GE(adjusted_coded_width, egl_image_size_.width());
-    egl_image_size_.set_width(adjusted_coded_width);
     if (!CreateImageProcessor())
       return;
   }
-  DCHECK_EQ(egl_image_size_.width(), adjusted_coded_width);
 
   if (reset_pending_) {
     FinishReset();

@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Dårlig</translation>
 <translation id="1152528166145813711">Vælg …</translation>
 <translation id="1199593201721843963">Deaktiver fjernforbindelserne</translation>
+<translation id="1201402288615127009">Næste</translation>
 <translation id="1291443878853470558">Du skal aktivere fjernforbindelserne, hvis du vil bruge Chromoting til at få adgang til denne computer.</translation>
 <translation id="1297009705180977556">Der opstod en fejl under forsøget på at oprette forbindelse til <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(denne funktion er endnu ikke tilgængelig på din computer)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Fjernskrivebord er nu tilgængeligt på nettet. Prøv vores <ph name="LINK_BEGIN" />webapp<ph name="LINK_END" /> – den er hurtig og gratis, og den har flere funktioner, f.eks. forbedret understøttelse af flere skærme.</translation>
 <translation id="1643640058022401035">Hvis du forlader denne side, afsluttes din session med Chromoting.</translation>
 <translation id="1654128982815600832">Aktiverer fjernforbindelserne for denne computer…</translation>
+<translation id="1697532407822776718">Fuldført</translation>
 <translation id="170207782578677537">Denne computer kunne ikke registreres.</translation>
 <translation id="174018511426417793">Du har ingen registrerede computere. Hvis du vil aktivere fjernforbindelser til en computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Opretter forbindelse...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Hostproces</translation>
 <translation id="20876857123010370">Musemarkør</translation>
 <translation id="2089514346391228378">Fjernforbindelserne til denne computer er blevet aktiveret.</translation>
+<translation id="2198363917176605566">Hvis du vil bruge <ph name="PRODUCT_NAME" />, skal du give tilladelsen "Skærmoptagelse", så skærmindholdet på denne Mac kan sendes til fjerncomputeren.
+
+Hvis du vil give denne tilladelse, skal du klikke på "<ph name="BUTTON_NAME" />" nedenfor for at åbne ruden med indstillinger for "Skærmoptagelse" og derefter markere afkrydsningsfeltet ud for "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er markeret, skal du fjerne markeringen og markere afkrydsningsfeltet igen.</translation>
 <translation id="2208514473086078157">Politikindstillingerne tillader ikke, at denne computer deles som en Chrome Fjernskrivebord-host. Kontakt din systemadministrator for at få hjælp.</translation>
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2221097377466213233">Brug Ctrl-knappen i højre side på et Windows-tastatur (⌘ på en Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Sidst set online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Denne app understøttes ikke længere. Brug <ph name="LINK_BEGIN" />webappen Chrome Fjernskrivebord<ph name="LINK_END" /> for at være sikker på, at du får de seneste funktioner og sikkerhedsopdateringer.</translation>
 <translation id="2499160551253595098">Hjælp os med at forbedre Chrome Fjernskrivebord ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
+<translation id="2504109125669302160">Giver tilladelsen "Tilgængelighed" til <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Der er oprettet forbindelse til <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">BEMÆRK! Du kan sikre, at alle tastaturgenveje er tilgængelige ved at konfigurere Chrome Fjernskrivebord til "Åbn som vindue".</translation>
 <translation id="2540992418118313681">Vil du dele denne computer, så en anden bruger kan se og styre den?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Kernebiblioteket</translation>
 <translation id="4430435636878359009">Deaktiver fjernforbindelserne til denne computer</translation>
 <translation id="4430915108080446161">Genererer adgangskode...</translation>
+<translation id="443560535555262820">Åbn præferencer for tilgængelighed</translation>
 <translation id="4450893287417543264">Vis ikke igen</translation>
 <translation id="4472575034687746823">Kom godt i gang</translation>
 <translation id="4481276415609939789">Du har ingen registrerede computere. Hvis du vil aktivere fjernforbindelser til en computer, skal du installere Chromoting på den pågældende computer og klikke på "<ph name="BUTTON_NAME" />".</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Skift pinkode</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (forældet)</translation>
 <translation id="6221358653751391898">Du er ikke logget ind i Chrome. Log ind, og prøv igen.</translation>
+<translation id="6223301979382383752">Åbn indstillingerne for skærmoptagelse</translation>
 <translation id="6227369581881558336">Chrome Fjernskrivebord er nu tilgængeligt på nettet med nye funktioner som f.eks. filoveførsel. Prøv vores <ph name="LINK_BEGIN" />webapp<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Hosten, der kører på loginskærmen for konsollen, er lukket ned for at understøtte curtain mode ved at skifte til en host, der kører i en brugerspecifik session.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Noget andet.</translation>
 <translation id="6398765197997659313">Afslut fuld skærm</translation>
+<translation id="6411861157501911556">Hvis du vil bruge <ph name="PRODUCT_NAME" />, skal du give rettigheden "Tilgængelighed", så input fra fjerncomputeren kan sendes til denne Mac.
+
+Hvis du vil give denne tilladelse, skal du klikke på "<ph name="BUTTON_NAME" />" nedenfor for at åbne ruden med indstillinger for "Tilgængelighed" og derefter markere afkrydsningsfeltet ud for "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er markeret, skal du fjerne markeringen og så markere afkrydsningsfeltet igen.</translation>
 <translation id="6441316101718669559">Skrivebordsintegration understøttes ikke på denne platform. Du kan fortsat bruge denne applikation, men brugeroplevelsen vil være forringet.</translation>
 <translation id="652218476070540101">Pinkoden for denne computer opdateres…</translation>
 <translation id="6527303717912515753">Del</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Hold hele fjernskrivebordet synligt</translation>
 <translation id="9149992051684092333">Hvis du vil begynde at dele dit skrivebord, skal du give adgangskoden nedenfor til den person, som skal hjælpe dig.</translation>
 <translation id="916856682307586697">Start XSessions standardsession</translation>
+<translation id="9187628920394877737">Giv <ph name="PRODUCT_NAME" /> tilladelsen "Skærmoptagelse"</translation>
 <translation id="9188433529406846933">Autoriser</translation>
 <translation id="9213184081240281106">Ugyldig hostkonfiguration.</translation>
 <translation id="951991426597076286">Afvis</translation>

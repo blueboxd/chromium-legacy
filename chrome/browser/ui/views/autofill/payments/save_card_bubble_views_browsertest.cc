@@ -2820,9 +2820,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
 }
 
 // Ensures the card saving throbber animation in the status chip behaves
-// correctly during credit card upload process.
+// correctly during credit card upload process. Also ensures the credit card
+// icon goes away when upload succeeds.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
-                       Feedback_CardSavingAnimation) {
+                       Feedback_Success) {
+  base::HistogramTester histogram_tester;
   // Start sync.
   harness_->SetupSync();
 
@@ -2848,9 +2850,88 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                                DialogEvent::SHOW_CARD_SAVED_FEEDBACK});
   WaitForObservedEvent();
 
-  // Ensures the animation should not be animating.
+  // Ensures icon is not visible.
+  EXPECT_FALSE(GetSaveCardIconView()->GetVisible());
+
+  // UMA should have been logged.
+  histogram_tester.ExpectTotalCount("Autofill.CreditCardUploadFeedback", 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN, 0);
+}
+
+// Ensures the card saving throbber animation in the status chip behaves
+// correctly during credit card upload process. Also ensures the credit card
+// icon and the save card failure bubble behave correctly when upload failed.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       Feedback_Failure) {
+  base::HistogramTester histogram_tester;
+  // Start sync.
+  harness_->SetupSync();
+
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  // Ensures icon is visible and animation is not.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
   EXPECT_FALSE(
       GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  ResetEventWaiterForSequence({DialogEvent::SENT_UPLOAD_CARD_REQUEST});
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Ensures icon and the animation are visible.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_TRUE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  SetUploadCardRpcPaymentsFails();
+  ResetEventWaiterForSequence({DialogEvent::RECEIVED_UPLOAD_CARD_RESPONSE,
+                               DialogEvent::STRIKE_CHANGE_COMPLETE,
+                               DialogEvent::SHOW_CARD_SAVED_FEEDBACK});
+  WaitForObservedEvent();
+
+  // Ensures icon is visible and the animation is not animating.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_FALSE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  // UMA should have been logged.
+  histogram_tester.ExpectTotalCount("Autofill.CreditCardUploadFeedback", 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN, 0);
+
+  // Click on the icon.
+  AddEventObserverToController();
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ClickOnView(GetSaveCardIconView());
+  WaitForObservedEvent();
+
+  // UMA should have been logged.
+  histogram_tester.ExpectTotalCount("Autofill.CreditCardUploadFeedback", 3);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN, 1);
 }
 
 // Tests the sign in promo bubble. Ensures that clicking the [Save] button

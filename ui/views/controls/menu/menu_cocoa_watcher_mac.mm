@@ -33,7 +33,13 @@ MenuCocoaWatcherMac::MenuCocoaWatcherMac(base::OnceClosure callback)
                       object:nil
                        queue:nil
                   usingBlock:^(NSNotification* notification) {
-                    ExecuteCallback();
+                    // Only destroy menus if the browser is losing focus, not if
+                    // it's gaining focus. This is to ensure that we can invoke
+                    // a context menu while focused on another app, and still be
+                    // able to click on menu items without dismissing the menu.
+                    if (![[NSRunningApplication currentApplication] isActive]) {
+                      ExecuteCallback();
+                    }
                   }];
 }
 

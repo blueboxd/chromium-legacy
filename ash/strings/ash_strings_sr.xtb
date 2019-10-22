@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" />: додато</translation>
 <translation id="1056775291175587022">Нема мрежа</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">Мобилни: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Досадно ми је</translation>
 <translation id="1104084341931202936">Прегледајте подешавања приступачности</translation>
 <translation id="1104621072296271835">Уређаји заједно функционишу још боље</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">ивично подручје екрана</translation>
 <translation id="119944043368869598">Обриши све</translation>
 <translation id="1247372569136754018">Микрофон (интерни)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Ово подешавање примењује администратор.</translation>
 <translation id="1252999807265626933">Пуњење из уређаја <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какво је време?</translation>
 <translation id="1267032506238418139">Промена пречице</translation>
 <translation id="1270290102613614947">Тастатура на екрану је онемогућена</translation>
 <translation id="1272079795634619415">Заустави</translation>
+<translation id="1275285675049378717">Напаја се <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Вратите се у: <ph name="COME_BACK_DAY_OF_WEEK" /> у <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Слаб сигнал</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">Режим високог контраста</translation>
 <translation id="2542089167727451762">Додирните слику профила</translation>
 <translation id="255671100581129685">Google помоћник није доступан у јавној сесији.</translation>
+<translation id="256712445991462162">монтирана лупа екрана</translation>
 <translation id="2575685495496069081">Онемогућено је вишеструко пријављивање</translation>
 <translation id="2582112259361606227">Рестартујте да бисте ажурирали</translation>
 <translation id="2617342710774726426">SIM картица је закључана</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">Алатке за писаљку</translation>
 <translation id="3368922792935385530">Повезан</translation>
 <translation id="3371140690572404006">Уређај са USB прикључком типа C (десни предњи порт)</translation>
+<translation id="3386978599540877378">лупа за цео екран</translation>
 <translation id="3400357268283240774">Додатна подешавања</translation>
 <translation id="3413817803639110246">Још увек нема шта да се види</translation>
 <translation id="343571671045587506">Измени подсетник</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Chrome ОС</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">Помоћник се учитава...</translation>
+<translation id="4356930093361201197">режим високог контраста</translation>
 <translation id="4378551569595875038">Повезује се...</translation>
 <translation id="4379531060876907730">Ово су алатке за писаљку</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Притиснули сте тастерску пречицу за монтирану лупу екрана. Желите ли да је укључите?</translation>
 <translation id="4421231901400348175">Делите контролу над екраном са особом <ph name="HELPER_NAME" /> преко Даљинске помоћи.</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">Желите ли стварно да искључите аутоматске кликове?</translation>
 <translation id="4849058404725798627">Истакни објекат помоћу фокуса тастатуре</translation>
 <translation id="485592688953820832">Ништа се не предузима (паузирање)</translation>
+<translation id="4868492592575313542">активирано</translation>
 <translation id="4872237917498892622">Alt + тастер за претрагу или Shift</translation>
 <translation id="4890187583552566966">Администратор је онемогућио Google помоћник.</translation>
 <translation id="4895488851634969361">Батерија је пуна.</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">Повезано, ниво батерије је <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Праћење учинка је укључено</translation>
 <translation id="6752912906630585008">Радна површина <ph name="REMOVED_DESK" /> је уклоњена и спојена са радном површином <ph name="RECEIVE_DESK" /></translation>
+<translation id="6777216307882431711">Напаја повезане уређаје са USB прикључком типа C</translation>
 <translation id="6790428901817661496">Пусти</translation>
 <translation id="6803622936009808957">Није могуће пресликати екране зато што није пронађена ниједна подржана резолуција. Уместо тога, приказује се проширена радна површина.</translation>
 <translation id="6820676911989879663">Направите паузу!</translation>
@@ -442,6 +451,7 @@
 <translation id="7568294522609223312">Искључите аутоматске кликове</translation>
 <translation id="7569509451529460200">Брајева азбука и ChromeVox су омогућени</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
+<translation id="7600875258240007829">Погледајте сва обавештења</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (власник)</translation>
 <translation id="7647488630410863958">Откључајте уређај да бисте прегледали обавештења</translation>
 <translation id="7649070708921625228">Помоћ</translation>
@@ -506,6 +516,7 @@
 <translation id="8452135315243592079">SIM картица недостаје</translation>
 <translation id="8454013096329229812">Wi-Fi је укључен.</translation>
 <translation id="847056008324733326">Подешавања размере приказа</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> – <ph name="FEATURE_STATE" />: <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Притисните Alt + тастер за претрагу или Shift да бисте отказали.</translation>
 <translation id="8513108775083588393">Аутоматско ротирање</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> се можда неће пунити док је укључен.</translation>
@@ -534,6 +545,7 @@
 <translation id="8909138438987180327">Батерија је на <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google помоћник не говори овај језик.</translation>
+<translation id="8936501819958976551">деактивирано</translation>
 <translation id="8938800817013097409">Уређај са USB прикључком типа C (задњи десни порт)</translation>
 <translation id="8940956008527784070">Батерија је скоро празна (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>

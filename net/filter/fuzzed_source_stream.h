@@ -32,6 +32,7 @@ class FuzzedSourceStream : public SourceStream {
            int buffer_size,
            CompletionOnceCallback callback) override;
   std::string Description() const override;
+  bool MayHaveMoreBytes() const override;
 
  private:
   void OnReadComplete(CompletionOnceCallback callback,

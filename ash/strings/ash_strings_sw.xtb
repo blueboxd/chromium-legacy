@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Imeongeza <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Hakuna mitandao</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">Simu ya Mkononi: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Nahitaji kuchangamshwa</translation>
 <translation id="1104084341931202936">Onyesha mipangilio ya ufikivu</translation>
 <translation id="1104621072296271835">Vifaa vyako vitafanya kazi vizuri vikiwa pamoja</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">angalia kwa ujumla:</translation>
 <translation id="119944043368869598">Ondoa vyote</translation>
 <translation id="1247372569136754018">Maikrofoni (ya ndani)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" />Mipangilio hii imetekelezwa na msimamizi wako.</translation>
 <translation id="1252999807265626933">Inachaji kwenye <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hali ya hewa ikoje?</translation>
 <translation id="1267032506238418139">Mabadiliko kwenye njia ya mkato</translation>
 <translation id="1270290102613614947">Kibodi ya skrini imezimwa</translation>
 <translation id="1272079795634619415">Simamisha</translation>
+<translation id="1275285675049378717">Inawasha <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Rejea <ph name="COME_BACK_DAY_OF_WEEK" /> saa <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Mtandao si thabiti</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">Hali ya juu ya utofautishaji</translation>
 <translation id="2542089167727451762">Gusa picha yako ya wasifu</translation>
 <translation id="255671100581129685">Programu ya Mratibu wa Google haipatikani katika kipindi cha umma.</translation>
+<translation id="256712445991462162">kikuzaji kilichoambatishwa</translation>
 <translation id="2575685495496069081">Umezima uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="2582112259361606227">Zima kisha uwashe ili usasishe</translation>
 <translation id="2617342710774726426">SIM kadi imefungwa</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">Zana za stylus</translation>
 <translation id="3368922792935385530">Umeunganishwa</translation>
 <translation id="3371140690572404006">Kifaa cha USB-C (mlango wa upande wa kulia mbele)</translation>
+<translation id="3386978599540877378">Kikuza skrini nzima</translation>
 <translation id="3400357268283240774">Mipangilio ya ziada</translation>
 <translation id="3413817803639110246">Bado hakuna chochote hapa</translation>
 <translation id="343571671045587506">Badilisha kikumbusho</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Mfumo wa Uendeshaji wa Chrome</translation>
 <translation id="4338109981321384717">Lenzi</translation>
 <translation id="4351433414020964307">Inapakia Mratibu...</translation>
+<translation id="4356930093361201197">hali ya juu ya utofautishaji</translation>
 <translation id="4378551569595875038">Inaunganisha...</translation>
 <translation id="4379531060876907730">Hizi ni zana zako za stylus</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Umebofya mikato ya kibodi ya kikuzaji kilichoambatishwa. Ungependa kukiwasha?</translation>
 <translation id="4421231901400348175">Kushiriki udhibiti wa skrini yako na <ph name="HELPER_NAME" /> kupitia Usaidizi wa Mbali.</translation>
 <translation id="4430019312045809116">Kiwango</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">Je, una uhakika ungependa kuzima mibofyo ya kiotomatiki?</translation>
 <translation id="4849058404725798627">Angazia kipengee kilicholengwa kwa kibodi</translation>
 <translation id="485592688953820832">Hakuna kitendo (simamisha)</translation>
+<translation id="4868492592575313542">kimewashwa</translation>
 <translation id="4872237917498892622">Alt + Utafutaji au Hama</translation>
 <translation id="4890187583552566966">Programu ya Mratibu wa Google imezimwa na msimamizi wako.</translation>
 <translation id="4895488851634969361">Betri imejaa.</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">Imeunganishwa, kiasi cha chaji ni <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Kipengele cha ufuatiliaji wa utendaji kimewashwa</translation>
 <translation id="6752912906630585008">Kiolesura cha <ph name="REMOVED_DESK" /> kimeondolewa na kimeunganishwa na Kiolesura cha <ph name="RECEIVE_DESK" /></translation>
+<translation id="6777216307882431711">Inawasha vifaa vya USB-C vilivyounganishwa</translation>
 <translation id="6790428901817661496">Cheza</translation>
 <translation id="6803622936009808957">Haikuweza kuakisi maonyesho kwa kuwa hakuna misongo inayoweza kutumiwa iliyopatikana. Badala yake imeingia eneo-kazi lililopanuliwa.</translation>
 <translation id="6820676911989879663">Pumzika kidogo!</translation>
@@ -443,6 +452,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="7568294522609223312">Zima mibofyo ya kiotomatiki</translation>
 <translation id="7569509451529460200">Breli na ChromeVox zimewashwa</translation>
 <translation id="7593891976182323525">Utafutaji au Hama</translation>
+<translation id="7600875258240007829">Angalia arifa zote</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (mmiliki)</translation>
 <translation id="7647488630410863958">Fungua kifaa ili uone arifa zako</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
@@ -507,6 +517,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8452135315243592079">Hakuna SIM kadi</translation>
 <translation id="8454013096329229812">Wi-Fi imewashwa.</translation>
 <translation id="847056008324733326">Onyesha mipangilio ya vipimo</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> ina <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Bonyeza Alt+Search au Shift ili ughairi.</translation>
 <translation id="8513108775083588393">Zungusha kiotomatiki</translation>
 <translation id="8517041960877371778">Huenda kifaa chako cha <ph name="DEVICE_TYPE" /> kisichaji kikiwa kimewashwa.</translation>
@@ -535,6 +546,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8909138438987180327">Chaji ya betri imefika <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Programu ya Mratibu wa Google haina huduma ya lugha hii.</translation>
+<translation id="8936501819958976551">kimezimwa</translation>
 <translation id="8938800817013097409">Kifaa cha USB-C (mlango wa kulia nyuma)</translation>
 <translation id="8940956008527784070">Betri inaisha (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>

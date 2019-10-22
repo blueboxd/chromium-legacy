@@ -16,6 +16,7 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sms/sms_flags.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
@@ -199,6 +200,8 @@ SharingDeviceRegistration::GetEnabledFeatures() const {
     enabled_features.insert(SharingSpecificFields::CLICK_TO_CALL);
   if (IsSharedClipboardSupported())
     enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD);
+  if (IsSmsFetcherSupported())
+    enabled_features.insert(SharingSpecificFields::SMS_FETCHER);
 
   return enabled_features;
 }
@@ -221,6 +224,14 @@ bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
     return false;
   }
   return base::FeatureList::IsEnabled(kSharedClipboardReceiver);
+}
+
+bool SharingDeviceRegistration::IsSmsFetcherSupported() const {
+#if defined(OS_ANDROID)
+  return base::FeatureList::IsEnabled(kSmsFetchRequestHandler);
+#endif
+
+  return false;
 }
 
 void SharingDeviceRegistration::SetEnabledFeaturesForTesting(

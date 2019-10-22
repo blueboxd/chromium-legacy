@@ -33,6 +33,12 @@ class GFX_EXPORT GlobalFontConfig {
     // being used (see http://crbug.com/1004254).
     fc_config_ = FcConfigGetCurrent();
     FcConfigReference(fc_config_);
+
+    // Set rescan interval to 0 to disable re-scan. Re-scanning in the
+    // background is a source of thread safety issues.
+    // See in http://crbug.com/1004254.
+    FcBool result = FcConfigSetRescanInterval(fc_config_, 0);
+    DCHECK_EQ(result, FcTrue);
   }
 
   ~GlobalFontConfig() { FcConfigDestroy(fc_config_); }

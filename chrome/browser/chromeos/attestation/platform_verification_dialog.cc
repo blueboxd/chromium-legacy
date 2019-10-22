@@ -34,6 +34,21 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace {
+
+std::unique_ptr<views::ImageButton> CreateLearnMoreButton(
+    views::ButtonListener* listener) {
+  auto learn_more_button = views::CreateVectorImageButton(listener);
+  views::SetImageFromVectorIcon(learn_more_button.get(),
+                                vector_icons::kHelpOutlineIcon);
+  learn_more_button->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
+  learn_more_button->SetFocusForPlatform();
+  return learn_more_button;
+}
+
+}  // namespace
+
 namespace chromeos {
 namespace attestation {
 
@@ -84,6 +99,8 @@ PlatformVerificationDialog::PlatformVerificationDialog(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
+  learn_more_button_ =
+      DialogDelegate::SetExtraView(CreateLearnMoreButton(this));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -96,17 +113,6 @@ PlatformVerificationDialog::PlatformVerificationDialog(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PLATFORM_VERIFICATION);
-}
-
-std::unique_ptr<views::View> PlatformVerificationDialog::CreateExtraView() {
-  auto learn_more_button = views::CreateVectorImageButton(this);
-  views::SetImageFromVectorIcon(learn_more_button.get(),
-                                vector_icons::kHelpOutlineIcon);
-  learn_more_button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
-  learn_more_button->SetFocusForPlatform();
-  learn_more_button_ = learn_more_button.get();
-  return learn_more_button;
 }
 
 bool PlatformVerificationDialog::Cancel() {

@@ -50,6 +50,18 @@ PolicyValue DocumentPolicy::GetFeatureValue(
   }
 }
 
+bool DocumentPolicy::IsFeatureSupported(
+    mojom::FeaturePolicyFeature feature) const {
+  // TODO(iclelland): Generate this switch block
+  switch (feature) {
+    case mojom::FeaturePolicyFeature::kFontDisplay:
+    case mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages:
+      return true;
+    default:
+      return false;
+  }
+}
+
 void DocumentPolicy::SetHeaderPolicy(
     const ParsedDocumentPolicy& parsed_header) {
   for (const ParsedDocumentPolicyDeclaration& parsed_declaration :
@@ -121,6 +133,33 @@ const DocumentPolicy::FeatureState& DocumentPolicy::GetFeatureDefaults() {
        {mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
         PolicyValue(2.0f)}});
   return *default_feature_list;
+}
+
+bool DocumentPolicy::IsPolicyCompatible(
+    const ParsedDocumentPolicy& required_policy) {
+  FeatureState p_map = ParsedDocumentPolicyToFeatureState(RequiredPolicy());
+  for (const ParsedDocumentPolicyDeclaration& req_p : required_policy) {
+    // feature value > threshold => enabled
+    // value_a > value_b => value_a looser than value_b
+    if (p_map[req_p.feature] > req_p.value)
+      return false;
+  }
+  return true;
+}
+
+// static
+DocumentPolicy::FeatureState DocumentPolicy::ParsedDocumentPolicyToFeatureState(
+    const ParsedDocumentPolicy& policies) {
+  FeatureState result;
+  for (const ParsedDocumentPolicyDeclaration& policy : policies)
+    result[policy.feature] = policy.value;
+  return result;
+}
+
+ParsedDocumentPolicy DocumentPolicy::RequiredPolicy() const {
+  // TODO(iclelland): This is currently a placeholder.
+  // To be implemented later.
+  return ParsedDocumentPolicy();
 }
 
 }  // namespace blink

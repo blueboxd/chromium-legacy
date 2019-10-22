@@ -54,11 +54,11 @@ void RemotingSender::SendFrame(uint32_t frame_size) {
 void RemotingSender::CancelInFlightData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-// TODO(miu): The following code is something we want to do as an
+// TODO(crbug.com/647423): The following code is something we want to do as an
 // optimization. However, as-is, it's not quite correct. We can only cancel
 // frames where no packets have actually hit the network yet. Said another
 // way, we can only cancel frames the receiver has definitely not seen any
-// part of (including kickstarting!). http://crbug.com/647423
+// part of (including kickstarting!).
 #if 0
   if (latest_acked_frame_id_ < last_sent_frame_id_) {
     std::vector<media::cast::FrameId> frames_to_cancel;

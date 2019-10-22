@@ -378,9 +378,10 @@ TEST_F(CreditCardFIDOAuthenticatorTest,
        AuthenticateCard_UserVerificationFailed) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
-  fido_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                    AutofillTickClock::NowTicks(),
-                                    base::Value(base::Value::Type::DICTIONARY));
+  fido_authenticator_->Authenticate(
+      &card, requester_->GetWeakPtr(), AutofillTickClock::NowTicks(),
+      GetTestRequestOptions(kTestChallenge, kTestRelyingPartyId,
+                            kTestCredentialId));
 
   TestCreditCardFIDOAuthenticator::GetAssertion(fido_authenticator_.get(),
                                                 /*did_succeed=*/false);

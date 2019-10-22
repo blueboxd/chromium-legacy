@@ -67,6 +67,8 @@ class URLRequestJob::URLRequestJobSourceStream : public SourceStream {
 
   std::string Description() const override { return std::string(); }
 
+  bool MayHaveMoreBytes() const override { return true; }
+
  private:
   // It is safe to keep a raw pointer because |job_| owns the last stream which
   // indirectly owns |this|. Therefore, |job_| will not be destroyed when |this|

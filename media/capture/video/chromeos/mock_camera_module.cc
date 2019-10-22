@@ -25,9 +25,9 @@ MockCameraModule::~MockCameraModule() {
 
 void MockCameraModule::OpenDevice(
     int32_t camera_id,
-    cros::mojom::Camera3DeviceOpsRequest device_ops_request,
+    mojo::PendingReceiver<cros::mojom::Camera3DeviceOps> device_ops_receiver,
     OpenDeviceCallback callback) {
-  DoOpenDevice(camera_id, device_ops_request, callback);
+  DoOpenDevice(camera_id, std::move(device_ops_receiver), callback);
 }
 
 void MockCameraModule::GetNumberOfCameras(GetNumberOfCamerasCallback callback) {

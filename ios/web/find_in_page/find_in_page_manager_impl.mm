@@ -226,6 +226,7 @@ void FindInPageManagerImpl::LastFindRequestCompleted() {
 }
 
 void FindInPageManagerImpl::SelectDidFinish(const base::Value* result) {
+  std::string match_context_string;
   if (result && result->is_dict()) {
     // Get updated match count.
     const base::Value* matches = result->FindKey(kSelectAndScrollResultMatches);
@@ -246,10 +247,18 @@ void FindInPageManagerImpl::SelectDidFinish(const base::Value* result) {
       int current_index = static_cast<int>(index->GetDouble());
       last_find_request_.SetCurrentSelectedMatchFrameIndex(current_index);
     }
+    // Get context string.
+    const base::Value* context_string =
+        result->FindKey(kSelectAndScrollResultContextString);
+    if (context_string && context_string->is_string()) {
+      match_context_string =
+          static_cast<std::string>(context_string->GetString());
+    }
   }
   if (delegate_) {
     delegate_->DidSelectMatch(
-        web_state_, last_find_request_.GetCurrentSelectedMatchPageIndex());
+        web_state_, last_find_request_.GetCurrentSelectedMatchPageIndex(),
+        base::SysUTF8ToNSString(match_context_string));
   }
 }
 

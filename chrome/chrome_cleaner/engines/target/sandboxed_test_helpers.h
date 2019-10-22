@@ -85,8 +85,8 @@ class MaybeSandboxedParentProcess : public BaseClass {
     engine_commands_->Bind(
         mojo::PendingRemote<mojom::EngineCommands>(std::move(mojo_pipe), 0));
 
-    mojom::EngineFileRequestsAssociatedPtrInfo file_requests_info;
-    file_requests_impl_->Bind(&file_requests_info);
+    mojo::PendingAssociatedRemote<mojom::EngineFileRequests> file_requests;
+    file_requests_impl_->Bind(&file_requests);
 
     // Bind to empty callbacks as we don't care about the result.
     mojom::EngineRequestsAssociatedPtrInfo scanner_info;
@@ -113,7 +113,7 @@ class MaybeSandboxedParentProcess : public BaseClass {
     auto operation_started = base::BindOnce([](uint32_t unused_result_code) {});
     if (requests_to_setup_ == CallbacksToSetup::kFileRequests) {
       (*engine_commands_)
-          ->Initialize(std::move(file_requests_info), base::FilePath(),
+          ->Initialize(std::move(file_requests), base::FilePath(),
                        std::move(operation_started));
 
     } else if (requests_to_setup_ ==
@@ -121,14 +121,14 @@ class MaybeSandboxedParentProcess : public BaseClass {
       (*engine_commands_)
           ->StartScan(/*enabled_uws=*/std::vector<UwSId>{},
                       /*enabled_locations=*/std::vector<UwS::TraceLocation>{},
-                      /*include_details=*/false, std::move(file_requests_info),
+                      /*include_details=*/false, std::move(file_requests),
                       std::move(scanner_info), std::move(scanner_results),
                       std::move(operation_started));
 
     } else if (requests_to_setup_ == CallbacksToSetup::kCleanupRequests) {
       (*engine_commands_)
           ->StartCleanup(/*enabled_uws=*/std::vector<UwSId>(),
-                         std::move(file_requests_info), std::move(scanner_info),
+                         std::move(file_requests), std::move(scanner_info),
                          std::move(cleaner_info), std::move(cleanup_results),
                          std::move(operation_started));
     }

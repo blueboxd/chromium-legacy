@@ -167,6 +167,28 @@ void UnsentLogStore::StoreLog(const std::string& log_data) {
                     signing_key_);
 }
 
+const std::string& UnsentLogStore::GetLogAtIndex(size_t index) {
+  DCHECK_GE(index, 0U);
+  DCHECK_LT(index, list_.size());
+  return list_[index].compressed_log_data;
+}
+
+std::string UnsentLogStore::ReplaceLogAtIndex(size_t index,
+                                              const std::string& new_log_data) {
+  DCHECK_GE(index, 0U);
+  DCHECK_LT(index, list_.size());
+
+  // Avoid copying of long strings.
+  std::string old_log_data;
+  old_log_data.swap(list_[index].compressed_log_data);
+  std::string old_timestamp;
+  old_timestamp.swap(list_[index].timestamp);
+
+  list_[index] = LogInfo();
+  list_[index].Init(metrics_.get(), new_log_data, old_timestamp, signing_key_);
+  return old_log_data;
+}
+
 void UnsentLogStore::Purge() {
   if (has_staged_log()) {
     DiscardStagedLog();

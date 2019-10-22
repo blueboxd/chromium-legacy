@@ -487,7 +487,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   void DeliverInputForBeginFrame() {
     constexpr base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
     base::TimeTicks frame_time =
-        base::TimeTicks() +
+        WebInputEvent::GetStaticTimeStampForTests() +
         (next_begin_frame_number_ - viz::BeginFrameArgs::kStartingFrameNumber) *
             interval;
     input_handler_proxy_.DeliverInputForBeginFrame(viz::BeginFrameArgs::Create(
@@ -504,11 +504,10 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
         enabled ? std::make_unique<ScrollPredictor>() : nullptr;
   }
 
-  bool GestureScrollEventPredictionAvailable(
-      ui::InputPredictor::InputData* result) {
+  std::unique_ptr<ui::InputPredictor::InputData>
+  GestureScrollEventPredictionAvailable() {
     return input_handler_proxy_.scroll_predictor_->predictor_
-        ->GeneratePrediction(WebInputEvent::GetStaticTimeStampForTests(),
-                             result);
+        ->GeneratePrediction(WebInputEvent::GetStaticTimeStampForTests());
   }
 
  protected:
@@ -2001,11 +2000,10 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
       .WillOnce(testing::Return(scroll_result_did_scroll_));
 
   // No prediction when start with a GSB
-  ui::InputPredictor::InputData result;
   tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
   DeliverInputForBeginFrame();
-  EXPECT_FALSE(GestureScrollEventPredictionAvailable(&result));
+  EXPECT_FALSE(GestureScrollEventPredictionAvailable());
 
   // Test predictor returns last GSU delta.
   tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
@@ -2013,8 +2011,9 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -15);
   DeliverInputForBeginFrame();
-  EXPECT_TRUE(GestureScrollEventPredictionAvailable(&result));
-  EXPECT_NE(0, result.pos.y());
+  auto result = GestureScrollEventPredictionAvailable();
+  EXPECT_TRUE(result);
+  EXPECT_NE(0, result->pos.y());
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 
@@ -2025,7 +2024,7 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
   DeliverInputForBeginFrame();
-  EXPECT_FALSE(GestureScrollEventPredictionAvailable(&result));
+  EXPECT_FALSE(GestureScrollEventPredictionAvailable());
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }

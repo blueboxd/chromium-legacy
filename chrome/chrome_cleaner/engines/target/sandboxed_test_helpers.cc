@@ -82,7 +82,7 @@ class SandboxChildProcess::FakeEngineDelegate : public EngineDelegate {
       privileged_scan_calls_->UnbindRequestsPtr();
     }
     if (privileged_file_calls_) {
-      privileged_file_calls_->UnbindRequestsPtr();
+      privileged_file_calls_->UnbindRequestsRemote();
     }
   }
 

@@ -51,17 +51,6 @@ Polymer({
     },
 
     /**
-     * Whether to show experimental accessibility features.
-     * @private {boolean}
-     */
-    showExperimentalFeatures_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showExperimentalA11yFeatures');
-      },
-    },
-
-    /**
      * Whether to show Switch Access.
      * @private {boolean}
      */

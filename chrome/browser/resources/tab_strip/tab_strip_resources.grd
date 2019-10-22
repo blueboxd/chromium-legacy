@@ -56,6 +56,11 @@
           file="tab_strip_embedder_proxy.js"
           type="chrome_html"
           compress="gzip"/>
+      <structure
+          name="IDR_TAB_STRIP_OPTIONS_JS"
+          file="tab_strip_options.js"
+          type="chrome_html"
+          compress="gzip"/>
     </structures>
 
     <includes>

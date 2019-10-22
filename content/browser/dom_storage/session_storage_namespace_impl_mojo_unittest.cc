@@ -12,8 +12,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
@@ -34,12 +33,15 @@ namespace content {
 
 namespace {
 
-using leveldb::StdStringToUint8Vector;
 using NamespaceEntry = SessionStorageMetadata::NamespaceEntry;
 
 constexpr const int kTestProcessIdOrigin1 = 11;
 constexpr const int kTestProcessIdAllOrigins = 12;
 constexpr const int kTestProcessIdOrigin3 = 13;
+
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
 
 MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
   return arg.ok();
@@ -69,7 +71,7 @@ class SessionStorageNamespaceImplMojoTest
   ~SessionStorageNamespaceImplMojoTest() override = default;
 
   void RunBatch(
-      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks) {
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks) {
     base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
     database_->RunBatchDatabaseTasks(
         std::move(tasks),
@@ -80,14 +82,14 @@ class SessionStorageNamespaceImplMojoTest
   void SetUp() override {
     // Create a database that already has a namespace saved.
     base::RunLoop loop;
-    database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
+    database_ = storage::AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "SessionStorageNamespaceImplMojoTest",
         base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
         base::BindLambdaForTesting([&](leveldb::Status) { loop.Quit(); }));
     loop.Run();
 
     metadata_.SetupNewDatabase();
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
     auto entry = metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_);
     auto map_id = metadata_.RegisterNewMap(entry, test_origin1_, &save_tasks);
     DCHECK(map_id->KeyPrefix() == StdStringToUint8Vector("map-0-"));
@@ -156,7 +158,7 @@ class SessionStorageNamespaceImplMojoTest
   scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
       NamespaceEntry namespace_entry,
       const url::Origin& origin) {
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
     auto map_data =
         metadata_.RegisterNewMap(namespace_entry, origin, &save_tasks);
     RunBatch(std::move(save_tasks));
@@ -168,7 +170,7 @@ class SessionStorageNamespaceImplMojoTest
       const std::string& destination_namespace,
       const SessionStorageNamespaceImplMojo::OriginAreas& areas_to_clone)
       override {
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
     auto namespace_entry =
         metadata_.GetOrCreateNamespaceEntry(destination_namespace);
     metadata_.RegisterShallowClonedNamespace(source_namespace, namespace_entry,
@@ -212,7 +214,7 @@ class SessionStorageNamespaceImplMojoTest
       data_maps_;
 
   testing::StrictMock<MockListener> listener_;
-  std::unique_ptr<leveldb::LevelDBDatabaseImpl> database_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> database_;
 };
 
 TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoad) {

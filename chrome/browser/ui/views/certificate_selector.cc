@@ -119,6 +119,10 @@ CertificateSelector::CertificateSelector(net::ClientCertIdentityList identities,
     : web_contents_(web_contents) {
   CHECK(web_contents_);
 
+  view_cert_button_ =
+      DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
+          this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON)));
+
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::CONTROL));
 
@@ -278,14 +282,6 @@ bool CertificateSelector::IsDialogButtonEnabled(ui::DialogButton button) const {
 views::View* CertificateSelector::GetInitiallyFocusedView() {
   DCHECK(table_);
   return table_;
-}
-
-std::unique_ptr<views::View> CertificateSelector::CreateExtraView() {
-  DCHECK(!view_cert_button_);
-  auto view_cert_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON));
-  view_cert_button_ = view_cert_button.get();
-  return view_cert_button;
 }
 
 ui::ModalType CertificateSelector::GetModalType() const {

@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">Laadi leht hiljem</translation>
 <translation id="1015730422737071372">Esitage lisateavet</translation>
 <translation id="1021110881106174305">Aktsepteeritud kaardid</translation>
-<translation id="1023523064224774104">Chromium tuvastas, et sisestasite äsja oma parooli kahtlasele saidile. Lähtestage oma parool kohe!</translation>
 <translation id="1032854598605920125">Pööra päripäeva</translation>
 <translation id="1035334672863811645">logige Chromeʼi sisse</translation>
 <translation id="1036348656032585052">Lülita välja</translation>
@@ -122,6 +121,7 @@
 <translation id="1501859676467574491">Kuva kaardid minu Google'i kontolt</translation>
 <translation id="1507202001669085618">&lt;p&gt;Seda viga näete juhul, kui kasutate WiFi-portaali, kuhu tuleb enne võrguühenduse loomist sisse logida.&lt;/p&gt;
     &lt;p&gt;Vea parandamiseks klõpsake avataval lehel käsul &lt;strong&gt;Loo ühendus&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Ajalookannete loend</translation>
 <translation id="1517433312004943670">Telefoninumber on nõutav</translation>
 <translation id="1517500485252541695">Aktsepteeritavad krediit- ja deebetkaardid</translation>
 <translation id="1519264250979466059">Järgu kuupäev</translation>
@@ -307,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat võib olla tühistatud. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="2438874542388153331">Neli auku paremal</translation>
+<translation id="245044156129055925">Sisestasite äsja oma parooli kahtlasele saidile. Chromium soovitab teil kohe oma parooli muuta.</translation>
 <translation id="2463193859425327265">Muuda avalehte</translation>
 <translation id="2463739503403862330">Täida</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -551,7 +552,6 @@
 <translation id="3655670868607891010">Kui näete seda sageli, proovige järgmist: <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Redaktsioon</translation>
 <translation id="366077651725703012">Värskenda krediitkaarti</translation>
-<translation id="3672525478985456967">Saidi nimi sarnaneb domeenile <ph name="LOOKALIKE_DOMAIN" />. Ründajad imiteerivad mõnikord saite, tehes domeeni nimes väikeseid raskesti märgatavaid muudatusi.</translation>
 <translation id="3676592649209844519">Seadme ID:</translation>
 <translation id="3677008721441257057">Kas mõtlesite domeeni &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Taotlust ei saanud allkirjastada</translation>
@@ -617,6 +617,9 @@
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> on blokeeritud</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> lubas teie brauseris funktsiooni Chrome Enterprise Threat Protection. Funktsioonil Chrome Enterprise Threat Protection on juurdepääs osadele teie andmetele.</translation>
+<translation id="3987405730340719549">Chrome tuvastas, et see sait võib olla võlts või petturlik.
+
+    Kui arvate, et tegemist on veaga, külastage saiti https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Alla 1 MB</translation>
 <translation id="3990250421422698716">Astme nihe</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Läheduses on 1 veebileht}other{Läheduses on # veebilehte}}</translation>
@@ -875,7 +878,6 @@
 <translation id="5230733896359313003">Tarneaadress</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Loobu</translation>
 <translation id="5250209940322997802">„Looge võrguühendus”</translation>
 <translation id="5251803541071282808">Pilv</translation>
 <translation id="5252000469029418751">C7 (ümbrik)</translation>
@@ -995,6 +997,9 @@
 <translation id="5813119285467412249">&amp;Lisa uuesti</translation>
 <translation id="583281660410589416">Tundmatu</translation>
 <translation id="5838278095973806738">Te ei tohiks sellele saidile sisestada tundlikku teavet (nt paroolid või krediitkaardid), kuna ründajad võivad selle varastada.</translation>
+<translation id="5855253129151731373">Saidi hostinimi sarnaneb domeenile <ph name="LOOKALIKE_DOMAIN" />. Ründajad imiteerivad mõnikord saite, tehes domeeni nimes väikeseid raskesti märgatavaid muudatusi.
+
+    Kui arvate, et tegemist on veaga, külastage saiti https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Väljas</translation>
 <translation id="5863847714970149516">Järgmisel lehel võidakse teilt üritada tasu võtta</translation>
 <translation id="5866257070973731571">Telefoninumbri lisamine</translation>
@@ -1017,7 +1022,6 @@
 <translation id="5946937721014915347">Saidi <ph name="SITE_NAME" /> avamine …</translation>
 <translation id="5947933617628957894">Jah, lisa</translation>
 <translation id="5951495562196540101">Tarbijakontoga ei saa registreeruda (paketipõhine litsents on saadaval).</translation>
-<translation id="5966900314707961320">Kui see on sisse lülitatud, ei saa saidid kasutada küpsisefaile, mis jälgivad teid kogu veebis</translation>
 <translation id="5967592137238574583">Kontaktteabe muutmine</translation>
 <translation id="5967867314010545767">Eemalda ajaloost</translation>
 <translation id="5975083100439434680">Suumib välja</translation>
@@ -1106,6 +1110,7 @@
 <translation id="6401136357288658127">Selle reegli tugi on katkestatud. Peaksite selle asemel kasutama reeglit <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Muuda järjehoidjat</translation>
 <translation id="6406765186087300643">C0 (ümbrik)</translation>
+<translation id="6409754798200046165">Sisestasite äsja oma parooli kahtlasele saidile. Chrome soovitab teil kohe oma parooli muuta.</translation>
 <translation id="6410264514553301377">Sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC</translation>
 <translation id="6415778972515849510">Chromium aitab teil oma Google'i kontot kaitsta ja parooli muuta.</translation>
 <translation id="6427730057873428458">Väravakujuliselt volditud</translation>
@@ -1113,7 +1118,6 @@
 <translation id="6433490469411711332">Kontaktandmete muutmine</translation>
 <translation id="6433595998831338502">Host <ph name="HOST_NAME" /> keeldus ühendamast.</translation>
 <translation id="6434309073475700221">Tühista</translation>
-<translation id="6435221585574090192">Administraatoriga jagatakse andmeid turvasündmuste kohta, mille Chrome Enterprise Threat Protection on esile tõstnud. See võib hõlmata lehtede URL-e, failide nimesid ja metaandmeid, teie seadme kasutajanime ning Chrome'i kasutajanime.</translation>
 <translation id="6440503408713884761">Eiras</translation>
 <translation id="6446163441502663861">Kahu (ümbrik)</translation>
 <translation id="6446608382365791566">Lisateabe lisamine</translation>
@@ -1403,6 +1407,7 @@ Lisateave:
 <translation id="7932579305932748336">Kate</translation>
 <translation id="79338296614623784">Sisestage kehtiv telefoninumber</translation>
 <translation id="7934052535022478634">Makse on töödeldud</translation>
+<translation id="7935031712718413217">Võimalik tüssav URL</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Aegub <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Serveri sertifikaat ei kehti veel.</translation>
@@ -1457,7 +1462,6 @@ Lisateave:
 <translation id="8184538546369750125">Kasuta globaalset vaikeseadet (luba)</translation>
 <translation id="8194797478851900357">&amp;Võta teisaldamine tagasi</translation>
 <translation id="8197543752516192074">Tõlgi leht</translation>
-<translation id="8197899142098070286">Chrome tuvastas, et sisestasite äsja oma parooli kahtlasele saidile. Lähtestage oma parool kohe!</translation>
 <translation id="8201077131113104583">ID-ga „<ph name="EXTENSION_ID" />” laienduse kehtetu värskendamise URL.</translation>
 <translation id="8202097416529803614">Tellimuse kokkuvõte</translation>
 <translation id="8202370299023114387">Konflikt</translation>
@@ -1544,7 +1548,6 @@ Lisateave:
 <translation id="8718314106902482036">Makset ei viidud lõpule</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, otsingusoovitus</translation>
 <translation id="8719528812645237045">Mitu auku ülal</translation>
-<translation id="8723954843026426558">Nõustun nõuete ja tingimuste, privaatsuseeskirjade ja domeeni <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> taganemisõigusega</translation>
 <translation id="8725066075913043281">Proovi uuesti</translation>
 <translation id="8728672262656704056">Olete inkognito režiimis</translation>
 <translation id="8730621377337864115">Valmis</translation>

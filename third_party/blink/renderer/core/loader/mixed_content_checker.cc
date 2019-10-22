@@ -389,6 +389,7 @@ bool MixedContentChecker::ShouldBlockFetch(
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
   LocalFrameClient* client = frame->Client();
+  auto& local_frame_host = frame->GetLocalFrameHostRemote();
   WebContentSettingsClient* content_settings_client =
       frame->GetContentSettingsClient();
   const SecurityOrigin* security_origin =
@@ -417,7 +418,7 @@ bool MixedContentChecker::ShouldBlockFetch(
       if (allowed) {
         if (content_settings_client)
           content_settings_client->PassiveInsecureContentFound(url);
-        client->DidDisplayInsecureContent();
+        local_frame_host.DidDisplayInsecureContent();
       }
       break;
 
@@ -461,7 +462,7 @@ bool MixedContentChecker::ShouldBlockFetch(
     case WebMixedContentContextType::kShouldBeBlockable:
       allowed = !strict_mode;
       if (allowed)
-        client->DidDisplayInsecureContent();
+        local_frame_host.DidDisplayInsecureContent();
       break;
     case WebMixedContentContextType::kNotMixedContent:
       NOTREACHED();
@@ -643,7 +644,7 @@ bool MixedContentChecker::IsMixedFormAction(
 
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  frame->Client()->DidContainInsecureFormAction();
+  frame->GetLocalFrameHostRemote().DidContainInsecureFormAction();
 
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
     String message = String::Format(

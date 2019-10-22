@@ -19,7 +19,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/affiliation.h"
@@ -52,8 +51,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -190,9 +187,8 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
   // for creating the invalidator for user remote commands. The invalidator must
   // not be initialized before then because the invalidation service cannot be
   // started because it depends on components initialized at the end of profile
-  // creation.
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
-                 content::Source<Profile>(profile));
+  // creation. https://crbug.com/171406
+  observed_profile_manager_.Add(g_browser_process->profile_manager());
 }
 
 void UserCloudPolicyManagerChromeOS::ForceTimeoutForTest() {
@@ -213,7 +209,7 @@ void UserCloudPolicyManagerChromeOS::SetSystemURLLoaderFactoryForTests(
   system_url_loader_factory_for_tests_ = system_url_loader_factory;
 }
 
-UserCloudPolicyManagerChromeOS::~UserCloudPolicyManagerChromeOS() {}
+UserCloudPolicyManagerChromeOS::~UserCloudPolicyManagerChromeOS() = default;
 
 void UserCloudPolicyManagerChromeOS::Connect(
     PrefService* local_state,
@@ -352,6 +348,7 @@ UserCloudPolicyManagerChromeOS::GetAppInstallEventLogUploader() {
 }
 
 void UserCloudPolicyManagerChromeOS::Shutdown() {
+  observed_profile_manager_.RemoveAll();
   app_install_event_log_uploader_.reset();
   if (client())
     client()->RemoveObserver(this);
@@ -735,16 +732,11 @@ void UserCloudPolicyManagerChromeOS::StartRefreshSchedulerIfReady() {
                                 policy_prefs::kUserPolicyRefreshRate);
 }
 
-void UserCloudPolicyManagerChromeOS::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_ADDED, type);
+void UserCloudPolicyManagerChromeOS::OnProfileAdded(Profile* profile) {
+  if (profile != profile_)
+    return;
 
-  // Now that the profile is fully created we can unsubscribe from the
-  // notification.
-  registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_ADDED,
-                    content::Source<Profile>(profile_));
+  observed_profile_manager_.RemoveAll();
 
   // If true FCMInvalidationService will be used as invalidation service and
   // TiclInvalidationService otherwise.

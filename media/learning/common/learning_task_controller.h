@@ -79,6 +79,15 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
   // Notify the LearningTaskController that no completion will be sent.
   virtual void CancelObservation(base::UnguessableToken id) = 0;
 
+  // Update the default target value for |id|.  This can change a previously
+  // specified default value to something else, add one where one wasn't
+  // specified before, or un-set it.  In the last case, the observation will be
+  // cancelled rather than completed if |this| is destroyed, just as if no
+  // default value was given.
+  virtual void UpdateDefaultTarget(
+      base::UnguessableToken id,
+      const base::Optional<TargetValue>& default_target) = 0;
+
   // Returns the LearningTask associated with |this|.
   virtual const LearningTask& GetLearningTask() = 0;
 

@@ -70,8 +70,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
 
   // Set by SendPacket() when the sending is not allowed. Once set, SendPacket()
   // can only be called again when a previous sending completes successfully.
-  // TODO(xjz): Change the callback to a base::OnceClosure as well as in the
-  // cast::PacketTransport SendPacket().
+  // TODO(crbug.com/1015479): Change the callback to a base::OnceClosure as well
+  // as in the cast::PacketTransport SendPacket().
   base::RepeatingClosure resume_send_callback_;
 
   // Total numbe of bytes written to the data pipe.

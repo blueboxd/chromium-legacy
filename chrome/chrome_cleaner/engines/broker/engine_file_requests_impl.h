@@ -6,9 +6,10 @@
 #define CHROME_CHROME_CLEANER_ENGINES_BROKER_ENGINE_FILE_REQUESTS_IMPL_H_
 
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
-#include "chrome/chrome_cleaner/mojom/engine_file_requests.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "chrome/chrome_cleaner/mojom/engine_file_requests.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace chrome_cleaner {
 
@@ -19,7 +20,7 @@ class EngineFileRequestsImpl : public mojom::EngineFileRequests {
       InterfaceMetadataObserver* metadata_observer = nullptr);
   ~EngineFileRequestsImpl() override;
 
-  void Bind(mojom::EngineFileRequestsAssociatedPtrInfo* ptr_info);
+  void Bind(mojo::PendingAssociatedRemote<mojom::EngineFileRequests>* remote);
 
   // mojom::EngineFileRequests
   void SandboxFindFirstFile(
@@ -48,7 +49,7 @@ class EngineFileRequestsImpl : public mojom::EngineFileRequests {
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;
   InterfaceMetadataObserver* metadata_observer_ = nullptr;
-  mojo::AssociatedBinding<mojom::EngineFileRequests> binding_;
+  mojo::AssociatedReceiver<mojom::EngineFileRequests> receiver_{this};
 };
 
 }  // namespace chrome_cleaner

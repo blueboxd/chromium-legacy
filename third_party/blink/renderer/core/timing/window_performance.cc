@@ -112,12 +112,6 @@ AtomicString SameOriginAttribution(Frame* observer_frame,
   return SameOriginKeyword();
 }
 
-bool IsSameOrigin(const AtomicString& key) {
-  DCHECK(IsMainThread());
-  return key == SameOriginKeyword() || key == SameOriginDescendantKeyword() ||
-         key == SameOriginAncestorKeyword() || key == SelfKeyword();
-}
-
 }  // namespace
 
 static base::TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
@@ -291,25 +285,20 @@ std::pair<AtomicString, DOMWindow*> WindowPerformance::SanitizedAttribution(
   return std::make_pair(kCrossOriginAttribution, nullptr);
 }
 
-void WindowPerformance::ReportLongTask(
-    base::TimeTicks start_time,
-    base::TimeTicks end_time,
-    ExecutionContext* task_context,
-    bool has_multiple_contexts,
-    const SubTaskAttribution::EntriesVector& sub_task_attributions) {
+void WindowPerformance::ReportLongTask(base::TimeTicks start_time,
+                                       base::TimeTicks end_time,
+                                       ExecutionContext* task_context,
+                                       bool has_multiple_contexts) {
   if (!GetFrame())
     return;
   std::pair<AtomicString, DOMWindow*> attribution =
       WindowPerformance::SanitizedAttribution(
           task_context, has_multiple_contexts, GetFrame());
   DOMWindow* culprit_dom_window = attribution.second;
-  SubTaskAttribution::EntriesVector empty_vector;
   if (!culprit_dom_window || !culprit_dom_window->GetFrame() ||
       !culprit_dom_window->GetFrame()->DeprecatedLocalOwner()) {
-    AddLongTaskTiming(
-        start_time, end_time, attribution.first, g_empty_string, g_empty_string,
-        g_empty_string,
-        IsSameOrigin(attribution.first) ? sub_task_attributions : empty_vector);
+    AddLongTaskTiming(start_time, end_time, attribution.first, g_empty_string,
+                      g_empty_string, g_empty_string);
   } else {
     HTMLFrameOwnerElement* frame_owner =
         culprit_dom_window->GetFrame()->DeprecatedLocalOwner();
@@ -317,8 +306,7 @@ void WindowPerformance::ReportLongTask(
         start_time, end_time, attribution.first,
         GetFrameAttribute(frame_owner, html_names::kSrcAttr, false),
         GetFrameAttribute(frame_owner, html_names::kIdAttr, false),
-        GetFrameAttribute(frame_owner, html_names::kNameAttr, true),
-        IsSameOrigin(attribution.first) ? sub_task_attributions : empty_vector);
+        GetFrameAttribute(frame_owner, html_names::kNameAttr, true));
   }
 }
 

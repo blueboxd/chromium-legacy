@@ -249,8 +249,15 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
             "Event.Latency.EventToRender.TouchpadPinch", original_timestamp,
             timestamp);
       }
-      UMA_HISTOGRAM_INPUT_LATENCY_CUSTOM_MICROSECONDS(
-          "Event.Latency.EndToEnd.TouchpadPinch", original_timestamp,
+      {
+        // TODO(nburris): Deprecate Event.Latency.EndToEnd.TouchpadPinch in
+        // favor of TouchpadPinch2 once we have stable data for that one.
+        UMA_HISTOGRAM_INPUT_LATENCY_CUSTOM_MICROSECONDS(
+            "Event.Latency.EndToEnd.TouchpadPinch", original_timestamp,
+            gpu_swap_begin_timestamp);
+      }
+      UMA_HISTOGRAM_INPUT_LATENCY_CUSTOM_1_SECOND_MAX_MICROSECONDS(
+          "Event.Latency.EndToEnd.TouchpadPinch2", original_timestamp,
           gpu_swap_begin_timestamp);
     }
     return;
@@ -277,19 +284,6 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   if (!IsInertialScroll(latency) && input_modality == "Touch") {
     average_lag_tracker_.AddLatencyInFrame(latency, gpu_swap_begin_timestamp,
                                            scroll_name);
-
-    base::TimeTicks last_scroll_event_timestamp;
-    if (!rendering_scheduled_on_main &&
-        latency.FindLatency(
-            ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
-            &last_scroll_event_timestamp)) {
-      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
-          "Event.Latency." + scroll_name + ".Touch.EventTimeToRAFTime",
-          last_scroll_event_timestamp, rendering_scheduled_timestamp);
-      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
-          "Event.Latency." + scroll_name + ".Touch.RAFTimeToFrameSwapEnd",
-          rendering_scheduled_timestamp, gpu_swap_end_timestamp);
-    }
   }
 
   // Inertial and scrollbar scrolls are excluded from Ukm metrics.

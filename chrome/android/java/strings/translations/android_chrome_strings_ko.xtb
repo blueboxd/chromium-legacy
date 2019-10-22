@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Chrome에서 알림을 전송하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 알림을 사용 설정하세요.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />도 Chrome에서 데이터를 보유하고 있습니다</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">파일 확장자를 변경하면 예기치 못한 동작이 발생하거나 기기가 손상될 수 있습니다.</translation>
 <translation id="2056878612599315956">사이트 일시중지됨</translation>
 <translation id="2063713494490388661">탭하여 검색</translation>
 <translation id="2067805253194386918">텍스트</translation>
@@ -915,7 +914,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="7810647596859435254">연결 프로그램...</translation>
 <translation id="7821588508402923572">절약한 데이터 양이 여기에 표시됩니다</translation>
 <translation id="7837721118676387834">특정 사이트에서 음소거된 동영상이 자동재생되도록 허용합니다.</translation>
-<translation id="7838340937077326045">파일 확장자를 변경하시겠습니까?</translation>
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="784934925303690534">기간</translation>
 <translation id="7851858861565204677">다른 기기</translation>

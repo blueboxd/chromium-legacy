@@ -312,9 +312,9 @@ class KioskAppManager : public KioskAppDataDelegate,
   void UpdateExternalCachePrefs();
 
   // KioskAppDataDelegate overrides:
-  void GetKioskAppIconCacheDir(base::FilePath* cache_dir) override;
-  void OnKioskAppDataChanged(const std::string& app_id) override;
-  void OnKioskAppDataLoadFailure(const std::string& app_id) override;
+  void GetKioskAppIconCacheDir(base::FilePath* cache_dir) const override;
+  void OnKioskAppDataChanged(const std::string& app_id) const override;
+  void OnKioskAppDataLoadFailure(const std::string& app_id) const override;
 
   // ExternalCacheDelegate:
   void OnExtensionListsUpdated(const base::DictionaryValue* prefs) override;

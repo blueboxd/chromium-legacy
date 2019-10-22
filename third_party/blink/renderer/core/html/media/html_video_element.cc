@@ -65,8 +65,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 constexpr float kMostlyFillViewportThreshold = 0.85f;
@@ -81,7 +79,7 @@ enum VideoPersistenceControlsType {
 }  // anonymous namespace
 
 HTMLVideoElement::HTMLVideoElement(Document& document)
-    : HTMLMediaElement(kVideoTag, document),
+    : HTMLMediaElement(html_names::kVideoTag, document),
       remoting_interstitial_(nullptr),
       picture_in_picture_interstitial_(nullptr),
       in_overlay_fullscreen_video_(false) {
@@ -176,9 +174,9 @@ void HTMLVideoElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kWidthAttr)
+  if (name == html_names::kWidthAttr)
     AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
-  else if (name == kHeightAttr)
+  else if (name == html_names::kHeightAttr)
     AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   else
     HTMLMediaElement::CollectStyleForPresentationAttribute(name, value, style);
@@ -186,14 +184,14 @@ void HTMLVideoElement::CollectStyleForPresentationAttribute(
 
 bool HTMLVideoElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == kWidthAttr || name == kHeightAttr)
+  if (name == html_names::kWidthAttr || name == html_names::kHeightAttr)
     return true;
   return HTMLMediaElement::IsPresentationAttribute(name);
 }
 
 void HTMLVideoElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kPosterAttr) {
+  if (params.name == html_names::kPosterAttr) {
     // In case the poster attribute is set after playback, don't update the
     // display state, post playback the correct state will be picked up.
     if (GetDisplayMode() < kVideo || !HasAvailableVideoFrame()) {
@@ -223,7 +221,7 @@ void HTMLVideoElement::ParseAttribute(
       remoting_interstitial_->OnPosterImageChanged();
     if (picture_in_picture_interstitial_)
       picture_in_picture_interstitial_->OnPosterImageChanged();
-  } else if (params.name == kAutopictureinpictureAttr &&
+  } else if (params.name == html_names::kAutopictureinpictureAttr &&
              RuntimeEnabledFeatures::AutoPictureInPictureEnabled(
                  GetExecutionContext())) {
     if (!params.new_value.IsNull()) {
@@ -264,12 +262,12 @@ IntSize HTMLVideoElement::GetOverriddenIntrinsicSize() const {
 }
 
 bool HTMLVideoElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == kPosterAttr ||
+  return attribute.GetName() == html_names::kPosterAttr ||
          HTMLMediaElement::IsURLAttribute(attribute);
 }
 
 const AtomicString HTMLVideoElement::ImageSourceURL() const {
-  const AtomicString& url = getAttribute(kPosterAttr);
+  const AtomicString& url = getAttribute(html_names::kPosterAttr);
   if (!StripLeadingAndTrailingHTMLSpaces(url).IsEmpty())
     return url;
   return default_poster_url_;

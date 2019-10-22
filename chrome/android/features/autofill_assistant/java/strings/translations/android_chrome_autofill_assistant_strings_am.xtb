@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
-<translation id="1135993792949700405">Chrome እርስዎ የመረጡትን የግል ውሂብ ወደ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ይልካል</translation>
 <translation id="1625889395409731085">ውጫዊ አገናኝ ይከፈት?</translation>
 <translation id="1699570257714336246">መረጃ ይጎድላል</translation>
 <translation id="2203046366315513658">እሴትን ይቀንሱ</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Google ረዳት በChrome ውስጥ ግማሽ ቁመት ላይ ተከፍቷል።</translation>
 <translation id="6973932557599545801">ከእንግዲህ ላግዝ አልችልም፣ እባክዎ በራስዎ ይቀጥሉ።</translation>
 <translation id="7658239707568436148">ይቅር</translation>
-<translation id="7871791972254842204">በኋላ ላይ በ<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ላይ ያሉ ደንቦች እና ሁኔታዎችን ያንብቡና በእነሱ ይስማሙ</translation>
 <translation id="8253702004019660079">በChrome ውስጥ Google ረዳት።</translation>
 <translation id="9138504265731110181">Google ረዳት ድሩ ላይ ተመዝግበው እንዲወጡ በማገዝ ጊዜ ይቆጥብልዎታል</translation>
 <translation id="945522503751344254">ግብረ መልስ ላክ</translation>

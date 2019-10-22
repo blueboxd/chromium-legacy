@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser.util;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
+
+import org.chromium.base.ContextUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,10 +43,9 @@ public class ChromeFileProvider extends FileProvider {
      *
      * This function clobbers any uri that was previously created and the client application
      * accessing those uri will get a null file descriptor.
-     * @param context Activity context that is used to access package manager.
      */
-    public static Uri generateUriAndBlockAccess(final Context context) {
-        String authority = getAuthority(context);
+    public static Uri generateUriAndBlockAccess() {
+        String authority = getAuthority();
         String fileName = BLOCKED_FILE_PREFIX + String.valueOf(System.nanoTime());
         Uri blockingUri = new Uri.Builder()
                                   .scheme(UrlConstants.CONTENT_SCHEME)
@@ -64,13 +64,10 @@ public class ChromeFileProvider extends FileProvider {
 
     /**
      * Returns an unique uri to identify the file to be shared.
-     *
-     * @param context Activity context that is used to access package manager.
      * @param file File for which the Uri is generated.
      */
-    public static Uri generateUri(final Context context, File file)
-            throws IllegalArgumentException {
-        return getUriForFile(context, getAuthority(context), file);
+    public static Uri generateUri(File file) throws IllegalArgumentException {
+        return getUriForFile(ContextUtils.getApplicationContext(), getAuthority(), file);
     }
 
     /**
@@ -184,10 +181,9 @@ public class ChromeFileProvider extends FileProvider {
 
     /**
      * Gets the authority string for content URI generation.
-     * @param context Activity context that is used to access package manager.
      */
-    private static String getAuthority(Context context) {
-        return context.getPackageName() + AUTHORITY_SUFFIX;
+    private static String getAuthority() {
+        return ContextUtils.getApplicationContext().getPackageName() + AUTHORITY_SUFFIX;
     }
 
     private static boolean doesMatchCurrentBlockingUri(Uri uri) {

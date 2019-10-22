@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -32,11 +33,17 @@ AssistantWebView::AssistantWebView(AssistantViewDelegate* delegate)
   InitLayout();
 
   delegate_->AddObserver(this);
-  delegate_->AddUiModelObserver(this);
+
+  // |AssistantWebView| has its own separate container when Assistant web
+  // container is enabled. The container will handle its own lifecycle.
+  if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
+    delegate_->AddUiModelObserver(this);
 }
 
 AssistantWebView::~AssistantWebView() {
-  delegate_->RemoveUiModelObserver(this);
+  if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
+    delegate_->RemoveUiModelObserver(this);
+
   delegate_->RemoveObserver(this);
 }
 
@@ -49,6 +56,10 @@ gfx::Size AssistantWebView::CalculatePreferredSize() const {
 }
 
 int AssistantWebView::GetHeightForWidth(int width) const {
+  // The Assistant web container has fixed height.
+  if (chromeos::assistant::features::IsAssistantWebContainerEnabled())
+    return INT_MAX;
+
   if (app_list_features::IsEmbeddedAssistantUIEnabled())
     return kMaxHeightEmbeddedDip;
 
@@ -184,6 +195,10 @@ void AssistantWebView::OnUiVisibilityChanged(
     AssistantVisibility old_visibility,
     base::Optional<AssistantEntryPoint> entry_point,
     base::Optional<AssistantExitPoint> exit_point) {
+  // When Assistant web container is enabled, |assistant_web_view| has its own
+  // container and this method should not be called on it.
+  DCHECK(!chromeos::assistant::features::IsAssistantWebContainerEnabled());
+
   // When the Assistant UI is closed we need to clear the |contents_| in order
   // to free the memory.
   if (new_visibility == AssistantVisibility::kClosed)
@@ -192,6 +207,8 @@ void AssistantWebView::OnUiVisibilityChanged(
 
 void AssistantWebView::OnUsableWorkAreaChanged(
     const gfx::Rect& usable_work_area) {
+  DCHECK(!chromeos::assistant::features::IsAssistantWebContainerEnabled());
+
   UpdateContentSize();
 }
 

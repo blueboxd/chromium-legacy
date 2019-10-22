@@ -29,5 +29,9 @@ AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
 }
 
+bool ShellDelegateImpl::CanGoBack(gfx::NativeWindow window) const {
+  return true;
+}
+
 }  // namespace shell
 }  // namespace ash

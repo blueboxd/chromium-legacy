@@ -653,6 +653,23 @@ void TestingProfile::CreateWebDataService() {
       this, base::BindRepeating(&BuildWebDataService));
 }
 
+void TestingProfile::BlockUntilHistoryBackendDestroyed() {
+  // Only get the history service if it actually exists since the caller of the
+  // test should explicitly call CreateHistoryService to build it.
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(this);
+
+  // Nothing to destroy
+  if (!history_service) {
+    return;
+  }
+
+  base::RunLoop run_loop;
+  history_service->SetOnBackendDestroyTask(run_loop.QuitClosure());
+  HistoryServiceFactory::ShutdownForProfile(this);
+  run_loop.Run();
+}
+
 void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
   // Only get the history service if it actually exists since the caller of the
   // test should explicitly call CreateHistoryService to build it.

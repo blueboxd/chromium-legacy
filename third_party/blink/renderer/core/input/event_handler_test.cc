@@ -1889,6 +1889,75 @@ TEST_F(EventHandlerSimTest,
   EXPECT_TRUE(target2->IsHovered());
 }
 
+TEST_F(EventHandlerSimTest,
+       TestUpdateHoverAfterMainThreadScrollAtSnapPointAtBeginFrame) {
+  ScopedUpdateHoverAtBeginFrameForTest scoped_feature(true);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      div {
+        position: absolute;
+      }
+      #scroller {
+        width: 500px;
+        height: 500px;
+        overflow: scroll;
+        scroll-snap-type: both mandatory;
+        border: solid black 5px;
+      }
+      .target:hover {
+        background-color: red;
+      }
+
+      .target {
+        width: 200px;
+        height: 500px;
+        scroll-snap-align: start;
+        background-color: blue;
+      }
+    </style>
+    <body>
+      <div id="scroller">
+        <div class="target" id="target1" style="left: 0px; top: 0px;"></div>
+        <div class="target" id="target2" style="left: 0px; top: 500px;"></div>
+      </div>
+    </body>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  InitializeMousePositionAndActivateView(150, 150);
+  Compositor().BeginFrame();
+
+  Element* const scroller = GetDocument().getElementById("scroller");
+  Element* target1 = GetDocument().getElementById("target1");
+  Element* target2 = GetDocument().getElementById("target2");
+  EXPECT_TRUE(target1->IsHovered());
+  EXPECT_FALSE(target2->IsHovered());
+
+  // Send scroll gesture events which will cause scroll happen in main thread.
+  // The hover state will be marked dirty when the scroll lands exactly on a
+  // snap point.
+  ScrollableArea* scrollable_area =
+      scroller->GetLayoutBox()->GetScrollableArea();
+  ASSERT_EQ(0, scrollable_area->GetScrollOffset().Height());
+  constexpr float delta_y = 500;
+  InjectScrollFromGestureEvents(
+      scrollable_area->GetCompositorElementId().GetStableId(), 0, delta_y);
+  ASSERT_EQ(500, scrollable_area->GetScrollOffset().Height());
+  EXPECT_TRUE(target1->IsHovered());
+  EXPECT_FALSE(target2->IsHovered());
+
+  // The hover effect on targets is updated after the next begin frame.
+  Compositor().BeginFrame();
+  ASSERT_EQ(500, scrollable_area->GetScrollOffset().Height());
+  EXPECT_FALSE(target1->IsHovered());
+  EXPECT_TRUE(target2->IsHovered());
+}
+
 TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");

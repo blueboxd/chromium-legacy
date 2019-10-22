@@ -2926,8 +2926,8 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
       {
           .description =
               "A form is submitted and a PasswordFormManager not present.",
-          .parsed_forms = {},
           .save_signal = MissingFormManagerTestCase::Signal::Automatic,
+          .parsed_forms = {},
           // .parsed_forms is empty, so the processed form below was not
           // observed and has no form manager associated.
           .processed_forms = {form},
@@ -2938,8 +2938,8 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
       {
           .description = "Manual saving is requested and a "
                          "PasswordFormManager is created.",
-          .parsed_forms = {},
           .save_signal = MissingFormManagerTestCase::Signal::Manual,
+          .parsed_forms = {},
           // .parsed_forms is empty, so the processed form below was not
           // observed and has no form manager associated.
           .processed_forms = {form},
@@ -2948,8 +2948,8 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
       },
       {
           .description = "Manual saving is successfully requested.",
-          .parsed_forms = {form},
           .save_signal = MissingFormManagerTestCase::Signal::Manual,
+          .parsed_forms = {form},
           .processed_forms = {form},
           .expected_metric_value = MetricValue(
               PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess),
@@ -2957,16 +2957,16 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
       {
           .description =
               "A form is submitted and a PasswordFormManager present.",
-          .parsed_forms = {form},
           .save_signal = MissingFormManagerTestCase::Signal::Automatic,
+          .parsed_forms = {form},
           .processed_forms = {form},
           .expected_metric_value = MetricValue(
               PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess),
       },
       {
           .description = "First failure, then success.",
-          .parsed_forms = {form},
           .save_signal = MissingFormManagerTestCase::Signal::Automatic,
+          .parsed_forms = {form},
           // Processing |other_form| first signals a failure value in the
           // metric, but processing |form| after that should overwrite that with
           // kSuccess.
@@ -2976,16 +2976,16 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
       },
       {
           .description = "No forms, no report.",
-          .parsed_forms = {},
           .save_signal = MissingFormManagerTestCase::Signal::None,
+          .parsed_forms = {},
           .processed_forms = {},
           .expected_metric_value = base::nullopt,
       },
       {
           .description = "Not enabled, no report.",
           .saving = MissingFormManagerTestCase::Saving::Disabled,
-          .parsed_forms = {form},
           .save_signal = MissingFormManagerTestCase::Signal::Automatic,
+          .parsed_forms = {form},
           .processed_forms = {form},
           .expected_metric_value = base::nullopt,
       },

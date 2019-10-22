@@ -24,8 +24,6 @@ class CastTransportHostFilterTest : public testing::Test {
         ->InitializeNoOpWakeLockForTesting();
     // 127.0.0.1:7 is the local echo service port, which
     // is probably not going to respond, but that's ok.
-    // TODO(hubbe): Open up an UDP port and make sure
-    // we can send and receive packets.
     receive_endpoint_ = net::IPEndPoint(net::IPAddress::IPv4Localhost(), 7);
   }
 

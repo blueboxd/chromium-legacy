@@ -319,6 +319,7 @@
 <translation id="1468571364034902819">ಈ ಪ್ರೊಫೈಲ್ ಬಳಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="1470811252759861213">ನಿಮ್ಮ ಎಲ್ಲಾ ಕಂಪ್ಯೂಟರ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ಪಡೆಯಲು, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1470967055429794975">ಸುರಕ್ಷತಾ ಕೀಯ ಪಿನ್ ಸೇರಿದಂತೆ, ಅದರಲ್ಲಿರುವ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಇದು ಅಳಿಸಿಹಾಕುತ್ತದೆ</translation>
+<translation id="1472675084647422956">ಇನ್ನಷ್ಟು ತೋರಿಸಿ</translation>
 <translation id="1475502736924165259">ಇತರ ಯಾವುದೇ ವರ್ಗಗಳಿಗೆ ಹೊಂದದಿರುವಂತಹ ಫೈಲ್‌ನಲ್ಲಿ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ನೀವು ಹೊಂದಿರುವಿರಿ</translation>
 <translation id="1476088332184200792">ನಿಮ್ಮ ಸಾಧನಕ್ಕೆ ನಕಲಿಸಿ</translation>
 <translation id="1476607407192946488">&amp;ಭಾಷೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
@@ -333,7 +334,6 @@
 <translation id="1486096554574027028">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಹುಡುಕಿ</translation>
 <translation id="1487335504823219454">ಆನ್ - ಕಸ್ಟಮ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="1489664337021920575">ಇನ್ನೊಂದು ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ</translation>
-<translation id="1489956991149850859">ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್‍ಗಳನ್ನು ನೀವು ಇಲ್ಲಿ ಸೇರಿಸಬಹುದು, ತೆಗೆದುಹಾಕಬಹುದು ಅಥವಾ ಮರುಹೆಸರಿಸಬಹುದು.</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> ಗಾಗಿ ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> ಇತರ ಲಭ್ಯವಿರುವ ಸಾಧನಗಳು.</translation>
 <translation id="1495677929897281669">ಟ್ಯಾಬ್‌ಗೆ ಮರಳಿ</translation>
@@ -898,7 +898,6 @@
 <translation id="2280486287150724112">ಬಲ ಅಂಚು</translation>
 <translation id="2282146716419988068">GPU ಪ್ರಕ್ರಿಯೆ</translation>
 <translation id="2282155092769082568">ಸ್ವಯಂ ಕಾನ್ಫಿಗರೇಶನ್ URL:</translation>
-<translation id="228758327756499171"><ph name="NUMBER_OF_MORE_APPS" /> ಆ್ಯಪ್‌ಗಳು</translation>
 <translation id="2288181517385084064">ವೀಡಿಯೊ ರೆಕಾರ್ಡರ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="2288735659267887385">ಪ್ರವೇಶಿಸುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="2289270750774289114">ಸೈಟ್ ಯಾವಾಗ ಸಮೀಪದ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಅನ್ವೇಷಿಸಲು ಬಯಸುತ್ತದೆಯೋ ಆಗ ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
@@ -1484,7 +1483,6 @@
 <translation id="3151539355209957474">ಪ್ರಾರಂಭ ಸಮಯ</translation>
 <translation id="3151562827395986343">ಇತಿಹಾಸ, ಕುಕೀಗಳು, ಕ್ಯಾಷ್ ಮತ್ತು ಹೆಚ್ಚಿನವುಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="3151786313568798007">ಓರಿಯಂಟೇಶನ್</translation>
-<translation id="3153862085237805241">ಕಾರ್ಡ್‌ ಅನ್ನು ಉಳಿಸಿ</translation>
 <translation id="3154351730702813399">ಸಾಧನದ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಚಟುವಟಿಕೆಯ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು.</translation>
 <translation id="3154429428035006212">ಒಂದು ತಿಂಗಳಿಗಿಂತಲೂ ಹೆಚ್ಚು ಕಾಲ ಆಫ್‌ಲೈನ್</translation>
 <translation id="3156531245809797194">Chrome ಅನ್ನು ಬಳಸಲು, ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
@@ -1626,10 +1624,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">ವಿಭಾಜಕ</translation>
 <translation id="3387614642886316601">ವರ್ಧಿತ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯನ್ನು ಬಳಸಿ</translation>
-<translation id="3391459139089708789">ಈ ಸಾಧನವು <ph name="MONTH_AND_YEAR" /> ವರೆಗೆ ಸ್ವಯಂಚಾಲಿತ ಸಾಫ್ಟ್‌ವೇರ್ ಮತ್ತು ಭದ್ರತೆ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸುತ್ತದೆ.
-      <ph name="LINK_BEGIN" />
-        ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ
-      <ph name="LINK_END" /></translation>
 <translation id="3396800784455899911">ಈ Google ಸೇವೆಗಳಿಗಾಗಿ "ಸ್ವೀಕರಿಸಿ ಮತ್ತು ಮುಂದುವರೆಸು" ಬಟನ್‌ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡುವುದರ ಮೂಲಕ, ನೀವು ಮೇಲೆ ವಿವರಿಸಿರುವ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸುವಿಕೆಗೆ ಒಪ್ಪುತ್ತೀರಿ.</translation>
 <translation id="3399432415385675819">ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> ಹರ್ಟ್ಜ್) - ಇಂಟರ್‌ಲೇಸ್ ಆಗಿದೆ</translation>
@@ -2265,7 +2259,6 @@
 <translation id="428565720843367874">ಈ ಫೈಲ್ ಸ್ಕ್ಯಾನ್ ಮಾಡುವಾಗ ಅನಿರೀಕ್ಷಿತವಾಗಿ ಆಂಟಿ ವೈರಸ್ ಸಾಫ್ಟ್‌‌ವೇರ್ ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="4287502004382794929">ಈ ಸಾಧನವನ್ನು ದಾಖಲಿಸಲು ನೀವು ಸಾಕಷ್ಟು ಸಾಫ್ಟ್‌ವೇರ್ ಪರವಾನಗಿಗಳನ್ನು ಹೊಂದಿಲ್ಲ. ದಯವಿಟ್ಟು ಇನ್ನಷ್ಟು ಖರೀದಿಸಲು ಮಾರಾಟವನ್ನು ಸಂಪರ್ಕಿಸಿ. ಈ ಸಂದೇಶವನ್ನು ದೋಷದಲ್ಲಿ ನೀವು ನೋಡುತ್ತಿರುವಿರಿ ಎಂದು ನೀವು ಭಾವಿಸುವುದಾದರೆ, ದಯವಿಟ್ಟು ಸಂಪರ್ಕವನ್ನು ಬೆಂಬಲಿಸಿ.</translation>
 <translation id="4289540628985791613">ಅವಲೋಕನ</translation>
-<translation id="4291934469232591280">ಆವೃತ್ತಿ: <ph name="VERSION" /></translation>
 <translation id="4295072614469448764">ನಿಮ್ಮ ಟರ್ಮಿನಲ್‌ನಲ್ಲಿಯೇ ಆ್ಯಪ್‌ ಲಭ್ಯವಿದೆ. ನಿಮ್ಮ ಲಾಂಚರ್‌ನಲ್ಲಿ ಒಂದು ಐಕಾನ್ ಸಹ ಲಭ್ಯವಿರಬಹುದು.</translation>
 <translation id="4295979599050707005">ನಿಮ್ಮ <ph name="USER_EMAIL" /> ಖಾತೆಯನ್ನು Chrome ಮತ್ತು Google Play ನಲ್ಲಿ ವೆಬ್‌ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳ ಜೊತೆಗೆ ಬಳಸಬಹುದು ಎಂಬುದನ್ನು ಖಚಿತಪಡಿಸಲು, ಮತ್ತೊಮ್ಮೆ ಸೈನ್ ಇನ್ ಮಾಡಿ. ನೀವು ಈ ಖಾತೆಯನ್ನು ಸಹ ತೆಗೆದುಹಾಕಬಹುದು. <ph name="LINK_BEGIN" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="LINK_END" /></translation>
 <translation id="4296575653627536209">ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರನ್ನು ಸೇರಿಸಿ</translation>
@@ -2543,7 +2536,6 @@
 <translation id="4736292055110123391">ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲೂ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌‌ಗಳು, ಪಾಸ್‍ವರ್ಡ್‍ಗಳು, ಇತಿಹಾಸ ಹಾಗೂ ಇನ್ನೂ ಹೆಚ್ಚಿನವುಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="4737715515457435632">ದಯವಿಟ್ಟು ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
 <translation id="473775607612524610">ಅಪ್‌ಡೇಟ್‌‌</translation>
-<translation id="4739098340603978916">ಗಾತ್ರ: <ph name="APP_SIZE" /></translation>
 <translation id="4739639199548674512">ಟಿಕೆಟ್‌ಗಳು</translation>
 <translation id="4742746985488890273">ಶೆಲ್ಫ್‌ಗೆ ಪಿನ್‌ ಮಾಡು</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡುವುದು ಹೇಗೆ ಎಂದು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
@@ -2563,7 +2555,6 @@
 <translation id="4765582662863429759">ನಿಮ್ಮ ಫೋನ್‌ನಿಂದ ನಿಮ್ಮ Chromebook ಗೆ ಪಠ್ಯ ಸಂದೇಶಗಳನ್ನು ರಿಲೇ ಮಾಡಲು, Android ಸಂದೇಶಗಳನ್ನು ಅನುಮತಿಸುತ್ತದೆ</translation>
 <translation id="4768332406694066911">ನಿಮ್ಮನ್ನು ಗುರುತಿಸುವ ಈ ಸಂಸ್ಥೆಗಳ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ನೀವು ಹೊಂದಿರುವಿರಿ</translation>
 <translation id="4774824109040330448">ಹೊಂದಾಣಿಕೆಯ ದೃಢೀಕರಣ ಆ್ಯಪ್ ಬಳಸಿ, ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ QR ಕೋಡ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.</translation>
-<translation id="4776146737004271126">Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4779083564647765204">ಝೂಮ್</translation>
@@ -2586,7 +2577,6 @@
 <translation id="480990236307250886">ಹೋಮ್ ತೆರೆಯಿರಿ</translation>
 <translation id="4813136279048157860">ನನ್ನ ಚಿತ್ರಗಳು</translation>
 <translation id="4813512666221746211">ನೆಟ್‌ವರ್ಕ್  ದೋಷ</translation>
-<translation id="4816492930507672669">ಪುಟಕ್ಕೆ ಹೊಂದಿಸು</translation>
 <translation id="4820236583224459650">ಸಕ್ರಿಯ ಟಿಕೆಟ್ ಎಂದು ಹೊಂದಿಸಿ</translation>
 <translation id="4821935166599369261">&amp;ಪ್ರೊಫೈಲಿಂಗ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ
 </translation>
@@ -2811,7 +2801,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="5135085122826131075">"Ok Google" ಎಂದು ಹೇಳಿ, ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌ಗೆ ಪ್ರವೇಶಿಸಿ.</translation>
 <translation id="5135533361271311778">ಬುಕ್‌ಮಾರ್ಕ್ ಐಟಂ ಅನ್ನು ರಚಿಸಲು ಆಗುವುದಿಲ್ಲ.</translation>
 <translation id="5137501176474113045">ಈ ಐಟಂ ಅಳಿಸಿ</translation>
-<translation id="5138227688689900538">ಕಡಿಮೆ ತೋರಿಸಿ</translation>
 <translation id="5139955368427980650">&amp;ತೆರೆ</translation>
 <translation id="5142961317498132443">ಪ್ರಮಾಣೀಕರಣ</translation>
 <translation id="5143374789336132547">ನೀವು ಹೋಮ್‌ನ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು "<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯು ಬದಲಾಯಿಸಿದೆ.</translation>
@@ -2891,7 +2880,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="5265797726250773323">ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುವಾಗ ದೋಷ ಕಂಡುಬಂದಿದೆ</translation>
 <translation id="5266113311903163739">ಪ್ರಮಾಣಪತ್ರದ ಅಧಿಕಾರ ಆಮದು ದೋಷ</translation>
 <translation id="5269977353971873915">ಮುದ್ರಣ ವಿಫಲಗೊಂಡಿದೆ</translation>
-<translation id="5270167208902136840">ಇನ್ನೂ <ph name="NUMBER_OF_MORE_APPS" /> ಆ್ಯಪ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="5275352920323889391">ನಾಯಿ</translation>
 <translation id="5275776633505022322">ಬಾಕಿ ಉಳಿದಿರುವ ಪ್ರಯತ್ನಗಳು: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="527605982717517565"><ph name="HOST" /> ನಲ್ಲಿ JavaScript ಅನ್ನು ಯಾವಾಗಲೂ ಅನುಮತಿಸಿ</translation>
@@ -3788,7 +3776,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="6555810572223193255">ಕ್ಲೀನಪ್ ಪ್ರಸ್ತುತ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="6556866813142980365">ಪುನಃ ಮಾಡು</translation>
 <translation id="6557290421156335491">ನನ್ನ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
-<translation id="6559023360691182159">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> ಮತ್ತು <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" />, ಮತ್ತು <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, ಮತ್ತು 1 ಇತರ ಆ್ಯಪ್}one{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, ಮತ್ತು <ph name="EXTRA_APPS" /> ಇತರ ಆ್ಯಪ್‌ಗಳು}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" />, ಮತ್ತು <ph name="EXTRA_APPS" /> ಇತರ ಆ್ಯಪ್‌ಗಳು}}</translation>
 <translation id="6561726789132298588">ನಮೂದಿಸಿ</translation>
 <translation id="656293578423618167">ಫೈಲ್ ಹಾದಿ ಅಥವಾ ಹೆಸರು ತುಂಬಾ ಉದ್ದವಾಗಿದೆ. ದಯವಿಟ್ಟು ಕಿರಿದಾದ ಹೆಸರಿನೊಂದಿಗೆ ಅಥವಾ ಮತ್ತೊಂದು ಸ್ಥಾನದಲ್ಲಿ ಉಳಿಸಿ. </translation>
 <translation id="6563469144985748109">ನಿಮ್ಮ ಮ್ಯಾನೇಜರ್ ಇನ್ನೂ ಇದನ್ನು ಅಂಗೀಕರಿಸಿಲ್ಲ</translation>
@@ -3918,8 +3905,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="677965093459947883">ತುಂಬಾ ಚಿಕ್ಕದು</translation>
 <translation id="6781284683813954823">ಡೂಡಲ್ ಲಿಂಕ್</translation>
 <translation id="6781978626986383437">Linux ಬ್ಯಾಕಪ್ ಅನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ</translation>
-<translation id="6782111308708962316">ಕುಕೀ ಡೇಟಾವನ್ನು ಮೂರನೇ ವ್ಯಕ್ತಿ ವೆಬ್‌ಸೈಟ್‌ಗಳು ಉಳಿಸದಂತೆ ಮತ್ತು 
-ಓದದಂತೆ ತಡೆಯಿರಿ.</translation>
 <translation id="6786747875388722282">ವಿಸ್ತರಣೆಗಳು</translation>
 <translation id="6787839852456839824">ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
 <translation id="6788210894632713004">ಬಿಚ್ಚಿದ ವಿಸ್ತರಣೆ</translation>
@@ -5056,7 +5041,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="8398877366907290961">ಏನಾಗಲಿ ಮುಂದುವರೆಯಿರಿ</translation>
 <translation id="8400146488506985033">ಜನರನ್ನು ನಿರ್ವಹಿಸು</translation>
 <translation id="8401432541486058167">ನಿಮ್ಮ ಸ್ಮಾರ್ಟ್ ಕಾರ್ಡ್‌ನೊಂದಿಗೆ ಸಂಯೋಜಿತವಾಗಿರುವ ಪಿನ್ ಅನ್ನು ಒದಗಿಸಿ.</translation>
-<translation id="8401839918915644121">ಕಾಗದದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಸಿ</translation>
 <translation id="8405046151008197676">ಇತ್ತೀಚಿನ ಅಪ್‌ಡೇಟ್ ಕುರಿತು ಮುಖ್ಯಾಂಶಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಿ</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
@@ -5290,7 +5274,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="8743390665131937741">ಪೂರ್ಣಪರದೆಯ ಝೂಮ್ ಮಟ್ಟ:</translation>
 <translation id="8743864605301774756">1ಗಂಟೆಯ ಹಿಂದೆ ಆಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="874689135111202667">{0,plural, =1{ಈ ಸೈಟ್‌ಗೆ ಒಂದು ಫೈಲ್‌ ಅನ್ನು ಅಪ್‌ಲೋಡ್‌ ಮಾಡಬೇಕೇ?}one{ಈ ಸೈಟ್‌ಗೆ # ಫೈಲ್‌ಗಳನ್ನು ಅಪ್‌ಲೋಡ್‌ ಮಾಡಬೇಕೇ?}other{ಈ ಸೈಟ್‌ಗೆ # ಫೈಲ್‌ಗಳನ್ನು ಅಪ್‌ಲೋಡ್‌ ಮಾಡಬೇಕೇ?}}</translation>
-<translation id="8747503242566427664">ಈ ಅಪ್ಲಿಕೇಶನ್‌ ಹೀಗೆ ಮಾಡಬಹುದು:</translation>
 <translation id="8748384418490037181">Smart Lock ಆಯ್ಕೆಗಳು</translation>
 <translation id="8749863574775030885">ಅಪರಿಚಿತ ಮಾರಾಟಗಾರರಿಂದ USB ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ಒಂದು ಸೀರಿಯಲ್ ಪೋರ್ಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ಬಯಸುತ್ತದೆ</translation>
@@ -5362,7 +5345,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="883062543841130884">ಬದಲಿಗಳು</translation>
 <translation id="8830796635868321089">ಪ್ರಸ್ತುತ ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬಳಸಿಕೊಂಡು ಅಪ್‌ಡೇಟ್‌‌ನ ಪರಿಶೀಲನೆ ವಿಫಲಗೊಂಡಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ <ph name="PROXY_SETTINGS_LINK_START" />ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="PROXY_SETTINGS_LINK_END" /> ಹೊಂದಿಸಿ.</translation>
 <translation id="8831140208248705279">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಮತ್ತು Android ಫೋನ್ ಒಟ್ಟಿಗೆ ಚೆನ್ನಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತವೆ. ಅವುಗಳನ್ನು ಸಂಪರ್ಕಿಸುವುದರಿಂದ ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ನೀವು ಪಠ್ಯ ಸಂದೇಶವನ್ನು ಕಳುಹಿಸಬಹುದು, ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಹಂಚಿಕೊಳ್ಳಬಹುದು ಮತ್ತು ನಿಮ್ಮ ಫೋನ್ ಮೂಲಕ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಬಹುದಾಗಿದೆ. <ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="LINK_END" /></translation>
-<translation id="8831664945713891930">ವಿಸ್ತರಣೆಗಳ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="8834039744648160717"><ph name="USER_EMAIL" /> ಮೂಲಕ ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ನಿಯಂತ್ರಿಸಲಾಗಿದೆ.</translation>
 <translation id="8838601485495657486">ಅಪಾರದರ್ಶಕ</translation>
 <translation id="8838770651474809439">ಹ್ಯಾಂಬರ್ಗರ್</translation>
@@ -5485,7 +5467,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="9008201768610948239">ನಿರ್ಲಕ್ಷಿಸಿ</translation>
 <translation id="9009369504041480176">ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">ಯಾವಾಗಲೂ ಐಕಾನ್ ತೋರಿಸು</translation>
-<translation id="9011424611726486705">ಸೈಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="9013707997379828817">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮುಂಚಿನ ನಿರ್ದಿಷ್ಟ ಸ್ಥಿತಿಗೆ ಹಿಂತಿರುಗಿಸಿದ್ದಾರೆ. ದಯವಿಟ್ಟು ಪ್ರಮುಖ ಫೈಲ್‌ಗಳನ್ನು ಉಳಿಸಿ, ನಂತರ ಮರುಪ್ರಾರಂಭಿಸಿ. ಸಾಧನದಲ್ಲಿನ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="9018218886431812662">ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುವಿಕೆಯು ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
 <translation id="901834265349196618">ಇಮೇಲ್</translation>

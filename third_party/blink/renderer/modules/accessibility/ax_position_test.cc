@@ -1654,5 +1654,32 @@ TEST_F(AccessibilityTest, PositionInInvalidMapLayout) {
   EXPECT_EQ(0, position_after.GetPosition().OffsetInContainerNode());
 }
 
+TEST_P(ParameterizedAccessibilityTest,
+       ToPositionWithAffinityWithMultipleInlineTextBoxes) {
+  // "&#10" is a Line Feed ("\n").
+  SetBodyInnerHTML(
+      R"HTML(<style>p { white-space: pre-line; }</style>
+      <p id="paragraph">Hello &#10; world</p>)HTML");
+  const Node* text = GetElementById("paragraph")->firstChild();
+  ASSERT_NE(nullptr, text);
+  ASSERT_TRUE(text->IsTextNode());
+  AXObject* ax_static_text = GetAXObjectByElementId("paragraph")->FirstChild();
+
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
+
+  ax_static_text->LoadInlineTextBoxes();
+  ASSERT_EQ(3, ax_static_text->ChildCount());
+
+  // This test expects the starting offset of the last InlineTextBox object to
+  // equates the sum of the previous inline text boxes length, without the
+  // collapsed white-spaces.
+  const auto ax_position =
+      AXPosition::CreatePositionBeforeObject(*(ax_static_text->LastChild()));
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(LayoutNGEnabled() ? 7 : 6,
+            position.GetPosition().OffsetInContainerNode());
+}
+
 }  // namespace test
 }  // namespace blink

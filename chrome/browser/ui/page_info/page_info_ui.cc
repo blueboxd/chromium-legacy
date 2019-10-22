@@ -187,12 +187,14 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
 std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(
     PageInfoUI::SecuritySummaryColor style,
     int summary_id,
-    int details_id) {
+    int details_id,
+    PageInfoUI::SecurityDescriptionType type) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
       new PageInfoUI::SecurityDescription());
   security_description->summary_style = style;
   security_description->summary = l10n_util::GetStringUTF16(summary_id);
   security_description->details = l10n_util::GetStringUTF16(details_id);
+  security_description->type = type;
   return security_description;
 }
 
@@ -209,6 +211,7 @@ CreateSecurityDescriptionForLookalikeSafetyTip(const GURL& safe_url) {
       IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE, safe_host);
   security_description->details = l10n_util::GetStringFUTF16(
       IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_DESCRIPTION, safe_host);
+  security_description->type = PageInfoUI::SecurityDescriptionType::SAFETY_TIP;
   return security_description;
 }
 
@@ -272,15 +275,18 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     case PageInfo::SAFE_BROWSING_STATUS_MALWARE:
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_MALWARE_SUMMARY,
-                                       IDS_PAGE_INFO_MALWARE_DETAILS);
+                                       IDS_PAGE_INFO_MALWARE_DETAILS,
+                                       SecurityDescriptionType::SAFE_BROWSING);
     case PageInfo::SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING:
-      return CreateSecurityDescription(
-          SecuritySummaryColor::RED, IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
-          IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS);
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
+                                       IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS,
+                                       SecurityDescriptionType::SAFE_BROWSING);
     case PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE:
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
-                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
+                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS,
+                                       SecurityDescriptionType::SAFE_BROWSING);
     case PageInfo::SAFE_BROWSING_STATUS_SAVED_PASSWORD_REUSE:
     case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE:
     case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
@@ -293,7 +299,8 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     case PageInfo::SAFE_BROWSING_STATUS_BILLING:
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_BILLING_SUMMARY,
-                                       IDS_PAGE_INFO_BILLING_DETAILS);
+                                       IDS_PAGE_INFO_BILLING_DETAILS,
+                                       SecurityDescriptionType::SAFE_BROWSING);
   }
 
   std::unique_ptr<SecurityDescription> safety_tip_security_desc =
@@ -307,9 +314,9 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
 #if defined(OS_ANDROID)
       // We provide identical summary and detail strings for Android, which
       // deduplicates them in the UI code.
-      return CreateSecurityDescription(SecuritySummaryColor::GREEN,
-                                       IDS_PAGE_INFO_INTERNAL_PAGE,
-                                       IDS_PAGE_INFO_INTERNAL_PAGE);
+      return CreateSecurityDescription(
+          SecuritySummaryColor::GREEN, IDS_PAGE_INFO_INTERNAL_PAGE,
+          IDS_PAGE_INFO_INTERNAL_PAGE, SecurityDescriptionType::INTERNAL);
 #else
       // Internal pages on desktop have their own UI implementations which
       // should never call this function.
@@ -325,23 +332,28 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
           return CreateSecurityDescription(SecuritySummaryColor::RED,
                                            IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
-                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS);
+                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
           return CreateSecurityDescription(SecuritySummaryColor::RED,
                                            IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
-                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS);
+                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
           return CreateSecurityDescription(SecuritySummaryColor::RED,
                                            IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
-                                           IDS_PAGE_INFO_MIXED_CONTENT_DETAILS);
+                                           IDS_PAGE_INFO_MIXED_CONTENT_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
         case PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS:
           return CreateSecurityDescription(SecuritySummaryColor::RED,
                                            IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
-                                           IDS_PAGE_INFO_LEGACY_TLS_DETAILS);
+                                           IDS_PAGE_INFO_LEGACY_TLS_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
         default:
           return CreateSecurityDescription(SecuritySummaryColor::GREEN,
                                            IDS_PAGE_INFO_SECURE_SUMMARY,
-                                           IDS_PAGE_INFO_SECURE_DETAILS);
+                                           IDS_PAGE_INFO_SECURE_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
       }
     case PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case PageInfo::SITE_IDENTITY_STATUS_UNKNOWN:
@@ -349,7 +361,8 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     default:
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
-                                       IDS_PAGE_INFO_NOT_SECURE_DETAILS);
+                                       IDS_PAGE_INFO_NOT_SECURE_DETAILS,
+                                       SecurityDescriptionType::CONNECTION);
   }
 }
 
@@ -696,7 +709,8 @@ PageInfoUI::CreateSafetyTipSecurityDescription(
       return CreateSecurityDescription(
           SecuritySummaryColor::RED,
           IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE,
-          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION,
+          PageInfoUI::SecurityDescriptionType::SAFETY_TIP);
     case security_state::SafetyTipStatus::kLookalike:
       return CreateSecurityDescriptionForLookalikeSafetyTip(info.safe_url);
 

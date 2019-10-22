@@ -31,6 +31,10 @@ std::string DataPipeToSourceStream::Description() const {
   return "DataPipe";
 }
 
+bool DataPipeToSourceStream::MayHaveMoreBytes() const {
+  return !complete_;
+}
+
 int DataPipeToSourceStream::Read(net::IOBuffer* buf,
                                  int buf_size,
                                  net::CompletionOnceCallback callback) {
@@ -99,6 +103,7 @@ void DataPipeToSourceStream::OnReadable(MojoResult unused) {
 }
 
 void DataPipeToSourceStream::FinishReading() {
+  complete_ = true;
   handle_watcher_.Cancel();
   body_.reset();
 }

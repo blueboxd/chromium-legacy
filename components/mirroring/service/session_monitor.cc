@@ -348,8 +348,8 @@ std::string SessionMonitor::GetEventLogsAndReset(
 
   result.resize(media::cast::kMaxSerializedBytes);
   int output_bytes;
-  // TODO(xjz): media::cast::SerializeEvents() shouldn't require the caller to
-  // pre-allocate the memory. It should return a string result.
+  // TODO(crbug.com/1015471): media::cast::SerializeEvents() shouldn't require
+  // the caller to pre-allocate the memory. It should return a string result.
   if (media::cast::SerializeEvents(metadata, frame_events, packet_events,
                                    true /* compress */,
                                    media::cast::kMaxSerializedBytes,

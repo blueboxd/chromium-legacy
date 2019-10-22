@@ -50,6 +50,7 @@ void DiscoverWindowObserver::OnNewDiscoverWindow(Browser* discover_browser) {
   aura::Window* window = discover_browser->window()->GetNativeWindow();
   window->SetTitle(l10n_util::GetStringUTF16(IDS_INTERNAL_APP_DISCOVER));
   const ash::ShelfID shelf_id(ash::kInternalAppIdDiscover);
+  window->SetProperty(ash::kAppIDKey, shelf_id.app_id);
   window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
   aura_window_tracker_->Add(window);

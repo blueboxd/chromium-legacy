@@ -74,16 +74,15 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
     if (original_events.empty())
       return event_with_callback;
 
-    temporary_accumulated_delta_ = current_event_accumulated_delta_;
-    for (auto& coalesced_event : original_events)
-      ComputeAccuracy(coalesced_event.event_);
-
     for (auto& coalesced_event : original_events)
       UpdatePrediction(coalesced_event.event_, frame_time);
 
     if (should_resample_scroll_events_)
       ResampleEvent(frame_time, event_with_callback->event_pointer(),
                     event_with_callback->mutable_latency_info());
+
+    metrics_handler_.EvaluatePrediction();
+
   } else if (event_with_callback->event().GetType() ==
              WebInputEvent::kGestureScrollEnd) {
     should_resample_scroll_events_ = false;
@@ -98,6 +97,7 @@ void ScrollPredictor::Reset() {
     filter_->Reset();
   current_event_accumulated_delta_ = gfx::PointF();
   last_predicted_accumulated_delta_ = gfx::PointF();
+  metrics_handler_.Reset();
 }
 
 void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
@@ -119,10 +119,13 @@ void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event,
                                     gesture_event.TimeStamp()};
 
   predictor_->Update(data);
-  last_event_timestamp_ = gesture_event.TimeStamp();
+
+  metrics_handler_.AddRealEvent(current_event_accumulated_delta_,
+                                gesture_event.TimeStamp(), frame_time,
+                                true /* Scrolling */);
 }
 
-void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
+void ScrollPredictor::ResampleEvent(base::TimeTicks frame_time,
                                     WebInputEvent* event,
                                     LatencyInfo* latency_info) {
   DCHECK(event->GetType() == WebInputEvent::kGestureScrollUpdate);
@@ -134,9 +137,8 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
                                  gesture_event->data.scroll_update.delta_y)
                          .ToString());
   gfx::PointF predicted_accumulated_delta = current_event_accumulated_delta_;
-  InputPredictor::InputData result;
 
-  base::TimeDelta prediction_delta = time_stamp - gesture_event->TimeStamp();
+  base::TimeDelta prediction_delta = frame_time - gesture_event->TimeStamp();
   bool predicted = false;
 
   // For resampling, we don't want to predict too far away because the result
@@ -144,21 +146,20 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   // maximum available for the current predictor
   prediction_delta = std::min(prediction_delta, predictor_->MaxResampleTime());
 
-  // Compute the prediction timestamp
   base::TimeTicks prediction_time =
       gesture_event->TimeStamp() + prediction_delta;
 
-  if (predictor_->HasPrediction() &&
-      predictor_->GeneratePrediction(prediction_time, &result)) {
-    predicted_accumulated_delta = result.pos;
-    gesture_event->SetTimeStamp(prediction_time);
+  auto result = predictor_->GeneratePrediction(prediction_time);
+  if (result) {
+    predicted_accumulated_delta = result->pos;
+    gesture_event->SetTimeStamp(result->time_stamp);
     predicted = true;
   }
 
   // Feed the filter with the first non-predicted events but only apply
   // filtering on predicted events
   gfx::PointF filtered_pos = predicted_accumulated_delta;
-  if (filtering_enabled_ && filter_->Filter(time_stamp, &filtered_pos) &&
+  if (filtering_enabled_ && filter_->Filter(prediction_time, &filtered_pos) &&
       predicted)
     predicted_accumulated_delta = filtered_pos;
 
@@ -176,6 +177,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
       (new_delta.y() * gesture_event->data.scroll_update.delta_y < 0)
           ? 0
           : new_delta.y();
+
   // Sync the predicted delta_y to latency_info for AverageLag metric.
   latency_info->set_predicted_scroll_update_delta(new_delta.y());
 
@@ -187,48 +189,11 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   last_predicted_accumulated_delta_.Offset(
       gesture_event->data.scroll_update.delta_x,
       gesture_event->data.scroll_update.delta_y);
-}
 
-void ScrollPredictor::ComputeAccuracy(const WebScopedInputEvent& event) {
-  const WebGestureEvent& gesture_event =
-      static_cast<const WebGestureEvent&>(*event);
-
-  base::TimeDelta time_delta = event->TimeStamp() - last_event_timestamp_;
-  std::string suffix;
-  if (time_delta < base::TimeDelta::FromMilliseconds(10))
-    suffix = "Short";
-  else if (time_delta < base::TimeDelta::FromMilliseconds(20))
-    suffix = "Middle";
-  else if (time_delta < base::TimeDelta::FromMilliseconds(35))
-    suffix = "Long";
-  else
-    return;
-
-  InputPredictor::InputData predict_result;
-  temporary_accumulated_delta_.Offset(gesture_event.data.scroll_update.delta_x,
-                                      gesture_event.data.scroll_update.delta_y);
-  if (predictor_->HasPrediction() &&
-      predictor_->GeneratePrediction(event->TimeStamp(), &predict_result)) {
-    float distance =
-        (predict_result.pos - gfx::PointF(temporary_accumulated_delta_))
-            .Length();
-    base::UmaHistogramCounts1000(
-        "Event.InputEventPrediction.Accuracy.Scroll." + suffix,
-        static_cast<int>(distance));
-
-    // If the distance from predicted position to actual position is in same
-    // direction as the delta_y, the result is under predicted, otherwise over
-    // predict.
-    float dist_y = temporary_accumulated_delta_.y() - predict_result.pos.y();
-    if (gesture_event.data.scroll_update.delta_y * dist_y < 0) {
-      base::UmaHistogramCounts1000(
-          "Event.InputEventPrediction.Accuracy.Scroll.OverPredict." + suffix,
-          static_cast<int>(std::abs(dist_y)));
-    } else {
-      base::UmaHistogramCounts1000(
-          "Event.InputEventPrediction.Accuracy.Scroll.UnderPredict." + suffix,
-          static_cast<int>(std::abs(dist_y)));
-    }
+  if (predicted) {
+    metrics_handler_.AddPredictedEvent(predicted_accumulated_delta,
+                                       result->time_stamp, frame_time,
+                                       true /* Scrolling */);
   }
 }
 

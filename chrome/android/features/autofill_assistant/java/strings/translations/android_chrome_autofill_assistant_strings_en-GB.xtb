@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
-<translation id="1135993792949700405">Chrome will send personal data that you selected to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Open external link?</translation>
 <translation id="1699570257714336246">Information missing</translation>
 <translation id="2203046366315513658">Decrease value</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Google Assistant in Chrome opened at half height.</translation>
 <translation id="6973932557599545801">Sorry I'm not able to help. Please continue on your own.</translation>
 <translation id="7658239707568436148">Cancel</translation>
-<translation id="7871791972254842204">Read and agree to the terms &amp; conditions on <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> later</translation>
 <translation id="8253702004019660079">Google Assistant in Chrome.</translation>
 <translation id="9138504265731110181">Google Assistant saves you time by helping you check out on the web</translation>
 <translation id="945522503751344254">Send feedback</translation>

@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 хвилину тому}one{# хвилину тому}few{# хвилини тому}many{# хвилин тому}other{# хвилини тому}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 хв}one{# хв}few{# хв}many{# хв}other{# хв}}</translation>
 <translation id="1181037720776840403">Видалити</translation>
+<translation id="1201402288615127009">Далі</translation>
 <translation id="1243314992276662751">Завантажити</translation>
 <translation id="1266864766717917324">Не вдалося надіслати: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Торкніться елементів для дотику на екрані.</translation>
 <translation id="2295140143284145483">Опитування</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/сек.</translation>
+<translation id="2353636109065292463">Перевірка інтернет-з’єднання</translation>
 <translation id="2388990488038464401">Здійснювати виклики на цей номер із вашого телефона?</translation>
 <translation id="24452542372838207">Розгорнути сповіщення</translation>
 <translation id="2445449901874883781">Використовувати високу щільність</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Залишилась 1 секунда}one{Залишилася # секунда}few{Залишилося # секунди}many{Залишилося # секунд}other{Залишилося # секунди}}</translation>
 <translation id="5941711191222866238">Зменшити</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 година}one{# година}few{# години}many{# годин}other{# години}}</translation>
+<translation id="5946629889255121107">Номер взято із сайту <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Сторінка <ph name="SELECTED_PAGE" /> з <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Очистити вікно пошуку</translation>
 <translation id="6040143037577758943">Закрити</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Зберегти файл</translation>
 <translation id="6656912866303152668">Переконайтеся, що на пристрої<ph name="TARGET_DEVICE_NAME" /> увімкнено синхронізацію в Chrome, а потім спробуйте надіслати знову.</translation>
 <translation id="6699343763173986273">Наступна композиція</translation>
+<translation id="6710213216561001401">Попереднє</translation>
 <translation id="6779314412797872738">Щоб надіслати номер на телефон Android, <ph name="TROUBLESHOOT_LINK" /> для обох пристроїв у налаштуваннях.</translation>
 <translation id="6786750046913594791">Закрити папку</translation>
 <translation id="6808150112686056157">Зупинити</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Залишилась 1 хв}one{Залишилася # хв}few{Залишилося # хв}many{Залишилося # хв}other{Залишилося # хв}}</translation>
 <translation id="7319740667687257810">Панель запуску, частковий перегляд</translation>
+<translation id="7352651011704765696">Виникли проблеми</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 хв тому}one{# хв тому}few{# хв тому}many{# хв тому}other{# хв тому}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Залишилась 1 хвилина}one{Залишилася # хвилина}few{Залишилося # хвилини}many{Залишилося # хвилин}other{Залишилося # хвилини}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Залишилась 1 с}one{Залишилася # с}few{Залишилося # с}many{Залишилося # с}other{Залишилося # с}}</translation>
+<translation id="8134065097954893699">Оновити цю сторінку</translation>
 <translation id="8144660977431427332">Ваші пошукові запити виконуються за технологією Google Асистента. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />: автозавершення</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>

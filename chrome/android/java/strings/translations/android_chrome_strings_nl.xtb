@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Als je wilt dat Chrome je meldingen stuurt, moet je meldingen ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> heeft ook gegevens in Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Als je de bestandsextensie wijzigt, kan dit leiden tot onverwacht gedrag en schade aan je apparaat.</translation>
 <translation id="2056878612599315956">Site onderbroken</translation>
 <translation id="2063713494490388661">Tikken om te zoeken</translation>
 <translation id="2067805253194386918">sms</translation>
@@ -263,6 +262,7 @@
 <translation id="2913331724188855103">Sites toestaan cookiegegevens op te slaan en te lezen (aanbevolen)</translation>
 <translation id="2923908459366352541">Naam is ongeldig</translation>
 <translation id="2932150158123903946">Opslag van Google <ph name="APP_NAME" /></translation>
+<translation id="2942036813789421260">Voorbeeldtabblad is gesloten</translation>
 <translation id="2956410042958133412">Dit account wordt beheerd door <ph name="PARENT_NAME_1" /> en <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Overgeschakeld naar incognitotabbladen</translation>
 <translation id="2968755619301702150">Certificaatviewer</translation>
@@ -388,6 +388,7 @@
 <translation id="3988466920954086464">Instant-zoekresultaten weergeven in dit venster</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van ?</translation>
 <translation id="3997476611815694295">Onbelangrijke opslag</translation>
+<translation id="4000212216660919741">Homepage voor offline</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Cookies voor een specifieke site toestaan.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# uur}other{# uur}}</translation>
@@ -767,6 +768,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6697947395630195233">Chrome heeft toegang tot je locatie nodig om je locatie met deze site te delen.</translation>
 <translation id="6698801883190606802">Gesynchroniseerde gegevens beheren</translation>
 <translation id="6699370405921460408">De Google-servers optimaliseren de pagina's die je bezoekt.</translation>
+<translation id="6706288973712894588">Je bent op dit moment offline.\n<ph name="BEGIN_LINK" />Ontdek je offline feed.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Nieuws</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="671481426037969117">Je <ph name="FQDN" />-timer is afgelopen. Deze begint morgen opnieuw.</translation>
@@ -866,6 +868,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="7475688122056506577">SD-kaart niet gevonden. Sommige van je bestanden kunnen ontbreken.</translation>
 <translation id="7479104141328977413">Tabbladbeheer</translation>
 <translation id="7481312909269577407">Vooruit</translation>
+<translation id="7482656565088326534">Voorbeeldtabblad</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (geüpdatet: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">data bespaard</translation>
 <translation id="7498271377022651285">Een ogenblik geduld…</translation>
@@ -915,7 +918,6 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="7810647596859435254">Openen met…</translation>
 <translation id="7821588508402923572">Hier wordt getoond hoeveel data je bespaart</translation>
 <translation id="7837721118676387834">Automatisch afspelen van gedempte video's toestaan voor een specifieke site.</translation>
-<translation id="7838340937077326045">Weet je zeker dat je de bestandsextensie wilt wijzigen?</translation>
 <translation id="7846076177841592234">Selectie opheffen</translation>
 <translation id="784934925303690534">Periode</translation>
 <translation id="7851858861565204677">Andere apparaten</translation>
@@ -996,6 +998,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8380167699614421159">Deze site geeft opdringerige of misleidende advertenties weer</translation>
 <translation id="8393700583063109961">Bericht verzenden</translation>
 <translation id="8413126021676339697">Hele geschiedenis bekijken</translation>
+<translation id="8427875596167638501">Voorbeeldtabblad is half geopend</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8438566539970814960">Zoekopdrachten en browsefunctionaliteit verbeteren</translation>
 <translation id="8441146129660941386">Achteruit zoeken</translation>
@@ -1086,7 +1089,9 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="9086455579313502267">Geen toegang tot het netwerk</translation>
 <translation id="9100505651305367705">Aanbieden om artikelen weer te geven in een vereenvoudigde weergave (indien ondersteund)</translation>
 <translation id="9100610230175265781">Wachtwoordzin vereist</translation>
+<translation id="9102803872260866941">Voorbeeldtabblad is geopend</translation>
 <translation id="9104217018994036254">Lijst met apparaten om een tabblad mee te delen.</translation>
+<translation id="9133397713400217035">Offline ontdekken</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9139068048179869749">Vragen voordat sites meldingen mogen verzenden (aanbevolen)</translation>

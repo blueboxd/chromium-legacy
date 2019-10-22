@@ -26,7 +26,6 @@ public class SmokeTest {
     @SmallTest
     public void testSetSupportEmbedding() {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
-        Assert.assertNotNull(activity);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { activity.getBrowserFragmentController().setSupportsEmbedding(true); });
@@ -38,7 +37,6 @@ public class SmokeTest {
             activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
                     (Boolean result) -> {
                         Assert.assertTrue(result);
-                        mActivityTestRule.loadUrl(url);
                         latch.countDown();
                     });
         });
@@ -48,6 +46,6 @@ public class SmokeTest {
         } catch (InterruptedException e) {
             Assert.fail(e.toString());
         }
-        mActivityTestRule.waitForNavigation(url);
+        mActivityTestRule.navigateAndWait(url);
     }
 }

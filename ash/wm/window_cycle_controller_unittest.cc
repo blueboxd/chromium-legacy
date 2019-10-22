@@ -693,13 +693,7 @@ class DesksWindowCyclingTest : public WindowCycleControllerTest {
   DISALLOW_COPY_AND_ASSIGN(DesksWindowCyclingTest);
 };
 
-// https://crbug.com/1013174
-#if defined(OS_CHROMEOS)
-#define MAYBE_CycleShowsAllDesksWindows DISABLED_CycleShowsAllDesksWindows
-#else
-#define MAYBE_CycleShowsAllDesksWindows CycleShowsAllDesksWindows
-#endif
-TEST_F(DesksWindowCyclingTest, MAYBE_CycleShowsAllDesksWindows) {
+TEST_F(DesksWindowCyclingTest, CycleShowsAllDesksWindows) {
   // Create two desks with two windows in each.
   auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));

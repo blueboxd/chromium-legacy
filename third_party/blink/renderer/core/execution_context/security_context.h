@@ -32,6 +32,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
@@ -139,6 +140,12 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
       const ParsedFeaturePolicy& container_policy,
       const FeaturePolicy* parent_feature_policy);
 
+  const DocumentPolicy* GetDocumentPolicy() const {
+    return document_policy_.get();
+  }
+  void SetDocumentPolicyForTesting(
+      std::unique_ptr<DocumentPolicy> document_policy);
+
   // Tests whether the policy-controlled feature is enabled in this frame.
   // Optionally sends a report to any registered reporting observers or
   // Report-To endpoints, via ReportFeaturePolicyViolation(), if the feature is
@@ -179,6 +186,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<FeaturePolicy> feature_policy_;
   std::unique_ptr<FeaturePolicy> report_only_feature_policy_;
+  std::unique_ptr<DocumentPolicy> document_policy_;
 
  private:
   Member<ContentSecurityPolicy> content_security_policy_;

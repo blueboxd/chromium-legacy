@@ -41,6 +41,13 @@ class MojoLearningTaskControllerTest : public ::testing::Test {
       cancel_args_.id_ = id;
     }
 
+    void UpdateDefaultTarget(
+        const base::UnguessableToken& id,
+        const base::Optional<TargetValue>& default_target) override {
+      update_default_args_.id_ = id;
+      update_default_args_.default_target_ = default_target;
+    }
+
     struct {
       base::UnguessableToken id_;
       FeatureVector features_;
@@ -55,6 +62,11 @@ class MojoLearningTaskControllerTest : public ::testing::Test {
     struct {
       base::UnguessableToken id_;
     } cancel_args_;
+
+    struct {
+      base::UnguessableToken id_;
+      base::Optional<TargetValue> default_target_;
+    } update_default_args_;
   };
 
  public:
@@ -106,6 +118,34 @@ TEST_F(MojoLearningTaskControllerTest, BeginWithDefaultTarget) {
   EXPECT_EQ(features, fake_learning_controller_.begin_args_.features_);
   EXPECT_EQ(default_target,
             fake_learning_controller_.begin_args_.default_target_);
+}
+
+TEST_F(MojoLearningTaskControllerTest, UpdateDefaultTargetToValue) {
+  // Test if we can update the default target to a non-nullopt.
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  FeatureVector features = {FeatureValue(123), FeatureValue(456)};
+  learning_controller_->BeginObservation(id, features, base::nullopt);
+  TargetValue default_target(987);
+  learning_controller_->UpdateDefaultTarget(id, default_target);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(id, fake_learning_controller_.update_default_args_.id_);
+  EXPECT_EQ(features, fake_learning_controller_.begin_args_.features_);
+  EXPECT_EQ(default_target,
+            fake_learning_controller_.update_default_args_.default_target_);
+}
+
+TEST_F(MojoLearningTaskControllerTest, UpdateDefaultTargetToNoValue) {
+  // Test if we can update the default target to nullopt.
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  FeatureVector features = {FeatureValue(123), FeatureValue(456)};
+  TargetValue default_target(987);
+  learning_controller_->BeginObservation(id, features, default_target);
+  learning_controller_->UpdateDefaultTarget(id, base::nullopt);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(id, fake_learning_controller_.update_default_args_.id_);
+  EXPECT_EQ(features, fake_learning_controller_.begin_args_.features_);
+  EXPECT_EQ(base::nullopt,
+            fake_learning_controller_.update_default_args_.default_target_);
 }
 
 TEST_F(MojoLearningTaskControllerTest, Complete) {

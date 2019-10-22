@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">如要讓 Chrome 傳送通知，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟通知功能。</translation>
 <translation id="204321170514947529">「<ph name="APP_NAME" />」在 Chrome 中也有資料</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">變更副檔名可能會造成未預期的問題，也可能會對裝置造成損害。</translation>
 <translation id="2056878612599315956">網站已暫停</translation>
 <translation id="2063713494490388661">輕觸搜尋</translation>
 <translation id="2067805253194386918">文字</translation>
@@ -915,7 +914,6 @@
 <translation id="7810647596859435254">選擇開啟工具…</translation>
 <translation id="7821588508402923572">你省下的數據流量會顯示在這裡</translation>
 <translation id="7837721118676387834">允許特定網站自動播放靜音的影片。</translation>
-<translation id="7838340937077326045">確定要變更副檔名嗎？</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
 <translation id="784934925303690534">時間範圍</translation>
 <translation id="7851858861565204677">其他裝置</translation>

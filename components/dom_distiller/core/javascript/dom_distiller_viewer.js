@@ -136,6 +136,23 @@ function maybeSetWebFont() {
   document.head.appendChild(e);
 }
 
+const supportedTextSizes = [14, 15, 16, 18, 20, 24, 28, 32, 40, 48];
+function updateSlider(position) {
+  document.documentElement.style.setProperty(
+      '--fontSizePercent', (position / 9 * 100) + '%');
+  for (let i = 0; i < supportedTextSizes.length; i++) {
+    let optionClasses =
+        document.querySelector('.tickmarks option[value="' + i + '"]')
+            .classList;
+    removeAll(optionClasses, ['beforeThumb', 'afterThumb']);
+    if (i < position) {
+      optionClasses.add('beforeThumb');
+    } else {
+      optionClasses.add('afterThumb');
+    }
+  }
+}
+
 // Add a listener to the "View Original" link to report opt-outs.
 document.getElementById('closeReaderView')
     .addEventListener('click', function(e) {
@@ -407,7 +424,12 @@ document.querySelector('#themeSelection').addEventListener('change', (e) => {
 });
 
 document.querySelector('#fontSizeSelection').addEventListener('change', (e) => {
-  document.body.style.fontSize = e.target.value + 'px';
+  document.body.style.fontSize = supportedTextSizes[e.target.value] + 'px';
+  updateSlider(e.target.value);
+});
+
+document.querySelector('#fontSizeSelection').addEventListener('input', (e) => {
+  updateSlider(e.target.value);
 });
 
 document.querySelector('#fontFamilySelection')

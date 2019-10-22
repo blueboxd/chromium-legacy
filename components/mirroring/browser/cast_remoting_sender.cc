@@ -30,8 +30,8 @@ namespace {
 
 // Global map for looking-up CastRemotingSender instances by their
 // |rtp_stream_id|.
-// TODO(xjz): Remove this global look-up map when mirror service
-// refactoring is done. http://crbug.com/734672
+// TODO(crbug.com/1015477): Remove this global look-up map when mirror service
+// refactoring is done.
 using CastRemotingSenderMap = std::map<int32_t, mirroring::CastRemotingSender*>;
 base::LazyInstance<CastRemotingSenderMap>::Leaky g_sender_map =
     LAZY_INSTANCE_INITIALIZER;
@@ -230,7 +230,7 @@ void CastRemotingSender::ResendForKickstart() {
   transport_->ResendFrameForKickstart(ssrc_, last_sent_frame_id_);
 }
 
-// TODO(xjz): We may need to count in the frames acknowledged in
+// TODO(crbug.com/1015477): We may need to count in the frames acknowledged in
 // RtcpCastMessage::received_later_frames for more accurate calculation on
 // available bandwidth. Same logic should apply on
 // media::cast::FrameSender::GetUnacknowledgedFrameCount().
@@ -277,7 +277,8 @@ void CastRemotingSender::OnReceivedCastMessage(
     } else {
       duplicate_ack_counter_ = 0;
     }
-    // TODO(miu): The values "2" and "3" should be derived from configuration.
+    // TODO(crbug.com/1015477): The values "2" and "3" should be derived from
+    // configuration.
     if (duplicate_ack_counter_ >= 2 && duplicate_ack_counter_ % 3 == 2) {
       ResendForKickstart();
     }
@@ -475,7 +476,7 @@ void CastRemotingSender::TrySendFrame() {
   if (!frame_event_cb_.is_null()) {
     media::cast::FrameEvent remoting_event;
     remoting_event.timestamp = remoting_frame.reference_time;
-    // TODO(xjz): Use a new event type for remoting.
+    // TODO(crbug.com/1015477): Use a new event type for remoting.
     remoting_event.type = media::cast::FRAME_ENCODED;
     remoting_event.media_type =
         is_audio_ ? media::cast::AUDIO_EVENT : media::cast::VIDEO_EVENT;
@@ -502,11 +503,11 @@ void CastRemotingSender::TrySendFrame() {
 void CastRemotingSender::CancelInFlightData() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-// TODO(miu): The following code is something we want to do as an
+// TODO(crbug.com/647423): The following code is something we want to do as an
 // optimization. However, as-is, it's not quite correct. We can only cancel
 // frames where no packets have actually hit the network yet. Said another
 // way, we can only cancel frames the receiver has definitely not seen any
-// part of (including kickstarting!). http://crbug.com/647423
+// part of (including kickstarting!).
 #if 0
   if (latest_acked_frame_id_ < last_sent_frame_id_) {
     std::vector<media::cast::FrameId> frames_to_cancel;

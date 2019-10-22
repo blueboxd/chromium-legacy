@@ -90,8 +90,8 @@ template("test") {
         }
       }
     } else {
-      _library_target = "_${target_name}__library"
-      _apk_target = "${target_name}_apk"
+      _library_target = "${target_name}__library"
+      _apk_target = "${target_name}__apk"
       _apk_specific_vars = [
         "android_manifest",
         "android_manifest_dep",
@@ -160,16 +160,6 @@ template("test") {
         if (defined(_unwind_table_asset_name)) {
           deps += [ ":${_unwind_table_asset_name}" ]
         }
-
-        # TODO(agrieve): Remove this data_dep once bots don't build the _apk
-        #     target (post-GYP).
-        # It's a bit backwards for the apk to depend on the runner script, since
-        # the apk is conceptually a runtime_dep of the script. However, it is
-        # currently necessary because the bots build this _apk target directly
-        # rather than the group() below.
-        data_deps = [
-          ":$_test_runner_target",
-        ]
       }
 
       _test_runner_target = "${_output_name}__test_runner_script"

@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
     ":tab",
     ":tab_list",
     ":tab_strip_embedder_proxy",
+    ":tab_strip_options",
     ":tabs_api_proxy",
   ]
 }
@@ -36,6 +37,7 @@ js_library("tabs_api_proxy") {
 js_library("tab") {
   deps = [
     "//ui/webui/resources/js:icon.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -46,6 +48,9 @@ js_library("tab_strip_embedder_proxy") {
   deps = [
     "//ui/webui/resources/js:cr.m",
   ]
+}
+
+js_library("tab_strip_options") {
 }
 
 group("tab_strip_modules") {

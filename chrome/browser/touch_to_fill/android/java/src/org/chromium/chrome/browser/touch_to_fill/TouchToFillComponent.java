@@ -62,8 +62,17 @@ public interface TouchToFillComponent {
 
         /**
          * Called to fetch a favicon for one origin to display it in the UI.
+         *
+         * @param credentialOrigin The origin of the credential for which the favicon should be
+         *         fetched. May be opaque, in this case the frame origin will be used.
+         * @param frameOrigin The origin of the frame for which {@link TouchToFillComponent} is
+         *         displayed. Used as the fallback source for the favicon in credential origin is
+         *         opaque.
+         * @param desiredSize The desired size for the favicon. The actual size may be different.
+         * @param callback The callback to receive the favicon or null if no favicon was found.
          */
-        void fetchFavicon(String origin, @Px int desiredSize, Callback<Bitmap> callback);
+        void fetchFavicon(String credentialOrigin, String frameOrigin, @Px int desiredSize,
+                Callback<Bitmap> callback);
     }
 
     /**
@@ -76,9 +85,9 @@ public interface TouchToFillComponent {
 
     /**
      * Displays the given credentials in a new bottom sheet.
-     * @param formattedUrl A {@link String} that contains the URL to display credentials for.
+     * @param url A {@link String} that contains the URL to display credentials for.
      * @param isOriginSecure A {@link boolean} that indicates whether the current origin is secure.
      * @param credentials A list of {@link Credential}s that will be displayed.
      */
-    void showCredentials(String formattedUrl, boolean isOriginSecure, List<Credential> credentials);
+    void showCredentials(String url, boolean isOriginSecure, List<Credential> credentials);
 }

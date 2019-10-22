@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Ierīce <ph name="DEVICE_NAME" /> ir pievienota</translation>
 <translation id="1056775291175587022">Nav tīklu</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">Mobilais tālrunis: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Man ir garlaicīgi</translation>
 <translation id="1104084341931202936">Rādīt pieejamības iestatījumus</translation>
 <translation id="1104621072296271835">Kopā jūsu ierīces darbojas vēl labāk</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">attēla izvērse</translation>
 <translation id="119944043368869598">Notīrīt visu</translation>
 <translation id="1247372569136754018">Mikrofons (iebūvētais)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" />: šo iestatījumu ievieš jūsu administrators.</translation>
 <translation id="1252999807265626933">Uzlādes avots: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Kādi ir laikapstākļi?</translation>
 <translation id="1267032506238418139">Īsinājumtaustiņš mainīts</translation>
 <translation id="1270290102613614947">Ekrāna tastatūra atspējota</translation>
 <translation id="1272079795634619415">Apturēt</translation>
+<translation id="1275285675049378717">Savienojums, izmantojot <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Atgriezieties šajā dienā: <ph name="COME_BACK_DAY_OF_WEEK" />, plkst. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Vājš signāls</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">Augsta kontrasta režīms</translation>
 <translation id="2542089167727451762">Pieskarieties profila attēlam</translation>
 <translation id="255671100581129685">Google asistents nav pieejams publiskā sesijā.</translation>
+<translation id="256712445991462162">dokota lupa</translation>
 <translation id="2575685495496069081">Vairākkārtēja pierakstīšanās ir atspējota</translation>
 <translation id="2582112259361606227">Restartēt, lai atjauninātu</translation>
 <translation id="2617342710774726426">SIM karte ir bloķēta.</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">Skārienekrāna pildspalvas rīki</translation>
 <translation id="3368922792935385530">pievienots</translation>
 <translation id="3371140690572404006">USB-C ierīce (pieslēgvieta labajā pusē priekšā)</translation>
+<translation id="3386978599540877378">pilnekrāna režīma lupa</translation>
 <translation id="3400357268283240774">Papildu iestatījumi</translation>
 <translation id="3413817803639110246">Vēl nekas netiek rādīts</translation>
 <translation id="343571671045587506">Rediģēt atgādinājumu</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">Notiek Asistenta ielāde...</translation>
+<translation id="4356930093361201197">augsta kontrasta režīms</translation>
 <translation id="4378551569595875038">Notiek pievienošana...</translation>
 <translation id="4379531060876907730">Šie ir jūsu skārienekrāna pildspalvas rīki</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Jūs nospiedāt dokotās lupas īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="4421231901400348175">Ekrāna pārvaldības koplietošana ar <ph name="HELPER_NAME" />, izmantojot attālo palīdzību.</translation>
 <translation id="4430019312045809116">Skaļums</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">Vai tiešām vēlaties izslēgt automātiskos klikšķus?</translation>
 <translation id="4849058404725798627">Izcelt objektu ar tastatūras fokusu</translation>
 <translation id="485592688953820832">Neveikt darbību (pārtraukt)</translation>
+<translation id="4868492592575313542">aktivizēts</translation>
 <translation id="4872237917498892622">Alt+Meklēt vai Shift</translation>
 <translation id="4890187583552566966">Jūsu administrators ir atspējojis Google asistentu.</translation>
 <translation id="4895488851634969361">Akumulators ir pilnībā uzlādēts.</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">Savienojums izveidots, akumulatora uzlādes līmenis: <ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="6751826523481687655">Veiktspējas izsekošana ir ieslēgta.</translation>
 <translation id="6752912906630585008">Darbvirsma <ph name="REMOVED_DESK" /> ir noņemta un apvienota ar darbvirsmu <ph name="RECEIVE_DESK" /></translation>
+<translation id="6777216307882431711">Ar USB-C savienojumu notiek vairāku ierīču darbināšana</translation>
 <translation id="6790428901817661496">Atskaņot</translation>
 <translation id="6803622936009808957">Nevarēja spoguļot displejus, jo netika atrasta atbalstīta izšķirtspēja. Tā vietā tika aktivizēts paplašinātās darbvirsmas režīms.</translation>
 <translation id="6820676911989879663">Laiks pārtraukumam</translation>
@@ -442,6 +451,7 @@
 <translation id="7568294522609223312">Izslēgt automātiskos klikšķus</translation>
 <translation id="7569509451529460200">Braila raksts un ChromeVox ir iespējoti</translation>
 <translation id="7593891976182323525">Meklēt vai Shift</translation>
+<translation id="7600875258240007829">Skatīt visus paziņojumus</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (īpašnieks)</translation>
 <translation id="7647488630410863958">Atbloķējiet ierīci, lai skatītu paziņojumus.</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
@@ -506,6 +516,7 @@
 <translation id="8452135315243592079">Nav SIM kartes.</translation>
 <translation id="8454013096329229812">Wi-Fi tīkls ir ieslēgts.</translation>
 <translation id="847056008324733326">Displeja mēroga iestatījumi</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> ir <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Lai atceltu, nospiediet alternēšanas taustiņu + meklēšanas vai pārslēgšanas taustiņu.</translation>
 <translation id="8513108775083588393">Automātiska pagriešana</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ierīce, iespējams, netiks uzlādēta, kamēr tā būs ieslēgta.</translation>
@@ -534,6 +545,7 @@
 <translation id="8909138438987180327">Akumulatora uzlādes līmenis:<ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google asistents nav pieejams šajā valodā.</translation>
+<translation id="8936501819958976551">deaktivizēta</translation>
 <translation id="8938800817013097409">USB-C ierīce (pieslēgvieta aizmugurē pa labi)</translation>
 <translation id="8940956008527784070">Akumulators gandrīz tukšs (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>

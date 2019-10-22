@@ -31,6 +31,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void UnregisterProtocolHandler(const WTF::String& scheme,
                                  const ::blink::KURL& url,
                                  bool user_gesture) override;
+  void DidDisplayInsecureContent() override;
+  void DidContainInsecureFormAction() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

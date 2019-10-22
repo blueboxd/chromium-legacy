@@ -22,6 +22,18 @@
 - (void)showMore;
 @end
 
+@protocol HideProtocol
+- (void)hide;
+- (void)hideMore;
+@end
+
+@protocol CompositeProtocolWithMethods <HideProtocol>
+- (void)doCompositeThings;
+@end
+
+@protocol EmptyContainerProtocol <CompositeProtocolWithMethods, ShowProtocol>
+@end
+
 // A handler with methods that take no arguments.
 @interface CommandDispatcherTestSimpleTarget : NSObject<ShowProtocol>
 
@@ -365,4 +377,62 @@ TEST_F(CommandDispatcherTest, RespondsToSelector) {
       respondsToSelector:@selector(startDispatchingToTarget:forSelector:)]);
   EXPECT_TRUE(
       [dispatcher respondsToSelector:@selector(stopDispatchingForSelector:)]);
+}
+
+TEST_F(CommandDispatcherTest, DispatchingForProtocol) {
+  id dispatcher = [[CommandDispatcher alloc] init];
+  NSObject* target = [[NSObject alloc] init];
+
+  // Check that -dispatchingForProtocol tracks simple stop/start.
+  EXPECT_FALSE([dispatcher dispatchingForProtocol:@protocol(HideProtocol)]);
+  [dispatcher startDispatchingToTarget:target
+                           forProtocol:@protocol(HideProtocol)];
+  EXPECT_TRUE([dispatcher dispatchingForProtocol:@protocol(HideProtocol)]);
+  [dispatcher stopDispatchingForProtocol:@protocol(HideProtocol)];
+  EXPECT_FALSE([dispatcher dispatchingForProtocol:@protocol(HideProtocol)]);
+
+  // Check that -dispatchingForProtocol handles a conformed protocol.
+  [dispatcher startDispatchingToTarget:target
+                           forProtocol:@protocol(CompositeProtocolWithMethods)];
+  EXPECT_FALSE([dispatcher
+      dispatchingForProtocol:@protocol(CompositeProtocolWithMethods)]);
+  [dispatcher startDispatchingToTarget:target
+                           forProtocol:@protocol(HideProtocol)];
+  EXPECT_TRUE([dispatcher
+      dispatchingForProtocol:@protocol(CompositeProtocolWithMethods)]);
+
+  // Check that -dispatchingForProtocol doesn't have a problem with a protocol
+  // that also conforms to NSObject.
+  [dispatcher startDispatchingToTarget:target
+                           forProtocol:@protocol(ShowProtocol)];
+  EXPECT_TRUE([dispatcher dispatchingForProtocol:@protocol(ShowProtocol)]);
+
+  // Check that conforming to all of the conformed protocols in a protocol with
+  // no methods is the same as conforming to that protocol.
+  EXPECT_TRUE(
+      [dispatcher dispatchingForProtocol:@protocol(EmptyContainerProtocol)]);
+
+  // Check that stopping dispatch to a protocol doesn't stop dispatch to its
+  // conformed protocols.
+  [dispatcher
+      stopDispatchingForProtocol:@protocol(CompositeProtocolWithMethods)];
+  EXPECT_TRUE([dispatcher dispatchingForProtocol:@protocol(HideProtocol)]);
+}
+
+TEST_F(CommandDispatcherTest, CallableDispatcher) {
+  CommandDispatcher* dispatcher = [[CommandDispatcher alloc] init];
+  NSObject* target = [[NSObject alloc] init];
+
+  [dispatcher startDispatchingToTarget:target
+                           forProtocol:@protocol(ShowProtocol)];
+  id<ShowProtocol> callable = CallableDispatcher(dispatcher, ShowProtocol);
+  EXPECT_EQ(callable, dispatcher);
+
+  [dispatcher startDispatchingToTarget:target
+                           forProtocol:@protocol(HideProtocol)];
+  [dispatcher startDispatchingToTarget:target
+                           forProtocol:@protocol(CompositeProtocolWithMethods)];
+  id<EmptyContainerProtocol> container_callable =
+      CallableDispatcher(dispatcher, EmptyContainerProtocol);
+  EXPECT_EQ(container_callable, dispatcher);
 }

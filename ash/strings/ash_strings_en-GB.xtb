@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> added</translation>
 <translation id="1056775291175587022">No networks</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">Mobile: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">I'm bored</translation>
 <translation id="1104084341931202936">Show accessibility settings</translation>
 <translation id="1104621072296271835">Your devices work even better together</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Clear all</translation>
 <translation id="1247372569136754018">Microphone (internal)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> This setting is enforced by your administrator.</translation>
 <translation id="1252999807265626933">Charging from <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">What's the weather?</translation>
 <translation id="1267032506238418139">Shortcut change</translation>
 <translation id="1270290102613614947">On-screen keyboard disabled</translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1275285675049378717">Powering <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Come back <ph name="COME_BACK_DAY_OF_WEEK" /> at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Weak signal</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">High contrast mode</translation>
 <translation id="2542089167727451762">Tap your profile image</translation>
 <translation id="255671100581129685">The Google Assistant is not available in a public session.</translation>
+<translation id="256712445991462162">the docked magnifier</translation>
 <translation id="2575685495496069081">Multiple sign-in has been disabled</translation>
 <translation id="2582112259361606227">Restart to update</translation>
 <translation id="2617342710774726426">SIM card is locked</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">Stylus tools</translation>
 <translation id="3368922792935385530">Connected</translation>
 <translation id="3371140690572404006">USB-C device (right-hand-side front port)</translation>
+<translation id="3386978599540877378">the full-screen magnifier</translation>
 <translation id="3400357268283240774">Additional settings</translation>
 <translation id="3413817803639110246">Nothing to see just yet</translation>
 <translation id="343571671045587506">Edit reminder</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Magnifying glass</translation>
 <translation id="4351433414020964307">Assistant is loading...</translation>
+<translation id="4356930093361201197">high-contrast mode</translation>
 <translation id="4378551569595875038">Connecting...</translation>
 <translation id="4379531060876907730">These are your stylus tools</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">You pressed the keyboard shortcut for the docked magnifier. Do you want to turn it on?</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">volume</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">Are you sure that you want to turn off automatic clicks?</translation>
 <translation id="4849058404725798627">Highlight object with keyboard focus</translation>
 <translation id="485592688953820832">No action (pause)</translation>
+<translation id="4868492592575313542">activated</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
 <translation id="4890187583552566966">The Google Assistant is disabled by your administrator.</translation>
 <translation id="4895488851634969361">Battery is full.</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">Connected, <ph name="BATTERY_PERCENTAGE" />% battery</translation>
 <translation id="6751826523481687655">Performance tracing is turned on</translation>
 <translation id="6752912906630585008">Desk <ph name="REMOVED_DESK" /> removed and merged with Desk <ph name="RECEIVE_DESK" /></translation>
+<translation id="6777216307882431711">Powering connected USB-C devices</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
 <translation id="6820676911989879663">Take a break!</translation>
@@ -442,6 +451,7 @@
 <translation id="7568294522609223312">Turn off automatic clicks</translation>
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
+<translation id="7600875258240007829">See all notifications</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
 <translation id="7647488630410863958">Unlock device to view your notifications</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -506,6 +516,7 @@
 <translation id="8452135315243592079">Missing SIM card</translation>
 <translation id="8454013096329229812">Wi-Fi is turned on.</translation>
 <translation id="847056008324733326">Display scale settings</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> has <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Press Alt+Search or Shift to cancel.</translation>
 <translation id="8513108775083588393">Auto-rotate</translation>
 <translation id="8517041960877371778">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on.</translation>
@@ -534,6 +545,7 @@
 <translation id="8909138438987180327">Battery at <ph name="PERCENTAGE" /> per cent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">The Google Assistant doesn’t speak this language.</translation>
+<translation id="8936501819958976551">deactivated</translation>
 <translation id="8938800817013097409">USB-C device (right port in the back)</translation>
 <translation id="8940956008527784070">Battery low (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>

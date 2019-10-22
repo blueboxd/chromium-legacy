@@ -42,6 +42,11 @@ class SkiaOutputSurface;
 // can provide platform-specific behaviour.
 class VIZ_SERVICE_EXPORT OutputSurface {
  public:
+  enum Type {
+    kSoftware = 0,
+    kOpenGL = 1,
+    kVulkan = 2,
+  };
   struct Capabilities {
     Capabilities();
     Capabilities(const Capabilities& capabilities);
@@ -87,7 +92,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   };
 
   // Constructor for skia-based compositing.
-  OutputSurface();
+  explicit OutputSurface(Type type);
   // Constructor for GL-based compositing.
   explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
   // Constructor for software compositing.
@@ -96,6 +101,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual ~OutputSurface();
 
   const Capabilities& capabilities() const { return capabilities_; }
+  Type type() const { return type_; }
 
   // Obtain the 3d context or the software device associated with this output
   // surface. Either of these may return a null pointer, but not both.
@@ -229,6 +235,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   std::unique_ptr<SoftwareOutputDevice> software_device_;
 
  private:
+  const Type type_;
   SkMatrix44 color_matrix_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);

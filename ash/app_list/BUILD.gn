@@ -118,6 +118,7 @@ component("app_list") {
     "//base/third_party/dynamic_annotations",
     "//cc/paint",
     "//chromeos:chromeos",
+    "//chromeos/services/assistant/public:feature_flags",
     "//components/keyed_service/core",
     "//components/sync",
     "//mojo/public/cpp/bindings",

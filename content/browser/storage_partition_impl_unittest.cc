@@ -16,7 +16,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
@@ -241,7 +240,7 @@ class RemoveLocalStorageTester {
     data.set_size_bytes(16);
     ASSERT_TRUE(
         db.Put(CreateMetaDataKey(kOrigin1),
-               leveldb::StdStringToUint8Vector(data.SerializeAsString()))
+               base::as_bytes(base::make_span(data.SerializeAsString())))
             .ok());
     ASSERT_TRUE(db.Put(CreateDataKey(kOrigin1), {}).ok());
 
@@ -249,7 +248,7 @@ class RemoveLocalStorageTester {
     data.set_last_modified(one_day_ago.ToInternalValue());
     ASSERT_TRUE(
         db.Put(CreateMetaDataKey(kOrigin2),
-               leveldb::StdStringToUint8Vector(data.SerializeAsString()))
+               base::as_bytes(base::make_span((data.SerializeAsString()))))
             .ok());
     ASSERT_TRUE(db.Put(CreateDataKey(kOrigin2), {}).ok());
 
@@ -257,15 +256,16 @@ class RemoveLocalStorageTester {
     data.set_last_modified(sixty_days_ago.ToInternalValue());
     ASSERT_TRUE(
         db.Put(CreateMetaDataKey(kOrigin3),
-               leveldb::StdStringToUint8Vector(data.SerializeAsString()))
+               base::as_bytes(base::make_span(data.SerializeAsString())))
             .ok());
     ASSERT_TRUE(db.Put(CreateDataKey(kOrigin3), {}).ok());
   }
 
  private:
   static std::vector<uint8_t> CreateDataKey(const url::Origin& origin) {
-    auto serialized_origin =
-        leveldb::StdStringToUint8Vector(origin.Serialize());
+    auto origin_str = origin.Serialize();
+    std::vector<uint8_t> serialized_origin(origin_str.begin(),
+                                           origin_str.end());
     std::vector<uint8_t> key = {'_'};
     key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
     key.push_back(0);
@@ -275,8 +275,9 @@ class RemoveLocalStorageTester {
 
   static std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
     const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
-    auto serialized_origin =
-        leveldb::StdStringToUint8Vector(origin.Serialize());
+    auto origin_str = origin.Serialize();
+    std::vector<uint8_t> serialized_origin(origin_str.begin(),
+                                           origin_str.end());
     std::vector<uint8_t> key;
     key.reserve(base::size(kMetaPrefix) + serialized_origin.size());
     key.insert(key.end(), kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix));

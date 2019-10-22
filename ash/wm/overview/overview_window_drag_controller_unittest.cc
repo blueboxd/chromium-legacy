@@ -24,7 +24,7 @@
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
@@ -301,7 +301,8 @@ TEST_F(OverviewWindowDragControllerWithDesksTest,
 // Tests the behavior of dragging a window in portrait tablet mode with virtual
 // desks enabled.
 class OverviewWindowDragControllerDesksPortraitTabletTest
-    : public OverviewWindowDragControllerWithDesksTest {
+    : public AshTestBase,
+      public testing::WithParamInterface<bool> {
  public:
   OverviewWindowDragControllerDesksPortraitTabletTest() = default;
   ~OverviewWindowDragControllerDesksPortraitTabletTest() override = default;
@@ -337,9 +338,24 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
     return overview_grid()->desks_bar_view()->GetWidget();
   }
 
+  bool IsHotseatEnabled() { return GetParam(); }
+
   // OverviewWindowDragControllerWithDesksTest:
   void SetUp() override {
-    OverviewWindowDragControllerWithDesksTest::SetUp();
+    if (IsHotseatEnabled()) {
+      scoped_feature_list_.InitWithFeatures(
+          /* enabled */ {features::kVirtualDesks,
+                         chromeos::features::kShelfScrollable,
+                         chromeos::features::kShelfHotseat},
+          /* disabled */ {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          /* enabled */ {features::kVirtualDesks},
+          /* disabled */ {chromeos::features::kShelfScrollable,
+                          chromeos::features::kShelfHotseat});
+    }
+
+    AshTestBase::SetUp();
 
     // Setup a portrait internal display in tablet mode.
     UpdateDisplay("800x600");
@@ -396,13 +412,15 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(OverviewWindowDragControllerDesksPortraitTabletTest);
 };
 
-TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
+TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
        DragAndDropInEmptyArea) {
   // TODO(https://crbug.com/1011128): Fix this test when the hotseat is enabled.
-  if (chromeos::switches::ShouldShowShelfHotseat())
+  if (IsHotseatEnabled())
     return;
 
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
@@ -417,10 +435,10 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
   EXPECT_EQ(0, desks_bar_widget()->GetWindowBoundsInScreen().y());
 }
 
-TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
+TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
        DragAndDropInSnapAreas) {
   // TODO(https://crbug.com/1011128): Fix this test when the hotseat is enabled.
-  if (chromeos::switches::ShouldShowShelfHotseat())
+  if (IsHotseatEnabled())
     return;
 
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
@@ -464,9 +482,9 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 }
 
-TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
+TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
   // TODO(https://crbug.com/1011128): Fix this test when the hotseat is enabled.
-  if (chromeos::switches::ShouldShowShelfHotseat())
+  if (IsHotseatEnabled())
     return;
 
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
@@ -500,5 +518,9 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
   EXPECT_EQ(IndicatorState::kNone,
             drag_indicators()->current_indicator_state());
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         OverviewWindowDragControllerDesksPortraitTabletTest,
+                         testing::Bool());
 
 }  // namespace ash

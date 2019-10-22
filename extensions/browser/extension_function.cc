@@ -23,7 +23,6 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_api.h"

@@ -1037,53 +1037,8 @@ TEST_F('PrintPreviewHeaderTest', 'HeaderChangesForState', function() {
   this.runMochaTest(header_test.TestNames.HeaderChangesForState);
 });
 
-TEST_F('PrintPreviewHeaderTest', 'ButtonOrder', function() {
-  this.runMochaTest(header_test.TestNames.ButtonOrder);
-});
-
 TEST_F('PrintPreviewHeaderTest', 'EnterprisePolicy', function() {
   this.runMochaTest(header_test.TestNames.EnterprisePolicy);
-});
-
-// eslint-disable-next-line no-var
-var PrintPreviewHeaderNewTest = class extends PrintPreviewTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://print/ui/header_new.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'header_new_test.js',
-    ]);
-  }
-
-  /** @override */
-  get suiteName() {
-    return header_new_test.suiteName;
-  }
-};
-
-TEST_F('PrintPreviewHeaderNewTest', 'HeaderPrinterTypes', function() {
-  this.runMochaTest(header_new_test.TestNames.HeaderPrinterTypes);
-});
-
-TEST_F('PrintPreviewHeaderNewTest', 'HeaderWithDuplex', function() {
-  this.runMochaTest(header_new_test.TestNames.HeaderWithDuplex);
-});
-
-TEST_F('PrintPreviewHeaderNewTest', 'HeaderWithCopies', function() {
-  this.runMochaTest(header_new_test.TestNames.HeaderWithCopies);
-});
-
-TEST_F('PrintPreviewHeaderNewTest', 'HeaderChangesForState', function() {
-  this.runMochaTest(header_new_test.TestNames.HeaderChangesForState);
-});
-
-TEST_F('PrintPreviewHeaderNewTest', 'EnterprisePolicy', function() {
-  this.runMochaTest(header_new_test.TestNames.EnterprisePolicy);
 });
 
 // eslint-disable-next-line no-var

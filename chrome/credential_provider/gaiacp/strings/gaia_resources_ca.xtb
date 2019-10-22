@@ -11,7 +11,6 @@
 <translation id="2831078752570172210">El teu compte s'ha bloquejat. Contacta amb l'administrador del sistema.</translation>
 <translation id="2844349213149998955">No es permet iniciar la sessió amb un compte personal en aquest dispositiu. Utilitza un compte de la feina.</translation>
 <translation id="3306357053520292004">Ja s'ha afegit un usuari a l'ordinador amb aquest compte. Inicia la sessió amb un altre compte.</translation>
-<translation id="3968372833844047539">Només poden iniciar la sessió els usuaris de G Suite Enterprise.</translation>
 <translation id="4057329986137569701">S'ha produït un error intern.</translation>
 <translation id="4267670563222825190">No s'ha trobat cap usuari del domini per al teu compte. Contacta amb l'administrador.</translation>
 <translation id="4300229033992784001">La contrasenya del compte ha canviat. Introdueix la contrasenya actual de Windows per sincronitzar el compte de Windows amb el de la feina.</translation>
@@ -25,7 +24,6 @@
 <translation id="7357241217513796177">Assegura't que tinguis connexió a la xarxa i torna-ho a provar.</translation>
 <translation id="7536769223115622137">Afegeix el compte de la feina</translation>
 <translation id="7856245195110636219">No es pot continuar sense introduir la contrasenya actual de Windows. Contacta amb un administrador del sistema.</translation>
-<translation id="7996763357529480810">Inicia la sessió amb el compte de la feina de GSuite.</translation>
 <translation id="8639729688781680518">He oblidat la contrasenya de Windows</translation>
 <translation id="866458870819756755">No s'ha pogut crear cap usuari.</translation>
 <translation id="8875753657315897487">Inicia la sessió amb el compte de la feina</translation>

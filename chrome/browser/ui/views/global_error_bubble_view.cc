@@ -86,6 +86,11 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
                                    error_->GetBubbleViewAcceptButtonLabel());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    error_->GetBubbleViewCancelButtonLabel());
+  if (!error_->GetBubbleViewCancelButtonLabel().empty() &&
+      error_->ShouldUseExtraView()) {
+    DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
+        this, error_->GetBubbleViewCancelButtonLabel()));
+  }
 
   if (!anchor_view) {
     SetAnchorRect(anchor_rect);
@@ -169,15 +174,6 @@ int GlobalErrorBubbleView::GetDialogButtons() const {
                   error_->GetBubbleViewCancelButtonLabel().empty()
               ? 0
               : ui::DIALOG_BUTTON_CANCEL);
-}
-
-std::unique_ptr<views::View> GlobalErrorBubbleView::CreateExtraView() {
-  if (!error_ || error_->GetBubbleViewCancelButtonLabel().empty() ||
-      !error_->ShouldUseExtraView())
-    return nullptr;
-  auto view = views::MdTextButton::CreateSecondaryUiButton(
-      this, error_->GetBubbleViewCancelButtonLabel());
-  return view;
 }
 
 void GlobalErrorBubbleView::OnDialogInitialized() {

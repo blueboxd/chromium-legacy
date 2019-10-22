@@ -18,6 +18,7 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   std::unique_ptr<ash::ScreenshotDelegate> CreateScreenshotDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   void OpenKeyboardShortcutHelpPage() const override;
+  bool CanGoBack(gfx::NativeWindow window) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);

@@ -68,6 +68,7 @@
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/driver/file_based_trusted_vault_client.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -137,6 +138,11 @@ namespace browser_sync {
 
 namespace {
 
+#if !defined(OS_ANDROID)
+const base::FilePath::CharType kTrustedVaultFilename[] =
+    FILE_PATH_LITERAL("Trusted Vault");
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_WIN)
 const base::FilePath::CharType kLoopbackServerBackendFilename[] =
     FILE_PATH_LITERAL("profile.pb");
@@ -196,6 +202,12 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
       account_web_data_service_, profile_password_store_,
       account_password_store_,
       BookmarkSyncServiceFactory::GetForProfile(profile_));
+
+  // TODO(crbug.com/1012659): Instantiate an Android-specific client.
+#if !defined(OS_ANDROID)
+  trusted_vault_client_ = std::make_unique<syncer::FileBasedTrustedVaultClient>(
+      profile_->GetPath().Append(kTrustedVaultFilename));
+#endif  // !defined(OS_ANDROID)
 }
 
 ChromeSyncClient::~ChromeSyncClient() {}
@@ -417,14 +429,7 @@ BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoService() {
 }
 
 syncer::TrustedVaultClient* ChromeSyncClient::GetTrustedVaultClient() {
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/1012659): Instantiate a client for Android.
-  NOTIMPLEMENTED();
-#else
-  // TODO(crbug.com/1012660): Instantiate a generic client for other platforms.
-  NOTIMPLEMENTED();
-#endif  // defined(OS_ANDROID)
-  return nullptr;
+  return trusted_vault_client_.get();
 }
 
 invalidation::InvalidationService* ChromeSyncClient::GetInvalidationService() {

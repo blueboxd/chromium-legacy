@@ -13,6 +13,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
@@ -352,7 +353,9 @@ void SimpleWebViewDialog::LoadImages() {
   forward_->SetImage(views::Button::STATE_DISABLED,
                      tp->GetImageSkiaNamed(IDR_FORWARD_D));
 
-  reload_->LoadImages();
+  reload_->SetColors(
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON),
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE));
 }
 
 void SimpleWebViewDialog::UpdateButtons() {

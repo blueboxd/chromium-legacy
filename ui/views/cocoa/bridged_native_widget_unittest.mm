@@ -419,7 +419,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
       Widget::InitParams::OPAQUE_WINDOW;
   gfx::Rect bounds_ = gfx::Rect(100, 100, 100, 100);
   Widget::InitParams::ShadowType shadow_type_ =
-      Widget::InitParams::SHADOW_TYPE_DEFAULT;
+      Widget::InitParams::ShadowType::kDefault;
 
  private:
   TestViewsDelegate test_views_delegate_;
@@ -902,7 +902,7 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
   // Verify Widget::InitParam defaults and arguments added from SetUp().
   EXPECT_EQ(Widget::InitParams::TYPE_WINDOW_FRAMELESS, type_);
   EXPECT_EQ(Widget::InitParams::OPAQUE_WINDOW, opacity_);
-  EXPECT_EQ(Widget::InitParams::SHADOW_TYPE_DEFAULT, shadow_type_);
+  EXPECT_EQ(Widget::InitParams::ShadowType::kDefault, shadow_type_);
 
   CreateNewWidgetToInit();
   EXPECT_FALSE(
@@ -912,10 +912,10 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
   // Borderless is 0, so isn't really a mask. Check that nothing is set.
   EXPECT_EQ(NSBorderlessWindowMask, [bridge_window() styleMask]);
   EXPECT_TRUE(
-      [bridge_window() hasShadow]);  // SHADOW_TYPE_DEFAULT means a shadow.
+      [bridge_window() hasShadow]);  // ShadowType::kDefault means a shadow.
 
   CreateNewWidgetToInit();
-  shadow_type_ = Widget::InitParams::SHADOW_TYPE_NONE;
+  shadow_type_ = Widget::InitParams::ShadowType::kNone;
   PerformInit();
   EXPECT_FALSE([bridge_window() hasShadow]);  // Preserves lack of shadow.
 
@@ -923,9 +923,9 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
   CreateNewWidgetToInit();
   PerformInit();
   EXPECT_FALSE(
-      [bridge_window() hasShadow]);  // SHADOW_TYPE_NONE removes shadow.
+      [bridge_window() hasShadow]);  // ShadowType::kNone removes shadow.
 
-  shadow_type_ = Widget::InitParams::SHADOW_TYPE_DEFAULT;
+  shadow_type_ = Widget::InitParams::ShadowType::kDefault;
   CreateNewWidgetToInit();
   PerformInit();
   EXPECT_TRUE([bridge_window() hasShadow]);  // Preserves shadow.

@@ -71,7 +71,7 @@ import java.util.concurrent.TimeUnit;
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-webvr"})
+        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR and WebXR are only supported on L+
 @TargetApi(Build.VERSION_CODES.KITKAT) // Necessary to allow taking screenshots with UiAutomation
 public class WebXrVrTransitionTest {
@@ -114,7 +114,7 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testRequestSessionEntersVr() {
@@ -167,7 +167,7 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Remove({"enable-blink-features=WebVR"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testWebVrDisabledWithoutFlagSet() {
         // TODO(bsheedy): Remove this test once WebVR is on by default without
@@ -185,7 +185,7 @@ public class WebXrVrTransitionTest {
     @MediumTest
     @CommandLineFlags
             .Add({"disable-features=WebXR"})
-            @CommandLineFlags.Remove({"enable-webvr"})
+            @CommandLineFlags.Remove({"enable-blink-features=WebVR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWebXrDisabledWithoutFlagSet() {
         apiDisabledWithoutFlagSetImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
@@ -248,7 +248,7 @@ public class WebXrVrTransitionTest {
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
     @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testPresentationPromiseUnresolvedDuringDon_WebXr() {
@@ -289,7 +289,7 @@ public class WebXrVrTransitionTest {
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
     @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testPresentationPromiseRejectedIfDonCanceled_WebXr() {
@@ -334,7 +334,7 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_SVR)
             public void testControlsVisibleAfterExitingVr_WebXr() throws InterruptedException {
@@ -384,7 +384,7 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWindowRafStopsFiringWhilePresenting_WebXr()
@@ -430,7 +430,7 @@ public class WebXrVrTransitionTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testRendererKilledInWebXrStaysInVr() throws IllegalArgumentException {
         rendererKilledInVrStaysInVrImpl(
@@ -452,7 +452,7 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWindowRafFiresDuringNonImmersiveSession() {
@@ -471,7 +471,7 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             @DisableFeatures(ChromeFeatureList.SEND_TAB_TO_SELF)
@@ -496,7 +496,7 @@ public class WebXrVrTransitionTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
             public void testAppButtonExitToast() {
@@ -515,7 +515,7 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @CommandLineFlags
-            .Remove({"enable-webvr"})
+            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testConsentDialogIsDismissedWhenPageNavigatesAwayInMainFrame() {

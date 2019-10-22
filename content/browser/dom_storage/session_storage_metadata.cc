@@ -8,8 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "components/services/leveldb/leveldb_database_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "url/gurl.h"
 
@@ -46,12 +45,18 @@ constexpr const size_t kPrefixBeforeOriginLength =
     kNamespacePrefixLength + blink::kSessionStorageNamespaceIdLength +
     kNamespaceOriginSeperatorLength;
 
+base::StringPiece Uint8VectorToStringPiece(const std::vector<uint8_t>& bytes) {
+  return base::StringPiece(reinterpret_cast<const char*>(bytes.data()),
+                           bytes.size());
+}
+
 bool ValueToNumber(const std::vector<uint8_t>& value, int64_t* out) {
-  return base::StringToInt64(leveldb::Uint8VectorToStringPiece(value), out);
+  return base::StringToInt64(Uint8VectorToStringPiece(value), out);
 }
 
 std::vector<uint8_t> NumberToValue(int64_t map_number) {
-  return leveldb::StdStringToUint8Vector(base::NumberToString(map_number));
+  auto str = base::NumberToString(map_number);
+  return std::vector<uint8_t>(str.begin(), str.end());
 }
 
 }  // namespace
@@ -75,13 +80,13 @@ SessionStorageMetadata::SessionStorageMetadata() {}
 
 SessionStorageMetadata::~SessionStorageMetadata() {}
 
-std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>
+std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
 SessionStorageMetadata::SetupNewDatabase() {
   next_map_id_ = 0;
   next_map_id_from_namespaces_ = 0;
   namespace_origin_map_.clear();
 
-  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks;
   tasks.push_back(base::BindOnce(
       [](int64_t next_map_id, leveldb::WriteBatch* batch,
          const storage::DomStorageDatabase& db) {
@@ -97,7 +102,7 @@ SessionStorageMetadata::SetupNewDatabase() {
 
 bool SessionStorageMetadata::ParseDatabaseVersion(
     base::Optional<std::vector<uint8_t>> value,
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>*
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
         upgrade_tasks) {
   if (!value) {
     initial_database_version_from_disk_ = 0;
@@ -123,7 +128,7 @@ bool SessionStorageMetadata::ParseDatabaseVersion(
 
 bool SessionStorageMetadata::ParseNamespaces(
     std::vector<storage::DomStorageDatabase::KeyValuePair> values,
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>*
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
         upgrade_tasks) {
   namespace_origin_map_.clear();
   next_map_id_from_namespaces_ = 0;
@@ -136,8 +141,7 @@ bool SessionStorageMetadata::ParseNamespaces(
   for (const storage::DomStorageDatabase::KeyValuePair& key_value : values) {
     size_t key_size = key_value.key.size();
 
-    base::StringPiece key_as_string =
-        leveldb::Uint8VectorToStringPiece(key_value.key);
+    base::StringPiece key_as_string = Uint8VectorToStringPiece(key_value.key);
 
     if (key_size < kNamespacePrefixLength) {
       LOG(ERROR) << "Key size is less than prefix length: " << key_as_string;
@@ -181,7 +185,7 @@ bool SessionStorageMetadata::ParseNamespaces(
     if (!ValueToNumber(key_value.value, &map_number)) {
       error = true;
       LOG(ERROR) << "Could not parse map number "
-                 << leveldb::Uint8VectorToStringPiece(key_value.value);
+                 << Uint8VectorToStringPiece(key_value.value);
       break;
     }
 
@@ -261,7 +265,8 @@ scoped_refptr<SessionStorageMetadata::MapData>
 SessionStorageMetadata::RegisterNewMap(
     NamespaceEntry namespace_entry,
     const url::Origin& origin,
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>* save_tasks) {
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
+        save_tasks) {
   auto new_map_data = base::MakeRefCounted<MapData>(next_map_id_, origin);
   ++next_map_id_;
 
@@ -301,7 +306,8 @@ SessionStorageMetadata::RegisterNewMap(
 void SessionStorageMetadata::RegisterShallowClonedNamespace(
     NamespaceEntry source_namespace,
     NamespaceEntry destination_namespace,
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>* save_tasks) {
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
+        save_tasks) {
   DCHECK(save_tasks);
   std::map<url::Origin, scoped_refptr<MapData>>& source_origins =
       source_namespace->second;
@@ -333,7 +339,8 @@ void SessionStorageMetadata::RegisterShallowClonedNamespace(
 
 void SessionStorageMetadata::DeleteNamespace(
     const std::string& namespace_id,
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>* save_tasks) {
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
+        save_tasks) {
   std::vector<storage::DomStorageDatabase::Key> prefixes_to_delete;
   auto it = namespace_origin_map_.find(namespace_id);
   if (it == namespace_origin_map_.end())
@@ -364,7 +371,8 @@ void SessionStorageMetadata::DeleteNamespace(
 void SessionStorageMetadata::DeleteArea(
     const std::string& namespace_id,
     const url::Origin& origin,
-    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>* save_tasks) {
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
+        save_tasks) {
   auto ns_entry = namespace_origin_map_.find(namespace_id);
   if (ns_entry == namespace_origin_map_.end())
     return;

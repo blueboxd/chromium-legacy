@@ -43,8 +43,13 @@ const base::Feature kUseInProgressDownloadManagerForDownloadService{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAllowDownloadResumptionWithoutStrongValidators{
-    "AllowDownloadResumptionWithoutStrongValidators",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "AllowDownloadResumptionWithoutStrongValidators",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kUseParallelRequestsForUnknwonRangeSupport{
     "UseParallelRequestForUnknownRangeSupport",

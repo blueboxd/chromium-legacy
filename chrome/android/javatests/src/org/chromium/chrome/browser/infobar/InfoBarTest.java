@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.tab.SadTab;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -547,8 +548,8 @@ public class InfoBarTest {
         mActivityTestRule.getInfoBarContainer().addAnimationListener(removeListener);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             WebContents newContents = WebContentsFactory.createWebContents(false, false);
-            mActivityTestRule.getActivity().getActivityTab().swapWebContents(
-                    newContents, false, false);
+            TabTestUtils.swapWebContents(
+                    mActivityTestRule.getActivity().getActivityTab(), newContents, false, false);
         });
         mActivityTestRule.loadUrl(HELLO_WORLD_URL);
         removeListener.removeInfoBarAnimationFinished("InfoBar not removed.");

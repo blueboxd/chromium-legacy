@@ -116,32 +116,28 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 
 - (void)passwordsBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
-  MobileMessagesBadgeState state;
-  if (badgeButton.accepted) {
-    state = MobileMessagesBadgeState::Active;
-    base::RecordAction(
-        base::UserMetricsAction("MobileMessagesBadgeAcceptedTapped"));
-  } else {
-    state = MobileMessagesBadgeState::Inactive;
-    base::RecordAction(
-        base::UserMetricsAction("MobileMessagesBadgeNonAcceptedTapped"));
-  }
-  InfobarMetricsRecorder* metricsRecorder;
+  DCHECK(badgeButton.badgeType == BadgeType::kBadgeTypePasswordSave ||
+         badgeButton.badgeType == BadgeType::kBadgeTypePasswordUpdate);
+
   if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordSave) {
-    metricsRecorder = [[InfobarMetricsRecorder alloc]
-        initWithType:InfobarType::kInfobarTypePasswordSave];
     [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypePasswordSave];
+    [self recordMetricsForBadgeButton:badgeButton
+                          infobarType:InfobarType::kInfobarTypePasswordSave];
   } else if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordUpdate) {
-    metricsRecorder = [[InfobarMetricsRecorder alloc]
-        initWithType:InfobarType::kInfobarTypePasswordUpdate];
     [self.dispatcher
         displayModalInfobar:InfobarType::kInfobarTypePasswordUpdate];
+    [self recordMetricsForBadgeButton:badgeButton
+                          infobarType:InfobarType::kInfobarTypePasswordUpdate];
   }
-  [metricsRecorder recordBadgeTappedInState:state];
 }
 
 - (void)saveCardBadgeButtonTapped:(id)sender {
-  // TODO(crbug.com/1014652): Implement.
+  BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
+  DCHECK_EQ(badgeButton.badgeType, BadgeType::kBadgeTypeSaveCard);
+
+  [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypeSaveCard];
+  [self recordMetricsForBadgeButton:badgeButton
+                        infobarType:InfobarType::kInfobarTypeSaveCard];
 }
 
 - (void)overflowBadgeButtonTapped:(id)sender {
@@ -181,6 +177,32 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   // |newWebState| can be null.
   if (newWebState) {
     [self updateNewWebState:newWebState withWebStateList:webStateList];
+  }
+}
+
+#pragma mark - Helpers
+
+// Records Badge tap Histograms through the InfobarMetricsRecorder and then
+// records UserActions.
+- (void)recordMetricsForBadgeButton:(BadgeButton*)badgeButton
+                        infobarType:(InfobarType)infobarType {
+  MobileMessagesBadgeState badgeState =
+      badgeButton.accepted ? MobileMessagesBadgeState::Active
+                           : MobileMessagesBadgeState::Inactive;
+
+  InfobarMetricsRecorder* metricsRecorder =
+      [[InfobarMetricsRecorder alloc] initWithType:infobarType];
+  [metricsRecorder recordBadgeTappedInState:badgeState];
+
+  switch (badgeState) {
+    case MobileMessagesBadgeState::Active:
+      base::RecordAction(
+          base::UserMetricsAction("MobileMessagesBadgeAcceptedTapped"));
+      break;
+    case MobileMessagesBadgeState::Inactive:
+      base::RecordAction(
+          base::UserMetricsAction("MobileMessagesBadgeNonAcceptedTapped"));
+      break;
   }
 }
 

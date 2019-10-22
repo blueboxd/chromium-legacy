@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Para payagan ang Chrome na magpadala sa iyo ng mga notification, i-on din ang mga notification sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">May data rin ang <ph name="APP_NAME" /> sa Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Kapag binago ang file extension, puwedeng magresulta sa hindi inaasahang gawi at puwedeng makapinsala sa iyong device.</translation>
 <translation id="2056878612599315956">Naka-pause ang site</translation>
 <translation id="2063713494490388661">Mag-tap upang Maghanap</translation>
 <translation id="2067805253194386918">text</translation>
@@ -915,7 +914,6 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="7810647596859435254">Buksan gamit ang…</translation>
 <translation id="7821588508402923572">Lalabas dito ang mga natipid sa iyong data</translation>
 <translation id="7837721118676387834">Payagan ang pag-autoplay ng mga naka-mute na video para sa isang partikular na site.</translation>
-<translation id="7838340937077326045">Sigurado ka bang gusto mong baguhin ang file extension?</translation>
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
 <translation id="784934925303690534">Sakop na oras</translation>
 <translation id="7851858861565204677">Iba pang device</translation>

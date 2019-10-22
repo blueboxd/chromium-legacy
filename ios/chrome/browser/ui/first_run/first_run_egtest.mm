@@ -196,7 +196,7 @@ id<GREYMatcher> SkipSigninButton() {
   // Check Sync hasn't started yet, allowing the user to change some settings.
   SyncSetupService* sync_service = SyncSetupServiceFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState());
-  GREYAssertFalse(sync_service->HasFinishedInitialSetup(),
+  GREYAssertFalse(sync_service->IsFirstSetupComplete(),
                   @"Sync shouldn't have finished its original setup yet");
 
   // Close Settings, user is still signed in and sync is now starting.
@@ -205,7 +205,7 @@ id<GREYMatcher> SkipSigninButton() {
 
   [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
 
-  GREYAssertTrue(sync_service->HasFinishedInitialSetup(),
+  GREYAssertTrue(sync_service->IsFirstSetupComplete(),
                  @"Sync should have finished its original setup");
 }
 

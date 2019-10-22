@@ -25,10 +25,6 @@
 #endif  // defined(OS_CHROMEOS)
 #endif  // BUILDFLAG(ENABLE_PDF)
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/common/chrome_features.h"
-#endif
-
 // To add a new component to this API, simply:
 // 1. Add your component to the Component enum in
 //      chrome/common/extensions/api/resources_private.idl
@@ -136,11 +132,6 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
 #endif  // defined(OS_CHROMEOS)
   dict->SetKey("printingEnabled", base::Value(enable_printing));
 #endif  // BUILDFLAG(ENABLE_PDF)
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  dict->SetKey("newPrintPreviewLayoutEnabled",
-               base::Value(base::FeatureList::IsEnabled(
-                   features::kNewPrintPreviewLayout)));
-#endif
 }
 
 }  // namespace

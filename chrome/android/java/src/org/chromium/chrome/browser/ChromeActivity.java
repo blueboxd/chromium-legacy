@@ -131,6 +131,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -880,6 +881,18 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         return mStatusBarColorController;
+    }
+
+    /**
+     * Returns theme color which should be used when:
+     * - Web page does not provide a custom theme color.
+     * AND
+     * - Browser is in a state where it can be themed (no  intersitial showing etc.)
+     * {@link TabState#UNSPECIFIED_THEME_COLOR} should be returned if the activity should use the
+     * default color in this scenario.
+     */
+    public int getActivityThemeColor() {
+        return TabState.UNSPECIFIED_THEME_COLOR;
     }
 
     @Override

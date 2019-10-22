@@ -1515,19 +1515,17 @@ void NetworkContext::AddAuthCacheEntry(
   std::move(callback).Run();
 }
 
-void NetworkContext::LookupBasicAuthCredentials(
+void NetworkContext::LookupServerBasicAuthCredentials(
     const GURL& url,
-    LookupBasicAuthCredentialsCallback callback) {
+    const net::NetworkIsolationKey& network_isolation_key,
+    LookupServerBasicAuthCredentialsCallback callback) {
   net::HttpAuthCache* http_auth_cache =
       url_request_context_->http_transaction_factory()
           ->GetSession()
           ->http_auth_cache();
-  // TODO(mmenke): Make NetworkIsolationKey an argument to this method. The one
-  // consumer of it is associated with a ResourceRequest, so can have the
-  // consumer grab it from there.
   net::HttpAuthCache::Entry* entry =
       http_auth_cache->LookupByPath(url.GetOrigin(), net::HttpAuth::AUTH_SERVER,
-                                    net::NetworkIsolationKey(), url.path());
+                                    network_isolation_key, url.path());
   if (entry && entry->scheme() == net::HttpAuth::AUTH_SCHEME_BASIC)
     std::move(callback).Run(entry->credentials());
   else

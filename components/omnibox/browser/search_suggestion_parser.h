@@ -314,6 +314,7 @@ class SearchSuggestionParser {
   //
   // |source| must be the SimpleURLLoader that loaded the data; it is used to
   // lookup the body's encoding from response headers.
+  // Note: It can be nullptr in tests.
   //
   // |response_body| must be the body of the response; it may be null.
   static std::string ExtractJsonData(

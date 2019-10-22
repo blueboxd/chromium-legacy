@@ -822,8 +822,11 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
   const auto last_position = Position::LastPositionInNode(*container_node);
   CharacterIterator character_iterator(first_position, last_position,
                                        text_iterator_behavior);
+  unsigned text_offset_in_container =
+      adjusted_position.container_object_->TextOffsetInContainer(
+          adjusted_position.TextOffset());
   const EphemeralRange range = character_iterator.CalculateCharacterSubrange(
-      0, adjusted_position.text_offset_or_child_index_);
+      0, text_offset_in_container);
   return PositionWithAffinity(range.EndPosition(), affinity_);
 }
 

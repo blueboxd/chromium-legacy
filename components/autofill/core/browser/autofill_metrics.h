@@ -302,6 +302,17 @@ class AutofillMetrics {
     NUM_SAVE_CARD_PROMPT_METRICS,
   };
 
+  enum CreditCardUploadFeedbackMetric {
+    // The loading indicator animation which indicates uploading is in progress
+    // is successfully shown.
+    CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN,
+    // The credit card icon with the saving failure badge is shown.
+    CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN,
+    // The failure icon is clicked and the save card failure bubble is shown.
+    CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN,
+    NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS,
+  };
+
   // Metrics to measure user interaction with the Manage Cards view
   // shown when user clicks on the save card icon after accepting
   // to save a card.
@@ -699,6 +710,41 @@ class AutofillMetrics {
     kMaxValue = kDidNotChooseMaskedCard,
   };
 
+  // Metric for tracking which authentication method was used for a user with
+  // FIDO authentication enabled.
+  enum class CardUnmaskTypeDecisionMetric {
+    // Only WebAuthn prompt was shown.
+    kFidoOnly = 0,
+    // CVC authentication was required in addition to WebAuthn.
+    kCvcThenFido = 1,
+    kMaxValue = kCvcThenFido,
+  };
+
+  // Possible scenarios where a WebAuthn prompt may show.
+  enum class WebauthnFlowEvent {
+    // WebAuthn is immediately prompted for unmasking.
+    kImmediateAuthentication = 0,
+    // WebAuthn is prompted after a CVC check.
+    kAuthenticationAfterCvc = 1,
+    // WebAuthn is prompted after being offered to opt-in from a checkout flow.
+    kCheckoutOptIn = 2,
+    // WebAuthn is prompted after being offered to opt-in from the settings
+    // page.
+    kSettingsPageOptIn = 3,
+    kMaxValue = kSettingsPageOptIn,
+  };
+
+  // The result of a WebAuthn user-verification prompt.
+  enum class WebauthnResultMetric {
+    // User-verification succeeded.
+    kSuccess = 0,
+    // Other checks failed (e.g. invalid domain, algorithm unsupported, etc.)
+    kOtherError = 1,
+    // User either failed verification or cancelled.
+    kNotAllowedError = 2,
+    kMaxValue = kNotAllowedError,
+  };
+
   // Possible results of Payments RPCs.
   enum PaymentsRpcResult {
     // Request succeeded.
@@ -974,6 +1020,8 @@ class AutofillMetrics {
       SaveCardPromptMetric metric,
       bool is_uploading,
       security_state::SecurityLevel security_level);
+  static void LogCreditCardUploadFeedbackMetric(
+      CreditCardUploadFeedbackMetric metric);
   static void LogManageCardsPromptMetric(ManageCardsPromptMetric metric,
                                          bool is_uploading);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
@@ -1055,10 +1103,18 @@ class AutofillMetrics {
   // GetDetailsForGetRealPan).
   static void LogCardUnmaskPreflightDuration(const base::TimeDelta& duration);
 
+  // Logs which unmask type was used for a user with FIDO authentication
+  // enabled.
+  static void LogCardUnmaskTypeDecision(CardUnmaskTypeDecisionMetric metric);
+
   // Logs the existence of any user-perceived latency between selecting a Google
   // Payments server card and seeing a card unmask prompt.
   static void LogUserPerceivedLatencyOnCardSelection(PreflightCallEvent event,
                                                      bool fido_auth_enabled);
+
+  // Logs the result of a WebAuthn prompt.
+  static void LogWebauthnResult(WebauthnFlowEvent event,
+                                WebauthnResultMetric metric);
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);

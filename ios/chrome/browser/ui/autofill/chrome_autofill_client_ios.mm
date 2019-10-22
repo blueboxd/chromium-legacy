@@ -40,6 +40,8 @@
 #include "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_save_card_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -56,9 +58,16 @@ namespace {
 // Creates and returns an infobar for saving credit cards.
 std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
     std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile> delegate) {
-  SaveCardInfoBarController* controller = [[SaveCardInfoBarController alloc]
-      initWithInfoBarDelegate:delegate.get()];
-  return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
+  if (IsSaveCardInfobarMessagesUIEnabled()) {
+    InfobarSaveCardCoordinator* coordinator =
+        [[InfobarSaveCardCoordinator alloc]
+            initWithInfoBarDelegate:delegate.get()];
+    return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
+  } else {
+    SaveCardInfoBarController* controller = [[SaveCardInfoBarController alloc]
+        initWithInfoBarDelegate:delegate.get()];
+    return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
+  }
 }
 
 }  // namespace

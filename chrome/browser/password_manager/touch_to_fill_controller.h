@@ -16,6 +16,7 @@
 #include "chrome/browser/touch_to_fill/touch_to_fill_view_factory.h"
 #include "components/favicon_base/favicon_types.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 namespace favicon {
 class FaviconService;
@@ -58,7 +59,8 @@ class TouchToFillController {
 
   // Obtains a favicon for the origin and invokes the callback with a favicon
   // image or with an empty image if a favicon could not be retrieved.
-  void FetchFavicon(const std::string& credential_origin,
+  void FetchFavicon(const GURL& credential_origin,
+                    const GURL& frame_origin,
                     int desired_size_in_pixel,
                     base::OnceCallback<void(const gfx::Image&)> callback);
 

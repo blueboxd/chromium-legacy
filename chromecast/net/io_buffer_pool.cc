@@ -226,6 +226,7 @@ IOBufferPool::IOBufferPool(size_t buffer_size,
                            bool threadsafe)
     : buffer_size_(buffer_size),
       max_buffers_(max_buffers),
+      threadsafe_(threadsafe),
       internal_(new Internal(buffer_size, max_buffers, threadsafe)) {}
 
 IOBufferPool::IOBufferPool(size_t buffer_size)

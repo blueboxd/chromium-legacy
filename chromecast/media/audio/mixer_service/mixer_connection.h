@@ -19,6 +19,7 @@ class StreamSocket;
 namespace chromecast {
 namespace media {
 namespace mixer_service {
+class MixerSocket;
 
 // Base class for connecting to the mixer service.
 class MixerConnection {
@@ -32,7 +33,7 @@ class MixerConnection {
 
  protected:
   // Called when a connection is established to the mixer service.
-  virtual void OnConnected(std::unique_ptr<net::StreamSocket> socket) = 0;
+  virtual void OnConnected(std::unique_ptr<MixerSocket> socket) = 0;
 
  private:
   void ConnectCallback(int result);

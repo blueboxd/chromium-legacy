@@ -50,11 +50,6 @@ Polymer({
     /** @type {?print_preview.MeasurementSystem} */
     measurementSystem: Object,
 
-    newPrintPreviewLayout: {
-      type: Boolean,
-      reflectToAttribute: true,
-    },
-
     /** @type {!print_preview.Size} */
     pageSize: Object,
 
@@ -327,7 +322,7 @@ Polymer({
     }
 
     this.pluginLoaded_ = false;
-    if (this.inDarkMode && this.newPrintPreviewLayout) {
+    if (this.inDarkMode) {
       this.pluginProxy_.darkModeChanged(true);
     }
     this.pluginProxy_.resetPrintPreviewMode(
@@ -408,10 +403,6 @@ Polymer({
 
   /** @private */
   onDarkModeChanged_: function() {
-    if (!this.newPrintPreviewLayout) {
-      return;
-    }
-
     if (this.pluginProxy_.pluginReady()) {
       this.pluginProxy_.darkModeChanged(this.inDarkMode);
     }

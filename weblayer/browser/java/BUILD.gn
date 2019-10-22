@@ -40,6 +40,7 @@ android_library("java") {
     ":weblayer_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//components/embedder_support/android:application_java",
     "//content/public/android:content_java",
     "//ui/android:ui_java",
   ]

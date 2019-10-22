@@ -308,7 +308,7 @@ export class PDFViewer {
     /** @private {!ViewerZoomToolbarElement} */
     this.zoomToolbar_ =
         /** @type {!ViewerZoomToolbarElement} */ ($('zoom-toolbar'));
-    this.zoomToolbar_.setIsPrintPreview(this.isPrintPreview_);
+    this.zoomToolbar_.isPrintPreview = this.isPrintPreview_;
     this.zoomToolbar_.addEventListener(
         'fit-to-changed',
         e => this.fitToChanged_(
@@ -421,9 +421,6 @@ export class PDFViewer {
 
     /** @private {!Point} */
     this.lastViewportPosition_;
-
-    /** @private {boolean} */
-    this.reverseZoomToolbar_;
 
     /** @private {boolean} */
     this.inPrintPreviewMode_;
@@ -884,14 +881,9 @@ export class PDFViewer {
     document.documentElement.lang = stringsDictionary.language;
 
     loadTimeData.data = strings;
-    const isNewPrintPreview = this.isPrintPreview_ &&
-        loadTimeData.getBoolean('newPrintPreviewLayoutEnabled');
-    if (isNewPrintPreview) {
+    if (this.isPrintPreview_) {
       this.sendBackgroundColorForPrintPreview_();
-      this.toolbarManager_.reverseSideToolbar();
     }
-    this.reverseZoomToolbar_ = isNewPrintPreview;
-    this.zoomToolbar_.newPrintPreview = isNewPrintPreview;
 
     $('toolbar').strings = strings;
     $('toolbar').pdfAnnotationsEnabled =
@@ -991,7 +983,7 @@ export class PDFViewer {
     // when the NewPrintPreview flag is enabled, the zoom toolbar is on the left
     // left side, but the scrollbar is still on the right, so this is not
     // necessary.
-    if (isRTL() === this.reverseZoomToolbar_) {
+    if (isRTL() === this.isPrintPreview_) {
       this.zoomToolbar_.style.right =
           -verticalScrollbarWidth + (scrollbarWidth / 2) + 'px';
     }

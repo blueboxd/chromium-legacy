@@ -17709,10 +17709,52 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ProfileMenu_ActionableItemClicked_Guest">
+  <owner>droger@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    The user clicked a button or a link in the guest profile menu.
+  </description>
+</action>
+
+<action name="ProfileMenu_ActionableItemClicked_Incognito">
+  <owner>droger@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    The user clicked a button or a link in the incognito profile menu.
+  </description>
+</action>
+
+<action name="ProfileMenu_ActionableItemClicked_Regular">
+  <owner>droger@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    The user clicked a button or a link in the regular profile menu.
+  </description>
+</action>
+
 <action name="ProfileMenu_Opened">
   <owner>msarda@chromium.org</owner>
   <owner>tangltom@chromium.org</owner>
   <description>The user opened the profile menu.</description>
+</action>
+
+<action name="ProfileMenu_Opened_Guest">
+  <owner>droger@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>The user opened the guest profile menu.</description>
+</action>
+
+<action name="ProfileMenu_Opened_Incognito">
+  <owner>droger@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>The user opened the incognito profile menu.</description>
+</action>
+
+<action name="ProfileMenu_Opened_Regular">
+  <owner>droger@chromium.org</owner>
+  <owner>tangltom@chromium.org</owner>
+  <description>The user opened the regular profile menu.</description>
 </action>
 
 <action name="PWAInstallIcon">

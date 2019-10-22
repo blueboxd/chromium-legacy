@@ -326,7 +326,7 @@ cros::mojom::CameraInfoPtr CameraHalDelegate::GetCameraInfoFromDeviceId(
 
 void CameraHalDelegate::OpenDevice(
     int32_t camera_id,
-    cros::mojom::Camera3DeviceOpsRequest device_ops_request,
+    mojo::PendingReceiver<cros::mojom::Camera3DeviceOps> device_ops_receiver,
     OpenDeviceCallback callback) {
   DCHECK(!ipc_task_runner_->BelongsToCurrentThread());
   // This method may be called on any thread except |ipc_task_runner_|.
@@ -336,7 +336,7 @@ void CameraHalDelegate::OpenDevice(
   ipc_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&CameraHalDelegate::OpenDeviceOnIpcThread, this, camera_id,
-                     base::Passed(&device_ops_request), std::move(callback)));
+                     std::move(device_ops_receiver), std::move(callback)));
 }
 
 int CameraHalDelegate::GetCameraIdFromDeviceId(const std::string& device_id) {
@@ -506,10 +506,10 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
 
 void CameraHalDelegate::OpenDeviceOnIpcThread(
     int32_t camera_id,
-    cros::mojom::Camera3DeviceOpsRequest device_ops_request,
+    mojo::PendingReceiver<cros::mojom::Camera3DeviceOps> device_ops_receiver,
     OpenDeviceCallback callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  camera_module_->OpenDevice(camera_id, std::move(device_ops_request),
+  camera_module_->OpenDevice(camera_id, std::move(device_ops_receiver),
                              std::move(callback));
 }
 

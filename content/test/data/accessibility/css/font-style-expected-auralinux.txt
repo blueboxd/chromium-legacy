@@ -12,7 +12,7 @@
 ++++[text] name='over' offset=0 style=italic underline=single
 ++++[text] name=' ' offset=0
 ++++[text] name='dog' offset=0 weight=700 style=italic underline=single
-++[section] selectable-text offset=0 offset=7 weight=700 offset=11 offset=12 style=italic offset=18 offset=19 underline=single offset=28 offset=29 offset=41 offset=42 offset=51 offset=52
+++[section] selectable-text offset=0 offset=7 weight=700 offset=11 offset=12 style=italic offset=18 offset=19 underline=single offset=28 offset=29 offset=41 offset=42 text-position=sub offset=51 offset=52 text-position=super
 ++++[text] name='Normal' offset=0
 ++++[text] name=' ' offset=0
 ++++[text] name='bold' offset=0 weight=700
@@ -23,8 +23,7 @@
 ++++[text] name=' ' offset=0
 ++++[text] name='line-through' offset=0
 ++++[text] name=' ' offset=0
-++++[subscript] name='subscript' offset=0
+++++[subscript] name='subscript' offset=0 text-position=sub
 ++++[text] name=' ' offset=0
-++++[superscript] name='superscript' offset=0
-<-- End-of-file -->
+++++[superscript] name='superscript' offset=0 text-position=super
 

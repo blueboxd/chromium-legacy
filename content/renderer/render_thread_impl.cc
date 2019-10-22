@@ -2167,11 +2167,14 @@ void RenderThreadImpl::OnSystemColorsChanged(
 
 void RenderThreadImpl::UpdateSystemColorInfo(
     mojom::UpdateSystemColorInfoParamsPtr params) {
-  ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
-      params->is_dark_mode, params->is_high_contrast,
-      params->preferred_color_scheme, params->colors);
-  blink::SystemColorsChanged();
-  blink::ColorSchemeChanged();
+  bool did_system_color_info_change =
+      ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
+          params->is_dark_mode, params->is_high_contrast,
+          params->preferred_color_scheme, params->colors);
+  if (did_system_color_info_change) {
+    blink::SystemColorsChanged();
+    blink::ColorSchemeChanged();
+  }
 }
 
 void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {

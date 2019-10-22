@@ -44,6 +44,20 @@ using bookmarks::BookmarkExpandedStateTracker;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
+namespace {
+
+std::unique_ptr<views::LabelButton> CreateNewFolderButton(
+    views::ButtonListener* listener,
+    bool enabled) {
+  auto new_folder_button = views::MdTextButton::CreateSecondaryUiButton(
+      listener,
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON));
+  new_folder_button->SetEnabled(enabled);
+  return new_folder_button;
+}
+
+}  // namespace
+
 BookmarkEditorView::BookmarkEditorView(
     Profile* profile,
     const BookmarkNode* parent,
@@ -59,6 +73,10 @@ BookmarkEditorView::BookmarkEditorView(
   DCHECK(bb_model_->client()->CanBeEditedByUser(parent));
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_SAVE));
+  if (show_tree_) {
+    new_folder_button_ = DialogDelegate::SetExtraView(
+        CreateNewFolderButton(this, bb_model_->loaded()));
+  }
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::CONTROL, views::CONTROL));
   Init();
@@ -82,17 +100,6 @@ bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
       return GetInputURL().is_valid();
   }
   return true;
-}
-
-std::unique_ptr<views::View> BookmarkEditorView::CreateExtraView() {
-  if (show_tree_ && !new_folder_button_) {
-    auto new_folder_button = views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON));
-    new_folder_button->SetEnabled(bb_model_->loaded());
-    new_folder_button_ = new_folder_button.get();
-    return new_folder_button;
-  }
-  return nullptr;
 }
 
 ui::ModalType BookmarkEditorView::GetModalType() const {

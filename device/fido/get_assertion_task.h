@@ -84,10 +84,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
       base::Optional<AuthenticatorMakeCredentialResponse> response_data);
 
   CtapGetAssertionRequest request_;
+  std::vector<std::vector<PublicKeyCredentialDescriptor>> allow_list_batches_;
+  size_t current_allow_list_batch_ = 0;
+
   std::unique_ptr<SignOperation> sign_operation_;
   std::unique_ptr<RegisterOperation> dummy_register_operation_;
   GetAssertionTaskCallback callback_;
-  size_t current_credential_ = 0;
+
   bool canceled_ = false;
 
   base::WeakPtrFactory<GetAssertionTask> weak_factory_{this};

@@ -32,13 +32,15 @@ void FindInPageManagerDelegateBridge::DidHighlightMatches(WebState* web_state,
 }
 
 void FindInPageManagerDelegateBridge::DidSelectMatch(WebState* web_state,
-                                                     int index) {
+                                                     int index,
+                                                     NSString* context_string) {
   if ([delegate_ respondsToSelector:@selector
-                 (findInPageManager:didSelectMatchAtIndex:forWebState:)]) {
+                 (findInPageManager:
+                     didSelectMatchAtIndex:withContextString:forWebState:)]) {
     [delegate_ findInPageManager:web::FindInPageManager::FromWebState(web_state)
            didSelectMatchAtIndex:index
+               withContextString:context_string
                      forWebState:web_state];
   }
 }
-
 }

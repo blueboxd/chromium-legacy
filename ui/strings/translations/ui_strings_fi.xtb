@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minuutti sitten}other{# minuuttia sitten}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Poista</translation>
+<translation id="1201402288615127009">Seuraava</translation>
 <translation id="1243314992276662751">Lähetä</translation>
 <translation id="1266864766717917324">Jakaminen epäonnistui: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Napauta näytölläsi olevia kosketettavia kohteita.</translation>
 <translation id="2295140143284145483">Kysely</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> Tt/s</translation>
+<translation id="2353636109065292463">Internetyhteyttäsi tarkistetaan</translation>
 <translation id="2388990488038464401">Soitetaanko tähän numeroon puhelimellasi?</translation>
 <translation id="24452542372838207">Laajenna ilmoitus</translation>
 <translation id="2445449901874883781">Korkea tiheys</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekunti jäljellä}other{# sekuntia jäljellä}}</translation>
 <translation id="5941711191222866238">Pienennä</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 tunti}other{# tuntia}}</translation>
+<translation id="5946629889255121107">Numeron lähde: <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Sivu <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Tyhjennä hakukentän teksti</translation>
 <translation id="6040143037577758943">Sulje</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Tallenna tiedosto</translation>
 <translation id="6656912866303152668">Varmista, että <ph name="TARGET_DEVICE_NAME" /> käyttää synkronointia Chromessa, ja yritä lähettämistä sitten uudelleen.</translation>
 <translation id="6699343763173986273">Media: seuraava kappale</translation>
+<translation id="6710213216561001401">Edellinen</translation>
 <translation id="6779314412797872738">Jos haluat lähettää numeron tältä laitteelta Android-puhelimeesi, <ph name="TROUBLESHOOT_LINK" /> molempien laitteiden asetuksista.</translation>
 <translation id="6786750046913594791">Sulje kansio</translation>
 <translation id="6808150112686056157">Media: pysäytä</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min jäljellä}other{# min jäljellä}}</translation>
 <translation id="7319740667687257810">Käynnistysohjelma, osittainen näkymä</translation>
+<translation id="7352651011704765696">Tapahtui jokin virhe</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min sitten}other{# min sitten}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuutti jäljellä}other{# minuuttia jäljellä}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 tunti sitten}other{# tuntia sitten}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s jäljellä}other{# s jäljellä}}</translation>
+<translation id="8134065097954893699">Ladataan sivu uudelleen</translation>
 <translation id="8144660977431427332">Hakupalvelun tarjoaa Google Assistant. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automaattinen täydennys</translation>
 <translation id="815598010540052116">Vieritä alas</translation>

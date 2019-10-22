@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Slaba</translation>
 <translation id="1152528166145813711">Odaberite…</translation>
 <translation id="1199593201721843963">Onemogući daljinske veze</translation>
+<translation id="1201402288615127009">Dalje</translation>
 <translation id="1291443878853470558">Ako želite da aplikacija Chromoting ima pristup ovom računalu, morate omogućiti daljinski pristup.</translation>
 <translation id="1297009705180977556">Pogreška pri povezivanju s računalom <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(ta značajka još nije dostupna za vaše računalo)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Udaljena radna površina Chrome sad je na webu. Isprobajte našu <ph name="LINK_BEGIN" />web-aplikaciju<ph name="LINK_END" />– brza je i besplatna te ima još više značajki, uključujući poboljšanu podršku za više monitora.</translation>
 <translation id="1643640058022401035">Napuštanjem ove stranice završit ćete svoju sesiju aplikacije Chromoting.</translation>
 <translation id="1654128982815600832">Omogućavanje daljinskih veza za ovo računalo…</translation>
+<translation id="1697532407822776718">Potpuno ste spremni!</translation>
 <translation id="170207782578677537">Nisam uspio registrirati ovo računalo.</translation>
 <translation id="174018511426417793">Nije registrirano nijedno računalo. Da biste omogućili daljinske veze s računalom, instalirajte Udaljenu radnu površinu Chrome pa kliknite "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Povezivanje…</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Postupak hosta</translation>
 <translation id="20876857123010370">Način dodirne podloge</translation>
 <translation id="2089514346391228378">Na ovom su računalu omogućene daljinske veze.</translation>
+<translation id="2198363917176605566">Da biste se koristili uslugom <ph name="PRODUCT_NAME" />, trebate dodijeliti dopuštenje za "Snimanje zaslona" da bi se sadržaj zaslona na Macu mogao poslati na udaljeno računalo.
+
+Za dodjelu tog dopuštenja kliknite "<ph name="BUTTON_NAME" />" u nastavku da biste otvorili okno s postavkama "Snimanja zaslona" i zatim potvrdite okvir pored naziva "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Ako je okvir "<ph name="SERVICE_SCRIPT_NAME" />" već potvrđen, uklonite kvačicu i zatim je ponovno stavite.</translation>
 <translation id="2208514473086078157">Postavke pravila ne dopuštaju dijeljenje ovog računala kao hosta za Udaljenu radnu površinu Chrome. Obratite se administratoru sustava za pomoć.</translation>
 <translation id="2220529011494928058">Prijavite poteškoću</translation>
 <translation id="2221097377466213233">Upotrijebite desni Ctrl za tipku Win (⌘ na Macu)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Posljednji put viđen online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ta aplikacija više nije podržana. Da biste dobili najnovije značajke i sigurnosna ažuriranja, upotrijebite <ph name="LINK_BEGIN" />web-aplikaciju Udaljena radna površina Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Pomognite nam poboljšati Udaljenu radnu površinu Chrome, dopustite nam prikupljanje statistike upotrebe i izvješća o padu programa.</translation>
+<translation id="2504109125669302160">Dodijeli usluzi <ph name="PRODUCT_NAME" /> dopuštenje za "Pristupačnost"</translation>
 <translation id="2509394361235492552">Povezano s računalom <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati udaljenu radnu površinu Chrome da se otvara kao prozor.</translation>
 <translation id="2540992418118313681">Želite li dijeliti ovo računalo tako da ga neki drugi korisnik može vidjeti i upravljati njime?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Središnja biblioteka</translation>
 <translation id="4430435636878359009">Onemogući daljinske veze na ovom računalu</translation>
 <translation id="4430915108080446161">Generiranje pristupnog koda...</translation>
+<translation id="443560535555262820">Otvori postavke pristupačnosti</translation>
 <translation id="4450893287417543264">Ne prikazuj ponovo</translation>
 <translation id="4472575034687746823">Početak korištenja</translation>
 <translation id="4481276415609939789">Nije registrirano nijedno računalo. Da biste omogućili daljinske veze s računalom, instalirajte na njega Chromoting pa kliknite "<ph name="BUTTON_NAME" />".</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Promijeni PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (zastarjelo)</translation>
 <translation id="6221358653751391898">Niste prijavljeni u Chrome. Prijavite se i pokušajte ponovo.</translation>
+<translation id="6223301979382383752">Otvori postavke snimanja zaslona</translation>
 <translation id="6227369581881558336">Udaljena radna površina Chrome sad je na webu s novim značajkama, uključujući prijenos datoteka! Provjerite našu <ph name="LINK_BEGIN" />web-aplikaciju<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Host koji je pokrenut na zaslonu za prijavu na konzolu isključio se radi podrške za način zavjese prelaskom na host koji je pokrenut u sesiji korisnika.</translation>
 <translation id="629730747756840877">Račun</translation>
 <translation id="6304318647555713317">Klijent</translation>
 <translation id="6381670701864002291">Nešto drugo.</translation>
 <translation id="6398765197997659313">Izađi iz cijelog zaslona</translation>
+<translation id="6411861157501911556">Za upotrebu usluge <ph name="PRODUCT_NAME" /> trebate dodijeliti dopuštenje za "Pristupačnost" kako bi se unos s daljinskog uređaja mogao dodati na ovaj Mac.
+
+Za dodjelu tog dopuštenja kliknite "<ph name="BUTTON_NAME" />" u nastavku da biste otvorili okno s postavkama "Pristupačnosti", a zatim potvrdite okvir pored naziva "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Ako je okvir "<ph name="SERVICE_SCRIPT_NAME" />" već potvrđen, uklonite kvačicu i ponovno je stavite.</translation>
 <translation id="6441316101718669559">Ova platforma ne podržava integraciju radne površine. Aplikacija se može upotrebljavati, ali uz lošiji korisnički doživljaj.</translation>
 <translation id="652218476070540101">U tijeku je ažuriranje PIN-a za ovo računalo…</translation>
 <translation id="6527303717912515753">Podijeli</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Zadrži cijelu udaljenu radnu površinu vidljivom</translation>
 <translation id="9149992051684092333">Da biste započeli dijeliti radnu površinu, pošaljite pristupni kôd u nastavku osobi koja će vam pomagati.</translation>
 <translation id="916856682307586697">Pokrenite zadanu Xsesiju</translation>
+<translation id="9187628920394877737">Dodijelite usluzi <ph name="PRODUCT_NAME" /> dopuštenje za "Snimanje zaslona"</translation>
 <translation id="9188433529406846933">Autoriziraj</translation>
 <translation id="9213184081240281106">Nevažeća konfiguracija hosta.</translation>
 <translation id="951991426597076286">Odbijam</translation>

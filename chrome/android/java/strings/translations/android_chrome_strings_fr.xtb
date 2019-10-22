@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Pour autoriser Chrome à vous envoyer des notifications, activez également ces dernières dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> a également des données dans Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">La modification de l'extension de fichier peut entraîner un comportement inattendu, dommageable pour votre appareil.</translation>
 <translation id="2056878612599315956">Site en pause</translation>
 <translation id="2063713494490388661">Appuyer pour rechercher</translation>
 <translation id="2067805253194386918">texte</translation>
@@ -263,6 +262,7 @@
 <translation id="2913331724188855103">Autoriser les sites à enregistrer et à lire les données des cookies (recommandé)</translation>
 <translation id="2923908459366352541">Le nom n'est pas valide</translation>
 <translation id="2932150158123903946">Stockage Google <ph name="APP_NAME" /></translation>
+<translation id="2942036813789421260">L'onglet "Aperçu" est fermé</translation>
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1" /> et <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Onglets de navigation privée sélectionnés</translation>
 <translation id="2968755619301702150">Lecteur de certificat</translation>
@@ -388,6 +388,7 @@
 <translation id="3988466920954086464">Consultez les résultats de la recherche instantanée dans ce panneau</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/ ?</translation>
 <translation id="3997476611815694295">Stockage non important</translation>
+<translation id="4000212216660919741">Mode hors connexion</translation>
 <translation id="4002066346123236978">Titre</translation>
 <translation id="4008040567710660924">Autorisez les cookies pour un site spécifique.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}one{# h}other{# h}}</translation>
@@ -767,6 +768,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6697947395630195233">Chrome a besoin d'accéder à votre position pour la partager avec ce site.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
 <translation id="6699370405921460408">Grâce aux serveurs Google, les pages que vous consultez sont optimisées.</translation>
+<translation id="6706288973712894588">Vous êtes actuellement hors connexion.\n<ph name="BEGIN_LINK" />Consultez votre flux hors connexion.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Actualités</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="671481426037969117">Votre minuteur <ph name="FQDN" /> a expiré. Il redémarrera demain.</translation>
@@ -866,6 +868,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7475688122056506577">Carte SD introuvable. Certains de vos fichiers risquent d'être manquants.</translation>
 <translation id="7479104141328977413">Gestion des onglets</translation>
 <translation id="7481312909269577407">Avancer</translation>
+<translation id="7482656565088326534">Onglet ''Aperçu''</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dernière mise à jour <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de données économisées</translation>
 <translation id="7498271377022651285">Veuillez patienter…</translation>
@@ -915,7 +918,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7810647596859435254">Ouvrir avec…</translation>
 <translation id="7821588508402923572">Vos économies de données s'affichent ici</translation>
 <translation id="7837721118676387834">Autorisez la lecture automatique des vidéos dont le son est coupé pour un site spécifique.</translation>
-<translation id="7838340937077326045">Voulez-vous vraiment modifier l'extension du fichier ?</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="784934925303690534">Période</translation>
 <translation id="7851858861565204677">Autres appareils</translation>
@@ -996,6 +998,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8380167699614421159">Ce site affiche des annonces intrusives ou trompeuses</translation>
 <translation id="8393700583063109961">Envoyer un message</translation>
 <translation id="8413126021676339697">Afficher l'historique complet</translation>
+<translation id="8427875596167638501">L'onglet "Aperçu" est ouvert à moitié</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8438566539970814960">Améliorer les recherches et la navigation</translation>
 <translation id="8441146129660941386">Retour rapide</translation>
@@ -1086,7 +1089,9 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="9086455579313502267">Impossible d'accéder au réseau.</translation>
 <translation id="9100505651305367705">Propose une vue simplifiée des articles, si compatibles</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
+<translation id="9102803872260866941">L'onglet "Aperçu" est ouvert</translation>
 <translation id="9104217018994036254">Liste des appareils avec lesquels vous pouvez partager un onglet.</translation>
+<translation id="9133397713400217035">Consulter hors connexion</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9139068048179869749">Demander avant d'autoriser des sites à envoyer des notifications (recommandé)</translation>

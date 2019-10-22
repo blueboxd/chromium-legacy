@@ -1101,8 +1101,9 @@ void KeyframeEffect::GenerateEvent(AnimationEvents* events,
       animation_->NotifyKeyframeModelAborted(event);
       break;
     case AnimationEvent::TAKEOVER:
-      // We never expect to receive a TAKEOVER notification on impl only
-      // animations.
+    case AnimationEvent::TIME_UPDATED:
+      // We never expect to receive a TAKEOVER or TIME_UPDATED
+      // notifications on impl only animations.
       NOTREACHED();
       break;
   }

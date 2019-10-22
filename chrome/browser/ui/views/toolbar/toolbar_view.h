@@ -235,6 +235,8 @@ class ToolbarView : public views::AccessiblePaneView,
   views::View* GetAnchorView(PageActionIconType type) override;
   void ZoomChangedForActiveTab(bool can_show_bubble) override;
   AvatarToolbarButton* GetAvatarToolbarButton() override;
+  ToolbarButton* GetBackButton() override;
+  ReloadButton* GetReloadButton() override;
 
   // BrowserRootView::DropTarget
   BrowserRootView::DropIndex GetDropIndex(

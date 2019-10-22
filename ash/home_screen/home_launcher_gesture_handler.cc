@@ -835,7 +835,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(
   }
 
   aura::Window* first_window = nullptr;
-  if (mode == HomeLauncherGestureHandler::Mode::kDragWindowToHomeOrOverview) {
+  if (mode == Mode::kDragWindowToHomeOrOverview) {
     DCHECK(location_in_screen.has_value());
     first_window =
         GetWindowForDragToHomeOrOverview(*location_in_screen, windows);
@@ -884,35 +884,27 @@ bool HomeLauncherGestureHandler::SetUpWindows(
     });
   }
 
+  // In kDragWindowToHomeOrOverview mode, no need to calculate the desired
+  // opacity and transform for the dragged window and its transient descendants
+  // and backdrop window and the divider window. No need to hide windows as well
+  // since DragWindowFromShelfController will handle it itself.
+  if (mode == Mode::kDragWindowToHomeOrOverview)
+    return true;
+
   // Hide all visible windows which are behind our window so that when we
-  // scroll, the home launcher will be visible in kSlideUpToShow case and
-  // wallpaper will be visible in kDragWindowToHomeOrOverview case. This is only
-  // needed when swiping up, and not when overview mode is active.
+  // scroll, the home launcher will be visible in kSlideUpToShow case. This is
+  // only needed when swiping up, and not when overview mode is active.
   hidden_windows_.clear();
-  if ((mode == Mode::kSlideUpToShow ||
-       mode == Mode::kDragWindowToHomeOrOverview) &&
-      !overview_active_on_gesture_start_) {
+  if (mode == Mode::kSlideUpToShow && !overview_active_on_gesture_start_) {
     for (auto* window : windows) {
-      if (window->IsVisible() &&
-          (mode == Mode::kSlideUpToShow ||
-           (mode == Mode::kDragWindowToHomeOrOverview &&
-            !split_view_controller->IsWindowInSplitView(window)))) {
+      if (window->IsVisible()) {
         hidden_windows_.push_back(window);
         window->AddObserver(this);
       }
     }
-    // Minimize the hidden windows instead of hiding so that they can show up
-    // in overview later.
-    window_util::HideAndMaybeMinimizeWithoutAnimation(
-        hidden_windows_,
-        /*minimize=*/(mode == Mode::kDragWindowToHomeOrOverview));
+    window_util::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
+                                                      /*minimize=*/false);
   }
-
-  // In kDragWindowToHomeOrOverview mode, no need to calculate the desired
-  // opacity and transform for the dragged window and its transient descendants
-  // and backdrop window and the divider window.
-  if (mode == Mode::kDragWindowToHomeOrOverview)
-    return true;
 
   // Show |active_window_| if we are swiping down to hide.
   if (mode == Mode::kSlideDownToHide) {
@@ -975,8 +967,8 @@ bool HomeLauncherGestureHandler::SetUpWindows(
 
 void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
   if (mode_ == Mode::kDragWindowToHomeOrOverview) {
-    window_drag_controller_ = std::make_unique<DragWindowFromShelfController>(
-        GetActiveWindow(), hidden_windows_);
+    window_drag_controller_ =
+        std::make_unique<DragWindowFromShelfController>(GetActiveWindow());
   } else if (mode_ == Mode::kSwipeHomeToOverview) {
     swipe_home_to_overview_controller_ =
         std::make_unique<SwipeHomeToOverviewController>();

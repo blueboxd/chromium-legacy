@@ -78,10 +78,10 @@ gfx::Matrix3F LeastSquaresPredictor::GetXMatrix() const {
   return x;
 }
 
-bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks predict_time,
-                                               InputData* result) const {
+std::unique_ptr<InputPredictor::InputData>
+LeastSquaresPredictor::GeneratePrediction(base::TimeTicks predict_time) const {
   if (!HasPrediction())
-    return false;
+    return nullptr;
 
   float pred_dt = (predict_time - time_[0]).InMillisecondsF();
 
@@ -91,11 +91,12 @@ bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks predict_time,
       SolveLeastSquares(time_matrix, y_queue_, b2)) {
     gfx::Vector3dF prediction_time(1, pred_dt, pred_dt * pred_dt);
 
-    result->pos.set_x(gfx::DotProduct(prediction_time, b1));
-    result->pos.set_y(gfx::DotProduct(prediction_time, b2));
-    return true;
+    return std::make_unique<InputData>(
+        gfx::PointF(gfx::DotProduct(prediction_time, b1),
+                    gfx::DotProduct(prediction_time, b2)),
+        predict_time);
   }
-  return false;
+  return nullptr;
 }
 
 base::TimeDelta LeastSquaresPredictor::TimeInterval() const {

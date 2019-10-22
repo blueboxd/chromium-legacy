@@ -588,7 +588,7 @@ void NativeWidgetNSWindowBridge::CloseWindow() {
   // it and properly increment the reference count bound to the posted task.
   NSWindow* window = ns_window();
 
-  if (IsWindowModalSheet()) {
+  if (IsWindowModalSheet() && [ns_window() isSheet]) {
     // Sheets can't be closed normally. This starts the sheet closing. Once the
     // sheet has finished animating, it will call sheetDidEnd: on the parent
     // window's delegate. Note it still needs to be asynchronous, since code
@@ -603,7 +603,8 @@ void NativeWidgetNSWindowBridge::CloseWindow() {
   }
 
   // For other modal types, animate the close.
-  if (ShouldRunCustomAnimationFor(VisibilityTransition::kHide)) {
+  if (ShouldRunCustomAnimationFor(VisibilityTransition::kHide) &&
+      [ns_window() isVisible]) {
     [ViewsNSWindowCloseAnimator closeWindowWithAnimation:window];
     return;
   }

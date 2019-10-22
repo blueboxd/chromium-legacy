@@ -44,15 +44,6 @@ Polymer({
     /** @private {print_preview.Margins} */
     margins_: Object,
 
-    /** @private {boolean} */
-    newPrintPreviewLayout_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('newPrintPreviewLayoutEnabled');
-      },
-      reflectToAttribute: true,
-    },
-
     /** @private {!print_preview.Size} */
     pageSize_: Object,
 

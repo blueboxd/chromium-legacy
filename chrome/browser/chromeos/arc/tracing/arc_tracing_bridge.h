@@ -16,13 +16,10 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/trace_event/trace_event.h"
 #include "components/arc/mojom/tracing.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/base_agent.h"
-#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace content {
 class BrowserContext;
@@ -77,17 +74,7 @@ class ArcTracingBridge : public KeyedService,
     // tracing::BaseAgent.
     void GetCategories(std::set<std::string>* category_set) override;
 
-    // tracing::mojom::Agent.
-    void StartTracing(const std::string& config,
-                      base::TimeTicks coordinator_time,
-                      Agent::StartTracingCallback callback) override;
-    void StopAndFlush(
-        mojo::PendingRemote<tracing::mojom::Recorder> recorder) override;
-
-    void OnTraceData(const std::string& data);
-
     ArcTracingBridge* const bridge_;
-    mojo::Remote<tracing::mojom::Recorder> recorder_;
 
     DISALLOW_COPY_AND_ASSIGN(ArcTracingAgent);
   };

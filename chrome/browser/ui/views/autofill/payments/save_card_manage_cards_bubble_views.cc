@@ -21,13 +21,27 @@
 #include "chrome/browser/ui/views/sync/bubble_sync_promo_view_util.h"
 #endif
 
+namespace {
+
+std::unique_ptr<views::View> CreateManageCardsButton(
+    views::ButtonListener* listener) {
+  auto manage_cards_button = views::MdTextButton::CreateSecondaryUiButton(
+      listener, l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_CARDS));
+  manage_cards_button->SetID(autofill::DialogViewId::MANAGE_CARDS_BUTTON);
+  return manage_cards_button;
+}
+
+}  // namespace
+
 namespace autofill {
 
 SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
     views::View* anchor_view,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, web_contents, controller) {}
+    : SaveCardBubbleViews(anchor_view, web_contents, controller) {
+  DialogDelegate::SetExtraView(CreateManageCardsButton(this));
+}
 
 std::unique_ptr<views::View>
 SaveCardManageCardsBubbleViews::CreateFootnoteView() {
@@ -62,13 +76,6 @@ SaveCardManageCardsBubbleViews::CreateFootnoteView() {
   InitFootnoteView(promo_view.get());
   return promo_view;
 #endif
-}
-
-std::unique_ptr<views::View> SaveCardManageCardsBubbleViews::CreateExtraView() {
-  auto manage_cards_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_CARDS));
-  manage_cards_button->SetID(DialogViewId::MANAGE_CARDS_BUTTON);
-  return manage_cards_button;
 }
 
 int SaveCardManageCardsBubbleViews::GetDialogButtons() const {

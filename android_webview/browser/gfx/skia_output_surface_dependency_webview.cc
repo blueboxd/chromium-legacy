@@ -123,6 +123,7 @@ void SkiaOutputSurfaceDependencyWebView::DidLoseContext(
     gpu::error::ContextLostReason reason,
     const GURL& active_url) {
   // No GpuChannelManagerDelegate here, so leave it no-op for now.
+  LOG(ERROR) << "SkiaRenderer detected lost context.";
 }
 
 }  // namespace android_webview

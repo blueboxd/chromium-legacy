@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Poor</translation>
 <translation id="1152528166145813711">Select…</translation>
 <translation id="1199593201721843963">Disable remote connections</translation>
+<translation id="1201402288615127009">Next</translation>
 <translation id="1291443878853470558">You must enable remote connections if you want to use Chromoting to access this computer.</translation>
 <translation id="1297009705180977556">Error connecting to <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(this feature is not yet available for your computer)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Remote Desktop is now on the web. Try our <ph name="LINK_BEGIN" />web app<ph name="LINK_END" /> – it's fast and free, with even more features, including improved support for multiple monitors.</translation>
 <translation id="1643640058022401035">Leaving this page will end your Chromoting session.</translation>
 <translation id="1654128982815600832">Enabling remote connections for this computer…</translation>
+<translation id="1697532407822776718">You're all set!</translation>
 <translation id="170207782578677537">Failed to register this computer.</translation>
 <translation id="174018511426417793">You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Connecting…</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Host Process</translation>
 <translation id="20876857123010370">Trackpad mode</translation>
 <translation id="2089514346391228378">Remote connections for this computer have been enabled.</translation>
+<translation id="2198363917176605566">To use <ph name="PRODUCT_NAME" />, you need to grant the 'Screen Recording' permission so that the screen contents on this Mac can be sent to the remote machine.
+
+To grant this permission, click '<ph name="BUTTON_NAME" />' below to open the 'Screen Recording' preferences pane and then tick the box next to '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+If '<ph name="SERVICE_SCRIPT_NAME" />' is already ticked, untick it and then tick it again.</translation>
 <translation id="2208514473086078157">Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance.</translation>
 <translation id="2220529011494928058">Report an issue</translation>
 <translation id="2221097377466213233">Use right Ctrl for Win key (⌘ on Mac)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Last seen online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">This app is no longer supported. To ensure that you're getting the latest features and security updates, please use the <ph name="LINK_BEGIN" />Chrome Remote Desktop web app<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Help us to improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.</translation>
+<translation id="2504109125669302160">Grant 'Accessibility' permission to <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Connected to <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.</translation>
 <translation id="2540992418118313681">Would you like to share this computer for another user to see and control?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Core Library</translation>
 <translation id="4430435636878359009">Disable remote connections to this computer</translation>
 <translation id="4430915108080446161">Generating access code…</translation>
+<translation id="443560535555262820">Open Accessibility Preferences</translation>
 <translation id="4450893287417543264">Don't show again</translation>
 <translation id="4472575034687746823">Get started</translation>
 <translation id="4481276415609939789">You have no computers registered. To enable remote connections to a computer, install Chromoting there and click “<ph name="BUTTON_NAME" />”.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">Change PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (out-of-date)</translation>
 <translation id="6221358653751391898">You are not signed in to Chrome. Please sign in and try again.</translation>
+<translation id="6223301979382383752">Open Screen Recording Preferences</translation>
 <translation id="6227369581881558336">Chrome Remote Desktop is now on the web with new features including file transfer! Take a look at our <ph name="LINK_BEGIN" />web app<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Host running at the console logic screen has shut down to support curtain mode by switching to a host running in a user-specific session.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Something else.</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
+<translation id="6411861157501911556">To use <ph name="PRODUCT_NAME" />, you need to grant the 'Accessibility' permission so that input from the remote machine can be injected on this Mac.
+
+To grant this permission, click '<ph name="BUTTON_NAME" />' below to open the 'Accessibility' preferences pane and then tick the box next to '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+If '<ph name="SERVICE_SCRIPT_NAME" />' is already ticked, untick it and then tick it again.</translation>
 <translation id="6441316101718669559">Desktop integration is not supported on this platform. You can still use the application, but the user experience will be degraded.</translation>
 <translation id="652218476070540101">The PIN for this computer is being updated…</translation>
 <translation id="6527303717912515753">Share</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">Keep whole remote desktop visible</translation>
 <translation id="9149992051684092333">To begin sharing your desktop, give the access code below to the person who will be assisting you.</translation>
 <translation id="916856682307586697">Launch the default XSession</translation>
+<translation id="9187628920394877737">Grant 'Screen Recording' permission to <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Authorise</translation>
 <translation id="9213184081240281106">Invalid host configuration.</translation>
 <translation id="951991426597076286">Decline</translation>

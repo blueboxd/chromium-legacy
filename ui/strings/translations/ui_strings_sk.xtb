@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{pred minútou}few{pred # minútami}many{pred # minútami}other{pred # minútami}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
+<translation id="1201402288615127009">Ďalej</translation>
 <translation id="1243314992276662751">Nahrať</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> sa nepodarilo zdieľať</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Klepnite na dotykové ciele na obrazovke.</translation>
 <translation id="2295140143284145483">Prieskum</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Kontroluje sa internetové pripojenie</translation>
 <translation id="2388990488038464401">Chcete zavolať na toto číslo z telefónu?</translation>
 <translation id="24452542372838207">Rozbaliť upozornenie</translation>
 <translation id="2445449901874883781">Použiť vysokú hustotu</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Zostáva 1 sekunda}few{Zostávajú # sekundy}many{Zostáva # sekundy}other{Zostáva # sekúnd}}</translation>
 <translation id="5941711191222866238">Minimalizovať</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hodina}few{# hodiny}many{# hodiny}other{# hodín}}</translation>
+<translation id="5946629889255121107">Číslo bolo spustené zo zdroja <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Stránka <ph name="SELECTED_PAGE" /> z <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Vymazať text vo vyhľadávacom poli</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Uložiť súbor</translation>
 <translation id="6656912866303152668">Skontrolujte, či má <ph name="TARGET_DEVICE_NAME" /> v Chrome zapnutú synchronizáciu, a skúste to odoslať znova.</translation>
 <translation id="6699343763173986273">Média – ďalšia stopa</translation>
+<translation id="6710213216561001401">Dozadu</translation>
 <translation id="6779314412797872738">Ak chcete odtiaľto odoslať číslo do telefónu s Androidom, <ph name="TROUBLESHOOT_LINK" /> pre obidve zariadenia v nastaveniach.</translation>
 <translation id="6786750046913594791">Zatvoriť priečinok</translation>
 <translation id="6808150112686056157">Médiá – zastaviť</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Zostáva 1 min}few{Zostávajú # min}many{Zostáva # min}other{Zostáva # min}}</translation>
 <translation id="7319740667687257810">Launcher, čiastočné zobrazenie</translation>
+<translation id="7352651011704765696">Vyskytla sa chyba</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pred 1 min}few{Pred # min}many{Pred # min}other{Pred # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zostáva 1 minúta}few{Zostávajú # minúty}many{Zostáva # minúty}other{Zostáva # minút}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Pred 1 hodinou}few{Pred # hodinami}many{Pred # hodinou}other{Pred # hodinami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Zostáva 1 s}few{Zostávajú # s}many{Zostáva # s}other{Zostáva # s}}</translation>
+<translation id="8134065097954893699">Táto stránka sa znova načítava</translation>
 <translation id="8144660977431427332">Vaše vyhľadávania využívajú technológiu Asistenta Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatické dopĺňanie</translation>
 <translation id="815598010540052116">Rolovať nadol</translation>

@@ -78,8 +78,8 @@ class MediaRouter;
 // reference for how CastRemotingConnector and a MediaRemoter interact to
 // start/execute/stop remoting sessions.
 //
-// TODO(xjz): Remove media::mojom::MirrorServiceRemotingSource interface and
-// implementation after Mirroring Service is launched.
+// TODO(crbug.com/1015486): Remove media::mojom::MirrorServiceRemotingSource
+// interface and implementation after Mirroring Service is launched.
 class CastRemotingConnector : public base::SupportsUserData::Data,
                               public media::mojom::MirrorServiceRemotingSource,
                               public media::mojom::RemotingSource {
@@ -235,7 +235,7 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   // pointing to the RemotingBridge being used to communicate with the source.
   RemotingBridge* active_bridge_;
 
-  // TODO(xjz): Remove these after Mirroring Service is launched.
+  // TODO(crbug.com/1015486): Remove these after Mirroring Service is launched.
   mojo::Receiver<media::mojom::MirrorServiceRemotingSource>
       deprecated_receiver_{this};
   mojo::Remote<media::mojom::MirrorServiceRemoter> deprecated_remoter_;

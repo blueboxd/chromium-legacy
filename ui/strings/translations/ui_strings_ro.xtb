@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Acum 1 minut}few{Acum # minute}other{Acum # de minute}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min.}few{# min.}other{# min.}}</translation>
 <translation id="1181037720776840403">Elimină</translation>
+<translation id="1201402288615127009">Înainte</translation>
 <translation id="1243314992276662751">Încărcați</translation>
 <translation id="1266864766717917324">Nu s-a trimis <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Atinge țintele de atingere de pe ecran.</translation>
 <translation id="2295140143284145483">Sondaj</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Se verifică conexiunea la internet</translation>
 <translation id="2388990488038464401">Apelezi acest număr de pe telefonul tău?</translation>
 <translation id="24452542372838207">Extinde notificarea</translation>
 <translation id="2445449901874883781">Folosește densitatea ridicată</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{O secundă rămasă}few{# secunde rămase}other{# de secunde rămase}}</translation>
 <translation id="5941711191222866238">Minimizează</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{o oră}few{# ore}other{# de ore}}</translation>
+<translation id="5946629889255121107">Numărul provine de la <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Pagina <ph name="SELECTED_PAGE" /> din <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Șterge textul din caseta de căutare</translation>
 <translation id="6040143037577758943">Închide</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Salvează fișierul</translation>
 <translation id="6656912866303152668">Asigură-te că dispozitivul <ph name="TARGET_DEVICE_NAME" /> are sincronizarea activată în Chrome, apoi încearcă să trimiți din nou.</translation>
 <translation id="6699343763173986273">Melodia următoare din conținutul media</translation>
+<translation id="6710213216561001401">Înapoi</translation>
 <translation id="6779314412797872738">Pentru a trimite un număr de aici pe telefonul Android, <ph name="TROUBLESHOOT_LINK" /> pentru ambele dispozitive din setări.</translation>
 <translation id="6786750046913594791">Închideți dosarul</translation>
 <translation id="6808150112686056157">Opriți conținutul media</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Un min. rămas}few{# min. rămase}other{# min. rămase}}</translation>
 <translation id="7319740667687257810">Lansator, afișare parțială</translation>
+<translation id="7352651011704765696">A apărut o eroare</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Acum un min.}few{Acum # min.}other{Acum # min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Un minut rămas}few{# minute rămase}other{# de minute rămase}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Acum o oră}few{Acum # ore}other{Acum # de ore}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{O sec. rămasă}few{# sec. rămase}other{# sec. rămase}}</translation>
+<translation id="8134065097954893699">Se reîncarcă pagina</translation>
 <translation id="8144660977431427332">Căutările tale funcționează cu Asistentul Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, completare automată</translation>
 <translation id="815598010540052116">Derulează în jos</translation>

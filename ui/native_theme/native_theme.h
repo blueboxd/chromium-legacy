@@ -484,7 +484,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   void set_system_colors(const std::map<SystemThemeColor, SkColor>& colors);
 
-  void UpdateSystemColorInfo(
+  // Updates the state of dark mode, high contrast, preferred color scheme,
+  // and the map of system colors. Returns true if NativeTheme was updated
+  // as a result, or false if the state of NativeTheme was untouched.
+  bool UpdateSystemColorInfo(
       bool is_dark_mode,
       bool is_high_contrast,
       PreferredColorScheme preferred_color_scheme,

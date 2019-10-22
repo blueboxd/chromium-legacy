@@ -32,12 +32,17 @@ class FindInPageManagerDelegate {
                                    int match_count,
                                    NSString* query) = 0;
 
-  // Called when a match number |index| is selected. A selected match refers to
-  // a match that is highlighted in a unique manner different from the other
-  // matches. This is triggered by calling FindInPageManager::Find() with any
-  // FindInPageOptions to indicate the new match number that was selected. This
-  // method is not called if |FindInPageManager::Find| did not find any matches.
-  virtual void DidSelectMatch(WebState* web_state, int index) = 0;
+  // Called when a match number |index| is selected with |context_string|
+  // representing the text context of the match phrase. |context_string| can be
+  // used in VoiceOver to notify the user of the context of the match in the
+  // sentence. A selected match refers to a match that is
+  // highlighted in a unique manner different from the other matches. This is
+  // triggered by calling FindInPageManager::Find() with any FindInPageOptions
+  // to indicate the new match number that was selected. This method is not
+  // called if |FindInPageManager::Find| did not find any matches.
+  virtual void DidSelectMatch(WebState* web_state,
+                              int index,
+                              NSString* context_string) = 0;
 
  protected:
   virtual ~FindInPageManagerDelegate() = default;

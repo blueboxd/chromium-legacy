@@ -16,7 +16,7 @@
 
 namespace blink {
 
-using namespace css_test_helpers;
+using css_test_helpers::RegisterProperty;
 using VariableMode = CSSParserLocalContext::VariableMode;
 
 namespace {

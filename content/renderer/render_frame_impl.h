@@ -789,8 +789,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidLoadResourceFromMemoryCache(
       const blink::WebURLRequest& request,
       const blink::WebURLResponse& response) override;
-  void DidDisplayInsecureContent() override;
-  void DidContainInsecureFormAction() override;
   void DidRunInsecureContent(const blink::WebSecurityOrigin& origin,
                              const blink::WebURL& target) override;
   void DidDisplayContentWithCertificateErrors() override;

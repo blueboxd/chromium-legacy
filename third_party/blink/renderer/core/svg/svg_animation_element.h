@@ -115,10 +115,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  String ToValue() const;
-  String ByValue() const;
-  String FromValue() const;
-
   // from SVGSMILElement
   void UpdateAnimation(float percent,
                        unsigned repeat,
@@ -145,6 +141,10 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
  private:
   bool IsValid() const final { return SVGTests::IsValid(); }
 
+  String ToValue() const;
+  String ByValue() const;
+  String FromValue() const;
+
   void AnimationAttributeChanged();
   bool CheckAnimationParameters();
   virtual bool CalculateToAtEndOfDurationValue(
@@ -161,10 +161,10 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
     return -1.f;
   }
 
-  void CurrentValuesForValuesAnimation(float percent,
-                                       float& effective_percent,
-                                       String& from,
-                                       String& to);
+  bool CalculateValuesAnimation();
+  float CurrentValuesForValuesAnimation(float percent,
+                                        String& from,
+                                        String& to) const;
   // Also decides which list is to be used, either key_times_from_attribute_
   // or key_times_for_paced_ by toggling the flag use_paced_key_times_.
   void CalculateKeyTimesForCalcModePaced();
@@ -175,10 +175,9 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   }
 
   float CalculatePercentFromKeyPoints(float percent) const;
-  void CurrentValuesFromKeyPoints(float percent,
-                                  float& effective_percent,
-                                  String& from,
-                                  String& to) const;
+  float CurrentValuesFromKeyPoints(float percent,
+                                   String& from,
+                                   String& to) const;
   float CalculatePercentForSpline(float percent, unsigned spline_index) const;
   float CalculatePercentForFromTo(float percent) const;
   unsigned CalculateKeyTimesIndex(float percent) const;

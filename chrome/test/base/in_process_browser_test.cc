@@ -320,11 +320,6 @@ void InProcessBrowserTest::TearDown() {
 #if defined(OS_WIN)
   com_initializer_.reset();
 #endif
-  if (::testing::UnitTest::GetInstance()
-          ->current_test_info()
-          ->result()
-          ->Skipped())
-    return;
   BrowserTestBase::TearDown();
 #if defined(OS_MACOSX) || defined(OS_LINUX)
   OSCryptMocker::TearDown();

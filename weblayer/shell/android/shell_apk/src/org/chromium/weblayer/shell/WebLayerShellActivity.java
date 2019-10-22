@@ -45,6 +45,8 @@ import java.util.List;
  * Activity for managing the Demo Shell.
  */
 public class WebLayerShellActivity extends FragmentActivity {
+    public static final String EXTRA_NO_LOAD = "extra_no_load";
+
     private static final String TAG = "WebLayerShell";
     private static final String KEY_MAIN_VIEW_ID = "mainViewId";
 
@@ -176,11 +178,15 @@ public class WebLayerShellActivity extends FragmentActivity {
         mBrowserFragmentController.setTopView(mTopContentsContainer);
 
         mBrowserController = mBrowserFragmentController.getBrowserController();
-        String startupUrl = getUrlFromIntent(getIntent());
-        if (TextUtils.isEmpty(startupUrl)) {
-            startupUrl = "http://google.com";
+        boolean blockFirstLoad = getIntent().getExtras() != null
+                && getIntent().getExtras().getBoolean(EXTRA_NO_LOAD, false);
+        if (!blockFirstLoad) {
+            String startupUrl = getUrlFromIntent(getIntent());
+            if (TextUtils.isEmpty(startupUrl)) {
+                startupUrl = "http://google.com";
+            }
+            loadUrl(startupUrl);
         }
-        loadUrl(startupUrl);
         mBrowserController.addObserver(new BrowserObserver() {
             @Override
             public void visibleUrlChanged(Uri uri) {

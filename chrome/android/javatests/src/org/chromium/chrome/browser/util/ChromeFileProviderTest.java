@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.util;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
 
@@ -48,8 +46,7 @@ public class ChromeFileProviderTest {
     @Test
     @SmallTest
     public void testOpenFileWhenReady() {
-        Uri uri =
-                ChromeFileProvider.generateUriAndBlockAccess(InstrumentationRegistry.getContext());
+        Uri uri = ChromeFileProvider.generateUriAndBlockAccess();
         Uri fileUri = new Uri.Builder().path("1").build();
         ChromeFileProvider.notifyFileReady(uri, fileUri);
         Uri result = ChromeFileProvider.getFileUriWhenReady(uri);
@@ -59,8 +56,7 @@ public class ChromeFileProviderTest {
     @Test
     @LargeTest
     public void testOpenOnAsyncNotify() {
-        final Context context = InstrumentationRegistry.getContext();
-        final Uri uri = ChromeFileProvider.generateUriAndBlockAccess(context);
+        final Uri uri = ChromeFileProvider.generateUriAndBlockAccess();
         PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
             try {
                 Thread.sleep(10);
@@ -77,9 +73,8 @@ public class ChromeFileProviderTest {
     @Test
     @LargeTest
     public void testFileChanged() {
-        final Context context = InstrumentationRegistry.getContext();
-        Uri uri1 = ChromeFileProvider.generateUriAndBlockAccess(context);
-        final Uri uri2 = ChromeFileProvider.generateUriAndBlockAccess(context);
+        Uri uri1 = ChromeFileProvider.generateUriAndBlockAccess();
+        final Uri uri2 = ChromeFileProvider.generateUriAndBlockAccess();
         final Uri fileUri2 = new Uri.Builder().path("2").build();
         PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
             try {

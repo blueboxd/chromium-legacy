@@ -10,7 +10,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
-#include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_resolution_policy.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/base/renderer.h"
@@ -48,7 +47,6 @@ class CastRenderer : public ::media::Renderer,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                VideoModeSwitcher* video_mode_switcher,
                VideoResolutionPolicy* video_resolution_policy,
-               MediaResourceTracker* media_resource_tracker,
                service_manager::Connector* connector,
                service_manager::mojom::InterfaceProvider* host_interfaces);
   ~CastRenderer() final;
@@ -98,11 +96,8 @@ class CastRenderer : public ::media::Renderer,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
-  MediaResourceTracker* media_resource_tracker_;
   service_manager::Connector* connector_;
   service_manager::mojom::InterfaceProvider* host_interfaces_;
-  // Must outlive |pipeline_| to properly count resource usage.
-  std::unique_ptr<MediaResourceTracker::ScopedUsage> media_resource_usage_;
 
   ::media::RendererClient* client_;
   CastCdmContext* cast_cdm_context_;

@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Aby zezwolić Chrome na wysyłanie Ci powiadomień, musisz je też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Dane aplikacji <ph name="APP_NAME" /> znajdują się też w Chrome</translation>
 <translation id="2049574241039454490"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE_OF_TOTAL" /></translation>
-<translation id="2049961518639794558">Zmiana rozszerzenia pliku może spowodować nieoczekiwane zachowanie i uszkodzić urządzenie.</translation>
 <translation id="2056878612599315956">Strona wstrzymana</translation>
 <translation id="2063713494490388661">Kliknij, by wyszukać</translation>
 <translation id="2067805253194386918">Tekst</translation>
@@ -263,6 +262,7 @@
 <translation id="2913331724188855103">Zezwalaj witrynom na zapisywanie danych w plikach cookie i ich odczytywanie (zalecane)</translation>
 <translation id="2923908459366352541">Nazwa jest nieprawidłowa.</translation>
 <translation id="2932150158123903946">Dane aplikacji Google <ph name="APP_NAME" /></translation>
+<translation id="2942036813789421260">Karta podglądu jest zamknięta</translation>
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Przełączono na karty incognito</translation>
 <translation id="2968755619301702150">Przeglądarka certyfikatów</translation>
@@ -388,6 +388,7 @@
 <translation id="3988466920954086464">Zobacz wyniki wyszukiwania dynamicznego w tym panelu</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">Nieistotne dane</translation>
+<translation id="4000212216660919741">Ekran główny offline</translation>
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="4008040567710660924">Zezwalaj na pliki cookie z określonej strony internetowej.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# godzina}few{# godziny}many{# godzin}other{# godziny}}</translation>
@@ -767,6 +768,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6697947395630195233">Chrome musi mieć dostęp do Twojej lokalizacji, by udostępnić ją tej stronie.</translation>
 <translation id="6698801883190606802">Zarządzaj synchronizowanymi danymi</translation>
 <translation id="6699370405921460408">Serwery Google będą optymalizować otwierane strony.</translation>
+<translation id="6706288973712894588">Teraz jesteś offline.\n<ph name="BEGIN_LINK" />Przeglądaj swój kanał offline<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Wiadomości</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="671481426037969117">Licznik czasu w aplikacji <ph name="FQDN" /> dobiegł końca. Jutro zacznie działać od nowa.</translation>
@@ -866,6 +868,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7475688122056506577">Nie znaleziono karty SD. Może brakować niektórych Twoich plików.</translation>
 <translation id="7479104141328977413">Zarządzanie kartami</translation>
 <translation id="7481312909269577407">Dalej</translation>
+<translation id="7482656565088326534">Karta podglądu</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (zaktualizowana <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">zaoszczędzonych danych</translation>
 <translation id="7498271377022651285">Czekaj…</translation>
@@ -915,7 +918,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7810647596859435254">Otwórz za pomocą…</translation>
 <translation id="7821588508402923572">Tutaj będą widoczne informacje o zaoszczędzonych danych</translation>
 <translation id="7837721118676387834">Zezwalaj określonej stronie na automatyczne odtwarzanie wyciszonych filmów.</translation>
-<translation id="7838340937077326045">Czy na pewno chcesz zmienić rozszerzenie pliku?</translation>
 <translation id="7846076177841592234">Anuluj wybór</translation>
 <translation id="784934925303690534">Zakres czasu</translation>
 <translation id="7851858861565204677">Inne urządzenia</translation>
@@ -996,6 +998,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8380167699614421159">Na tej stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy</translation>
 <translation id="8393700583063109961">Wyślij wiadomość</translation>
 <translation id="8413126021676339697">Wyświetl całą historię</translation>
+<translation id="8427875596167638501">Karta podglądu jest otwarta w połowie</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8438566539970814960">Ulepsz wyszukiwanie i przeglądanie</translation>
 <translation id="8441146129660941386">Przewiń do tyłu</translation>
@@ -1086,7 +1089,9 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="9086455579313502267">Nie można uzyskać dostępu do sieci</translation>
 <translation id="9100505651305367705">Proponuj wyświetlanie artykułów w widoku uproszczonym, gdy jest obsługiwany</translation>
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
+<translation id="9102803872260866941">Karta podglądu jest otwarta</translation>
 <translation id="9104217018994036254">Lista urządzeń, którym udostępnisz kartę.</translation>
+<translation id="9133397713400217035">Przeglądaj offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9139068048179869749">Pytaj, zanim zezwolisz stronom na wysyłanie powiadomień (zalecane)</translation>

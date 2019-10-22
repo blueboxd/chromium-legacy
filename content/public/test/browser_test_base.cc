@@ -109,9 +109,6 @@
 namespace content {
 namespace {
 
-// See kRunManualTestsFlag in "content_switches.cc".
-const char kManualTestPrefix[] = "MANUAL_";
-
 #if defined(OS_POSIX)
 // On SIGSEGV or SIGTERM (sent by the runner on timeouts), dump a stack trace
 // (to make debugging easier) and also exit with a known error code (so that
@@ -211,9 +208,6 @@ BrowserTestBase::~BrowserTestBase() {
 
 void BrowserTestBase::SetUp() {
   set_up_called_ = true;
-
-  if (BrowserTestBase::ShouldSkipManualTests())
-    GTEST_SKIP();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -539,14 +533,6 @@ void BrowserTestBase::SimulateNetworkServiceCrash() {
   // Need to re-initialize the network process.
   initialized_network_process_ = false;
   InitializeNetworkProcess();
-}
-
-bool BrowserTestBase::ShouldSkipManualTests() {
-  return (base::StartsWith(
-              ::testing::UnitTest::GetInstance()->current_test_info()->name(),
-              kManualTestPrefix, base::CompareCase::SENSITIVE) &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kRunManualTestsFlag));
 }
 
 #if defined(OS_ANDROID)

@@ -85,6 +85,10 @@ extern const base::Feature kEnablePowerManager;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnableTextQueriesWithClientDiscourseContext;
 
+// Enables the Assistant web container (e.g. Assistant Settings).
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kEnableAssistantWebContainer;
+
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 int GetProactiveSuggestionsMaxWidth();
 
@@ -127,8 +131,10 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsStereoAudioInputEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsWarmerWelcomeEnabled();
 
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsVoiceMatchDisabled();
+
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-bool IsVoiceMatchDisabled();
+bool IsAssistantWebContainerEnabled();
 
 }  // namespace features
 }  // namespace assistant

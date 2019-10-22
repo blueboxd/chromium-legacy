@@ -668,10 +668,37 @@ __gCrWeb.findInPage.selectAndScrollToVisibleMatch = function(index) {
   selectedMatchIndex_ = total_match_index;
   selectedVisibleMatchIndex_ = index;
 
-  getCurrentSelectedMatch_().addSelectHighlight();
+  match = getCurrentSelectedMatch_();
+  match.addSelectHighlight();
   scrollToCurrentlySelectedMatch_();
 
-  return {matches: visibleMatchCount, index: index};
+  // Get string consisting of the text contents of the match nodes and the
+  // nodes before and after them, if applicable.
+  // This will be read out as an accessibility notification for the match.
+  // The siblings's textContent are added into the node array, because the
+  // nextSibling and previousSibling properties to the match nodes sometimes
+  // are text nodes, not HTML nodes. This results in '[object Text]' string
+  // being added to the array instead of the object.
+  let nodes = match.nodes.slice();
+  if (match.nodes[0].previousSibling) {
+    nodes.unshift([match.nodes[0].previousSibling.textContent]);
+  }
+  if (match.nodes[match.nodes.length-1].nextSibling) {
+    nodes.push([match.nodes[match.nodes.length-1].nextSibling.textContent]);
+  }
+  let contextString = nodes.map(function(node) {
+    if (node.textContent) {
+      return node.textContent;
+    } else {
+      return node;
+    }
+  }).join("");
+
+  return {
+    matches: visibleMatchCount,
+    index: index,
+    contextString: contextString
+  };
 };
 
 /**

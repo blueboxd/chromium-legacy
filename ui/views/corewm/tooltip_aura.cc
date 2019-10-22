@@ -65,7 +65,7 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window,
   params.bounds = bounds;
   if (CanUseTranslucentTooltipWidget())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   // Use software compositing to avoid using unnecessary hardware resources
   // which just amount to overkill for this UI.
   params.force_software_compositing = true;

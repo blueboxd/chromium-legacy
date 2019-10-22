@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1135993792949700405">Chrome sẽ gửi dữ liệu cá nhân mà bạn đã chọn tới <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Mở đường dẫn liên kết bên ngoài?</translation>
 <translation id="1699570257714336246">Thiếu thông tin</translation>
 <translation id="2203046366315513658">Giảm giá trị</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Trợ lý Google trong Chrome đã mở ở nửa dưới của màn hình.</translation>
 <translation id="6973932557599545801">Rất tiếc, tôi không thể trợ giúp được nữa. Bạn vui lòng tự thực hiện việc này.</translation>
 <translation id="7658239707568436148">Hủy</translation>
-<translation id="7871791972254842204">Đọc và đồng ý với điều khoản và điều kiện của <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vào lúc khác</translation>
 <translation id="8253702004019660079">Trợ lý Google trong Chrome.</translation>
 <translation id="9138504265731110181">Trợ lý Google tiết kiệm thời gian cho bạn bằng cách giúp bạn thanh toán trên web</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>

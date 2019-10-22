@@ -175,6 +175,8 @@ void WebUIDataSourceImpl::SetDefaultResource(int resource_id) {
 void WebUIDataSourceImpl::SetRequestFilter(
     const ShouldHandleRequestCallback& should_handle_request_callback,
     const HandleRequestCallback& handle_request_callback) {
+  CHECK(!should_handle_request_callback_);
+  CHECK(!filter_callback_);
   should_handle_request_callback_ = should_handle_request_callback;
   filter_callback_ = handle_request_callback;
 }

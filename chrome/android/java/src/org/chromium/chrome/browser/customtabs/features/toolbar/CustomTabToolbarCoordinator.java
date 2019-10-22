@@ -176,11 +176,10 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
             }
 
             /**
-             * Updates the color of the Activity's status bar and the CCT Toolbar. When a preview is
-             * shown, it should be reset to the default color. If the user later navigates away from
-             * that preview to a non-preview page, reset the color back to the original. This does
-             * not interfere with site-specific theme colors which are disabled when a preview is
-             * being shown.
+             * Updates the color of the Activity's CCT Toolbar. When a preview is shown, it should
+             * be reset to the default color. If the user later navigates away from that preview to
+             * a non-preview page, reset the color back to the original. This does not interfere
+             * with site-specific theme colors which are disabled when a preview is being shown.
              */
             private void updateColor(Tab tab) {
                 ToolbarManager manager = mToolbarManager.get();
@@ -204,7 +203,6 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
                     mOriginalColor = 0;
                 }
 
-                mStatusBarColorProvider.onToolbarColorChanged();
                 manager.setShouldUpdateToolbarPrimaryColor(shouldUpdateOriginal);
             }
         });

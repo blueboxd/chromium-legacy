@@ -55,7 +55,6 @@
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
-#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
@@ -172,8 +171,6 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     // prevent test flakiness due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + kHour);
   }
-
-  void UpdateUsageTime() { UpdateChildUsageTime(); }
 
   void Simulate(ui::IdleState* states, int len) {
     for (int i = 0; i < len; i++)
@@ -514,56 +511,6 @@ class DeviceStatusCollectorTest : public testing::Test {
   void TearDown() override { status_collector_.reset(); }
 
  protected:
-  // States tracked to calculate a child's active time.
-  enum class DeviceStateTransitions {
-    kEnterIdleState,
-    kLeaveIdleState,
-    kEnterSleep,
-    kLeaveSleep,
-    kEnterSessionActive,
-    kLeaveSessionActive,
-    kPeriodicCheckTriggered
-  };
-
-  void SimulateStateChanges(DeviceStateTransitions* states, int len) {
-    for (int i = 0; i < len; i++) {
-      switch (states[i]) {
-        case DeviceStateTransitions::kEnterIdleState: {
-          power_manager::ScreenIdleState state;
-          state.set_off(true);
-          chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(
-              state);
-        } break;
-        case DeviceStateTransitions::kLeaveIdleState: {
-          power_manager::ScreenIdleState state;
-          state.set_off(false);
-          chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(
-              state);
-        } break;
-        case DeviceStateTransitions::kEnterSleep:
-          chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
-              power_manager::SuspendImminent_Reason_LID_CLOSED);
-          break;
-        case DeviceStateTransitions::kLeaveSleep:
-          chromeos::FakePowerManagerClient::Get()->SendSuspendDone(
-              base::TimeDelta::FromSeconds(
-                  policy::DeviceStatusCollector::kIdlePollIntervalSeconds));
-          break;
-        case DeviceStateTransitions::kEnterSessionActive:
-          session_manager::SessionManager::Get()->SetSessionState(
-              session_manager::SessionState::ACTIVE);
-          break;
-        case DeviceStateTransitions::kLeaveSessionActive:
-          session_manager::SessionManager::Get()->SetSessionState(
-              session_manager::SessionState::LOCKED);
-          break;
-        case DeviceStateTransitions::kPeriodicCheckTriggered:
-          status_collector_->UpdateUsageTime();
-          break;
-      }
-    }
-  }
-
   void AddMountPoint(const std::string& mount_point) {
     mount_point_map_.insert(DiskMountManager::MountPointMap::value_type(
         mount_point, DiskMountManager::MountPointInfo(
@@ -638,13 +585,6 @@ class DeviceStatusCollectorTest : public testing::Test {
                                       bool is_affiliated) {
     MockUserWithTypeAndAffiliation(account_id, user_manager::USER_TYPE_REGULAR,
                                    is_affiliated);
-  }
-
-  void MockChildUser(const AccountId& account_id) {
-    MockUserWithTypeAndAffiliation(account_id, user_manager::USER_TYPE_CHILD,
-                                   false);
-    EXPECT_CALL(*user_manager_, IsLoggedInAsChildUser())
-        .WillRepeatedly(Return(true));
   }
 
   void MockRunningKioskApp(const DeviceLocalAccount& account, bool arc_kiosk) {

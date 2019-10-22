@@ -31,10 +31,9 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
 
   // Creates and shows the session crashed bubble, with |uma_opted_in_already|
   // indicating whether the user has already opted-in to UMA. It will be called
-  // by Show. It takes ownership of |browser_observer|.
-  static void ShowForReal(
-      std::unique_ptr<BrowserRemovalObserver> browser_observer,
-      bool uma_opted_in_already);
+  // by ShowIfNotOffTheRecordProfile. It takes ownership of |browser_observer|.
+  static void Show(std::unique_ptr<BrowserRemovalObserver> browser_observer,
+                   bool uma_opted_in_already);
 
  private:
   friend class SessionCrashedBubbleViewTest;

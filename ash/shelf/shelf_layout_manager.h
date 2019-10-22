@@ -610,6 +610,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Location of the most recent mouse drag event in screen coordinate.
   gfx::Point last_mouse_drag_position_;
 
+  // Location of the beginning of a drag in screen coordinates.
+  gfx::Point drag_start_point_in_screen_;
+
   // When it is true, |CalculateAutoHideState| returns the current auto hide
   // state.
   bool is_auto_hide_state_locked_ = false;

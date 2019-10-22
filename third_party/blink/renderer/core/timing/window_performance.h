@@ -106,12 +106,10 @@ class CORE_EXPORT WindowPerformance final : public Performance,
       LocalFrame* observer_frame);
 
   // PerformanceMonitor::Client implementation.
-  void ReportLongTask(
-      base::TimeTicks start_time,
-      base::TimeTicks end_time,
-      ExecutionContext* task_context,
-      bool has_multiple_contexts,
-      const SubTaskAttribution::EntriesVector& sub_task_attributions) override;
+  void ReportLongTask(base::TimeTicks start_time,
+                      base::TimeTicks end_time,
+                      ExecutionContext* task_context,
+                      bool has_multiple_contexts) override;
 
   void BuildJSONValue(V8ObjectBuilder&) const override;
 

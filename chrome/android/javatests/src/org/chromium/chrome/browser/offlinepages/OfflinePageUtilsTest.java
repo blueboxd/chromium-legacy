@@ -274,7 +274,7 @@ public class OfflinePageUtilsTest {
         final TestShareCallback shareCallback = new TestShareCallback(semaphore);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
+            OfflinePageUtils.maybeShareOfflinePage(
                     mActivityTestRule.getActivity().getActivityTab(), shareCallback);
         });
 
@@ -301,7 +301,7 @@ public class OfflinePageUtilsTest {
         final TestShareCallback shareCallback = new TestShareCallback(semaphore);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
+            OfflinePageUtils.maybeShareOfflinePage(
                     mActivityTestRule.getActivity().getActivityTab(), shareCallback);
         });
         // Wait for share callback to get called.

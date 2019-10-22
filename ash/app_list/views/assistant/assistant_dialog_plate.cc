@@ -12,6 +12,7 @@
 #include "ash/assistant/ui/dialog_plate/mic_view.h"
 #include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/util/animation_util.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -25,7 +26,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -101,7 +101,7 @@ bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
       // In tablet mode the virtual keyboard should not be sticky, so we hide it
       // when committing a query.
       if (delegate_->IsTabletMode())
-        textfield_->GetFocusManager()->ClearFocus();
+        keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyBySystem();
 
       const base::StringPiece16& trimmed_text = base::TrimWhitespace(
           textfield_->GetText(), base::TrimPositions::TRIM_ALL);

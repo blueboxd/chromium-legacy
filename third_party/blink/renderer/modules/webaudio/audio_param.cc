@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -283,6 +284,13 @@ void AudioParamHandler::CalculateFinalValues(float* values,
       // Sum, with unity-gain.
       summing_bus_->SumFrom(*connection_bus);
     }
+
+    // Clamp the values now to the nominal range
+    float min_value = MinValue();
+    float max_value = MaxValue();
+
+    vector_math::Vclip(values, 1, &min_value, &max_value, values, 1,
+                       number_of_values);
   }
 }
 

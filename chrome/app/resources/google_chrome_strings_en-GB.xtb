@@ -27,6 +27,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1628000112320670027">Get help with Chrome</translation>
 <translation id="1635734105302489219">You clear cookies when you quit Chrome. To keep syncing, change this <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open source software<ph name="END_LINK_CROS_OSS" />, as is <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="1666409074978194368">Nearly up to date! Relaunch Google Chrome to finish updating. Incognito windows won't reopen.</translation>
 <translation id="1674870198290878346">Open Link in Chrome Inco&amp;gnito Window</translation>
 <translation id="1682634494516646069">Google Chrome cannot read and write to its data directory:
 
@@ -91,6 +92,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3503306920980160878">Chrome needs access to your location to share your location with this site</translation>
 <translation id="3576528680708590453">Your system administrator has configured Google Chrome to open an alternative browser to access <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sync and personalise Chrome across your devices</translation>
+<translation id="3596080736082218006">{COUNT,plural, =0{Your administrator requires that you relaunch Chrome to apply an update}=1{Your administrator requires that you relaunch Chrome to apply an update. Your Incognito window won't reopen.}other{Your administrator requires that you relaunch Chrome to apply an update. Your # Incognito windows won't reopen.}}</translation>
 <translation id="3622797965165704966">Now it's easier to use Chrome with your Google Account and on shared computers.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">This will delete 1 item from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
@@ -153,6 +155,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5657226924540934362">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
       Chrome OS settings<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> may be dangerous, so Chrome has blocked it.</translation>
+<translation id="5678190148303298925">{COUNT,plural, =0{Your administrator asks that you relaunch Chrome to apply this update}=1{Your administrator asks that you relaunch Chrome to apply this update. Your Incognito window won't reopen.}other{Your administrator asks that you relaunch Chrome to apply this update. Your # Incognito windows won't reopen.}}</translation>
 <translation id="5686916850681061684">Customise and control Google Chrome. Something needs your attention – click for details.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome will restart in 1 second}other{Google Chrome will restart in # seconds}}</translation>
@@ -187,6 +190,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
+<translation id="7140653346177713799">{COUNT,plural, =0{A new update for Chrome is available and will be applied as soon as you relaunch.}=1{A new update for Chrome is available and will be applied as soon as you relaunch. Your Incognito window won't reopen.}other{A new update for Chrome is available and will be applied as soon as you relaunch. Your # Incognito windows won't reopen.}}</translation>
 <translation id="7242029209006116544">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chrome data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">This language is used to display the Google Chrome UI</translation>
 <translation id="7296210096911315575">Important use and safety information</translation>

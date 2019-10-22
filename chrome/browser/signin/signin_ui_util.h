@@ -109,6 +109,9 @@ void RecordAnimatedIdentityTriggered(Profile* profile);
 // Called when the ProfileMenuView is opened. Used for metrics.
 void RecordProfileMenuViewShown(Profile* profile);
 
+// Called when a button/link in the profile menu was clicked.
+void RecordProfileMenuClick(Profile* profile);
+
 }  // namespace signin_ui_util
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_UI_UTIL_H_

@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">S-a adăugat <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Nu s-au găsit rețele</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">Celular: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">M-am plictisit</translation>
 <translation id="1104084341931202936">Afișează setările de accesibilitate</translation>
 <translation id="1104621072296271835">Dispozitivele funcționează și mai bine împreună</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">suprascanare</translation>
 <translation id="119944043368869598">Șterge-le pe toate</translation>
 <translation id="1247372569136754018">Microfon (intern)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Această setare este impusă de administratorul tău.</translation>
 <translation id="1252999807265626933">Se încarcă de la <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Cum este vremea?</translation>
 <translation id="1267032506238418139">Modificarea comenzii rapide</translation>
 <translation id="1270290102613614947">Tastatură pe ecran dezactivată</translation>
 <translation id="1272079795634619415">Oprește</translation>
+<translation id="1275285675049378717">Se încarcă <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Revino <ph name="COME_BACK_DAY_OF_WEEK" /> la <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Semnal slab</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">Mod de contrast ridicat</translation>
 <translation id="2542089167727451762">Atinge imaginea de profil</translation>
 <translation id="255671100581129685">Asistentul Google nu este disponibil într-o sesiune publică.</translation>
+<translation id="256712445991462162">lupa andocată</translation>
 <translation id="2575685495496069081">Conectarea multiplă a fost dezactivată</translation>
 <translation id="2582112259361606227">Repornește pentru a actualiza</translation>
 <translation id="2617342710774726426">Cardul SIM este blocat</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">Instrumente pentru creion</translation>
 <translation id="3368922792935385530">Conectată</translation>
 <translation id="3371140690572404006">Dispozitiv USB-C (portul din dreapta față)</translation>
+<translation id="3386978599540877378">lupa de ecran complet</translation>
 <translation id="3400357268283240774">Setări suplimentare</translation>
 <translation id="3413817803639110246">Încă nu este nimic de văzut</translation>
 <translation id="343571671045587506">Editează mementoul</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
 <translation id="4338109981321384717">Lupă</translation>
 <translation id="4351433414020964307">Asistentul se încarcă...</translation>
+<translation id="4356930093361201197">mod de contrast ridicat</translation>
 <translation id="4378551569595875038">Se stabilește conexiunea...</translation>
 <translation id="4379531060876907730">Acestea sunt instrumentele pentru creion</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Ai accesat comanda rapidă de la tastatură pentru lupa andocată. Vrei să o activezi?</translation>
 <translation id="4421231901400348175">În prezent, <ph name="HELPER_NAME" /> îți poate controla ecranul prin Asistență la distanță.</translation>
 <translation id="4430019312045809116">Volum</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">Sigur vrei să dezactivezi clicurile automate?</translation>
 <translation id="4849058404725798627">Evidențiază obiectul focalizat de la tastatură</translation>
 <translation id="485592688953820832">Nicio acțiune (pauză)</translation>
+<translation id="4868492592575313542">activată</translation>
 <translation id="4872237917498892622">Alt+Căutare sau Shift</translation>
 <translation id="4890187583552566966">Asistentul Google este dezactivat de administrator.</translation>
 <translation id="4895488851634969361">Bateria este încărcată complet.</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">Conectat, nivelul bateriei: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Urmărirea performanțelor este activată</translation>
 <translation id="6752912906630585008">Desktopul <ph name="REMOVED_DESK" /> a fost eliminat și îmbinat cu desktopul <ph name="RECEIVE_DESK" /></translation>
+<translation id="6777216307882431711">Se încarcă dispozitivele USB-C conectate</translation>
 <translation id="6790428901817661496">Redă</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
 <translation id="6820676911989879663">Fă o pauză!</translation>
@@ -442,6 +451,7 @@
 <translation id="7568294522609223312">Dezactivează clicurile automate</translation>
 <translation id="7569509451529460200">Braille și ChromeVox sunt activate</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
+<translation id="7600875258240007829">Vezi toate notificările</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietar)</translation>
 <translation id="7647488630410863958">Deblochează dispozitivul pentru a vedea notificările</translation>
 <translation id="7649070708921625228">Ajutor</translation>
@@ -506,6 +516,7 @@
 <translation id="8452135315243592079">Lipsește cardul SIM</translation>
 <translation id="8454013096329229812">Conexiunea Wi-Fi este activată.</translation>
 <translation id="847056008324733326">Setările pentru scara afișajului</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> are <ph name="FEATURE_NAME" /> <ph name="FEATURE_STATE" />.</translation>
 <translation id="8477270416194247200">Apasă pe Alt + tasta de căutare sau pe Shift pentru a anula.</translation>
 <translation id="8513108775083588393">Rotire automată</translation>
 <translation id="8517041960877371778">Este posibil ca <ph name="DEVICE_TYPE" /> să nu se încarce cât timp este pornit.</translation>
@@ -534,6 +545,7 @@
 <translation id="8909138438987180327">Nivelul bateriei este <ph name="PERCENTAGE" /> %.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Asistentul Google nu vorbește în această limbă.</translation>
+<translation id="8936501819958976551">dezactivată</translation>
 <translation id="8938800817013097409">Dispozitiv USB-C (portul din dreapta în spate)</translation>
 <translation id="8940956008527784070">Baterie slabă (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8983038754672563810">HSPA</translation>

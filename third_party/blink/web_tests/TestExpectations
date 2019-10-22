@@ -1198,7 +1198,7 @@ crbug.com/874506 virtual/layout_ng_experimental/fast/multicol/scrollable-basic.h
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/scrolling-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/shadow-breaking.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/single-line.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Crash Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Crash Failure Timeout ]
 crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/span/after-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/after-row-with-uneven-height-nested-multicol.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/as-inner-multicol.html [ Failure ]
@@ -5738,7 +5738,7 @@ crbug.com/1012599 virtual/outofblink-cors/external/wpt/fetch/cross-origin-resour
 crbug.com/1013391 http/tests/devtools/a11y-axe-core/settings/shortcuts-a11y-test.js [ Pass Timeout ]
 crbug.com/1013523 [ Release ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1013523 [ Release Linux Mac ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
-crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Failure Pass ]
+crbug.com/1010472 [ Linux Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Timeout Pass ]
 crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass ]
 crbug.com/1013779 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass ]
@@ -5763,6 +5763,9 @@ crbug.com/1015187 [ Linux Mac ] virtual/cross-origin-embedder-policy/external/wp
 crbug.com/996250 external/wpt/web-nfc/NDEFReader_scan_iframe.https.html [ Timeout ]
 crbug.com/1015254 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 crbug.com/1015859 [ Linux ] http/tests/devtools/a11y-axe-core/performance/landing-page-a11y-test.js [ Pass Failure ]
-crbug.com/1015764 compositing/video/video-poster.html [ Pass Crash ]
 crbug.com/1015975 media/video-currentTime.html [ Pass Failure ]
 crbug.com/1015975 virtual/audio-service/media/video-currentTime.html [ Pass Failure ]
+
+# Sheriff 2019-10-21
+crbug.com/1016364 [ Linux Mac Debug ] http/tests/devtools/console/console-search.js [ Pass Timeout ]
+crbug.com/1016457 [ Linux Mac Debug ] external/wpt/dom/ranges/Range-mutations-dataChange.html [ Pass Timeout ]

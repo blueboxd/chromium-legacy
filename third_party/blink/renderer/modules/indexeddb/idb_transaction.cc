@@ -320,16 +320,28 @@ void IDBTransaction::IndexDeleted(IDBIndex* index) {
   deleted_indexes_.push_back(index);
 }
 
-void IDBTransaction::SetActive(bool active) {
-  DCHECK_NE(state_, kFinished) << "A finished transaction tried to SetActive("
-                               << (active ? "true" : "false") << ")";
+void IDBTransaction::SetActive(bool new_is_active) {
+  DCHECK_NE(state_, kFinished)
+      << "A finished transaction tried to SetActive(" << new_is_active << ")";
   if (state_ == kFinishing)
     return;
-  DCHECK_NE(active, (state_ == kActive));
-  state_ = active ? kActive : kInactive;
+  DCHECK_NE(new_is_active, (state_ == kActive));
+  state_ = new_is_active ? kActive : kInactive;
 
-  if (!active && request_list_.IsEmpty() && transaction_backend())
+  if (!new_is_active && request_list_.IsEmpty() && transaction_backend())
     transaction_backend()->Commit(num_errors_handled_);
+}
+
+void IDBTransaction::SetActiveDuringSerialization(bool new_is_active) {
+  if (new_is_active) {
+    DCHECK_EQ(state_, kInactive)
+        << "Incorrect state restore during Structured Serialization";
+    state_ = kActive;
+  } else {
+    DCHECK_EQ(state_, kActive)
+        << "Structured serialization attempted while transaction is inactive";
+    state_ = kInactive;
+  }
 }
 
 void IDBTransaction::abort(ExceptionState& exception_state) {

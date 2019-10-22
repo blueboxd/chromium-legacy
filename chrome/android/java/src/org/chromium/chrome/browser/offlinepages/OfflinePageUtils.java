@@ -49,6 +49,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -250,12 +251,11 @@ public class OfflinePageUtils {
         return getInstance().isConnected();
     }
 
-    /*
+    /**
      * Save an offline copy for the bookmarked page asynchronously.
      *
      * @param bookmarkId The ID of the page to save an offline copy.
      * @param tab A {@link Tab} object.
-     * @param callback The callback to be invoked when the offline copy is saved.
      */
     public static void saveBookmarkOffline(BookmarkId bookmarkId, Tab tab) {
         // If bookmark ID is missing there is nothing to save here.
@@ -329,16 +329,13 @@ public class OfflinePageUtils {
 
     /**
      * Save the page loaded in current tab and share the saved page.
-     *
-     * @param activity The activity used for sharing and file provider interaction.
-     * @param currentTab The current tab from which the page is being shared.
+     * @param tab The current tab from which the page is being shared.
      * @param shareCallback The callback to be used to send the ShareParams. This will only be
      *                      called if this function call returns true.
      * @return true if the sharing of the page is possible. The callback will be invoked if
      *                      saving the page succeeds.
      */
-    public static boolean saveAndSharePage(
-            final Activity activity, Tab tab, final Callback<ShareParams> shareCallback) {
+    public static boolean saveAndSharePage(Tab tab, final Callback<ShareParams> shareCallback) {
         OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
 
         if (offlinePageBridge == null) {
@@ -351,7 +348,7 @@ public class OfflinePageUtils {
 
         GetPagesByNamespaceForLivePageSharingCallback callback =
                 new GetPagesByNamespaceForLivePageSharingCallback(
-                        activity, tab, shareCallback, offlinePageBridge);
+                        tab, shareCallback, offlinePageBridge);
         offlinePageBridge.getPagesByNamespace(
                 OfflinePageBridge.LIVE_PAGE_SHARING_NAMESPACE, callback);
 
@@ -387,16 +384,13 @@ public class OfflinePageUtils {
     /**
      * If possible, creates the ShareParams needed to share the current offline page loaded in the
      * provided tab as a MHTML file.
-     *
-     * @param activity The activity used for sharing and file provider interaction.
-     * @param currentTab The current tab from which the page is being shared.
+     * @param tab The current tab from which the page is being shared.
      * @param shareCallback The callback invoked when either sharing is complete, or when sharing
      *                      cannot be completed. If sharing cannot be done, the callback parameter
      *                      is null. May either be invoked from within the function call, or
      *                      afterwards via PostTask.
      */
-    public static void maybeShareOfflinePage(
-            final Activity activity, Tab tab, final Callback<ShareParams> shareCallback) {
+    public static void maybeShareOfflinePage(Tab tab, final Callback<ShareParams> shareCallback) {
         if (tab == null) {
             shareCallback.onResult(null);
             return;
@@ -409,7 +403,7 @@ public class OfflinePageUtils {
         // sharing.
         if (!isOfflinePage) {
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_PAGES_LIVE_PAGE_SHARING)) {
-                if (!saveAndSharePage(activity, tab, shareCallback)) {
+                if (!saveAndSharePage(tab, shareCallback)) {
                     shareCallback.onResult(null);
                 }
                 return;
@@ -446,27 +440,26 @@ public class OfflinePageUtils {
         String tabTitle = tab.getTitle();
         getOfflinePageUriForSharing(tab.getUrl(), isPageTemporary, offlinePath,
                 (Uri uri)
-                        -> maybeShareOfflinePageWithUri(activity, tabTitle, webContents,
-                                offlinePageBridge, offlinePage, isPageTemporary, shareCallback,
-                                uri));
+                        -> maybeShareOfflinePageWithUri(tabTitle, webContents, offlinePageBridge,
+                                offlinePage, isPageTemporary, shareCallback, uri));
     }
 
     // A continuation of maybeShareOfflinePage, after the URI is determined in a background thread.
-    private static void maybeShareOfflinePageWithUri(Activity activity, String tabTitle,
-            WebContents webContents, OfflinePageBridge offlinePageBridge,
-            OfflinePageItem offlinePage, boolean isPageTemporary,
-            Callback<ShareParams> shareCallback, Uri uri) {
+    private static void maybeShareOfflinePageWithUri(String tabTitle, WebContents webContents,
+            OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage,
+            boolean isPageTemporary, Callback<ShareParams> shareCallback, Uri uri) {
         if (!isOfflinePageShareable(offlinePageBridge, offlinePage, uri)) {
             shareCallback.onResult(null);
             return;
         }
 
+        WindowAndroid window = webContents.getTopLevelNativeWindow();
         String offlinePath = offlinePage.getFilePath();
         if (isPageTemporary || !offlinePageBridge.isInPrivateDirectory(offlinePath)) {
             // Share temporary pages and pages already in a public location.
             final File offlinePageFile = new File(offlinePath);
-            sharePage(activity, uri.toString(), tabTitle, offlinePath, offlinePageFile,
-                    shareCallback);
+            sharePage(
+                    window, uri.toString(), tabTitle, offlinePath, offlinePageFile, shareCallback);
             return;
         }
 
@@ -480,7 +473,7 @@ public class OfflinePageUtils {
 
             // If the page is not in a public location, we must publish it before
             // sharing it.
-            publishThenShareInternalPage(activity, offlinePageBridge, offlinePage, shareCallback);
+            publishThenShareInternalPage(window, offlinePageBridge, offlinePage, shareCallback);
         });
     }
 
@@ -528,15 +521,16 @@ public class OfflinePageUtils {
 
     /**
      * For internal pages, we must publish them, then share them.
+     * @param window The window that triggered the share action.
      * @param offlinePageBridge Bridge to native code for offline pages use.
      * @param offlinePage Page to publish and share.
      * @param shareCallback The callback to be used to send the ShareParams.
      */
-    public static void publishThenShareInternalPage(final Activity activity,
+    public static void publishThenShareInternalPage(final WindowAndroid window,
             OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage,
             final Callback<ShareParams> shareCallback) {
         PublishPageCallback publishPageCallback =
-                new PublishPageCallback(activity, offlinePage, shareCallback);
+                new PublishPageCallback(window, offlinePage, shareCallback);
         offlinePageBridge.publishInternalPageByOfflineId(
                 offlinePage.getOfflineId(), publishPageCallback);
     }
@@ -544,15 +538,15 @@ public class OfflinePageUtils {
     /**
      * Called when publishing is done.  Continues with processing to share.
      */
-    public static void publishCompleted(OfflinePageItem page, final Activity activity,
+    public static void publishCompleted(OfflinePageItem page, final WindowAndroid window,
             final Callback<ShareParams> shareCallback) {
-        sharePublishedPage(page, activity, shareCallback);
+        sharePublishedPage(page, window, shareCallback);
     }
 
     /**
      * This will take a page in a public directory, and share it.
      */
-    public static void sharePublishedPage(OfflinePageItem page, final Activity activity,
+    public static void sharePublishedPage(OfflinePageItem page, final WindowAndroid window,
             final Callback<ShareParams> shareCallback) {
         if (page == null) {
             // For errors, we don't call the shareCallback.  The callback only causes the page to be
@@ -562,13 +556,13 @@ public class OfflinePageUtils {
         final String pageUrl = page.getUrl();
         final String pageTitle = page.getTitle();
         final File offlinePageFile = new File(page.getFilePath());
-        sharePage(activity, pageUrl, pageTitle, page.getFilePath(), offlinePageFile, shareCallback);
+        sharePage(window, pageUrl, pageTitle, page.getFilePath(), offlinePageFile, shareCallback);
     }
 
     /**
      * Share the page.
      */
-    public static void sharePage(Activity activity, String pageUrl, String pageTitle,
+    public static void sharePage(WindowAndroid window, String pageUrl, String pageTitle,
             String offlinePath, File offlinePageFile, final Callback<ShareParams> shareCallback) {
         RecordUserAction.record("OfflinePages.Sharing.SharePageFromOverflowMenu");
         AsyncTask<Uri> task = new AsyncTask<Uri>() {
@@ -591,7 +585,7 @@ public class OfflinePageUtils {
                 // in external storage.
                 Uri generatedUri;
                 try {
-                    generatedUri = ChromeFileProvider.generateUri(activity, offlinePageFile);
+                    generatedUri = ChromeFileProvider.generateUri(offlinePageFile);
                 } catch (IllegalArgumentException e) {
                     Log.e(TAG, "Couldn't generate URI for sharing page: " + e);
                     generatedUri = Uri.parse(pageUrl);
@@ -600,8 +594,8 @@ public class OfflinePageUtils {
             }
             @Override
             protected void onPostExecute(Uri uri) {
-                ShareParams.Builder builder = new ShareParams.Builder(activity, pageTitle, pageUrl)
-                                                      .setShareDirectly(false);
+                ShareParams.Builder builder =
+                        new ShareParams.Builder(window, pageTitle, pageUrl).setShareDirectly(false);
                 // Only try to share the offline page if we have a content URI making the actual
                 // file available.
                 // TODO(985699): Sharing the page's online URL is a temporary fix for crashes when

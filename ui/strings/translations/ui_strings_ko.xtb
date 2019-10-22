@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1분 전}other{#분 전}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="1181037720776840403">삭제</translation>
+<translation id="1201402288615127009">다음</translation>
 <translation id="1243314992276662751">업로드</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">화면에서 터치 대상을 탭하세요.</translation>
 <translation id="2295140143284145483">설문조사</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" />TB/s</translation>
+<translation id="2353636109065292463">인터넷 연결 상태를 확인하세요.</translation>
 <translation id="2388990488038464401">휴대전화에서 이 번호로 전화를 거시겠습니까?</translation>
 <translation id="24452542372838207">알림 펼치기</translation>
 <translation id="2445449901874883781">고밀도 사용</translation>
@@ -162,6 +164,7 @@
 <translation id="6620110761915583480">파일 저장</translation>
 <translation id="6656912866303152668"><ph name="TARGET_DEVICE_NAME" />에서 Chrome 동기화가 사용 설정되어 있는지 확인한 다음 다시 보내 보세요.</translation>
 <translation id="6699343763173986273">미디어 다음 트랙</translation>
+<translation id="6710213216561001401">이전</translation>
 <translation id="6779314412797872738">여기에서 Android 휴대전화로 번호를 전송하려면 두 기기 모두 설정에서 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
 <translation id="6786750046913594791">폴더 닫기</translation>
 <translation id="6808150112686056157">미디어 중지</translation>
@@ -179,6 +182,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1분 남음}other{#분 남음}}</translation>
 <translation id="7319740667687257810">런처, 부분 뷰</translation>
+<translation id="7352651011704765696">문제가 발생한 경우</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1분 전}other{#분 전}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1분 남음}other{#분 남음}}</translation>

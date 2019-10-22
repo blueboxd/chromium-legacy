@@ -570,6 +570,8 @@ LoginStatus SessionControllerImpl::CalculateLoginStatusForActiveSession()
     case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
       // TODO: There is no LoginStatus for this.
       return LoginStatus::USER;
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
+      return LoginStatus::KIOSK_APP;
     case user_manager::NUM_USER_TYPES:
       // Avoid having a "default" case so the compiler catches new enum values.
       NOTREACHED();

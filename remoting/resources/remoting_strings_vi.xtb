@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Kém</translation>
 <translation id="1152528166145813711">Chọn…</translation>
 <translation id="1199593201721843963">Tắt kết nối từ xa</translation>
+<translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1291443878853470558">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Kết nối từ xa trên Chrome để truy cập vào máy tính này.</translation>
 <translation id="1297009705180977556">Lỗi khi kết nối với <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(tính năng này chưa khả dụng đối với máy tính của bạn)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Remote Desktop hiện đã có trên web. Hãy dùng thử <ph name="LINK_BEGIN" />ứng dụng web<ph name="LINK_END" /> của chúng tôi — ứng dụng nhanh và miễn phí với nhiều tính năng hơn nữa, trong đó đã cải thiện khả năng hỗ trợ nhiều màn hình.</translation>
 <translation id="1643640058022401035">Thoát khỏi trang này sẽ kết thúc phiên Kết nối từ xa trên Chrome của bạn.</translation>
 <translation id="1654128982815600832">Đang bật kết nối từ xa cho máy tính này…</translation>
+<translation id="1697532407822776718">Bạn đã hoàn tất!</translation>
 <translation id="170207782578677537">Không thể đăng ký máy tính này.</translation>
 <translation id="174018511426417793">Bạn chưa đăng ký máy tính nào. Để bật kết nối từ xa với một máy tính, hãy cài đặt Chrome Remote Desktop trên máy tính đó và nhấp “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Đang kết nối...</translation>

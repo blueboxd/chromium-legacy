@@ -223,51 +223,11 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
 
 }  // namespace
 
-CrOSTracingAgent::CrOSTracingAgent()
-    : BaseAgent(tracing::mojom::kSystemTraceEventLabel,
-                tracing::mojom::TraceDataType::STRING,
-                base::kNullProcessId) {
+CrOSTracingAgent::CrOSTracingAgent() {
   tracing::PerfettoTracedProcess::Get()->AddDataSource(
       CrOSDataSource::GetInstance());
 }
 
 CrOSTracingAgent::~CrOSTracingAgent() = default;
-
-// tracing::mojom::Agent. Called by Mojo internals on the UI thread.
-void CrOSTracingAgent::StartTracing(const std::string& config,
-                                    base::TimeTicks coordinator_time,
-                                    Agent::StartTracingCallback callback) {
-  DCHECK(!session_);
-  session_ = std::make_unique<CrOSSystemTracingSession>();
-  session_->StartTracing(
-      config, base::BindOnce(&CrOSTracingAgent::StartTracingCallbackProxy,
-                             base::Unretained(this), std::move(callback)));
-}
-
-void CrOSTracingAgent::StopAndFlush(
-    mojo::PendingRemote<tracing::mojom::Recorder> recorder) {
-  // This may be called even if we are not tracing.
-  if (!session_)
-    return;
-  recorder_.Bind(std::move(recorder));
-  session_->StopTracing(
-      base::BindOnce(&CrOSTracingAgent::RecorderProxy, base::Unretained(this)));
-}
-
-void CrOSTracingAgent::StartTracingCallbackProxy(
-    Agent::StartTracingCallback callback,
-    bool success) {
-  if (!success)
-    session_.reset();
-  std::move(callback).Run(success);
-}
-
-void CrOSTracingAgent::RecorderProxy(
-    const scoped_refptr<base::RefCountedString>& events) {
-  if (events && !events->data().empty())
-    recorder_->AddChunk(events->data());
-  session_.reset();
-  recorder_.reset();
-}
 
 }  // namespace content

@@ -1808,6 +1808,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       // BVC is contained and its parent bounds to the full screen.
       launchScreenView.frame = self.parentViewController.view.bounds;
       [self.parentViewController.view addSubview:launchScreenView];
+      [launchScreenView setNeedsLayout];
+      [launchScreenView layoutIfNeeded];
 
       // Replace the completion handler sent to the superclass with one which
       // removes |launchScreenView| and resets the status bar. If |completion|

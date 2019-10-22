@@ -103,17 +103,31 @@ void NativeTheme::set_system_colors(
   system_colors_ = colors;
 }
 
-void NativeTheme::UpdateSystemColorInfo(
+bool NativeTheme::UpdateSystemColorInfo(
     bool is_dark_mode,
     bool is_high_contrast,
     PreferredColorScheme preferred_color_scheme,
     const base::flat_map<SystemThemeColor, uint32_t>& colors) {
-  set_use_dark_colors(is_dark_mode);
-  set_high_contrast(is_high_contrast);
-  set_preferred_color_scheme(preferred_color_scheme);
-  for (const auto& color : colors) {
-    system_colors_[color.first] = color.second;
+  bool did_system_color_info_change = false;
+  if (is_dark_mode != ShouldUseDarkColors()) {
+    did_system_color_info_change = true;
+    set_use_dark_colors(is_dark_mode);
   }
+  if (is_high_contrast != UsesHighContrastColors()) {
+    did_system_color_info_change = true;
+    set_high_contrast(is_high_contrast);
+  }
+  if (preferred_color_scheme != GetPreferredColorScheme()) {
+    did_system_color_info_change = true;
+    set_preferred_color_scheme(preferred_color_scheme);
+  }
+  for (const auto& color : colors) {
+    if (color.second != GetSystemColorFromMap(color.first)) {
+      did_system_color_info_change = true;
+      system_colors_[color.first] = color.second;
+    }
+  }
+  return did_system_color_info_change;
 }
 
 NativeTheme::ColorSchemeNativeThemeObserver::ColorSchemeNativeThemeObserver(

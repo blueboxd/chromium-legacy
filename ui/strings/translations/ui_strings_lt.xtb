@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Prieš 1 minutę}one{Prieš # minutę}few{Prieš # minutes}many{Prieš # minutės}other{Prieš # minučių}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min.}one{# min.}few{# min.}many{# min.}other{# min.}}</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
+<translation id="1201402288615127009">Kitas</translation>
 <translation id="1243314992276662751">Įkelti</translation>
 <translation id="1266864766717917324">Nepavyko bendrinti turinio: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Palieskite jutiklines sritis ekrane.</translation>
 <translation id="2295140143284145483">Apklausa</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Tikrinamas interneto ryšys</translation>
 <translation id="2388990488038464401">Skambinti šiuo numeriu iš jūsų telefono?</translation>
 <translation id="24452542372838207">Išskleisti pranešimą</translation>
 <translation id="2445449901874883781">Naudoti didelį tankį</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Liko 1 sekundė}one{Liko # sekundė}few{Liko # sekundės}many{Liko # sekundės}other{Liko # sekundžių}}</translation>
 <translation id="5941711191222866238">Sumažinti</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 valanda}one{# valanda}few{# valandos}many{# valandos}other{# valandų}}</translation>
+<translation id="5946629889255121107">Numeris pradėtas iš <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" /> psl. iš <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Išvalyti paieškos laukelio tekstą</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Išsaugoti failą</translation>
 <translation id="6656912866303152668">Įsitikinkite, kad įrenginio „<ph name="TARGET_DEVICE_NAME" />“ naršyklėje „Chrome“ įjungtas sinchronizavimas, tada bandykite siųsti dar kartą.</translation>
 <translation id="6699343763173986273">Kitas medijos takelis</translation>
+<translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="6779314412797872738">Jei norite iš čia į „Android“ telefoną išsiųsti numerį, nustatymuose<ph name="TROUBLESHOOT_LINK" /> abiejuose įrenginiuose.</translation>
 <translation id="6786750046913594791">Uždaryti aplanką</translation>
 <translation id="6808150112686056157">Sustabdyti mediją</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Liko 1 min.}one{Liko # min.}few{Liko # min.}many{Liko # min.}other{Liko # min.}}</translation>
 <translation id="7319740667687257810">Paleidimo priemonė, dalinis rodinys</translation>
+<translation id="7352651011704765696">Kažkas negerai</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Prieš 1 min.}one{Prieš # min.}few{Prieš # min.}many{Prieš # min.}other{Prieš # min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Liko 1 minutė}one{Liko # minutė}few{Liko # minutės}many{Liko # minutės}other{Liko # minučių}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + „<ph name="KEY_COMBO_NAME" />“</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Prieš 1 valandą}one{Prieš # valandą}few{Prieš # valandas}many{Prieš # valandos}other{Prieš # valandų}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Liko 1 sek.}one{Liko # sek.}few{Liko # sek.}many{Liko # sek.}other{Liko # sek.}}</translation>
+<translation id="8134065097954893699">Šis puslapis įkeliamas iš naujo</translation>
 <translation id="8144660977431427332">Jūsų paieškos veikia su „Google Assistant“. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatinis užbaigimas</translation>
 <translation id="815598010540052116">Slinkti žemyn</translation>

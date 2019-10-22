@@ -1,4 +1,1 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
-
-# Fails for unknown reason.
--org.chromium.content.browser.InterstitialPageTest.testCloseInterstitial

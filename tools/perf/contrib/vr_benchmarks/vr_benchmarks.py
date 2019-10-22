@@ -123,7 +123,7 @@ class _BaseWebVRBenchmark(_BaseWebVRWebXRBenchmark):
   def SetExtraBrowserOptions(self, options):
     memory.SetExtraBrowserOptionsForMemoryMeasurement(options)
     options.AppendExtraBrowserArgs([
-        '--enable-webvr',
+        '--enable-blink-features=WebVR',
     ])
 
 

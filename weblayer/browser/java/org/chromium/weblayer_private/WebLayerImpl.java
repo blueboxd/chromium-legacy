@@ -15,6 +15,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
@@ -52,18 +53,21 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public void initAndLoadAsync(IObjectWrapper webLayerContextWrapper,
+    public void initAndLoadAsync(IObjectWrapper appContextWrapper,
             IObjectWrapper loadedCallbackWrapper, int resourcesPackageId) {
         // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
         // other expensive startup tasks.
         R.onResourcesLoaded(resourcesPackageId);
 
-        Context context = ObjectWrapper.unwrap(webLayerContextWrapper, Context.class);
-        ContextUtils.initApplicationContext(context);
+        // Wrap the app context so that it can be used to load WebLayer implementation classes.
+        Context appContext = ClassLoaderContextWrapperFactory.get(
+                ObjectWrapper.unwrap(appContextWrapper, Context.class));
+        ContextUtils.initApplicationContext(appContext);
+
         ResourceBundle.setAvailablePakLocales(new String[] {}, LocaleConfig.UNCOMPRESSED_LOCALES);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
 
-        ChildProcessCreationParams.set(context.getPackageName(), false /* isExternalService */,
+        ChildProcessCreationParams.set(appContext.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_WEBLAYER_CHILD, true /* bindToCaller */,
                 false /* ignoreVisibilityForImportance */,
                 "org.chromium.weblayer.ChildProcessService$Privileged",

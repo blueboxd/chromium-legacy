@@ -42,6 +42,17 @@ using bookmarks::BookmarkNode;
 
 BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = nullptr;
 
+namespace {
+
+std::unique_ptr<views::View> CreateEditButton(views::ButtonListener* listener) {
+  auto edit_button = views::MdTextButton::CreateSecondaryUiButton(
+      listener, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
+  edit_button->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
+  return edit_button;
+}
+
+}  // namespace
+
 // static
 views::Widget* BookmarkBubbleView::ShowBubble(
     views::View* anchor_view,
@@ -135,14 +146,6 @@ void BookmarkBubbleView::WindowClosing() {
 }
 
 // views::DialogDelegate -------------------------------------------------------
-
-std::unique_ptr<views::View> BookmarkBubbleView::CreateExtraView() {
-  auto edit_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
-  edit_button->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
-  edit_button_ = edit_button.get();
-  return edit_button;
-}
 
 std::unique_ptr<views::View> BookmarkBubbleView::CreateFootnoteView() {
 #if defined(OS_CHROMEOS)
@@ -266,6 +269,7 @@ BookmarkBubbleView::BookmarkBubbleView(
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
+  DialogDelegate::SetExtraView(CreateEditButton(this));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

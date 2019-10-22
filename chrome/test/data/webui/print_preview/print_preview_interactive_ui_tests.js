@@ -46,34 +46,6 @@ const PrintPreviewInteractiveUITest = class extends PolymerInteractiveUITest {
 };
 
 // eslint-disable-next-line no-var
-var PrintPreviewPrintHeaderInteractiveTest =
-    class extends PrintPreviewInteractiveUITest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://print/ui/header.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//chrome/test/data/webui/test_util.js',
-      'print_header_interactive_test.js',
-    ]);
-  }
-
-  /** @override */
-  get suiteName() {
-    return print_header_interactive_test.suiteName;
-  }
-};
-
-TEST_F(
-    'PrintPreviewPrintHeaderInteractiveTest', 'FocusPrintOnReady', function() {
-      this.runMochaTest(
-          print_header_interactive_test.TestNames.FocusPrintOnReady);
-    });
-
-// eslint-disable-next-line no-var
 var PrintPreviewButtonStripInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */

@@ -480,6 +480,12 @@ TEST_F(HintsFetcherTest, MaxHostsForOptimizationGuideServiceHintsFetch) {
   base::HistogramTester histogram_tester;
   std::string response_content;
   std::vector<std::string> all_hosts;
+
+  // Invalid hosts, IP addresses, and localhosts should be skipped.
+  all_hosts.push_back("localhost");
+  all_hosts.push_back("8.8.8.8");
+  all_hosts.push_back("probably%20not%20Canonical");
+
   size_t max_hosts_in_fetch_request = optimization_guide::features::
       MaxHostsForOptimizationGuideServiceHintsFetch();
   for (size_t i = 0; i < max_hosts_in_fetch_request; ++i) {
@@ -497,12 +503,11 @@ TEST_F(HintsFetcherTest, MaxHostsForOptimizationGuideServiceHintsFetch) {
   DictionaryPrefUpdate hosts_fetched(
       pref_service(), prefs::kHintsFetcherHostsSuccessfullyFetched);
   EXPECT_EQ(max_hosts_in_fetch_request, hosts_fetched->size());
-  EXPECT_EQ(all_hosts.size(), max_hosts_in_fetch_request + 2);
+  EXPECT_EQ(all_hosts.size(), max_hosts_in_fetch_request + 5);
 
-  for (size_t i = 0; i < all_hosts.size(); ++i) {
-    // Only the first |max_hosts_in_fetch_request| should be requested.
-    EXPECT_EQ(i < max_hosts_in_fetch_request,
-              WasHostCoveredByFetch(all_hosts[i]));
+  for (size_t i = 0; i < max_hosts_in_fetch_request; ++i) {
+    EXPECT_TRUE(
+        WasHostCoveredByFetch("host" + base::NumberToString(i) + ".com"));
   }
 }
 

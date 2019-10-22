@@ -33,7 +33,9 @@ runInAnimationWorklet(
   animation.play();
 
   if (window.testRunner) {
-    waitTwoAnimationFrames(_ => {
+    waitForAnimationFrameWithCondition(_ => {
+      return getComputedStyle(target).transform != 'matrix(1, 0, 0, 1, 0, 0)';
+    }).then(_ => {
       eventSender.setPageZoomFactor(2);
       waitTwoAnimationFrames(_ => {
         testRunner.notifyDone();

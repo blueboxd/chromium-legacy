@@ -206,6 +206,9 @@ if (is_android || is_chromeos) {
     # Checks that proguard flags have not changed (!is_java_debug only).
     check_android_configuration = false
 
+    # Where to write failed expectations if check_android_configuration is true.
+    android_configuration_failure_dir = "$root_build_dir/failed_expectations"
+
     # Enable the chrome build for devices without touchscreens.
     notouch_build = false
 

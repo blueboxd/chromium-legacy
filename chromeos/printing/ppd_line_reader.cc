@@ -47,18 +47,21 @@ class StringSourceStream : public net::SourceStream {
   int Read(net::IOBuffer* dest_buffer,
            int buffer_size,
            net::CompletionOnceCallback) override {
-    int read_size = src_.size() - read_ofs_;
-    if (read_size > buffer_size) {
-      read_size = buffer_size;
-    }
+    if (buffer_size < 0)
+      return net::ERR_INVALID_ARGUMENT;
+    if (!MayHaveMoreBytes())
+      return net::OK;
+    const size_t read_size =
+        std::min(src_.size() - read_ofs_, static_cast<size_t>(buffer_size));
     memcpy(dest_buffer->data(), src_.data() + read_ofs_, read_size);
     read_ofs_ += read_size;
     return read_size;
   }
   std::string Description() const override { return ""; }
+  bool MayHaveMoreBytes() const override { return read_ofs_ < src_.size(); }
 
  private:
-  int read_ofs_ = 0;
+  size_t read_ofs_ = 0;
   const std::string& src_;
 };
 

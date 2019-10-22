@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
-<translation id="1135993792949700405">‏سيُرسل Chrome البيانات الشخصية التي اختَرتها إلى <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">هل تريد فتح الرابط الخارجي؟</translation>
 <translation id="1699570257714336246">معلومات غير متوفرة</translation>
 <translation id="2203046366315513658">تقليل القيمة</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">‏تم فتح "مساعد Google" في Chrome بنصف ارتفاع.</translation>
 <translation id="6973932557599545801">عذرًا، لا يمكنني مساعدتك، يُرجى المتابعة بنفسك.</translation>
 <translation id="7658239707568436148">إلغاء</translation>
-<translation id="7871791972254842204">يمكنك قراءة الأحكام والشروط والموافقة عليها <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> لاحقًا</translation>
 <translation id="8253702004019660079">‏"مساعد Google" في Chrome</translation>
 <translation id="9138504265731110181">‏يوفِّر عليك "مساعد Google" الوقت من خلال مساعدتك على تسجيل الخروج من الويب</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>

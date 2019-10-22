@@ -19,6 +19,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/metrics.h"
 #include "ui/views/widget/widget.h"
@@ -51,7 +52,9 @@ ReloadButton::ReloadButton(CommandUpdater* command_updater)
       command_updater_(command_updater),
       double_click_timer_delay_(
           base::TimeDelta::FromMilliseconds(views::GetDoubleClickInterval())),
-      mode_switch_timer_delay_(base::TimeDelta::FromMilliseconds(1350)) {}
+      mode_switch_timer_delay_(base::TimeDelta::FromMilliseconds(1350)),
+      normal_color_(gfx::kPlaceholderColor),
+      disabled_color_(gfx::kPlaceholderColor) {}
 
 ReloadButton::~ReloadButton() {}
 
@@ -87,7 +90,9 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
   }
 }
 
-void ReloadButton::LoadImages() {
+void ReloadButton::SetColors(SkColor normal_color, SkColor disabled_color) {
+  normal_color_ = normal_color;
+  disabled_color_ = disabled_color;
   ChangeModeInternal(visible_mode_);
 }
 
@@ -224,19 +229,11 @@ void ReloadButton::ExecuteBrowserCommand(int command, int event_flags) {
 }
 
 void ReloadButton::ChangeModeInternal(Mode mode) {
-  const ui::ThemeProvider* tp = GetThemeProvider();
-  // |tp| can be NULL in unit tests.
-  if (tp) {
-    const gfx::VectorIcon& icon = GetIconForMode(mode == Mode::kReload);
-    const SkColor normal_color =
-        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-    const SkColor disabled_color =
-        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(icon, normal_color));
-    SetImage(views::Button::STATE_DISABLED,
-             gfx::CreateVectorIcon(icon, disabled_color));
-  }
+  const gfx::VectorIcon& icon = GetIconForMode(mode == Mode::kReload);
+  SetImage(views::Button::STATE_NORMAL,
+           gfx::CreateVectorIcon(icon, normal_color_));
+  SetImage(views::Button::STATE_DISABLED,
+           gfx::CreateVectorIcon(icon, disabled_color_));
 
   visible_mode_ = mode;
   SchedulePaint();

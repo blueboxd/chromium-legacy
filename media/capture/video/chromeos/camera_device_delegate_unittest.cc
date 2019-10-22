@@ -23,8 +23,10 @@
 #include "media/capture/video/chromeos/mock_video_capture_client.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/mock_gpu_memory_buffer_manager.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,13 +47,15 @@ class MockCameraDevice : public cros::mojom::Camera3DeviceOps {
 
   ~MockCameraDevice() = default;
 
-  void Initialize(cros::mojom::Camera3CallbackOpsPtr callback_ops,
-                  InitializeCallback callback) override {
-    DoInitialize(callback_ops, callback);
+  void Initialize(
+      mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops,
+      InitializeCallback callback) override {
+    DoInitialize(std::move(callback_ops), callback);
   }
-  MOCK_METHOD2(DoInitialize,
-               void(cros::mojom::Camera3CallbackOpsPtr& callback_ops,
-                    InitializeCallback& callback));
+  MOCK_METHOD2(
+      DoInitialize,
+      void(mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops,
+           InitializeCallback& callback));
 
   void ConfigureStreams(cros::mojom::Camera3StreamConfigurationPtr config,
                         ConfigureStreamsCallback callback) override {
@@ -117,7 +121,7 @@ VideoCaptureParams GetDefaultCaptureParams() {
 class CameraDeviceDelegateTest : public ::testing::Test {
  public:
   CameraDeviceDelegateTest()
-      : mock_camera_device_binding_(&mock_camera_device_),
+      : mock_camera_device_receiver_(&mock_camera_device_),
         device_delegate_thread_("DeviceDelegateThread"),
         hal_delegate_thread_("HalDelegateThread") {}
 
@@ -246,16 +250,16 @@ class CameraDeviceDelegateTest : public ::testing::Test {
 
   void OpenMockCameraDevice(
       int32_t camera_id,
-      cros::mojom::Camera3DeviceOpsRequest& device_ops_request,
+      mojo::PendingReceiver<cros::mojom::Camera3DeviceOps> device_ops_receiver,
       base::OnceCallback<void(int32_t)>& callback) {
-    mock_camera_device_binding_.Bind(std::move(device_ops_request));
+    mock_camera_device_receiver_.Bind(std::move(device_ops_receiver));
     std::move(callback).Run(0);
   }
 
   void InitializeMockCameraDevice(
-      cros::mojom::Camera3CallbackOpsPtr& callback_ops,
+      mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops,
       base::OnceCallback<void(int32_t)>& callback) {
-    callback_ops_ = std::move(callback_ops);
+    callback_ops_.Bind(std::move(callback_ops));
     std::move(callback).Run(0);
   }
 
@@ -307,9 +311,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   }
 
   void CloseMockCameraDevice(base::OnceCallback<void(int32_t)>& callback) {
-    if (mock_camera_device_binding_.is_bound()) {
-      mock_camera_device_binding_.Close();
-    }
+    mock_camera_device_receiver_.reset();
     callback_ops_.reset();
     std::move(callback).Run(0);
   }
@@ -473,8 +475,8 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   unittest_internal::MockGpuMemoryBufferManager mock_gpu_memory_buffer_manager_;
 
   testing::StrictMock<MockCameraDevice> mock_camera_device_;
-  mojo::Binding<cros::mojom::Camera3DeviceOps> mock_camera_device_binding_;
-  cros::mojom::Camera3CallbackOpsPtr callback_ops_;
+  mojo::Receiver<cros::mojom::Camera3DeviceOps> mock_camera_device_receiver_;
+  mojo::Remote<cros::mojom::Camera3CallbackOps> callback_ops_;
 
   base::Thread device_delegate_thread_;
 
@@ -540,13 +542,15 @@ TEST_F(CameraDeviceDelegateTest, StopBeforeOpened) {
   base::WaitableEvent stop_posted;
   auto open_device_quit_loop_cb =
       [&](int32_t camera_id,
-          cros::mojom::Camera3DeviceOpsRequest& device_ops_request,
+          mojo::PendingReceiver<cros::mojom::Camera3DeviceOps>
+              device_ops_receiver,
           base::OnceCallback<void(int32_t)>& callback) {
         QuitRunLoop();
         // Make sure StopAndDeAllocate() is called before the device opened
         // callback.
         stop_posted.Wait();
-        OpenMockCameraDevice(camera_id, device_ops_request, callback);
+        OpenMockCameraDevice(camera_id, std::move(device_ops_receiver),
+                             callback);
       };
   EXPECT_CALL(mock_camera_module_, DoOpenDevice(0, _, _))
       .Times(1)
@@ -669,15 +673,17 @@ TEST_F(CameraDeviceDelegateTest, FailToOpenDevice) {
       .Times(AtLeast(1))
       .WillRepeatedly(InvokeWithoutArgs(stop_on_error));
 
-  // Hold the |device_ops_request| to make the behavior of CameraDeviceDelegate
+  // Hold the |device_ops_receiver| to make the behavior of CameraDeviceDelegate
   // deterministic. Otherwise the connection error handler would race with the
   // callback of OpenDevice(), because they are in different mojo channels.
-  cros::mojom::Camera3DeviceOpsRequest device_ops_request_holder;
+  mojo::PendingReceiver<cros::mojom::Camera3DeviceOps>
+      device_ops_receiver_holder;
   auto open_device_with_error_cb =
       [&](int32_t camera_id,
-          cros::mojom::Camera3DeviceOpsRequest& device_ops_request,
+          mojo::PendingReceiver<cros::mojom::Camera3DeviceOps>
+              device_ops_receiver,
           base::OnceCallback<void(int32_t)>& callback) {
-        device_ops_request_holder = std::move(device_ops_request);
+        device_ops_receiver_holder = std::move(device_ops_receiver);
         std::move(callback).Run(-ENODEV);
       };
   EXPECT_CALL(mock_camera_module_, DoOpenDevice(0, _, _))

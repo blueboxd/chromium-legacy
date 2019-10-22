@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="1135993792949700405">Az Ön által kiválasztott személyes adatokat a Chrome elküldi a következő domainnek: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Megnyitja a külső linket?</translation>
 <translation id="1699570257714336246">Hiányzó információ</translation>
 <translation id="2203046366315513658">Érték csökkentése</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">A Google Segéd félmagasságban van megnyitva a Chrome-ban.</translation>
 <translation id="6973932557599545801">Sajnos nem tudok többet segíteni. Kérjük, folytassa egyedül.</translation>
 <translation id="7658239707568436148">Mégse</translation>
-<translation id="7871791972254842204">A(z) <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> általános szerződési feltételeinek elolvasása és elfogadása később</translation>
 <translation id="8253702004019660079">Google Segéd a Chrome-ban.</translation>
 <translation id="9138504265731110181">A Google Segéd időt takarít meg Önnek azáltal, hogy segít fizetni az interneten</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>

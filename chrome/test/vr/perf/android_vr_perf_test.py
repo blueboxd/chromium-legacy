@@ -50,7 +50,12 @@ class AndroidVrPerfTest(vr_perf_test.VrPerfTest):
 
     # Force WebVR support, remove open tabs, and don't have first run
     # experience.
-    flags = ['--enable-webvr', '--no-restore-state', '--disable-fre']
+    flags = [
+        '--enable-blink-features=WebVR',
+        '--no-restore-state',
+        '--disable-fre'
+    ]
+
     if self._args.additional_flags:
       flags.extend(self._args.additional_flags.split(' '))
     self._SetChromeCommandLineFlags(flags)

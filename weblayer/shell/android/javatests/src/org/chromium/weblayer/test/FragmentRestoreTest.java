@@ -25,13 +25,11 @@ public class FragmentRestoreTest {
         mActivityTestRule.launchShellWithUrl("about:blank");
 
         String url = "data:text,foo";
-        mActivityTestRule.loadUrl(url);
-        mActivityTestRule.waitForNavigation(url);
+        mActivityTestRule.navigateAndWait(url);
 
         mActivityTestRule.rotateActivity();
 
         url = "data:text,bar";
-        mActivityTestRule.loadUrl(url);
-        mActivityTestRule.waitForNavigation(url);
+        mActivityTestRule.navigateAndWait(url);
     }
 }

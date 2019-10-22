@@ -32,11 +32,12 @@ class NET_EXPORT_PRIVATE FilterSourceStream : public SourceStream {
 
   ~FilterSourceStream() override;
 
+  // SourceStream implementation.
   int Read(IOBuffer* read_buffer,
            int read_buffer_size,
            CompletionOnceCallback callback) override;
-
   std::string Description() const override;
+  bool MayHaveMoreBytes() const override;
 
   static SourceType ParseEncodingType(const std::string& encoding);
 

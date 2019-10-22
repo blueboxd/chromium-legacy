@@ -21,6 +21,8 @@ const char kSelectAndScrollResultMatches[] = "matches";
 
 const char kSelectAndScrollResultIndex[] = "index";
 
+const char kSelectAndScrollResultContextString[] = "contextString";
+
 const char kFindInPageStop[] = "findInPage.stop";
 
 }  // namespace web

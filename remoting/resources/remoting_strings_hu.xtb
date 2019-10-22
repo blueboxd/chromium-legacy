@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Gyenge</translation>
 <translation id="1152528166145813711">Válasszon…</translation>
 <translation id="1199593201721843963">Távoli kapcsolatok letiltása</translation>
+<translation id="1201402288615127009">Tovább</translation>
 <translation id="1291443878853470558">Engedélyeznie kell a távoli kapcsolatokat, ha a Chromoting használatával szeretné elérni ezt a számítógépet.</translation>
 <translation id="1297009705180977556">Hiba a következőhöz való csatlakozáskor: <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(Ez a funkció még nem érhető el az Ön számítógépe számára)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome távoliasztal-szolgáltatás immár az interneten. Próbálja ki <ph name="LINK_BEGIN" />webes alkalmazásunkat<ph name="LINK_END" />– gyors és ingyenes, és ráadásul még több funkciót kínál, egyebek mellett továbbfejlesztett többmonitoros támogatást.</translation>
 <translation id="1643640058022401035">Ha elhagyja ezt az oldalt, akkor befejeződik a Chromoting munkamenete.</translation>
 <translation id="1654128982815600832">Távoli kapcsolatok engedélyezése ezen a számítógépen...</translation>
+<translation id="1697532407822776718">Máris elkészült!</translation>
 <translation id="170207782578677537">Nem sikerült regisztrálni a számítógépet.</translation>
 <translation id="174018511426417793">Önnek nincs regisztrált számítógépe. Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Csatlakozás…</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Gazdafolyamat</translation>
 <translation id="20876857123010370">Trackpad mód</translation>
 <translation id="2089514346391228378">A távoli kapcsolatok engedélyezve vannak ezen a számítógépen.</translation>
+<translation id="2198363917176605566">A(z) <ph name="PRODUCT_NAME" /> használatához meg kell adnia a „Screen Recording” (Képernyőrögzítés) engedélyt, hogy a rendszer elküldhesse ennek a Mac típusú eszköznek a képernyőjén lévő tartalmakat a távoli gép számára.
+
+Az engedély megadásához kattintson az alábbi „<ph name="BUTTON_NAME" />” gombra a „Képernyőrögzítés” beállításait tartalmazó panel megnyitásához, majd jelölje be az „<ph name="SERVICE_SCRIPT_NAME" />” melletti négyzetet.
+
+Ha már be van jelölve az „<ph name="SERVICE_SCRIPT_NAME" />” melletti négyzet, távolítsa el a jelölését, majd jelölje be újra.</translation>
 <translation id="2208514473086078157">Az irányelv-beállítások értelmében a Chrome távoliasztal-szolgáltatásban nem oszthatja meg számítógépét gazdaszámítógépként. Segítségért lépjen kapcsolatba a rendszergazdával.</translation>
 <translation id="2220529011494928058">Probléma bejelentése</translation>
 <translation id="2221097377466213233">A jobb oldali Ctrl használata Windows billentyűként (Mac esetében ⌘ billentyűként)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Legutóbb észlelve az interneten: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ez az alkalmazás már nem támogatott. Annak érdekében, hogy biztosan megkapja a legújabb funkciókat és biztonsági frissítéseket, használja a <ph name="LINK_BEGIN" />Chrome távoliasztal-szolgáltatás internetes alkalmazást<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Segítsen fejleszteni a Chrome távoliasztal-szolgáltatást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikákat és hibajelentéseket.</translation>
+<translation id="2504109125669302160">Az „Accessibility” (Kisegítő lehetőségek) engedély megadása a következőnek: <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Csatlakozva a következőhöz: <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chrome távoliasztal-szolgáltatást a „Megnyitás ablakban” lehetőséggel.</translation>
 <translation id="2540992418118313681">Meg szeretné osztani a számítógép megtekintését és vezérlését egy másik felhasználóval?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">Alapkönyvtár</translation>
 <translation id="4430435636878359009">Távoli kapcsolódások letiltása ezen a számítógépen</translation>
 <translation id="4430915108080446161">Hozzáférési kód létrehozása...</translation>
+<translation id="443560535555262820">Kisegítő lehetőségek beállításainak megnyitása</translation>
 <translation id="4450893287417543264">Ne jelenjen meg többé</translation>
 <translation id="4472575034687746823">Kezdő lépések</translation>
 <translation id="4481276415609939789">Önnek nincs regisztrált számítógépe. Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy számítógépen, telepítse a gépre a Chromoting alkalmazást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME" />”.</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">PIN-kód megváltoztatása</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (elavult)</translation>
 <translation id="6221358653751391898">Nincs bejelentkezve a Chrome-ba. Jelentkezzen be, és próbálkozzon újra.</translation>
+<translation id="6223301979382383752">Képernyőrögzítési beállítások megnyitása</translation>
 <translation id="6227369581881558336">A Chrome távoliasztal-szolgáltatás most már megtalálható az interneten olyan új funkciókkal, mint a fájlátvitel! Nézze meg a <ph name="LINK_BEGIN" />webalkalmazásunkat<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">A konzol logikai képernyőjén futó gazdagép leállt, hogy támogassa a rejtett üzemmódot úgy, hogy felhasználóspecifikus munkamenetben futó gazdagépre váltott.</translation>
 <translation id="629730747756840877">Fiók</translation>
 <translation id="6304318647555713317">Kliens</translation>
 <translation id="6381670701864002291">Valami más.</translation>
 <translation id="6398765197997659313">Kilépés a teljes képernyős módból</translation>
+<translation id="6411861157501911556">A <ph name="PRODUCT_NAME" /> használatához meg kell adnia az „Accessibility” (Kisegítő lehetőségek) engedélyt, hogy a távoli gépről érkező bevitel megjelenhessen ezen a Mac típusú eszközön.
+
+Az engedély megadásához kattintson az alábbi „<ph name="BUTTON_NAME" />” gombra a „Kisegítő lehetőségek” beállításait tartalmazó panel megnyitásához, majd jelölje be az „<ph name="SERVICE_SCRIPT_NAME" />” melletti négyzetet.
+
+Ha már be van jelölve az „<ph name="SERVICE_SCRIPT_NAME" />” melletti négyzet, távolítsa el a jelölését, majd jelölje be újra.</translation>
 <translation id="6441316101718669559">Ez az operációs rendszer nem támogatja az asztali integrációt. Az alkalmazást használhatja, de a felhasználói élmény nem lesz teljes.</translation>
 <translation id="652218476070540101">A számítógéphez tartozó PIN-kód frissítése folyamatban...</translation>
 <translation id="6527303717912515753">Megosztás</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">A teljes távoli asztal maradjon látható</translation>
 <translation id="9149992051684092333">Az asztal megosztásának megkezdéséhez adja meg az alábbi elérési kódot annak a személynek, aki segít Önnek.</translation>
 <translation id="916856682307586697">Az alapértelmezett XSession indítása</translation>
+<translation id="9187628920394877737">A „Screen Recording” (Képernyőrögzítés) engedély megadása a következőnek: <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Engedélyezés</translation>
 <translation id="9213184081240281106">A gazdagép beállítása érvénytelen.</translation>
 <translation id="951991426597076286">Elutasítás</translation>

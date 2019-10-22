@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
@@ -12,23 +11,22 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
+#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/interactive_test_utils.h"
 
-class WebAppAshInteractiveUITest : public extensions::ExtensionBrowserTest {
+class WebAppAshInteractiveUITest : public web_app::WebAppControllerBrowserTest {
  public:
   WebAppAshInteractiveUITest() = default;
   ~WebAppAshInteractiveUITest() override = default;
 
   // InProcessBrowserTest override:
   void SetUpOnMainThread() override {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = GURL("https://test.org");
-    // TODO(alancutter): Use web_app::InstallManager instead of Extensions
-    // specific install path.
-    const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = GURL("https://test.org");
+    web_app::AppId app_id = InstallWebApp(std::move(web_app_info));
 
-    Browser* browser = ExtensionBrowserTest::LaunchAppBrowser(app);
+    Browser* browser = LaunchWebAppBrowser(app_id);
     browser_view_ = BrowserView::GetBrowserViewForBrowser(browser);
 
     controller_ = browser_view_->immersive_mode_controller();
@@ -67,12 +65,12 @@ class WebAppAshInteractiveUITest : public extensions::ExtensionBrowserTest {
 };
 
 // Test that the web app menu button opens a menu on click.
-IN_PROC_BROWSER_TEST_F(WebAppAshInteractiveUITest, MenuButtonClickable) {
+IN_PROC_BROWSER_TEST_P(WebAppAshInteractiveUITest, MenuButtonClickable) {
   CheckWebAppMenuClickable();
 }
 
 // Test that the web app menu button opens a menu on click in immersive mode.
-IN_PROC_BROWSER_TEST_F(WebAppAshInteractiveUITest,
+IN_PROC_BROWSER_TEST_P(WebAppAshInteractiveUITest,
                        ImmersiveMenuButtonClickable) {
   FullscreenNotificationObserver waiter(browser());
   chrome::ToggleFullscreenMode(browser());
@@ -84,3 +82,11 @@ IN_PROC_BROWSER_TEST_F(WebAppAshInteractiveUITest,
 
   CheckWebAppMenuClickable();
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    WebAppAshInteractiveUITest,
+    ::testing::Values(
+        web_app::ControllerType::kHostedAppController,
+        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
+        web_app::ControllerType::kUnifiedControllerWithWebApp));

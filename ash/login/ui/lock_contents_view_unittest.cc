@@ -1957,7 +1957,9 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   EXPECT_TRUE(HasFocusInAnyChildView(status_area));
 }
 
-TEST_F(LockContentsViewUnitTest, DisableAuthAndMediaControls) {
+// Tests that media controls do not show on lock screen when auth is disabled
+// after media session changes to playing.
+TEST_F(LockContentsViewUnitTest, DisableAuthAfterMediaSessionChanged) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
@@ -1984,6 +1986,38 @@ TEST_F(LockContentsViewUnitTest, DisableAuthAndMediaControls) {
                        base::Time::Now() + base::TimeDelta::FromHours(8),
                        base::TimeDelta::FromHours(1),
                        true /*disable_lock_screen_media*/));
+  EXPECT_FALSE(lock_contents.media_controls_view()->IsDrawn());
+}
+
+// Tests that media controls do not show on lock screen when auth is disabled
+// before media session changes to playing.
+TEST_F(LockContentsViewUnitTest, DisableAuthBeforeMediaSessionChanged) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
+
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  const AccountId& kFirstUserAccountId = users()[0].basic_user_info.account_id;
+  LockContentsView::TestApi lock_contents(contents);
+
+  // Disable auth and media.
+  DataDispatcher()->DisableAuthForUser(
+      kFirstUserAccountId,
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1),
+                       true /*disable_lock_screen_media*/));
+  EXPECT_FALSE(lock_contents.media_controls_view()->IsDrawn());
+
+  // Simulate playing media session.
+  SimulateMediaSessionChanged(
+      lock_contents.media_controls_view(),
+      media_session::mojom::MediaPlaybackState::kPlaying);
   EXPECT_FALSE(lock_contents.media_controls_view()->IsDrawn());
 }
 

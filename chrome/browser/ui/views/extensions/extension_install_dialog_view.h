@@ -57,7 +57,6 @@ class ExtensionInstallDialogView : public views::BubbleDialogDelegateView,
   gfx::Size CalculatePreferredSize() const override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
   void AddedToWidget() override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;
   int GetDialogButtons() const override;

@@ -27,9 +27,6 @@
             "mac": "system_health_desktop_040.wprgo",
             "win": "system_health_desktop_047.wprgo"
         },
-        "browse:media:youtube:2018": {
-            "DEFAULT": "system_health_desktop_6b6bdda708.wprgo"
-        },
         "browse:media:youtubetv:2019": {
             "DEFAULT": "system_health_desktop_e53598d1f4.wprgo"
         },
@@ -85,7 +82,7 @@
             "DEFAULT": "system_health_desktop_056.wprgo"
         },
         "browse:social:tumblr_infinite_scroll:2018": {
-            "DEFAULT": "system_health_desktop_049d29ed85.wprgo"
+            "DEFAULT": "system_health_desktop_e6232c2d50.wprgo"
         },
         "browse:social:twitter": {
             "DEFAULT": "system_health_desktop_053.wprgo"

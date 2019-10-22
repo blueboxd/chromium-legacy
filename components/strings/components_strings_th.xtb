@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">โหลดหน้าภายหลัง</translation>
 <translation id="1015730422737071372">ให้รายละเอียดเพิ่มเติม</translation>
 <translation id="1021110881106174305">บัตรที่ยอมรับ</translation>
-<translation id="1023523064224774104">Chromium ตรวจพบว่าคุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่ไม่น่าไว้ใจ โปรดรีเซ็ตรหัสผ่านเดี๋ยวนี้</translation>
 <translation id="1032854598605920125">หมุนตามเข็มนาฬิกา</translation>
 <translation id="1035334672863811645">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="1036348656032585052">ปิด</translation>
@@ -540,7 +539,6 @@
 <translation id="3655670868607891010">หากคุณเห็นข้อความนี้บ่อยๆ ให้ลองไปที่ <ph name="HELP_LINK" /></translation>
 <translation id="3658742229777143148">การแก้ไข</translation>
 <translation id="366077651725703012">อัปเดตบัตรเครดิต</translation>
-<translation id="3672525478985456967">ชื่อของเว็บไซต์นี้ดูคล้ายกับ <ph name="LOOKALIKE_DOMAIN" /> บางครั้งผู้โจมตีจะเลียนแบบเว็บไซต์ต่างๆ โดยทำการเปลี่ยนแปลงเล็กๆ น้อยๆ ที่สังเกตเห็นได้ยากกับชื่อโดเมน</translation>
 <translation id="3676592649209844519">รหัสอุปกรณ์:</translation>
 <translation id="3677008721441257057">คุณหมายถึง &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; ใช่ไหม</translation>
 <translation id="3678029195006412963">ไม่สามารถลงนามคำขอ</translation>
@@ -858,7 +856,6 @@
 <translation id="5230733896359313003">ที่อยู่ในการจัดส่ง</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">ปิด</translation>
 <translation id="5250209940322997802">"เชื่อมต่อกับเครือข่าย"</translation>
 <translation id="5251803541071282808">ระบบคลาวด์</translation>
 <translation id="5252000469029418751">C7 (ซองจดหมาย)</translation>
@@ -1000,7 +997,6 @@
 <translation id="5946937721014915347">กำลังเปิด <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">เพิ่มเลย</translation>
 <translation id="5951495562196540101">ลงทะเบียนด้วยบัญชีผู้ใช้ทั่วไปไม่ได้ (มีใบอนุญาตแบบแพ็กเกจ)</translation>
-<translation id="5966900314707961320">เมื่อเปิดใช้ เว็บไซต์ต่างๆ จะใช้คุกกี้ที่ติดตามคุณในอินเทอร์เน็ตไม่ได้</translation>
 <translation id="5967592137238574583">แก้ไขข้อมูลติดต่อ</translation>
 <translation id="5967867314010545767">ลบจากประวัติการเข้าชม</translation>
 <translation id="5975083100439434680">ย่อ</translation>
@@ -1096,7 +1092,6 @@
 <translation id="6433490469411711332">แก้ไขข้อมูลติดต่อ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ปฏิเสธการเชื่อมต่อ</translation>
 <translation id="6434309073475700221">ทิ้ง</translation>
-<translation id="6435221585574090192">แชร์ข้อมูลให้ผู้ดูแลระบบทราบเกี่ยวกับการดำเนินการด้านความปลอดภัยที่ฟีเจอร์ป้องกันภัยคุกคามของ Chrome Enterprise แจ้งว่าไม่เหมาะสม ข้อมูลดังกล่าวอาจรวมถึง URL หน้าเว็บ ชื่อไฟล์และข้อมูลเมตาของไฟล์ ชื่อผู้ใช้ในอุปกรณ์ และชื่อผู้ใช้ใน Chrome</translation>
 <translation id="6440503408713884761">ละเว้น</translation>
 <translation id="6446163441502663861">Kahu (ซองจดหมาย)</translation>
 <translation id="6446608382365791566">เพิ่มข้อมูลเพิ่มเติม</translation>
@@ -1440,7 +1435,6 @@
 <translation id="8184538546369750125">ใช้ค่าเริ่มต้นสากล (อนุญาต)</translation>
 <translation id="8194797478851900357">&amp;เลิกทำการย้าย</translation>
 <translation id="8197543752516192074">แปลหน้าเว็บ</translation>
-<translation id="8197899142098070286">Chrome ตรวจพบว่าคุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่ไม่น่าไว้ใจ โปรดรีเซ็ตรหัสผ่านเดี๋ยวนี้</translation>
 <translation id="8201077131113104583">การอัปเดต URL ไม่ถูกต้องสำหรับส่วนขยายรหัส "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8202097416529803614">ข้อมูลสรุปคำสั่งซื้อ</translation>
 <translation id="8202370299023114387">ความขัดแย้ง</translation>
@@ -1528,7 +1522,6 @@
 <translation id="8718314106902482036">การชำระเงินไม่เสร็จสมบูรณ์</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, คำแนะนำการค้นหา</translation>
 <translation id="8719528812645237045">เจาะรูด้านบนหลายรู</translation>
-<translation id="8723954843026426558">ฉันยอมรับข้อกำหนดและเงื่อนไข นโยบายความเป็นส่วนตัว และสิทธิ์การถอนของ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8728672262656704056">คุณได้เข้าสู่โหมดไม่ระบุตัวตนแล้ว</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>

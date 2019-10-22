@@ -48,8 +48,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 // TODO(rjwright): make this const
 CSSValue* ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
     const Length& length,
@@ -114,7 +112,7 @@ CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
     const StyleColor& color) {
   // This function does NOT look at visited information, so that computed style
   // doesn't expose that.
-  return CSSColorValue::Create(color.Resolve(style.GetColor()).Rgb());
+  return cssvalue::CSSColorValue::Create(color.Resolve(style.GetColor()).Rgb());
 }
 
 const blink::Color ComputedStyleUtils::BorderSideColor(
@@ -305,8 +303,8 @@ const CSSValue* ComputedStyleUtils::BackgroundPositionYOrWebkitMaskPositionY(
   return list;
 }
 
-CSSBorderImageSliceValue* ComputedStyleUtils::ValueForNinePieceImageSlice(
-    const NinePieceImage& image) {
+cssvalue::CSSBorderImageSliceValue*
+ComputedStyleUtils::ValueForNinePieceImageSlice(const NinePieceImage& image) {
   // Create the slices.
   CSSPrimitiveValue* top = nullptr;
   CSSPrimitiveValue* right = nullptr;
@@ -371,7 +369,7 @@ CSSBorderImageSliceValue* ComputedStyleUtils::ValueForNinePieceImageSlice(
     }
   }
 
-  return MakeGarbageCollected<CSSBorderImageSliceValue>(
+  return MakeGarbageCollected<cssvalue::CSSBorderImageSliceValue>(
       MakeGarbageCollected<CSSQuadValue>(top, right, bottom, left,
                                          CSSQuadValue::kSerializeAsQuad),
       image.Fill());
@@ -467,7 +465,8 @@ CSSValue* ComputedStyleUtils::ValueForNinePieceImage(
   }
 
   // Create the image slice.
-  CSSBorderImageSliceValue* image_slices = ValueForNinePieceImageSlice(image);
+  cssvalue::CSSBorderImageSliceValue* image_slices =
+      ValueForNinePieceImageSlice(image);
 
   // Create the border area slices.
   CSSValue* border_slices =
@@ -516,7 +515,7 @@ CSSValue* ComputedStyleUtils::ValueForReflection(
       break;
   }
 
-  return MakeGarbageCollected<CSSReflectValue>(
+  return MakeGarbageCollected<cssvalue::CSSReflectValue>(
       direction, offset,
       ValueForNinePieceImage(reflection->Mask(), style, allow_visited_style));
 }
@@ -801,7 +800,7 @@ CSSValue* ComputedStyleUtils::ValueForFontStyle(const ComputedStyle& style) {
   CSSValueList* oblique_values = CSSValueList::CreateSpaceSeparated();
   oblique_values->Append(*CSSNumericLiteralValue::Create(
       angle, CSSPrimitiveValue::UnitType::kDegrees));
-  return MakeGarbageCollected<CSSFontStyleRangeValue>(
+  return MakeGarbageCollected<cssvalue::CSSFontStyleRangeValue>(
       *CSSIdentifierValue::Create(CSSValueID::kOblique), *oblique_values);
 }
 
@@ -1142,12 +1141,14 @@ class OrderedNamedLinesCollector {
     return ordered_named_grid_lines_.IsEmpty() &&
            ordered_named_auto_repeat_grid_lines_.IsEmpty();
   }
-  virtual void CollectLineNamesForIndex(CSSGridLineNamesValue&,
+  virtual void CollectLineNamesForIndex(cssvalue::CSSGridLineNamesValue&,
                                         size_t index) const;
 
  protected:
   enum NamedLinesType { kNamedLines, kAutoRepeatNamedLines };
-  void AppendLines(CSSGridLineNamesValue&, size_t index, NamedLinesType) const;
+  void AppendLines(cssvalue::CSSGridLineNamesValue&,
+                   size_t index,
+                   NamedLinesType) const;
 
   const OrderedNamedGridLines& ordered_named_grid_lines_;
   const OrderedNamedGridLines& ordered_named_auto_repeat_grid_lines_;
@@ -1160,7 +1161,7 @@ class OrderedNamedLinesCollectorInsideRepeat
   OrderedNamedLinesCollectorInsideRepeat(const ComputedStyle& style,
                                          bool is_row_axis)
       : OrderedNamedLinesCollector(style, is_row_axis) {}
-  void CollectLineNamesForIndex(CSSGridLineNamesValue&,
+  void CollectLineNamesForIndex(cssvalue::CSSGridLineNamesValue&,
                                 size_t index) const override;
 };
 
@@ -1178,7 +1179,7 @@ class OrderedNamedLinesCollectorInGridLayout
         auto_repeat_track_list_length_(
             is_row_axis ? style.GridAutoRepeatColumns().size()
                         : style.GridAutoRepeatRows().size()) {}
-  void CollectLineNamesForIndex(CSSGridLineNamesValue&,
+  void CollectLineNamesForIndex(cssvalue::CSSGridLineNamesValue&,
                                 size_t index) const override;
 
  private:
@@ -1189,7 +1190,7 @@ class OrderedNamedLinesCollectorInGridLayout
 
 // RJW
 void OrderedNamedLinesCollector::AppendLines(
-    CSSGridLineNamesValue& line_names_value,
+    cssvalue::CSSGridLineNamesValue& line_names_value,
     size_t index,
     NamedLinesType type) const {
   auto iter = type == kNamedLines
@@ -1208,14 +1209,14 @@ void OrderedNamedLinesCollector::AppendLines(
 }
 
 void OrderedNamedLinesCollector::CollectLineNamesForIndex(
-    CSSGridLineNamesValue& line_names_value,
+    cssvalue::CSSGridLineNamesValue& line_names_value,
     size_t i) const {
   DCHECK(!IsEmpty());
   AppendLines(line_names_value, i, kNamedLines);
 }
 
 void OrderedNamedLinesCollectorInsideRepeat::CollectLineNamesForIndex(
-    CSSGridLineNamesValue& line_names_value,
+    cssvalue::CSSGridLineNamesValue& line_names_value,
     size_t i) const {
   DCHECK(!IsEmpty());
   AppendLines(line_names_value, i, kAutoRepeatNamedLines);
@@ -1223,7 +1224,7 @@ void OrderedNamedLinesCollectorInsideRepeat::CollectLineNamesForIndex(
 
 // RJW
 void OrderedNamedLinesCollectorInGridLayout::CollectLineNamesForIndex(
-    CSSGridLineNamesValue& line_names_value,
+    cssvalue::CSSGridLineNamesValue& line_names_value,
     size_t i) const {
   DCHECK(!IsEmpty());
   if (ordered_named_auto_repeat_grid_lines_.IsEmpty() || i < insertion_point_) {
@@ -1268,7 +1269,7 @@ void AddValuesForNamedGridLinesAtIndex(OrderedNamedLinesCollector& collector,
   if (collector.IsEmpty())
     return;
 
-  auto* line_names = MakeGarbageCollected<CSSGridLineNamesValue>();
+  auto* line_names = MakeGarbageCollected<cssvalue::CSSGridLineNamesValue>();
   collector.CollectLineNamesForIndex(*line_names, i);
   if (line_names->length())
     list.Append(*line_names);
@@ -1375,9 +1376,10 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   AutoRepeatType auto_repeat_type = is_row_axis
                                         ? style.GridAutoRepeatColumnsType()
                                         : style.GridAutoRepeatRowsType();
-  CSSValueList* repeated_values = MakeGarbageCollected<CSSGridAutoRepeatValue>(
-      auto_repeat_type == AutoRepeatType::kAutoFill ? CSSValueID::kAutoFill
-                                                    : CSSValueID::kAutoFit);
+  CSSValueList* repeated_values =
+      MakeGarbageCollected<cssvalue::CSSGridAutoRepeatValue>(
+          auto_repeat_type == AutoRepeatType::kAutoFill ? CSSValueID::kAutoFill
+                                                        : CSSValueID::kAutoFit);
   OrderedNamedLinesCollectorInsideRepeat repeat_collector(style, is_row_axis);
   PopulateGridTrackList(repeated_values, repeat_collector,
                         auto_repeat_track_sizes, getTrackSize);
@@ -1642,7 +1644,7 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
         }
         return CSSIdentifierValue::Create(value_id);
       }
-      return MakeGarbageCollected<CSSCubicBezierTimingFunctionValue>(
+      return MakeGarbageCollected<cssvalue::CSSCubicBezierTimingFunctionValue>(
           bezier_timing_function->X1(), bezier_timing_function->Y1(),
           bezier_timing_function->X2(), bezier_timing_function->Y2());
     }
@@ -1656,7 +1658,7 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
 
       // Canonical form of step timing function is step(n, type) or step(n) even
       // if initially parsed as step-start or step-end.
-      return CSSStepsTimingFunctionValue::Create(steps, position);
+      return cssvalue::CSSStepsTimingFunctionValue::Create(steps, position);
     }
 
     default:
@@ -2039,27 +2041,27 @@ CSSValue* ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
     const Color& current_color) {
   if (paint.type >= SVG_PAINTTYPE_URI_NONE) {
     CSSValueList* values = CSSValueList::CreateSpaceSeparated();
-    values->Append(*CSSURIValue::Create(paint.GetUrl()));
+    values->Append(*cssvalue::CSSURIValue::Create(paint.GetUrl()));
     if (paint.type == SVG_PAINTTYPE_URI_NONE)
       values->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
     else if (paint.type == SVG_PAINTTYPE_URI_CURRENTCOLOR)
-      values->Append(*CSSColorValue::Create(current_color.Rgb()));
+      values->Append(*cssvalue::CSSColorValue::Create(current_color.Rgb()));
     else if (paint.type == SVG_PAINTTYPE_URI_RGBCOLOR)
-      values->Append(*CSSColorValue::Create(paint.GetColor().Rgb()));
+      values->Append(*cssvalue::CSSColorValue::Create(paint.GetColor().Rgb()));
     return values;
   }
   if (paint.type == SVG_PAINTTYPE_NONE)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   if (paint.type == SVG_PAINTTYPE_CURRENTCOLOR)
-    return CSSColorValue::Create(current_color.Rgb());
+    return cssvalue::CSSColorValue::Create(current_color.Rgb());
 
-  return CSSColorValue::Create(paint.GetColor().Rgb());
+  return cssvalue::CSSColorValue::Create(paint.GetColor().Rgb());
 }
 
 CSSValue* ComputedStyleUtils::ValueForSVGResource(
     const StyleSVGResource* resource) {
   if (resource)
-    return CSSURIValue::Create(resource->Url());
+    return cssvalue::CSSURIValue::Create(resource->Url());
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 

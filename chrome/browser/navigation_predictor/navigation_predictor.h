@@ -24,6 +24,7 @@
 
 namespace content {
 class BrowserContext;
+class NavigationHandle;
 class RenderFrameHost;
 }
 
@@ -115,6 +116,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
       std::vector<blink::mojom::AnchorElementMetricsPtr> metrics,
       const gfx::Size& viewport_size) override;
 
+  // content::WebContentsObserver:
+  void OnVisibilityChanged(content::Visibility visibility) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
   // Returns true if the anchor element metric from the renderer process is
   // valid.
   bool IsValidMetricFromRenderer(
@@ -173,9 +179,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // on the action taken as well as the URL that was navigated to.
   // |target_url| is the URL navigated to by the user.
   void RecordActionAccuracyOnClick(const GURL& target_url) const;
-
-  // content::WebContentsObserver:
-  void OnVisibilityChanged(content::Visibility visibility) override;
 
   // Records metrics on which action the predictor is taking.
   void RecordAction(Action log_action);
@@ -272,6 +275,10 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // A count of clicks to prevent reporting more than 10 clicks to UKM.
   size_t clicked_count_ = 0;
+
+  // Whether a new navigation has started (only set if load event comes before
+  // DidStartNavigation).
+  bool next_navigation_started_ = false;
 
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;

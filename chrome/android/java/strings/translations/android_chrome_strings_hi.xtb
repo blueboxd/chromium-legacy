@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Chrome को आपको सूचनाएं भेजने देने के लिए, <ph name="BEGIN_LINK" />Android की सेटिंग<ph name="END_LINK" /> में जाकर भी सूचनाएं चालू करें.</translation>
 <translation id="204321170514947529">Chrome में <ph name="APP_NAME" /> का डेटा भी है</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">फ़ाइल का एक्सटेंशन बदलने से अनचाहा बर्ताव हो सकता है जिससे आपके डिवाइस को नुकसान पहुंच सकता है.</translation>
 <translation id="2056878612599315956">साइट रोकी गई</translation>
 <translation id="2063713494490388661">खोजने के लिए टैप करें</translation>
 <translation id="2067805253194386918">टेक्स्ट</translation>
@@ -915,7 +914,6 @@
 <translation id="7810647596859435254">इसमें खोलें…</translation>
 <translation id="7821588508402923572">बचाया गया डेटा यहां दिखाई देगा</translation>
 <translation id="7837721118676387834">किसी खास साइट पर म्यूट किए गए वीडियो को अपने आप चलाने की अनुमति दें.</translation>
-<translation id="7838340937077326045">क्या आप वाकई फ़ाइल का एक्सटेंशन बदलना चाहते हैं?</translation>
 <translation id="7846076177841592234">चुना गया हटाएं</translation>
 <translation id="784934925303690534">समय सीमा</translation>
 <translation id="7851858861565204677">अन्य डिवाइस</translation>

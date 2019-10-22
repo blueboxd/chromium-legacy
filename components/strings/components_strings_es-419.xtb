@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">Cargar la página más tarde</translation>
 <translation id="1015730422737071372">Proporciona más detalles</translation>
 <translation id="1021110881106174305">Tarjetas aceptadas</translation>
-<translation id="1023523064224774104">Chromium detectó que acabas de ingresar tu contraseña en un sitio
-          sospechoso. Restablece la contraseña ahora.</translation>
 <translation id="1032854598605920125">Girar a la derecha</translation>
 <translation id="1035334672863811645">acceder a Chrome</translation>
 <translation id="1036348656032585052">Desactivar</translation>
@@ -551,7 +549,6 @@
 <translation id="3655670868607891010">Si este mensaje aparece con frecuencia, haz clic aquí: <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisión</translation>
 <translation id="366077651725703012">Actualizar tarjeta de crédito</translation>
-<translation id="3672525478985456967">El nombre de este sitio es similar al de <ph name="LOOKALIKE_DOMAIN" />. A veces, los atacantes hacen cambios sutiles y difíciles de detectar en el nombre del dominio para imitar sitios.</translation>
 <translation id="3676592649209844519">ID de dispositivo:</translation>
 <translation id="3677008721441257057">¿Quisiste decir &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">La solicitud no se pudo firmar</translation>
@@ -875,7 +872,6 @@
 <translation id="5230733896359313003">Dirección de envío</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Rechazar</translation>
 <translation id="5250209940322997802">"Conectarse a una red"</translation>
 <translation id="5251803541071282808">Nube</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
@@ -1017,7 +1013,6 @@
 <translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sí, agregar</translation>
 <translation id="5951495562196540101">No se puede realizar la inscripción con una cuenta personal (licencia de paquete disponible).</translation>
-<translation id="5966900314707961320">Cuando esta opción está activada, los sitios no pueden usar cookies para rastrearte en la Web</translation>
 <translation id="5967592137238574583">Editar la información de contacto</translation>
 <translation id="5967867314010545767">Eliminar del historial</translation>
 <translation id="5975083100439434680">Alejar</translation>
@@ -1113,7 +1108,6 @@
 <translation id="6433490469411711332">Editar la información de contacto</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> rechazó la conexión.</translation>
 <translation id="6434309073475700221">Rechazar</translation>
-<translation id="6435221585574090192">Comparte con tu administrador información sobre eventos de seguridad que se hayan marcado en la función de Protección contra amenazas de Chrome Enterprise. Esos eventos pueden incluir URL de páginas, nombres y metadatos de archivos y tu nombre de usuario de Chrome y el de tu dispositivo.</translation>
 <translation id="6440503408713884761">Ignorada</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Agregar más información</translation>
@@ -1457,7 +1451,6 @@ Detalles adicionales:
 <translation id="8184538546369750125">Usar configuración global predeterminada (Permitir)</translation>
 <translation id="8194797478851900357">&amp;Deshacer Mover</translation>
 <translation id="8197543752516192074">Traducir página</translation>
-<translation id="8197899142098070286">Chrome detectó que acabas de ingresar tu contraseña en un sitio sospechoso. Restablece la contraseña ahora.</translation>
 <translation id="8201077131113104583">URL de actualización no válida para la extensión con ID "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8202097416529803614">Resumen del pedido</translation>
 <translation id="8202370299023114387">Conflicto</translation>
@@ -1545,7 +1538,6 @@ Detalles adicionales:
 <translation id="8718314106902482036">No se completó el pago</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, sugerencia de búsqueda</translation>
 <translation id="8719528812645237045">Perforaciones múltiples en la parte superior</translation>
-<translation id="8723954843026426558">Acepto los Términos y Condiciones, la Política de Privacidad y el derecho de cancelación de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8728672262656704056">Estás en modo incógnito</translation>
 <translation id="8730621377337864115">Listo</translation>

@@ -233,6 +233,7 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   std::vector<base::Feature> enable_features_;
   std::vector<base::Feature> disable_features_;
   std::vector<std::string> append_switches_;
+  std::vector<std::string> enable_blink_features_;
   std::vector<XrTestRequirement> runtime_requirements_;
   std::unordered_set<std::string> ignored_requirements_;
 

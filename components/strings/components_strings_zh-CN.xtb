@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">保存网页以供日后加载</translation>
 <translation id="1015730422737071372">提供其他详细信息</translation>
 <translation id="1021110881106174305">接受的信用卡</translation>
-<translation id="1023523064224774104">Chromium 检测到，您刚刚在一个可疑的网站中输入了密码。请立即重置您的密码！</translation>
 <translation id="1032854598605920125">顺时针旋转</translation>
 <translation id="1035334672863811645">登录 Chrome</translation>
 <translation id="1036348656032585052">关闭</translation>
@@ -537,7 +536,6 @@
 <translation id="3655670868607891010">如果您频繁遇到此问题，请尝试这些<ph name="HELP_LINK" />。</translation>
 <translation id="3658742229777143148">修订版本</translation>
 <translation id="366077651725703012">更新信用卡</translation>
-<translation id="3672525478985456967">此网站的域名看起来和 <ph name="LOOKALIKE_DOMAIN" /> 很相似。攻击者有时会通过对域名进行一些难以发现的细微变更来仿冒网站。</translation>
 <translation id="3676592649209844519">设备 ID：</translation>
 <translation id="3677008721441257057">您是想访问 &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; 吧？</translation>
 <translation id="3678029195006412963">无法签署该请求</translation>
@@ -855,7 +853,6 @@
 <translation id="5230733896359313003">送货地址</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">关闭</translation>
 <translation id="5250209940322997802">“连接到网络”</translation>
 <translation id="5251803541071282808">云端</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
@@ -997,7 +994,6 @@
 <translation id="5946937721014915347">正在打开 <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">添加</translation>
 <translation id="5951495562196540101">无法通过消费者帐号注册（有封装的许可）。</translation>
-<translation id="5966900314707961320">此项处于开启状态时，网站无法使用 Cookie 来跟踪您在网上的活动</translation>
 <translation id="5967592137238574583">修改联系信息</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5975083100439434680">缩小</translation>
@@ -1092,7 +1088,6 @@
 <translation id="6433490469411711332">修改联系信息</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒绝了我们的连接请求。</translation>
 <translation id="6434309073475700221">放弃</translation>
-<translation id="6435221585574090192">与您的管理员分享 Chrome 企业版威胁防护功能所报告的安全性事件的相关数据。这些数据可能包括页面网址、文件名、文件元数据、您的设备用户名和 Chrome 用户名。</translation>
 <translation id="6440503408713884761">已忽略</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">添加更多信息</translation>
@@ -1436,7 +1431,6 @@
 <translation id="8184538546369750125">使用全局默认设置（允许）</translation>
 <translation id="8194797478851900357">撤消移动(&amp;U)</translation>
 <translation id="8197543752516192074">翻译网页</translation>
-<translation id="8197899142098070286">Chrome 检测到，您刚刚在一个可疑的网站中输入了密码。请立即重置您的密码！</translation>
 <translation id="8201077131113104583">ID 为“<ph name="EXTENSION_ID" />”的扩展程序的更新网址无效。</translation>
 <translation id="8202097416529803614">订单摘要</translation>
 <translation id="8202370299023114387">冲突</translation>
@@ -1524,7 +1518,6 @@
 <translation id="8718314106902482036">未能完成付款</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />，<ph name="DESCRIPTION" />，搜索建议</translation>
 <translation id="8719528812645237045">多孔（顶部）</translation>
-<translation id="8723954843026426558">我认同 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 的条款及条件、隐私权政策和撤消权</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8728672262656704056">您已进入无痕模式</translation>
 <translation id="8730621377337864115">完成</translation>

@@ -179,9 +179,14 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
     return;
   }
 
-  const ash::ShelfID shelf_id =
-      ChromeLauncherController::instance()->GetShelfIDForWebContents(
+  const std::string app_id =
+      ChromeLauncherController::instance()->GetAppIDForWebContents(
           web_contents);
+  browser->window()->GetNativeWindow()->SetProperty(ash::kAppIDKey,
+                                                    new std::string(app_id));
+
+  const ash::ShelfID shelf_id =
+      ChromeLauncherController::instance()->GetShelfIDForAppId(app_id);
   browser->window()->GetNativeWindow()->SetProperty(
       ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
 }

@@ -8,12 +8,9 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
 
-import android.support.v4.widget.NestedScrollView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
-
-import androidx.annotation.Nullable;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -21,18 +18,14 @@ import org.chromium.ui.modelutil.PropertyModel;
 /** The binder controls the display of the {@link TasksView} in its parent. */
 class TasksSurfaceViewBinder {
     /**
-     * The view holder holds the parent view, the scroll container and the tasks surface view.
+     * The view holder holds the parent view and the tasks surface view.
      */
     public static class ViewHolder {
         public final ViewGroup parentView;
-        @Nullable
-        public final NestedScrollView scrollContainer;
-        public final ViewGroup tasksSurfaceView;
+        public final View tasksSurfaceView;
 
-        ViewHolder(ViewGroup parentView, @Nullable NestedScrollView scrollContainer,
-                ViewGroup tasksSurfaceView) {
+        ViewHolder(ViewGroup parentView, View tasksSurfaceView) {
             this.parentView = parentView;
-            this.scrollContainer = scrollContainer;
             this.tasksSurfaceView = tasksSurfaceView;
         }
     }
@@ -47,22 +40,20 @@ class TasksSurfaceViewBinder {
 
     private static void updateLayoutAndVisibility(
             ViewHolder viewHolder, PropertyModel model, boolean isShowing) {
-        ViewGroup targetView = viewHolder.scrollContainer == null ? viewHolder.tasksSurfaceView
-                                                                  : viewHolder.scrollContainer;
         if (isShowing && viewHolder.tasksSurfaceView.getParent() == null) {
-            viewHolder.parentView.addView(targetView);
-            if (viewHolder.scrollContainer != null) targetView.addView(viewHolder.tasksSurfaceView);
-            MarginLayoutParams layoutParams = (MarginLayoutParams) targetView.getLayoutParams();
+            viewHolder.parentView.addView(viewHolder.tasksSurfaceView);
+            MarginLayoutParams layoutParams =
+                    (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
             layoutParams.bottomMargin = model.get(BOTTOM_BAR_HEIGHT);
             layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
         }
 
-        targetView.setVisibility(isShowing ? View.VISIBLE : View.GONE);
+        viewHolder.tasksSurfaceView.setVisibility(isShowing ? View.VISIBLE : View.GONE);
     }
 
     private static void setBottomBarHeight(ViewHolder viewHolder, int height) {
-        ViewGroup targetView = viewHolder.scrollContainer == null ? viewHolder.tasksSurfaceView
-                                                                  : viewHolder.scrollContainer;
-        ((MarginLayoutParams) targetView.getLayoutParams()).bottomMargin = height;
+        MarginLayoutParams layoutParams =
+                (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
+        if (layoutParams != null) layoutParams.bottomMargin = height;
     }
 }

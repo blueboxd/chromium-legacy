@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/user_script_listener.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/kiosk/kiosk_delegate.h"
 
@@ -165,7 +166,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   std::unique_ptr<KioskDelegate> kiosk_delegate_;
 
-  std::unique_ptr<UserScriptListener> user_script_listener_;
+  UserScriptListener user_script_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserClient);
 };

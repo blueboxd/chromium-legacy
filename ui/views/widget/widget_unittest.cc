@@ -3940,7 +3940,7 @@ class WidgetShadowTest : public WidgetTest {
   Widget::InitParams CreateParams(Widget::InitParams::Type type) override {
     Widget::InitParams params =
         WidgetTest::CreateParams(override_type_.value_or(type));
-    params.shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
+    params.shadow_type = Widget::InitParams::ShadowType::kDrop;
     params.shadow_elevation = 10;
     params.name = name_;
     params.child = force_child_;

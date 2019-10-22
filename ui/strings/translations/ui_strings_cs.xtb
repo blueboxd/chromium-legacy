@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{před minutou}few{před # minutami}many{před # minuty}other{před # minutami}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Odebrat</translation>
+<translation id="1201402288615127009">Další</translation>
 <translation id="1243314992276662751">Nahrát</translation>
 <translation id="1266864766717917324">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Klepněte na cíle klepnutí na obrazovce.</translation>
 <translation id="2295140143284145483">Průzkum</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Kontrola připojení k internetu</translation>
 <translation id="2388990488038464401">Zavolat toto číslo z vašeho telefonu?</translation>
 <translation id="24452542372838207">Rozbalit oznámení</translation>
 <translation id="2445449901874883781">Použít vysokou hustotu</translation>
@@ -162,6 +164,7 @@
 <translation id="6620110761915583480">Uložit soubor</translation>
 <translation id="6656912866303152668">Zkontrolujte, zda je v Chromu na zařízení <ph name="TARGET_DEVICE_NAME" /> zapnutá synchronizace, a poté zkuste odeslání opakovat.</translation>
 <translation id="6699343763173986273">Média – další skladba</translation>
+<translation id="6710213216561001401">Předchozí</translation>
 <translation id="6779314412797872738">Chcete-li si odsud poslat číslo na telefon Android, v nastavení obou zařízení <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">Zavřít složku</translation>
 <translation id="6808150112686056157">Média – zastavit</translation>
@@ -179,6 +182,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Zbývá 1 min}few{Zbývají # min}many{Zbývá # min}other{Zbývá # min}}</translation>
 <translation id="7319740667687257810">Spouštěč, částečné zobrazení</translation>
+<translation id="7352651011704765696">Něco se pokazilo</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Před 1 min}few{Před # min}many{Před # min}other{Před # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zbývá 1 minuta}few{Zbývají # minuty}many{Zbývá # minuty}other{Zbývá # minut}}</translation>

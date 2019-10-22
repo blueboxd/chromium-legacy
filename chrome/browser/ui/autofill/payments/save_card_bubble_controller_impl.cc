@@ -548,6 +548,15 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
           features::kAutofillCreditCardUploadFeedback) &&
       previous_bubble_type == BubbleType::UPLOAD_SAVE) {
     current_bubble_type_ = BubbleType::UPLOAD_IN_PROGRESS;
+
+    // Log this metric here since for each bubble, the bubble state will only be
+    // changed to UPLOAD_IN_PROGRESS once. SaveCardIconView::Update is not
+    // guaranteed to be called only once so logging in any functions related to
+    // it is not reliable. Though bubble state change does not update the icon
+    // which is done in OnBubbleClosed, OnBubbleClosed ought to be called
+    // immediately after.
+    AutofillMetrics::LogCreditCardUploadFeedbackMetric(
+        AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN);
   }
 
   // If experiment |kAutofillCreditCardUploadFeedback| is enabled, there will be
@@ -824,7 +833,8 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
     case BubbleType::SIGN_IN_PROMO:
       break;
     case BubbleType::FAILURE:
-      // TODO(crbug.com/964127): Add metrics.
+      AutofillMetrics::LogCreditCardUploadFeedbackMetric(
+          AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN);
       break;
     case BubbleType::UPLOAD_IN_PROGRESS:
     case BubbleType::INACTIVE:
@@ -863,7 +873,8 @@ void SaveCardBubbleControllerImpl::ShowIconOnly() {
           GetSecurityLevel(), GetSyncState());
       break;
     case BubbleType::FAILURE:
-      // TODO(crbug.com/964127): Add metrics.
+      AutofillMetrics::LogCreditCardUploadFeedbackMetric(
+          AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN);
       break;
     case BubbleType::UPLOAD_IN_PROGRESS:
     case BubbleType::MANAGE_CARDS:

@@ -26,12 +26,13 @@ public abstract class ChildProcessService extends Service {
     public void onCreate() {
         super.onCreate();
         try {
-            Context remoteContext = WebLayer.createRemoteContext(getApplication());
+            Context appContext = getApplicationContext();
+            ClassLoader remoteClassLoader = WebLayer.createRemoteClassLoader(appContext);
             mImpl = IChildProcessService.Stub.asInterface(
-                    (IBinder) remoteContext.getClassLoader()
+                    (IBinder) remoteClassLoader
                             .loadClass("org.chromium.weblayer_private.ChildProcessServiceImpl")
                             .getMethod("create", Service.class, Context.class)
-                            .invoke(null, this, remoteContext));
+                            .invoke(null, this, appContext));
             mImpl.onCreate();
         } catch (Exception e) {
             throw new APICallException(e);

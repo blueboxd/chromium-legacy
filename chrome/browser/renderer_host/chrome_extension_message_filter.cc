@@ -15,14 +15,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -67,9 +65,7 @@ ChromeExtensionMessageFilter::ChromeExtensionMessageFilter(
       extension_info_map_(
           extensions::ExtensionSystem::Get(profile)->info_map()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::Source<Profile>(profile));
+  observed_profiles_.Add(profile);
 }
 
 ChromeExtensionMessageFilter::~ChromeExtensionMessageFilter() {
@@ -234,12 +230,10 @@ void ChromeExtensionMessageFilter::OnAddEventToExtensionActivityLog(
   AddActionToExtensionActivityLog(profile_, activity_log_, action);
 }
 
-void ChromeExtensionMessageFilter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-  profile_ = NULL;
+void ChromeExtensionMessageFilter::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK_EQ(profile_, profile);
+  observed_profiles_.Remove(profile_);
+  profile_ = nullptr;
   activity_log_ = nullptr;
 }
 

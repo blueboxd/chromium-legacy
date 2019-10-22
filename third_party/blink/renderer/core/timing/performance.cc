@@ -612,27 +612,19 @@ bool Performance::CanAddResourceTimingEntry() {
   return resource_timing_buffer_.size() < resource_timing_buffer_size_limit_;
 }
 
-void Performance::AddLongTaskTiming(
-    base::TimeTicks start_time,
-    base::TimeTicks end_time,
-    const AtomicString& name,
-    const String& frame_src,
-    const String& frame_id,
-    const String& frame_name,
-    const SubTaskAttribution::EntriesVector& sub_task_attributions) {
+void Performance::AddLongTaskTiming(base::TimeTicks start_time,
+                                    base::TimeTicks end_time,
+                                    const AtomicString& name,
+                                    const String& frame_src,
+                                    const String& frame_id,
+                                    const String& frame_name) {
   if (!HasObserverFor(PerformanceEntry::kLongTask))
     return;
 
-  for (auto&& it : sub_task_attributions) {
-    it->setHighResStartTime(
-        MonotonicTimeToDOMHighResTimeStamp(it->startTime()));
-    it->setHighResDuration(
-        ConvertTimeDeltaToDOMHighResTimeStamp(it->duration()));
-  }
   auto* entry = MakeGarbageCollected<PerformanceLongTaskTiming>(
       MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(end_time), name, frame_src, frame_id,
-      frame_name, sub_task_attributions);
+      frame_name);
   NotifyObserversOfEntry(*entry);
 }
 

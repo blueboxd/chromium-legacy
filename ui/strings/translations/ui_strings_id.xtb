@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 menit yang lalu}other{# menit yang lalu}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Hapus</translation>
+<translation id="1201402288615127009">Berikutnya</translation>
 <translation id="1243314992276662751">Upload</translation>
 <translation id="1266864766717917324">Tidak dapat membagikan <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Ketuk target sentuh di layar.</translation>
 <translation id="2295140143284145483">Survei</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/dtk</translation>
+<translation id="2353636109065292463">Memeriksa sambungan internet Anda</translation>
 <translation id="2388990488038464401">Panggil nomor ini dari ponsel Anda?</translation>
 <translation id="24452542372838207">Luaskan notifikasi</translation>
 <translation id="2445449901874883781">Gunakan kepadatan tinggi</translation>
@@ -136,6 +138,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 detik lagi}other{# detik lagi}}</translation>
 <translation id="5941711191222866238">Perkecil</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 jam}other{# jam}}</translation>
+<translation id="5946629889255121107">Nomor dimulai dari <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Halaman <ph name="SELECTED_PAGE" /> dari <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Hapus teks dari kotak penelusuran</translation>
 <translation id="6040143037577758943">Tutup</translation>
@@ -162,6 +165,7 @@
 <translation id="6620110761915583480">Simpan File</translation>
 <translation id="6656912866303152668">Pastikan <ph name="TARGET_DEVICE_NAME" /> telah mengaktifkan sinkronisasi di Chrome, dan coba kirim lagi.</translation>
 <translation id="6699343763173986273">Lacak Media Berikutnya</translation>
+<translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6779314412797872738">Untuk mengirim nomor dari sini ke ponsel Android Anda, <ph name="TROUBLESHOOT_LINK" /> untuk kedua perangkat di setelan.</translation>
 <translation id="6786750046913594791">Tutup folder</translation>
 <translation id="6808150112686056157">Hentikan Media</translation>
@@ -179,6 +183,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 mnt lagi}other{# mnt lagi}}</translation>
 <translation id="7319740667687257810">Peluncur, tampilan sebagian</translation>
+<translation id="7352651011704765696">Ada yang tidak beres</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 mnt yang lalu}other{# mnt yang lalu}}</translation>
 <translation id="7389409599945284130"><ph name="MESSAGE" /> -</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 menit lagi}other{# menit lagi}}</translation>
@@ -196,6 +201,7 @@
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 jam yang lalu}other{# jam yang lalu}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 dtk lagi}other{# dtk lagi}}</translation>
+<translation id="8134065097954893699">Memuat ulang halaman ini</translation>
 <translation id="8144660977431427332">Penelusuran Anda difasilitasi oleh Asisten Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Dilengkapi otomatis</translation>
 <translation id="815598010540052116">Gulir ke Bawah</translation>

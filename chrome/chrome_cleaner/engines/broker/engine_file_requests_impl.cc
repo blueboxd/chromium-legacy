@@ -34,16 +34,14 @@ EngineFileRequestsImpl::EngineFileRequestsImpl(
     scoped_refptr<MojoTaskRunner> mojo_task_runner,
     InterfaceMetadataObserver* metadata_observer)
     : mojo_task_runner_(mojo_task_runner),
-      metadata_observer_(metadata_observer),
-      binding_(this) {}
+      metadata_observer_(metadata_observer) {}
 
 void EngineFileRequestsImpl::Bind(
-    mojom::EngineFileRequestsAssociatedPtrInfo* ptr_info) {
-  if (binding_.is_bound())
-    binding_.Unbind();
+    mojo::PendingAssociatedRemote<mojom::EngineFileRequests>* remote) {
+  receiver_.reset();
 
-  binding_.Bind(mojo::MakeRequest(ptr_info));
-  // There's no need to call set_connection_error_handler on this since it's an
+  receiver_.Bind(remote->InitWithNewEndpointAndPassReceiver());
+  // There's no need to call set_disconnect_handler on this since it's an
   // associated interface. Any errors will be handled on the main EngineCommands
   // interface.
 }

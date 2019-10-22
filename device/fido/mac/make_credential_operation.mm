@@ -86,29 +86,26 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
 
   // Evaluate that excludeList does not contain any credentials stored by this
   // authenticator.
-  if (request().exclude_list) {
-    for (auto& credential : *request().exclude_list) {
-      ScopedCFTypeRef<CFMutableDictionaryRef> query = DefaultKeychainQuery();
-      CFDictionarySetValue(query, kSecAttrApplicationLabel,
-                           [NSData dataWithBytes:credential.id().data()
-                                          length:credential.id().size()]);
-      OSStatus status = SecItemCopyMatching(query, nullptr);
-      if (status == errSecSuccess) {
-        // Excluded item found.
-        DVLOG(1) << "credential from excludeList found";
-        std::move(callback())
-            .Run(CtapDeviceResponseCode::kCtap2ErrCredentialExcluded,
-                 base::nullopt);
-        return;
-      }
-      if (status != errSecItemNotFound) {
-        // Unexpected keychain error.
-        OSSTATUS_DLOG(ERROR, status)
-            << "failed to check for excluded credential";
-        std::move(callback())
-            .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-        return;
-      }
+  for (auto& credential : request().exclude_list) {
+    ScopedCFTypeRef<CFMutableDictionaryRef> query = DefaultKeychainQuery();
+    CFDictionarySetValue(query, kSecAttrApplicationLabel,
+                         [NSData dataWithBytes:credential.id().data()
+                                        length:credential.id().size()]);
+    OSStatus status = SecItemCopyMatching(query, nullptr);
+    if (status == errSecSuccess) {
+      // Excluded item found.
+      DVLOG(1) << "credential from excludeList found";
+      std::move(callback())
+          .Run(CtapDeviceResponseCode::kCtap2ErrCredentialExcluded,
+               base::nullopt);
+      return;
+    }
+    if (status != errSecItemNotFound) {
+      // Unexpected keychain error.
+      OSSTATUS_DLOG(ERROR, status) << "failed to check for excluded credential";
+      std::move(callback())
+          .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+      return;
     }
   }
 

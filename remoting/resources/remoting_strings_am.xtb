@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">ደካማ</translation>
 <translation id="1152528166145813711">ይምረጡ…</translation>
 <translation id="1199593201721843963">የርቀት ግንኙነቶችን አሰናክል</translation>
+<translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1291443878853470558">Chromotingን ተጠቅመው ይህንን ኮምፒውተር መድረስ ከፈለጉ የርቀት ግንኙነቶችን ማንቃት አለብዎት።</translation>
 <translation id="1297009705180977556">ከ<ph name="HOSTNAME" /> ጋር መገናኘት ላይ ስህተት</translation>
 <translation id="1324095856329524885">(ይህ ባህሪ ገና ለኮምፒውተርዎ አይገኝም)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome የርቀት ዴስክቶፕ አሁን በድሩ ላይ ነው የእኛን <ph name="LINK_BEGIN" />የድር መተግበሪያ<ph name="LINK_END" /> ይሞክሩት — ፈጣን እና ነጻ ነው፣ እንዲሁም ለበርካታ መቆጣጠሪያዎች የተሻሻለ ድጋፍን ጨምሮ ተጨማሪ ባህሪያት አሉት።</translation>
 <translation id="1643640058022401035">ከዚህ ገጽ መውጣት የChromoting ክፍለ-ጊዜዎን ያጠናቅቀዋል።</translation>
 <translation id="1654128982815600832">ለዚህ ኮምፒውተር የርቀት ግንኙነቶችን በማንቃት ላይ…</translation>
+<translation id="1697532407822776718">በቃ ጨርሰዋል!</translation>
 <translation id="170207782578677537">ይህንን ኮምፒውተር መመዝገብ አልተሳካም።</translation>
 <translation id="174018511426417793">ምንም የተመዘገቡ ኮምፒውተሮች የለዎትም። ከአንድ ኮምፒውተር ጋር የርቀት ግንኙነቶችን ለማንቃት Chrome የርቀት ዴስክቶፕን እዚያው ይጫኑና «<ph name="BUTTON_NAME" />»ን ይጫኑ።</translation>
 <translation id="1742469581923031760">በመገናኘት ላይ...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">የአስተናጋጅ ሂደት</translation>
 <translation id="20876857123010370">የትራክፓድ ሁነታ</translation>
 <translation id="2089514346391228378">ለዚህ ኮምፒውተር የርቀት ግንኙነቶች ነቅተዋል።</translation>
+<translation id="2198363917176605566"><ph name="PRODUCT_NAME" />ን ለመጠቀም በዚህ Mac ላይ ያሉ የማያ ገጽ ይዘቶች ወደ የርቀት ማሽን መላክ እንዲቻል «የማያ ገጽ ቀረጻ» ፈቃዱን መስጠት አለብዎት።
+
+ይህን ፈቃድ ለመስጠት ከታች «<ph name="BUTTON_NAME" />»ን ጠቅ አዳርገው «የማያ ገጽ ቀረጻ» ምርጫዎች መቃኑን ይክፈቱና ከ«<ph name="SERVICE_SCRIPT_NAME" />» ቀጥሎ ባለው ሳጥን ላይ ምልክት ያድርጉ።
+
+«<ph name="SERVICE_SCRIPT_NAME" />» አስቀድሞ ምልክት ከተደረገበት ምልክቱን ያንሱትና እንደገና ምልክት ያድርጉበት።</translation>
 <translation id="2208514473086078157">የመምሪያ ቅንብሮች ይህን ኮምፒውተር እንደ የChrome ርቀት ዴስክቶፕ አስተናጋጅ አድርጎ ማጋራት አይፈቅዱም። እርዳታ እንዲያገኙ የስርዓት አስተዳዳሪዎን ያግኙ።</translation>
 <translation id="2220529011494928058">ችግር ሪፖርት አድርግ</translation>
 <translation id="2221097377466213233">ለWin ቁልፍ Ctrlን ይጠቀሙ (Mac ላይ ⌘)</translation>
@@ -54,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  ለመጨረሻ ጊዜ መስመር ላይ የታየው በ<ph name="RELATIVE_TIMESTAMP" />።</translation>
 <translation id="2405928220797050937">ይህ መተግበሪያ ከእንግዲህ አይደገፍም። የቅርብ ጊዜዎቹን ባህሪዎች እና የደህንነት መጠበቂያ ዝማኔዎችን ማግኘትዎን እርግጠኛ ለመሆን እባክዎ  <ph name="LINK_BEGIN" />የChrome የርቀት ዴስክቶፕ የድር መተግበሪያ<ph name="LINK_END" />ን ይጠቀሙ።</translation>
 <translation id="2499160551253595098">የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶችን እንድንሰበስብ በመፍቀድ Chrome የርቀት ዴስክቶፕ እንድናሻሽል ያግዙን።</translation>
+<translation id="2504109125669302160">የ«ተደራሽነት» ፈቃዱን ለ<ph name="PRODUCT_NAME" /> ይስጡ</translation>
 <translation id="2509394361235492552">ከ<ph name="HOSTNAME" /> ጋር ተገናኝቷል</translation>
 <translation id="2512228156274966424">ማሳሰቢያ፦ ሁሉም የቁልፍ ሰሌዳ አቋራጮች የሚገኙ መሆናቸውን ለማረጋገጥ Chrome የርቀት ዴስክቶፕ ወደ «እንደ መስኮት ክፈት» ማዋቀር ይችላሉ።</translation>
 <translation id="2540992418118313681">ሌላ ተጠቃሚ ይህን ኮምፒውተር እንዲመለከት እና እንዲቆጣጠር ማጋራት ይፈልጋሉ?</translation>
@@ -134,6 +142,7 @@
 <translation id="4405930547258349619">ዋና ቤተ መጽሐፍት</translation>
 <translation id="4430435636878359009">ከዚህ ኮምፒውተር ጋር ያሉ የርቀት ግንኙነቶችን ያሰናክሉ</translation>
 <translation id="4430915108080446161">የመዳረሻ ኮድ በማመንጨት ላይ…</translation>
+<translation id="443560535555262820">የተደራሽነት ምርጫዎችን ክፈት</translation>
 <translation id="4450893287417543264">ዳግም አታሳይ</translation>
 <translation id="4472575034687746823">ይጀምሩ</translation>
 <translation id="4481276415609939789">ምንም የተመዘገቡ ኮምፒውተሮች የለዎትም። ከአንድ ኮምፒውተር ጋር የርቀት ግንኙነቶችን ለማንቃት Chromotingን እዚያው ይጫኑና «<ph name="BUTTON_NAME" />»ን ይጫኑ።</translation>
@@ -213,12 +222,18 @@
 <translation id="6198252989419008588">ፒን ይቀይሩ</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (ቀኑ ያለፈበት)</translation>
 <translation id="6221358653751391898">ወደ Chrome በመለያ አልገቡም። እባክዎ ይግቡ እና እንደገና ይሞክሩ።</translation>
+<translation id="6223301979382383752">የማያ ቀረጻ ምርጫዎችን ይክፈቱ</translation>
 <translation id="6227369581881558336">Chrome የርቀት ዴስክቶፕ የፋይል ሽግግርን ጨምሮ አሁን ላይ ከአዳዲስ ባህሪያት ጋር በድሩ ላይ ነው። የእኛን <ph name="LINK_BEGIN" />የድር መተግበሪያ<ph name="LINK_END" /> ይሞክሩት።</translation>
 <translation id="6284412385303060032">በመሥሪያ አመክንዮ ማያ ገጽ ላይ አያሄደ ያለው አስተናጋጅ በተጠቃሚ-ተኮር ክፍለ-ጊዜ ውስጥ በማሄድ የመጋረጃ ሁነታን ለመደገፍ ተዘግቷል።</translation>
 <translation id="629730747756840877">መለያ</translation>
 <translation id="6304318647555713317">ደንበኛ</translation>
 <translation id="6381670701864002291">ሌላ ነገር።</translation>
 <translation id="6398765197997659313">ከሙሉ ማሳያ መስኮት ይውጡ</translation>
+<translation id="6411861157501911556"><ph name="PRODUCT_NAME" />ን ለመጠቀም ከርቀት ማሽኑ የመጣ ግቤት ወደዚህ Mac እንዲገባ ለማድረግ የ«ተደራሽነት» ፈቃዱን መስጠት ይኖርብዎታል።
+
+ይህን ፈቃድ ለመስጠት ከታች «<ph name="BUTTON_NAME" />»ን ጠቅ አድርገው የ«ተደራሽነት» መቃኑን ይክፈቱና ከ«<ph name="SERVICE_SCRIPT_NAME" />» ቀጥሎ ያለውን ሳጥን ምልክት ያድርጉበት።
+
+«<ph name="SERVICE_SCRIPT_NAME" />» አስቀድሞ ምልክት የተደረገበት ከሆነ ምልክቱን ያንሱትና ዳግም ያድርጉበት።</translation>
 <translation id="6441316101718669559">የዴስክቶፕ ውህደት በዚህ የመሣሪያ ስርዓት ላይ አይደገፍም። አሁንም መተግበሪያውን መጠቀም ይችላሉ፣ ነገር ግን የተጠቃሚ ተሞክሮው የወረደ ይሆናል።</translation>
 <translation id="652218476070540101">የዚህ ኮምፒውተር ፒን እየተዘመነ ነው…</translation>
 <translation id="6527303717912515753">አጋራ</translation>
@@ -325,6 +340,7 @@
 <translation id="9149580767411232853">መላውን የርቀት ዴስክቶፕ የሚታይ እንደሆነ አድርገው ያቆዩት</translation>
 <translation id="9149992051684092333">ዴስክቶፕዎን ማጋራት ለመጀመር ከታች ያለውን የመዳረሻ ኮድ ለሚረዳዎ ሰው ይስጡት።</translation>
 <translation id="916856682307586697">ነባሪውን XSession አስጀምር</translation>
+<translation id="9187628920394877737">ለ<ph name="PRODUCT_NAME" /> የ«ማያ ገጽ ቀረጻ» ፈቃዱን ይስጡ</translation>
 <translation id="9188433529406846933">ፈቀዳ ይስጡ</translation>
 <translation id="9213184081240281106">ልክ ያልሆነ የአስተናጋጅ ውቅር።</translation>
 <translation id="951991426597076286">አትቀበል</translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
-<translation id="1135993792949700405">Chrome itatuma data ya binafsi uliyochagua kwa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Ungependa kufungua kiungo cha nje?</translation>
 <translation id="1699570257714336246">Maelezo hayajakamilika</translation>
 <translation id="2203046366315513658">Punguza thamani</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Imefungua urefu nusu wa programu ya Mratibu wa Google katika Chrome.</translation>
 <translation id="6973932557599545801">Samahani, nimeshindwa kukusaidia, tafadhali endelea mwenyewe.</translation>
 <translation id="7658239707568436148">Ghairi</translation>
-<translation id="7871791972254842204">Soma na ukubali sheria na masharti kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> baadaye</translation>
 <translation id="8253702004019660079">Programu ya Mratibu wa Google katika Chrome.</translation>
 <translation id="9138504265731110181">Programu ya Mratibu wa Google huokoa muda wako kwa kukusaidia kununua haraka kwenye wavuti</translation>
 <translation id="945522503751344254">Tuma maoni</translation>

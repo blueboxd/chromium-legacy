@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.share;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.text.TextUtils;
 
@@ -13,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.share.ShareHelper.TargetChosenCallback;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 
@@ -29,8 +29,8 @@ public class ShareParams {
     /** Whether to save the chosen activity for future direct sharing. */
     private final boolean mSaveLastUsed;
 
-    /** The activity that is used to access package manager. */
-    private final Activity mActivity;
+    /** The window that triggered the share action. */
+    private final WindowAndroid mWindow;
 
     /** The title of the page to be shared. */
     private final String mTitle;
@@ -69,14 +69,14 @@ public class ShareParams {
     @Nullable
     private final Runnable mOnDialogDismissed;
 
-    private ShareParams(boolean shareDirectly, boolean saveLastUsed, Activity activity,
+    private ShareParams(boolean shareDirectly, boolean saveLastUsed, WindowAndroid window,
             String title, String text, String url, @Nullable String fileContentType,
             @Nullable ArrayList<Uri> fileUris, @Nullable Uri offlineUri,
             @Nullable Uri screenshotUri, @Nullable TargetChosenCallback callback,
             @Nullable String sourcePackageName, @Nullable Runnable onDialogDismissed) {
         mShareDirectly = shareDirectly;
         mSaveLastUsed = saveLastUsed;
-        mActivity = activity;
+        mWindow = window;
         mTitle = title;
         mText = text;
         mUrl = url;
@@ -105,10 +105,10 @@ public class ShareParams {
     }
 
     /**
-     * @return The activity that is used to access package manager.
+     * @return The window that triggered share.
      */
-    public Activity getActivity() {
-        return mActivity;
+    public WindowAndroid getWindow() {
+        return mWindow;
     }
 
     /**
@@ -191,7 +191,7 @@ public class ShareParams {
     public static class Builder {
         private boolean mShareDirectly;
         private boolean mSaveLastUsed;
-        private Activity mActivity;
+        private WindowAndroid mWindow;
         private String mTitle;
         private String mText;
         private String mUrl;
@@ -204,8 +204,8 @@ public class ShareParams {
         private boolean mIsExternalUrl;
         private Runnable mOnDialogDismissed;
 
-        public Builder(@NonNull Activity activity, @NonNull String title, @NonNull String url) {
-            mActivity = activity;
+        public Builder(@NonNull WindowAndroid window, @NonNull String title, @NonNull String url) {
+            mWindow = window;
             mUrl = url;
             mTitle = title;
         }
@@ -320,7 +320,7 @@ public class ShareParams {
                     mText = mUrl;
                 }
             }
-            return new ShareParams(mShareDirectly, mSaveLastUsed, mActivity, mTitle, mText, mUrl,
+            return new ShareParams(mShareDirectly, mSaveLastUsed, mWindow, mTitle, mText, mUrl,
                     mFileContentType, mFileUris, mOfflineUri, mScreenshotUri, mCallback,
                     mSourcePackageName, mOnDialogDismissed);
         }

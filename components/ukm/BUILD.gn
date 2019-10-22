@@ -11,8 +11,8 @@ static_library("ukm") {
   sources = [
     "app_source_url_recorder.cc",
     "app_source_url_recorder.h",
-    "unsent_log_store_metrics_impl.cc",
-    "unsent_log_store_metrics_impl.h",
+    "scheme_constants.cc",
+    "scheme_constants.h",
     "ukm_pref_names.cc",
     "ukm_pref_names.h",
     "ukm_recorder_impl.cc",
@@ -23,6 +23,8 @@ static_library("ukm") {
     "ukm_rotation_scheduler.h",
     "ukm_service.cc",
     "ukm_service.h",
+    "unsent_log_store_metrics_impl.cc",
+    "unsent_log_store_metrics_impl.h",
   ]
 
   public_deps = [

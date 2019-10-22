@@ -95,6 +95,7 @@ message SharingSpecificFields {
     UNKNOWN = 0;
     CLICK_TO_CALL = 1;
     SHARED_CLIPBOARD = 2;
+    SMS_FETCHER = 3;
   }
 
   // A list of enabled Sharing features.

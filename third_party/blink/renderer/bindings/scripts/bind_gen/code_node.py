@@ -340,22 +340,29 @@ class SequenceNode(CodeNode):
     Represents a sequence of nodes.
     """
 
-    def __init__(self, code_nodes=None, separator="\n", renderer=None):
+    def __init__(self,
+                 code_nodes=None,
+                 separator=" ",
+                 separator_last="",
+                 renderer=None):
         assert isinstance(separator, str)
+        assert isinstance(separator_last, str)
 
         element_nodes_gensym = CodeNode.gensym()
         element_nodes = []
         template_text = CodeNode.format_template(
             """\
 % for node in {element_nodes}:
-${node}\\
+${node | trim}\\
 % if not loop.last:
 {separator}\\
 % endif
 % endfor
+{separator_last}\\
 """,
             element_nodes=element_nodes_gensym,
-            separator=separator)
+            separator=separator,
+            separator_last=separator_last)
         template_vars = {element_nodes_gensym: element_nodes}
 
         CodeNode.__init__(
@@ -453,7 +460,7 @@ class SymbolNode(CodeNode):
 
             def constructor(symbol_node):
                 return SymbolDefinitionNode(
-                    symbol_node, template_text=template_text)
+                    symbol_node=symbol_node, template_text=template_text)
 
             self._definition_node_constructor = constructor
         else:
@@ -516,6 +523,14 @@ class SymbolScopeNode(SequenceNode):
     If SymbolNodes are rendered inside this node, this node will attempt to
     insert corresponding SymbolDefinitionNodes appropriately.
     """
+
+    def __init__(self, code_nodes=None, renderer=None):
+        SequenceNode.__init__(
+            self,
+            code_nodes=code_nodes,
+            separator="\n",
+            separator_last="\n",
+            renderer=renderer)
 
     def _render(self, renderer, last_render_state):
         # Sort nodes in order to render reproducible results.
@@ -635,9 +650,9 @@ class ConditionalExitNode(ConditionalNode):
     where BODY ends with a return statement.
     """
 
-    def __init__(self, cond_node, body_node, body_likeliness, renderer=None):
-        assert isinstance(cond_node, CodeNode)
-        assert isinstance(body_node, SymbolScopeNode)
+    def __init__(self, cond, body, body_likeliness, renderer=None):
+        assert isinstance(cond, CodeNode)
+        assert isinstance(body, SymbolScopeNode)
         assert isinstance(body_likeliness, Likeliness.Level)
 
         gensyms = {
@@ -647,12 +662,12 @@ class ConditionalExitNode(ConditionalNode):
         template_text = CodeNode.format_template(
             """\
 if (${{{conditional}}}) {{
-  ${{{body}}}
+  ${{{body} | trim}}
 }}
 """, **gensyms)
         template_vars = {
-            gensyms["conditional"]: cond_node,
-            gensyms["body"]: body_node,
+            gensyms["conditional"]: cond,
+            gensyms["body"]: body,
         }
 
         ConditionalNode.__init__(
@@ -661,8 +676,8 @@ if (${{{conditional}}}) {{
             template_vars=template_vars,
             renderer=renderer)
 
-        self._cond_node = cond_node
-        self._body_node = body_node
+        self._cond_node = cond
+        self._body_node = body
         self._body_likeliness = body_likeliness
 
     def likeliness_of_undefined_code_symbol_usage(self, symbol_node):
@@ -683,12 +698,9 @@ class LikelyExitNode(ConditionalExitNode):
     meets.
     """
 
-    def __init__(self, cond_node, body_node):
+    def __init__(self, cond, body):
         ConditionalExitNode.__init__(
-            self,
-            cond_node=cond_node,
-            body_node=body_node,
-            body_likeliness=Likeliness.LIKELY)
+            self, cond=cond, body=body, body_likeliness=Likeliness.LIKELY)
 
 
 class UnlikelyExitNode(ConditionalExitNode):
@@ -697,9 +709,82 @@ class UnlikelyExitNode(ConditionalExitNode):
     meets.
     """
 
-    def __init__(self, cond_node, body_node):
+    def __init__(self, cond, body):
         ConditionalExitNode.__init__(
+            self, cond=cond, body=body, body_likeliness=Likeliness.UNLIKELY)
+
+
+class FunctionDefinitionNode(CodeNode):
+    """Represents a function definition."""
+
+    def __init__(self,
+                 name,
+                 arg_decls,
+                 return_type,
+                 local_vars=None,
+                 body=None,
+                 comment=None,
+                 renderer=None):
+        """
+        Args:
+            name: Function name node, which may include nested-name-specifier
+                (i.e. 'namespace_name::' and/or 'type_name::').
+            arg_decls: List of argument declaration nodes.
+            return_type: Return type node.
+            local_vars: List of SymbolNodes that can be used in the function
+                body.
+            body: Function body node (of type SymbolScopeNode).
+            comment: Function header comment node.
+        """
+        assert isinstance(name, CodeNode)
+        assert isinstance(arg_decls, (list, tuple))
+        assert all(isinstance(arg_decl, CodeNode) for arg_decl in arg_decls)
+        assert isinstance(return_type, CodeNode)
+        if local_vars is None:
+            local_vars = []
+        assert isinstance(local_vars, (list, tuple))
+        assert all(
+            isinstance(local_var, SymbolNode) for local_var in local_vars)
+        if body is None:
+            body = SymbolScopeNode()
+        assert isinstance(body, CodeNode)
+        if comment is None:
+            comment = LiteralNode("")
+        assert isinstance(comment, CodeNode)
+
+        gensyms = {
+            "name": CodeNode.gensym(),
+            "arg_decls": CodeNode.gensym(),
+            "return_type": CodeNode.gensym(),
+            "body": CodeNode.gensym(),
+            "comment": CodeNode.gensym(),
+        }
+
+        template_text = CodeNode.format_template(
+            """\
+${{{comment} | trim}}
+${{{return_type}}} ${{{name}}}(${{{arg_decls}}}) {{
+  ${{{body} | trim}}
+}}
+""", **gensyms)
+        template_vars = {
+            gensyms["name"]: name,
+            gensyms["arg_decls"]: SequenceNode(arg_decls, separator=", "),
+            gensyms["return_type"]: return_type,
+            gensyms["body"]: body,
+            gensyms["comment"]: comment,
+        }
+
+        CodeNode.__init__(
             self,
-            cond_node=cond_node,
-            body_node=body_node,
-            body_likeliness=Likeliness.UNLIKELY)
+            template_text=template_text,
+            template_vars=template_vars,
+            renderer=renderer)
+
+        self._body_node = body
+
+        self._body_node.register_code_symbols(local_vars)
+
+    @property
+    def body(self):
+        return self._body_node

@@ -5493,14 +5493,6 @@ void RenderFrameImpl::DidReceiveTransferSizeUpdate(int resource_id,
   }
 }
 
-void RenderFrameImpl::DidDisplayInsecureContent() {
-  Send(new FrameHostMsg_DidDisplayInsecureContent(routing_id_));
-}
-
-void RenderFrameImpl::DidContainInsecureFormAction() {
-  Send(new FrameHostMsg_DidContainInsecureFormAction(routing_id_));
-}
-
 void RenderFrameImpl::DidRunInsecureContent(
     const blink::WebSecurityOrigin& origin,
     const blink::WebURL& target) {

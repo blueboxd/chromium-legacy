@@ -112,6 +112,9 @@ typedef struct {
   const char* claimed_authority;
 } OriginClaimedAuthorityPair;
 
+// The size of credential IDs returned by GetTestCredentials().
+constexpr size_t kTestCredentialIdLength = 32u;
+
 constexpr char kTestOrigin1[] = "https://a.google.com";
 constexpr char kTestOrigin2[] = "https://acme.org";
 constexpr char kTestRelyingPartyId[] = "google.com";
@@ -293,7 +296,7 @@ std::vector<device::PublicKeyCredentialDescriptor> GetTestCredentials(
   std::vector<device::PublicKeyCredentialDescriptor> descriptors;
   for (size_t i = 0; i < num_credentials; i++) {
     DCHECK(i <= std::numeric_limits<uint8_t>::max());
-    std::vector<uint8_t> id(32u, static_cast<uint8_t>(i));
+    std::vector<uint8_t> id(kTestCredentialIdLength, static_cast<uint8_t>(i));
     base::flat_set<device::FidoTransportProtocol> transports{
         device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
         device::FidoTransportProtocol::kBluetoothLowEnergy};
@@ -2834,6 +2837,9 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
   }
 }
 
+// Tests that for an authenticator that does not support batching, credential
+// lists get probed silently to work around authenticators rejecting exclude
+// lists exceeding a certain size.
 TEST_F(AuthenticatorImplTest, MakeCredentialWithLargeExcludeList) {
   TestServiceManagerContext smc;
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -2868,6 +2874,9 @@ TEST_F(AuthenticatorImplTest, MakeCredentialWithLargeExcludeList) {
   }
 }
 
+// Tests that for an authenticator that does not support batching, credential
+// lists get probed silently to work around authenticators rejecting allow lists
+// exceeding a certain size.
 TEST_F(AuthenticatorImplTest, GetAssertionWithLargeAllowList) {
   TestServiceManagerContext smc;
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -2903,6 +2912,90 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithLargeAllowList) {
   }
 }
 
+// Tests that, regardless of batching support, GetAssertion requests with a
+// single allowed credential ID don't result in a silent probing request.
+TEST_F(AuthenticatorImplTest, GetAssertionSingleElementAllowListDoesNotProbe) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (bool supports_batching : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "supports_batching=" << supports_batching);
+
+    ResetVirtualDevice();
+    device::VirtualCtap2Device::Config config;
+    if (supports_batching) {
+      config.max_credential_id_length = kTestCredentialIdLength;
+      config.max_credential_count_in_list = 10;
+    }
+    config.reject_silent_authentication_requests = true;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+
+    auto test_credentials = GetTestCredentials(/*num_credentials=*/1);
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+        test_credentials.front().id(), kTestRelyingPartyId));
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->allow_credentials = std::move(test_credentials);
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    base::RunLoop().RunUntilIdle();
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(callback_receiver.status(), AuthenticatorStatus::SUCCESS);
+  }
+}
+
+// Tests that an allow list that fits into a single batch does not result in a
+// silent probing request.
+TEST_F(AuthenticatorImplTest, GetAssertionSingleBatchListDoesNotProbe) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (bool allow_list_fits_single_batch : {false, true}) {
+    SCOPED_TRACE(::testing::Message() << "allow_list_fits_single_batch="
+                                      << allow_list_fits_single_batch);
+
+    ResetVirtualDevice();
+    device::VirtualCtap2Device::Config config;
+    config.max_credential_id_length = kTestCredentialIdLength;
+    constexpr size_t kBatchSize = 10;
+    config.max_credential_count_in_list = kBatchSize;
+    config.reject_silent_authentication_requests = true;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+
+    auto test_credentials = GetTestCredentials(
+        /*num_credentials=*/kBatchSize +
+        (allow_list_fits_single_batch ? 0 : 1));
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+        test_credentials.back().id(), kTestRelyingPartyId));
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->allow_credentials = std::move(test_credentials);
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    base::RunLoop().RunUntilIdle();
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(callback_receiver.status(),
+              allow_list_fits_single_batch
+                  ? AuthenticatorStatus::SUCCESS
+                  : AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  }
+}
+
 TEST_F(AuthenticatorImplTest, NoUnexpectedAuthenticatorExtensions) {
   TestServiceManagerContext smc;
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -2935,6 +3028,54 @@ TEST_F(AuthenticatorImplTest, NoUnexpectedAuthenticatorExtensions) {
   assertion_callback.WaitForCallback();
   EXPECT_EQ(assertion_callback.status(),
             AuthenticatorStatus::NOT_ALLOWED_ERROR);
+}
+
+// Tests that on an authenticator that supports batching, exclude lists that fit
+// into a single batch are sent without probing.
+TEST_F(AuthenticatorImplTest, ExcludeListBatching) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (bool authenticator_has_excluded_credential : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "authenticator_has_excluded_credential="
+                 << authenticator_has_excluded_credential);
+
+    ResetVirtualDevice();
+    device::VirtualCtap2Device::Config config;
+    config.max_credential_id_length = kTestCredentialIdLength;
+    constexpr size_t kBatchSize = 10;
+    config.max_credential_count_in_list = kBatchSize;
+    // Reject silent authentication requests to ensure we are not probing
+    // credentials silently, since the exclude list should fit into a single
+    // batch.
+    config.reject_silent_authentication_requests = true;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    auto test_credentials = GetTestCredentials(kBatchSize);
+    test_credentials.insert(
+        test_credentials.end() - 1,
+        {device::CredentialType::kPublicKey,
+         std::vector<uint8_t>(kTestCredentialIdLength + 1, 1)});
+    if (authenticator_has_excluded_credential) {
+      ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+          test_credentials.back().id(), kTestRelyingPartyId));
+    }
+
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->exclude_credentials = std::move(test_credentials);
+    TestMakeCredentialCallback callback;
+    authenticator->MakeCredential(std::move(options), callback.callback());
+    base::RunLoop().RunUntilIdle();
+    callback.WaitForCallback();
+
+    EXPECT_EQ(callback.status(), authenticator_has_excluded_credential
+                                     ? AuthenticatorStatus::CREDENTIAL_EXCLUDED
+                                     : AuthenticatorStatus::SUCCESS);
+  }
 }
 
 class UVAuthenticatorImplTest : public AuthenticatorImplTest {
@@ -4144,6 +4285,46 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
   }
 }
 #endif  // defined(OS_WIN)
+
+// Tests that an allowList with only credential IDs of a length exceeding the
+// maxCredentialIdLength parameter is not mistakenly interpreted as an empty
+// allow list.
+TEST_F(ResidentKeyAuthenticatorImplTest,
+       AllowListWithOnlyOversizedCredentialIds) {
+  device::VirtualCtap2Device::Config config;
+  config.u2f_support = true;
+  config.pin_support = true;
+  config.resident_key_support = true;
+  config.max_credential_id_length = kTestCredentialIdLength;
+  config.max_credential_count_in_list = 10;
+  virtual_device_factory_->SetCtap2Config(config);
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      /*credential_id=*/std::vector<uint8_t>(kTestCredentialIdLength, 1),
+      kTestRelyingPartyId,
+      /*user_id=*/{{1}}, base::nullopt, base::nullopt));
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      /*credential_id=*/std::vector<uint8_t>(kTestCredentialIdLength, 2),
+      kTestRelyingPartyId,
+      /*user_id=*/{{2}}, base::nullopt, base::nullopt));
+
+  TestServiceManagerContext smc;
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  // |SelectAccount| should not be called since this is not a resident key
+  // request.
+  test_client_.expected_accounts = "<invalid>";
+
+  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+  options->appid = kTestOrigin1;
+  options->allow_credentials = {device::PublicKeyCredentialDescriptor(
+      device::CredentialType::kPublicKey,
+      std::vector<uint8_t>(kTestCredentialIdLength + 1, 0))};
+
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
 
 class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
  protected:

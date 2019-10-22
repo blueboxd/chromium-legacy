@@ -145,7 +145,6 @@
 <translation id="2041019821020695769">Chrome যাতে আপনাকে বিজ্ঞপ্তি পাঠাতে পারে তার জন্য আপনি <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে বিজ্ঞপ্তি চালু করুন।</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> অ্যাপের ডেটা Chrome ব্রাউজারেও আছে</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">ফাইল এক্সটেনশন পরিবর্তন করলে, অপ্রত্যাশিত সমস্যা হতে পারে এবং আপনার ডিভাইসের ক্ষতি হতে পারে।</translation>
 <translation id="2056878612599315956">সাইট পজ করা আছে</translation>
 <translation id="2063713494490388661">সার্চ করতে আলতো চাপুন</translation>
 <translation id="2067805253194386918">টেক্সট</translation>
@@ -917,7 +916,6 @@
 <translation id="7810647596859435254">এর মাধ্যমে খুলুন...</translation>
 <translation id="7821588508402923572">আপনি কত ডেটা সেভ করেছেন তা এখানে দেখা যাবে</translation>
 <translation id="7837721118676387834">একটি নির্দিষ্ট সাইটের জন্য মিউট করে রাখা ভিডিওগুলি স্বতঃবাজানোর অনুমতি দেয়।</translation>
-<translation id="7838340937077326045">আপনি কি ফাইল এক্সটেনশন পরিবর্তন করার ব্যাপারে নিশ্চিত?</translation>
 <translation id="7846076177841592234">নির্বাচন বাতিল করুন</translation>
 <translation id="784934925303690534">সময় সীমা</translation>
 <translation id="7851858861565204677">অন্যান্য ডিভাইস</translation>

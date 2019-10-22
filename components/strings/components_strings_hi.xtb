@@ -721,6 +721,7 @@
 <translation id="4477350412780666475">अगला ट्रैक</translation>
 <translation id="4482953324121162758">इस साइट का अनुवाद नहीं किया जाएगा.</translation>
 <translation id="4490717597759821841">ए7</translation>
+<translation id="4492519888999857993">ये सुविधाएं डिफ़ॉल्ट रूप से बंद कर दी गई हैं. Chrome के आने वाले वर्शन पर ये सुविधाएं उपलब्ध नहीं होंगी.</translation>
 <translation id="4493480324863638523">यूआरएल गलत है. यूआरएल में सामान्य स्कीम, जैसे कि, http://example.com या https://example.com.ज़रूर होनी चाहिए.</translation>
 <translation id="4503882053543859973">आर्किटेक्चर-डी</translation>
 <translation id="4506176782989081258">सत्‍यापन गड़बड़ी: <ph name="VALIDATION_ERROR" /></translation>
@@ -794,6 +795,7 @@
 <translation id="4880827082731008257">खोज इतिहास</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4901778704868714008">सेव करें...</translation>
 <translation id="4913987521957242411">सबसे ऊपर बाईं ओर पंच</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{1 और वेब पेज}one{# और वेब पेज}other{# और वेब पेज}}</translation>
 <translation id="4923417429809017348">इस पेज का एक अज्ञात भाषा से <ph name="LANGUAGE_LANGUAGE" /> में अनुवाद किया गया है</translation>
@@ -868,7 +870,6 @@
 <translation id="5230733896359313003">शिपिंग पता</translation>
 <translation id="5230815978613972521">बी8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">खारिज करें</translation>
 <translation id="5250209940322997802">"नेटवर्क से कनेक्ट करें"</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5252000469029418751">सी7 (एन्वेलप)</translation>
@@ -1010,7 +1011,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> को खोला जा रहा है…</translation>
 <translation id="5947933617628957894">हां, जोड़ें</translation>
 <translation id="5951495562196540101">उपभोक्ता खाते (पैकेज किया गया लाइसेंस मौजूद है) के साथ नामांकन नहीं कर सकते.</translation>
-<translation id="5966900314707961320">इसके चालू होने पर साइटें उन कुकी का इस्तेमाल नहीं कर सकतीं जो आपको वेब पर ट्रैक करती हैं</translation>
 <translation id="5967592137238574583">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="5967867314010545767">इतिहास से निकालें</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
@@ -1106,7 +1106,6 @@
 <translation id="6433490469411711332">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ने कनेक्ट करने से मना कर दिया है.</translation>
 <translation id="6434309073475700221">खारिज करें</translation>
-<translation id="6435221585574090192">सुरक्षा से जुड़ी उन गतिविधियों के बारे में डेटा शेयर करें जिन्हें Chrome Enterprise की खतरे से बचाने वाली सुविधा ने आपके एडमिन को फ़्लैग किया है. इनमें पेज के यूआरएल, फ़ाइल का नाम, और फ़ाइल का मेटाडेटा, आपके डिवाइस का उपयोगकर्ता नाम और Chrome उपयोगकर्ता नाम शामिल हो सकते हैं.</translation>
 <translation id="6440503408713884761">अनदेखा किया गया</translation>
 <translation id="6446163441502663861">काहू (एन्वेलप)</translation>
 <translation id="6446608382365791566">और जानकारी जोड़ें</translation>
@@ -1155,6 +1154,7 @@
 <translation id="6671697161687535275">क्रोमियम से फ़ॉर्म सुझाव निकालें?</translation>
 <translation id="6685834062052613830">प्रस्थान करें और सेटअप पूरा करें</translation>
 <translation id="6689271823431384964">आपके साइन इन किए होने की वजह से, Chrome आपको Google खाते में कार्ड सेव करने की सुविधा देता है. आप 'सेटिंग' में जाकर इसे बदल सकते हैं. कार्डधारक का नाम आपके खाते से लिया जाता है.</translation>
+<translation id="6704582573942289642">क्या यह सही साइट है?</translation>
 <translation id="6707256370811247129">कैश मेमोरी की सामग्री और फ़ाइलों को स्कैन करें जिन्हें आप Chrome में डाउनलोड या अपलोड करते हैं.</translation>
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="6710594484020273272">&lt;खोज शब्द लिखें&gt;</translation>
@@ -1536,7 +1536,6 @@
 <translation id="8718314106902482036">भुगतान पूरा नहीं हुआ</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, खोज सुझाव</translation>
 <translation id="8719528812645237045">सबसे ऊपर एक से ज़्यादा पंच</translation>
-<translation id="8723954843026426558">मैं नियमों और शर्तों, निजता नीति, और <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> निकाले जाने के अधिकार से सहमत हूं</translation>
 <translation id="8725066075913043281">फिर से कोशिश करें</translation>
 <translation id="8728672262656704056">आप गुप्त मोड में चले गए हैं</translation>
 <translation id="8730621377337864115">हो गया</translation>

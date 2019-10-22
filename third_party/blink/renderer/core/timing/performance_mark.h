@@ -54,8 +54,7 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
                                  PerformanceMarkOptions*,
                                  ExceptionState&);
 
-  PerformanceMark(ScriptState*,
-                  const AtomicString& name,
+  PerformanceMark(const AtomicString& name,
                   double start_time,
                   scoped_refptr<SerializedScriptValue>,
                   ExceptionState& exception_state);

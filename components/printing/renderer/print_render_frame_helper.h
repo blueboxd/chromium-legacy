@@ -30,7 +30,6 @@
 struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPages_Params;
 struct PrintMsg_PrintFrame_Params;
-struct PrintHostMsg_DidPrintContent_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 // RenderViewTest-based tests crash on Android
@@ -339,10 +338,6 @@ class PrintRenderFrameHelper
                                  cc::PaintCanvas* canvas);
 
   // Helper methods -----------------------------------------------------------
-
-  bool CopyMetafileDataToReadOnlySharedMem(
-      const MetafileSkia& metafile,
-      PrintHostMsg_DidPrintContent_Params* params);
 
   // Increments the IPC nesting level when an IPC message is received.
   void IPCReceived();

@@ -385,6 +385,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Notifies that mixed content was displayed or ran.
   virtual void DidDisplayInsecureContent() {}
+  virtual void DidContainInsecureFormAction() {}
   virtual void DidRunInsecureContent(const GURL& security_origin,
                                      const GURL& target_url) {}
 

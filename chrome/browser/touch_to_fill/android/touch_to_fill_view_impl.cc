@@ -68,11 +68,11 @@ TouchToFillViewImpl::~TouchToFillViewImpl() {
 }
 
 void TouchToFillViewImpl::Show(
-    base::StringPiece16 formatted_url,
+    const GURL& url,
     IsOriginSecure is_origin_secure,
     base::span<const password_manager::CredentialPair> credentials) {
   // Serialize the |credentials| span into a Java array and instruct the bridge
-  // to show it together with |formatted_url| to the user.
+  // to show it together with |url| to the user.
   JNIEnv* env = AttachCurrentThread();
   auto credential_array =
       Java_TouchToFillBridge_createCredentialArray(env, credentials.size());
@@ -88,7 +88,7 @@ void TouchToFillViewImpl::Show(
   }
 
   Java_TouchToFillBridge_showCredentials(
-      env, java_object_, ConvertUTF16ToJavaString(env, formatted_url),
+      env, java_object_, ConvertUTF8ToJavaString(env, url.spec()),
       is_origin_secure.value(), credential_array);
 }
 
@@ -103,11 +103,13 @@ void TouchToFillViewImpl::OnDismiss() {
 
 void TouchToFillViewImpl::FetchFavicon(
     JNIEnv* env,
-    const JavaParamRef<jstring>& j_origin,
+    const JavaParamRef<jstring>& j_credential_origin,
+    const JavaParamRef<jstring>& j_frame_origin,
     jint desized_size_in_pixel,
     const JavaParamRef<jobject>& j_callback) {
   controller_->FetchFavicon(
-      ConvertJavaStringToUTF8(env, j_origin), desized_size_in_pixel,
+      GURL(ConvertJavaStringToUTF8(env, j_credential_origin)),
+      GURL(ConvertJavaStringToUTF8(env, j_frame_origin)), desized_size_in_pixel,
       base::BindOnce(&OnFaviconFetched,
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }

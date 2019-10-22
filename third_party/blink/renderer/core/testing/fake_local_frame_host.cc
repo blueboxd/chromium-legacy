@@ -31,6 +31,10 @@ void FakeLocalFrameHost::UnregisterProtocolHandler(const WTF::String& scheme,
                                                    const ::blink::KURL& url,
                                                    bool user_gesture) {}
 
+void FakeLocalFrameHost::DidDisplayInsecureContent() {}
+
+void FakeLocalFrameHost::DidContainInsecureFormAction() {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

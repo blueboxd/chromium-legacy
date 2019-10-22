@@ -319,6 +319,7 @@
 <translation id="1468571364034902819">ใช้โปรไฟล์นี้ไม่ได้</translation>
 <translation id="1470811252759861213">หากต้องการรับส่วนขยายในคอมพิวเตอร์ทุกเครื่องของคุณ ให้<ph name="SIGN_IN_LINK" /></translation>
 <translation id="1470967055429794975">การดำเนินการนี้จะลบข้อมูลทั้งหมดในคีย์ความปลอดภัย รวมถึง PIN ของคีย์ด้วย</translation>
+<translation id="1472675084647422956">แสดงเพิ่มเติม</translation>
 <translation id="1475502736924165259">คุณมีใบรับรองของไฟล์ที่ไม่เข้ากับหมวดหมู่อื่นๆ</translation>
 <translation id="1476088332184200792">คัดลอกไปยังอุปกรณ์ของคุณ</translation>
 <translation id="1476607407192946488">&amp;การตั้งค่าภาษา</translation>
@@ -333,7 +334,6 @@
 <translation id="1486096554574027028">ค้นหารหัสผ่าน</translation>
 <translation id="1487335504823219454">เปิด - การตั้งค่าที่กำหนดเอง</translation>
 <translation id="1489664337021920575">เลือกตัวเลือกอื่น</translation>
-<translation id="1489956991149850859">คุณอาจเพิ่ม นำออก หรือเปลี่ยนชื่อลายนิ้วมือที่นี่</translation>
 <translation id="1493892686965953381">กำลังรอ <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> อุปกรณ์อื่นๆ ที่พร้อมใช้งาน</translation>
 <translation id="1495677929897281669">กลับไปที่แท็บ</translation>
@@ -802,7 +802,7 @@
 <translation id="216169395504480358">เพิ่ม WiFi...</translation>
 <translation id="2162155940152307086">การซิงค์จะเริ่มขึ้นเมื่อคุณออกจากการตั้งค่า</translation>
 <translation id="2163470535490402084">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่อลงชื่อเข้าใช้ <ph name="DEVICE_TYPE" /></translation>
-<translation id="2165421703844373933">เข้าถึง Assistant ได้เพียงพูดว่า "Ok Google" หากต้องการประหยัดแบตเตอรี่ ให้เลือก “เปิด (แนะนำ)” Assistant จะตอบสนองเฉพาะเมื่ออุปกรณ์ชาร์จไฟอยู่</translation>
+<translation id="2165421703844373933">เข้าถึง Assistant ได้เพียงพูดว่า "Ok Google" หากต้องการประหยัดแบตเตอรี่ ให้เลือก “เปิด (แนะนำ)” Assistant จะตอบสนองเฉพาะเมื่ออุปกรณ์เสียบปลั๊กหรือชาร์จไฟอยู่</translation>
 <translation id="2166369534954157698">สุนัขจิ้งจอกที่ปราดเปรียวกระโดดข้ามสุนัขเกียจคร้าน</translation>
 <translation id="2169062631698640254">ลงชื่อเข้าใช้ต่อไป</translation>
 <translation id="2170088579611075216">อนุญาตและเข้าสู่ประสบการณ์ VR</translation>
@@ -897,7 +897,6 @@
 <translation id="2280486287150724112">ขอบขวา</translation>
 <translation id="2282146716419988068">การประมวลผลของ GPU</translation>
 <translation id="2282155092769082568">URL การกำหนดค่าอัตโนมัติ:</translation>
-<translation id="228758327756499171"><ph name="NUMBER_OF_MORE_APPS" /> แอป</translation>
 <translation id="2288181517385084064">สลับไปเป็นโปรแกรมบันทึกวิดีโอ</translation>
 <translation id="2288735659267887385">การตั้งค่าการเข้าถึง</translation>
 <translation id="2289270750774289114">ถามเมื่อเว็บไซต์ต้องการค้นหาอุปกรณ์บลูทูธใกล้เคียง (แนะนำ)</translation>
@@ -1484,7 +1483,6 @@
 <translation id="3151539355209957474">เวลาเริ่มต้น</translation>
 <translation id="3151562827395986343">ล้างประวัติ คุกกี้ แคช และอื่นๆ</translation>
 <translation id="3151786313568798007">การวางแนว</translation>
-<translation id="3153862085237805241">บันทึกบัตร</translation>
 <translation id="3154351730702813399">ผู้ดูแลระบบของอุปกรณ์อาจตรวจสอบกิจกรรมการท่องเว็บของคุณ</translation>
 <translation id="3154429428035006212">ออฟไลน์นานกว่าหนึ่งเดือน</translation>
 <translation id="3156531245809797194">โปรดลงชื่อเข้าใช้เพื่อใช้ Chrome</translation>
@@ -1626,10 +1624,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">ตัวแยก</translation>
 <translation id="3387614642886316601">ใช้ฟีเจอร์ตรวจตัวสะกดที่ได้รับการปรับปรุง</translation>
-<translation id="3391459139089708789">อุปกรณ์นี้จะได้รับการอัปเดตซอฟต์แวร์และความปลอดภัยอัตโนมัติจนถึง <ph name="MONTH_AND_YEAR" />
-      <ph name="LINK_BEGIN" />
-        ดูข้อมูลเพิ่มเติม
-      <ph name="LINK_END" /></translation>
 <translation id="3396800784455899911">การคลิกปุ่ม "ยอมรับและดำเนินการต่อ" แสดงว่าคุณยอมรับการดำเนินการของบริการต่างๆ ของ Google ตามที่ชี้แจ้งไว้ด้านบน</translation>
 <translation id="3399432415385675819">ระบบจะปิดใช้การแจ้งเตือน</translation>
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> เฮิรตซ์) - อินเตอร์เลซ</translation>
@@ -1737,7 +1731,7 @@
 <translation id="3543597750097719865">ลายเซ็น X9.62 ECDSA ที่มี SHA-512</translation>
 <translation id="3544879808695557954">ชื่อผู้ใช้ (ไม่บังคับ)</translation>
 <translation id="354602065659584722">นำซอฟต์แวร์อันตรายออกแล้ว</translation>
-<translation id="3547220315004609203">สลับแนวแท็บ</translation>
+<translation id="3547220315004609203">เปิด/ปิดแนวแท็บ</translation>
 <translation id="3547954654003013442">การตั้งค่าพร็อกซี</translation>
 <translation id="3550915441744863158">Chrome จะอัปเดตโดยอัตโนมัติเพื่อให้คุณได้ใช้เวอร์ชันใหม่ที่สุดอยู่เสมอ</translation>
 <translation id="3551320343578183772">ปิดแท็บ</translation>
@@ -2265,7 +2259,6 @@
 <translation id="428565720843367874">ซอฟต์แวร์ป้องกันไวรัสล้มเหลวอย่างไม่คาดคิดในขณะสแกนไฟล์นี้</translation>
 <translation id="4287502004382794929">คุณมีใบอนุญาตซอฟต์แวร์ไม่เพียงพอสำหรับการลงทะเบียนอุปกรณ์นี้ โปรดติดต่อฝ่ายขายเพื่อสั่งซื้อเพิ่มเติม หากคุณเชื่อว่าคุณเห็นข้อความนี้เนื่องจากข้อผิดพลาด โปรดติดต่อฝ่ายสนับสนุน</translation>
 <translation id="4289540628985791613">ภาพรวม</translation>
-<translation id="4291934469232591280">เวอร์ชัน: <ph name="VERSION" /></translation>
 <translation id="4295072614469448764">แอปพร้อมให้ใช้งานในเทอร์มินัลของคุณ และอาจจะมีไอคอนใน Launcher ด้วย</translation>
 <translation id="4295979599050707005">โปรดลงชื่อเข้าใช้อีกครั้งเพื่อยืนยันว่าบัญชี <ph name="USER_EMAIL" /> ของคุณใช้กับเว็บไซต์ แอป และส่วนขยายใน Chrome และ Google Play ได้ คุณอาจนำบัญชีนี้ออกก็ได้ <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
 <translation id="4296575653627536209">เพิ่มผู้ใช้ภายใต้การดูแล</translation>
@@ -2543,7 +2536,6 @@
 <translation id="4736292055110123391">ซิงค์บุ๊กมาร์ก รหัสผ่าน ประวัติการเข้าชม และอื่นๆ ในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="4737715515457435632">โปรดเชื่อมต่อเครือข่าย</translation>
 <translation id="473775607612524610">อัปเดต</translation>
-<translation id="4739098340603978916">ขนาด: <ph name="APP_SIZE" /></translation>
 <translation id="4739639199548674512">ตั๋ว</translation>
 <translation id="4742746985488890273">ตรึงที่ชั้นวาง</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ดูวิธีอัปเดตแอปพลิเคชัน<ph name="END_LINK" /></translation>
@@ -2563,7 +2555,6 @@
 <translation id="4765582662863429759">อนุญาตให้ Android Messages นำส่งข้อความจากโทรศัพท์ไปยัง Chromebook ของคุณ</translation>
 <translation id="4768332406694066911">คุณมีใบรับรองจากองค์กรเหล่านี้ซึ่งระบุถึงตัวคุณ</translation>
 <translation id="4774824109040330448">สแกนคิวอาร์โค้ดด้วยแอปตัวตรวจสอบสิทธิ์ที่ใช้งานร่วมกันได้ในโทรศัพท์</translation>
-<translation id="4776146737004271126">เปิดการตั้งค่า Android</translation>
 <translation id="4776917500594043016">รหัสผ่านของ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4779083564647765204">ซูม</translation>
@@ -2586,7 +2577,6 @@
 <translation id="480990236307250886">เปิดหน้าแรก</translation>
 <translation id="4813136279048157860">รูปภาพของฉัน</translation>
 <translation id="4813512666221746211">ข้อผิดพลาดของเครือข่าย</translation>
-<translation id="4816492930507672669">พอดีกับหน้า</translation>
 <translation id="4820236583224459650">กำหนดเป็นตั๋วที่ใช้งานอยู่</translation>
 <translation id="4821935166599369261">&amp;เปิดใช้งานการทำแฟ้มประวัติ</translation>
 <translation id="4823484602432206655">อ่านและเปลี่ยนการตั้งค่าผู้ใช้และอุปกรณ์</translation>
@@ -2810,7 +2800,6 @@
 <translation id="5135085122826131075">เข้าถึง Assistant ได้เพียงพูดว่า "Ok Google"</translation>
 <translation id="5135533361271311778">ไม่สามารถสร้างรายการบุ๊กมาร์ก</translation>
 <translation id="5137501176474113045">ลบรายการนี้</translation>
-<translation id="5138227688689900538">แสดงน้อยลง</translation>
 <translation id="5139955368427980650">เ&amp;ปิด</translation>
 <translation id="5142961317498132443">การตรวจสอบสิทธิ์</translation>
 <translation id="5143374789336132547">ส่วนขยาย "<ph name="EXTENSION_NAME" />" ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณคลิกปุ่มหน้าแรก</translation>
@@ -2890,7 +2879,6 @@
 <translation id="5265797726250773323">เกิดข้อผิดพลาดระหว่างติดตั้ง</translation>
 <translation id="5266113311903163739">ข้อผิดพลาดเกี่ยวกับการนำเข้าผู้ออกใบรับรอง</translation>
 <translation id="5269977353971873915">การพิมพ์ล้มเหลว</translation>
-<translation id="5270167208902136840">แสดงอีก <ph name="NUMBER_OF_MORE_APPS" /> แอป</translation>
 <translation id="5275352920323889391">สุนัข</translation>
 <translation id="5275776633505022322">ลองได้อีก <ph name="ATTEMPTS_LEFT" /> ครั้ง</translation>
 <translation id="527605982717517565">อนุญาตให้เรียกใช้ JavaScript บน <ph name="HOST" /> เสมอ</translation>
@@ -3786,7 +3774,6 @@
 <translation id="6555810572223193255">การทำความสะอาดไม่พร้อมใช้งานในขณะนี้</translation>
 <translation id="6556866813142980365">ทำซ้ำ</translation>
 <translation id="6557290421156335491">ทางลัดของฉัน</translation>
-<translation id="6559023360691182159">{COUNT,plural, =0{ไม่มี}=1{<ph name="APP_1" />}=2{<ph name="APP_1" /> และ <ph name="APP_2" />}=3{<ph name="APP_1" />, <ph name="APP_2" /> และ <ph name="APP_3" />}=4{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> และอีก 1 แอป}other{<ph name="APP_1" />, <ph name="APP_2" />, <ph name="APP_3" /> และอีก <ph name="EXTRA_APPS" /> แอป}}</translation>
 <translation id="6561726789132298588">ป้อน</translation>
 <translation id="656293578423618167">เส้นทางหรือชื่อของไฟล์ยาวเกินไป โปรดบันทึกด้วยชื่อที่สั้นกว่านี้หรือบันทึกลงในตำแหน่งอื่น</translation>
 <translation id="6563469144985748109">ผู้จัดการยังไม่ได้อนุมัติเว็บไซต์นี้</translation>
@@ -3916,7 +3903,6 @@
 <translation id="677965093459947883">เล็กมาก</translation>
 <translation id="6781284683813954823">ลิงก์ของ Doodle</translation>
 <translation id="6781978626986383437">ยกเลิกการสำรองข้อมูล Linux แล้ว</translation>
-<translation id="6782111308708962316">ป้องกันไม่ให้เว็บไซต์ของบุคคลที่สามบันทึกและอ่านข้อมูลคุกกี้</translation>
 <translation id="6786747875388722282">ส่วนขยาย</translation>
 <translation id="6787839852456839824">แป้นพิมพ์ลัด</translation>
 <translation id="6788210894632713004">ส่วนขยายที่คลายแพ็กแล้ว</translation>
@@ -5012,7 +4998,7 @@
 <translation id="8326478304147373412">PKCS #7, กลุ่มใบรับรอง (Certificate Chain)</translation>
 <translation id="8327039559959785305">เกิดข้อผิดพลาดขณะต่อเชื่อมไฟล์ Linux โปรดลองอีกครั้ง</translation>
 <translation id="8335587457941836791">เลิกตรึงในชั้นวาง</translation>
-<translation id="8336407002559723354">การอัปเดตจะสิ้นสุดใน <ph name="MONTH_AND_YEAR" /></translation>
+<translation id="8336407002559723354">การอัปเดตจะสิ้นสุดใน<ph name="MONTH_AND_YEAR" /></translation>
 <translation id="8336739000755212683">เปลี่ยนรูปภาพของบัญชีอุปกรณ์</translation>
 <translation id="8337047789441383384">คุณลงทะเบียนคีย์ความปลอดภัยนี้ไปแล้ว ไม่จำเป็นต้องลงทะเบียนซ้ำ</translation>
 <translation id="8338952601723052325">เว็บไซต์สำหรับนักพัฒนาซอฟต์แวร์</translation>
@@ -5055,7 +5041,6 @@
 <translation id="8398877366907290961">ดำเนินการต่อ</translation>
 <translation id="8400146488506985033">จัดการบุคคล</translation>
 <translation id="8401432541486058167">ใส่ PIN ที่เชื่อมโยงกับสมาร์ทการ์ดของคุณ</translation>
-<translation id="8401839918915644121">พอดีกับขนาดกระดาษ</translation>
 <translation id="8405046151008197676">ดูไฮไลต์จากอัปเดตล่าสุด</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ถามก่อน (แนะนำ)</translation>
@@ -5287,7 +5272,6 @@
 <translation id="8743390665131937741">ระดับการซูมทั้งหน้าจอ:</translation>
 <translation id="8743864605301774756">อัปเดตเมื่อ 1 ชั่วโมงที่ผ่านมา</translation>
 <translation id="874689135111202667">{0,plural, =1{อัปโหลด 1 ไฟล์ไปยังเว็บไซต์นี้ใช่ไหม}other{อัปโหลด # ไฟล์ไปยังเว็บไซต์นี้ใช่ไหม}}</translation>
-<translation id="8747503242566427664">แอปนี้สามารถ:</translation>
 <translation id="8748384418490037181">ตัวเลือก Smart Lock</translation>
 <translation id="8749863574775030885">เข้าถึงอุปกรณ์ USB จากผู้ขายที่ไม่รู้จัก</translation>
 <translation id="8750155211039279868"><ph name="ORIGIN" /> ต้องการเชื่อมต่อกับพอร์ตอนุกรม</translation>
@@ -5359,7 +5343,6 @@
 <translation id="883062543841130884">การใช้แทน</translation>
 <translation id="8830796635868321089">ไม่สามารถตรวจหาการอัปเดตโดยใช้การตั้งค่าพร็อกซีปัจจุบัน โปรดปรับ<ph name="PROXY_SETTINGS_LINK_START" />การตั้งค่าพร็อกซี<ph name="PROXY_SETTINGS_LINK_END" /></translation>
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> และโทรศัพท์ Android จะทำงานได้ดียิ่งขึ้นเมื่อใช้ร่วมกัน เชื่อมต่ออุปกรณ์ทั้ง 2 อย่างนี้เพื่อให้ส่งข้อความจากคอมพิวเตอร์ แชร์การเชื่อมต่ออินเทอร์เน็ต และปลดล็อก <ph name="DEVICE_TYPE" /> ด้วยโทรศัพท์ได้<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
-<translation id="8831664945713891930">เปิดการตั้งค่าส่วนขยาย</translation>
 <translation id="8834039744648160717">การกำหนดค่าเครือข่ายควบคุมโดย <ph name="USER_EMAIL" /></translation>
 <translation id="8838601485495657486">ทึบ</translation>
 <translation id="8838770651474809439">แฮมเบอร์เกอร์</translation>
@@ -5482,7 +5465,6 @@
 <translation id="9008201768610948239">ไม่สนใจ</translation>
 <translation id="9009369504041480176">กำลังอัปโหลด (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">แสดงไอคอนเสมอ</translation>
-<translation id="9011424611726486705">เปิดการตั้งค่าเว็บไซต์</translation>
 <translation id="9013707997379828817">ผู้ดูแลระบบได้คืนค่าสถานะของอุปกรณ์เครื่องนี้แล้ว โปรดบันทึกไฟล์สำคัญแล้วรีสตาร์ทเครื่อง ข้อมูลทั้งหมดในอุปกรณ์จะถูกลบออกไป</translation>
 <translation id="9018218886431812662">ติดตั้งเสร็จสมบูรณ์แล้ว</translation>
 <translation id="901834265349196618">อีเมล</translation>

@@ -29,4 +29,8 @@ AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
 }
 
+bool TestShellDelegate::CanGoBack(gfx::NativeWindow window) const {
+  return true;
+}
+
 }  // namespace ash

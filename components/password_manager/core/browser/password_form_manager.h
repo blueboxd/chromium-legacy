@@ -162,8 +162,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void PresaveGeneratedPassword(const autofill::PasswordForm& form);
   void PasswordNoLongerGenerated();
   bool HasGeneratedPassword() const;
-  void SetGenerationPopupWasShown(bool generation_popup_was_shown,
-                                  bool is_manual_generation);
+  void SetGenerationPopupWasShown(bool is_manual_generation);
   void SetGenerationElement(const base::string16& generation_element);
   bool IsPossibleChangePasswordFormWithoutUsername() const;
   bool IsPasswordUpdate() const;

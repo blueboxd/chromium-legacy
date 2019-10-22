@@ -378,7 +378,7 @@ class GTestTest(RemoteTest):
   # The following list corresponds to paths that should not be copied over to
   # the device during tests. In other words, these files are only ever used on
   # the host.
-  _FILE_BLACKLIST = [
+  _FILE_IGNORELIST = [
       re.compile(r'.*build/android.*'),
       re.compile(r'.*build/chromeos.*'),
       re.compile(r'.*build/cros_cache.*'),
@@ -518,7 +518,7 @@ class GTestTest(RemoteTest):
     for f in files:
       rel_file_path = os.path.relpath(
           os.path.abspath(os.path.join(self._path_to_outdir, f)))
-      if not any(regex.match(rel_file_path) for regex in self._FILE_BLACKLIST):
+      if not any(regex.match(rel_file_path) for regex in self._FILE_IGNORELIST):
         rel_file_paths.append(rel_file_path)
     return rel_file_paths
 

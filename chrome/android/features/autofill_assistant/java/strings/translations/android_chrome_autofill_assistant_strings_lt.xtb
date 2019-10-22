@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="1135993792949700405">„Chrome“ siųs pasirinktus asmens duomenis į <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Atidaryti išorinę nuorodą?</translation>
 <translation id="1699570257714336246">Trūksta informacijos</translation>
 <translation id="2203046366315513658">Sumažinti vertę</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">Programa „Google Assistant“ naršyklėje „Chrome“ atidaryta pusės aukščio.</translation>
 <translation id="6973932557599545801">Deja, negaliu padėti, tolesnius veiksmus atlikite patys.</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
-<translation id="7871791972254842204">Vėliau perskaityti <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> taisykles ir nuostatas ir su jomis sutikti</translation>
 <translation id="8253702004019660079">„Google Assistant“ sistemoje „Chrome“.</translation>
 <translation id="9138504265731110181">„Google“ padėjėjas padeda sutaupyti laiko padėdamas apdoroti mokėjimą žiniatinklyje</translation>
 <translation id="945522503751344254">Siųsti atsiliepimą</translation>

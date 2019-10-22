@@ -128,7 +128,6 @@
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"  // nogncheck
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"  // nogncheck
 #include "extensions/browser/info_map.h"                            // nogncheck
-#include "extensions/browser/io_thread_extension_message_filter.h"  // nogncheck
 #include "extensions/browser/process_map.h"                         // nogncheck
 #include "extensions/common/constants.h"                            // nogncheck
 #endif
@@ -154,8 +153,7 @@ static void CreateMediaService(CastContentBrowserClient* browser_client,
       base::Bind(&CastContentBrowserClient::CreateCdmFactory,
                  base::Unretained(browser_client)),
       browser_client->GetVideoModeSwitcher(),
-      browser_client->GetVideoResolutionPolicy(),
-      browser_client->media_resource_tracker());
+      browser_client->GetVideoResolutionPolicy());
   service = std::make_unique<::media::MediaService>(
       std::move(mojo_media_client), std::move(request));
   service_manager::Service::RunAsyncUntilTermination(std::move(service));
@@ -420,7 +418,6 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
       cast_browser_main_parts_->browser_context();
   host->AddFilter(new extensions::ExtensionMessageFilter(render_process_id,
                                                          browser_context));
-  host->AddFilter(new extensions::IOThreadExtensionMessageFilter());
   host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(
       render_process_id, browser_context));
   host->AddFilter(
@@ -1049,8 +1046,7 @@ void CastContentBrowserClient::BindMediaRenderer(
       std::make_unique<media::CastRenderer>(
           GetCmaBackendFactory(), std::move(media_task_runner),
           GetVideoModeSwitcher(), GetVideoResolutionPolicy(),
-          media_resource_tracker(), nullptr /* connector */,
-          nullptr /* host_interfaces */),
+          nullptr /* connector */, nullptr /* host_interfaces */),
       std::move(request));
 }
 

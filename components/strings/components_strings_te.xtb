@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">పేజీని తర్వాత లోడ్ చేయి</translation>
 <translation id="1015730422737071372">అదనపు వివరాలను అందించండి</translation>
 <translation id="1021110881106174305">ఆమోదించబడే కార్డ్‌లు</translation>
-<translation id="1023523064224774104">మీరు మీ పాస్‌వర్డ్‌ను ఇప్పుడే అనుమానాస్పదమైన సైట్‌లో నమోదు చేసినట్లుగా
-          Chromium గుర్తించింది. దయచేసి ఇప్పుడే మీ పాస్‌వర్డ్‌ను రీసెట్ చేయండి!</translation>
 <translation id="1032854598605920125">సవ్యదిశలో తిప్పు</translation>
 <translation id="1035334672863811645">Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="1036348656032585052">ఆఫ్ చేయి</translation>
@@ -552,7 +550,6 @@
 <translation id="3655670868607891010">మీరు దీన్ని తరచుగా చూస్తుంటే, ఈ <ph name="HELP_LINK" />ని ప్రయత్నించండి.</translation>
 <translation id="3658742229777143148">పునర్విమర్శ</translation>
 <translation id="366077651725703012">క్రెడిట్ కార్డ్‌ని అప్‌డేట్ చేయి</translation>
-<translation id="3672525478985456967">ఈ సైట్ యొక్క పేరు <ph name="LOOKALIKE_DOMAIN" /> లాగానే ఉంది. దాడి చేసే వారు కొన్నిసార్లు డొమైన్ పేరుకు చిన్న చిన్నని, అంత తేలికగా పసిగట్టలేని మార్పులను చేయడం ద్వారా నకిలీ సైట్‌లను రూపొందిస్తారు.</translation>
 <translation id="3676592649209844519">పరికర ID:</translation>
 <translation id="3677008721441257057">మీరు &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; గురించి అభ్యర్థిస్తున్నారా?</translation>
 <translation id="3678029195006412963">అభ్యర్థనకు సంతకం అందించడం సాధ్యపడలేదు</translation>
@@ -876,7 +873,6 @@
 <translation id="5230733896359313003">బట్వాడా చిరునామా</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">తొలగించు</translation>
 <translation id="5250209940322997802">"నెట్‌వర్క్‌కు కనెక్ట్ చేయండి"</translation>
 <translation id="5251803541071282808">క్లౌడ్</translation>
 <translation id="5252000469029418751">C7 (ఎన్వలప్)</translation>
@@ -1018,7 +1014,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> తెరవబడుతోంది…</translation>
 <translation id="5947933617628957894">అవును, జోడించు</translation>
 <translation id="5951495562196540101">వినియోగదారు ఖాతాతో నమోదు చేయడం సాధ్యపడదు (ప్యాకేజ్డ్ లైసెన్స్ అందుబాటులో ఉంది).</translation>
-<translation id="5966900314707961320">అజ్ఞాత మోడ్ ఆన్ చేసినప్పుడు, వెబ్ అంతటా మిమ్మల్ని ట్రాక్ చేసే కుక్కీలను సైట్ ఉపయోగించలేదు.</translation>
 <translation id="5967592137238574583">సంప్రదింపు సమాచారాన్ని సవరించండి</translation>
 <translation id="5967867314010545767">చరిత్ర నుండి తీసివేయి</translation>
 <translation id="5975083100439434680">దూరంగా జూమ్ చెయ్యి</translation>
@@ -1114,7 +1109,6 @@
 <translation id="6433490469411711332">సంప్రదింపు సమాచారాన్ని సవరించండి</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> కనెక్ట్ కావడానికి నిరాకరించింది.</translation>
 <translation id="6434309073475700221">తొలగించు</translation>
-<translation id="6435221585574090192">Chrome ఎంటర్‌ప్రైజ్ అపాయ నివారణచే ఫ్లాగ్ చేయబడిన భద్రతా ఈవెంట్‌ల డేటాను మీ నిర్వాహకుడితో షేర్ చేస్తుంది. ఈ ఈవెంట్‌లలో పేజీ urlలు, ఫైల్ పేరు, ఫైల్ మెటాడేటా, మీ పరికర వినియోగదారు పేరు, Chrome వినియోగదారు పేరు ఉంటాయి.</translation>
 <translation id="6440503408713884761">విస్మరించబడింది</translation>
 <translation id="6446163441502663861">Kahu (ఎన్వలప్)</translation>
 <translation id="6446608382365791566">మరింత సమాచారాన్ని జోడించండి</translation>
@@ -1458,7 +1452,6 @@
 <translation id="8184538546369750125">సార్వజనీన డిఫాల్ట్‌ను ఉపయోగించు (అనుమతించు)</translation>
 <translation id="8194797478851900357">&amp;తరలించడాన్ని రద్దు చేయి</translation>
 <translation id="8197543752516192074">పేజీని అనువదించు</translation>
-<translation id="8197899142098070286">మీరు మీ పాస్‌వర్డ్‌ను ఇప్పుడే అనుమానాస్పదమైన సైట్‌లో నమోదు చేసినట్లుగా Chrome గుర్తించింది. దయచేసి ఇప్పుడే మీ పాస్‌వర్డ్‌ను రీసెట్ చేయండి!</translation>
 <translation id="8201077131113104583">ID "<ph name="EXTENSION_ID" />" ఉన్న ఎక్స్‌టెన్ష‌న్‌ కోసం అప్‌డేట్‌ URL చెల్లదు.</translation>
 <translation id="8202097416529803614">ఆర్డర్ సారాంశం</translation>
 <translation id="8202370299023114387">వైరుధ్యం</translation>
@@ -1545,7 +1538,6 @@
 <translation id="8718314106902482036">చెల్లింపు పూర్తి కాలేదు</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, శోధన సూచన</translation>
 <translation id="8719528812645237045">ఎగువ భాగంలో అనేక రంధ్రాలు</translation>
-<translation id="8723954843026426558"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> నిబంధనలు &amp; షరతులు, గోప్యతా విధానం, ఉపసంహరణ హక్కుకు నేను అంగీకరిస్తున్నాను</translation>
 <translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="8728672262656704056">మీరు ఇప్పుడు అజ్ఞాత మోడ్‌లో ఉన్నారు</translation>
 <translation id="8730621377337864115">పూర్తయింది</translation>

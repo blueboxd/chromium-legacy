@@ -774,6 +774,14 @@ void AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
 }
 
 // static
+void AutofillMetrics::LogCreditCardUploadFeedbackMetric(
+    CreditCardUploadFeedbackMetric metric) {
+  DCHECK_LT(metric, NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardUploadFeedback", metric,
+                            NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
+}
+
+// static
 void AutofillMetrics::LogManageCardsPromptMetric(ManageCardsPromptMetric metric,
                                                  bool is_upload_save) {
   DCHECK_LT(metric, NUM_MANAGE_CARDS_PROMPT_METRICS);
@@ -934,6 +942,13 @@ void AutofillMetrics::LogCardUnmaskPreflightDuration(
 }
 
 // static
+void AutofillMetrics::LogCardUnmaskTypeDecision(
+    CardUnmaskTypeDecisionMetric metric) {
+  base::UmaHistogramEnumeration("Autofill.BetterAuth.CardUnmaskTypeDecision",
+                                metric);
+}
+
+// static
 void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
     PreflightCallEvent event,
     bool fido_auth_enabled) {
@@ -941,6 +956,27 @@ void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
       "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.";
   histogram_name += fido_auth_enabled ? "OptedIn" : "OptedOut";
   base::UmaHistogramEnumeration(histogram_name, event);
+}
+
+// static
+void AutofillMetrics::LogWebauthnResult(WebauthnFlowEvent event,
+                                        WebauthnResultMetric metric) {
+  std::string histogram_name = "Autofill.BetterAuth.WebauthnResult.";
+  switch (event) {
+    case WebauthnFlowEvent::kImmediateAuthentication:
+      histogram_name += "ImmediateAuthentication";
+      break;
+    case WebauthnFlowEvent::kAuthenticationAfterCvc:
+      histogram_name += "AuthenticationAfterCVC";
+      break;
+    case WebauthnFlowEvent::kCheckoutOptIn:
+      histogram_name += "CheckoutOptIn";
+      break;
+    case WebauthnFlowEvent::kSettingsPageOptIn:
+      histogram_name += "SettingsPageOptIn";
+      break;
+  }
+  base::UmaHistogramEnumeration(histogram_name, metric);
 }
 
 // static

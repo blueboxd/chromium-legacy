@@ -25,6 +25,7 @@ class WebState;
                    forWebState:(web::WebState*)webState;
 - (void)findInPageManager:(web::FindInPageManager*)manager
     didSelectMatchAtIndex:(NSInteger)index
+        withContextString:(NSString*)contextString
               forWebState:(web::WebState*)webState;
 
 // The last web::WebState received in delegate method calls.
@@ -35,6 +36,8 @@ class WebState;
 @property(nonatomic, readonly) NSInteger matchCount;
 // The last |index| passed in |didSelectMatchAtIndex:|.
 @property(nonatomic, readonly) NSInteger index;
+// The last |contextString| passed in |didSelectMatchAtIndex:|.
+@property(nonatomic, readonly) NSString* contextString;
 
 @end
 

@@ -7,6 +7,7 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Hace 1 minuto}other{Hace # minutos}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Quitar</translation>
+<translation id="1201402288615127009">Siguiente</translation>
 <translation id="1243314992276662751">Cargar</translation>
 <translation id="1266864766717917324">No se pudo compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -51,6 +52,7 @@
 <translation id="2289052229480071835">Presiona los objetivos táctiles en tu pantalla.</translation>
 <translation id="2295140143284145483">Encuesta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Revisando tu conexión a Internet</translation>
 <translation id="2388990488038464401">¿Quieres llamar a este número desde tu teléfono?</translation>
 <translation id="24452542372838207">Expandir notificación</translation>
 <translation id="2445449901874883781">Usar la densidad alta</translation>
@@ -162,6 +164,7 @@
 <translation id="6620110761915583480">Guardar archivo</translation>
 <translation id="6656912866303152668">Asegúrate de que el dispositivo <ph name="TARGET_DEVICE_NAME" /> tenga activada la sincronización en Chrome y, luego, vuelve a intentar el envío.</translation>
 <translation id="6699343763173986273">Pista multimedia siguiente</translation>
+<translation id="6710213216561001401">Anterior</translation>
 <translation id="6779314412797872738">Para enviar un número desde aquí a tu teléfono Android, <ph name="TROUBLESHOOT_LINK" /> en la configuración de ambos dispositivos.</translation>
 <translation id="6786750046913594791">Cerrar carpeta</translation>
 <translation id="6808150112686056157">Detener contenido multimedia</translation>
@@ -179,6 +182,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Falta 1 min.}other{Faltan # min.}}</translation>
 <translation id="7319740667687257810">Launcher, vista parcial</translation>
+<translation id="7352651011704765696">Se produjo un error</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Hace 1 min.}other{Hace # min.}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Falta 1 minuto.}other{Faltan # minutos.}}</translation>

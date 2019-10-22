@@ -17,8 +17,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 class CSSNumericLiteralValue;
 class CSSStyleValue;
 class CSSValue;

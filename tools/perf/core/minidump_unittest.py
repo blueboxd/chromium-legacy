@@ -18,10 +18,9 @@ import py_utils
 class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
   # Android is currently hard coded to return None for minidump paths.
-  # Flakes on chromeos: crbug.com/1014754
   # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
   # still read-only, so skip the test in that case.
-  @decorators.Disabled('android', 'chromeos', 'chromeos-local')
+  @decorators.Disabled('android', 'chromeos-local')
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var sam = "car";', 'sam')
@@ -39,6 +38,12 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     if all_unsymbolized_paths is not None:
       logging.info('testSymbolizeMinidump: all unsymbolized paths '
           + ''.join(all_unsymbolized_paths))
+
+    # Flakes on chromeos: crbug.com/1014754
+    # This has failed to repro either locally or on swarming, so dump extra
+    # information if this is hit on the bots.
+    if len(all_unsymbolized_paths) != 1:
+      self._browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
     self.assertTrue(len(all_unsymbolized_paths) == 1)
 
     # Now symbolize that minidump and make sure there are no longer any present
@@ -94,10 +99,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self.assertTrue(crash_function in sections[4] or match is not None)
 
   @decorators.Isolated
-  # Flakes on chromeos: crbug.com/1014754
   # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
   # still read-only, so skip the test in that case.
-  @decorators.Disabled('android', 'chromeos', 'chromeos-local')
+  @decorators.Disabled('android', 'chromeos-local')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')
@@ -112,6 +116,11 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     if all_paths is not None:
       logging.info('testMultipleCrashMinidumps: first crash all paths: '
           + ''.join(all_paths))
+    # Flakes on chromeos: crbug.com/1014754
+    # This has failed to repro either locally or on swarming, so dump extra
+    # information if this is hit on the bots.
+    if len(all_paths) != 1:
+      self._browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
     self.assertEquals(len(all_paths), 1)
     self.assertEqual(all_paths[0], first_crash_path)
     all_unsymbolized_paths = self._browser.GetAllUnsymbolizedMinidumpPaths()

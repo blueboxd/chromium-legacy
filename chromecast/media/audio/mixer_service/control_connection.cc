@@ -102,9 +102,9 @@ void ControlConnection::SetStreamCountCallback(StreamCountCallback callback) {
   }
 }
 
-void ControlConnection::OnConnected(std::unique_ptr<net::StreamSocket> socket) {
-  socket_ = std::make_unique<MixerSocket>(std::move(socket), this);
-  socket_->ReceiveMessages();
+void ControlConnection::OnConnected(std::unique_ptr<MixerSocket> socket) {
+  socket_ = std::move(socket);
+  socket_->SetDelegate(this);
 
   for (const auto& item : volume_limit_) {
     Generic message;

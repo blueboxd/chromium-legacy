@@ -9,7 +9,7 @@
 
 namespace blink {
 
-using namespace css_test_helpers;
+using css_test_helpers::CreateVariableData;
 
 TEST(CSSVariableDataTest, FontUnitsDetected) {
   EXPECT_FALSE(CreateVariableData("100px")->HasFontUnits());

@@ -7,7 +7,6 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 
 namespace content {
@@ -16,7 +15,7 @@ namespace content {
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateFromDisk(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    leveldb::LevelDBDatabaseImpl* database) {
+    storage::AsyncDomStorageDatabase* database) {
   return base::WrapRefCounted(new SessionStorageDataMap(
       listener, std::move(map_data), database, false));
 }
@@ -25,7 +24,7 @@ scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateFromDisk(
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateEmpty(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    leveldb::LevelDBDatabaseImpl* database) {
+    storage::AsyncDomStorageDatabase* database) {
   return base::WrapRefCounted(
       new SessionStorageDataMap(listener, std::move(map_data), database, true));
 }
@@ -46,7 +45,7 @@ void SessionStorageDataMap::DidCommit(leveldb::Status status) {
 SessionStorageDataMap::SessionStorageDataMap(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    leveldb::LevelDBDatabaseImpl* database,
+    storage::AsyncDomStorageDatabase* database,
     bool is_empty)
     : listener_(listener),
       map_data_(std::move(map_data)),

@@ -9,6 +9,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/back_gesture_affordance.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
@@ -104,7 +105,7 @@ void OnDragCompleted(
 }
 
 // True if we can start swiping from left edge to go to previous page.
-bool CanStartGoingBack() {
+bool CanStartGoingBack(aura::Window* target) {
   if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
     return false;
 
@@ -131,6 +132,18 @@ bool CanStartGoingBack() {
   if (shell->home_screen_controller()->IsHomeScreenVisible())
     return false;
 
+  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(target);
+  if (!widget)
+    return false;
+
+  aura::Window* native_window = widget->GetNativeWindow();
+  const int app_type = native_window->GetProperty(aura::client::kAppType);
+  // No need to show the back gesture affordance and go back if the active
+  // browser web contents can not go back.
+  if (app_type == static_cast<int>(AppType::BROWSER) ||
+      app_type == static_cast<int>(AppType::CHROME_APP)) {
+    return Shell::Get()->shell_delegate()->CanGoBack(widget->GetNativeWindow());
+  }
   return true;
 }
 
@@ -879,12 +892,12 @@ void ToplevelWindowEventHandler::UpdateGestureTarget(
 
 bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
     ui::GestureEvent* event) {
-  if (!CanStartGoingBack())
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  if (!CanStartGoingBack(target))
     return false;
 
   gfx::Point screen_location = event->location();
-  ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
-                             &screen_location);
+  ::wm::ConvertPointToScreen(target, &screen_location);
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       going_back_started_ = StartedAwayFromLeftArea(event);

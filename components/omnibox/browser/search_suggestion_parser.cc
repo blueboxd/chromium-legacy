@@ -337,7 +337,7 @@ std::string SearchSuggestionParser::ExtractJsonData(
     const network::SimpleURLLoader* source,
     std::unique_ptr<std::string> response_body) {
   const net::HttpResponseHeaders* response_headers = nullptr;
-  if (source->ResponseInfo())
+  if (source && source->ResponseInfo())
     response_headers = source->ResponseInfo()->headers.get();
   if (!response_body)
     return std::string();

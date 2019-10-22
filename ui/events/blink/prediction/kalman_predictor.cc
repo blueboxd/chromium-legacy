@@ -70,18 +70,17 @@ bool KalmanPredictor::HasPrediction() const {
   return x_predictor_.Stable() && y_predictor_.Stable();
 }
 
-bool KalmanPredictor::GeneratePrediction(base::TimeTicks predict_time,
-                                         InputData* result) const {
+std::unique_ptr<InputPredictor::InputData> KalmanPredictor::GeneratePrediction(
+    base::TimeTicks predict_time) const {
   if (!HasPrediction())
-    return false;
+    return nullptr;
 
   DCHECK(last_points_.size());
   float pred_dt =
       (predict_time - last_points_.back().time_stamp).InMillisecondsF();
 
-  std::vector<InputData> pred_points;
-  gfx::Vector2dF position(last_points_.back().pos.x(),
-                          last_points_.back().pos.y());
+  gfx::PointF position(last_points_.back().pos.x(),
+                       last_points_.back().pos.y());
   gfx::Vector2dF velocity = PredictVelocity();
   gfx::Vector2dF acceleration = PredictAcceleration();
 
@@ -107,9 +106,7 @@ bool KalmanPredictor::GeneratePrediction(base::TimeTicks predict_time,
         ScaleVector2d(acceleration, kAccelerationInfluence * pred_dt * pred_dt);
   }
 
-  result->pos.set_x(position.x());
-  result->pos.set_y(position.y());
-  return true;
+  return std::make_unique<InputData>(position, predict_time);
 }
 
 base::TimeDelta KalmanPredictor::TimeInterval() const {

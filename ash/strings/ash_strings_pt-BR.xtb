@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> adicionado</translation>
 <translation id="1056775291175587022">Nenhuma rede encontrada</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">Celular: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Que tédio</translation>
 <translation id="1104084341931202936">Mostrar configurações de acessibilidade</translation>
 <translation id="1104621072296271835">Seus dispositivos funcionam ainda melhor juntos</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1247372569136754018">Microfone (interno)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Esta configuração é realizada pelo seu administrador.</translation>
 <translation id="1252999807265626933">Carregando a partir de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Como está o tempo?</translation>
 <translation id="1267032506238418139">Mudança de atalho</translation>
 <translation id="1270290102613614947">Teclado na tela desativado</translation>
 <translation id="1272079795634619415">Parar</translation>
+<translation id="1275285675049378717">Conectando <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Volte <ph name="COME_BACK_DAY_OF_WEEK" />, neste horário: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Sinal fraco</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">Modo de alto contraste</translation>
 <translation id="2542089167727451762">Toque na imagem do seu perfil</translation>
 <translation id="255671100581129685">O Google Assistente não está disponível para uma sessão pública.</translation>
+<translation id="256712445991462162">a lupa ancorada</translation>
 <translation id="2575685495496069081">A opção de login múltiplo foi desativada</translation>
 <translation id="2582112259361606227">Reiniciar para atualizar</translation>
 <translation id="2617342710774726426">O chip está bloqueado</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">Ferramentas da stylus</translation>
 <translation id="3368922792935385530">Conectado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal da direita)</translation>
+<translation id="3386978599540877378">a lupa de tela cheia</translation>
 <translation id="3400357268283240774">Configurações adicionais</translation>
 <translation id="3413817803639110246">Nada para ver ainda</translation>
 <translation id="343571671045587506">Editar lembrete</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Sistema operacional Chrome</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">O Assistente está sendo carregado…</translation>
+<translation id="4356930093361201197">modo de alto contraste</translation>
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4379531060876907730">Estas são suas ferramentas da stylus</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Você pressionou o atalho de teclado para a lupa ancorada. Gostaria de ativá-la?</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">Tem certeza de que você quer desativar os cliques automáticos?</translation>
 <translation id="4849058404725798627">Destacar objeto com o foco de teclado</translation>
 <translation id="485592688953820832">Nenhuma ação (pausar)</translation>
+<translation id="4868492592575313542">ativado</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
 <translation id="4890187583552566966">O Google Assistente foi desativado pelo seu administrador.</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
@@ -392,6 +400,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6727969043791803658">Conectado, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="6751826523481687655">O acompanhamento de desempenho está ativado</translation>
 <translation id="6752912906630585008">Área de trabalho <ph name="REMOVED_DESK" /> removida e mesclada com a <ph name="RECEIVE_DESK" /></translation>
+<translation id="6777216307882431711">Carregando dispositivos USB-C conectados</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os displays porque não foram encontradas resoluções suportadas. Em vez disso, foi ativada a área de trabalho estendida.</translation>
 <translation id="6820676911989879663">Faça uma pausa</translation>
@@ -443,6 +452,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7568294522609223312">Desativar cliques automáticos</translation>
 <translation id="7569509451529460200">Braille e ChromeVox estão ativados</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
+<translation id="7600875258240007829">Ver todas as notificações</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>
 <translation id="7647488630410863958">Desbloquear dispositivo para ver as notificações</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -507,6 +517,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8452135315243592079">Chip ausente</translation>
 <translation id="8454013096329229812">O Wi-Fi está ligado.</translation>
 <translation id="847056008324733326">Exibir configurações de escala</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> o recurso <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Pressione Alt+Pesquisar ou Shift para cancelar.</translation>
 <translation id="8513108775083588393">Girar automaticamente</translation>
 <translation id="8517041960877371778">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado.</translation>
@@ -535,6 +546,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8909138438987180327">Bateria em <ph name="PERCENTAGE" /> por cento.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">O Google Assistente não fala esse idioma.</translation>
+<translation id="8936501819958976551">desativado</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="8940956008527784070">Nível de bateria baixo (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>

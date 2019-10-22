@@ -131,7 +131,7 @@ class NetworkStateListDetailedView::InfoBubble
 
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override {
-    params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+    params->shadow_type = views::Widget::InitParams::ShadowType::kDrop;
     params->shadow_elevation = kBubbleShadowElevation;
     params->name = "NetworkStateListDetailedView::InfoBubble";
   }

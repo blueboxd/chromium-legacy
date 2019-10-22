@@ -60,14 +60,12 @@ CastRenderer::CastRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
-    MediaResourceTracker* media_resource_tracker,
     service_manager::Connector* connector,
     service_manager::mojom::InterfaceProvider* host_interfaces)
     : backend_factory_(backend_factory),
       task_runner_(task_runner),
       video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy),
-      media_resource_tracker_(media_resource_tracker),
       connector_(connector),
       host_interfaces_(host_interfaces),
       client_(nullptr),
@@ -164,8 +162,6 @@ void CastRenderer::OnGetMultiroomInfo(
   // trigger a second call to this function.
   multiroom_manager_.reset();
   // Create pipeline backend.
-  media_resource_usage_.reset(
-      new MediaResourceTracker::ScopedUsage(media_resource_tracker_));
   backend_task_runner_.reset(new TaskRunnerImpl());
   // TODO(erickung): crbug.com/443956. Need to provide right LoadType.
   LoadType load_type = kLoadTypeMediaSource;

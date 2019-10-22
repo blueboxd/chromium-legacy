@@ -5,8 +5,6 @@
 <translation id="1010200102790553230">I-load ang page sa ibang pagkakataon</translation>
 <translation id="1015730422737071372">Magbigay ng mga karagdagang detalye</translation>
 <translation id="1021110881106174305">Mga tinatanggap na card</translation>
-<translation id="1023523064224774104">Natukoy ng Chromium na kakatapos mo lang ilagay ang iyong password sa isang site na
-          kahina-hinala. Paki-reset ang iyong password ngayon!</translation>
 <translation id="1032854598605920125">I-rotate pakanan</translation>
 <translation id="1035334672863811645">mag-sign in sa Chrome</translation>
 <translation id="1036348656032585052">I-off</translation>
@@ -544,7 +542,6 @@
 <translation id="3655670868607891010">Kung madalas mo itong nakikita, subukan ang mga ito <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Rebisyon</translation>
 <translation id="366077651725703012">I-update ang Credit Card</translation>
-<translation id="3672525478985456967">Mukhang katulad ng pangalan ng site na ito ang pangalan ng <ph name="LOOKALIKE_DOMAIN" />. Kung minsan, ginagaya ng mga nang-aatake ang mga site sa pamamagitan ng paggawa ng mga maliit at mahirap makita na pagbabago sa domain name.</translation>
 <translation id="3676592649209844519">Device ID:</translation>
 <translation id="3677008721441257057">Ang ibig mo bang sabihin ay &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Hindi malagdaan ang kahilingan</translation>
@@ -862,7 +859,6 @@
 <translation id="5230733896359313003">Address na Padadalhan</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">Balewalain</translation>
 <translation id="5250209940322997802">"Kumonekta sa network"</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
@@ -1004,7 +1000,6 @@
 <translation id="5946937721014915347">Binubuksan ang <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Oo, idagdag</translation>
 <translation id="5951495562196540101">Hindi maka-enroll gamit ang account ng consumer (may available na naka-package na lisensya).</translation>
-<translation id="5966900314707961320">Kapag naka-on, hindi makakagamit ang mga site ng cookies na sumusubaybay sa iyo sa buong web</translation>
 <translation id="5967592137238574583">I-edit ang Impormasyon ng Contact</translation>
 <translation id="5967867314010545767">Alisin sa history</translation>
 <translation id="5975083100439434680">Mag-zoom out</translation>
@@ -1100,7 +1095,6 @@
 <translation id="6433490469411711332">I-edit ang impormasyon sa pakikipag-ugnayan</translation>
 <translation id="6433595998831338502">Tumangging kumonekta ang <ph name="HOST_NAME" />.</translation>
 <translation id="6434309073475700221">Itapon</translation>
-<translation id="6435221585574090192">Ibahagi ang data tungkol sa mga pangyayari sa seguridad na na-flag ng Proteksyon Laban sa Banta ng Chrome Enterprise sa iyong Administrator. Puwedeng kasama sa mga ito ang mga url ng page, pangalan ng file, at metadata ng file, username ng iyong device at username sa Chrome.</translation>
 <translation id="6440503408713884761">Binalewala</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Magdagdag ng higit pang impormasyon</translation>
@@ -1444,7 +1438,6 @@ Mga karagdagang detalye:
 <translation id="8184538546369750125">Gamitin ang pangkalahatang default (Payagan)</translation>
 <translation id="8194797478851900357">&amp;I-undo ang Paglilipat</translation>
 <translation id="8197543752516192074">Isalin ang Page</translation>
-<translation id="8197899142098070286">Natukoy ng Chrome na kakatapos mo lang ilagay ang iyong password sa isang site na kahina-hinala. Paki-reset ang iyong password ngayon!</translation>
 <translation id="8201077131113104583">Di-wastong URL ng update para sa extension na may ID na "<ph name="EXTENSION_ID" />."</translation>
 <translation id="8202097416529803614">Buod ng order</translation>
 <translation id="8202370299023114387">Hindi pagkakasundo</translation>
@@ -1531,7 +1524,6 @@ Mga karagdagang detalye:
 <translation id="8718314106902482036">Hindi nakumpleto ang pagbabayad</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, suhestyon sa paghahanap</translation>
 <translation id="8719528812645237045">Multiple punch top</translation>
-<translation id="8723954843026426558">Sumasang-ayon ako sa mga tuntunin at kundisyon, patakaran sa privacy, at karapatang umalis ng <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8728672262656704056">Naging incognito ka</translation>
 <translation id="8730621377337864115">Tapos na</translation>

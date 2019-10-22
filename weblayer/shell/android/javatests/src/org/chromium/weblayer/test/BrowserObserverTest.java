@@ -90,16 +90,13 @@ public class BrowserObserverTest {
     public void testLoadEvents() {
         String startupUrl = "about:blank";
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(startupUrl);
-        Assert.assertNotNull(activity);
-        mActivityTestRule.waitForNavigation(startupUrl);
 
         Observer observer = new Observer();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { activity.getBrowserController().addObserver(observer); });
 
         String url = "data:text,foo";
-        mActivityTestRule.loadUrl(url);
-        mActivityTestRule.waitForNavigation(url);
+        mActivityTestRule.navigateAndWait(url);
 
         /* Verify that the visible URL changes to the target. */
         observer.visibleUrlChangedCallback.waitUntilValueObserved(url);

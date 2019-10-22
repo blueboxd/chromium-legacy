@@ -84,11 +84,6 @@ class CONTENT_EXPORT InputEventPrediction {
   // predictor, for other pointer type, remove it from mapping.
   void ResetSinglePredictor(const WebPointerProperties& event);
 
-  // Reports UMA histograms for prediction accuracy. Use the previous prediction
-  // states to calculate position in current event time and compute the
-  // distance between real event and predicted event.
-  void ComputeAccuracy(const WebInputEvent& event) const;
-
   std::unordered_map<ui::PointerId, std::unique_ptr<ui::InputPredictor>>
       pointer_id_predictor_map_;
   std::unique_ptr<ui::InputPredictor> mouse_predictor_;

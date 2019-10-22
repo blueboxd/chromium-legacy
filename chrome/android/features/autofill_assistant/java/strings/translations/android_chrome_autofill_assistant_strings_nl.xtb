@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
-<translation id="1135993792949700405">Chrome verzendt de persoonsgegevens die je hebt geselecteerd naar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Externe link openen?</translation>
 <translation id="1699570257714336246">Ontbrekende informatie</translation>
 <translation id="2203046366315513658">Waarde verlagen</translation>
@@ -14,7 +13,6 @@
 <translation id="6555233628095991027">De Google Assistent is op halve hoogte geopend in Chrome.</translation>
 <translation id="6973932557599545801">Ik kan je helaas niet helpen. Ga zelf verder.</translation>
 <translation id="7658239707568436148">Annuleren</translation>
-<translation id="7871791972254842204">De algemene voorwaarden voor <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> later lezen en ermee akkoord gaan</translation>
 <translation id="8253702004019660079">De Google Assistent in Chrome.</translation>
 <translation id="9138504265731110181">De Google Assistent helpt je sneller te betalen op internet</translation>
 <translation id="945522503751344254">Feedback verzenden</translation>

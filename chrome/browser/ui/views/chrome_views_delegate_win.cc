@@ -124,7 +124,7 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
           ? NativeWidgetType::NATIVE_WIDGET_AURA
           : NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA;
 
-  if (params->shadow_type == views::Widget::InitParams::SHADOW_TYPE_DROP &&
+  if (params->shadow_type == views::Widget::InitParams::ShadowType::kDrop &&
       params->shadow_elevation.has_value()) {
     // If the window defines an elevation based shadow in the Widget
     // initialization parameters, force the use of a non toplevel window,

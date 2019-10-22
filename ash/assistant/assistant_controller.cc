@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/assistant/assistant_web_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -20,6 +21,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -33,6 +35,11 @@
 namespace ash {
 
 AssistantController::AssistantController() {
+  if (chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
+    assistant_web_ui_controller_ =
+        std::make_unique<AssistantWebUiController>(this);
+  }
+
   assistant_state_controller_.AddObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
   AddObserver(this);

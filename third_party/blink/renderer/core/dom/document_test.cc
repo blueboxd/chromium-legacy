@@ -1192,6 +1192,45 @@ TEST_F(DocumentTest, PrefersColorSchemeChanged) {
   EXPECT_TRUE(listener->IsNotified());
 }
 
+TEST_F(DocumentTest, DocumentPolicyFeaturePolicyCoexist) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  const auto test_feature = blink::mojom::FeaturePolicyFeature::kFontDisplay;
+  const auto report_option = blink::ReportOptions::kReportOnFailure;
+
+  // When document_policy is not initialized, feature_policy should
+  // be sufficient to determine the result.
+  NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap 'none'",
+             "");
+  EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+
+  NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap *", "");
+  EXPECT_TRUE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+
+  // When document_policy is specified, both feature_policy and
+  // document_policy need to return true for the feature to be
+  // enabled.
+  NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap *", "");
+  GetDocument().SetDocumentPolicyForTesting(
+      DocumentPolicy::CreateWithRequiredPolicy(
+          {{test_feature, blink::PolicyValue(true)}}));
+  EXPECT_TRUE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+  GetDocument().SetDocumentPolicyForTesting(
+      DocumentPolicy::CreateWithRequiredPolicy(
+          {{test_feature, blink::PolicyValue(false)}}));
+  EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+
+  NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap 'none'",
+             "");
+  GetDocument().SetDocumentPolicyForTesting(
+      DocumentPolicy::CreateWithRequiredPolicy(
+          {{test_feature, blink::PolicyValue(true)}}));
+  EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+  GetDocument().SetDocumentPolicyForTesting(
+      DocumentPolicy::CreateWithRequiredPolicy(
+          {{test_feature, blink::PolicyValue(false)}}));
+  EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
+}
+
 /**
  * Tests for viewport-fit propagation.
  */

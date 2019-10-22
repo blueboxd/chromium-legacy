@@ -2898,6 +2898,20 @@ gfx::Rect AppsGridView::GetExpectedTileBounds(const GridIndex& index) const {
   return tile_bounds;
 }
 
+gfx::Rect AppsGridView::GetExpectedItemBoundsInFirstPage(
+    const std::string& id) const {
+  const AppListItem* item = model_->FindItem(id);
+  if (!item)
+    return gfx::Rect(GetContentsBounds().CenterPoint(), gfx::Size(1, 1));
+
+  const int model_index = GetModelIndexOfItem(item);
+  const GridIndex grid_index = GetIndexFromModelIndex(model_index);
+  if (grid_index.page != 0)
+    return gfx::Rect(GetContentsBounds().CenterPoint(), gfx::Size(1, 1));
+
+  return GetExpectedTileBounds(grid_index);
+}
+
 AppListItemView* AppsGridView::GetViewDisplayedAtSlotOnCurrentPage(
     int slot) const {
   if (slot < 0)
@@ -3248,7 +3262,7 @@ void AppsGridView::CalculateIdealBounds() {
   }
 }
 
-int AppsGridView::GetModelIndexOfItem(const AppListItem* item) {
+int AppsGridView::GetModelIndexOfItem(const AppListItem* item) const {
   for (int i = 0; i < view_model_.view_size(); ++i) {
     if (view_model_.view_at(i)->item() == item) {
       return i;

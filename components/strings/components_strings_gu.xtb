@@ -5,7 +5,6 @@
 <translation id="1010200102790553230">પેજ પછીથી લોડ કરો</translation>
 <translation id="1015730422737071372">અતિરિક્ત વિગતો પ્રદાન કરો</translation>
 <translation id="1021110881106174305">સ્વીકારેલ કાર્ડ</translation>
-<translation id="1023523064224774104">Chromiumને જાણવા મળ્યું કે તમે અત્યારે જે સાઇટમાં તમારો પાસવર્ડ દાખલ કર્યો તે શંકાસ્પદ છે. કૃપા કરીને તમારો પાસવર્ડ હમણાં જ રીસેટ કરો!</translation>
 <translation id="1032854598605920125">ઘડિયાળની દિશામાં ફેરવો</translation>
 <translation id="1035334672863811645">Chrome માં સાઇન ઇન કરો</translation>
 <translation id="1036348656032585052">બંધ કરો</translation>
@@ -548,7 +547,6 @@
 <translation id="3655670868607891010">જો તમે આ વારંવાર જોઈ રહ્યાં છો, તો આ <ph name="HELP_LINK" /> અજમાવી જુઓ.</translation>
 <translation id="3658742229777143148">પુનરાવર્તન</translation>
 <translation id="366077651725703012">ક્રેડિટ કાર્ડ અપડેટ કરો</translation>
-<translation id="3672525478985456967">આ સાઇટનું નામ <ph name="LOOKALIKE_DOMAIN" /> જેવું લાગે છે. હુમલાખોરો ઘણી વાર ડોમેન નામમાં સરળતાથી જોઈ ન શકાય એવા મામૂલી ફેરફારો કરીને સાઇટની નકલ કરતા હોય છે.</translation>
 <translation id="3676592649209844519">ડિવાઇસ ID:</translation>
 <translation id="3677008721441257057">શું તમારો અર્થ &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; હતો?</translation>
 <translation id="3678029195006412963">વિનંતી પર સહી કરી શક્યાં નથી</translation>
@@ -870,7 +868,6 @@
 <translation id="5230733896359313003">વિતરણ માટેનું સરનામું</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
-<translation id="5234764350956374838">કાઢી નાખો</translation>
 <translation id="5250209940322997802">"નેટવર્ક સાથે કનેક્ટ કરો"</translation>
 <translation id="5251803541071282808">મેઘ</translation>
 <translation id="5252000469029418751">C7 (એન્વલપ)</translation>
@@ -1012,7 +1009,6 @@
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> ખોલી રહ્યાં છે…</translation>
 <translation id="5947933617628957894">હા, ઉમેરો</translation>
 <translation id="5951495562196540101">ઉપભોક્તા એકાઉન્ટ સાથે નોંધણી કરાવી શકાતી નથી (પૅકેજમાં લાઇસન્સ ઉપલબ્ધ છે).</translation>
-<translation id="5966900314707961320">જ્યારે ચાલુ કરવામાં આવે, ત્યારે સાઇટ તમને વેબ પર બધે ટ્રૅક કરી શકે એવી કુકીનો ઉપયોગ કરી શકશે નહીં</translation>
 <translation id="5967592137238574583">સંપર્ક માહિતીમાં ફેરફાર કરો</translation>
 <translation id="5967867314010545767">ઇતિહાસમાંથી દૂર કરો</translation>
 <translation id="5975083100439434680">ઝૂમ ઘટાડો</translation>
@@ -1108,7 +1104,6 @@
 <translation id="6433490469411711332">સંપર્ક માહિતીમાં ફેરફાર કરો</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> એ કનેક્ટ કરવાનો ઇનકાર કર્યો.</translation>
 <translation id="6434309073475700221">કાઢી નાખો</translation>
-<translation id="6435221585574090192">Chrome એન્ટરપ્રાઇઝ જોખમ સંરક્ષણ સેવા દ્વારા ચિહ્નિત કરવામાં આવેલી સુરક્ષા ઇવેન્ટ વિશેનો ડેટા તમારા વ્યવસ્થાપક સાથે શેર કરો. આમાં પેજની URLs, ફાઇલનું નામ અને ફાઇલ મેટાડેટા, તમારું ડિવાઇસ વપરાશકર્તા નામ અને Chrome વપરાશકર્તા નામનો સમાવેશ હોય શકે.</translation>
 <translation id="6440503408713884761">અવગણી</translation>
 <translation id="6446163441502663861">Kahu (એન્વલપ)</translation>
 <translation id="6446608382365791566">વધુ માહિતી ઉમેરો</translation>
@@ -1452,7 +1447,6 @@
 <translation id="8184538546369750125">વૈશ્વિક ડિફોલ્ટનો ઉપયોગ કરો (મંજૂરી આપો)</translation>
 <translation id="8194797478851900357">&amp;ખસેડવું પૂર્વવત્‌ કરો</translation>
 <translation id="8197543752516192074">પેજનો અનુવાદ કરો</translation>
-<translation id="8197899142098070286">Chromeને જાણવા મળ્યું કે તમે અત્યારે જે સાઇટમાં તમારો પાસવર્ડ દાખલ કર્યો તે શંકાસ્પદ છે. કૃપા કરીને તમારો પાસવર્ડ હમણાં જ રીસેટ કરો!</translation>
 <translation id="8201077131113104583">ID "<ph name="EXTENSION_ID" />" સાથેના એક્સટેન્શન માટે અમાન્ય અપડેટ URL.</translation>
 <translation id="8202097416529803614">ઓર્ડરનો સારાંશ</translation>
 <translation id="8202370299023114387">વિરોધ</translation>
@@ -1539,7 +1533,6 @@
 <translation id="8718314106902482036">ચુકવણી પૂર્ણ થઈ નથી</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, શોધ સૂચન</translation>
 <translation id="8719528812645237045">ઉપરની બાજુએ એકથી વધુ કાણાં પાડો</translation>
-<translation id="8723954843026426558">હું <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />ના શરતો અને નિયમો, પ્રાઇવસી પૉલિસી અને પાછું ખેંચવાના અધિકારથી સંમત છું</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8728672262656704056">તમે છુપા મોડમાં ગયા છો</translation>
 <translation id="8730621377337864115">થઈ ગયું</translation>

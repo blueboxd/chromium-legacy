@@ -49,8 +49,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static const int kNumberDefaultStep = 1;
 static const int kNumberDefaultStepBase = 0;
 static const int kNumberStepScaleFactor = 1;
@@ -153,17 +151,18 @@ bool NumberInputType::SizeShouldIncludeDecoration(int default_size,
                                                   int& preferred_size) const {
   preferred_size = default_size;
 
-  const String step_string = GetElement().FastGetAttribute(kStepAttr);
+  const String step_string =
+      GetElement().FastGetAttribute(html_names::kStepAttr);
   if (DeprecatedEqualIgnoringCase(step_string, "any"))
     return false;
 
-  const Decimal minimum =
-      ParseToDecimalForNumberType(GetElement().FastGetAttribute(kMinAttr));
+  const Decimal minimum = ParseToDecimalForNumberType(
+      GetElement().FastGetAttribute(html_names::kMinAttr));
   if (!minimum.IsFinite())
     return false;
 
-  const Decimal maximum =
-      ParseToDecimalForNumberType(GetElement().FastGetAttribute(kMaxAttr));
+  const Decimal maximum = ParseToDecimalForNumberType(
+      GetElement().FastGetAttribute(html_names::kMaxAttr));
   if (!maximum.IsFinite())
     return false;
 

@@ -9,6 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 
@@ -17,6 +19,7 @@ class Profile;
 namespace web_app {
 
 class AppRegistrar;
+class AppShortcutObserver;
 struct ShortcutInfo;
 
 // TODO(crbug.com/860581): Migrate functions from
@@ -30,6 +33,9 @@ class AppShortcutManager {
   virtual ~AppShortcutManager();
 
   void SetSubsystems(AppRegistrar* registrar);
+
+  void AddObserver(AppShortcutObserver* observer);
+  void RemoveObserver(AppShortcutObserver* observer);
 
   // virtual for testing.
   virtual bool CanCreateShortcuts() const;
@@ -48,12 +54,20 @@ class AppShortcutManager {
                                      GetShortcutInfoCallback callback) = 0;
 
  protected:
+  void OnShortcutsCreated(const AppId& app_id,
+                          CreateShortcutsCallback callback,
+                          bool success);
+
   AppRegistrar* registrar() { return registrar_; }
   Profile* profile() { return profile_; }
 
  private:
   AppRegistrar* registrar_ = nullptr;
   Profile* const profile_;
+
+  base::ObserverList<AppShortcutObserver, /*check_empty=*/true> observers_;
+
+  base::WeakPtrFactory<AppShortcutManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppShortcutManager);
 };

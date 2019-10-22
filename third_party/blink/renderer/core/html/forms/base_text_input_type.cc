@@ -31,8 +31,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 BaseTextInputType::BaseTextInputType(HTMLInputElement& element)
     : TextFieldInputType(element) {}
 
@@ -79,7 +77,8 @@ bool BaseTextInputType::TooShort(
 }
 
 bool BaseTextInputType::PatternMismatch(const String& value) const {
-  const AtomicString& raw_pattern = GetElement().FastGetAttribute(kPatternAttr);
+  const AtomicString& raw_pattern =
+      GetElement().FastGetAttribute(html_names::kPatternAttr);
   // Empty values can't be mismatched
   if (raw_pattern.IsNull() || value.IsEmpty())
     return false;

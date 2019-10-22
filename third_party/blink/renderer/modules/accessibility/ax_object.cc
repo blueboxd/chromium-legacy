@@ -1561,6 +1561,9 @@ String AXObject::GetName(ax::mojom::NameFrom& name_from,
   bool hidden_and_ignored_but_included_in_tree =
       IsHiddenForTextAlternativeCalculation() &&
       AccessibilityIsIgnoredButIncludedInTree();
+  // Initialize |name_from|, as TextAlternative() might never set it in some
+  // cases.
+  name_from = ax::mojom::NameFrom::kNone;
   String text = TextAlternative(false, hidden_and_ignored_but_included_in_tree,
                                 visited, name_from, &related_objects, nullptr);
 

@@ -383,7 +383,6 @@ void BrowserTestBase::SetUp() {
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();
-  gin::V8Initializer::LoadV8Natives();
 #endif
 
   ContentMainDelegate* delegate = GetContentMainDelegateForTesting();

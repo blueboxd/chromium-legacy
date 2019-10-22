@@ -2733,11 +2733,6 @@ const char kSitePerProcess[] = "site_isolation.site_per_process";
 const char kUserTriggeredIsolatedOrigins[] =
     "site_isolation.user_triggered_isolated_origins";
 
-// Boolean that specifies if the web driver flag is allowed to override policies
-// which prevent it from operating normally. (e.g. SitePerProcess.)
-const char kWebDriverOverridesIncompatiblePolicies[] =
-    "webdriver.override_incompatible_policy";
-
 #if !defined(OS_ANDROID)
 // Boolean that specifies whether media (audio/video) autoplay is allowed.
 const char kAutoplayAllowed[] = "media.autoplay_allowed";

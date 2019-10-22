@@ -7,11 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include <hb-subset.h>
+#include <hb.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "third_party/harfbuzz-ng/src/src/hb-subset.h"
-#include "third_party/harfbuzz-ng/src/src/hb.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 

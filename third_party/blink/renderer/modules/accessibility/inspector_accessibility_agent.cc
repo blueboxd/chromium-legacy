@@ -724,6 +724,8 @@ Response InspectorAccessibilityAgent::getFullAXTree(
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
     return Response::Error("No document.");
+  if (document->View()->NeedsLayout() || document->NeedsLayoutTreeUpdate())
+    document->UpdateStyleAndLayout();
   *nodes = std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
   AXContext ax_context(*document);
   AXObjectCacheImpl& cache = ToAXObjectCacheImpl(ax_context.GetAXObjectCache());

@@ -40,8 +40,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 // TODO(crbug.com/1008708): Remove this flag when we're sure the new behavior
@@ -52,8 +50,9 @@ inline HTMLFormElement* OwnerFormForState(const ListedElement& control) {
   // Assume controls with form attribute have no owners because we restore
   // state during parsing and form owners of such controls might be
   // indeterminate.
-  return control.ToHTMLElement().FastHasAttribute(kFormAttr) ? nullptr
-                                                             : control.Form();
+  return control.ToHTMLElement().FastHasAttribute(html_names::kFormAttr)
+             ? nullptr
+             : control.Form();
 }
 
 const AtomicString& ControlType(const ListedElement& control) {
@@ -382,7 +381,7 @@ static inline void RecordFormStructure(const HTMLFormElement& form,
 }
 
 String FormSignature(const HTMLFormElement& form) {
-  KURL action_url = form.GetURLAttribute(kActionAttr);
+  KURL action_url = form.GetURLAttribute(html_names::kActionAttr);
   // Remove the query part because it might contain volatile parameters such
   // as a session key.
   if (!action_url.IsEmpty())

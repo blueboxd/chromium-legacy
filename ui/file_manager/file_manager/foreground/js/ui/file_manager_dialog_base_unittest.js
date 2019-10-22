@@ -4,7 +4,7 @@
 
 async function testShowDialogAfterHide(done) {
   // Polyfill chrome.app.window.current().
-  /** @suppress {duplicate|checkTypes} */
+  /** @suppress {duplicate,checkTypes,const} */
   chrome.app = {window: {current: () => null}};
 
   const container =

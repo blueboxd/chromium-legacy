@@ -246,7 +246,7 @@ class PDFiumEngine : public PDFEngine,
   void FinishLoadingDocument();
 
   // Loads information about the pages in the document and performs layout.
-  void LoadPageInfo(bool reload);
+  void LoadPageInfo();
 
   // Loads information about the pages in the document, calculating and
   // returning the individual page sizes.
@@ -256,7 +256,7 @@ class PDFiumEngine : public PDFEngine,
   //
   // TODO(kmoon): LoadPageSizes() is a bit misnomer, but LoadPageInfo() is
   // taken right now...
-  std::vector<pp::Size> LoadPageSizes(bool reload);
+  std::vector<pp::Size> LoadPageSizes();
 
   void LoadBody();
 
@@ -574,6 +574,7 @@ class PDFiumEngine : public PDFEngine,
   PDFiumFormFiller form_filler_;
 
   std::unique_ptr<PDFiumDocument> document_;
+  bool document_loaded_ = false;
 
   // The page(s) of the document.
   std::vector<std::unique_ptr<PDFiumPage>> pages_;

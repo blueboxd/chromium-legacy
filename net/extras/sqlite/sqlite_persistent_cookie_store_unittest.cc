@@ -1229,17 +1229,17 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   std::unique_ptr<CookieMonster> cookie_monster =
       std::make_unique<CookieMonster>(store_.get(), nullptr);
   ResultSavingCookieCallback<bool> cookie_scheme_callback1;
-  cookie_monster->SetCookieableSchemes({"gopher", "http"},
+  cookie_monster->SetCookieableSchemes({"ftp", "http"},
                                        cookie_scheme_callback1.MakeCallback());
   cookie_scheme_callback1.WaitUntilDone();
   EXPECT_TRUE(cookie_scheme_callback1.result());
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
   auto cookie = CanonicalCookie::Create(
-      GURL("gopher://subdomain.gopheriffic.com/page"), "A=B; max-age=3600",
+      GURL("ftp://subdomain.ftperiffic.com/page"), "A=B; max-age=3600",
       base::Time::Now(), base::nullopt /* server_time */);
   cookie_monster->SetCanonicalCookieAsync(
-      std::move(cookie), "gopher", CookieOptions(),
+      std::move(cookie), "ftp", CookieOptions(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
@@ -1276,7 +1276,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   Create(false, false, true /* want current thread to invoke cookie monster */);
   cookie_monster = std::make_unique<CookieMonster>(store_.get(), nullptr);
   ResultSavingCookieCallback<bool> cookie_scheme_callback2;
-  cookie_monster->SetCookieableSchemes({"gopher", "http"},
+  cookie_monster->SetCookieableSchemes({"ftp", "http"},
                                        cookie_scheme_callback2.MakeCallback());
   cookie_scheme_callback2.WaitUntilDone();
   EXPECT_TRUE(cookie_scheme_callback2.result());
@@ -1284,14 +1284,14 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // Now try to get the cookie back.
   GetCookieListCallback get_callback;
   cookie_monster->GetCookieListWithOptionsAsync(
-      GURL("gopher://subdomain.gopheriffic.com/page"), CookieOptions(),
+      GURL("ftp://subdomain.ftperiffic.com/page"), CookieOptions(),
       base::BindOnce(&GetCookieListCallback::Run,
                      base::Unretained(&get_callback)));
   get_callback.WaitUntilDone();
   ASSERT_EQ(1u, get_callback.cookies().size());
   EXPECT_EQ("A", get_callback.cookies()[0].Name());
   EXPECT_EQ("B", get_callback.cookies()[0].Value());
-  EXPECT_EQ("subdomain.gopheriffic.com", get_callback.cookies()[0].Domain());
+  EXPECT_EQ("subdomain.ftperiffic.com", get_callback.cookies()[0].Domain());
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {

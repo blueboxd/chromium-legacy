@@ -33,7 +33,6 @@ libGLESv2.dll: %(VersionDir)s\
 nacl64.exe: %(VersionDir)s\
 nacl_irt_x86_32.nexe: %(VersionDir)s\
 nacl_irt_x86_64.nexe: %(VersionDir)s\
-natives_blob.bin: %(VersionDir)s\
 notification_helper.exe: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 v8_context_snapshot.bin: %(VersionDir)s\

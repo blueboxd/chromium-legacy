@@ -11,9 +11,6 @@ import os.path as path
 import sys
 
 _COMPILE_JS = '//third_party/closure_compiler/compile_js.gni'
-_WEB_ANIMATIONS_BASE = 'web-animations.html'
-_WEB_ANIMATIONS_EXTERNS = \
-    '//third_party/closure_compiler/externs/web_animations.js'
 _COMPILED_RESOURCES_TEMPLATE = '''
 # Copyright %d The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -54,10 +51,6 @@ def main(created_by, input_files):
 
       for i in sorted(imports):
         import_dir, import_base = path.split(i.encode('ascii'))
-
-        if import_base == _WEB_ANIMATIONS_BASE:
-          externs += '\n  externs_list = [ "%s" ]' % _WEB_ANIMATIONS_EXTERNS
-          continue
 
         # Redirect dependencies to minified Polymer to the non-minified version.
         if import_base == 'polymer_bundled.min.js':

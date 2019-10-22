@@ -267,6 +267,11 @@ VisibleSecurityState::VisibleSecurityState()
       connection_used_legacy_tls(false),
       should_suppress_legacy_tls_warning(false) {}
 
+VisibleSecurityState::VisibleSecurityState(const VisibleSecurityState& other) =
+    default;
+VisibleSecurityState& VisibleSecurityState::operator=(
+    const VisibleSecurityState& other) = default;
+
 VisibleSecurityState::~VisibleSecurityState() {}
 
 bool IsSchemeCryptographic(const GURL& url) {
@@ -291,6 +296,22 @@ std::string GetSecurityLevelHistogramName(
 std::string GetSafetyTipHistogramName(const std::string& prefix,
                                       SafetyTipStatus safety_tip_status) {
   return prefix + "." + GetHistogramSuffixForSafetyTipStatus(safety_tip_status);
+}
+
+bool GetLegacyTLSWarningStatus(
+    const VisibleSecurityState& visible_security_state) {
+  return visible_security_state.connection_used_legacy_tls &&
+         !visible_security_state.should_suppress_legacy_tls_warning;
+}
+
+std::string GetLegacyTLSHistogramName(
+    const std::string& prefix,
+    const VisibleSecurityState& visible_security_state) {
+  if (GetLegacyTLSWarningStatus(visible_security_state)) {
+    return prefix + "." + "LegacyTLS_Triggered";
+  } else {
+    return prefix + "." + "LegacyTLS_NotTriggered";
+  }
 }
 
 bool IsSHA1InChain(const VisibleSecurityState& visible_security_state) {

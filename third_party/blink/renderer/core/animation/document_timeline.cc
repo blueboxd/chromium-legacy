@@ -114,6 +114,17 @@ bool DocumentTimeline::IsActive() const {
   return document_->GetPage();
 }
 
+// Document-linked animations are initialized with start time of the document
+// timeline current time.
+base::Optional<base::TimeDelta>
+DocumentTimeline::InitialStartTimeForAnimations() {
+  base::Optional<double> current_time_ms = CurrentTime();
+  if (current_time_ms.has_value()) {
+    return base::TimeDelta::FromMillisecondsD(current_time_ms.value());
+  }
+  return base::nullopt;
+}
+
 void DocumentTimeline::AnimationAttached(Animation* animation) {
   DCHECK_EQ(&animation->GetDocument()->Timeline(), this);
   DCHECK(!animations_.Contains(animation));

@@ -281,7 +281,6 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestPassedReauthOnView) {
   base::Optional<base::string16> plaintext_password;
   delegate.RequestShowPassword(0, GetCallbackArgument(&plaintext_password),
                                nullptr);
-  task_environment_.RunUntilIdle();
   EXPECT_TRUE(reauth_called);
   EXPECT_TRUE(plaintext_password.has_value());
   EXPECT_EQ(base::ASCIIToUTF16("test"), *plaintext_password);
@@ -302,7 +301,6 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
   base::Optional<base::string16> plaintext_password;
   delegate.RequestShowPassword(0, GetCallbackArgument(&plaintext_password),
                                nullptr);
-  task_environment_.RunUntilIdle();
   EXPECT_TRUE(reauth_called);
   EXPECT_FALSE(plaintext_password.has_value());
 }
@@ -324,13 +322,11 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnExport) {
   EXPECT_CALL(mock_accepted, Run(std::string())).Times(2);
 
   delegate.ExportPasswords(mock_accepted.Get(), nullptr);
-  task_environment_.RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 
   // Export should ignore previous reauthentication results.
   reauth_called = false;
   delegate.ExportPasswords(mock_accepted.Get(), nullptr);
-  task_environment_.RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 }
 
@@ -351,7 +347,6 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestReauthFailedOnExport) {
       &FakeOsReauthCall, &reauth_called, ReauthResult::FAIL));
 
   delegate.ExportPasswords(mock_accepted.Get(), nullptr);
-  task_environment_.RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 }
 

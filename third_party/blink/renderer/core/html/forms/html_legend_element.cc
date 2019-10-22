@@ -30,10 +30,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLLegendElement::HTMLLegendElement(Document& document)
-    : HTMLElement(kLegendTag, document) {}
+    : HTMLElement(html_names::kLegendTag, document) {}
 
 HTMLFormElement* HTMLLegendElement::form() const {
   // According to the specification, If the legend has a fieldset element as

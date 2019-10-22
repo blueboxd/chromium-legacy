@@ -91,14 +91,6 @@ class SitePerProcessPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(policy_value), nullptr);
     provider_.UpdateChromePolicy(values);
-
-    // Append the automation switch which should disable Site Isolation when the
-    // "WebDriverOverridesIncompatiblePolicies" is set. This is tested in the
-    // WebDriverSitePerProcessPolicyBrowserTest class below.
-    // NOTE: This flag is on for some tests per default but we still force it
-    // it here to make sure to avoid possible regressions being missed
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableAutomation);
   }
 
  private:
@@ -135,31 +127,6 @@ class IsolateOriginsPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IsolateOriginsPolicyBrowserTest);
-};
-
-class WebDriverSitePerProcessPolicyBrowserTest
-    : public SitePerProcessPolicyBrowserTestEnabled {
- protected:
-  WebDriverSitePerProcessPolicyBrowserTest() = default;
-
-  void SetUpInProcessBrowserTestFixture() override {
-    // We setup the policy here, because the policy must be 'live' before the
-    // renderer is created, since the value for this policy is passed to the
-    // renderer via a command-line. Setting the policy in the test itself or in
-    // SetUpOnMainThread works for update-able policies, but is too late for
-    // this one.
-    SitePerProcessPolicyBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    policy::PolicyMap values;
-    values.Set(policy::key::kWebDriverOverridesIncompatiblePolicies,
-               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-               nullptr);
-    provider_.UpdateChromePolicy(values);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebDriverSitePerProcessPolicyBrowserTest);
 };
 
 // Ensure that --disable-site-isolation-trials and/or
@@ -221,14 +188,6 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPolicyBrowserTest, Simple) {
       {"http://policy4.example.com/index.php", true},
   };
   CheckIsolatedOriginExpectations(expectations2, base::size(expectations2));
-}
-
-IN_PROC_BROWSER_TEST_F(WebDriverSitePerProcessPolicyBrowserTest, Simple) {
-  Expectations expectations[] = {
-      {"https://foo.com/noodles.html", true},
-      {"http://example.org/pumpkins.html", true},
-  };
-  CheckExpectations(expectations, base::size(expectations));
 }
 
 IN_PROC_BROWSER_TEST_F(NoOverrideSitePerProcessPolicyBrowserTest, Simple) {

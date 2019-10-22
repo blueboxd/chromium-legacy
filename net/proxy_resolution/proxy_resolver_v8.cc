@@ -369,7 +369,6 @@ class SharedIsolateFactory {
       if (!has_initialized_v8_) {
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
         gin::V8Initializer::LoadV8Snapshot();
-        gin::V8Initializer::LoadV8Natives();
 #endif
 
         // The performance of the proxy resolver is limited by DNS resolution,

@@ -43,8 +43,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static const int kMonthDefaultStep = 1;
 static const int kMonthDefaultStepBase = 0;
 static const int kMonthStepScaleFactor = 1;
@@ -145,11 +143,13 @@ void MonthInputType::SetupLayoutParameters(
     const DateComponents& date) const {
   layout_parameters.date_time_format = layout_parameters.locale.MonthFormat();
   layout_parameters.fallback_date_time_format = "yyyy-MM";
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMinAttr),
-                             &layout_parameters.minimum))
+  if (!ParseToDateComponents(
+          GetElement().FastGetAttribute(html_names::kMinAttr),
+          &layout_parameters.minimum))
     layout_parameters.minimum = DateComponents();
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMaxAttr),
-                             &layout_parameters.maximum))
+  if (!ParseToDateComponents(
+          GetElement().FastGetAttribute(html_names::kMaxAttr),
+          &layout_parameters.maximum))
     layout_parameters.maximum = DateComponents();
   layout_parameters.placeholder_for_month = "--";
   layout_parameters.placeholder_for_year = "----";

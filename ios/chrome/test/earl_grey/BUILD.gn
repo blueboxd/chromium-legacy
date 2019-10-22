@@ -364,6 +364,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/bookmarks:bookmarks_ui",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
+    "//ios/chrome/browser/ui/content_suggestions:eg_app_support+eg2",
     "//ios/chrome/browser/ui/history:constants",
     "//ios/chrome/browser/ui/location_bar:location_bar",
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",

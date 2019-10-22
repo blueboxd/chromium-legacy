@@ -24,8 +24,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 static inline bool IsSimpleLengthPropertyID(CSSPropertyID property_id,
                                             bool& accepts_negative_numbers) {
   switch (property_id) {
@@ -532,7 +530,7 @@ CSSValue* CSSParserFastPaths::ParseColor(const String& string,
                                           string.length(), quirks_mode);
   if (!parse_result)
     return nullptr;
-  return CSSColorValue::Create(color);
+  return cssvalue::CSSColorValue::Create(color);
 }
 
 bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(

@@ -15,7 +15,6 @@ js_library("cr_view_manager") {
   deps = [
     "//ui/webui/resources/js:assert",
   ]
-  externs_list = [ "$externs_path/web_animations.js" ]
 }
 
 polymer_modulizer("cr_view_manager") {

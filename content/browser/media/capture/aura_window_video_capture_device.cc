@@ -19,7 +19,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "media/base/bind_to_current_loop.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
@@ -157,12 +158,13 @@ AuraWindowVideoCaptureDevice::~AuraWindowVideoCaptureDevice() = default;
 
 #if defined(OS_CHROMEOS)
 void AuraWindowVideoCaptureDevice::CreateCapturer(
-    viz::mojom::FrameSinkVideoCapturerRequest request) {
+    mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> receiver) {
   base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           [](base::WeakPtr<WindowTracker> tracker_ptr,
-             viz::mojom::FrameSinkVideoCapturerRequest request) {
+             mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer>
+                 receiver) {
             WindowTracker* const tracker = tracker_ptr.get();
             if (!tracker) {
               // WindowTracker was destroyed in the meantime, due to early
@@ -173,17 +175,17 @@ void AuraWindowVideoCaptureDevice::CreateCapturer(
             if (tracker->target_type() == DesktopMediaID::TYPE_WINDOW) {
               VLOG(1) << "AuraWindowVideoCaptureDevice is using the LAME "
                          "capturer. :(";
-              mojo::StrongBinding<viz::mojom::FrameSinkVideoCapturer>::Create(
+              mojo::MakeSelfOwnedReceiver(
                   std::make_unique<LameWindowCapturerChromeOS>(
                       tracker->target_window()),
-                  std::move(request));
+                  std::move(receiver));
             } else {
               VLOG(1) << "AuraWindowVideoCaptureDevice is using the frame "
                          "sink capturer. :)";
-              CreateCapturerViaGlobalManager(std::move(request));
+              CreateCapturerViaGlobalManager(std::move(receiver));
             }
           },
-          tracker_->AsWeakPtr(), std::move(request)));
+          tracker_->AsWeakPtr(), std::move(receiver)));
 }
 #endif
 

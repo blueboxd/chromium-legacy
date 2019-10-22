@@ -171,6 +171,12 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
   AddRequiredField(
       &action, UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_4_DIGIT_YEAR,
       "#expyear4");
+  AddRequiredField(
+      &action, UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
+      "#card_name");
+  AddRequiredField(&action,
+                   UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER,
+                   "#card_number");
 
   // First validation fails.
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
@@ -180,6 +186,12 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#expyear2"}), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#expyear4"}), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Selector({"#card_name"}), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Selector({"#card_number"}), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
 
   // Expect fields to be filled
@@ -199,6 +211,15 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
       EXPECT_CALL(mock_action_delegate_,
                   OnSetFieldValue(Selector({"#expyear4"}), "2024", _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  Expectation set_cardholder_name =
+      EXPECT_CALL(mock_action_delegate_,
+                  OnSetFieldValue(Selector({"#card_name"}), "Jon Doe", _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  Expectation set_card_number =
+      EXPECT_CALL(
+          mock_action_delegate_,
+          OnSetFieldValue(Selector({"#card_number"}), "4111111111111111", _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // After fallback, second validation succeeds.
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
@@ -213,10 +234,22 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#expyear4"}), _))
       .After(set_expyear4)
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Selector({"#card_name"}), _))
+      .After(set_expyear4)
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Selector({"#card_number"}), _))
+      .After(set_expyear4)
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   autofill::CreditCard credit_card;
   credit_card.SetExpirationMonth(9);
   credit_card.SetExpirationYear(2024);
+  credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
+                         base::UTF8ToUTF16("Jon Doe"));
+  credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
+                         base::UTF8ToUTF16("4111111111111111"));
   client_memory_.set_selected_card(
       std::make_unique<autofill::CreditCard>(credit_card));
   EXPECT_CALL(mock_action_delegate_, OnGetFullCard(_))

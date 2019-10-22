@@ -8,8 +8,11 @@
 
 #include "android_webview/browser/gfx/compositor_frame_producer.h"
 #include "android_webview/browser/gfx/gpu_service_web_view.h"
+#include "android_webview/browser/gfx/hardware_renderer_single_thread.h"
+#include "android_webview/browser/gfx/hardware_renderer_viz.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
 #include "android_webview/browser/gfx/task_queue_web_view.h"
+#include "android_webview/common/aw_features.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -189,7 +192,18 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
   ScopedAllowGL allow_gl;
   if (!hardware_renderer_ && !IsInsideHardwareRelease() &&
       HasFrameForHardwareRendererOnRT()) {
-    hardware_renderer_.reset(new HardwareRendererSingleThread(this));
+    if (base::FeatureList::IsEnabled(features::kVizForWebView)) {
+      RootFrameSinkGetter getter;
+      {
+        base::AutoLock lock(lock_);
+        getter = root_frame_sink_getter_;
+      }
+      DCHECK(getter);
+      hardware_renderer_.reset(
+          new HardwareRendererViz(this, std::move(getter)));
+    } else {
+      hardware_renderer_.reset(new HardwareRendererSingleThread(this));
+    }
     hardware_renderer_->CommitFrame();
   }
 
@@ -217,10 +231,14 @@ void RenderThreadManager::RemoveFromCompositorFrameProducerOnUI() {
 }
 
 void RenderThreadManager::SetCompositorFrameProducer(
-    CompositorFrameProducer* compositor_frame_producer) {
+    CompositorFrameProducer* compositor_frame_producer,
+    RootFrameSinkGetter root_frame_sink_getter) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   CheckUiCallsAllowed();
   producer_weak_ptr_ = compositor_frame_producer->GetWeakPtr();
+
+  base::AutoLock lock(lock_);
+  root_frame_sink_getter_ = std::move(root_frame_sink_getter);
 }
 
 bool RenderThreadManager::HasFrameForHardwareRendererOnRT() const {

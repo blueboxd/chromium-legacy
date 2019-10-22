@@ -6,8 +6,6 @@
 """
 import re
 
-from tracing.value import histogram as histogram_module
-
 from page_sets import press_story
 
 _SPEEDOMETER_SUITE_NAME_BASE = '{0}-TodoMVC'
@@ -29,6 +27,7 @@ _SPEEDOMETER_SUITES = [
   'Elm',
   'Flight'
 ]
+
 
 class Speedometer2Story(press_story.PressStory):
   URL = 'file://InteractiveRunner.html'
@@ -100,36 +99,24 @@ class Speedometer2Story(press_story.PressStory):
         count=iterationCount)
     action_runner.WaitForJavaScriptCondition('testDone', timeout=600)
 
-
   def ParseTestResults(self, action_runner):
     if not self._should_filter_suites:
-      total_hg = histogram_module.Histogram("Total", "ms_smallerIsBetter")
-      total_samples = action_runner.EvaluateJavaScript(
-          'suiteValues.map(each => each.total)')
-      for s in total_samples:
-        total_hg.AddSample(s)
-      self.AddJavascriptMetricHistogram(total_hg)
-
-      runs_hg = histogram_module.Histogram("RunsPerMinute",
-                                           "unitless_biggerIsBetter")
-      runs_samples = action_runner.EvaluateJavaScript(
+      self.AddJavaScriptMeasurement(
+          'Total', 'ms_smallerIsBetter', 'suiteValues.map(each => each.total)')
+      self.AddJavaScriptMeasurement(
+          'RunsPerMinute', 'unitless_biggerIsBetter',
           'suiteValues.map(each => each.score)')
-      for s in runs_samples:
-        runs_hg.AddSample(s)
-      self.AddJavascriptMetricHistogram(runs_hg)
 
     # Extract the timings for each suite
     for suite_name in self._enabled_suites:
-      suite_hg = histogram_module.Histogram(suite_name, "ms_smallerIsBetter")
-      samples = action_runner.EvaluateJavaScript("""
-              var suite_times = [];
-              for(var i = 0; i < iterationCount; i++) {
-                suite_times.push(
-                    suiteValues[i].tests[{{ key }}].total);
-              };
-              suite_times;
-              """,
-              key=suite_name)
-      for s in samples:
-        suite_hg.AddSample(s)
-      self.AddJavascriptMetricHistogram(suite_hg)
+      self.AddJavaScriptMeasurement(
+          suite_name, 'ms_smallerIsBetter',
+          """
+          var suite_times = [];
+          for(var i = 0; i < iterationCount; i++) {
+            suite_times.push(
+                suiteValues[i].tests[{{ key }}].total);
+          };
+          suite_times;
+          """,
+          key=suite_name)

@@ -4,6 +4,8 @@
 
 #include "device/udev_linux/udev_watcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -115,8 +117,8 @@ UdevWatcher::UdevWatcher(ScopedUdevPtr udev,
       observer_(observer),
       udev_filters_(filters) {
   file_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-      monitor_fd,
-      base::Bind(&UdevWatcher::OnMonitorReadable, base::Unretained(this)));
+      monitor_fd, base::BindRepeating(&UdevWatcher::OnMonitorReadable,
+                                      base::Unretained(this)));
 }
 
 void UdevWatcher::OnMonitorReadable() {

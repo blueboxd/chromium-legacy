@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.util.TokenHolder;
 
 import javax.inject.Inject;
@@ -223,13 +224,9 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
         mNavigationController.navigateOnClose();
     }
 
-    /**
-     * Sets the hidden state. If set to true, toolbar stays hidden. If set to false, toolbar
-     * behaves normally: appears and disappears while scrolling, etc.
-     */
-    public void setToolbarHidden(boolean hidden) {
-        mVisibilityDelegate.setControlsHidden(hidden);
-        if (hidden) {
+    public void setBrowserControlsState(@BrowserControlsState int controlsState) {
+        mVisibilityDelegate.setControlsState(controlsState);
+        if (controlsState == BrowserControlsState.HIDDEN) {
             mControlsHidingToken = mFullscreenManager.get()
                     .hideAndroidControlsAndClearOldToken(mControlsHidingToken);
         } else {

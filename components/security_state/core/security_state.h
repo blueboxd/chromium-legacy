@@ -143,7 +143,10 @@ struct SafetyTipInfo {
 // for a page. This is the input to GetSecurityLevel().
 struct VisibleSecurityState {
   VisibleSecurityState();
+  VisibleSecurityState(const VisibleSecurityState& other);
+  VisibleSecurityState& operator=(const VisibleSecurityState& other);
   ~VisibleSecurityState();
+
   GURL url;
 
   MaliciousContentStatus malicious_content_status;
@@ -239,6 +242,18 @@ std::string GetSecurityLevelHistogramName(
 // Returns the given prefix suffixed with a dot and the given Safety Tip status.
 std::string GetSafetyTipHistogramName(const std::string& prefix,
                                       SafetyTipStatus safety_tip_status);
+
+// Returns whether the given VisibleSecurityState would trigger a legacy TLS
+// warning (i.e., uses legacy TLS and isn't in the control group), if the user
+// were in the appropriate field trial.
+bool GetLegacyTLSWarningStatus(
+    const VisibleSecurityState& visible_security_state);
+
+// Returns the given prefix suffixed with a dot and the legacy TLS status
+// derived from the VisibleSecurityStatus.
+std::string GetLegacyTLSHistogramName(
+    const std::string& prefix,
+    const VisibleSecurityState& visible_security_state);
 
 bool IsSHA1InChain(const VisibleSecurityState& visible_security_state);
 

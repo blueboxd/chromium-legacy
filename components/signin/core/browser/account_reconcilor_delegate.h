@@ -47,6 +47,11 @@ class AccountReconcilorDelegate {
   // false.
   virtual bool IsReconcileEnabled() const;
 
+  // Returns whether the OAuth multilogin endpoint can be used to build the Gaia
+  // cookies.
+  // Default implementation returns true.
+  virtual bool IsMultiloginEndpointEnabled() const;
+
   // Returns true if account consistency is enforced (Mirror or Dice).
   // If this is false, reconcile is done, but its results are discarded and no
   // changes to the accounts are made. Defaults to false.

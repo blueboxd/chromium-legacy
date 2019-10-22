@@ -122,14 +122,12 @@ void TestPaymentsClient::AddFidoEligibleCard(std::string server_id,
                   base::Value(base::Value::Type::LIST));
   key_info
       .FindKeyOfType("authenticator_transport_support", base::Value::Type::LIST)
-      ->GetList()
-      .push_back(base::Value("INTERNAL"));
+      ->Append("INTERNAL");
   unmask_details_.fido_request_options.SetKey(
       "key_info", base::Value(base::Value::Type::LIST));
   unmask_details_.fido_request_options
       .FindKeyOfType("key_info", base::Value::Type::LIST)
-      ->GetList()
-      .push_back(std::move(key_info));
+      ->Append(std::move(key_info));
 }
 
 void TestPaymentsClient::SetServerIdForCardUpload(std::string server_id) {

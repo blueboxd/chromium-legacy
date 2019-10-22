@@ -850,6 +850,7 @@ void ShelfLayoutManager::OnHomeLauncherTargetPositionChanged(
     return;
   }
 
+  home_launcher_animation_state_ = new_animation_state;
   UpdateVisibilityState();
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }

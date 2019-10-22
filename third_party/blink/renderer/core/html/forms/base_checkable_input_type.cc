@@ -42,8 +42,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 void BaseCheckableInputType::Trace(Visitor* visitor) {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
@@ -97,7 +95,7 @@ void BaseCheckableInputType::AccessKeyAction(bool send_mouse_events) {
 }
 
 bool BaseCheckableInputType::MatchesDefaultPseudoClass() {
-  return GetElement().FastHasAttribute(kCheckedAttr);
+  return GetElement().FastHasAttribute(html_names::kCheckedAttr);
 }
 
 InputType::ValueMode BaseCheckableInputType::GetValueMode() const {
@@ -108,7 +106,8 @@ void BaseCheckableInputType::SetValue(const String& sanitized_value,
                                       bool,
                                       TextFieldEventBehavior,
                                       TextControlSetValueSelection) {
-  GetElement().setAttribute(kValueAttr, AtomicString(sanitized_value));
+  GetElement().setAttribute(html_names::kValueAttr,
+                            AtomicString(sanitized_value));
 }
 
 void BaseCheckableInputType::ReadingChecked() const {

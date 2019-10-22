@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
@@ -170,6 +171,28 @@ class ExtensionAppsEnableFlow : public ExtensionEnableFlowDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppsEnableFlow);
 };
+
+void ExtensionApps::RecordUninstallCanceledAction(Profile* profile,
+                                                  const std::string& app_id) {
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+          app_id);
+  if (!extension) {
+    return;
+  }
+
+  if (extension->from_bookmark()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Webapp.UninstallDialogAction",
+        extensions::ExtensionUninstallDialog::CLOSE_ACTION_CANCELED,
+        extensions::ExtensionUninstallDialog::CLOSE_ACTION_LAST);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.UninstallDialogAction",
+        extensions::ExtensionUninstallDialog::CLOSE_ACTION_CANCELED,
+        extensions::ExtensionUninstallDialog::CLOSE_ACTION_LAST);
+  }
+}
 
 ExtensionApps::ExtensionApps(
     const mojo::Remote<apps::mojom::AppService>& app_service,
@@ -436,15 +459,24 @@ void ExtensionApps::Uninstall(const std::string& app_id,
   base::string16 error;
   extensions::ExtensionSystem::Get(profile_)
       ->extension_service()
-      ->UninstallExtension(
-          app_id, extensions::UninstallReason::UNINSTALL_REASON_USER_INITIATED,
-          &error);
-
-  if (!clear_site_data) {
-    return;
-  }
+      ->UninstallExtension(app_id, extensions::UNINSTALL_REASON_USER_INITIATED,
+                           &error);
 
   if (extension->from_bookmark()) {
+    if (!clear_site_data) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Webapp.UninstallDialogAction",
+          extensions::ExtensionUninstallDialog::CLOSE_ACTION_UNINSTALL,
+          extensions::ExtensionUninstallDialog::CLOSE_ACTION_LAST);
+      return;
+    }
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "Webapp.UninstallDialogAction",
+        extensions::ExtensionUninstallDialog::
+            CLOSE_ACTION_UNINSTALL_AND_CHECKBOX_CHECKED,
+        extensions::ExtensionUninstallDialog::CLOSE_ACTION_LAST);
+
     constexpr bool kClearCookies = true;
     constexpr bool kClearStorage = true;
     constexpr bool kClearCache = true;
@@ -460,6 +492,20 @@ void ExtensionApps::Uninstall(const std::string& app_id,
         kClearCookies, kClearStorage, kClearCache, kAvoidClosingConnections,
         base::DoNothing());
   } else {
+    if (!report_abuse) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.UninstallDialogAction",
+          extensions::ExtensionUninstallDialog::CLOSE_ACTION_UNINSTALL,
+          extensions::ExtensionUninstallDialog::CLOSE_ACTION_LAST);
+      return;
+    }
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.UninstallDialogAction",
+        extensions::ExtensionUninstallDialog::
+            CLOSE_ACTION_UNINSTALL_AND_CHECKBOX_CHECKED,
+        extensions::ExtensionUninstallDialog::CLOSE_ACTION_LAST);
+
     // If the extension specifies a custom uninstall page via
     // chrome.runtime.setUninstallURL, then at uninstallation its uninstall
     // page opens. To ensure that the CWS Report Abuse page is the active

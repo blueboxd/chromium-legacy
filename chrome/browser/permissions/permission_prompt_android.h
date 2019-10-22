@@ -13,13 +13,18 @@
 #include "chrome/browser/permissions/permission_request_notification_android.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/infobars/core/infobar_manager.h"
 
 namespace content {
 class WebContents;
 }
+namespace infobars {
+class InfoBar;
+}
 class PermissionRequestNotificationAndroid;
 
-class PermissionPromptAndroid : public PermissionPrompt {
+class PermissionPromptAndroid : public PermissionPrompt,
+                                public infobars::InfoBarManager::Observer {
  public:
   PermissionPromptAndroid(content::WebContents* web_contents,
                           Delegate* delegate);
@@ -42,6 +47,9 @@ class PermissionPromptAndroid : public PermissionPrompt {
   base::string16 GetTitleText() const;
   base::string16 GetMessageText() const;
 
+  // InfoBar::Manager:
+  void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
+
  private:
   // PermissionPromptAndroid is owned by PermissionRequestManager, so it should
   // be safe to hold a raw WebContents pointer here because this class is
@@ -54,6 +62,10 @@ class PermissionPromptAndroid : public PermissionPrompt {
   // request, if displayed in that format.
   std::unique_ptr<PermissionRequestNotificationAndroid>
       permission_request_notification_;
+
+  // The infobar used to display the permission request, if displayed in that
+  // format. Never assume that this pointer is currently alive.
+  infobars::InfoBar* permission_infobar_;
 
   base::WeakPtrFactory<PermissionPromptAndroid> weak_factory_{this};
 

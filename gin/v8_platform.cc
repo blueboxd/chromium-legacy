@@ -440,25 +440,6 @@ void V8Platform::CallDelayedOnWorkerThread(std::unique_ptr<v8::Task> task,
                         base::TimeDelta::FromSecondsD(delay_in_seconds));
 }
 
-void V8Platform::CallOnForegroundThread(v8::Isolate* isolate, v8::Task* task) {
-  PerIsolateData* data = PerIsolateData::From(isolate);
-  data->task_runner()->PostTask(std::unique_ptr<v8::Task>(task));
-}
-
-void V8Platform::CallDelayedOnForegroundThread(v8::Isolate* isolate,
-                                               v8::Task* task,
-                                               double delay_in_seconds) {
-  PerIsolateData* data = PerIsolateData::From(isolate);
-  data->task_runner()->PostDelayedTask(std::unique_ptr<v8::Task>(task),
-                                       delay_in_seconds);
-}
-
-void V8Platform::CallIdleOnForegroundThread(v8::Isolate* isolate,
-                                            v8::IdleTask* task) {
-  PerIsolateData* data = PerIsolateData::From(isolate);
-  data->task_runner()->PostIdleTask(std::unique_ptr<v8::IdleTask>(task));
-}
-
 bool V8Platform::IdleTasksEnabled(v8::Isolate* isolate) {
   return PerIsolateData::From(isolate)->task_runner()->IdleTasksEnabled();
 }

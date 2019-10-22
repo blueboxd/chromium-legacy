@@ -904,8 +904,6 @@ class CORE_EXPORT LocalFrameView final
   bool frame_timing_requests_dirty_;
 
   // Exists only on root frame.
-  // TODO(bokan): crbug.com/484188. We should specialize LocalFrameView for the
-  // main frame.
   Member<RootFrameViewport> viewport_scrollable_area_;
 
   // Non-top-level frames a throttled until they are ready to run lifecycle

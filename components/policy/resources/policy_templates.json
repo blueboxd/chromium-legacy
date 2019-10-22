@@ -2771,7 +2771,7 @@
       'id': 19,
       'caption': '''Specify a list of disabled plugins''',
       'tags': [],
-      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> to control the availability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -2802,7 +2802,7 @@
       'id': 78,
       'caption': '''Specify a list of enabled plugins''',
       'tags': ['system-security'],
-      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> to control the availability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that are enabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -2833,7 +2833,7 @@
       'id': 79,
       'caption': '''Specify a list of plugins that the user can enable or disable''',
       'tags': [],
-      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME">DefaultPluginsSetting</ph> to control the availability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME">AlwaysOpenPdfExternally</ph> to control whether the integrated PDF viewer should be used for opening PDF files.
 
       Specifies a list of plugins that user can enable or disable in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -14348,7 +14348,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:65-'],
+      'supported_on': ['chrome.*:65-79'],
       'device_only': False,
       'features': {
         'dynamic_refresh': False,
@@ -14358,7 +14358,11 @@
       'id': 414,
       'caption': '''Allow WebDriver to Override Incompatible Policies''',
       'tags': ['system-security'],
-      'desc': '''This policy allows users of the WebDriver feature to override
+      'desc': '''
+      This policy was removed in M80, because it is not necessary anymore as
+      WebDriver is now compatible with all existing policies.
+
+      This policy allows users of the WebDriver feature to override
       policies which can interfere with its operation.
 
       Currently this policy disables SitePerProcess and IsolateOrigins policies.
@@ -14638,7 +14642,7 @@
       'id': 410,
       'caption': '''Restrict accounts that are visible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
-      'desc': '''Contains a list of patterns which are used to control the visiblity of accounts in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Contains a list of patterns which are used to control the visibility of accounts in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       Each Google account on the device will be compared to patterns stored in this policy to determine the account visibility in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The account will be visible if its name matches any pattern on the list. Otherwise, the account will be hidden.
 
@@ -18507,7 +18511,7 @@
       'tags': [],
       'desc': '''Use the legacy <ph name="CORS">CORS</ph> implementation rather than new <ph name="CORS">CORS</ph>.
 
-      If this setting is set to True, the legacy implementation is used that should be compatibile with previous versions.
+      If this setting is set to True, the legacy implementation is used that should be compatible with previous versions.
 
       If this setting is set to False, or is not set, the new implementation is used that might cause enterprise specific compatibility issues potentially.
 

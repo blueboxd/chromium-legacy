@@ -1131,7 +1131,12 @@
   {
     "name": "enable-cros-ime-input-logic-fst",
     "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 80
+  },
+  {
+    "name": "enable-cros-ime-native-decoder",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-cssom-view-scroll-coordinates",
@@ -1268,7 +1273,7 @@
   {
     "name": "enable-experimental-kernel-vm-support",
     "owners": [ "jflat", "zwisler" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "enable-experimental-productivity-features",
@@ -1451,6 +1456,11 @@
     "name": "enable-md-rounded-corners-on-dialogs",
     "owners": ["bsep", "sajadm"],
     "expiry_milestone": 78
+  },
+  {
+    "name": "enable-media-internals-devtools",
+    "owners": ["tmathmeyer"],
+    "expiry_milestone": 82
   },
   {
     "name": "enable-media-session-notifications",

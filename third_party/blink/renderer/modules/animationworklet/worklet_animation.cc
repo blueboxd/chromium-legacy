@@ -161,12 +161,9 @@ base::Optional<base::TimeDelta> CalculateStartTime(
     base::TimeDelta current_time,
     double playback_rate,
     AnimationTimeline& timeline) {
-  bool is_null;
-  double time_ms = timeline.currentTime(is_null);
-  DCHECK(!is_null);
-
-  auto timeline_time = base::TimeDelta::FromMillisecondsD(time_ms);
-  return timeline_time - (current_time / playback_rate);
+  base::Optional<double> timeline_current_time_ms = timeline.CurrentTime();
+  return base::TimeDelta::FromMillisecondsD(timeline_current_time_ms.value()) -
+         (current_time / playback_rate);
 }
 }  // namespace
 
@@ -711,8 +708,7 @@ bool WorkletAnimation::IsCurrentTimeInitialized() const {
 // zero (i.e., scroll origin) and the current time corresponding to the current
 // scroll position adjusted by the playback rate.
 //
-// Changing scroll-linked animation start_time initialization is under
-// consideration here: https://github.com/w3c/csswg-drafts/issues/2075.
+// More information at AnimationTimeline::InitialStartTimeForAnimations
 //
 // TODO(https://crbug.com/986925): The playback rate should be taken into
 // consideration when calculating the initial current time.
@@ -722,16 +718,17 @@ base::Optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
       !IsTimelineActive())
     return base::nullopt;
 
-  if (timeline_->IsScrollTimeline()) {
-    bool is_null;
-    double timeline_time_ms = timeline_->currentTime(is_null);
-    if (is_null)
-      return base::nullopt;
+  base::Optional<base::TimeDelta> starting_time =
+      timeline_->InitialStartTimeForAnimations();
+  base::Optional<double> current_time = timeline_->CurrentTime();
 
-    return base::TimeDelta::FromMillisecondsD(timeline_time_ms) *
-           playback_rate_;
+  if (!starting_time || !current_time) {
+    return base::nullopt;
   }
-  return base::TimeDelta();
+
+  return (base::TimeDelta::FromMillisecondsD(current_time.value()) -
+          starting_time.value()) *
+         playback_rate_;
 }
 
 void WorkletAnimation::UpdateCurrentTimeIfNeeded() {

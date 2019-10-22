@@ -1147,13 +1147,7 @@
   },
 
   "WebDriverOverridesIncompatiblePolicies": {
-    "os": ["win", "linux", "mac"],
-    "test_policy": { "WebDriverOverridesIncompatiblePolicies": true },
-    "pref_mappings": [
-      { "pref": "webdriver.override_incompatible_policy",
-        "local_state": true
-      }
-    ]
+    "note": "This policy has been removed since Chrome 79."
   },
 
   "DefaultDownloadDirectory": {

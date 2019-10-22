@@ -46,8 +46,6 @@ bool IsDefaultPortForProtocol(uint16_t port, const WTF::String& protocol) {
       return protocol == "ftp";
     case 990:
       return protocol == "ftps";
-    case 70:
-      return protocol == "gopher";
   }
   return false;
 }
@@ -61,8 +59,6 @@ uint16_t DefaultPortForProtocol(const WTF::String& protocol) {
     return 21;
   if (protocol == "ftps")
     return 990;
-  if (protocol == "gopher")
-    return 70;
 
   return 0;
 }

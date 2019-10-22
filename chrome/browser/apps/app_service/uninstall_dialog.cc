@@ -4,8 +4,14 @@
 
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/cpp/icon_loader.h"
+#include "extensions/browser/uninstall_reason.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/apps/app_service/extension_apps.h"
+#endif  // OS_CHROMEOS
 
 namespace {
 
@@ -43,6 +49,9 @@ UninstallDialog::UninstallDialog(Profile* profile,
       break;
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
+      UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallSource",
+                                extensions::UNINSTALL_SOURCE_APP_LIST,
+                                extensions::NUM_UNINSTALL_SOURCES);
       size_hint_in_dip = kUninstallIconSize;
       break;
     default:
@@ -63,6 +72,13 @@ UninstallDialog::~UninstallDialog() = default;
 void UninstallDialog::OnDialogClosed(bool uninstall,
                                      bool clear_site_data,
                                      bool report_abuse) {
+#if defined(OS_CHROMEOS)
+  if (!uninstall && (app_type_ == apps::mojom::AppType::kExtension ||
+                     app_type_ == apps::mojom::AppType::kWeb)) {
+    ExtensionApps::RecordUninstallCanceledAction(profile_, app_id_);
+  }
+#endif  // OS_CHROMEOS
+
   std::move(uninstall_callback_)
       .Run(uninstall, clear_site_data, report_abuse, this);
 }

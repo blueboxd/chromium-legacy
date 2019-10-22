@@ -31,7 +31,8 @@ TestSynchronousCompositor::DemandDrawHwAsync(
     const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
-  auto future = base::MakeRefCounted<FrameFuture>();
+  auto future = base::MakeRefCounted<FrameFuture>(
+      viz::LocalSurfaceId(1, base::UnguessableToken::Create()));
   future->SetFrame(std::move(hardware_frame_));
   return future;
 }

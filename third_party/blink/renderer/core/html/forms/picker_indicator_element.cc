@@ -43,15 +43,13 @@
 
 namespace blink {
 
-using namespace html_names;
-
 PickerIndicatorElement::PickerIndicatorElement(
     Document& document,
     PickerIndicatorOwner& picker_indicator_owner)
     : HTMLDivElement(document),
       picker_indicator_owner_(&picker_indicator_owner) {
   SetShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
-  setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
+  setAttribute(html_names::kIdAttr, shadow_element_names::PickerIndicator());
 }
 
 PickerIndicatorElement::~PickerIndicatorElement() {
@@ -165,11 +163,11 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
   // FIXME: We should have a way to disable accessibility in web tests.
   if (WebTestSupport::IsRunningWebTest())
     return;
-  setAttribute(kTabindexAttr, "0");
-  setAttribute(kAriaHaspopupAttr, "menu");
-  setAttribute(kRoleAttr, "button");
+  setAttribute(html_names::kTabindexAttr, "0");
+  setAttribute(html_names::kAriaHaspopupAttr, "menu");
+  setAttribute(html_names::kRoleAttr, "button");
   setAttribute(
-      kAriaLabelAttr,
+      html_names::kAriaLabelAttr,
       AtomicString(GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_DATE_PICKER)));
 }
 

@@ -274,8 +274,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     key_info.SetKey("credential_id", base::Value(kCredentialId));
     request_options.SetKey("key_info", base::Value(base::Value::Type::LIST));
     request_options.FindKeyOfType("key_info", base::Value::Type::LIST)
-        ->GetList()
-        .push_back(std::move(key_info));
+        ->Append(std::move(key_info));
     return request_options;
   }
 

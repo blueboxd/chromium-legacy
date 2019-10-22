@@ -16,6 +16,7 @@
 namespace blink {
 
 class DOMArrayBuffer;
+class DOMDataView;
 class ExceptionState;
 class NDEFRecordInit;
 class ScriptState;
@@ -37,20 +38,23 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
 
   const String& recordType() const;
   const String& mediaType() const;
+  const String& id() const;
+  DOMDataView* data() const;
   String text() const;
   DOMArrayBuffer* arrayBuffer() const;
   ScriptValue json(ScriptState*, ExceptionState&) const;
 
-  const WTF::Vector<uint8_t>& data() const;
+  const WTF::Vector<uint8_t>& payloadData() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
   String record_type_;
   String media_type_;
+  String id_;
   // Holds the NDEFRecord.[[PayloadData]] bytes defined at
   // https://w3c.github.io/web-nfc/#the-ndefrecord-interface.
-  WTF::Vector<uint8_t> data_;
+  WTF::Vector<uint8_t> payload_data_;
 };
 
 }  // namespace blink

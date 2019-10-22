@@ -767,6 +767,9 @@ extern const char kMarkHttpAsWarning[];
 extern const char kMarkHttpAsWarningAndDangerousOnFormEdits[];
 extern const char kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards[];
 
+extern const char kMediaInspectorLoggingName[];
+extern const char kMediaInspectorLoggingDescription[];
+
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
@@ -1278,9 +1281,6 @@ extern const char kUnsafeWebGPUDescription[];
 
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
-
-extern const char kUsePdfCompositorServiceName[];
-extern const char kUsePdfCompositorServiceDescription[];
 
 extern const char kUserActivationV2Name[];
 extern const char kUserActivationV2Description[];
@@ -2111,6 +2111,9 @@ extern const char kHideArcMediaNotificationsDescription[];
 
 extern const char kImeInputLogicFstName[];
 extern const char kImeInputLogicFstDescription[];
+
+extern const char kImeNativeDecoderName[];
+extern const char kImeNativeDecoderDescription[];
 
 extern const char kListAllDisplayModesName[];
 extern const char kListAllDisplayModesDescription[];

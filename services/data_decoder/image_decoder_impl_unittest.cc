@@ -81,7 +81,6 @@ class BlinkInitializer : public blink::Platform {
   BlinkInitializer() {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
-    gin::V8Initializer::LoadV8Natives();
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
     service_manager::BinderRegistry empty_registry;

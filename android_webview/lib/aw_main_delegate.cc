@@ -141,9 +141,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     ui::GestureConfiguration::GetInstance()
         ->set_fling_touchscreen_tap_suppression_enabled(false);
 
-    base::android::RegisterApkAssetWithFileDescriptorStore(
-        content::kV8NativesDataDescriptor,
-        gin::V8Initializer::GetNativesFilePath());
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
     gin::V8Initializer::V8SnapshotFileType file_type =
         gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;

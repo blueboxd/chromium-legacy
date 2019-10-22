@@ -114,31 +114,61 @@ id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
 #pragma mark - Test that all fields on the 'Add Credit Card' screen appear
 
 // Tests that 'Name on Card' field appears on screen.
+// TODO(crbug.com/1016353): Test disabled on iOS 13 iPhone.
 - (void)testNameOnCardFieldIsPresent {
+#if TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails iPhone 7 13.0");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
   [[EarlGrey selectElementWithMatcher:NameOnCardField()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that 'Card Number' field appears on screen.
+// TODO(crbug.com/1016353): Test disabled on iOS 13 iPhone.
 - (void)testCardNumberFieldIsPresent {
+#if TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails iPhone 7 13.0");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
   [[EarlGrey selectElementWithMatcher:CardNumberField()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that 'Month of Expiry' field appears on screen.
+// TODO(crbug.com/1016353): Test disabled on iOS 13 iPhone.
 - (void)testMonthOfExpiryFieldIsPresent {
+#if TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails iPhone 7 13.0");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
   [[EarlGrey selectElementWithMatcher:MonthOfExpiryField()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that 'Year of Expiry' field appears on screen.
+// TODO(crbug.com/1016353): Test disabled on iOS 13 iPhone.
 - (void)testYearOfExpiryFieldIsPresent {
+#if TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails iPhone 7 13.0");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
   [[EarlGrey selectElementWithMatcher:YearOfExpiryField()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that 'Use Camera' button appears on screen only for iOS 13.
+// TODO(crbug.com/1016353): Test disabled on iOS 13 iPhone.
 - (void)testUseCameraButtonIsPresent {
+#if TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails iPhone 7 13.0");
+  }
+#endif  // TARGET_IPHONE_SIMULATOR
   if (@available(iOS 13, *)) {
     [[EarlGrey selectElementWithMatcher:UseCameraButton()]
         assertWithMatcher:grey_sufficientlyVisible()];

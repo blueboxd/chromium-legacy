@@ -1268,6 +1268,13 @@ const char kLookalikeUrlNavigationSuggestionsDescription[] =
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 
+extern const char kMediaInspectorLoggingName[] =
+    "Enable media log in developer tools";
+extern const char kMediaInspectorLoggingDescription[] =
+    "Move media logging from chrome://media-internals into the developer tools "
+    "project; #enable-devtools-experiments must also be enabled as well on "
+    "desktop platforms";
+
 const char kMediaRouterCastAllowAllIPsName[] =
     "Connect to Cast devices on all IP addresses";
 const char kMediaRouterCastAllowAllIPsDescription[] =
@@ -2179,14 +2186,6 @@ const char kUnsafeWebGPUDescription[] =
 
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
-
-const char kUsePdfCompositorServiceName[] =
-    "Use PDF compositor service for printing";
-const char kUsePdfCompositorServiceDescription[] =
-    "When enabled, use PDF compositor service to composite and generate PDF "
-    "files for printing. When site isolation is enabled, disabling this will "
-    "not stop using PDF compositor service since the service is required for "
-    "printing out-of-process iframes correctly.";
 
 const char kUserActivationV2Name[] = "User Activation v2";
 const char kUserActivationV2Description[] =
@@ -3554,6 +3553,10 @@ const char kHideArcMediaNotificationsDescription[] =
 const char kImeInputLogicFstName[] = "Enable FST Input Logic on IME";
 const char kImeInputLogicFstDescription[] =
     "Enable FST Input Logic to replace the IME legacy input logic on NaCl";
+
+const char kImeNativeDecoderName[] = "Enable native decoders in IME Service";
+const char kImeNativeDecoderDescription[] =
+    "Enable native decoders in IME service to deprecate NaCl decoders";
 
 const char kListAllDisplayModesName[] = "List all display modes";
 const char kListAllDisplayModesDescription[] =

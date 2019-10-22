@@ -35996,8 +35996,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
   <int value="-1190174011" label="enable-hdr"/>
+  <int value="-1185477291" label="ImeDecoderWithSandbox:enabled"/>
   <int value="-1184904651" label="enable-npapi"/>
   <int value="-1184480269" label="LsdPermissionPrompt:enabled"/>
+  <int value="-1183321008" label="ImeDecoderWithSandbox:disabled"/>
   <int value="-1183009666" label="OfflinePagesLimitlessPrefetching:disabled"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
   <int value="-1176748003"
@@ -36880,6 +36882,7 @@ from previous Chrome versions.
   <int value="-41672681" label="WebUITabStripDemoOptions:disabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-35388407" label="AshNewSystemMenu:disabled"/>
+  <int value="-31444029" label="MediaInspectorLogging:disabled"/>
   <int value="-30966385" label="enable-hardware-overlays"/>
   <int value="-29877377" label="TabHoverCardImages:disabled"/>
   <int value="-29847483" label="MemoryAblation:enabled"/>
@@ -37734,6 +37737,7 @@ from previous Chrome versions.
   <int value="1127427821" label="OmniboxEntitySuggestions:disabled"/>
   <int value="1129542111" label="CastAllowAllIPs:disabled"/>
   <int value="1129888794" label="ash-touch-hud"/>
+  <int value="1133207726" label="MediaInspectorLogging:enabled"/>
   <int value="1133635187" label="force-gpu-rasterization"/>
   <int value="1138349838" label="EnableMDRoundedCornersOnDialogs:disabled"/>
   <int value="1139226452" label="enable-nacl-debug"/>

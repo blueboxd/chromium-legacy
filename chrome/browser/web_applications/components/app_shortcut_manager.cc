@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 
 #include "base/callback.h"
+#include "chrome/browser/web_applications/components/app_shortcut_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -37,6 +38,14 @@ void AppShortcutManager::SetSubsystems(AppRegistrar* registrar) {
   registrar_ = registrar;
 }
 
+void AppShortcutManager::AddObserver(AppShortcutObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AppShortcutManager::RemoveObserver(AppShortcutObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 bool AppShortcutManager::CanCreateShortcuts() const {
 #if defined(OS_CHROMEOS)
   return false;
@@ -48,10 +57,25 @@ bool AppShortcutManager::CanCreateShortcuts() const {
 void AppShortcutManager::CreateShortcuts(const AppId& app_id,
                                          bool add_to_desktop,
                                          CreateShortcutsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(CanCreateShortcuts());
-  GetShortcutInfoForApp(app_id,
-                        base::BindOnce(&OnShortcutInfoRetrievedCreateShortcuts,
-                                       add_to_desktop, std::move(callback)));
+  GetShortcutInfoForApp(
+      app_id,
+      base::BindOnce(&OnShortcutInfoRetrievedCreateShortcuts, add_to_desktop,
+                     base::BindOnce(&AppShortcutManager::OnShortcutsCreated,
+                                    weak_ptr_factory_.GetWeakPtr(), app_id,
+                                    std::move(callback))));
+}
+
+void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,
+                                            CreateShortcutsCallback callback,
+                                            bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (success) {
+    for (auto& observer : observers_)
+      observer.OnShortcutsCreated(app_id);
+  }
+  std::move(callback).Run(success);
 }
 
 }  // namespace web_app

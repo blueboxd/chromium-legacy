@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "android_webview/browser/gfx/child_frame.h"
+#include "android_webview/browser/gfx/output_surface_provider_webview.h"
 #include "base/macros.h"
 #include "ui/gfx/color_space.h"
 

@@ -6,12 +6,10 @@
 
 typedef DOMString NDEFRecordType;
 
-typedef any NDEFRecordData;
-
 // https://w3c.github.io/web-nfc/#dom-ndefrecordinit
 
 dictionary NDEFRecordInit {
     NDEFRecordType recordType;
     USVString mediaType;
-    NDEFRecordData data;
+    any data;
 };

@@ -254,7 +254,8 @@ void ThumbnailTabHelper::OnFrameCaptured(
     base::ReadOnlySharedMemoryMapping mapping;
     // Prevents FrameSinkVideoCapturer from recycling the shared memory that
     // backs |frame_|.
-    mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> releaser;
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+        releaser;
   };
 
   content::RenderWidgetHostView* const source_view = GetView();
@@ -289,7 +290,7 @@ void ThumbnailTabHelper::OnFrameCaptured(
       [](void* addr, void* context) {
         delete static_cast<FramePinner*>(context);
       },
-      new FramePinner{std::move(mapping), std::move(callbacks_remote)});
+      new FramePinner{std::move(mapping), callbacks_remote.Unbind()});
   frame.setImmutable();
 
   SkBitmap cropped_frame;

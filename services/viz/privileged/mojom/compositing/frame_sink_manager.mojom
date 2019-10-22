@@ -122,7 +122,7 @@ interface FrameSinkManager {
   AddVideoDetectorObserver(VideoDetectorObserver observer);
 
   // Creates a FrameSinkVideoCapturer instance.
-  CreateVideoCapturer(FrameSinkVideoCapturer& request);
+  CreateVideoCapturer(pending_receiver<FrameSinkVideoCapturer> receiver);
 
   // Marks the given SurfaceIds for destruction.
   EvictSurfaces(array<SurfaceId> surface_ids);

@@ -36,15 +36,13 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLButtonElement::HTMLButtonElement(Document& document)
-    : HTMLFormControlElement(kButtonTag, document),
+    : HTMLFormControlElement(html_names::kButtonTag, document),
       type_(SUBMIT),
       is_activated_submit_(false) {}
 
 void HTMLButtonElement::setType(const AtomicString& type) {
-  setAttribute(kTypeAttr, type);
+  setAttribute(html_names::kTypeAttr, type);
 }
 
 LayoutObject* HTMLButtonElement::CreateLayoutObject(const ComputedStyle&,
@@ -74,7 +72,7 @@ const AtomicString& HTMLButtonElement::FormControlType() const {
 
 bool HTMLButtonElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == kAlignAttr) {
+  if (name == html_names::kAlignAttr) {
     // Don't map 'align' attribute.  This matches what Firefox and IE do, but
     // not Opera.  See http://bugs.webkit.org/show_bug.cgi?id=12071
     return false;
@@ -85,7 +83,7 @@ bool HTMLButtonElement::IsPresentationAttribute(
 
 void HTMLButtonElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kTypeAttr) {
+  if (params.name == html_names::kTypeAttr) {
     if (DeprecatedEqualIgnoringCase(params.new_value, "reset"))
       type_ = RESET;
     else if (DeprecatedEqualIgnoringCase(params.new_value, "button"))
@@ -96,7 +94,7 @@ void HTMLButtonElement::ParseAttribute(
     if (formOwner() && isConnected())
       formOwner()->InvalidateDefaultButtonStyle();
   } else {
-    if (params.name == kFormactionAttr)
+    if (params.name == html_names::kFormactionAttr)
       LogUpdateAttributeIfIsolatedWorldAndInDocument("button", params);
     HTMLFormControlElement::ParseAttribute(params);
   }
@@ -188,12 +186,12 @@ void HTMLButtonElement::AccessKeyAction(bool send_mouse_events) {
 }
 
 bool HTMLButtonElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == kFormactionAttr ||
+  return attribute.GetName() == html_names::kFormactionAttr ||
          HTMLFormControlElement::IsURLAttribute(attribute);
 }
 
 const AtomicString& HTMLButtonElement::Value() const {
-  return getAttribute(kValueAttr);
+  return getAttribute(html_names::kValueAttr);
 }
 
 bool HTMLButtonElement::RecalcWillValidate() const {
@@ -215,8 +213,9 @@ Node::InsertionNotificationRequest HTMLButtonElement::InsertedInto(
     ContainerNode& insertion_point) {
   InsertionNotificationRequest request =
       HTMLFormControlElement::InsertedInto(insertion_point);
-  LogAddElementIfIsolatedWorldAndInDocument("button", kTypeAttr,
-                                            kFormmethodAttr, kFormactionAttr);
+  LogAddElementIfIsolatedWorldAndInDocument("button", html_names::kTypeAttr,
+                                            html_names::kFormmethodAttr,
+                                            html_names::kFormactionAttr);
   return request;
 }
 

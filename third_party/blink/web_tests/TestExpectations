@@ -260,9 +260,6 @@ crbug.com/1004650 http/tests/security/contentSecurityPolicy/frame-src-cross-orig
 
 # Display locking failures
 
-# MSAN failure
-crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
-
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
 # These tests are no longer applicable in BlinkGenPropertyTree mode.
@@ -2299,6 +2296,13 @@ crbug.com/796619 [ Win10 ] external/wpt/css/css-fonts/matching/style-ranges-over
 
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
+
+# These need a rebaseline due crbug.com/1003497 when the relevant change lands in devtools-frontend.
+crbug.com/1003497 http/tests/devtools/sources/inline-styles-scripts-locations.js [ Pass Failure ]
+crbug.com/1003497 http/tests/devtools/startup/sources/debugger/linkifier.js [ Pass Failure ]
+crbug.com/1003497 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-1.js [ Pass Failure ]
+crbug.com/1003497 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-4.js [ Pass Failure ]
+crbug.com/1003497 http/tests/devtools/startup/sources/debugger/script-formatter-console.js [ Pass Failure ]
 
 # Disabled briefly until test runner support lands.
 crbug.com/479533 accessibility/show-context-menu.html [ Skip ]

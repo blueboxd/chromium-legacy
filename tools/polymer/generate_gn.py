@@ -12,9 +12,6 @@ import sys
 
 _COMPILE_JS = '//third_party/closure_compiler/compile_js.gni'
 _POLYMERS = ['polymer.html', 'polymer-mini.html', 'polymer-micro.html']
-_WEB_ANIMATIONS_BASE = 'web-animations.html'
-_WEB_ANIMATIONS_EXTERNS = \
-    '//third_party/closure_compiler/externs/web_animations.js'
 _COMPILED_RESOURCES_TEMPLATE = '''
 # Copyright %d The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -59,11 +56,6 @@ def main(created_by, html_files):
         for html_import in sorted(imports):
             import_dir, import_base = path.split(html_import.encode('ascii'))
             if import_base in _POLYMERS:
-                continue
-
-            if import_base == _WEB_ANIMATIONS_BASE:
-                externs += '\n  externs_list = [ "%s" ]' % \
-                    _WEB_ANIMATIONS_EXTERNS
                 continue
 
             # Only exclude these after appending web animations externs.

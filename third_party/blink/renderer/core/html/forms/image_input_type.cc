@@ -43,8 +43,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 ImageInputType::ImageInputType(HTMLInputElement& element)
     : BaseButtonInputType(element), use_fallback_content_(false) {}
 
@@ -177,8 +175,8 @@ unsigned ImageInputType::Height() const {
   if (!GetElement().GetLayoutObject()) {
     // Check the attribute first for an explicit pixel value.
     unsigned height;
-    if (ParseHTMLNonNegativeInteger(GetElement().FastGetAttribute(kHeightAttr),
-                                    height))
+    if (ParseHTMLNonNegativeInteger(
+            GetElement().FastGetAttribute(html_names::kHeightAttr), height))
       return height;
 
     // If the image is available, use its height.
@@ -202,8 +200,8 @@ unsigned ImageInputType::Width() const {
   if (!GetElement().GetLayoutObject()) {
     // Check the attribute first for an explicit pixel value.
     unsigned width;
-    if (ParseHTMLNonNegativeInteger(GetElement().FastGetAttribute(kWidthAttr),
-                                    width))
+    if (ParseHTMLNonNegativeInteger(
+            GetElement().FastGetAttribute(html_names::kWidthAttr), width))
       return width;
 
     // If the image is available, use its width.
@@ -224,11 +222,12 @@ unsigned ImageInputType::Width() const {
 }
 
 bool ImageInputType::HasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == kSrcAttr || BaseButtonInputType::HasLegalLinkAttribute(name);
+  return name == html_names::kSrcAttr ||
+         BaseButtonInputType::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& ImageInputType::SubResourceAttributeName() const {
-  return kSrcAttr;
+  return html_names::kSrcAttr;
 }
 
 void ImageInputType::EnsureFallbackContent() {

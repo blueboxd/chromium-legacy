@@ -1007,16 +1007,14 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_WebM) {
                                            video_webm_codecs()));
   EXPECT_WV_SUCCESS(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
                                            vp9_profile0_codecs()));
+  EXPECT_WV_SUCCESS(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
+                                           vp9_profile2_codecs()));
   EXPECT_WV_AV1(
       IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType, av1_codecs()));
 
   // Non-video WebM codecs.
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
                                             audio_webm_codecs()));
-
-  // TODO(crbug.com/996372): Change to EXPECT_WV_SUCCESS after new CDM is in.
-  EXPECT_ANY(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
-                                    vp9_profile2_codecs()));
 
   // Invalid or non-Webm codecs.
   EXPECT_UNSUPPORTED(
@@ -1055,6 +1053,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_MP4) {
       IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType, video_mp4_codecs()));
   EXPECT_WV_SUCCESS(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
                                            vp9_profile0_codecs()));
+  EXPECT_WV_SUCCESS(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
+                                           vp9_profile2_codecs()));
   EXPECT_WV_AV1(
       IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType, av1_codecs()));
 
@@ -1067,10 +1067,6 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_MP4) {
       IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType, audio_mp4_codecs()));
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
                                             audio_mp4_flac_codecs()));
-
-  // TODO(crbug.com/996372): Change to EXPECT_WV_SUCCESS after new CDM is in.
-  EXPECT_ANY(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
-                                    vp9_profile2_codecs()));
 
   // Invalid or non-MP4 codecs.
   EXPECT_UNSUPPORTED(

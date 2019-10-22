@@ -155,8 +155,11 @@ gfx::NativeCursor MouseCursorOverlayController::GetCurrentCursorOrDefault()
 
   if (auto* window = Observer::GetTargetWindow(observer_)) {
     if (auto* host = window->GetHost()) {
-      const gfx::NativeCursor cursor = host->last_cursor();
+      gfx::NativeCursor cursor = host->last_cursor();
       if (cursor != ui::CursorType::kNull) {
+        if (cursor.device_scale_factor() < 1.0f) {
+          cursor.set_device_scale_factor(1.0f);
+        }
         return cursor;
       }
     }

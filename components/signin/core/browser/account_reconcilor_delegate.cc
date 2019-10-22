@@ -14,6 +14,10 @@ bool AccountReconcilorDelegate::IsReconcileEnabled() const {
   return false;
 }
 
+bool AccountReconcilorDelegate::IsMultiloginEndpointEnabled() const {
+  return true;
+}
+
 bool AccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return false;
 }

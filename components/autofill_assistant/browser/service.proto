@@ -908,6 +908,8 @@ message UseCreditCardProto {
       CREDIT_CARD_EXP_MONTH = 2;
       CREDIT_CARD_EXP_2_DIGIT_YEAR = 3;
       CREDIT_CARD_EXP_4_DIGIT_YEAR = 4;
+      CREDIT_CARD_CARD_HOLDER_NAME = 5;
+      CREDIT_CARD_NUMBER = 6;
     }
 
     optional CardField card_field = 1;

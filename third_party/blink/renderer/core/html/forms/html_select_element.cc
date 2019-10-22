@@ -81,15 +81,13 @@
 
 namespace blink {
 
-using namespace html_names;
-
 // Upper limit of list_items_. According to the HTML standard, options larger
 // than this limit doesn't work well because |selectedIndex| IDL attribute is
 // signed.
 static const unsigned kMaxListItems = INT_MAX;
 
 HTMLSelectElement::HTMLSelectElement(Document& document)
-    : HTMLFormControlElementWithState(kSelectTag, document),
+    : HTMLFormControlElementWithState(html_names::kSelectTag, document),
       type_ahead_(this),
       size_(0),
       last_on_change_option_(nullptr),
@@ -110,8 +108,9 @@ bool HTMLSelectElement::CanAssignToSelectSlot(const Node& node) {
   // Even if options/optgroups are not rendered as children of LayoutMenuList,
   // we still need to add them to the flat tree through slotting since we need
   // their ComputedStyle for popup rendering.
-  return node.HasTagName(kOptionTag) || node.HasTagName(kOptgroupTag) ||
-         node.HasTagName(kHrTag);
+  return node.HasTagName(html_names::kOptionTag) ||
+         node.HasTagName(html_names::kOptgroupTag) ||
+         node.HasTagName(html_names::kHrTag);
 }
 
 const AtomicString& HTMLSelectElement::FormControlType() const {
@@ -296,7 +295,7 @@ void HTMLSelectElement::SetSuggestedValue(const String& value) {
 
 bool HTMLSelectElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == kAlignAttr) {
+  if (name == html_names::kAlignAttr) {
     // Don't map 'align' attribute. This matches what Firefox, Opera and IE do.
     // See http://bugs.webkit.org/show_bug.cgi?id=12072
     return false;
@@ -307,7 +306,7 @@ bool HTMLSelectElement::IsPresentationAttribute(
 
 void HTMLSelectElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kSizeAttr) {
+  if (params.name == html_names::kSizeAttr) {
     unsigned old_size = size_;
     if (!ParseHTMLNonNegativeInteger(params.new_value, size_))
       size_ = 0;
@@ -318,9 +317,9 @@ void HTMLSelectElement::ParseAttribute(
       if (!UsesMenuList())
         SaveListboxActiveSelection();
     }
-  } else if (params.name == kMultipleAttr) {
+  } else if (params.name == html_names::kMultipleAttr) {
     ParseMultipleAttribute(params.new_value);
-  } else if (params.name == kAccesskeyAttr) {
+  } else if (params.name == html_names::kAccesskeyAttr) {
     // FIXME: ignore for the moment.
     //
   } else {
@@ -1259,7 +1258,8 @@ void HTMLSelectElement::AppendToFormData(FormData& form_data) {
 
 void HTMLSelectElement::ResetImpl() {
   for (auto* const option : GetOptionList()) {
-    option->SetSelectedState(option->FastHasAttribute(kSelectedAttr));
+    option->SetSelectedState(
+        option->FastHasAttribute(html_names::kSelectedAttr));
     option->SetDirty(false);
   }
   ResetToDefaultSelection();

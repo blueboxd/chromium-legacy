@@ -42,8 +42,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 SpinButtonElement::SpinButtonElement(Document& document,
                                      SpinButtonOwner& spin_button_owner)
     : HTMLDivElement(document),
@@ -55,7 +53,7 @@ SpinButtonElement::SpinButtonElement(Document& document,
                        this,
                        &SpinButtonElement::RepeatingTimerFired) {
   SetShadowPseudoId(AtomicString("-webkit-inner-spin-button"));
-  setAttribute(kIdAttr, shadow_element_names::SpinButton());
+  setAttribute(html_names::kIdAttr, shadow_element_names::SpinButton());
 }
 
 void SpinButtonElement::DetachLayoutTree(bool performing_reattach) {

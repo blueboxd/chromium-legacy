@@ -581,13 +581,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        Playback_VideoOnly_WebM_VP9Profile2) {
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  // TODO(crbug.com/707128): Update Widevine CDM to support VP9 profile 1/2/3.
-  if (IsWidevine(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - Widevine CDM does not support VP9 profile 2";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm");
 }
 
@@ -597,13 +590,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  // TODO(crbug.com/707128): Update Widevine CDM to support VP9 profile 1/2/3.
-  if (IsWidevine(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - Widevine CDM does not support VP9 profile 2";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4");
 }
 

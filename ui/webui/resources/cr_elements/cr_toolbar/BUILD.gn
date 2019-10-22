@@ -26,7 +26,6 @@ js_library("cr_toolbar") {
   deps = [
     ":cr_toolbar_search_field",
   ]
-  externs_list = [ "$externs_path/web_animations.js" ]
 }
 
 polymer_modulizer("cr_toolbar") {

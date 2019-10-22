@@ -54,12 +54,12 @@ class StructuredHeaderParser {
   base::Optional<ListOfLists> ReadListOfLists() {
     ListOfLists result;
     while (true) {
-      std::vector<std::string> inner_list;
+      std::vector<Item> inner_list;
       while (true) {
-        base::Optional<std::string> item = ReadItem();
+        base::Optional<Item> item(ReadItem());
         if (!item)
           return base::nullopt;
-        inner_list.push_back(*item);
+        inner_list.push_back(std::move(*item));
         SkipWhitespaces();
         if (!ConsumeChar(';'))
           break;
@@ -76,12 +76,9 @@ class StructuredHeaderParser {
 
   // Parses an Item ([SH] 4.2.7).
   // Currently only limited types (non-negative integers, strings, tokens and
-  // byte sequences) are supported, and all types are returned as a string
-  // regardless of the item type. E.g. both 123 (number) and "123" (string) are
-  // returned as "123".
-  // TODO(1011101): Add support for other types, and return a value with type
-  // info.
-  base::Optional<std::string> ReadItem() {
+  // byte sequences) are supported.
+  // TODO(1011101): Add support for other types.
+  base::Optional<Item> ReadItem() {
     if (input_.empty()) {
       DVLOG(1) << "ReadItem: unexpected EOF";
       return base::nullopt;
@@ -118,7 +115,7 @@ class StructuredHeaderParser {
  private:
   // Parses a Parameterised Identifier ([SH] 4.2.6).
   base::Optional<ParameterisedIdentifier> ReadParameterisedIdentifier() {
-    base::Optional<std::string> primary_identifier = ReadToken();
+    base::Optional<Item> primary_identifier = ReadToken();
     if (!primary_identifier)
       return base::nullopt;
 
@@ -132,12 +129,12 @@ class StructuredHeaderParser {
       if (!name)
         return base::nullopt;
 
-      std::string value;
+      Item value;
       if (ConsumeChar('=')) {
         auto item = ReadItem();
         if (!item)
           return base::nullopt;
-        value = *item;
+        value = std::move(*item);
       }
       if (!parameters.emplace(*name, value).second) {
         DVLOG(1) << "ReadParameterisedIdentifier: duplicated parameter: "
@@ -146,7 +143,8 @@ class StructuredHeaderParser {
       }
       SkipWhitespaces();
     }
-    return ParameterisedIdentifier(*primary_identifier, std::move(parameters));
+    return ParameterisedIdentifier(std::move(*primary_identifier),
+                                   std::move(parameters));
   }
 
   // Parses a Key ([SH] 4.2.2).
@@ -164,7 +162,7 @@ class StructuredHeaderParser {
   }
 
   // Parses a Token ([SH] 4.2.10).
-  base::Optional<std::string> ReadToken() {
+  base::Optional<Item> ReadToken() {
     if (input_.empty() || !base::IsAsciiAlpha(input_.front())) {
       LogParseError("ReadToken", "ALPHA");
       return base::nullopt;
@@ -174,12 +172,12 @@ class StructuredHeaderParser {
       len = input_.size();
     std::string token(input_.substr(0, len));
     input_.remove_prefix(len);
-    return token;
+    return Item(std::move(token), Item::kTokenType);
   }
 
   // Parses a Number ([SH] 4.2.8).
   // Currently only supports non-negative integers.
-  base::Optional<std::string> ReadNumber() {
+  base::Optional<Item> ReadNumber() {
     size_t i = 0;
     for (; i < input_.size(); ++i) {
       if (!base::IsAsciiDigit(input_[i]))
@@ -192,15 +190,16 @@ class StructuredHeaderParser {
     std::string output_number_string(input_.substr(0, i));
     input_.remove_prefix(i);
 
-    // Check if it fits in a 64-bit signed integer.
+    // Convert to a 64-bit signed integer, and return if the conversion is
+    // successful.
     int64_t n;
     if (!base::StringToInt64(output_number_string, &n))
       return base::nullopt;
-    return output_number_string;
+    return Item(n);
   }
 
   // Parses a String ([SH] 4.2.9).
-  base::Optional<std::string> ReadString() {
+  base::Optional<Item> ReadString() {
     std::string s;
     if (!ConsumeChar('"')) {
       LogParseError("ReadString", "'\"'");
@@ -239,7 +238,7 @@ class StructuredHeaderParser {
   }
 
   // Parses a Byte Sequence ([SH] 4.2.11).
-  base::Optional<std::string> ReadByteSequence() {
+  base::Optional<Item> ReadByteSequence() {
     if (!ConsumeChar('*')) {
       LogParseError("ReadByteSequence", "'*'");
       return base::nullopt;
@@ -260,7 +259,7 @@ class StructuredHeaderParser {
     }
     input_.remove_prefix(len);
     ConsumeChar('*');
-    return binary;
+    return Item(std::move(binary), Item::kByteSequenceType);
   }
 
   void SkipWhitespaces() {
@@ -287,18 +286,45 @@ class StructuredHeaderParser {
 
 }  // namespace
 
+Item::Item() {}
+Item::Item(const std::string& value, Item::ItemType type)
+    : type_(type), string_value_(value) {}
+Item::Item(std::string&& value, Item::ItemType type)
+    : type_(type), string_value_(std::move(value)) {
+  DCHECK(type_ == kStringType || type_ == kTokenType ||
+         type_ == kByteSequenceType);
+}
+Item::Item(int64_t value) : type_(kIntegerType), integer_value_(value) {}
+
+bool operator==(const Item& lhs, const Item& rhs) {
+  if (lhs.type_ != rhs.type_)
+    return false;
+  switch (lhs.type_) {
+    case Item::kNullType:
+      return true;
+    case Item::kStringType:
+    case Item::kTokenType:
+    case Item::kByteSequenceType:
+      return lhs.string_value_ == rhs.string_value_;
+    case Item::kIntegerType:
+      return lhs.integer_value_ == rhs.integer_value_;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 ParameterisedIdentifier::ParameterisedIdentifier(
     const ParameterisedIdentifier&) = default;
 ParameterisedIdentifier& ParameterisedIdentifier::operator=(
     const ParameterisedIdentifier&) = default;
-ParameterisedIdentifier::ParameterisedIdentifier(const std::string& id,
-                                                 const Parameters& ps)
-    : identifier(id), params(ps) {}
+ParameterisedIdentifier::ParameterisedIdentifier(Item id, const Parameters& ps)
+    : identifier(std::move(id)), params(ps) {}
 ParameterisedIdentifier::~ParameterisedIdentifier() = default;
 
-base::Optional<std::string> ParseItem(const base::StringPiece& str) {
+base::Optional<Item> ParseItem(const base::StringPiece& str) {
   StructuredHeaderParser parser(str);
-  base::Optional<std::string> item = parser.ReadItem();
+  base::Optional<Item> item = parser.ReadItem();
   if (item && parser.FinishParsing())
     return item;
   return base::nullopt;

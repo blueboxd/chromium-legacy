@@ -42,8 +42,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 void HiddenInputType::CountUsage() {
   UseCounter::Count(GetElement().GetDocument(), WebFeature::kInputTypeHidden);
 }
@@ -89,7 +87,8 @@ void HiddenInputType::SetValue(const String& sanitized_value,
                                bool,
                                TextFieldEventBehavior,
                                TextControlSetValueSelection) {
-  GetElement().setAttribute(kValueAttr, AtomicString(sanitized_value));
+  GetElement().setAttribute(html_names::kValueAttr,
+                            AtomicString(sanitized_value));
 }
 
 void HiddenInputType::AppendToFormData(FormData& form_data) const {

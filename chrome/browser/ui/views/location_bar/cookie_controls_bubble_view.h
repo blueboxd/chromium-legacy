@@ -47,8 +47,6 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
     kNone,
     // Show a button to disable cookie blocking on the current site.
     kTurnOffButton,
-    // Show a confirmation that cookie blocking was turned on.
-    kBlockingIsOn,
   };
 
   CookieControlsBubbleView(views::View* anchor_view,

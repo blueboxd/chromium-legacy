@@ -17,14 +17,9 @@
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
+#include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_fcm_handler.h"
-#include "chrome/browser/sharing/sharing_fcm_sender.h"
-#include "chrome/browser/sharing/sharing_metrics.h"
-#include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
-#include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/browser_task_environment.h"
@@ -47,53 +42,6 @@ const char kPhoneNumber[] = "+9876543210";
 
 constexpr int kSeparatorCommandId = -1;
 
-class MockSharingDeviceRegistration : public SharingDeviceRegistration {
- public:
-  MockSharingDeviceRegistration()
-      : SharingDeviceRegistration(/* pref_service_= */ nullptr,
-                                  /* sharing_sync_preference_= */ nullptr,
-                                  /* instance_id_driver_= */ nullptr,
-                                  /* vapid_key_manager_= */ nullptr) {}
-
-  ~MockSharingDeviceRegistration() override = default;
-
-  MOCK_CONST_METHOD0(IsSharedClipboardSupported, bool());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSharingDeviceRegistration);
-};
-
-class MockSharingService : public SharingService {
- public:
-  explicit MockSharingService(std::unique_ptr<SharingFCMHandler> fcm_handler)
-      : SharingService(/* sync_prefs= */ nullptr,
-                       /* vapid_key_manager= */ nullptr,
-                       std::make_unique<MockSharingDeviceRegistration>(),
-                       /* fcm_sender= */ nullptr,
-                       std::move(fcm_handler),
-                       /* gcm_driver= */ nullptr,
-                       /* device_info_tracker= */ nullptr,
-                       /* local_device_info_provider= */ nullptr,
-                       /* sync_service */ nullptr,
-                       /* notification_display_service= */ nullptr) {}
-
-  ~MockSharingService() override = default;
-
-  MOCK_CONST_METHOD1(
-      GetDeviceCandidates,
-      std::vector<std::unique_ptr<syncer::DeviceInfo>>(
-          sync_pb::SharingSpecificFields::EnabledFeatures required_feature));
-
-  MOCK_METHOD4(SendMessageToDevice,
-               void(const std::string& device_guid,
-                    base::TimeDelta time_to_live,
-                    SharingMessage message,
-                    SharingService::SendMessageCallback callback));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSharingService);
-};
-
 class ClickToCallContextMenuObserverTest : public testing::Test {
  public:
   ClickToCallContextMenuObserverTest() = default;
@@ -108,8 +56,7 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
         menu_.GetBrowserContext(),
         base::BindRepeating([](content::BrowserContext* context)
                                 -> std::unique_ptr<KeyedService> {
-          return std::make_unique<NiceMock<MockSharingService>>(
-              std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr));
+          return std::make_unique<NiceMock<MockSharingService>>();
         }));
     observer_ = std::make_unique<ClickToCallContextMenuObserver>(&menu_);
     menu_.SetObserver(observer_.get());

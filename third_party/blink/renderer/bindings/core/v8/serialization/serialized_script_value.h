@@ -333,7 +333,6 @@ class CORE_EXPORT SerializedScriptValue
   SharedArrayBufferContentsArray shared_array_buffers_contents_;
 
   bool has_registered_external_allocation_;
-  bool transferables_need_external_allocation_registration_;
 #if DCHECK_IS_ON()
   bool was_unpacked_ = false;
 #endif

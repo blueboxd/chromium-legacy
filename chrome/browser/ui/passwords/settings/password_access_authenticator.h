@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -36,23 +35,16 @@ class PasswordAccessAuthenticator {
 
   ~PasswordAccessAuthenticator();
 
-  // Checks whether user is already authenticated or not, if yes,
-  // execute |postAuthCallback|. Otherwise call
-  // |ForceUserReauthenticationAsync| function for presenting OS
-  // authentication challenge.
-  // This function and |postAuthCallback| callback should be executed
-  // on main thread only.
-  void EnsureUserIsAuthenticatedAsync(
-      password_manager::ReauthPurpose purpose,
-      base::OnceCallback<void(bool)> postAuthCallback);
+  // Returns whether the user is able to pass the authentication challenge,
+  // which is represented by |os_reauth_call_| returning true. A successful
+  // result of |os_reauth_call_| is cached for |kAuthValidityPeriodSeconds|
+  // seconds.
+  bool EnsureUserIsAuthenticated(password_manager::ReauthPurpose purpose);
 
-  // Presents the authentication challenge to the user on the
-  // background thread for Windows, and on UI thread for other platforms.
-  // This call is guaranteed to present the challenge to the user.
-  // This function should be executed on main thread only.
-  void ForceUserReauthenticationAsync(
-      password_manager::ReauthPurpose purpose,
-      base::OnceCallback<void(bool)> postAuthCallback);
+  // Presents the reauthentication challenge to the user and returns whether
+  // the user passed the challenge. This call is guaranteed to present the
+  // challenge to the user.
+  bool ForceUserReauthentication(password_manager::ReauthPurpose purpose);
 
   // Use this in tests to mock the OS-level reauthentication.
   void SetOsReauthCallForTesting(ReauthCallback os_reauth_call);
@@ -61,19 +53,6 @@ class PasswordAccessAuthenticator {
   void SetClockForTesting(base::Clock* clock);
 
  private:
-  // Returns whether the user can skip Reauth, based on
-  // |last_authentication_time_| and |kAuthValidityPeriodSeconds|
-  bool CanSkipReauth() const;
-
-  // This function will be called on main thread and it will run
-  // |postAuthCallback| on main thread.
-  // A successful result of |os_reauth_call_| is cached for
-  // |kAuthValidityPeriodSeconds| seconds.
-  void ProcessReauthenticationResult(
-      password_manager::ReauthPurpose purpose,
-      base::OnceCallback<void(bool)> postAuthCallback,
-      bool authenticated);
-
   // The last time the user was successfully authenticated.
   base::Optional<base::Time> last_authentication_time_;
 
@@ -83,9 +62,6 @@ class PasswordAccessAuthenticator {
   // Used to directly present the authentication challenge (such as the login
   // prompt) to the user.
   ReauthCallback os_reauth_call_;
-
-  // Weak pointers for different callbacks.
-  base::WeakPtrFactory<PasswordAccessAuthenticator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAccessAuthenticator);
 };

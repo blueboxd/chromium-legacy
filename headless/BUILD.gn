@@ -473,7 +473,6 @@ jumbo_component("headless_non_renderer") {
   # use external v8 startup data too.
   if ((is_win && is_component_build) || !is_win) {
     if (v8_use_external_startup_data) {
-      data += [ "$root_out_dir/natives_blob.bin" ]
       public_deps += [ "//v8" ]
       if (use_v8_context_snapshot) {
         data += [ "$root_out_dir/v8_context_snapshot.bin" ]

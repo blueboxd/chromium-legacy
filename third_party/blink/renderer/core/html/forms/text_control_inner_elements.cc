@@ -39,11 +39,9 @@
 
 namespace blink {
 
-using namespace html_names;
-
 TextControlInnerContainer::TextControlInnerContainer(Document& document)
     : HTMLDivElement(document) {
-  setAttribute(kIdAttr, shadow_element_names::TextFieldContainer());
+  setAttribute(html_names::kIdAttr, shadow_element_names::TextFieldContainer());
 }
 
 LayoutObject* TextControlInnerContainer::CreateLayoutObject(
@@ -57,7 +55,7 @@ LayoutObject* TextControlInnerContainer::CreateLayoutObject(
 EditingViewPortElement::EditingViewPortElement(Document& document)
     : HTMLDivElement(document) {
   SetHasCustomStyleCallbacks();
-  setAttribute(kIdAttr, shadow_element_names::EditingViewPort());
+  setAttribute(html_names::kIdAttr, shadow_element_names::EditingViewPort());
 }
 
 scoped_refptr<ComputedStyle>
@@ -201,7 +199,7 @@ SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(
     Document& document)
     : HTMLDivElement(document) {
   SetShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
-  setAttribute(kIdAttr, shadow_element_names::SearchClearButton());
+  setAttribute(html_names::kIdAttr, shadow_element_names::SearchClearButton());
 }
 
 void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
@@ -239,7 +237,8 @@ bool SearchFieldCancelButtonElement::WillRespondToMouseClickEvents() {
 PasswordRevealButtonElement::PasswordRevealButtonElement(Document& document)
     : HTMLDivElement(document) {
   SetShadowPseudoId(AtomicString("-internal-reveal"));
-  setAttribute(kIdAttr, shadow_element_names::PasswordRevealButton());
+  setAttribute(html_names::kIdAttr,
+               shadow_element_names::PasswordRevealButton());
 }
 
 void PasswordRevealButtonElement::DefaultEventHandler(Event& event) {

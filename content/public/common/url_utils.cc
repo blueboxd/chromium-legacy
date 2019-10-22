@@ -64,7 +64,7 @@ bool IsURLHandledByNetworkStack(const GURL& url) {
 
 bool IsURLHandledByNetworkService(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS() ||
-         url.SchemeIs(url::kFtpScheme) || url.SchemeIs(url::kGopherScheme);
+         url.SchemeIs(url::kFtpScheme);
 }
 
 bool IsRendererDebugURL(const GURL& url) {

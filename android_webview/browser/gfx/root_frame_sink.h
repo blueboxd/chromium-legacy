@@ -70,7 +70,8 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
   DISALLOW_COPY_AND_ASSIGN(RootFrameSink);
 };
 
-using RootFrameSinkGetter = base::OnceCallback<scoped_refptr<RootFrameSink>()>;
+using RootFrameSinkGetter =
+    base::RepeatingCallback<scoped_refptr<RootFrameSink>()>;
 
 }  // namespace android_webview
 

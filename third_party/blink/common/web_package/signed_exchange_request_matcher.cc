@@ -261,23 +261,96 @@ std::unique_ptr<ContentNegotiationAlgorithm> GetContentNegotiationAlgorithm(
   return nullptr;
 }
 
-// https://httpwg.org/http-extensions/draft-ietf-httpbis-variants.html#variant-key
-base::Optional<http_structured_header::ListOfLists> ParseVariantKey(
-    const base::StringPiece& str,
-    size_t num_variant_axes) {
+// https://tools.ietf.org/id/draft-ietf-httpbis-variants-04.html#variants
+base::Optional<std::vector<std::pair<std::string, std::vector<std::string>>>>
+ParseVariants(const base::StringPiece& str) {
+  // Compatibility note: Draft 4 of Variants
+  // (https://tools.ietf.org/id/draft-ietf-httpbis-variants-04.html#variants)
+  // uses a custom format for the Variants-04 header, which this method attempts
+  // to parse as a Structured Headers list-of-lists. This means that quoted
+  // string values as well as unquoted tokens will be accepted by this parser,
+  // which is strictly more lenient than the actual draft spec. Draft 5
+  // (https://tools.ietf.org/id/draft-ietf-httpbis-variants-05.html#variants,
+  // which we don't actually support yet) uses a Structured-Headers-Draft-9
+  // list-of-lists syntax for the Variants-05 header, and explicitly allows both
+  // strings and tokens.
+  // TODO(iclelland): As of October 2019, the latest editor's draft of Variants
+  // (https://httpwg.org/http-extensions/draft-ietf-httpbis-variants.html#variants)
+  // specifies a Structured-Headers-Draft-13 dictionary for the Variants header.
+  // Once the specs are updated, also parse the new Variants dictionary header
+  // as well. The same data structure should be returned.
   base::Optional<http_structured_header::ListOfLists> parsed =
       http_structured_header::ParseListOfLists(str);
   if (!parsed)
-    return parsed;
-  // Each inner-list MUST have the same number of list-members as there are
-  // variant-axes in the representation's Variants header field. If not, the
-  // client MUST treat the representation as having no Variant-Key header field.
+    return base::nullopt;
+  std::vector<std::pair<std::string, std::vector<std::string>>> variants;
+  // Each inner-list in the Variants header field value is parsed into a
+  // variant-axis.  The first list-member of the inner-list is interpreted as
+  // the field-name, and the remaining list-members are the available-values.
   // [spec text]
   for (const auto& inner_list : *parsed) {
+    auto it = inner_list.begin();
+    // Any list-member that is a token is interpreted as a string containing the
+    // same characters.
+    // [spec text]
+    if (!it->is_string() && !it->is_token())
+      return base::nullopt;
+    std::string field_name = it->string();
+    std::vector<std::string> available_values;
+    available_values.reserve(inner_list.size() - 1);
+    for (++it; it != inner_list.end(); ++it) {
+      // Any list-member that is a token is interpreted as a string containing
+      // the same characters.
+      // [spec text]
+      if (!it->is_string() && !it->is_token())
+        return base::nullopt;
+      available_values.push_back(it->string());
+    }
+    variants.push_back(std::make_pair(field_name, available_values));
+  }
+  return variants;
+}
+
+// https://tools.ietf.org/id/draft-ietf-httpbis-variants-04.html#variant-key
+base::Optional<std::vector<std::vector<std::string>>> ParseVariantKey(
+    const base::StringPiece& str,
+    size_t num_variant_axes) {
+  // Compatibility note: Draft 4 of Variants
+  // (https://tools.ietf.org/id/draft-ietf-httpbis-variants-04.html#variant-key)
+  // uses a custom format for the Variant-Key-04 header, which this method
+  // attempts to parse as a Structured Headers list-of-lists. This means that
+  // quoted string values as well as unquoted tokens will be accepted by this
+  // parser, which is strictly more lenient than the actual draft spec. Draft 5
+  // (https://tools.ietf.org/id/draft-ietf-httpbis-variants-05.html#variant-key,
+  // which we don't actually support yet) uses a Structured-Headers-Draft-9
+  // list-of-lists syntax for the Variant-Key-05 header, and explicitly allows
+  // both strings and tokens.
+  // TODO(iclelland): Once the specs are updated, also parse the new
+  // Variants-Key header as well. The same data structure should be returned.
+  base::Optional<http_structured_header::ListOfLists> parsed =
+      http_structured_header::ParseListOfLists(str);
+  if (!parsed)
+    return base::nullopt;
+  std::vector<std::vector<std::string>> variant_keys;
+  variant_keys.reserve(parsed->size());
+  // Each inner-list MUST have the same number of list-members as there are
+  // variant-axes in the representation's Variants header field. Additionally,
+  // every element of each inner-list must be a string. If not, the client MUST
+  // treat the representation as having no Variant-Key header field.
+  // [spec text]
+  for (const auto& inner_list : *parsed) {
+    std::vector<std::string> list_members;
+    list_members.reserve(inner_list.size());
     if (inner_list.size() != num_variant_axes)
       return base::nullopt;
+    for (const http_structured_header::Item& item : inner_list) {
+      if (!item.is_string() && !item.is_token())
+        return base::nullopt;
+      list_members.push_back(item.string());
+    }
+    variant_keys.push_back(list_members);
   }
-  return parsed;
+  return variant_keys;
 }
 
 // Returns the index of matching entry in Possible Keys [1] which is the cross
@@ -342,7 +415,8 @@ SignedExchangeRequestMatcher::FindBestMatchingVariantKey(
 // [1] https://httpwg.org/http-extensions/draft-ietf-httpbis-variants.html#cache
 std::vector<std::vector<std::string>>
 SignedExchangeRequestMatcher::CacheBehavior(
-    const http_structured_header::ListOfLists& variants,
+    const std::vector<std::pair<std::string, std::vector<std::string>>>&
+        variants,
     const net::HttpRequestHeaders& request_headers) {
   // Step 1. If stored-responses is empty, return an empty list. [spec text]
   // The size of stored-responses is always 1.
@@ -366,13 +440,11 @@ SignedExchangeRequestMatcher::CacheBehavior(
   // |variants| is the parsed "Variants" header field value.
 
   // Step 4.2. For each variant-axis in variants-header: [spec text]
-  for (const std::vector<std::string>& variant_axis : variants) {
-    DCHECK(!variant_axis.empty());
-
+  for (const auto& variant_axis : variants) {
     // Step 4.2.1. If variant-axis' field-name corresponds to the request header
     // field identified by a content negotiation mechanism that the
     // implementation supports: [spec text]
-    std::string field_name = base::ToLowerASCII(variant_axis[0]);
+    std::string field_name = base::ToLowerASCII(variant_axis.first);
     std::unique_ptr<ContentNegotiationAlgorithm> negotiation_algorithm =
         GetContentNegotiationAlgorithm(field_name);
     if (negotiation_algorithm) {
@@ -387,8 +459,8 @@ SignedExchangeRequestMatcher::CacheBehavior(
       // Step 4.2.1.2. Let sorted-values be the result of running the algorithm
       // defined by the content negotiation mechanism with request-value and
       // variant-axis' available-values. [spec text]
-      std::vector<std::string> sorted_values = negotiation_algorithm->run(
-          base::make_span(variant_axis).subspan(1), request_value);
+      std::vector<std::string> sorted_values =
+          negotiation_algorithm->run(variant_axis.second, request_value);
 
       // Step 4.2.1.3. Append sorted-values to sorted-variants. [spec text]
       sorted_variants.push_back(std::move(sorted_values));
@@ -438,8 +510,7 @@ bool SignedExchangeRequestMatcher::MatchRequest(
   // Step 4. If getting `Variants` from storedExchange's response's header list
   // returns a value that fails to parse according to the instructions for the
   // Variants Header Field, return "mismatch". [spec text]
-  auto parsed_variants =
-      http_structured_header::ParseListOfLists(variants_found->second);
+  auto parsed_variants = ParseVariants(variants_found->second);
   if (!parsed_variants)
     return false;
 
@@ -495,7 +566,7 @@ SignedExchangeRequestMatcher::FindBestMatchingVariantKey(
     const net::HttpRequestHeaders& request_headers,
     const std::string& variants,
     const std::vector<std::string>& variant_keys_list) {
-  auto parsed_variants = http_structured_header::ParseListOfLists(variants);
+  auto parsed_variants = ParseVariants(variants);
   if (!parsed_variants)
     return variant_keys_list.end();
 

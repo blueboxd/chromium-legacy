@@ -52,7 +52,6 @@
 namespace blink {
 
 using mojom::blink::FileChooserParams;
-using namespace html_names;
 
 namespace {
 
@@ -169,10 +168,11 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
 
   if (ChromeClient* chrome_client = GetChromeClient()) {
     FileChooserParams params;
-    bool is_directory = input.FastHasAttribute(kWebkitdirectoryAttr);
+    bool is_directory =
+        input.FastHasAttribute(html_names::kWebkitdirectoryAttr);
     if (is_directory)
       params.mode = FileChooserParams::Mode::kUploadFolder;
-    else if (input.FastHasAttribute(kMultipleAttr))
+    else if (input.FastHasAttribute(html_names::kMultipleAttr))
       params.mode = FileChooserParams::Mode::kOpenMultiple;
     else
       params.mode = FileChooserParams::Mode::kOpen;
@@ -181,7 +181,7 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
     params.accept_types = CollectAcceptTypes(input);
     params.selected_files = file_list_->PathsForUserVisibleFiles();
     params.use_media_capture = RuntimeEnabledFeatures::MediaCaptureEnabled() &&
-                               input.FastHasAttribute(kCaptureAttr);
+                               input.FastHasAttribute(html_names::kCaptureAttr);
     params.requestor = document.Url();
 
     UseCounter::Count(
@@ -312,7 +312,7 @@ void FileInputType::CreateShadowSubtree() {
       GetElement().GetDocument(), CreateElementFlags());
   button->setType(input_type_names::kButton);
   button->setAttribute(
-      kValueAttr,
+      html_names::kValueAttr,
       AtomicString(GetLocale().QueryString(
           GetElement().Multiple() ? IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL
                                   : IDS_FORM_FILE_BUTTON_LABEL)));
@@ -326,7 +326,7 @@ void FileInputType::DisabledAttributeChanged() {
         IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
   if (Element* button =
           To<Element>(GetElement().UserAgentShadowRoot()->firstChild()))
-    button->SetBooleanAttribute(kDisabledAttr,
+    button->SetBooleanAttribute(html_names::kDisabledAttr,
                                 GetElement().IsDisabledFormControl());
 }
 
@@ -337,7 +337,7 @@ void FileInputType::MultipleAttributeChanged() {
   if (Element* button =
           To<Element>(GetElement().UserAgentShadowRoot()->firstChild())) {
     button->setAttribute(
-        kValueAttr,
+        html_names::kValueAttr,
         AtomicString(GetLocale().QueryString(
             GetElement().Multiple() ? IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL
                                     : IDS_FORM_FILE_BUTTON_LABEL)));
@@ -417,7 +417,7 @@ void FileInputType::SetFilesFromPaths(const Vector<String>& paths) {
     return;
 
   HTMLInputElement& input = GetElement();
-  if (input.FastHasAttribute(kWebkitdirectoryAttr)) {
+  if (input.FastHasAttribute(html_names::kWebkitdirectoryAttr)) {
     SetFilesFromDirectory(paths[0]);
     return;
   }
@@ -426,7 +426,7 @@ void FileInputType::SetFilesFromPaths(const Vector<String>& paths) {
   for (const auto& path : paths)
     files.push_back(CreateFileChooserFileInfoNative(path));
 
-  if (input.FastHasAttribute(kMultipleAttr)) {
+  if (input.FastHasAttribute(html_names::kMultipleAttr)) {
     FilesChosen(std::move(files), base::FilePath());
   } else {
     FileChooserFileInfoList first_file_only;
@@ -441,7 +441,7 @@ bool FileInputType::ReceiveDroppedFiles(const DragData* drag_data) {
   if (paths.IsEmpty())
     return false;
 
-  if (!GetElement().FastHasAttribute(kWebkitdirectoryAttr)) {
+  if (!GetElement().FastHasAttribute(html_names::kWebkitdirectoryAttr)) {
     dropped_file_system_id_ = drag_data->DroppedFileSystemId();
   }
   SetFilesFromPaths(paths);
@@ -476,7 +476,7 @@ void FileInputType::CopyNonAttributeProperties(const HTMLInputElement& source) {
 }
 
 void FileInputType::HandleKeypressEvent(KeyboardEvent& event) {
-  if (GetElement().FastHasAttribute(kWebkitdirectoryAttr)) {
+  if (GetElement().FastHasAttribute(html_names::kWebkitdirectoryAttr)) {
     // Override to invoke the action on Enter key up (not press) to avoid
     // repeats committing the file chooser.
     if (event.key() == "Enter") {
@@ -488,7 +488,7 @@ void FileInputType::HandleKeypressEvent(KeyboardEvent& event) {
 }
 
 void FileInputType::HandleKeyupEvent(KeyboardEvent& event) {
-  if (GetElement().FastHasAttribute(kWebkitdirectoryAttr)) {
+  if (GetElement().FastHasAttribute(html_names::kWebkitdirectoryAttr)) {
     // Override to invoke the action on Enter key up (not press) to avoid
     // repeats committing the file chooser.
     if (event.key() == "Enter") {

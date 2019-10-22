@@ -8,8 +8,9 @@
 #include <map>
 
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
-#include "android_webview/browser/gfx/hardware_renderer_single_thread.h"
+#include "android_webview/browser/gfx/hardware_renderer.h"
 #include "android_webview/browser/gfx/parent_compositor_draw_constraints.h"
+#include "android_webview/browser/gfx/root_frame_sink.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -22,7 +23,6 @@ namespace android_webview {
 
 class ChildFrame;
 class CompositorFrameProducer;
-class HardwareRenderer;
 
 // This class is used to pass data between UI thread and RenderThread.
 class RenderThreadManager : public CompositorFrameConsumer {
@@ -33,7 +33,8 @@ class RenderThreadManager : public CompositorFrameConsumer {
 
   // CompositorFrameConsumer methods.
   void SetCompositorFrameProducer(
-      CompositorFrameProducer* compositor_frame_producer) override;
+      CompositorFrameProducer* compositor_frame_producer,
+      RootFrameSinkGetter root_frame_sink_getter) override;
   void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) override;
   std::unique_ptr<ChildFrame> SetFrameOnUI(
       std::unique_ptr<ChildFrame> frame) override;
@@ -110,6 +111,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
 
   // Accessed by both UI and RT thread.
   mutable base::Lock lock_;
+  RootFrameSinkGetter root_frame_sink_getter_;
   gfx::Vector2d scroll_offset_;
   ChildFrameQueue child_frames_;
   bool mark_hardware_release_;

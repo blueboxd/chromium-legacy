@@ -488,7 +488,6 @@ TEST(URLUtilTest, BasicCoverage) {
   EXPECT_TRUE(MatchFilters({"example.com"}, "ftp://example.com"));
   EXPECT_TRUE(MatchFilters({"example.com"}, "http://example.com"));
   EXPECT_TRUE(MatchFilters({"example.com"}, "https://example.com"));
-  EXPECT_TRUE(MatchFilters({"example.com"}, "gopher://example.com"));
   EXPECT_TRUE(MatchFilters({"example.com"}, "ws://example.com"));
   EXPECT_TRUE(MatchFilters({"example.com"}, "wss://example.com"));
 

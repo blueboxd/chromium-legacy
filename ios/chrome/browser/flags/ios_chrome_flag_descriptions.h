@@ -326,11 +326,6 @@ extern const char kTranslateInfobarMessagesUIDescription[];
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
 
-// Title and description for the flag to enable Gaia Auth Mutlilogin endpoint
-// for identity consistency.
-extern const char kUseMultiloginEndpointName[];
-extern const char kUseMultiloginEndpointDescription[];
-
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.
 extern const char kWalletServiceUseSandboxName[];

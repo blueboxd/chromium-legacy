@@ -57,7 +57,9 @@ class HashPasswordManager {
   void set_prefs(PrefService* prefs) { prefs_ = prefs; }
 
   // Adds a listener for when |kPasswordHashDataList| list might have changed.
-  // Should only be called on the UI thread.
+  // Should only be called on the UI thread. The callback is only called when
+  // the sign-in isn't the first change on the |kPasswordHashDataList| and
+  // saving the password hash actually succeeded.
   virtual std::unique_ptr<StateSubscription> RegisterStateCallback(
       const base::Callback<void(const std::string& username)>& callback);
 
@@ -68,7 +70,9 @@ class HashPasswordManager {
   PrefService* prefs_ = nullptr;
 
   // Callbacks when |kPasswordHashDataList| might have changed.
-  // Should only be accessed on the UI thread.
+  // Should only be accessed on the UI thread. The callback is only called when
+  // the sign-in isn't the first change on the |kPasswordHashDataList| and
+  // saving the password hash actually succeeded.
   base::CallbackList<void(const std::string& username)> state_callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HashPasswordManager);

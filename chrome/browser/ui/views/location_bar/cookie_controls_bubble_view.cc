@@ -132,14 +132,6 @@ void CookieControlsBubbleView::UpdateUi() {
     text_->SetVisible(true);
     text_->SetText(
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_DESCRIPTION));
-  } else if (intermediate_step_ == IntermediateStep::kBlockingIsOn) {
-    header_view_->SetVisible(true);
-    header_view_->SetImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_COOKIE_BLOCKING_ON_HEADER));
-    text_->SetVisible(true);
-    text_->SetText(
-        l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE));
   } else if (status_ == CookieControlsController::Status::kEnabled) {
     header_view_->SetVisible(true);
     header_view_->SetImage(
@@ -232,8 +224,6 @@ base::string16 CookieControlsBubbleView::GetWindowTitle() const {
   switch (intermediate_step_) {
     case IntermediateStep::kTurnOffButton:
       return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE);
-    case IntermediateStep::kBlockingIsOn:
-      return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TURNED_ON_TITLE);
     case IntermediateStep::kNone: {
       // Determine title based on status_ instead.
     }
@@ -278,10 +268,9 @@ bool CookieControlsBubbleView::Accept() {
     DCHECK_EQ(status_, CookieControlsController::Status::kDisabledForSite);
     DCHECK_EQ(intermediate_step_, IntermediateStep::kNone);
     base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOn"));
-    intermediate_step_ = IntermediateStep::kBlockingIsOn;
     controller_->OnCookieBlockingEnabledForSite(true);
   }
-  return false;
+  return true;
 }
 
 bool CookieControlsBubbleView::Close() {

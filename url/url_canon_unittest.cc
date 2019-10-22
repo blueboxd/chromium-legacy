@@ -1393,7 +1393,7 @@ TEST(URLCanonTest, CanonicalizeStandardURL) {
       {"https://foo:80/", "https://foo:80/", true},
       {"ftp://foo:21/", "ftp://foo/", true},
       {"ftp://foo:80/", "ftp://foo:80/", true},
-      {"gopher://foo:70/", "gopher://foo/", true},
+      {"gopher://foo:70/", "gopher://foo:70/", true},
       {"gopher://foo:443/", "gopher://foo:443/", true},
       {"ws://foo:80/", "ws://foo/", true},
       {"ws://foo:81/", "ws://foo:81/", true},
@@ -2325,14 +2325,12 @@ TEST(URLCanonTest, DefaultPortForScheme) {
       {"ftp", 21},
       {"ws", 80},
       {"wss", 443},
-      {"gopher", 70},
       {"fake-scheme", PORT_UNSPECIFIED},
       {"HTTP", PORT_UNSPECIFIED},
       {"HTTPS", PORT_UNSPECIFIED},
       {"FTP", PORT_UNSPECIFIED},
       {"WS", PORT_UNSPECIFIED},
       {"WSS", PORT_UNSPECIFIED},
-      {"GOPHER", PORT_UNSPECIFIED},
   };
 
   for (auto& test_case : cases) {

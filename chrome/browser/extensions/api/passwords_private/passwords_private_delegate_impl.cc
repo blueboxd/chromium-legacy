@@ -194,12 +194,21 @@ void PasswordsPrivateDelegateImpl::RequestShowPassword(
   // TODO(crbug.com/495290): Pass the native window directly to the
   // reauth-handling code.
   web_contents_ = web_contents;
-  base::OnceCallback<void(bool)> request_show_password_reply =
-      base::BindOnce(&PasswordsPrivateDelegateImpl::RequestShowPasswordReply,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback), id);
-  password_access_authenticator_.EnsureUserIsAuthenticatedAsync(
-      password_manager::ReauthPurpose::VIEW_PASSWORD,
-      std::move(request_show_password_reply));
+  if (!password_access_authenticator_.EnsureUserIsAuthenticated(
+          password_manager::ReauthPurpose::VIEW_PASSWORD)) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  // Request the password. When it is retrieved, ShowPassword() will be called.
+  const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
+  if (!sort_key) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  password_manager_presenter_->RequestShowPassword(*sort_key,
+                                                   std::move(callback));
 }
 
 bool PasswordsPrivateDelegateImpl::OsReauthCall(
@@ -318,12 +327,15 @@ void PasswordsPrivateDelegateImpl::ExportPasswords(
   // TODO(crbug.com/495290): Pass the native window directly to the
   // reauth-handling code.
   web_contents_ = web_contents;
-  base::OnceCallback<void(bool)> export_password_reply = base::BindOnce(
-      &PasswordsPrivateDelegateImpl::ExportPasswordReply,
-      weak_ptr_factory_.GetWeakPtr(), std::move(callback), web_contents);
-  password_access_authenticator_.ForceUserReauthenticationAsync(
-      password_manager::ReauthPurpose::EXPORT,
-      std::move(export_password_reply));
+  if (!password_access_authenticator_.ForceUserReauthentication(
+          password_manager::ReauthPurpose::EXPORT)) {
+    std::move(callback).Run(kReauthenticationFailed);
+    return;
+  }
+
+  password_manager_porter_->set_web_contents(web_contents);
+  bool accepted = password_manager_porter_->Store();
+  std::move(callback).Run(accepted ? std::string() : kExportInProgress);
 }
 
 void PasswordsPrivateDelegateImpl::CancelExportPasswords() {
@@ -369,40 +381,6 @@ void PasswordsPrivateDelegateImpl::ExecuteFunction(
   }
 
   pre_initialization_callbacks_.push_back(callback);
-}
-
-void PasswordsPrivateDelegateImpl::ExportPasswordReply(
-    base::OnceCallback<void(const std::string&)> callback,
-    content::WebContents* web_contents,
-    bool authenticated) {
-  if (!authenticated) {
-    std::move(callback).Run(kReauthenticationFailed);
-    return;
-  }
-
-  password_manager_porter_->set_web_contents(web_contents);
-  bool accepted = password_manager_porter_->Store();
-  std::move(callback).Run(accepted ? std::string() : kExportInProgress);
-}
-
-void PasswordsPrivateDelegateImpl::RequestShowPasswordReply(
-    PlaintextPasswordCallback callback,
-    int id,
-    bool authenticated) {
-  if (!authenticated) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  // Request the password. When it is retrieved, ShowPassword() will be called.
-  const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
-  if (!sort_key) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  password_manager_presenter_->RequestShowPassword(*sort_key,
-                                                   std::move(callback));
 }
 
 void PasswordsPrivateDelegateImpl::InitializeIfNecessary() {

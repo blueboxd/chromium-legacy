@@ -7,7 +7,4 @@
 
 #include "base/feature_list.h"
 
-// Feature flag to move -LogLoadStarted() to WebStateDidStartNavigation().
-extern const base::Feature kLogLoadStartedInDidStartNavigation;
-
 #endif  // IOS_CHROME_BROWSER_METRICS_FEATURES_H_

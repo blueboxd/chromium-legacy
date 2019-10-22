@@ -39,12 +39,15 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetError;
 import org.chromium.net.test.EmbeddedTestServerRule;
@@ -246,5 +249,38 @@ public class TrustedWebActivityTest {
             expectedColor = ColorUtils.getDarkenedColorForStatusBar(expectedColor);
         }
         assertEquals(expectedColor, activity.getWindow().getStatusBarColor());
+    }
+
+    /**
+     * Test that trusted web activities show the toolbar when the page has a certificate error
+     * (and origin verification succeeds).
+     */
+    @Test
+    @MediumTest
+    public void testToolbarVisibleCertificateError() throws ExecutionException, TimeoutException {
+        final String pageWithoutCertError =
+                mEmbeddedTestServerRule.getServer().getURL("/chrome/test/data/android/about.html");
+        final String pageWithCertError = mEmbeddedTestServerRule.getServer().getURL(
+                "/chrome/test/data/android/theme_color_test.html");
+
+        // Initially don't set certificate error so that we can later wait for the toolbar to hide.
+        launchCustomTabActivity(createTrustedWebActivityIntent(pageWithoutCertError));
+        Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+        assertFalse(getCanShowToolbarState(tab));
+
+        mCertVerifierRule.setResult(NetError.ERR_CERT_INVALID);
+        ChromeTabUtils.loadUrlOnUiThread(tab, pageWithCertError);
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getCanShowToolbarState(tab);
+            }
+        }, 10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+    }
+
+    public boolean getCanShowToolbarState(Tab tab) {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> TabBrowserControlsState.get(tab).canShow());
     }
 }

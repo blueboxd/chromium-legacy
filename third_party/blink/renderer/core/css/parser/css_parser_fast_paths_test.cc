@@ -11,8 +11,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 TEST(CSSParserFastPathsTest, ParseKeyword) {
   CSSValue* value = CSSParserFastPaths::MaybeParseValue(
       CSSPropertyID::kFloat, "left", kHTMLStandardMode);
@@ -116,7 +114,7 @@ TEST(CSSParserFastPathsTest, ParseColorWithLargeAlpha) {
                                                    kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kBlack, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 }
 
 TEST(CSSParserFastPathsTest, ParseColorWithNewSyntax) {
@@ -124,27 +122,27 @@ TEST(CSSParserFastPathsTest, ParseColorWithNewSyntax) {
       CSSParserFastPaths::ParseColor("rgba(0 0 0)", kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kBlack, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 
   value = CSSParserFastPaths::ParseColor("rgba(0 0 0 / 1)", kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kBlack, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 
   value = CSSParserFastPaths::ParseColor("rgba(0, 0, 0, 1)", kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kBlack, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 
   value = CSSParserFastPaths::ParseColor("RGBA(0 0 0 / 1)", kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kBlack, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 
   value = CSSParserFastPaths::ParseColor("RGB(0 0 0 / 1)", kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kBlack, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 
   value = CSSParserFastPaths::ParseColor("rgba(0 0 0 0)", kHTMLStandardMode);
   EXPECT_EQ(nullptr, value);
@@ -165,25 +163,25 @@ TEST(CSSParserFastPathsTest, ParseColorWithDecimal) {
                                                    kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kBlack, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 
   value =
       CSSParserFastPaths::ParseColor("rgb(0.0, 0.0, 0.0)", kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kBlack, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 
   value =
       CSSParserFastPaths::ParseColor("rgb(0.0 , 0.0,0.0)", kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kBlack, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 
   value = CSSParserFastPaths::ParseColor("rgb(254.5, 254.5, 254.5)",
                                          kHTMLStandardMode);
   EXPECT_NE(nullptr, value);
   EXPECT_TRUE(value->IsColorValue());
-  EXPECT_EQ(Color::kWhite, To<CSSColorValue>(*value).Value());
+  EXPECT_EQ(Color::kWhite, To<cssvalue::CSSColorValue>(*value).Value());
 }
 
 }  // namespace blink

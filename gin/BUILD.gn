@@ -70,7 +70,6 @@ component("gin") {
 
   if (v8_use_external_startup_data) {
     data = [
-      "$root_out_dir/natives_blob.bin",
       "$root_out_dir/snapshot_blob.bin",
     ]
   }

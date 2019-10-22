@@ -259,15 +259,13 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
 }
 
 SerializedScriptValue::SerializedScriptValue()
-    : has_registered_external_allocation_(false),
-      transferables_need_external_allocation_registration_(false) {}
+    : has_registered_external_allocation_(false) {}
 
 SerializedScriptValue::SerializedScriptValue(DataBufferPtr data,
                                              size_t data_size)
     : data_buffer_(std::move(data)),
       data_buffer_size_(data_size),
-      has_registered_external_allocation_(false),
-      transferables_need_external_allocation_registration_(false) {}
+      has_registered_external_allocation_(false) {}
 
 void SerializedScriptValue::SetImageBitmapContentsArray(
     ImageBitmapContentsArray contents) {
@@ -751,16 +749,6 @@ void SerializedScriptValue::
         -static_cast<int64_t>(DataLengthInBytes()));
     has_registered_external_allocation_ = false;
   }
-
-  // TODO: if other transferables start accounting for their external
-  // allocations with V8, extend this with corresponding cases.
-  if (!transferables_need_external_allocation_registration_) {
-    for (auto& buffer : array_buffer_contents_array_)
-      buffer.UnregisterExternalAllocationWithCurrentContext();
-    for (auto& buffer : shared_array_buffers_contents_)
-      buffer.UnregisterExternalAllocationWithCurrentContext();
-    transferables_need_external_allocation_registration_ = true;
-  }
 }
 
 void SerializedScriptValue::RegisterMemoryAllocatedWithCurrentScriptContext() {
@@ -771,15 +759,6 @@ void SerializedScriptValue::RegisterMemoryAllocatedWithCurrentScriptContext() {
   int64_t diff = static_cast<int64_t>(DataLengthInBytes());
   DCHECK_GE(diff, 0);
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
-
-  // Only (re)register allocation cost for transferables if this
-  // SerializedScriptValue has explicitly unregistered them before.
-  if (transferables_need_external_allocation_registration_) {
-    for (auto& buffer : array_buffer_contents_array_)
-      buffer.RegisterExternalAllocationWithCurrentContext();
-    for (auto& buffer : shared_array_buffers_contents_)
-      buffer.RegisterExternalAllocationWithCurrentContext();
-  }
 }
 
 // This ensures that the version number published in

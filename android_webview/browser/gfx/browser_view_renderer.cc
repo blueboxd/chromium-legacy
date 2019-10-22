@@ -137,7 +137,11 @@ void BrowserViewRenderer::SetCurrentCompositorFrameConsumer(
   }
   current_compositor_frame_consumer_ = compositor_frame_consumer;
   if (current_compositor_frame_consumer_) {
-    current_compositor_frame_consumer_->SetCompositorFrameProducer(this);
+    RootFrameSinkGetter root_sink_getter;
+    if (root_frame_sink_proxy_)
+      root_sink_getter = root_frame_sink_proxy_->GetRootFrameSinkCallback();
+    current_compositor_frame_consumer_->SetCompositorFrameProducer(
+        this, std::move(root_sink_getter));
     OnParentDrawDataUpdated(current_compositor_frame_consumer_);
   }
 }
@@ -302,7 +306,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
   }
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
       std::move(future), frame_sink_id_, viewport_size_for_tile_priority,
-      external_draw_constraints_.transform, offscreen_pre_raster_,
+      external_draw_constraints_.transform, offscreen_pre_raster_, dip_scale_,
       std::move(requests));
 
   ReturnUnusedResource(

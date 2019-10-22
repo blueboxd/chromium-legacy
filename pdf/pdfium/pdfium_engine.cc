@@ -606,8 +606,10 @@ void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {
   FPDF_ImportPages(doc(), static_cast<PDFiumEngine*>(engine)->doc(), "1",
                    index);
   pp::Size new_page_size = GetPageSize(index);
-  if (curr_page_size != new_page_size)
-    LoadPageInfo(true);
+  if (curr_page_size != new_page_size) {
+    DCHECK(document_loaded_);
+    LoadPageInfo();
+  }
   client_->Invalidate(GetPageScreenRect(index));
 }
 
@@ -668,8 +670,10 @@ void PDFiumEngine::OnPendingRequestComplete() {
     }
   }
   pending_pages_.swap(still_pending);
-  if (update_pages)
-    LoadPageInfo(true);
+  if (update_pages) {
+    DCHECK(document_loaded_);
+    LoadPageInfo();
+  }
 }
 
 void PDFiumEngine::OnNewDataReceived() {
@@ -716,8 +720,15 @@ void PDFiumEngine::FinishLoadingDocument() {
     if (IsPageVisible(i))
       client_->Invalidate(GetPageScreenRect(i));
   }
+
+  // Transition |document_loaded_| to true after finishing any calls to
+  // FPDFAvail_IsPageAvail(), since we no longer need to defer calls to this
+  // function from LoadPageInfo(). Note that LoadBody() calls LoadPageInfo()
+  // indirectly, so we cannot make this transition earlier.
+  document_loaded_ = true;
+
   if (need_update)
-    LoadPageInfo(true);
+    LoadPageInfo();
 
   if (called_do_document_action_)
     return;
@@ -1917,7 +1928,8 @@ void PDFiumEngine::RotateCounterclockwise() {
 void PDFiumEngine::InvalidateAllPages() {
   CancelPaints();
   StopFind();
-  LoadPageInfo(true);
+  DCHECK(document_loaded_);
+  LoadPageInfo();
   client_->Invalidate(pp::Rect(plugin_size_));
 }
 
@@ -2372,7 +2384,8 @@ void PDFiumEngine::AppendBlankPages(size_t num_pages) {
     pages_.push_back(std::move(page));
   }
 
-  LoadPageInfo(true);
+  DCHECK(document_loaded_);
+  LoadPageInfo();
 }
 
 void PDFiumEngine::LoadDocument() {
@@ -2474,8 +2487,8 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
     FinishLoadingDocument();
 }
 
-void PDFiumEngine::LoadPageInfo(bool reload) {
-  std::vector<pp::Size> page_sizes = LoadPageSizes(reload);
+void PDFiumEngine::LoadPageInfo() {
+  std::vector<pp::Size> page_sizes = LoadPageSizes();
   if (page_sizes.empty())
     return;
 
@@ -2498,13 +2511,12 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   }
 }
 
-std::vector<pp::Size> PDFiumEngine::LoadPageSizes(bool reload) {
+std::vector<pp::Size> PDFiumEngine::LoadPageSizes() {
   std::vector<pp::Size> page_sizes;
   if (!doc_loader_)
     return page_sizes;
-  if (pages_.empty() && reload)
+  if (pages_.empty() && document_loaded_)
     return page_sizes;
-  DCHECK(reload || pages_.empty()) << "!reload expects no existing pages";
 
   pending_pages_.clear();
   size_t new_page_count = FPDF_GetPageCount(doc());
@@ -2513,13 +2525,12 @@ std::vector<pp::Size> PDFiumEngine::LoadPageSizes(bool reload) {
   bool is_linear =
       FPDFAvail_IsLinearized(fpdf_availability()) == PDF_LINEARIZED;
   for (size_t i = 0; i < new_page_count; ++i) {
-    // Get page availability. If |reload| == true and the page is not new,
-    // then the page has been constructed already. Get page availability flag
-    // from already existing PDFiumPage object.
-    // If |reload| == false or the page is new, then the page may not be fully
-    // loaded yet.
+    // Get page availability. If |document_loaded_| == true and the page is not
+    // new, then the page has been constructed already. Get page availability
+    // flag from already existing PDFiumPage object. If |document_loaded_| ==
+    // false or the page is new, then the page may not be fully loaded yet.
     bool page_available;
-    if (reload && i < pages_.size()) {
+    if (document_loaded_ && i < pages_.size()) {
       page_available = pages_[i]->available();
     } else if (is_linear) {
       FX_DOWNLOADHINTS& download_hints = document_->download_hints();
@@ -2535,12 +2546,14 @@ std::vector<pp::Size> PDFiumEngine::LoadPageSizes(bool reload) {
     page_sizes.push_back(size);
   }
 
-  // Add new pages. If !reload, do not mark page as available even if
-  // |doc_complete| is true because FPDFAvail_IsPageAvail() still has to be
-  // called for this page, which will be done in FinishLoadingDocument().
+  // Add new pages. If |document_loaded_| == false, do not mark page as
+  // available even if |doc_complete| is true because FPDFAvail_IsPageAvail()
+  // still has to be called for this page, which will be done in
+  // FinishLoadingDocument().
   for (size_t i = pages_.size(); i < new_page_count; ++i) {
     auto page = std::make_unique<PDFiumPage>(this, i);
-    if (reload && FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr))
+    if (document_loaded_ &&
+        FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr))
       page->MarkAvailable();
     pages_.push_back(std::move(page));
   }
@@ -2581,7 +2594,8 @@ void PDFiumEngine::LoadPages() {
       // the document is available, the first page is available as well.
       CheckPageAvailable(FPDFAvail_GetFirstPageNum(doc()), &pending_pages_);
     }
-    LoadPageInfo(false);
+    DCHECK(!document_loaded_);
+    LoadPageInfo();
   }
 }
 

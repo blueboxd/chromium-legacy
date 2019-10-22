@@ -26,7 +26,6 @@ COMPONENT_EXPORT(URL) extern const char kDataScheme[];
 COMPONENT_EXPORT(URL) extern const char kFileScheme[];
 COMPONENT_EXPORT(URL) extern const char kFileSystemScheme[];
 COMPONENT_EXPORT(URL) extern const char kFtpScheme[];
-COMPONENT_EXPORT(URL) extern const char kGopherScheme[];
 COMPONENT_EXPORT(URL) extern const char kHttpScheme[];
 COMPONENT_EXPORT(URL) extern const char kHttpsScheme[];
 COMPONENT_EXPORT(URL) extern const char kJavaScriptScheme[];

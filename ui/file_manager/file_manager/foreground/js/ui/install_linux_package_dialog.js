@@ -50,6 +50,7 @@ cr.define('cr.filebrowser', () => {
       // We re-use the same object, so reset any visual state that may be
       // changed.
       this.installButton_.hidden = false;
+      this.installButton_.disabled = true;
       this.okButton.hidden = true;
       this.cancelButton.hidden = false;
 
@@ -140,6 +141,9 @@ cr.define('cr.filebrowser', () => {
         this.details_frame_.appendChild(text);
         this.details_frame_.appendChild(this.document_.createElement('br'));
       }
+
+      // Allow install now.
+      this.installButton_.disabled = false;
     }
 
     /**

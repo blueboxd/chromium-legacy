@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.util.TokenHolder;
 
 import javax.inject.Inject;
@@ -47,7 +48,7 @@ public class DynamicModuleToolbarController implements InflationObserver, Native
 
     @Override
     public void onPostInflationStartup() {
-        mToolbarCoordinator.setToolbarHidden(true);
+        mToolbarCoordinator.setBrowserControlsState(BrowserControlsState.HIDDEN);
         mControlsHidingToken =
                 mFullscreenManager.get().hideAndroidControlsAndClearOldToken(mControlsHidingToken);
         mHasReleasedToken = false;
@@ -61,7 +62,7 @@ public class DynamicModuleToolbarController implements InflationObserver, Native
     }
 
     /* package */ void releaseAndroidControlsHidingToken() {
-        mToolbarCoordinator.setToolbarHidden(false);
+        mToolbarCoordinator.setBrowserControlsState(BrowserControlsState.BOTH);
         mFullscreenManager.get().releaseAndroidControlsHidingToken(mControlsHidingToken);
         mHasReleasedToken = true;
     }

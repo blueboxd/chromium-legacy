@@ -35,10 +35,6 @@ namespace apps {
 // TODO(crbug.com/1009248):
 // 1. Add an interface to the uninstall, like what is done by
 // extension_uninstall_dialog_->ConfirmUninstallByExtension
-// 2. Add RecordDialogCreation to the appropriate place as what is done by
-// extension_uninstall_dialog.
-// 3. Add UMA to the appropriate place as what is done by
-// extension_uninstall_dialog.
 class UninstallDialog {
  public:
   // The UiBase is the parent virtual class for the AppUninstallDialogView,

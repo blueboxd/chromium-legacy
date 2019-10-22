@@ -157,7 +157,8 @@ SynchronousCompositorHost::DemandDrawHwAsync(
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
   invalidate_needs_draw_ = false;
-  scoped_refptr<FrameFuture> frame_future = new FrameFuture();
+  scoped_refptr<FrameFuture> frame_future =
+      new FrameFuture(rwhva_->GetLocalSurfaceIdAllocation().local_surface_id());
   if (compute_scroll_needs_synchronous_draw_ || !allow_async_draw_) {
     allow_async_draw_ = allow_async_draw_ || IsReadyForSynchronousCall();
     compute_scroll_needs_synchronous_draw_ = false;

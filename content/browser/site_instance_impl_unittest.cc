@@ -415,10 +415,10 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
 
   // Blob URLs extract the site from the origin.
   test_url = GURL(
-      "blob:gopher://www.ftp.chromium.org/"
+      "blob:https://www.ftp.chromium.org/"
       "4d4ff040-6d61-4446-86d3-13ca07ec9ab9");
   site_url = SiteInstance::GetSiteForURL(&context, test_url);
-  EXPECT_EQ(GURL("gopher://chromium.org"), site_url);
+  EXPECT_EQ(GURL("https://chromium.org"), site_url);
 
   // Blob URLs with file origin also extract the site from the origin.
   test_url = GURL("blob:file:///1029e5a4-2983-4b90-a585-ed217563acfeb");

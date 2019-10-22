@@ -454,18 +454,22 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       service->GetLastCycleSnapshotForDebugging();
   const SyncTokenStatus& token_status =
       service->GetSyncTokenStatusForDebugging();
+  bool is_local_sync_enabled_state = service->IsLocalSyncEnabled();
 
   // Version Info.
   // |client_version| was already set above.
-  server_url->Set(service->GetSyncServiceUrlForDebugging().spec());
+  if (!is_local_sync_enabled_state)
+    server_url->Set(service->GetSyncServiceUrlForDebugging().spec());
 
   // Identity.
   if (is_status_valid && !full_status.sync_id.empty())
     sync_client_id->Set(full_status.sync_id);
   if (is_status_valid && !full_status.invalidator_client_id.empty())
     invalidator_id->Set(full_status.invalidator_client_id);
-  username->Set(service->GetAuthenticatedAccountInfo().email);
-  user_is_primary->Set(service->IsAuthenticatedAccountPrimary());
+  if (!is_local_sync_enabled_state) {
+    username->Set(service->GetAuthenticatedAccountInfo().email);
+    user_is_primary->Set(service->IsAuthenticatedAccountPrimary());
+  }
 
   // Credentials.
   token_request_time->Set(GetTimeStr(token_status.token_request_time, "n/a"));
@@ -483,8 +487,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   is_setup_complete->Set(service->GetUserSettings()->IsFirstSetupComplete());
   if (is_status_valid)
     is_syncing->Set(full_status.syncing);
-  is_local_sync_enabled->Set(service->IsLocalSyncEnabled());
-  if (service->IsLocalSyncEnabled() && is_status_valid)
+  is_local_sync_enabled->Set(is_local_sync_enabled_state);
+  if (is_local_sync_enabled_state && is_status_valid)
     local_backend_path->Set(full_status.local_sync_folder);
 
   // Network.

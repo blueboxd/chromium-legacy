@@ -29,6 +29,7 @@ import org.chromium.device.mojom.NdefErrorType;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefPushOptions;
 import org.chromium.device.mojom.NdefPushTarget;
+import org.chromium.device.mojom.NdefRecord;
 import org.chromium.device.mojom.NdefScanOptions;
 import org.chromium.device.mojom.Nfc;
 import org.chromium.device.mojom.NfcClient;
@@ -550,14 +551,21 @@ public class NfcImpl implements Nfc {
             mTagHandler.connect();
             message = mTagHandler.read();
             if (message == null) {
-                Log.w(TAG, "Cannot read data from NFC tag. Tag is empty.");
+                // Tag is formatted to support NDEF but does not contain a message yet.
+                // Let's create one with no records so that watchers can be notified.
+                NdefMessage webNdefMessage = new NdefMessage();
+                webNdefMessage.data = new NdefRecord[0];
+                notifyMatchingWatchers(webNdefMessage);
                 return;
             }
             if (message.getByteArrayLength() > NdefMessage.MAX_SIZE) {
                 Log.w(TAG, "Cannot read data from NFC tag. NdefMessage exceeds allowed size.");
                 return;
             }
-            notifyMatchingWatchers(message);
+            NdefMessage webNdefMessage = NdefMessageUtils.toNdefMessage(message);
+            notifyMatchingWatchers(webNdefMessage);
+        } catch (UnsupportedEncodingException e) {
+            Log.w(TAG, "Cannot read data from NFC tag. Cannot convert to NdefMessage.");
         } catch (TagLostException e) {
             Log.w(TAG, "Cannot read data from NFC tag. Tag is lost.");
         } catch (FormatException | IllegalStateException | IOException e) {
@@ -569,26 +577,21 @@ public class NfcImpl implements Nfc {
      * Iterates through active watchers and if any of those match NdefScanOptions criteria,
      * delivers NdefMessage to the client.
      */
-    private void notifyMatchingWatchers(android.nfc.NdefMessage message) {
-        try {
-            NdefMessage ndefMessage = NdefMessageUtils.toNdefMessage(message);
-            List<Integer> watchIds = new ArrayList<Integer>();
-            for (int i = 0; i < mWatchers.size(); i++) {
-                NdefScanOptions options = mWatchers.valueAt(i);
-                if (matchesWatchOptions(ndefMessage, options)) {
-                    watchIds.add(mWatchers.keyAt(i));
-                }
+    private void notifyMatchingWatchers(NdefMessage message) {
+        List<Integer> watchIds = new ArrayList<Integer>();
+        for (int i = 0; i < mWatchers.size(); i++) {
+            NdefScanOptions options = mWatchers.valueAt(i);
+            if (matchesWatchOptions(message, options)) {
+                watchIds.add(mWatchers.keyAt(i));
             }
+        }
 
-            if (watchIds.size() != 0) {
-                int[] ids = new int[watchIds.size()];
-                for (int i = 0; i < watchIds.size(); ++i) {
-                    ids[i] = watchIds.get(i).intValue();
-                }
-                mClient.onWatch(ids, mTagHandler.serialNumber(), ndefMessage);
+        if (watchIds.size() != 0) {
+            int[] ids = new int[watchIds.size()];
+            for (int i = 0; i < watchIds.size(); ++i) {
+                ids[i] = watchIds.get(i).intValue();
             }
-        } catch (UnsupportedEncodingException e) {
-            Log.w(TAG, "Cannot convert NdefMessage to NdefMessage.");
+            mClient.onWatch(ids, mTagHandler.serialNumber(), message);
         }
     }
 

@@ -69,10 +69,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLFormElement::HTMLFormElement(Document& document)
-    : HTMLElement(kFormTag, document),
+    : HTMLElement(html_names::kFormTag, document),
       listed_elements_are_dirty_(false),
       image_elements_are_dirty_(false),
       has_elements_associated_by_parser_(false),
@@ -112,7 +110,8 @@ bool HTMLFormElement::IsValidElement() {
 Node::InsertionNotificationRequest HTMLFormElement::InsertedInto(
     ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
-  LogAddElementIfIsolatedWorldAndInDocument("form", kMethodAttr, kActionAttr);
+  LogAddElementIfIsolatedWorldAndInDocument("form", html_names::kMethodAttr,
+                                            html_names::kActionAttr);
   if (insertion_point.isConnected())
     GetDocument().DidAssociateFormControl(this);
   return kInsertionDone;
@@ -532,7 +531,7 @@ void HTMLFormElement::SubmitForm(FormSubmission* submission) {
                                              submission->Action())) {
     UseCounter::Count(GetDocument(), WebFeature::kMixedContentFormsSubmitted);
   }
-  if (FastHasAttribute(kDisabledAttr)) {
+  if (FastHasAttribute(html_names::kDisabledAttr)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kFormDisabledAttributePresentAndSubmit);
   }
@@ -570,7 +569,7 @@ void HTMLFormElement::reset() {
 void HTMLFormElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
-  if (name == kActionAttr) {
+  if (name == html_names::kActionAttr) {
     attributes_.ParseAction(params.new_value);
     LogUpdateAttributeIfIsolatedWorldAndInDocument("form", params);
 
@@ -586,15 +585,15 @@ void HTMLFormElement::ParseAttribute(
                                                action_url)) {
       UseCounter::Count(GetDocument(), WebFeature::kMixedContentFormPresent);
     }
-  } else if (name == kTargetAttr) {
+  } else if (name == html_names::kTargetAttr) {
     attributes_.SetTarget(params.new_value);
-  } else if (name == kMethodAttr) {
+  } else if (name == html_names::kMethodAttr) {
     attributes_.UpdateMethodType(params.new_value);
-  } else if (name == kEnctypeAttr) {
+  } else if (name == html_names::kEnctypeAttr) {
     attributes_.UpdateEncodingType(params.new_value);
-  } else if (name == kAcceptCharsetAttr) {
+  } else if (name == html_names::kAcceptCharsetAttr) {
     attributes_.SetAcceptCharset(params.new_value);
-  } else if (name == kDisabledAttr) {
+  } else if (name == html_names::kDisabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kFormDisabledAttributePresent);
   } else {
     HTMLElement::ParseAttribute(params);
@@ -604,7 +603,7 @@ void HTMLFormElement::ParseAttribute(
 void HTMLFormElement::Associate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
   listed_elements_.clear();
-  if (e.ToHTMLElement().FastHasAttribute(kFormAttr))
+  if (e.ToHTMLElement().FastHasAttribute(html_names::kFormAttr))
     has_elements_associated_by_form_attribute_ = true;
 }
 
@@ -620,12 +619,13 @@ void HTMLFormElement::Disassociate(ListedElement& e) {
 }
 
 bool HTMLFormElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == kActionAttr ||
+  return attribute.GetName() == html_names::kActionAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
 bool HTMLFormElement::HasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == kActionAttr || HTMLElement::HasLegalLinkAttribute(name);
+  return name == html_names::kActionAttr ||
+         HTMLElement::HasLegalLinkAttribute(name);
 }
 
 void HTMLFormElement::Associate(HTMLImageElement& e) {
@@ -705,7 +705,7 @@ String HTMLFormElement::GetName() const {
 }
 
 bool HTMLFormElement::NoValidate() const {
-  return FastHasAttribute(kNovalidateAttr);
+  return FastHasAttribute(html_names::kNovalidateAttr);
 }
 
 String HTMLFormElement::action() const {
@@ -717,11 +717,11 @@ String HTMLFormElement::action() const {
 }
 
 void HTMLFormElement::setAction(const AtomicString& value) {
-  setAttribute(kActionAttr, value);
+  setAttribute(html_names::kActionAttr, value);
 }
 
 void HTMLFormElement::setEnctype(const AtomicString& value) {
-  setAttribute(kEnctypeAttr, value);
+  setAttribute(html_names::kEnctypeAttr, value);
 }
 
 String HTMLFormElement::method() const {
@@ -729,7 +729,7 @@ String HTMLFormElement::method() const {
 }
 
 void HTMLFormElement::setMethod(const AtomicString& value) {
-  setAttribute(kMethodAttr, value);
+  setAttribute(html_names::kMethodAttr, value);
 }
 
 HTMLFormControlElement* HTMLFormElement::FindDefaultButton() const {
@@ -839,8 +839,8 @@ void HTMLFormElement::GetNamedElements(
 }
 
 bool HTMLFormElement::ShouldAutocomplete() const {
-  return !DeprecatedEqualIgnoringCase(FastGetAttribute(kAutocompleteAttr),
-                                      "off");
+  return !DeprecatedEqualIgnoringCase(
+      FastGetAttribute(html_names::kAutocompleteAttr), "off");
 }
 
 void HTMLFormElement::FinishParsingChildren() {

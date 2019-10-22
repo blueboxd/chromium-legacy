@@ -27,7 +27,6 @@ _BLACKLIST = [
     re.compile(r'.*jni_generator_tests'),
 
     # v8's blobs and icu data get packaged into APKs.
-    re.compile(r'.*natives_blob.*\.bin'),
     re.compile(r'.*snapshot_blob.*\.bin'),
     re.compile(r'.*icudtl.bin'),
 

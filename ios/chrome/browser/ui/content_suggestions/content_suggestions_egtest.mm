@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <XCTest/XCTest.h>
-
 #include <memory>
 #include <vector>
 
@@ -14,50 +11,30 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_command_line.h"
-#include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-#include "components/ntp_snippets/content_suggestion.h"
-#include "components/ntp_snippets/content_suggestions_service.h"
-#include "components/ntp_snippets/mock_content_suggestions_provider.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_switches.h"
-#include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
-#include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_header_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
-#include "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_app_interface.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
-#import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
+#import "net/base/mac/url_conversions.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/strings/grit/ui_strings.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using ntp_snippets::AdditionalSuggestionsHelper;
-using ntp_snippets::Category;
-using ntp_snippets::CategoryStatus;
-using ntp_snippets::ContentSuggestion;
-using ntp_snippets::ContentSuggestionsService;
-using ntp_snippets::CreateChromeContentSuggestionsService;
-using ntp_snippets::KnownCategories;
-using ntp_snippets::MockContentSuggestionsProvider;
-using testing::_;
-using testing::Invoke;
-using testing::WithArg;
+#if defined(CHROME_EARL_GREY_2)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ContentSuggestionsAppInterface);
+#pragma clang diagnostic pop
+#endif  // defined(CHROME_EARL_GREY_2)
 
 namespace {
 
@@ -90,17 +67,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   return std::move(http_response);
 }
 
-// Returns a suggestion created from the |category|, |suggestion_id| and the
-// |url|.
-ContentSuggestion Suggestion(Category category,
-                             std::string suggestion_id,
-                             GURL url) {
-  ContentSuggestion suggestion(category, suggestion_id, url);
-  suggestion.set_title(base::UTF8ToUTF16(url.spec()));
-
-  return suggestion;
-}
-
 // Select the cell with the |matcher| by scrolling the collection.
 // 200 is a reasonable scroll displacement that works for all UI elements, while
 // not being too slow.
@@ -123,72 +89,47 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Test case for the ContentSuggestion UI.
 @interface ContentSuggestionsTestCase : ChromeTestCase
 
-// Current non-incognito browser state.
-@property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
-// Mock provider from the singleton.
-@property(nonatomic, assign, readonly) MockContentSuggestionsProvider* provider;
-// Article category, used by the singleton.
-@property(nonatomic, assign, readonly) Category category;
-
 @end
 
 @implementation ContentSuggestionsTestCase
 
 #pragma mark - Setup/Teardown
 
+#if defined(CHROME_EARL_GREY_2)
++ (void)setUpForTestCase {
+  [super setUpForTestCase];
+  [self setUpHelper];
+}
+#elif defined(CHROME_EARL_GREY_1)
 + (void)setUp {
   [super setUp];
+  [self setUpHelper];
+}
+#else
+#error Not an EarlGrey Test
+#endif
 
++ (void)setUpHelper {
   [self closeAllTabs];
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
 
-  // Sets the ContentSuggestionsService associated with this browserState to a
-  // service with no provider registered, allowing to register fake providers
-  // which do not require internet connection. The previous service is deleted.
-  IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-      browserState,
-      base::BindRepeating(&CreateChromeContentSuggestionsService));
-
-  ContentSuggestionsService* service =
-      IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
-          browserState);
-  [[ContentSuggestionsTestSingleton sharedInstance]
-      registerArticleProvider:service];
+  [ContentSuggestionsAppInterface setUpService];
 }
 
 + (void)tearDown {
   [self closeAllTabs];
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
 
-  // Resets the Service associated with this browserState to a new service with
-  // no providers. The previous service is deleted.
-  IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-      browserState,
-      base::BindRepeating(&CreateChromeContentSuggestionsService));
+  [ContentSuggestionsAppInterface resetService];
+
   [super tearDown];
 }
 
-// Per crbug.com/845186, Disable flakey iPad Retina tests that are limited
-// to iOS 10.2.
-+ (NSArray*)testInvocations {
-#if TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom] && !base::ios::IsRunningOnOrLater(10, 3, 0))
-    return @[];
-#endif  // TARGET_IPHONE_SIMULATOR
-  return [super testInvocations];
-}
-
 - (void)setUp {
-  self.provider->FireCategoryStatusChanged(self.category,
-                                           CategoryStatus::AVAILABLE);
   [super setUp];
+  [ContentSuggestionsAppInterface makeSuggestionsAvailable];
 }
 
 - (void)tearDown {
-  self.provider->FireCategoryStatusChanged(
-      self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
+  [ContentSuggestionsAppInterface disableSuggestions];
   [ChromeEarlGrey clearBrowsingHistory];
   [super tearDown];
 }
@@ -204,20 +145,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Add 3 suggestions, persisted accross page loads.
-  std::vector<ContentSuggestion> suggestions;
-  suggestions.push_back(
-      Suggestion(self.category, "chromium1", GURL("http://chromium.org/1")));
-  suggestions.push_back(
-      Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
-  suggestions.push_back(
-      Suggestion(self.category, "chromium3", GURL("http://chromium.org/3")));
-  self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
-
-  // Set up the action when "More" is tapped.
-  AdditionalSuggestionsHelper helper(pageURL);
-  EXPECT_CALL(*self.provider, FetchMock(_, _, _))
-      .WillOnce(WithArg<2>(Invoke(
-          &helper, &AdditionalSuggestionsHelper::SendAdditionalSuggestions)));
+  [ContentSuggestionsAppInterface
+        addNumberOfSuggestions:3
+      additionalSuggestionsURL:net::NSURLWithGURL(pageURL)];
 
   // Tap on more, which adds 10 elements.
   [CellWithMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
@@ -243,20 +173,12 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that when the page is reloaded using the tools menu, the suggestions
 // are updated.
 - (void)testReloadPage {
-  // Add 2 suggestions.
-  std::vector<ContentSuggestion> suggestions;
-  suggestions.push_back(
-      Suggestion(self.category, "chromium1", GURL("http://chromium.org/1")));
-  suggestions.push_back(
-      Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
-  self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
+  // Add 2 suggestions, persisted accross page loads.
+  [ContentSuggestionsAppInterface addNumberOfSuggestions:2
+                                additionalSuggestionsURL:nil];
 
   // Change the suggestions to have one the second one.
-  std::vector<ContentSuggestion> suggestionsOnly;
-  suggestionsOnly.push_back(
-      Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
-  self.provider->FireSuggestionsChanged(self.category,
-                                        std::move(suggestionsOnly));
+  [ContentSuggestionsAppInterface addSuggestionNumber:2];
 
   // Check that the first suggestion is still displayed.
   [CellWithMatcher(grey_accessibilityID(@"http://chromium.org/1"))
@@ -282,28 +204,16 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Add 3 suggestions, persisted accross page loads.
-  std::vector<ContentSuggestion> suggestions;
-  suggestions.push_back(
-      Suggestion(self.category, "chromium1", GURL("http://chromium.org/1")));
-  suggestions.push_back(
-      Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
-  suggestions.push_back(
-      Suggestion(self.category, "chromium3", GURL("http://chromium.org/3")));
-  self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
-
-  // Set up the action when "More" is tapped.
-  AdditionalSuggestionsHelper helper(pageURL);
-  EXPECT_CALL(*self.provider, FetchMock(_, _, _))
-      .WillOnce(WithArg<2>(Invoke(
-          &helper, &AdditionalSuggestionsHelper::SendAdditionalSuggestions)));
+  [ContentSuggestionsAppInterface
+        addNumberOfSuggestions:3
+      additionalSuggestionsURL:net::NSURLWithGURL(pageURL)];
 
   // Tap on more, which adds 10 elements.
   [CellWithMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
       IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE)) performAction:grey_tap()];
 
   // Make sure to scroll to the bottom.
-  [CellWithMatcher(grey_accessibilityID(
-      [ContentSuggestionsLearnMoreItem accessibilityIdentifier]))
+  [CellWithMatcher(grey_accessibilityID(@"Learn more"))
       assertWithMatcher:grey_notNil()];
 
   // Open the last item. After the extra space of the last suggestion is
@@ -338,20 +248,15 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)testLearnMore {
   id<GREYAction> action =
       grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 200, 0.5, 0.5);
-  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                           [ContentSuggestionsLearnMoreItem
-                                               accessibilityIdentifier])]
+  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Learn more")]
          usingSearchAction:action
       onElementWithMatcher:chrome_test_util::ContentSuggestionCollectionView()]
       assertWithMatcher:grey_nil()];
 
-  std::vector<ContentSuggestion> suggestions;
-  suggestions.push_back(
-      Suggestion(self.category, "chromium", GURL("http://chromium.org")));
-  self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
+  [ContentSuggestionsAppInterface addNumberOfSuggestions:1
+                                additionalSuggestionsURL:nil];
 
-  [CellWithMatcher(grey_accessibilityID(
-      [ContentSuggestionsLearnMoreItem accessibilityIdentifier]))
+  [CellWithMatcher(grey_accessibilityID(@"Learn more"))
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -477,7 +382,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)testMostVisitedLongPress {
   [self setupMostVisitedTileLongPress];
 
-  if (!IsRegularXRegularSizeClass()) {
+  if (![ChromeEarlGrey isRegularXRegularSizeClass]) {
     [[EarlGrey selectElementWithMatcher:
                    chrome_test_util::ButtonWithAccessibilityLabelId(
                        IDS_APP_CANCEL)] assertWithMatcher:grey_interactable()];
@@ -488,20 +393,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST)]
       assertWithMatcher:grey_nil()];
-}
-
-#pragma mark - Properties
-
-- (ios::ChromeBrowserState*)browserState {
-  return chrome_test_util::GetOriginalBrowserState();
-}
-
-- (MockContentSuggestionsProvider*)provider {
-  return [[ContentSuggestionsTestSingleton sharedInstance] provider];
-}
-
-- (Category)category {
-  return Category::FromKnownCategory(KnownCategories::ARTICLES);
 }
 
 #pragma mark - Test utils

@@ -166,6 +166,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/TwaFinishHandler.java",
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/TwaIntentHandlingStrategy.java",
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/ClientAppDataRecorder.java",
+  "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityBrowserControlsVisibilityManager.java",
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityDisclosureController.java",
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityOpenTimeRecorder.java",
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityVerifier.java",

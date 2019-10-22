@@ -139,23 +139,31 @@ public final class NdefMessageUtils {
      */
     private static NdefRecord toNdefRecord(android.nfc.NdefRecord ndefRecord)
             throws UnsupportedEncodingException {
+        NdefRecord record = null;
         switch (ndefRecord.getTnf()) {
             case android.nfc.NdefRecord.TNF_EMPTY:
-                return createEmptyRecord();
+                record = createEmptyRecord();
+                break;
             case android.nfc.NdefRecord.TNF_MIME_MEDIA:
-                return createMIMERecord(
+                record = createMIMERecord(
                         new String(ndefRecord.getType(), "UTF-8"), ndefRecord.getPayload());
+                break;
             case android.nfc.NdefRecord.TNF_ABSOLUTE_URI:
-                return createURLRecord(ndefRecord.toUri());
+                record = createURLRecord(ndefRecord.toUri());
+                break;
             case android.nfc.NdefRecord.TNF_WELL_KNOWN:
-                return createWellKnownRecord(ndefRecord);
+                record = createWellKnownRecord(ndefRecord);
+                break;
             case android.nfc.NdefRecord.TNF_UNKNOWN:
-                return createUnKnownRecord(ndefRecord.getPayload());
+                record = createUnKnownRecord(ndefRecord.getPayload());
+                break;
             case android.nfc.NdefRecord.TNF_EXTERNAL_TYPE:
-                return createExternalTypeRecord(
+                record = createExternalTypeRecord(
                         new String(ndefRecord.getType(), "UTF-8"), ndefRecord.getPayload());
+                break;
         }
-        return null;
+        record.id = new String(ndefRecord.getId(), "UTF-8");
+        return record;
     }
 
     /**

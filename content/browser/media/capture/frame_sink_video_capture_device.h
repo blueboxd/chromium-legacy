@@ -22,6 +22,7 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -101,12 +102,12 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   // implementation calls CreateCapturerViaGlobalManager(), but subclasses
   // and/or tests may provide alternatives.
   virtual void CreateCapturer(
-      viz::mojom::FrameSinkVideoCapturerRequest request);
+      mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> receiver);
 
   // Establishes connection to FrameSinkVideoCapturer using the global
   // viz::HostFrameSinkManager.
   static void CreateCapturerViaGlobalManager(
-      viz::mojom::FrameSinkVideoCapturerRequest request);
+      mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> receiver);
 
  private:
   using BufferId = decltype(media::VideoCaptureDevice::Client::Buffer::id);

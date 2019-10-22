@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.content_public.common.BrowserControlsState;
 
 import javax.inject.Inject;
 
@@ -23,7 +24,7 @@ public class CustomTabBrowserControlsVisibilityDelegate
         implements BrowserControlsVisibilityDelegate {
     private final Lazy<ChromeFullscreenManager> mFullscreenManagerDelegate;
     private final ActivityTabProvider mTabProvider;
-    private boolean mHidden;
+    private @BrowserControlsState int mBrowserControlsState = BrowserControlsState.BOTH;
 
     @Inject
     public CustomTabBrowserControlsVisibilityDelegate(
@@ -33,23 +34,25 @@ public class CustomTabBrowserControlsVisibilityDelegate
     }
 
     /**
-     * Sets browser controls hidden. Note: this is not enough to completely hide the toolbar, use
-     * {@link CustomTabToolbarCoordinator#setToolbarHidden} for that.
+     * Sets the browser controls state. Note: this is not enough to completely hide the toolbar, use
+     * {@link CustomTabToolbarCoordinator#setBrowserControlsState()} for that.
      */
-    public void setControlsHidden(boolean hidden) {
-        if (hidden == mHidden) return;
-        mHidden = hidden;
+    public void setControlsState(@BrowserControlsState int browserControlsState) {
+        if (browserControlsState == mBrowserControlsState) return;
+        mBrowserControlsState = browserControlsState;
         updateActiveTabFullscreenEnabledState();
     }
 
     @Override
     public boolean canShowBrowserControls() {
-        return !mHidden && getDefaultVisibilityDelegate().canShowBrowserControls();
+        return mBrowserControlsState != BrowserControlsState.HIDDEN
+                && getDefaultVisibilityDelegate().canShowBrowserControls();
     }
 
     @Override
     public boolean canAutoHideBrowserControls() {
-        return getDefaultVisibilityDelegate().canAutoHideBrowserControls();
+        return mBrowserControlsState != BrowserControlsState.SHOWN
+                && getDefaultVisibilityDelegate().canAutoHideBrowserControls();
     }
 
     private BrowserStateBrowserControlsVisibilityDelegate getDefaultVisibilityDelegate() {

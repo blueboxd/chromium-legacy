@@ -43,8 +43,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static const int kDateTimeLocalDefaultStep = 60;
 static const int kDateTimeLocalDefaultStepBase = 0;
 static const int kDateTimeLocalStepScaleFactor = 1000;
@@ -166,11 +164,13 @@ void DateTimeLocalInputType::SetupLayoutParameters(
         layout_parameters.locale.DateTimeFormatWithoutSeconds();
     layout_parameters.fallback_date_time_format = "yyyy-MM-dd'T'HH:mm";
   }
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMinAttr),
-                             &layout_parameters.minimum))
+  if (!ParseToDateComponents(
+          GetElement().FastGetAttribute(html_names::kMinAttr),
+          &layout_parameters.minimum))
     layout_parameters.minimum = DateComponents();
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMaxAttr),
-                             &layout_parameters.maximum))
+  if (!ParseToDateComponents(
+          GetElement().FastGetAttribute(html_names::kMaxAttr),
+          &layout_parameters.maximum))
     layout_parameters.maximum = DateComponents();
   layout_parameters.placeholder_for_day =
       GetLocale().QueryString(IDS_FORM_PLACEHOLDER_FOR_DAY_OF_MONTH_FIELD);

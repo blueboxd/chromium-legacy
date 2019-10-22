@@ -164,7 +164,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void AddVideoDetectorObserver(mojom::VideoDetectorObserverPtr observer);
 
   // Creates a FrameSinkVideoCapturer instance in viz.
-  void CreateVideoCapturer(mojom::FrameSinkVideoCapturerRequest request);
+  void CreateVideoCapturer(
+      mojo::PendingReceiver<mojom::FrameSinkVideoCapturer> receiver);
 
   // Creates a FrameSinkVideoCapturer instance in viz and returns a
   // ClientFrameSinkVideoCapturer that's connected to it. Clients should prefer

@@ -13,7 +13,9 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/viz_host_export.h"
 #include "media/base/video_types.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -64,8 +66,8 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
     DISALLOW_COPY_AND_ASSIGN(Overlay);
   };
 
-  using EstablishConnectionCallback =
-      base::RepeatingCallback<void(mojom::FrameSinkVideoCapturerRequest)>;
+  using EstablishConnectionCallback = base::RepeatingCallback<void(
+      mojo::PendingReceiver<mojom::FrameSinkVideoCapturer>)>;
 
   explicit ClientFrameSinkVideoCapturer(EstablishConnectionCallback callback);
   ~ClientFrameSinkVideoCapturer() override;
@@ -152,7 +154,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
 
   mojom::FrameSinkVideoConsumer* consumer_ = nullptr;
   EstablishConnectionCallback establish_connection_callback_;
-  mojom::FrameSinkVideoCapturerPtr capturer_;
+  mojo::Remote<mojom::FrameSinkVideoCapturer> capturer_remote_;
   mojo::Receiver<mojom::FrameSinkVideoConsumer> consumer_receiver_{this};
 
   base::WeakPtrFactory<ClientFrameSinkVideoCapturer> weak_factory_{this};

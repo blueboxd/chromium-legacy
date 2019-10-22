@@ -30,7 +30,7 @@ def get_files_to_compare(build_dir, recursive=False):
     '.aab',
     '.apk',
     '.app',
-    '.bin',  # V8 snapshot files natives_blob.bin, snapshot_blob.bin
+    '.bin',  # V8 snapshot file snapshot_blob.bin
     '.dll',
     '.dylib',
     '.exe',

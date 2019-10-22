@@ -69,7 +69,6 @@ void ContentTestSuiteBase::Initialize() {
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
-  gin::V8Initializer::LoadV8Natives();
 #endif
 
   ui::MaterialDesignController::Initialize();

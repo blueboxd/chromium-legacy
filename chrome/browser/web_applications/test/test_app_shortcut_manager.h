@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -48,6 +49,8 @@ class TestAppShortcutManager : public AppShortcutManager {
 
   bool can_create_shortcuts_ = true;
   std::map<AppId, bool> next_create_shortcut_results_;
+
+  base::WeakPtrFactory<TestAppShortcutManager> weak_ptr_factory_{this};
 };
 
 }  // namespace web_app

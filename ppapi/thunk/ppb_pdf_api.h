@@ -32,9 +32,7 @@ class PPB_PDF_API {
   virtual void Print() = 0;
   virtual void SetSelectedText(const char* selected_text) = 0;
   virtual void SetLinkUnderCursor(const char* url) = 0;
-  virtual void GetV8ExternalSnapshotData(const char** natives_data_out,
-                                         int* natives_size_out,
-                                         const char** snapshot_data_out,
+  virtual void GetV8ExternalSnapshotData(const char** snapshot_data_out,
                                          int* snapshot_size_out) = 0;
   virtual void SetAccessibilityViewportInfo(
       const PP_PrivateAccessibilityViewportInfo* viewport_info) = 0;

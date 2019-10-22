@@ -50,8 +50,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 class FormAttributeTargetObserver : public IdTargetObserver {
  public:
   FormAttributeTargetObserver(const AtomicString& id, ListedElement*);
@@ -89,7 +87,7 @@ ValidityState* ListedElement::validity() {
 }
 
 void ListedElement::DidMoveToNewDocument(Document& old_document) {
-  if (ToHTMLElement().FastHasAttribute(kFormAttr))
+  if (ToHTMLElement().FastHasAttribute(html_names::kFormAttr))
     SetFormAttributeTargetObserver(nullptr);
 }
 
@@ -107,7 +105,7 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
 
   HTMLElement& element = ToHTMLElement();
   if (insertion_point.isConnected()) {
-    if (element.FastHasAttribute(kFormAttr))
+    if (element.FastHasAttribute(html_names::kFormAttr))
       ResetFormAttributeTargetObserver();
   }
 
@@ -135,7 +133,8 @@ void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
   UpdateWillValidateCache();
 
   HTMLElement& element = ToHTMLElement();
-  if (insertion_point.isConnected() && element.FastHasAttribute(kFormAttr)) {
+  if (insertion_point.isConnected() &&
+      element.FastHasAttribute(html_names::kFormAttr)) {
     SetFormAttributeTargetObserver(nullptr);
     ResetFormOwner();
   } else {
@@ -246,7 +245,7 @@ void ListedElement::FieldSetAncestorsSetNeedsValidityCheck(Node* node) {
 void ListedElement::ResetFormOwner() {
   form_was_set_by_parser_ = false;
   HTMLElement& element = ToHTMLElement();
-  const AtomicString& form_id(element.FastGetAttribute(kFormAttr));
+  const AtomicString& form_id(element.FastGetAttribute(html_names::kFormAttr));
   HTMLFormElement* nearest_form = element.FindFormAncestor();
   // 1. If the element's form owner is not null, and either the element is not
   // reassociateable or its form content attribute is not present, and the
@@ -642,7 +641,7 @@ void ListedElement::SetFormAttributeTargetObserver(
 
 void ListedElement::ResetFormAttributeTargetObserver() {
   HTMLElement& element = ToHTMLElement();
-  const AtomicString& form_id(element.FastGetAttribute(kFormAttr));
+  const AtomicString& form_id(element.FastGetAttribute(html_names::kFormAttr));
   if (!form_id.IsNull() && element.isConnected()) {
     SetFormAttributeTargetObserver(
         MakeGarbageCollected<FormAttributeTargetObserver>(form_id, this));

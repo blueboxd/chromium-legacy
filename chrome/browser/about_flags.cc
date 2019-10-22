@@ -104,7 +104,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
-#include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
@@ -2486,6 +2486,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeInputLogicFstName,
      flag_descriptions::kImeInputLogicFstDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicFst)},
+    {"enable-cros-ime-native-decoder", flag_descriptions::kImeNativeDecoderName,
+     flag_descriptions::kImeNativeDecoderDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeDecoderWithSandbox)},
     {"enable-experimental-accessibility-switch-access",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessName,
      flag_descriptions::kExperimentalAccessibilitySwitchAccessDescription,
@@ -3256,11 +3259,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PRINTING)
-    {"use-pdf-compositor-service-for-print",
-     flag_descriptions::kUsePdfCompositorServiceName,
-     flag_descriptions::kUsePdfCompositorServiceDescription, kOsAll,
-     FEATURE_VALUE_TYPE(printing::features::kUsePdfCompositorServiceForPrint)},
-
     {"harfbuzz-pdf-subsetter", flag_descriptions::kHarfBuzzPDFSubsetterName,
      flag_descriptions::kHarfBuzzPDFSubsetterDescription, kOsAll,
      FEATURE_VALUE_TYPE(printing::features::kHarfBuzzPDFSubsetter)},
@@ -3657,9 +3655,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          blink::features::kServiceWorkerImportedScriptUpdateCheck)},
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
-     flag_descriptions::kUseMultiloginEndpointDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
+     flag_descriptions::kUseMultiloginEndpointDescription,
+     kOsMac | kOsWin | kOsLinux, FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
+#endif
 
 #if defined(OS_CHROMEOS)
     {"enable-usbguard", flag_descriptions::kUsbguardName,
@@ -4674,6 +4674,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-desktop-minimal-ui", flag_descriptions::kDesktopMinimalUIName,
      flag_descriptions::kDesktopMinimalUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopMinimalUI)},
+    {"enable-media-internals-devtools",
+     flag_descriptions::kMediaInspectorLoggingName,
+     flag_descriptions::kMediaInspectorLoggingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kMediaInspectorLogging)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

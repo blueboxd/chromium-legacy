@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -26,10 +27,13 @@ import java.util.Set;
  * through direct actions. The actual implementation is in the module.
  */
 public class AutofillAssistantDirectActionHandler implements DirectActionHandler {
+    // TODO(b/138833619): Rename this action into something that shows that it is starting the
+    // controller / dynamic actions stack.
     private static final String LIST_AA_ACTIONS = "list_assistant_actions";
     private static final String LIST_AA_ACTIONS_RESULT = "names";
+    // TODO(b/138833619): Remove this action entirely.
     private static final String PERFORM_AA_ACTION = "perform_assistant_action";
-    private static final String PERFORM_AA_ACTION_RESULT = "success";
+    private static final String AA_ACTION_RESULT = "success";
     private static final String ACTION_NAME = "name";
     private static final String EXPERIMENT_IDS = "experiment_ids";
     private static final String ONBOARDING_ACTION = "onboarding";
@@ -62,7 +66,17 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
 
     @Override
     public void reportAvailableDirectActions(DirectActionReporter reporter) {
-        if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) return;
+        if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
+            return;
+        }
+
+        if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
+            reporter.addDirectAction(ONBOARDING_ACTION)
+                    .withParameter(ACTION_NAME, Type.STRING, /* required= */ false)
+                    .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
+                    .withResult(AA_ACTION_RESULT, Type.BOOLEAN);
+            return;
+        }
 
         reporter.addDirectAction(LIST_AA_ACTIONS)
                 .withParameter(USER_NAME, Type.STRING, /* required= */ false)
@@ -72,7 +86,16 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
         reporter.addDirectAction(PERFORM_AA_ACTION)
                 .withParameter(ACTION_NAME, Type.STRING, /* required= */ false)
                 .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
-                .withResult(PERFORM_AA_ACTION_RESULT, Type.BOOLEAN);
+                .withResult(AA_ACTION_RESULT, Type.BOOLEAN);
+
+        // Additionally report if there are dynamic actions.
+        if (mDelegate != null) {
+            for (String action : mDelegate.getActions()) {
+                reporter.addDirectAction(action)
+                        .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
+                        .withResult(AA_ACTION_RESULT, Type.BOOLEAN);
+            }
+        }
     }
 
     @Override
@@ -86,7 +109,18 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             performAction(arguments, callback);
             return true;
         }
+        // Only handle and perform the action if it is known to the controller.
+        if (isActionAvailable(actionId)) {
+            arguments.putString("name", actionId);
+            performAction(arguments, callback);
+            return true;
+        }
         return false;
+    }
+
+    private boolean isActionAvailable(String actionId) {
+        if (mDelegate == null) return false;
+        return Arrays.asList(mDelegate.getActions()).contains(actionId);
     }
 
     private void listActions(Bundle arguments, Callback<Bundle> bundleCallback) {
@@ -124,7 +158,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     private void performAction(Bundle arguments, Callback<Bundle> bundleCallback) {
         Callback<Boolean> booleanCallback = (result) -> {
             Bundle bundle = new Bundle();
-            bundle.putBoolean(PERFORM_AA_ACTION_RESULT, result);
+            bundle.putBoolean(AA_ACTION_RESULT, result);
             bundleCallback.onResult(bundle);
         };
 

@@ -310,7 +310,8 @@ void DevToolsEyeDropper::OnFrameCaptured(
     base::ReadOnlySharedMemoryMapping mapping;
     // Prevents FrameSinkVideoCapturer from recycling the shared memory that
     // backs |frame_|.
-    mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> releaser;
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+        releaser;
   };
   frame_.installPixels(
       SkImageInfo::MakeN32(content_rect.width(), content_rect.height(),
@@ -322,7 +323,7 @@ void DevToolsEyeDropper::OnFrameCaptured(
       [](void* addr, void* context) {
         delete static_cast<FramePinner*>(context);
       },
-      new FramePinner{std::move(mapping), std::move(callbacks_remote)});
+      new FramePinner{std::move(mapping), callbacks_remote.Unbind()});
   frame_.setImmutable();
 
   UpdateCursor();

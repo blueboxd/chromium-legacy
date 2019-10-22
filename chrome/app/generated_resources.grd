@@ -2563,9 +2563,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE" desc="Label shown on a dialog that allows users to turn off third-party cookie blocking for a specific site.">
         Site not working?
       </message>
-      <message name="IDS_COOKIE_CONTROLS_TURNED_ON_TITLE" desc="Label shown to a user after cookie blocking has been turned on for a specific site.">
-        Third-party cookie blocking is on
-      </message>
      <message name="IDS_COOKIE_CONTROLS_NOT_WORKING_DESCRIPTION" desc="Label shown on a dialog that allows users to turn off third-party cookie blocking for a specific site.">
         Some sites use third-party cookies to load their pages. If a site isn't working, you can try turning off cookie blocking.
       </message>

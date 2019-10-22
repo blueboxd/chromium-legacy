@@ -11,6 +11,7 @@
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -39,11 +40,6 @@ bool WebAppBrowserController::IsHostedApp() const {
 void WebAppBrowserController::SetReadIconCallbackForTesting(
     base::OnceClosure callback) {
   callback_for_testing_ = std::move(callback);
-}
-
-bool WebAppBrowserController::ShouldShowCustomTabBar() const {
-  // TODO(https://crbug.com/966290): Complete implementation.
-  return false;
 }
 
 gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {

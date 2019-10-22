@@ -97,17 +97,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // has been initialized or by deferring it until initialization has completed.
   void ExecuteFunction(const base::Closure& callback);
 
-  // Called after OS authentication call for export password request.
-  void ExportPasswordReply(
-      base::OnceCallback<void(const std::string&)> accepted,
-      content::WebContents* web_contents,
-      bool authenticated);
-
-  // Called after OS authentication call for show password request.
-  void RequestShowPasswordReply(PlaintextPasswordCallback callback,
-                                int id,
-                                bool authenticated);
-
   void SendSavedPasswordsList();
   void SendPasswordExceptionsList();
 
@@ -158,9 +147,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // The WebContents used when invoking this API. Used to fetch the
   // NativeWindow for the window where the API was called.
   content::WebContents* web_contents_;
-
-  // Weak pointers for different callbacks.
-  base::WeakPtrFactory<PasswordsPrivateDelegateImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateDelegateImpl);
 };

@@ -567,11 +567,6 @@ TEST(GURLTest, EffectiveIntPort) {
     {"ftp://www.google.com:21/", 21},
     {"ftp://www.google.com:80/", 80},
 
-    // gopher
-    {"gopher://www.google.com/", 70},
-    {"gopher://www.google.com:70/", 70},
-    {"gopher://www.google.com:80/", 80},
-
     // file - no port
     {"file://www.google.com/", PORT_UNSPECIFIED},
     {"file://www.google.com:443/", PORT_UNSPECIFIED},

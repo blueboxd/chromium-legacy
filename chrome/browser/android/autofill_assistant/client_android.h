@@ -72,6 +72,10 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobjectArray>& jargument_values,
       const base::android::JavaParamRef<jobject>& jcallback);
 
+  base::android::ScopedJavaLocalRef<jobjectArray> GetDirectActions(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
+
   bool PerformDirectAction(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
@@ -109,6 +113,9 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
   bool NeedsUI();
   void OnListDirectActions(const base::android::JavaRef<jobject>& jcallback);
+
+  base::android::ScopedJavaLocalRef<jobjectArray>
+  GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const;
 
   // Returns the index of a direct action with that name, to pass to
   // UiDelegate::PerformUserAction() or -1 if not found.

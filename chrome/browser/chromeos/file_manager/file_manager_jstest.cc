@@ -195,6 +195,9 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileManagerDialogBaseTest) {
   RunTestURL("foreground/js/ui/file_manager_dialog_base_unittest_gen.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, InstallLinuxPackageDialogTest) {
+  RunTestURL("foreground/js/ui/install_linux_package_dialog_unittest_gen.html");
+}
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMenu) {
   RunTestURL("foreground/js/ui/multi_menu_unittest_gen.html");
 }

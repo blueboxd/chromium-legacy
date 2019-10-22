@@ -622,18 +622,6 @@ class ScopedMainMessageLoopRunEvent {
   }
 };
 
-// Check if the policy to allow WebDriver to override Site Isolation is set and
-// if the user actually wants to use WebDriver which will cause us to skip
-// even checking if Site Isolation should be turned on by policy.
-bool IsWebDriverOverridingPolicy(PrefService* local_state) {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  return (!command_line->HasSwitch(switches::kEnableAutomation) ||
-          !(local_state->IsManagedPreference(
-                prefs::kWebDriverOverridesIncompatiblePolicies) &&
-            local_state->GetBoolean(
-                prefs::kWebDriverOverridesIncompatiblePolicies)));
-}
-
 }  // namespace
 
 // BrowserMainParts ------------------------------------------------------------
@@ -1125,17 +1113,15 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif
   metrics::RendererUptimeTracker::Initialize();
 
-  if (IsWebDriverOverridingPolicy(local_state)) {
-    auto* command_line = base::CommandLine::ForCurrentProcess();
-    // Add Site Isolation switches as dictated by policy.
-    if (local_state->GetBoolean(prefs::kSitePerProcess) &&
-        SiteIsolationPolicy::IsEnterprisePolicyApplicable() &&
-        !command_line->HasSwitch(switches::kSitePerProcess)) {
-      command_line->AppendSwitch(switches::kSitePerProcess);
-    }
-    // IsolateOrigins policy is taken care of through SiteIsolationPrefsObserver
-    // (constructed and owned by BrowserProcessImpl).
+  // Add Site Isolation switches as dictated by policy.
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (local_state->GetBoolean(prefs::kSitePerProcess) &&
+      SiteIsolationPolicy::IsEnterprisePolicyApplicable() &&
+      !command_line->HasSwitch(switches::kSitePerProcess)) {
+    command_line->AppendSwitch(switches::kSitePerProcess);
   }
+  // IsolateOrigins policy is taken care of through SiteIsolationPrefsObserver
+  // (constructed and owned by BrowserProcessImpl).
 
 #if defined(OS_ANDROID)
   // The admin should also be able to use these policies to force Site Isolation

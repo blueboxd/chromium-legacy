@@ -7,6 +7,7 @@
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_record_init.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -257,23 +258,24 @@ NDEFRecord::NDEFRecord(const String& record_type,
                        WTF::Vector<uint8_t> data)
     : record_type_(record_type),
       media_type_(media_type),
-      data_(std::move(data)) {}
+      payload_data_(std::move(data)) {}
 
 NDEFRecord::NDEFRecord(const String& text)
     : record_type_("text"),
       media_type_("text/plain;charset=UTF-8"),
-      data_(GetUTF8DataFromString(text)) {}
+      payload_data_(GetUTF8DataFromString(text)) {}
 
 NDEFRecord::NDEFRecord(DOMArrayBuffer* array_buffer)
     : record_type_("opaque"), media_type_("application/octet-stream") {
-  data_.Append(static_cast<uint8_t*>(array_buffer->Data()),
-               array_buffer->ByteLength());
+  payload_data_.Append(static_cast<uint8_t*>(array_buffer->Data()),
+                       array_buffer->ByteLength());
 }
 
 NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
     : record_type_(record.record_type),
       media_type_(record.media_type),
-      data_(record.data) {}
+      id_(record.id),
+      payload_data_(record.data) {}
 
 const String& NDEFRecord::recordType() const {
   return record_type_;
@@ -283,6 +285,16 @@ const String& NDEFRecord::mediaType() const {
   return media_type_;
 }
 
+const String& NDEFRecord::id() const {
+  return id_;
+}
+
+DOMDataView* NDEFRecord::data() const {
+  DOMArrayBuffer* dom_buffer =
+      DOMArrayBuffer::Create(payload_data_.data(), payload_data_.size());
+  return DOMDataView::Create(dom_buffer, 0, payload_data_.size());
+}
+
 String NDEFRecord::text() const {
   if (record_type_ == "empty")
     return String();
@@ -290,7 +302,8 @@ String NDEFRecord::text() const {
   // TODO(https://crbug.com/520391): Support utf-16 decoding for 'TEXT' record
   // as described at
   // http://w3c.github.io/web-nfc/#dfn-convert-ndefrecord-payloaddata-bytes.
-  return String::FromUTF8WithLatin1Fallback(data_.data(), data_.size());
+  return String::FromUTF8WithLatin1Fallback(payload_data_.data(),
+                                            payload_data_.size());
 }
 
 DOMArrayBuffer* NDEFRecord::arrayBuffer() const {
@@ -301,7 +314,7 @@ DOMArrayBuffer* NDEFRecord::arrayBuffer() const {
   DCHECK(record_type_ == "json" || record_type_ == "opaque" ||
          !ValidateCustomRecordType(record_type_).IsNull());
 
-  return DOMArrayBuffer::Create(data_.data(), data_.size());
+  return DOMArrayBuffer::Create(payload_data_.data(), payload_data_.size());
 }
 
 ScriptValue NDEFRecord::json(ScriptState* script_state,
@@ -314,17 +327,18 @@ ScriptValue NDEFRecord::json(ScriptState* script_state,
          !ValidateCustomRecordType(record_type_).IsNull());
 
   ScriptState::Scope scope(script_state);
-  v8::Local<v8::Value> json_object = FromJSONString(
-      script_state->GetIsolate(), script_state->GetContext(),
-      String::FromUTF8WithLatin1Fallback(data_.data(), data_.size()),
-      exception_state);
+  v8::Local<v8::Value> json_object =
+      FromJSONString(script_state->GetIsolate(), script_state->GetContext(),
+                     String::FromUTF8WithLatin1Fallback(payload_data_.data(),
+                                                        payload_data_.size()),
+                     exception_state);
   if (exception_state.HadException())
     return ScriptValue::CreateNull(script_state->GetIsolate());
   return ScriptValue(script_state->GetIsolate(), json_object);
 }
 
-const WTF::Vector<uint8_t>& NDEFRecord::data() const {
-  return data_;
+const WTF::Vector<uint8_t>& NDEFRecord::payloadData() const {
+  return payload_data_;
 }
 
 void NDEFRecord::Trace(blink::Visitor* visitor) {

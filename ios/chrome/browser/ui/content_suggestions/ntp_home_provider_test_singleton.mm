@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "components/ntp_snippets/content_suggestion.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,6 +16,8 @@
 
 @implementation ContentSuggestionsTestSingleton {
   ntp_snippets::MockContentSuggestionsProvider* _provider;
+  std::unique_ptr<ntp_snippets::AdditionalSuggestionsHelper>
+      _additionalSuggestionsHelper;
 }
 
 + (instancetype)sharedInstance {
@@ -24,6 +27,15 @@
     sharedInstance = [[self alloc] init];
   });
   return sharedInstance;
+}
+
+- (void)resetAdditionalSuggestionsHelperWithURL:(const GURL&)URL {
+  _additionalSuggestionsHelper =
+      std::make_unique<ntp_snippets::AdditionalSuggestionsHelper>(URL);
+}
+
+- (ntp_snippets::AdditionalSuggestionsHelper*)additionalSuggestionsHelper {
+  return _additionalSuggestionsHelper.get();
 }
 
 - (ntp_snippets::MockContentSuggestionsProvider*)provider {

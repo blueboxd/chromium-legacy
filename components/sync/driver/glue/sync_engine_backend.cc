@@ -10,8 +10,8 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
@@ -62,17 +62,6 @@ namespace {
 const base::FilePath::CharType kNigoriStorageFilename[] =
     FILE_PATH_LITERAL("Nigori.bin");
 
-void RecordPerModelTypeInvalidation(ModelTypeForHistograms value,
-                                    bool is_grouped) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType", value);
-  if (!is_grouped) {
-    // When recording metrics it's important to distinguish between
-    // many/one case, since "many" aka grouped case is only common in
-    // the deprecated implementation.
-    UMA_HISTOGRAM_ENUMERATION("Sync.NonGroupedInvalidation", value);
-  }
-}
-
 bool ShouldEnableUSSNigori() {
   // USS implementation of Nigori is not compatible with Directory
   // implementations of Passwords and Bookmarks.
@@ -91,7 +80,7 @@ SyncEngineBackend::SyncEngineBackend(const std::string& name,
                                      const base::WeakPtr<SyncEngineImpl>& host)
     : name_(name), sync_data_folder_(sync_data_folder), host_(host) {
   DCHECK(host);
-  // This is constructed on the UI thread but used from the sync thread.
+  // This is constructed on the UI thread but used from another thread.
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -292,8 +281,8 @@ void SyncEngineBackend::DoOnIncomingInvalidation(
       DLOG(WARNING) << "Notification has invalid id: "
                     << ObjectIdToString(object_id);
     } else {
-      bool is_grouped = (ids.size() != 1);
-      RecordPerModelTypeInvalidation(ModelTypeHistogramValue(type), is_grouped);
+      UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType",
+                                ModelTypeHistogramValue(type));
       SingleObjectInvalidationSet invalidation_set =
           invalidation_map.ForObject(object_id);
       for (Invalidation invalidation : invalidation_set) {
@@ -301,10 +290,6 @@ void SyncEngineBackend::DoOnIncomingInvalidation(
           continue;
         }
 
-        if (!is_grouped && !invalidation.is_unknown_version()) {
-          UMA_HISTOGRAM_ENUMERATION("Sync.NonGroupedInvalidationKnownVersion",
-                                    ModelTypeHistogramValue(type));
-        }
         std::unique_ptr<InvalidationInterface> inv_adapter(
             new InvalidationAdapter(invalidation));
         sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
@@ -395,8 +380,9 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.birthday = params.birthday;
   args.bag_of_chips = params.bag_of_chips;
   sync_manager_->Init(&args);
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "SyncDirectory", base::ThreadTaskRunnerHandle::Get());
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->RegisterDumpProviderWithSequencedTaskRunner(
+          this, "SyncDirectory", base::SequencedTaskRunnerHandle::Get(), {});
 }
 
 void SyncEngineBackend::DoUpdateCredentials(
@@ -404,7 +390,7 @@ void SyncEngineBackend::DoUpdateCredentials(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // UpdateCredentials can be called during backend initialization, possibly
   // when backend initialization has failed but hasn't notified the UI thread
-  // yet. In that case, the sync manager may have been destroyed on the sync
+  // yet. In that case, the sync manager may have been destroyed on another
   // thread before this task was executed, so we do nothing.
   if (sync_manager_) {
     sync_manager_->UpdateCredentials(credentials);

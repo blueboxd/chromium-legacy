@@ -34,4 +34,8 @@ const base::Feature kV8GCBackgroundSchedule{"V8GCBackgroundSchedule",
 const base::Feature kV8GCLessCompaction{"V8GCLessCompaction",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Always promote young objects in Mark-Compact GC.
+const base::Feature kV8GCAlwaysPromoteYoungMC{
+    "V8GCAlwaysPromoteYoungMC", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

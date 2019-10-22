@@ -290,8 +290,6 @@ test("app_shell_unittests") {
   data = [
     "//extensions/test/data/",
     "$root_out_dir/extensions_shell_and_test.pak",
-
-    #"$root_out_dir/natives_blob.bin", # move to gin
   ]
 
   deps = [

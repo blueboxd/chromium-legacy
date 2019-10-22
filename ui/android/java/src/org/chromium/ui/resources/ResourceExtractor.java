@@ -35,7 +35,6 @@ import java.util.concurrent.CountDownLatch;
 public class ResourceExtractor {
     private static final String TAG = "ui";
     private static final String ICU_DATA_FILENAME = "icudtl.dat";
-    private static final String V8_NATIVES_DATA_FILENAME = "natives_blob.bin";
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
     private static final String FALLBACK_LOCALE = "en-US";
     private static final String COMPRESSED_LOCALES_DIR = "locales";
@@ -342,7 +341,6 @@ public class ResourceExtractor {
     private void deleteFiles(String[] existingFileNames) {
         // These used to be extracted, but no longer are, so just clean them up.
         FileUtils.recursivelyDeleteFile(new File(getAppDataDir(), ICU_DATA_FILENAME));
-        FileUtils.recursivelyDeleteFile(new File(getAppDataDir(), V8_NATIVES_DATA_FILENAME));
         FileUtils.recursivelyDeleteFile(new File(getAppDataDir(), V8_SNAPSHOT_DATA_FILENAME));
 
         if (existingFileNames != null) {

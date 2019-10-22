@@ -972,7 +972,15 @@ public class BottomSheet
         }
 
         // Do open/close computation based on the minimum allowed state by the sheet's content.
-        float minScrollableHeight = getSheetHeightForState(getMinSwipableSheetState());
+        // Note that when transitioning from hidden to peek, even dismissable sheets may want
+        // to have a peek state.
+        @SheetState
+        int minSwipableState = getMinSwipableSheetState();
+        if (isPeekStateEnabled() && !isSheetOpen() && mCurrentState != mTargetState) {
+            minSwipableState = SheetState.PEEK;
+        }
+
+        float minScrollableHeight = getSheetHeightForState(minSwipableState);
         boolean isAtMinHeight = MathUtils.areFloatsEqual(getCurrentOffsetPx(), minScrollableHeight);
         boolean heightLessThanPeek = getCurrentOffsetPx() < minScrollableHeight;
         // Trigger the onSheetClosed event when the sheet is moving toward the hidden state if peek

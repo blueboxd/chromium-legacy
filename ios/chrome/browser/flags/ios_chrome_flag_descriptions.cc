@@ -370,10 +370,6 @@ const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
 
-const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
-const char kUseMultiloginEndpointDescription[] =
-    "Use Gaia OAuth multilogin for identity consistency.";
-
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
     "Uses the sandbox service for Google Payments API calls.";

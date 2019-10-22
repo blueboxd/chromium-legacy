@@ -43,15 +43,13 @@ bool PDFModule::Init() {
 
 pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
   if (!g_sdk_initialized_via_pepper) {
-    // TODO(v8:7624): Remove natives and all remaining infrastructure.
-    v8::StartupData natives;
     v8::StartupData snapshot;
     pp::PDF::GetV8ExternalSnapshotData(pp::InstanceHandle(instance),
-                                       &natives.data, &natives.raw_size,
                                        &snapshot.data, &snapshot.raw_size);
-    if (natives.data) {
+    if (snapshot.data) {
       v8::V8::SetSnapshotDataBlob(&snapshot);
     }
+
     InitializeSDK(/*enable_v8=*/true);
     g_sdk_initialized_via_pepper = true;
   }

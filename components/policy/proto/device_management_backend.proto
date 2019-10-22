@@ -1020,10 +1020,10 @@ message DeviceStatusReportRequest {
   repeated int32 cpu_utilization_pct_samples = 12;
 
   // Total RAM on the device.
+  // To deprecate: Use SystemFreeRamInfo instead.
   optional int64 system_ram_total = 14;
 
   // Samples of free RAM [in bytes] (unreliable due to GC).
-  // To deprecate: Use SystemFreeRamInfo instead.
   repeated int64 system_ram_free_samples = 15;
 
   // Samples of CPU temperatures in Celsius, plus associated labels

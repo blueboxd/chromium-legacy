@@ -28,6 +28,17 @@ public interface AutofillAssistantActionHandler {
     void listActions(String userName, String experimentIds, Bundle arguments,
             Callback<Set<String>> callback);
 
+    /**
+     * Returns the available AA actions to be reported to the direct actions framework.
+     *
+     * <p>This method simply returns the list of actions known to AA. An empty string array means
+     * either that the controller has not yet been started or there are no actions available for the
+     * current website.
+     *
+     * @return Array of strings with the names of known actions.
+     */
+    String[] getActions();
+
     /** Performs onboarding and returns the result to the callback. */
     void performOnboarding(String experimentIds, Callback<Boolean> callback);
 

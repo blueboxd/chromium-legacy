@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintSetupScreenElements) {
       {"fingerprint-setup-impl", "setupFingerprint"});
 }
 
-IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, DISABLED_FingerprintSetupCancel) {
+IN_PROC_BROWSER_TEST_F(FingerprintSetupTest, FingerprintSetupCancel) {
   quick_unlock::EnabledForTesting(true);
   fingerprint_setup_screen_->Show();
   OobeScreenWaiter(FingerprintSetupScreenView::kScreenId).Wait();

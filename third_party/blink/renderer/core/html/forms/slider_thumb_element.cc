@@ -50,8 +50,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 inline static bool HasVerticalAppearance(HTMLInputElement* input) {
   return input->ComputedStyleRef().EffectiveAppearance() == kSliderVerticalPart;
 }
@@ -59,7 +57,7 @@ inline static bool HasVerticalAppearance(HTMLInputElement* input) {
 SliderThumbElement::SliderThumbElement(Document& document)
     : HTMLDivElement(document), in_drag_mode_(false) {
   SetHasCustomStyleCallbacks();
-  setAttribute(kIdAttr, shadow_element_names::SliderThumb());
+  setAttribute(html_names::kIdAttr, shadow_element_names::SliderThumb());
 }
 
 void SliderThumbElement::SetPositionFromValue() {

@@ -23,6 +23,8 @@ import java.util.Set;
  * A handler that provides Autofill Assistant actions for a specific activity.
  */
 class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandler {
+    private static final String[] EMPTY_ARRAY = new String[0];
+
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
     private final ScrimView mScrimView;
@@ -53,6 +55,15 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
     }
 
     @Override
+    public String[] getActions() {
+        AutofillAssistantClient client = getOrCreateClient();
+        if (client == null) {
+            return EMPTY_ARRAY;
+        }
+        return client.getDirectActions();
+    }
+
+    @Override
     public void performOnboarding(String experimentIds, Callback<Boolean> callback) {
         AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
                 experimentIds, mContext, mBottomSheetController, mGetCurrentTab.get());
@@ -73,11 +84,6 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
 
         Callback<AssistantOnboardingCoordinator> afterOnboarding = (onboardingCoordinator) -> {
             Map<String, String> argumentMap = toArgumentMap(arguments);
-            if (name.isEmpty()) {
-                callback.onResult(client.start(/* initialUrl= */ "", argumentMap, experimentIds,
-                        Bundle.EMPTY, onboardingCoordinator));
-                return;
-            }
             callback.onResult(client.performDirectAction(
                     name, experimentIds, argumentMap, onboardingCoordinator));
         };

@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static const int kWeekDefaultStepBase =
     -259200000;  // The first day of 1970-W01.
 static const int kWeekDefaultStep = 1;
@@ -105,11 +103,13 @@ void WeekInputType::SetupLayoutParameters(
     const DateComponents&) const {
   layout_parameters.date_time_format = GetLocale().WeekFormatInLDML();
   layout_parameters.fallback_date_time_format = "yyyy-'W'ww";
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMinAttr),
-                             &layout_parameters.minimum))
+  if (!ParseToDateComponents(
+          GetElement().FastGetAttribute(html_names::kMinAttr),
+          &layout_parameters.minimum))
     layout_parameters.minimum = DateComponents();
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMaxAttr),
-                             &layout_parameters.maximum))
+  if (!ParseToDateComponents(
+          GetElement().FastGetAttribute(html_names::kMaxAttr),
+          &layout_parameters.maximum))
     layout_parameters.maximum = DateComponents();
   layout_parameters.placeholder_for_year = "----";
 }

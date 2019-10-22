@@ -138,7 +138,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
-  gin::V8Initializer::LoadV8Natives();
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;

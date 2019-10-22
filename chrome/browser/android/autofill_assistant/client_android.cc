@@ -229,10 +229,16 @@ void ClientAndroid::ListDirectActions(
                      weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
 }
 
-void ClientAndroid::OnListDirectActions(
-    const base::android::JavaRef<jobject>& jcallback) {
+base::android::ScopedJavaLocalRef<jobjectArray>
+ClientAndroid::GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const {
   // Using a set here helps remove duplicates.
   std::set<std::string> names;
+
+  if (!controller_) {
+    return base::android::ToJavaArrayOfStrings(
+        env, std::vector<std::string>(names.begin(), names.end()));
+  }
+
   for (const UserAction& user_action : controller_->GetUserActions()) {
     if (!user_action.enabled())
       continue;
@@ -246,11 +252,21 @@ void ClientAndroid::OnListDirectActions(
   if (ui_controller_android_)
     names.insert(kCancelActionName);
 
+  return base::android::ToJavaArrayOfStrings(
+      env, std::vector<std::string>(names.begin(), names.end()));
+}
+
+base::android::ScopedJavaLocalRef<jobjectArray> ClientAndroid::GetDirectActions(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  return GetDirectActionsAsJavaArrayOfStrings(env);
+}
+
+void ClientAndroid::OnListDirectActions(
+    const base::android::JavaRef<jobject>& jcallback) {
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantClient_sendDirectActionList(
-      env, java_object_, jcallback,
-      base::android::ToJavaArrayOfStrings(
-          env, std::vector<std::string>(names.begin(), names.end())));
+      env, java_object_, jcallback, GetDirectActionsAsJavaArrayOfStrings(env));
 }
 
 bool ClientAndroid::PerformDirectAction(

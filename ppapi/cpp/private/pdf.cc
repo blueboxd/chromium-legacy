@@ -184,19 +184,14 @@ void PDF::SetLinkUnderCursor(const InstanceHandle& instance, const char* url) {
 
 // static
 void PDF::GetV8ExternalSnapshotData(const InstanceHandle& instance,
-                                    const char** natives_data_out,
-                                    int* natives_size_out,
                                     const char** snapshot_data_out,
                                     int* snapshot_size_out) {
   if (has_interface<PPB_PDF>()) {
-    get_interface<PPB_PDF>()->GetV8ExternalSnapshotData(instance.pp_instance(),
-        natives_data_out, natives_size_out, snapshot_data_out,
-        snapshot_size_out);
+    get_interface<PPB_PDF>()->GetV8ExternalSnapshotData(
+        instance.pp_instance(), snapshot_data_out, snapshot_size_out);
     return;
   }
-  *natives_data_out = NULL;
   *snapshot_data_out = NULL;
-  *natives_size_out = 0;
   *snapshot_size_out = 0;
 }
 

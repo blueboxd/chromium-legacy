@@ -178,6 +178,8 @@ TEST_F(ClickToCallUtilsTest,
   expectations.emplace("9 8 7 6 5 4 3 2 1 0", "9 8 7 6 5 4 3 2 1 0");
   // Two spaces in between.
   expectations.emplace("9  8 7 6 5  4 3 2 1 0", "9  8 7 6 5  4 3 2 1 0");
+  // Non breaking spaces around number.
+  expectations.emplace("\u00A09876543210\u00A0", "9876543210");
 
   for (auto& expectation : expectations) {
     base::Optional<std::string> phone_number =

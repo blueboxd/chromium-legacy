@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityDisclosureController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier;
@@ -15,7 +16,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -32,7 +32,7 @@ import dagger.Lazy;
 public class TrustedWebActivityCoordinator implements InflationObserver {
 
     private final TrustedWebActivityVerifier mVerifier;
-    private final CustomTabToolbarCoordinator mToolbarCoordinator;
+    private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final Lazy<ImmersiveModeController> mImmersiveModeController;
 
@@ -50,12 +50,12 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             TrustedWebActivityUmaRecorder umaRecorder,
             CustomTabStatusBarColorProvider statusBarColorProvider,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            CustomTabToolbarCoordinator toolbarCoordinator,
+            TrustedWebActivityBrowserControlsVisibilityManager browserControlsVisibilityManager,
             Lazy<ImmersiveModeController> immersiveModeController) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
         mVerifier = verifier;
-        mToolbarCoordinator = toolbarCoordinator;
+        mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
         mStatusBarColorProvider = statusBarColorProvider;
         mImmersiveModeController = immersiveModeController;
 
@@ -105,13 +105,8 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
 
     private void updateUi(boolean inTwaMode) {
         updateImmersiveMode(inTwaMode);
-        mToolbarCoordinator.setToolbarHidden(inTwaMode);
         mStatusBarColorProvider.setUseTabThemeColor(inTwaMode);
-
-        if (!inTwaMode) {
-            // Force showing the controls for a bit when leaving Trusted Web Activity mode.
-            mToolbarCoordinator.showToolbarTemporarily();
-        }
+        mBrowserControlsVisibilityManager.updateIsInTwaMode(inTwaMode);
     }
 
     private void updateImmersiveMode(boolean inTwaMode) {

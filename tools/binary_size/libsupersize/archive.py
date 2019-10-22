@@ -90,7 +90,6 @@ class SectionSizeKnobs(object):
       'assets/icudtl.dat': '../../third_party/icu/android/icudtl.dat',
       'assets/snapshot_blob_32.bin': '../../v8/snapshot_blob_32.bin',
       'assets/snapshot_blob_64.bin': '../../v8/snapshot_blob_64.bin',
-      'assets/natives_blob.bin': '../../v8/natives_blob.bin',
       'assets/unwind_cfi_32': '../../base/trace_event/cfi_backtrace_android.cc',
       'assets/webapk_dex_version.txt': (
           '../../chrome/android/webapk/libs/runtime_library_version.gni'),

@@ -652,26 +652,8 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
 
 }  // namespace
 
-static void AdjustAmountOfExternalAllocatedMemory(int64_t diff) {
-#if DCHECK_IS_ON()
-  static int64_t process_total = 0;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
-  {
-    MutexLocker locker(mutex);
-
-    process_total += diff;
-    DCHECK_GE(process_total, 0)
-        << "total amount = " << process_total << ", diff = " << diff;
-  }
-#endif
-
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
-}
-
 void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   DCHECK(IsMainThread());
-
-  WTF::ArrayBufferContents::Initialize(AdjustAmountOfExternalAllocatedMemory);
 
   DEFINE_STATIC_LOCAL(ArrayBufferAllocator, array_buffer_allocator, ());
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,

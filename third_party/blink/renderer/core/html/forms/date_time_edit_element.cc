@@ -45,8 +45,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 class DateTimeEditBuilder : private DateTimeFormat::TokenHandler {
  public:
   // The argument objects must be alive until this object dies.
@@ -537,7 +535,7 @@ DateTimeEditElement::DateTimeEditElement(Document& document,
     : HTMLDivElement(document), edit_control_owner_(&edit_control_owner) {
   SetHasCustomStyleCallbacks();
   SetShadowPseudoId(AtomicString("-webkit-datetime-edit"));
-  setAttribute(kIdAttr, shadow_element_names::DateTimeEdit());
+  setAttribute(html_names::kIdAttr, shadow_element_names::DateTimeEdit());
 }
 
 DateTimeEditElement::~DateTimeEditElement() = default;

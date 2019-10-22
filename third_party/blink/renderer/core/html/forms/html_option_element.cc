@@ -44,10 +44,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLOptionElement::HTMLOptionElement(Document& document)
-    : HTMLElement(kOptionTag, document), is_selected_(false) {
+    : HTMLElement(html_names::kOptionTag, document), is_selected_(false) {
   EnsureUserAgentShadowRoot();
 }
 
@@ -77,7 +75,7 @@ HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
   if (!value.IsNull())
     element->setValue(value);
   if (default_selected)
-    element->setAttribute(kSelectedAttr, g_empty_atom);
+    element->setAttribute(html_names::kSelectedAttr, g_empty_atom);
   element->SetSelected(selected);
 
   return element;
@@ -91,7 +89,7 @@ bool HTMLOptionElement::SupportsFocus() const {
 }
 
 bool HTMLOptionElement::MatchesDefaultPseudoClass() const {
-  return FastHasAttribute(kSelectedAttr);
+  return FastHasAttribute(html_names::kSelectedAttr);
 }
 
 bool HTMLOptionElement::MatchesEnabledPseudoClass() const {
@@ -104,7 +102,7 @@ String HTMLOptionElement::DisplayLabel() const {
 
   // WinIE does not use the label attribute, so as a quirk, we ignore it.
   if (!document.InQuirksMode())
-    text = FastGetAttribute(kLabelAttr);
+    text = FastGetAttribute(html_names::kLabelAttr);
 
   // FIXME: The following treats an element with the label attribute set to
   // the empty string the same as an element with no label attribute at all.
@@ -169,21 +167,21 @@ int HTMLOptionElement::ListIndex() const {
 void HTMLOptionElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
-  if (name == kValueAttr) {
+  if (name == html_names::kValueAttr) {
     if (HTMLDataListElement* data_list = OwnerDataListElement())
       data_list->OptionElementChildrenChanged();
-  } else if (name == kDisabledAttr) {
+  } else if (name == html_names::kDisabledAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull()) {
       PseudoStateChanged(CSSSelector::kPseudoDisabled);
       PseudoStateChanged(CSSSelector::kPseudoEnabled);
       if (LayoutObject* o = GetLayoutObject())
         o->InvalidateIfControlStateChanged(kEnabledControlState);
     }
-  } else if (name == kSelectedAttr) {
+  } else if (name == html_names::kSelectedAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull() && !is_dirty_)
       SetSelected(!params.new_value.IsNull());
     PseudoStateChanged(CSSSelector::kPseudoDefault);
-  } else if (name == kLabelAttr) {
+  } else if (name == html_names::kLabelAttr) {
     UpdateLabel();
   } else {
     HTMLElement::ParseAttribute(params);
@@ -191,7 +189,7 @@ void HTMLOptionElement::ParseAttribute(
 }
 
 String HTMLOptionElement::value() const {
-  const AtomicString& value = FastGetAttribute(kValueAttr);
+  const AtomicString& value = FastGetAttribute(html_names::kValueAttr);
   if (!value.IsNull())
     return value;
   return CollectOptionInnerText()
@@ -200,7 +198,7 @@ String HTMLOptionElement::value() const {
 }
 
 void HTMLOptionElement::setValue(const AtomicString& value) {
-  setAttribute(kValueAttr, value);
+  setAttribute(html_names::kValueAttr, value);
 }
 
 bool HTMLOptionElement::Selected() const {
@@ -288,7 +286,7 @@ HTMLSelectElement* HTMLOptionElement::OwnerSelectElement() const {
 }
 
 String HTMLOptionElement::label() const {
-  const AtomicString& label = FastGetAttribute(kLabelAttr);
+  const AtomicString& label = FastGetAttribute(html_names::kLabelAttr);
   if (!label.IsNull())
     return label;
   return CollectOptionInnerText()
@@ -297,7 +295,7 @@ String HTMLOptionElement::label() const {
 }
 
 void HTMLOptionElement::setLabel(const AtomicString& label) {
-  setAttribute(kLabelAttr, label);
+  setAttribute(html_names::kLabelAttr, label);
 }
 
 String HTMLOptionElement::TextIndentedToRespectGroupLabel() const {
@@ -308,7 +306,7 @@ String HTMLOptionElement::TextIndentedToRespectGroupLabel() const {
 }
 
 bool HTMLOptionElement::OwnElementDisabled() const {
-  return FastHasAttribute(kDisabledAttr);
+  return FastHasAttribute(html_names::kDisabledAttr);
 }
 
 bool HTMLOptionElement::IsDisabledFormControl() const {

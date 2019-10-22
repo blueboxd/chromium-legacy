@@ -10,6 +10,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "ios/chrome/browser/metrics/features.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -33,7 +34,8 @@ class IOSChromeStabilityMetricsProviderTest : public PlatformTest {
 
 TEST_F(IOSChromeStabilityMetricsProviderTest,
        DidStartLoadingEventShouldIncrementPageLoadCount) {
-  if (base::FeatureList::IsEnabled(kLogLoadStartedInDidStartNavigation))
+  if (base::FeatureList::IsEnabled(
+          web::features::kLogLoadStartedInDidStartNavigation))
     return;
   IOSChromeStabilityMetricsProvider provider(&prefs_);
 
@@ -66,7 +68,8 @@ TEST_F(IOSChromeStabilityMetricsProviderTest,
 
 TEST_F(IOSChromeStabilityMetricsProviderTest,
        DidStartNavigationEventShouldIncrementPageLoadCount) {
-  if (!base::FeatureList::IsEnabled(kLogLoadStartedInDidStartNavigation))
+  if (!base::FeatureList::IsEnabled(
+          web::features::kLogLoadStartedInDidStartNavigation))
     return;
 
   web::FakeNavigationContext context;
@@ -185,8 +188,10 @@ TEST_F(IOSChromeStabilityMetricsProviderTest, WebNavigationShouldLogPageLoad) {
 
   metrics::SystemProfileProto system_profile;
   provider.ProvideStabilityMetrics(&system_profile);
-  int page_load_count =
-      base::FeatureList::IsEnabled(kLogLoadStartedInDidStartNavigation) ? 1 : 0;
+  int page_load_count = base::FeatureList::IsEnabled(
+                            web::features::kLogLoadStartedInDidStartNavigation)
+                            ? 1
+                            : 0;
   EXPECT_EQ(page_load_count, system_profile.stability().page_load_count());
 }
 

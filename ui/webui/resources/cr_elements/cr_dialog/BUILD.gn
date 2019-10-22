@@ -16,7 +16,6 @@ js_library("cr_dialog") {
     "..:cr_container_shadow_behavior",
     "//ui/webui/resources/js:assert",
   ]
-  externs_list = [ "$externs_path/web_animations.js" ]
 }
 
 polymer_modulizer("cr_dialog") {
@@ -46,5 +45,4 @@ js_library("cr_dialog.m") {
     "//ui/webui/resources/js:assert.m",
   ]
   extra_deps = [ ":cr_dialog_module" ]
-  externs_list = [ "$externs_path/web_animations.js" ]
 }

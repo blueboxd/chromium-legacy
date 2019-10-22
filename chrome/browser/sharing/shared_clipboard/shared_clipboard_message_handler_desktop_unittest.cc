@@ -9,12 +9,9 @@
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/stub_notification_display_service.h"
+#include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/proto/shared_clipboard_message.pb.h"
-#include "chrome/browser/sharing/sharing_fcm_handler.h"
-#include "chrome/browser/sharing/sharing_fcm_sender.h"
-#include "chrome/browser/sharing/sharing_service.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
-#include "chrome/browser/sharing/vapid_key_manager.h"
+#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/protocol/sync_enums.pb.h"
@@ -32,45 +29,6 @@ const char kEmptyDeviceName[] = "";
 const char kDeviceNameInDeviceInfo[] = "DeviceNameInDeviceInfo";
 const char kDeviceNameInMessage[] = "DeviceNameInMessage";
 
-class MockSharingDeviceRegistration : public SharingDeviceRegistration {
- public:
-  MockSharingDeviceRegistration()
-      : SharingDeviceRegistration(/* pref_service_= */ nullptr,
-                                  /* sharing_sync_preference_= */ nullptr,
-                                  /* instance_id_driver_= */ nullptr,
-                                  /* vapid_key_manager_= */ nullptr) {}
-
-  ~MockSharingDeviceRegistration() override = default;
-
-  MOCK_CONST_METHOD0(IsSharedClipboardSupported, bool());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSharingDeviceRegistration);
-};
-
-class MockSharingService : public SharingService {
- public:
-  explicit MockSharingService(
-      NotificationDisplayService* notification_display_service)
-      : SharingService(
-            /* sync_prefs= */ nullptr,
-            /* vapid_key_manager= */ nullptr,
-            std::make_unique<MockSharingDeviceRegistration>(),
-            /* fcm_sender= */ nullptr,
-            std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr),
-            /* gcm_driver= */ nullptr,
-            /* device_info_tracker= */ nullptr,
-            /* local_device_info_provider= */ nullptr,
-            /* sync_service */ nullptr,
-            notification_display_service) {}
-
-  ~MockSharingService() override = default;
-
-  MOCK_CONST_METHOD1(
-      GetDeviceByGuid,
-      std::unique_ptr<syncer::DeviceInfo>(const std::string& guid));
-};
-
 class SharedClipboardMessageHandlerTest : public testing::Test {
  public:
   SharedClipboardMessageHandlerTest() = default;
@@ -78,8 +36,7 @@ class SharedClipboardMessageHandlerTest : public testing::Test {
   void SetUp() override {
     notification_display_service_ =
         std::make_unique<StubNotificationDisplayService>(&profile_);
-    sharing_service_ = std::make_unique<MockSharingService>(
-        notification_display_service_.get());
+    sharing_service_ = std::make_unique<MockSharingService>();
     message_handler_ = std::make_unique<SharedClipboardMessageHandlerDesktop>(
         sharing_service_.get(), notification_display_service_.get());
   }

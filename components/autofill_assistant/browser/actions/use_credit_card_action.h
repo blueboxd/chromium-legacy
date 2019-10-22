@@ -52,11 +52,13 @@ class UseCreditCardAction : public Action {
   // separate struct to make sure we don't keep it for longer than strictly
   // necessary.
   struct FallbackData {
-    FallbackData() = default;
+    FallbackData();
     ~FallbackData() = default;
 
     // Card information for UseCreditCard fallback.
     std::string cvc;
+    std::string card_holder_name;
+    std::string card_number;
     int expiration_year = 0;
     int expiration_month = 0;
 

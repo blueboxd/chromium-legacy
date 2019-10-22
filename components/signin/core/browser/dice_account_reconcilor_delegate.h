@@ -13,6 +13,9 @@
 
 class SigninClient;
 
+// Enables usage of Gaia Auth Multilogin endpoint for identity consistency.
+extern const base::Feature kUseMultiloginEndpoint;
+
 namespace signin {
 
 // AccountReconcilorDelegate specialized for Dice.
@@ -25,6 +28,7 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
 
   // AccountReconcilorDelegate:
   bool IsReconcileEnabled() const override;
+  bool IsMultiloginEndpointEnabled() const override;
   bool IsAccountConsistencyEnforced() const override;
   void MaybeLogInconsistencyReason(
       const CoreAccountId& primary_account,

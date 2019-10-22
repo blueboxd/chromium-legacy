@@ -6501,24 +6501,6 @@
             ]
         }
     ],
-    "UsePdfCompositorServiceForPrint": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "UsePdfCompositorServiceForPrint",
-                    "enable_features": [
-                        "UsePdfCompositorServiceForPrint"
-                    ]
-                }
-            ]
-        }
-    ],
     "UseSkiaRenderer": [
         {
             "platforms": [

@@ -84,7 +84,93 @@ public class AutofillAssistantDirectActionHandlerTest {
 
     @Test
     @MediumTest
-    public void testReportAvailableDirectActions() {
+    public void testReportOnboardingOnlyIfNotAccepted() throws Exception {
+        mModuleEntryProvider.setInstalled();
+        assertThat(listActions(), contains("onboarding"));
+
+        FakeDirectActionReporter reporter = new FakeDirectActionReporter();
+        mHandler.reportAvailableDirectActions(reporter);
+
+        assertEquals(1, reporter.mActions.size());
+
+        FakeDirectActionDefinition onboarding = reporter.mActions.get(0);
+        assertEquals("onboarding", onboarding.mId);
+        assertEquals(2, onboarding.mParameters.size());
+        assertEquals("name", onboarding.mParameters.get(0).mName);
+        assertEquals(Type.STRING, onboarding.mParameters.get(0).mType);
+        assertEquals("experiment_ids", onboarding.mParameters.get(1).mName);
+        assertEquals(Type.STRING, onboarding.mParameters.get(1).mType);
+        assertEquals(1, onboarding.mResults.size());
+        assertEquals("success", onboarding.mResults.get(0).mName);
+        assertEquals(Type.BOOLEAN, onboarding.mResults.get(0).mType);
+    }
+
+    @Test
+    @MediumTest
+    public void testReportAvailableDirectActions() throws Exception {
+        mModuleEntryProvider.setInstalled();
+        assertThat(listActions(), contains("onboarding"));
+        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
+        // Ask again for a new list of actions.
+        listActions();
+
+        FakeDirectActionReporter reporter = new FakeDirectActionReporter();
+        mHandler.reportAvailableDirectActions(reporter);
+
+        assertEquals(4, reporter.mActions.size());
+
+        FakeDirectActionDefinition list = reporter.mActions.get(0);
+        assertEquals("list_assistant_actions", list.mId);
+        assertEquals(2, list.mParameters.size());
+        assertEquals("user_name", list.mParameters.get(0).mName);
+        assertEquals(Type.STRING, list.mParameters.get(0).mType);
+        assertEquals(false, list.mParameters.get(0).mRequired);
+        assertEquals("experiment_ids", list.mParameters.get(1).mName);
+        assertEquals(Type.STRING, list.mParameters.get(1).mType);
+        assertEquals(false, list.mParameters.get(1).mRequired);
+
+        assertEquals(1, list.mResults.size());
+        assertEquals("names", list.mResults.get(0).mName);
+        assertEquals(Type.STRING, list.mResults.get(0).mType);
+
+        FakeDirectActionDefinition perform = reporter.mActions.get(1);
+        assertEquals("perform_assistant_action", perform.mId);
+        assertEquals(2, perform.mParameters.size());
+        assertEquals("name", perform.mParameters.get(0).mName);
+        assertEquals(Type.STRING, perform.mParameters.get(0).mType);
+        assertEquals("experiment_ids", perform.mParameters.get(1).mName);
+        assertEquals(Type.STRING, perform.mParameters.get(1).mType);
+        assertEquals(1, perform.mResults.size());
+        assertEquals("success", perform.mResults.get(0).mName);
+        assertEquals(Type.BOOLEAN, perform.mResults.get(0).mType);
+
+        // Now we expect 2 dyamic actions "search" and "action2".
+        FakeDirectActionDefinition search = reporter.mActions.get(2);
+        assertEquals("search", search.mId);
+        assertEquals(1, search.mParameters.size());
+        assertEquals("experiment_ids", search.mParameters.get(0).mName);
+        assertEquals(Type.STRING, search.mParameters.get(0).mType);
+        assertEquals(1, search.mResults.size());
+        assertEquals("success", search.mResults.get(0).mName);
+        assertEquals(Type.BOOLEAN, search.mResults.get(0).mType);
+
+        FakeDirectActionDefinition action2 = reporter.mActions.get(3);
+        assertEquals("action2", action2.mId);
+        assertEquals(1, action2.mParameters.size());
+        assertEquals("experiment_ids", action2.mParameters.get(0).mName);
+        assertEquals(Type.STRING, action2.mParameters.get(0).mType);
+        assertEquals(1, action2.mResults.size());
+        assertEquals("success", action2.mResults.get(0).mName);
+        assertEquals(Type.BOOLEAN, action2.mResults.get(0).mType);
+    }
+
+    @Test
+    @MediumTest
+    public void testReportAvailableAutofillAssistantActions() throws Exception {
+        mModuleEntryProvider.setInstalled();
+        assertThat(listActions(), contains("onboarding"));
+        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
+
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
         mHandler.reportAvailableDirectActions(reporter);
 

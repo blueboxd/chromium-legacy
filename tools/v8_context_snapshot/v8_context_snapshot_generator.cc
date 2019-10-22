@@ -37,7 +37,6 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();
-  gin::V8Initializer::LoadV8Natives();
 #endif
 
   // Set up environment to make Blink and V8 workable.

@@ -159,6 +159,15 @@ class AutofillAssistantClient {
                 arguments.values().toArray(new String[arguments.size()]), callback);
     }
 
+    /** Lists available direct actions. */
+    public String[] getDirectActions() {
+        if (mNativeClientAndroid == 0) {
+            return null;
+        }
+        return AutofillAssistantClientJni.get().getDirectActions(
+                mNativeClientAndroid, AutofillAssistantClient.this);
+    }
+
     /**
      * Performs a direct action.
      *
@@ -357,6 +366,8 @@ class AutofillAssistantClient {
         void listDirectActions(long nativeClientAndroid, AutofillAssistantClient caller,
                 String experimentIds, String[] argumentNames, String[] argumentValues,
                 Object callback);
+        String[] getDirectActions(long nativeClientAndroid, AutofillAssistantClient caller);
+
         boolean performDirectAction(long nativeClientAndroid, AutofillAssistantClient caller,
                 String actionId, String experimentId, String[] argumentNames,
                 String[] argumentValues,

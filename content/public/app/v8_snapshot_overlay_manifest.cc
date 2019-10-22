@@ -16,8 +16,6 @@ const service_manager::Manifest& GetV8SnapshotOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
 #if defined(OS_LINUX)
-        .PreloadFile(kV8NativesDataDescriptor,
-                     base::FilePath(FILE_PATH_LITERAL("natives_blob.bin")))
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
         .PreloadFile(
             kV8ContextSnapshotDataDescriptor,
@@ -27,9 +25,6 @@ const service_manager::Manifest& GetV8SnapshotOverlayManifest() {
                      base::FilePath(FILE_PATH_LITERAL("snapshot_blob.bin")))
 #endif  // defined(USE_V8_CONTEXT_SNAPSHOT)
 #elif defined(OS_ANDROID)
-        .PreloadFile(
-            kV8NativesDataDescriptor,
-            base::FilePath(FILE_PATH_LITERAL("assets/natives_blob.bin")))
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
 #if defined(ARCH_CPU_64_BITS)
         .PreloadFile(kV8Snapshot64DataDescriptor,

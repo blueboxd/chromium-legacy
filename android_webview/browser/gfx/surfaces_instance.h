@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "android_webview/browser/gfx/aw_gl_surface.h"
+#include "android_webview/browser/gfx/output_surface_provider_webview.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -24,10 +24,6 @@ namespace gfx {
 class Rect;
 class Size;
 class Transform;
-}
-
-namespace gl {
-class GLShareGroup;
 }
 
 namespace viz {
@@ -59,7 +55,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   void AddChildId(const viz::SurfaceId& child_id);
   void RemoveChildId(const viz::SurfaceId& child_id);
   bool is_using_vulkan() const {
-    return shared_context_state_ && shared_context_state_->GrContextIsVulkan();
+    return output_surface_provider_.shared_context_state() &&
+           output_surface_provider_.shared_context_state()->GrContextIsVulkan();
   }
 
  private:
@@ -99,10 +96,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   viz::FrameSinkId frame_sink_id_;
 
-  // These need to outlive viz objects such as |display_| below.
-  scoped_refptr<AwGLSurface> gl_surface_;
-  scoped_refptr<gl::GLShareGroup> share_group_;
-  scoped_refptr<gpu::SharedContextState> shared_context_state_;
+  // Used to create viz::OutputSurface and gl::GLSurface
+  OutputSurfaceProviderWebview output_surface_provider_;
 
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;

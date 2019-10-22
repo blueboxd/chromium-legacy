@@ -22,7 +22,6 @@ void LoadV8SnapshotData() {
   if (!loaded) {
     loaded = true;
     gin::V8Initializer::LoadV8Snapshot();
-    gin::V8Initializer::LoadV8Natives();
   }
 #endif
 }

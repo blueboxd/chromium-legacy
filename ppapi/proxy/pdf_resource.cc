@@ -196,12 +196,10 @@ void PDFResource::SetLinkUnderCursor(const char* url) {
   Post(RENDERER, PpapiHostMsg_PDF_SetLinkUnderCursor(url));
 }
 
-void PDFResource::GetV8ExternalSnapshotData(const char** natives_data_out,
-                                            int* natives_size_out,
-                                            const char** snapshot_data_out,
+void PDFResource::GetV8ExternalSnapshotData(const char** snapshot_data_out,
                                             int* snapshot_size_out) {
-  gin::V8Initializer::GetV8ExternalSnapshotData(
-      natives_data_out, natives_size_out, snapshot_data_out, snapshot_size_out);
+  gin::V8Initializer::GetV8ExternalSnapshotData(snapshot_data_out,
+                                                snapshot_size_out);
 }
 
 void PDFResource::SetAccessibilityDocInfo(

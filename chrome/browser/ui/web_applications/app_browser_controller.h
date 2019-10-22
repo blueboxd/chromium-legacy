@@ -54,7 +54,7 @@ class AppBrowserController : public TabStripModelObserver,
   virtual bool CreatedForInstalledPwa() const;
 
   // Whether the custom tab bar should be visible.
-  virtual bool ShouldShowCustomTabBar() const = 0;
+  virtual bool ShouldShowCustomTabBar() const;
 
   // Whether the browser should include the tab strip.
   virtual bool HasTabStrip() const;

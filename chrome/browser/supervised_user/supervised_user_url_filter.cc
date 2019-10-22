@@ -91,8 +91,7 @@ namespace {
 
 // URL schemes not in this list (e.g., file:// and chrome://) will always be
 // allowed.
-const char* const kFilteredSchemes[] = {"http",   "https", "ftp",
-                                        "gopher", "ws",    "wss"};
+const char* const kFilteredSchemes[] = {"http", "https", "ftp", "ws", "wss"};
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 const char* const kCrxDownloadUrls[] = {

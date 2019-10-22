@@ -39,7 +39,9 @@ void TestAppShortcutManager::CreateShortcuts(const AppId& app_id,
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), success));
+      FROM_HERE, base::BindOnce(&TestAppShortcutManager::OnShortcutsCreated,
+                                weak_ptr_factory_.GetWeakPtr(), app_id,
+                                std::move(callback), success));
 }
 
 void TestAppShortcutManager::GetShortcutInfoForApp(

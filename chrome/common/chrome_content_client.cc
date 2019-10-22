@@ -411,9 +411,7 @@ std::unique_ptr<content::CdmInfo> CreateCdmInfoForChromeOS(
   capability.video_codecs.push_back(media::VideoCodec::kCodecVP8);
   capability.video_codecs.push_back(media::VideoCodec::kCodecVP9);
   capability.video_codecs.push_back(media::VideoCodec::kCodecAV1);
-  // TODO(crbug.com/899403): Update this and tests after Widevine CDM supports
-  // VP9 profile 2.
-  capability.supports_vp9_profile2 = false;
+  capability.supports_vp9_profile2 = true;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   capability.video_codecs.push_back(media::VideoCodec::kCodecH264);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)

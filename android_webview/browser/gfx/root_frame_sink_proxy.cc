@@ -116,8 +116,8 @@ void RootFrameSinkProxy::BeginFrameOnViz(const viz::BeginFrameArgs& args,
 }
 
 RootFrameSinkGetter RootFrameSinkProxy::GetRootFrameSinkCallback() {
-  return base::BindOnce(&RootFrameSinkProxy::GetRootFrameSinkHelper,
-                        weak_ptr_factory_on_viz_.GetWeakPtr());
+  return base::BindRepeating(&RootFrameSinkProxy::GetRootFrameSinkHelper,
+                             weak_ptr_factory_on_viz_.GetWeakPtr());
 }
 
 }  // namespace android_webview

@@ -28,13 +28,20 @@ class GraphNode {
     /** @type {string} */
     this.iconUrl = '';
 
-    // Implementation of the d3.ForceNode interface.
-    // See https://github.com/d3/d3-force#simulation_nodes.
-    this.index = null;
-    this.x = null;
-    this.y = null;
-    this.vx = null;
-    this.vy = null;
+    /**
+     * Implementation of the d3.ForceNode interface.
+     * See https://github.com/d3/d3-force#simulation_nodes.
+     * @type {number|undefined}
+     */
+    this.index;
+    /** @type {number|undefined} */
+    this.x;
+    /** @type {number|undefined} */
+    this.y;
+    /** @type {number|undefined} */
+    this.vx;
+    /** @type {number|undefined} */
+    this.vy;
     this.fx = null;
     this.fy = null;
   }

@@ -21,6 +21,7 @@
 #include "components/autofill_assistant/browser/client_status.h"
 
 namespace autofill_assistant {
+UseCreditCardAction::FallbackData::FallbackData() {}
 
 UseCreditCardAction::UseCreditCardAction(ActionDelegate* delegate,
                                          const ActionProto& proto)
@@ -98,6 +99,10 @@ void UseCreditCardAction::OnGetFullCard(
   fallback_data->cvc = base::UTF16ToUTF8(cvc);
   fallback_data->expiration_month = card->expiration_month();
   fallback_data->expiration_year = card->expiration_year();
+  fallback_data->card_holder_name =
+      base::UTF16ToUTF8(card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+  fallback_data->card_number =
+      base::UTF16ToUTF8(card->GetRawInfo(autofill::CREDIT_CARD_NUMBER));
 
   delegate_->FillCardForm(
       std::move(card), cvc, selector_,
@@ -278,6 +283,14 @@ std::string UseCreditCardAction::GetCreditCardFieldValue(
     case UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_4_DIGIT_YEAR:
       if (fallback_data.expiration_year > 0)
         return base::NumberToString(fallback_data.expiration_year);
+      break;
+
+    case UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME:
+      return fallback_data.card_holder_name;
+      break;
+
+    case UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER:
+      return fallback_data.card_number;
       break;
 
     case UseCreditCardProto::RequiredField::UNDEFINED:

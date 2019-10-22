@@ -29,8 +29,9 @@
 #include "components/viz/service/viz_service_export.h"
 #include "media/base/video_frame.h"
 #include "media/capture/content/video_capture_oracle.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "ui/gfx/geometry/rect.h"
@@ -73,11 +74,12 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
       public mojom::FrameSinkVideoCapturer {
  public:
   // |frame_sink_manager| must outlive this instance. Binds this instance to the
-  // Mojo message pipe endpoint in |request|, but |request| may be empty for
+  // Mojo message pipe endpoint in |receiver|, but |receiver| may be empty for
   // unit testing.
-  FrameSinkVideoCapturerImpl(FrameSinkVideoCapturerManager* frame_sink_manager,
-                             mojom::FrameSinkVideoCapturerRequest request,
-                             std::unique_ptr<media::VideoCaptureOracle> oracle);
+  FrameSinkVideoCapturerImpl(
+      FrameSinkVideoCapturerManager* frame_sink_manager,
+      mojo::PendingReceiver<mojom::FrameSinkVideoCapturer> receiver,
+      std::unique_ptr<media::VideoCaptureOracle> oracle);
 
   ~FrameSinkVideoCapturerImpl() final;
 
@@ -228,8 +230,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // Owner/Manager of this instance.
   FrameSinkVideoCapturerManager* const frame_sink_manager_;
 
-  // Mojo binding for this instance.
-  mojo::Binding<mojom::FrameSinkVideoCapturer> binding_;
+  // Mojo receiver for this instance.
+  mojo::Receiver<mojom::FrameSinkVideoCapturer> receiver_{this};
 
   // Represents this instance as an issuer of CopyOutputRequests. The Surface
   // uses this to auto-cancel stale requests (i.e., prior requests that did not

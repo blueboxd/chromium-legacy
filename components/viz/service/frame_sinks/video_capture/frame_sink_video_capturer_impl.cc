@@ -62,10 +62,9 @@ constexpr gfx::ColorSpace FrameSinkVideoCapturerImpl::kDefaultColorSpace;
 
 FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
     FrameSinkVideoCapturerManager* frame_sink_manager,
-    mojom::FrameSinkVideoCapturerRequest request,
+    mojo::PendingReceiver<mojom::FrameSinkVideoCapturer> receiver,
     std::unique_ptr<media::VideoCaptureOracle> oracle)
     : frame_sink_manager_(frame_sink_manager),
-      binding_(this),
       copy_request_source_(base::UnguessableToken::Create()),
       clock_(base::DefaultTickClock::GetInstance()),
       oracle_(std::move(oracle)),
@@ -77,9 +76,9 @@ FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
   // Instantiate a default base::OneShotTimer instance.
   refresh_frame_retry_timer_.emplace();
 
-  if (request.is_pending()) {
-    binding_.Bind(std::move(request));
-    binding_.set_connection_error_handler(
+  if (receiver.is_valid()) {
+    receiver_.Bind(std::move(receiver));
+    receiver_.set_disconnect_handler(
         base::BindOnce(&FrameSinkVideoCapturerManager::OnCapturerConnectionLost,
                        base::Unretained(frame_sink_manager_), this));
   }

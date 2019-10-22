@@ -36,7 +36,6 @@ class PressStory(page_module.Page):
         make_javascript_deterministic=self.DETERMINISTIC_JS,
         name=self.NAME if self.NAME else self.URL)
     self._measurements = []
-    self._histogram_values = []
     self._action_runner = None
 
   def AddMeasurement(self, name, unit, samples, description=None):
@@ -81,14 +80,6 @@ class PressStory(page_module.Page):
 
   def GetMeasurements(self):
     return self._measurements
-
-  def GetJavascriptMetricHistograms(self):
-    """DEPRECATED: Use measurements instead."""
-    return self._histogram_values
-
-  def AddJavascriptMetricHistogram(self, value):
-    """DEPRECATED: Use measurements instead."""
-    self._histogram_values.append(value)
 
   def ExecuteTest(self, action_runner):
     pass

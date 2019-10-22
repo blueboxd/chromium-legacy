@@ -94,6 +94,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   void AnimationDetached(Animation*) override {}
 
   bool IsActive() const override;
+  base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
   bool HasPendingUpdates() const {
     return !animations_needing_update_.IsEmpty();
   }

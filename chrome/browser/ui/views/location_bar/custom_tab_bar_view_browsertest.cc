@@ -213,6 +213,7 @@ class CustomTabBarViewBrowserTest
   void InstallBookmark(const GURL& app_url) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->app_url = app_url;
+    web_app_info->scope = app_url.GetOrigin();
     web_app_info->open_as_window = true;
     Install(std::move(web_app_info));
   }
@@ -676,8 +677,10 @@ IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest, InterstitialCanHideOrigin) {
       app_view->toolbar()->custom_tab_bar()->IsShowingOriginForTesting());
 }
 
-// TODO(crbug.com/966290): Support kUnifiedControllerWithWebApp/BookmarkApp
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CustomTabBarViewBrowserTest,
-    ::testing::Values(web_app::ControllerType::kHostedAppController));
+    ::testing::Values(
+        web_app::ControllerType::kHostedAppController,
+        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
+        web_app::ControllerType::kUnifiedControllerWithWebApp));

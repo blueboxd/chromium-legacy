@@ -56,6 +56,7 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   // have a CSS layout box, or if its layout box is not a scroll container.
   // https://github.com/WICG/scroll-animations/issues/31
   bool IsActive() const override;
+  base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
 
   // IDL API implementation.
   Element* scrollSource();

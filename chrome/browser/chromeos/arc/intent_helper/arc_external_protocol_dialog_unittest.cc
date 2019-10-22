@@ -7,13 +7,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/sharing/sharing_device_registration.h"
-#include "chrome/browser/sharing/sharing_fcm_handler.h"
-#include "chrome/browser/sharing/sharing_fcm_sender.h"
-#include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
-#include "chrome/browser/sharing/vapid_key_manager.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/render_process_host.h"
@@ -80,34 +75,6 @@ mojom::IntentHandlerInfoPtr Create(const std::string& name,
     ptr->fallback_url = fallback_url.spec();
   return ptr;
 }
-
-// TODO(crbug.com/1011364): Extract this into a common mock file.
-class MockSharingService : public SharingService {
- public:
-  MockSharingService()
-      : SharingService(
-            nullptr,
-            nullptr,
-            std::make_unique<SharingDeviceRegistration>(nullptr,
-                                                        nullptr,
-                                                        nullptr,
-                                                        nullptr),
-            nullptr,
-            std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr),
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr) {}
-
-  ~MockSharingService() override = default;
-
-  MOCK_METHOD4(SendMessageToDevice,
-               void(const std::string&,
-                    base::TimeDelta,
-                    chrome_browser_sharing::SharingMessage,
-                    SendMessageCallback));
-};
 
 }  // namespace
 

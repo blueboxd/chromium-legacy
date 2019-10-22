@@ -34,7 +34,6 @@ struct SchemeRegistry {
       // canonicalization.
       {kFileScheme, SCHEME_WITH_HOST},
       {kFtpScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},
-      {kGopherScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},
       {kWssScheme,
        SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},  // WebSocket secure.
       {kWsScheme, SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION},  // WebSocket.

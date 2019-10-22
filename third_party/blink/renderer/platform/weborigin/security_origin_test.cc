@@ -580,7 +580,6 @@ TEST_F(SecurityOriginTest, CreateFromTuple) {
       {"https", "example.com", 444, "https://example.com:444"},
       {"file", "", 0, "file://"},
       {"file", "example.com", 0, "file://"},
-      {"gopher", "Foo.com", 70, "gopher://foo.com"},
   };
 
   for (const auto& test : cases) {
@@ -700,9 +699,6 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
 
       // Registered URLs
       {"ftp://example.com/", "ftp", "example.com", 21},
-      // crbug.com/781342
-      // Conversion doesn't work for gopher.
-      // {"gopher://example.com/", "gopher", "example.com", 70},
       {"ws://example.com/", "ws", "example.com", 80},
       {"wss://example.com/", "wss", "example.com", 443},
 
@@ -722,9 +718,6 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
        123},
       {"blob:https://example.com/guid-goes-here", "https", "example.com", 443},
       {"blob:http://u:p@example.com/guid-goes-here", "http", "example.com", 80},
-
-      // Gopher:
-      {"gopher://8u.9.Vx6/", "gopher", "8u.9.vx6", 70},
   };
 
   for (const auto& test_case : cases) {

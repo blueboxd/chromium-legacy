@@ -43,14 +43,12 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLLabelElement::HTMLLabelElement(Document& document)
-    : HTMLElement(kLabelTag, document), processing_click_(false) {}
+    : HTMLElement(html_names::kLabelTag, document), processing_click_(false) {}
 
 HTMLElement* HTMLLabelElement::control() const {
   // https://html.spec.whatwg.org/C/#labeled-control
-  const AtomicString& control_id = getAttribute(kForAttr);
+  const AtomicString& control_id = getAttribute(html_names::kForAttr);
   if (control_id.IsNull()) {
     // "If the for attribute is not specified, but the label element has a
     // labelable element descendant, then the first such descendant in tree

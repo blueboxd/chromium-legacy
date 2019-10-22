@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_HTTP_STRUCTURED_HEADER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_HTTP_STRUCTURED_HEADER_H_
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
@@ -36,48 +37,86 @@ namespace http_structured_header {
 // present in Structured Header values, and will cause the entire header to fail
 // to parse.)
 //
-// Note that all values of Item type are currently returned as strings. The
-// string, token and byte sequence examples above would all be returned by the
-// parser as the string "abc". It is not currently possible to determine which
-// type of Item was parsed from a given header.
-// TODO(1011101): Return values with type information attached.
-//
-// TODO(1011101): The current parser implementation is of draft #9
-// (https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-09) from
-// December 2018; this should be brought up to date with the latest changes.
+// Currently only limited types (non-negative integers, strings, tokens and
+// byte sequences) are supported.
+// TODO(1011101): Add support for other types.
+
+class BLINK_COMMON_EXPORT Item {
+ public:
+  enum ItemType {
+    kNullType,
+    kIntegerType,
+    kStringType,
+    kTokenType,
+    kByteSequenceType
+  };
+  Item();
+  Item(int64_t value);
+
+  // Constructors for string-like items: Strings, Tokens and Byte Sequences.
+  Item(const std::string& value, Item::ItemType type = kStringType);
+  Item(std::string&& value, Item::ItemType type = kStringType);
+
+  BLINK_COMMON_EXPORT friend bool operator==(const Item& lhs, const Item& rhs);
+  inline friend bool operator!=(const Item& lhs, const Item& rhs) {
+    return !(lhs == rhs);
+  }
+
+  bool is_null() const { return type_ == kNullType; }
+  bool is_integer() const { return type_ == kIntegerType; }
+  bool is_string() const { return type_ == kStringType; }
+  bool is_token() const { return type_ == kTokenType; }
+  bool is_byte_sequence() const { return type_ == kByteSequenceType; }
+
+  int64_t integer() const {
+    DCHECK_EQ(type_, kIntegerType);
+    return integer_value_;
+  }
+  // TODO(iclelland): Split up accessors for String, Token and Byte Sequence.
+  const std::string& string() const {
+    DCHECK(type_ == kStringType || type_ == kTokenType ||
+           type_ == kByteSequenceType);
+    return string_value_;
+  }
+
+ private:
+  ItemType type_ = kNullType;
+  // TODO(iclelland): Make this class more memory-efficient, replacing the
+  // values here with a union or std::variant (when available).
+  int64_t integer_value_ = 0;
+  std::string string_value_;
+};
 
 struct BLINK_COMMON_EXPORT ParameterisedIdentifier {
-  using Parameters = std::map<std::string, std::string>;
+  using Parameters = std::map<std::string, Item>;
 
-  std::string identifier;
+  Item identifier;
   Parameters params;
 
   ParameterisedIdentifier(const ParameterisedIdentifier&);
   ParameterisedIdentifier& operator=(const ParameterisedIdentifier&);
-  ParameterisedIdentifier(const std::string&, const Parameters&);
+  ParameterisedIdentifier(Item, const Parameters&);
   ~ParameterisedIdentifier();
 };
 
 using ParameterisedList = std::vector<ParameterisedIdentifier>;
-using ListOfLists = std::vector<std::vector<std::string>>;
+using ListOfLists = std::vector<std::vector<Item>>;
 
-// Returns the string representation of the header value, if it can be parsed as
-// an Item, or nullopt if it cannot. Note that the returned string is not
-// guaranteed to have any encoding, as it may have been a Byte Sequence.
-BLINK_COMMON_EXPORT base::Optional<std::string> ParseItem(
+// Returns the result of parsing the header value as an Item, if it can be
+// parsed as one, or nullopt if it cannot.
+BLINK_COMMON_EXPORT base::Optional<Item> ParseItem(
     const base::StringPiece& str);
 
 // Returns the result of parsing the header value as a Parameterised List, if it
-// can be parsed as one, or nullopt if it cannot. Note that list items, as well
-// as parameter values, will be returned as strings, and that those strings are
-// not guaranteed to have any encoding, as they may have been Byte Sequences.
+// can be parsed as one, or nullopt if it cannot. Note that parameter keys will
+// be returned as strings, which are guaranteed to be ASCII-encoded. List items,
+// as well as parameter values, will be returned as Items.
 BLINK_COMMON_EXPORT base::Optional<ParameterisedList> ParseParameterisedList(
     const base::StringPiece& str);
 
 // Returns the result of parsing the header value as a List of Lists, if it can
-// be parsed as one, or nullopt if it cannot. Note that inner list items will be
-// be returned as strings, and that those strings are not guaranteed to have any
-// encoding, as they may have been Byte Sequences.
+// be parsed as one, or nullopt if it cannot. Inner list items will be returned
+// as Items.
 BLINK_COMMON_EXPORT base::Optional<ListOfLists> ParseListOfLists(
     const base::StringPiece& str);
 

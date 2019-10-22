@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 
-#import <EarlGrey/EarlGrey.h>
-
 #include <string>
 
 #include "base/callback.h"
@@ -15,6 +13,7 @@
 #include "components/ntp_snippets/status.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/testing/earl_grey/earl_grey_app.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -57,10 +56,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
 
 namespace ntp_home {
 id<GREYMatcher> OmniboxWidth(CGFloat width) {
-  MatchesBlock matches = ^BOOL(UIView* view) {
+  GREYMatchesBlock matches = ^BOOL(UIView* view) {
     return fabs(view.bounds.size.width - width) < 0.001;
   };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
+  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
     [description
         appendText:[NSString stringWithFormat:@"Omnibox has correct width: %g",
                                               width]];
@@ -71,11 +70,11 @@ id<GREYMatcher> OmniboxWidth(CGFloat width) {
 }
 
 id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
-  MatchesBlock matches = ^BOOL(UIView* view) {
+  GREYMatchesBlock matches = ^BOOL(UIView* view) {
     return view.bounds.size.width >= width - margin &&
            view.bounds.size.width <= width + margin;
   };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
+  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
     [description
         appendText:[NSString
                        stringWithFormat:

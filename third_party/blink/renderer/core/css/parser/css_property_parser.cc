@@ -23,7 +23,9 @@
 
 namespace blink {
 
-using namespace css_property_parser_helpers;
+using css_property_parser_helpers::ConsumeIdent;
+using css_property_parser_helpers::IsImplicitProperty;
+using css_property_parser_helpers::ParseLonghand;
 
 class CSSIdentifierValue;
 
@@ -156,8 +158,8 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
     if (is_shorthand) {
       const cssvalue::CSSPendingSubstitutionValue& pending_value =
           *cssvalue::CSSPendingSubstitutionValue::Create(property_id, variable);
-      AddExpandedPropertyForValue(property_id, pending_value, important,
-                                  *parsed_properties_);
+      css_property_parser_helpers::AddExpandedPropertyForValue(
+          property_id, pending_value, important, *parsed_properties_);
     } else {
       AddProperty(property_id, CSSPropertyID::kInvalid, *variable, important,
                   IsImplicitProperty::kNotImplicit, *parsed_properties_);
@@ -266,8 +268,8 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
     AddProperty(property, CSSPropertyID::kInvalid, *value, important,
                 IsImplicitProperty::kNotImplicit, *parsed_properties_);
   } else {
-    AddExpandedPropertyForValue(property, *value, important,
-                                *parsed_properties_);
+    css_property_parser_helpers::AddExpandedPropertyForValue(
+        property, *value, important, *parsed_properties_);
   }
   range_ = range_copy;
   return true;
@@ -285,17 +287,19 @@ static CSSValue* ConsumeSingleViewportDescriptor(
     case CSSPropertyID::kMaxHeight:
       if (id == CSSValueID::kAuto || id == CSSValueID::kInternalExtendToZoom)
         return ConsumeIdent(range);
-      return ConsumeLengthOrPercent(range, css_parser_mode,
-                                    kValueRangeNonNegative);
+      return css_property_parser_helpers::ConsumeLengthOrPercent(
+          range, css_parser_mode, kValueRangeNonNegative);
     case CSSPropertyID::kMinZoom:
     case CSSPropertyID::kMaxZoom:
     case CSSPropertyID::kZoom: {
       if (id == CSSValueID::kAuto)
         return ConsumeIdent(range);
-      CSSValue* parsed_value = ConsumeNumber(range, kValueRangeNonNegative);
+      CSSValue* parsed_value = css_property_parser_helpers::ConsumeNumber(
+          range, kValueRangeNonNegative);
       if (parsed_value)
         return parsed_value;
-      return ConsumePercent(range, kValueRangeNonNegative);
+      return css_property_parser_helpers::ConsumePercent(
+          range, kValueRangeNonNegative);
     }
     case CSSPropertyID::kUserZoom:
       return ConsumeIdent<CSSValueID::kZoom, CSSValueID::kFixed>(range);

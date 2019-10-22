@@ -6,6 +6,7 @@
 #define DEVICE_UDEV_LINUX_UDEV_WATCHER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/files/file_descriptor_watcher_posix.h"

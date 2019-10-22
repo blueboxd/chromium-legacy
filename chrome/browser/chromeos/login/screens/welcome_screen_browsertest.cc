@@ -196,8 +196,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenElements) {
       {"connect", "welcomeScreen", "enableDebuggingLink"});
 }
 
-// Flaky: crbug.com/1014952
-IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, DISABLED_WelcomeScreenNext) {
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenNext) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});

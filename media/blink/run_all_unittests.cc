@@ -53,7 +53,6 @@ class MediaBlinkTestSuite : public base::TestSuite {
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
-    gin::V8Initializer::LoadV8Natives();
 #endif
 
 #if !defined(OS_IOS)

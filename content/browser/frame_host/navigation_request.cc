@@ -342,7 +342,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
 // Should match the definition of
 // blink::SchemeRegistry::ShouldTreatURLSchemeAsLegacy.
 bool ShouldTreatURLSchemeAsLegacy(const GURL& url) {
-  return url.SchemeIs(url::kFtpScheme) || url.SchemeIs(url::kGopherScheme);
+  return url.SchemeIs(url::kFtpScheme);
 }
 
 bool ShouldPropagateUserActivation(const url::Origin& previous_origin,

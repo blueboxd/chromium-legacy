@@ -4,8 +4,18 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.content.Context;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.content_public.browser.WebContents;
+
+import java.util.Map;
 
 /**
  * Implementation of {@link AutofillAssistantModuleEntryProvider} that can be manipulated to
@@ -14,6 +24,41 @@ import org.chromium.chrome.browser.tab.Tab;
 class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModuleEntryProvider {
     private boolean mNotInstalled;
     private boolean mCannotInstall;
+
+    /*
+     * Mock action handler. We only override returning dynamic actions.
+     *
+     * TODO(crbug/806868): Inject a service also for the DirectAction path and get rid of this
+     * mock.
+     */
+    static class MockAutofillAssistantActionHandler extends AutofillAssistantActionHandlerImpl {
+        public MockAutofillAssistantActionHandler(Context context,
+                BottomSheetController bottomSheetController, ScrimView scrimView,
+                GetCurrentTab getCurrentTab) {
+            super(context, bottomSheetController, scrimView, getCurrentTab);
+        }
+
+        @Override
+        public String[] getActions() {
+            return new String[] {"search", "action2"};
+        }
+    }
+
+    /** Mock module entry. */
+    static class MockAutofillAssistantModuleEntry implements AutofillAssistantModuleEntry {
+        @Override
+        public void start(@NonNull Tab tab, @NonNull WebContents webContents,
+                boolean skipOnboarding, String initialUrl, Map<String, String> parameters,
+                String experimentIds, Bundle intentExtras) {}
+
+        @Override
+        public AutofillAssistantActionHandler createActionHandler(Context context,
+                BottomSheetController bottomSheetController, ScrimView scrimView,
+                GetCurrentTab getCurrentTab) {
+            return new MockAutofillAssistantActionHandler(
+                    context, bottomSheetController, scrimView, getCurrentTab);
+        }
+    }
 
     /** The module is already installed. This is the default state. */
     public void setInstalled() {
@@ -36,7 +81,7 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
     @Override
     public AutofillAssistantModuleEntry getModuleEntryIfInstalled() {
         if (mNotInstalled) return null;
-        return super.getModuleEntryIfInstalled();
+        return new MockAutofillAssistantModuleEntry();
     }
 
     @Override

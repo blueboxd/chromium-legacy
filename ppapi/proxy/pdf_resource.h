@@ -54,9 +54,7 @@ class PPAPI_PROXY_EXPORT PDFResource
   PP_Bool IsFeatureEnabled(PP_PDFFeature feature) override;
   void SetSelectedText(const char* selected_text) override;
   void SetLinkUnderCursor(const char* url) override;
-  void GetV8ExternalSnapshotData(const char** natives_data_out,
-                                 int* natives_size_out,
-                                 const char** snapshot_data_out,
+  void GetV8ExternalSnapshotData(const char** snapshot_data_out,
                                  int* snapshot_size_out) override;
   void SetAccessibilityViewportInfo(
       const PP_PrivateAccessibilityViewportInfo* viewport_info) override;

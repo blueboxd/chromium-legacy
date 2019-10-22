@@ -16,8 +16,7 @@ const char* kAuthorizedSchemes[] = {
     // TODO(mpearson): add support for chrome:// URLs.  Right now the scheme
     // for that lives in content and is accessible via
     // GetEmbedderRepresentationOfAboutScheme() or content::kChromeUIScheme
-    // TODO(mpearson): when adding desktop support, add kFileScheme, kFtpScheme,
-    // and kGopherScheme.
+    // TODO(mpearson): when adding desktop support, add kFileScheme, kFtpScheme.
 };
 
 }  // namespace

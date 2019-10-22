@@ -18,12 +18,14 @@ ChildFrame::ChildFrame(
     const gfx::Size& viewport_size_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority,
     bool offscreen_pre_raster,
+    float device_scale_factor,
     CopyOutputRequestQueue copy_requests)
     : frame_future(std::move(frame_future)),
       frame_sink_id(frame_sink_id),
       viewport_size_for_tile_priority(viewport_size_for_tile_priority),
       transform_for_tile_priority(transform_for_tile_priority),
       offscreen_pre_raster(offscreen_pre_raster),
+      device_scale_factor(device_scale_factor),
       copy_requests(std::move(copy_requests)) {}
 
 ChildFrame::~ChildFrame() {
@@ -39,8 +41,14 @@ void ChildFrame::WaitOnFutureIfNeeded() {
   if (frame_ptr) {
     layer_tree_frame_sink_id = frame_ptr->layer_tree_frame_sink_id;
     frame = std::move(frame_ptr->frame);
+    local_surface_id = frame_future->local_surface_id();
   }
   frame_future = nullptr;
+}
+
+viz::SurfaceId ChildFrame::GetSurfaceId() const {
+  DCHECK(!frame_future);
+  return viz::SurfaceId(frame_sink_id, local_surface_id);
 }
 
 }  // namespace android_webview

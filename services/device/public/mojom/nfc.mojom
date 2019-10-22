@@ -34,12 +34,16 @@ struct NDEFError {
   NDEFErrorType error_type;
 };
 
+// https://w3c.github.io/web-nfc/#dom-ndefrecord
 struct NDEFRecord {
   // The type of NDEFRecord.
   string? record_type;
 
   // Represents the IANA media type of the NDEFRecord data field.
   string? media_type;
+
+  // The id of NDEFRecord. https://w3c.github.io/web-nfc/#dom-ndefrecord-id
+  string? id;
 
   // Payload of the NDEFRecord.
   array<uint8> data;

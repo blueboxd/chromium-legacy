@@ -680,7 +680,7 @@ config("compiler") {
   }
 
   if (compiler_timing) {
-    if (is_clang) {
+    if (is_clang && !is_nacl) {
       if (is_win) {
         cflags += [ "/clang:-ftime-trace" ]
       } else {

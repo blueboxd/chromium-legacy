@@ -117,7 +117,6 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();
-  gin::V8Initializer::LoadV8Natives();
 #endif
 
 #if defined(OS_LINUX)

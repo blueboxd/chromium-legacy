@@ -34,7 +34,7 @@ void ClientFrameSinkVideoCapturer::SetFormat(media::VideoPixelFormat format,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   format_.emplace(format, color_space);
-  capturer_->SetFormat(format, color_space);
+  capturer_remote_->SetFormat(format, color_space);
 }
 
 void ClientFrameSinkVideoCapturer::SetMinCapturePeriod(
@@ -42,7 +42,7 @@ void ClientFrameSinkVideoCapturer::SetMinCapturePeriod(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   min_capture_period_ = min_capture_period;
-  capturer_->SetMinCapturePeriod(min_capture_period);
+  capturer_remote_->SetMinCapturePeriod(min_capture_period);
 }
 
 void ClientFrameSinkVideoCapturer::SetMinSizeChangePeriod(
@@ -50,7 +50,7 @@ void ClientFrameSinkVideoCapturer::SetMinSizeChangePeriod(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   min_size_change_period_ = min_period;
-  capturer_->SetMinSizeChangePeriod(min_period);
+  capturer_remote_->SetMinSizeChangePeriod(min_period);
 }
 
 void ClientFrameSinkVideoCapturer::SetResolutionConstraints(
@@ -60,15 +60,15 @@ void ClientFrameSinkVideoCapturer::SetResolutionConstraints(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   resolution_constraints_.emplace(min_size, max_size, use_fixed_aspect_ratio);
-  capturer_->SetResolutionConstraints(min_size, max_size,
-                                      use_fixed_aspect_ratio);
+  capturer_remote_->SetResolutionConstraints(min_size, max_size,
+                                             use_fixed_aspect_ratio);
 }
 
 void ClientFrameSinkVideoCapturer::SetAutoThrottlingEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto_throttling_enabled_ = enabled;
-  capturer_->SetAutoThrottlingEnabled(enabled);
+  capturer_remote_->SetAutoThrottlingEnabled(enabled);
 }
 
 void ClientFrameSinkVideoCapturer::ChangeTarget(
@@ -76,7 +76,7 @@ void ClientFrameSinkVideoCapturer::ChangeTarget(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   target_ = frame_sink_id;
-  capturer_->ChangeTarget(frame_sink_id);
+  capturer_remote_->ChangeTarget(frame_sink_id);
 }
 
 void ClientFrameSinkVideoCapturer::Start(
@@ -93,7 +93,7 @@ void ClientFrameSinkVideoCapturer::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   is_started_ = false;
-  capturer_->Stop();
+  capturer_remote_->Stop();
 }
 
 void ClientFrameSinkVideoCapturer::StopAndResetConsumer() {
@@ -107,7 +107,7 @@ void ClientFrameSinkVideoCapturer::StopAndResetConsumer() {
 void ClientFrameSinkVideoCapturer::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  capturer_->RequestRefreshFrame();
+  capturer_remote_->RequestRefreshFrame();
 }
 
 std::unique_ptr<ClientFrameSinkVideoCapturer::Overlay>
@@ -127,8 +127,8 @@ ClientFrameSinkVideoCapturer::CreateOverlay(int32_t stacking_index) {
   auto overlay =
       std::make_unique<Overlay>(weak_factory_.GetWeakPtr(), stacking_index);
   overlays_.push_back(overlay.get());
-  if (capturer_)
-    overlays_.back()->EstablishConnection(capturer_.get());
+  if (capturer_remote_)
+    overlays_.back()->EstablishConnection(capturer_remote_.get());
   return overlay;
 }
 
@@ -166,27 +166,29 @@ void ClientFrameSinkVideoCapturer::OnStopped() {
 void ClientFrameSinkVideoCapturer::EstablishConnection() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  establish_connection_callback_.Run(mojo::MakeRequest(&capturer_));
-  capturer_.set_connection_error_handler(
+  capturer_remote_.reset();
+  establish_connection_callback_.Run(
+      capturer_remote_.BindNewPipeAndPassReceiver());
+  capturer_remote_.set_disconnect_handler(
       base::BindOnce(&ClientFrameSinkVideoCapturer::OnConnectionError,
                      base::Unretained(this)));
   if (format_)
-    capturer_->SetFormat(format_->pixel_format, format_->color_space);
+    capturer_remote_->SetFormat(format_->pixel_format, format_->color_space);
   if (min_capture_period_)
-    capturer_->SetMinCapturePeriod(*min_capture_period_);
+    capturer_remote_->SetMinCapturePeriod(*min_capture_period_);
   if (min_size_change_period_)
-    capturer_->SetMinSizeChangePeriod(*min_size_change_period_);
+    capturer_remote_->SetMinSizeChangePeriod(*min_size_change_period_);
   if (resolution_constraints_) {
-    capturer_->SetResolutionConstraints(
+    capturer_remote_->SetResolutionConstraints(
         resolution_constraints_->min_size, resolution_constraints_->max_size,
         resolution_constraints_->use_fixed_aspect_ratio);
   }
   if (auto_throttling_enabled_)
-    capturer_->SetAutoThrottlingEnabled(*auto_throttling_enabled_);
+    capturer_remote_->SetAutoThrottlingEnabled(*auto_throttling_enabled_);
   if (target_)
-    capturer_->ChangeTarget(target_);
+    capturer_remote_->ChangeTarget(target_);
   for (Overlay* overlay : overlays_)
-    overlay->EstablishConnection(capturer_.get());
+    overlay->EstablishConnection(capturer_remote_.get());
   if (is_started_)
     StartInternal();
 }
@@ -204,7 +206,7 @@ void ClientFrameSinkVideoCapturer::OnConnectionError() {
 void ClientFrameSinkVideoCapturer::StartInternal() {
   if (consumer_receiver_.is_bound())
     consumer_receiver_.reset();
-  capturer_->Start(consumer_receiver_.BindNewPipeAndPassRemote());
+  capturer_remote_->Start(consumer_receiver_.BindNewPipeAndPassRemote());
 }
 
 void ClientFrameSinkVideoCapturer::OnOverlayDestroyed(Overlay* overlay) {

@@ -69,11 +69,6 @@ void GridTrack::SetGrowthLimitCap(base::Optional<LayoutUnit> growth_limit_cap) {
   growth_limit_cap_ = growth_limit_cap;
 }
 
-void GridTrack::SetSizeDistributionWeight(double size_distribution_weight) {
-  DCHECK_GE(size_distribution_weight, 0);
-  size_distribution_weight_ = size_distribution_weight;
-}
-
 bool GridTrack::IsGrowthLimitBiggerThanBaseSize() const {
   return GrowthLimitIsInfinite() || growth_limit_ >= base_size_;
 }
@@ -526,8 +521,7 @@ double GridTrackSizingAlgorithmStrategy::FindFrUnitSize(
 void GridTrackSizingAlgorithmStrategy::DistributeSpaceToTracks(
     Vector<GridTrack*>& tracks,
     LayoutUnit& available_logical_space) const {
-  algorithm_.DistributeSpaceToTracks<kNotCrossingIntrinsicFlexibleTracks,
-                                     kMaximizeTracks>(tracks, nullptr,
+  algorithm_.DistributeSpaceToTracks<kMaximizeTracks>(tracks, nullptr,
                                                       available_logical_space);
 }
 
@@ -968,10 +962,8 @@ LayoutUnit GridTrackSizingAlgorithm::InitialGrowthLimit(
     const GridTrackSize& track_size,
     LayoutUnit base_size) const {
   const GridLength& grid_length = track_size.MaxTrackBreadth();
-  if (grid_length.IsFlex()) {
-    return track_size.MinTrackBreadth().IsContentSized() ? LayoutUnit(kInfinity)
-                                                         : base_size;
-  }
+  if (grid_length.IsFlex())
+    return base_size;
 
   const Length& track_length = grid_length.length();
   if (track_length.IsSpecified()) {
@@ -1008,11 +1000,8 @@ void GridTrackSizingAlgorithm::InitializeTrackSizes() {
 
     if (track_size.IsContentSized())
       content_sized_tracks_index_.push_back(i);
-    if (track_size.MaxTrackBreadth().IsFlex()) {
+    if (track_size.MaxTrackBreadth().IsFlex())
       flexible_sized_tracks_index_.push_back(i);
-      if (track_size.MinTrackBreadth().IsContentSized())
-        track.SetSizeDistributionWeight(track_size.MaxTrackBreadth().Flex());
-    }
     if (track_size.HasAutoMaxTrackBreadth() && !track_size.IsFitContent())
       auto_sized_tracks_for_stretch_index_.push_back(i);
 
@@ -1058,12 +1047,12 @@ void GridTrackSizingAlgorithm::SizeTrackToFitNonSpanningItem(
   }
 }
 
-bool GridTrackSizingAlgorithm::SpanningItemCrossesIntrinsicFlexibleSizedTracks(
+bool GridTrackSizingAlgorithm::SpanningItemCrossesFlexibleSizedTracks(
     const GridSpan& span) const {
   for (const auto& track_position : span) {
     const GridTrackSize& track_size =
         GetGridTrackSize(direction_, track_position);
-    if (track_size.HasIntrinsicMinTrackBreadth() &&
+    if (track_size.MinTrackBreadth().IsFlex() ||
         track_size.MaxTrackBreadth().IsFlex())
       return true;
   }
@@ -1125,13 +1114,9 @@ static LayoutUnit TrackSizeForTrackSizeComputationPhase(
   return track.BaseSize();
 }
 
-static bool ShouldProcessTrackForTrackSizeComputationVariantAndPhase(
-    TrackSizeComputationVariant variant,
+static bool ShouldProcessTrackForTrackSizeComputationPhase(
     TrackSizeComputationPhase phase,
     const GridTrackSize& track_size) {
-  if (variant == kCrossingIntrinsicFlexibleTracks &&
-      !track_size.MaxTrackBreadth().IsFlex())
-    return false;
   switch (phase) {
     case kResolveIntrinsicMinimums:
       return track_size.HasIntrinsicMinTrackBreadth();
@@ -1260,12 +1245,6 @@ static bool SortByGridTrackGrowthPotential(const GridTrack* track1,
       track2_has_infinite_growth_potential_without_cap)
     return track2_has_infinite_growth_potential_without_cap;
 
-  // We don't have to take weights into account when comparing growth potentials
-  // because they must be 0 at this point. Flexible tracks with a greater
-  // weight have already been handled due to their infinite growth limit.
-  DCHECK_EQ(track1->SizeDistributionWeight(), 0);
-  DCHECK_EQ(track2->SizeDistributionWeight(), 0);
-
   LayoutUnit track1_limit =
       track1->GrowthLimitCap().value_or(track1->GrowthLimit());
   LayoutUnit track2_limit =
@@ -1288,21 +1267,7 @@ static void ClampGrowthShareIfNeeded(TrackSizeComputationPhase phase,
   growth_share = std::min(growth_share, distance_to_cap);
 }
 
-static Vector<double> FractionsOfRemainingSpace(
-    const Vector<GridTrack*>& tracks) {
-  size_t tracks_size = tracks.size();
-  Vector<double> fractions_of_remaining_space(tracks_size);
-  double weight_sum = 0;
-  for (size_t i = tracks_size; i-- > 0;) {
-    double weight = tracks[i]->SizeDistributionWeight();
-    weight_sum += weight;
-    fractions_of_remaining_space[i] =
-        weight_sum > 0 ? weight / weight_sum : 1.0 / (tracks_size - i);
-  }
-  return fractions_of_remaining_space;
-}
-
-template <TrackSizeComputationVariant variant, TrackSizeComputationPhase phase>
+template <TrackSizeComputationPhase phase>
 void GridTrackSizingAlgorithm::DistributeSpaceToTracks(
     Vector<GridTrack*>& tracks,
     Vector<GridTrack*>* grow_beyond_growth_limits_tracks,
@@ -1315,23 +1280,13 @@ void GridTrackSizingAlgorithm::DistributeSpaceToTracks(
   }
 
   if (available_logical_space > 0) {
-    // No need to sort when distributing intrinsic contributions among flexible
-    // tracks, because all of them have an infinite growth potential.
-    if (variant == kNotCrossingIntrinsicFlexibleTracks)
-      std::sort(tracks.begin(), tracks.end(), SortByGridTrackGrowthPotential);
+    std::sort(tracks.begin(), tracks.end(), SortByGridTrackGrowthPotential);
 
-    auto fractions_of_remaining_space = FractionsOfRemainingSpace(tracks);
     size_t tracks_size = tracks.size();
     for (size_t i = 0; i < tracks_size; ++i) {
       GridTrack& track = *tracks[i];
-#if DCHECK_IS_ON()
-      if (variant == kCrossingIntrinsicFlexibleTracks)
-        DCHECK(track.GrowthLimitIsInfinite());
-      else
-        DCHECK_EQ(track.SizeDistributionWeight(), 0);
-#endif
-      LayoutUnit available_logical_space_share(available_logical_space *
-                                               fractions_of_remaining_space[i]);
+      LayoutUnit available_logical_space_share =
+          available_logical_space / (tracks_size - i);
       const LayoutUnit& track_breadth =
           TrackSizeForTrackSizeComputationPhase(phase, track, kForbidInfinity);
       LayoutUnit growth_share =
@@ -1349,9 +1304,6 @@ void GridTrackSizingAlgorithm::DistributeSpaceToTracks(
   }
 
   if (available_logical_space > 0 && grow_beyond_growth_limits_tracks) {
-    // We never grow flex tracks beyond growth limits, since they are infinite.
-    DCHECK_NE(variant, kCrossingIntrinsicFlexibleTracks);
-
     // We need to sort them because there might be tracks with growth limit caps
     // (like the ones with fit-content()) which cannot indefinitely grow over
     // the limits.
@@ -1361,15 +1313,12 @@ void GridTrackSizingAlgorithm::DistributeSpaceToTracks(
                 SortByGridTrackGrowthPotential);
     }
 
-    auto fractions_of_remaining_space =
-        FractionsOfRemainingSpace(*grow_beyond_growth_limits_tracks);
     size_t tracks_growing_above_max_breadth_size =
         grow_beyond_growth_limits_tracks->size();
     for (size_t i = 0; i < tracks_growing_above_max_breadth_size; ++i) {
       GridTrack* track = grow_beyond_growth_limits_tracks->at(i);
-      LayoutUnit growth_share(available_logical_space *
-                              fractions_of_remaining_space[i]);
-
+      LayoutUnit growth_share =
+          available_logical_space / (tracks_growing_above_max_breadth_size - i);
       ClampGrowthShareIfNeeded(phase, *track, growth_share);
       DCHECK_GE(growth_share, 0) << "We must never shrink any grid track or "
                                     "else we can't guarantee we abide by our "
@@ -1387,7 +1336,7 @@ void GridTrackSizingAlgorithm::DistributeSpaceToTracks(
   }
 }
 
-template <TrackSizeComputationVariant variant, TrackSizeComputationPhase phase>
+template <TrackSizeComputationPhase phase>
 void GridTrackSizingAlgorithm::IncreaseSizesToAccommodateSpanningItems(
     const GridItemsSpanGroupRange& grid_items_with_span) {
   Vector<GridTrack>& all_tracks = Tracks(direction_);
@@ -1402,9 +1351,8 @@ void GridTrackSizingAlgorithm::IncreaseSizesToAccommodateSpanningItems(
   for (auto* it = grid_items_with_span.range_start;
        it != grid_items_with_span.range_end; ++it) {
     GridItemWithSpan& grid_item_with_span = *it;
+    DCHECK_GT(grid_item_with_span.GetGridSpan().IntegerSpan(), 1u);
     const GridSpan& item_span = grid_item_with_span.GetGridSpan();
-    DCHECK(variant == kCrossingIntrinsicFlexibleTracks ||
-           item_span.IntegerSpan() > 1u);
 
     grow_beyond_growth_limits_tracks.Shrink(0);
     filtered_tracks.Shrink(0);
@@ -1414,8 +1362,7 @@ void GridTrackSizingAlgorithm::IncreaseSizesToAccommodateSpanningItems(
       GridTrack& track = Tracks(direction_)[track_position];
       spanning_tracks_size +=
           TrackSizeForTrackSizeComputationPhase(phase, track, kForbidInfinity);
-      if (!ShouldProcessTrackForTrackSizeComputationVariantAndPhase(
-              variant, phase, track_size))
+      if (!ShouldProcessTrackForTrackSizeComputationPhase(phase, track_size))
         continue;
 
       filtered_tracks.push_back(&track);
@@ -1440,7 +1387,7 @@ void GridTrackSizingAlgorithm::IncreaseSizesToAccommodateSpanningItems(
         grow_beyond_growth_limits_tracks.IsEmpty()
             ? filtered_tracks
             : grow_beyond_growth_limits_tracks;
-    DistributeSpaceToTracks<variant, phase>(
+    DistributeSpaceToTracks<phase>(
         filtered_tracks, &tracks_to_grow_beyond_growth_limits, extra_space);
   }
 
@@ -1451,25 +1398,8 @@ void GridTrackSizingAlgorithm::IncreaseSizesToAccommodateSpanningItems(
   }
 }
 
-template <TrackSizeComputationVariant variant>
-void GridTrackSizingAlgorithm::IncreaseSizesToAccommodateSpanningItems(
-    const GridItemsSpanGroupRange& grid_items_with_span) {
-  IncreaseSizesToAccommodateSpanningItems<variant, kResolveIntrinsicMinimums>(
-      grid_items_with_span);
-  IncreaseSizesToAccommodateSpanningItems<variant,
-                                          kResolveContentBasedMinimums>(
-      grid_items_with_span);
-  IncreaseSizesToAccommodateSpanningItems<variant, kResolveMaxContentMinimums>(
-      grid_items_with_span);
-  IncreaseSizesToAccommodateSpanningItems<variant, kResolveIntrinsicMaximums>(
-      grid_items_with_span);
-  IncreaseSizesToAccommodateSpanningItems<variant, kResolveMaxContentMaximums>(
-      grid_items_with_span);
-}
-
 void GridTrackSizingAlgorithm::ResolveIntrinsicTrackSizes() {
   Vector<GridItemWithSpan> items_sorted_by_increasing_span;
-  Vector<GridItemWithSpan> items_crossing_flexible_tracks;
   if (grid_.HasGridItems()) {
     HashSet<LayoutBox*> items_set;
     for (const auto& track_index : content_sized_tracks_index_) {
@@ -1478,12 +1408,9 @@ void GridTrackSizingAlgorithm::ResolveIntrinsicTrackSizes() {
       while (auto* grid_item = iterator->NextGridItem()) {
         if (items_set.insert(grid_item).is_new_entry) {
           const GridSpan& span = grid_.GridItemSpan(*grid_item, direction_);
-          if (SpanningItemCrossesIntrinsicFlexibleSizedTracks(span)) {
-            items_crossing_flexible_tracks.push_back(
-                GridItemWithSpan(*grid_item, span));
-          } else if (span.IntegerSpan() == 1) {
+          if (span.IntegerSpan() == 1) {
             SizeTrackToFitNonSpanningItem(span, *grid_item, track);
-          } else {
+          } else if (!SpanningItemCrossesFlexibleSizedTracks(span)) {
             items_sorted_by_increasing_span.push_back(
                 GridItemWithSpan(*grid_item, span));
           }
@@ -1499,23 +1426,24 @@ void GridTrackSizingAlgorithm::ResolveIntrinsicTrackSizes() {
   while (it != end) {
     GridItemsSpanGroupRange span_group_range = {it,
                                                 std::upper_bound(it, end, *it)};
-    IncreaseSizesToAccommodateSpanningItems<
-        kNotCrossingIntrinsicFlexibleTracks>(span_group_range);
+    IncreaseSizesToAccommodateSpanningItems<kResolveIntrinsicMinimums>(
+        span_group_range);
+    IncreaseSizesToAccommodateSpanningItems<kResolveContentBasedMinimums>(
+        span_group_range);
+    IncreaseSizesToAccommodateSpanningItems<kResolveMaxContentMinimums>(
+        span_group_range);
+    IncreaseSizesToAccommodateSpanningItems<kResolveIntrinsicMaximums>(
+        span_group_range);
+    IncreaseSizesToAccommodateSpanningItems<kResolveMaxContentMaximums>(
+        span_group_range);
     it = span_group_range.range_end;
   }
 
-  IncreaseSizesToAccommodateSpanningItems<kCrossingIntrinsicFlexibleTracks>(
-      {items_crossing_flexible_tracks.begin(),
-       items_crossing_flexible_tracks.end()});
-
-  Vector<GridTrack>& track_list = Tracks(direction_);
   for (const auto& track_index : content_sized_tracks_index_) {
-    GridTrack& track = track_list[track_index];
+    GridTrack& track = Tracks(direction_)[track_index];
     if (track.GrowthLimit() == kInfinity)
       track.SetGrowthLimit(track.BaseSize());
   }
-  for (const auto& track_index : flexible_sized_tracks_index_)
-    track_list[track_index].SetSizeDistributionWeight(0);
 }
 
 void GridTrackSizingAlgorithm::ComputeGridContainerIntrinsicSizes() {
@@ -1523,12 +1451,8 @@ void GridTrackSizingAlgorithm::ComputeGridContainerIntrinsicSizes() {
 
   Vector<GridTrack>& all_tracks = Tracks(direction_);
   for (auto& track : all_tracks) {
-#if DCHECK_IS_ON()
-    if (!strategy_->IsComputingSizeContainment()) {
-      DCHECK(!track.InfiniteGrowthPotential());
-      DCHECK_EQ(track.SizeDistributionWeight(), 0);
-    }
-#endif
+    DCHECK(strategy_->IsComputingSizeContainment() ||
+           !track.InfiniteGrowthPotential());
     min_content_size_ += track.BaseSize();
     max_content_size_ +=
         track.GrowthLimitIsInfinite() ? track.BaseSize() : track.GrowthLimit();

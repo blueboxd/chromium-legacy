@@ -22,6 +22,7 @@
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
@@ -378,8 +379,7 @@ class FrameSinkVideoCapturerTest : public testing::Test {
         true /* enable_auto_throttling */);
     oracle_ = oracle.get();
     capturer_ = std::make_unique<FrameSinkVideoCapturerImpl>(
-        &frame_sink_manager_, mojom::FrameSinkVideoCapturerRequest(),
-        std::move(oracle));
+        &frame_sink_manager_, mojo::NullReceiver(), std::move(oracle));
   }
 
   void SetUp() override {

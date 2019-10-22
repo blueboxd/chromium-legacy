@@ -530,7 +530,6 @@ TEST_F(URLBlacklistManagerTest, BlacklistBasicCoverage) {
   EXPECT_TRUE(IsMatch("example.com", "ftp://example.com"));
   EXPECT_TRUE(IsMatch("example.com", "http://example.com"));
   EXPECT_TRUE(IsMatch("example.com", "https://example.com"));
-  EXPECT_TRUE(IsMatch("example.com", "gopher://example.com"));
   EXPECT_TRUE(IsMatch("example.com", "ws://example.com"));
   EXPECT_TRUE(IsMatch("example.com", "wss://example.com"));
 
@@ -540,6 +539,7 @@ TEST_F(URLBlacklistManagerTest, BlacklistBasicCoverage) {
   EXPECT_FALSE(IsMatch("example.com/*", "filesystem:///something"));
   EXPECT_FALSE(IsMatch("example.com", "custom://example.com"));
   EXPECT_FALSE(IsMatch("example", "custom://example"));
+  EXPECT_FALSE(IsMatch("example.com", "gopher://example.com"));
 
   // An optional '.' (dot) can prefix the host field to disable subdomain
   // matching, see below for details.

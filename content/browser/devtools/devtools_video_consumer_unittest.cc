@@ -42,9 +42,10 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
 
   bool is_bound() const { return receiver_.is_bound(); }
 
-  void Bind(viz::mojom::FrameSinkVideoCapturerRequest request) {
+  void Bind(
+      mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> receiver) {
     DCHECK(!receiver_.is_bound());
-    receiver_.Bind(std::move(request));
+    receiver_.Bind(std::move(receiver));
   }
 
   void Reset() {
@@ -237,9 +238,8 @@ class DevToolsVideoConsumerTest : public testing::Test {
     return std::make_unique<viz::ClientFrameSinkVideoCapturer>(
         base::BindRepeating(
             [](base::WeakPtr<DevToolsVideoConsumerTest> self,
-               viz::mojom::FrameSinkVideoCapturerRequest request) {
-              self->capturer_.Bind(std::move(request));
-            },
+               mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer>
+                   receiver) { self->capturer_.Bind(std::move(receiver)); },
             weak_factory_.GetWeakPtr()));
   }
 

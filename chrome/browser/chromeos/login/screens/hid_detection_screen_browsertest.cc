@@ -135,9 +135,7 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, MouseKeyboardStates) {
 
 // Test that if there is any Bluetooth device connected on HID screen, the
 // Bluetooth adapter should not be disabled after advancing to the next screen.
-// Flaky: https://crbug.com/1014951
-IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest,
-                       DISABLED_BluetoothDeviceConnected) {
+IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, BluetoothDeviceConnected) {
   OobeScreenWaiter(HIDDetectionView::kScreenId).Wait();
   EXPECT_TRUE(adapter()->IsPowered());
 

@@ -19,7 +19,6 @@
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -83,13 +82,14 @@ media::VideoCaptureParams GetCaptureParams() {
 // Mock for the FrameSinkVideoCapturer running in the VIZ process.
 class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
  public:
-  MockFrameSinkVideoCapturer() : binding_(this) {}
+  MockFrameSinkVideoCapturer() = default;
 
-  bool is_bound() const { return binding_.is_bound(); }
+  bool is_bound() const { return receiver_.is_bound(); }
 
-  void Bind(viz::mojom::FrameSinkVideoCapturerRequest request) {
+  void Bind(
+      mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> receiver) {
     DCHECK_NOT_ON_DEVICE_THREAD();
-    binding_.Bind(std::move(request));
+    receiver_.Bind(std::move(receiver));
   }
 
   MOCK_METHOD2(SetFormat,
@@ -129,7 +129,7 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
                receiver));
 
  private:
-  mojo::Binding<viz::mojom::FrameSinkVideoCapturer> binding_;
+  mojo::Receiver<viz::mojom::FrameSinkVideoCapturer> receiver_{this};
   mojo::Remote<viz::mojom::FrameSinkVideoConsumer> consumer_;
 };
 
@@ -272,14 +272,15 @@ class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
       : capturer_(capturer) {}
 
  protected:
-  void CreateCapturer(viz::mojom::FrameSinkVideoCapturerRequest request) final {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(
-                       [](MockFrameSinkVideoCapturer* capturer,
-                          viz::mojom::FrameSinkVideoCapturerRequest request) {
-                         capturer->Bind(std::move(request));
-                       },
-                       capturer_, std::move(request)));
+  void CreateCapturer(mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer>
+                          receiver) final {
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(
+            [](MockFrameSinkVideoCapturer* capturer,
+               mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer>
+                   receiver) { capturer->Bind(std::move(receiver)); },
+            capturer_, std::move(receiver)));
   }
 
   MockFrameSinkVideoCapturer* const capturer_;

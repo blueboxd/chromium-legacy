@@ -249,7 +249,7 @@ String SchemeRegistry::ListOfCorsEnabledURLSchemes() {
 }
 
 bool SchemeRegistry::ShouldTreatURLSchemeAsLegacy(const String& scheme) {
-  return scheme == "ftp" || scheme == "gopher";
+  return scheme == "ftp";
 }
 
 bool SchemeRegistry::ShouldTrackUsageMetricsForScheme(const String& scheme) {

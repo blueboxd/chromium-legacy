@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 88 tests; 78 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 88 tests; 81 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS NDEFMessage interface: existence and properties of interface object
@@ -20,8 +20,8 @@ PASS NDEFRecord interface: existence and properties of interface prototype objec
 PASS NDEFRecord interface: existence and properties of interface prototype object's @@unscopables property
 PASS NDEFRecord interface: attribute recordType
 PASS NDEFRecord interface: attribute mediaType
-FAIL NDEFRecord interface: attribute id assert_true: The prototype object must have a property "id" expected true got false
-FAIL NDEFRecord interface: attribute data assert_true: The prototype object must have a property "data" expected true got false
+PASS NDEFRecord interface: attribute id
+PASS NDEFRecord interface: attribute data
 FAIL NDEFRecord interface: attribute encoding assert_true: The prototype object must have a property "encoding" expected true got false
 FAIL NDEFRecord interface: attribute lang assert_true: The prototype object must have a property "lang" expected true got false
 PASS NDEFRecord interface: operation text()
@@ -32,8 +32,8 @@ PASS NDEFRecord must be primary interface of new NDEFRecord({"recordType":"text"
 PASS Stringification of new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"});
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "recordType" with the proper type
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "mediaType" with the proper type
-FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "id" with the proper type assert_inherits: property "id" not found in prototype chain
-FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "data" with the proper type assert_inherits: property "data" not found in prototype chain
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "id" with the proper type
+FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "data" with the proper type Unrecognized type DataView
 FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "encoding" with the proper type assert_inherits: property "encoding" not found in prototype chain
 FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "lang" with the proper type assert_inherits: property "lang" not found in prototype chain
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "text()" with the proper type

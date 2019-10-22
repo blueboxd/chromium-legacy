@@ -142,15 +142,13 @@ void SetLinkUnderCursor(PP_Instance instance, const char* url) {
 }
 
 void GetV8ExternalSnapshotData(PP_Instance instance,
-                               const char** natives_data_out,
-                               int* natives_size_out,
                                const char** snapshot_data_out,
                                int* snapshot_size_out) {
   EnterInstanceAPI<PPB_PDF_API> enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->GetV8ExternalSnapshotData(natives_data_out,
-      natives_size_out, snapshot_data_out, snapshot_size_out);
+  enter.functions()->GetV8ExternalSnapshotData(snapshot_data_out,
+                                               snapshot_size_out);
 }
 
 void SetAccessibilityViewportInfo(

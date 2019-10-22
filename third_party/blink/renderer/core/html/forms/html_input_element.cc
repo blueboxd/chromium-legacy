@@ -83,7 +83,6 @@
 namespace blink {
 
 using ValueMode = InputType::ValueMode;
-using namespace html_names;
 
 class ListAttributeTargetObserver : public IdTargetObserver {
  public:
@@ -100,7 +99,7 @@ const int kDefaultSize = 20;
 
 HTMLInputElement::HTMLInputElement(Document& document,
                                    const CreateElementFlags flags)
-    : TextControlElement(kInputTag, document),
+    : TextControlElement(html_names::kInputTag, document),
       size_(kDefaultSize),
       has_dirty_value_(false),
       is_checked_(false),
@@ -355,7 +354,7 @@ void HTMLInputElement::HandleBlurEvent() {
 }
 
 void HTMLInputElement::setType(const AtomicString& type) {
-  setAttribute(kTypeAttr, type);
+  setAttribute(html_names::kTypeAttr, type);
 }
 
 void HTMLInputElement::InitializeTypeInParsing() {
@@ -364,10 +363,10 @@ void HTMLInputElement::InitializeTypeInParsing() {
   DCHECK(!input_type_view_);
 
   const AtomicString& new_type_name =
-      InputType::NormalizeTypeName(FastGetAttribute(kTypeAttr));
+      InputType::NormalizeTypeName(FastGetAttribute(html_names::kTypeAttr));
   input_type_ = InputType::Create(*this, new_type_name);
   input_type_view_ = input_type_->CreateView();
-  String default_value = FastGetAttribute(kValueAttr);
+  String default_value = FastGetAttribute(html_names::kValueAttr);
   if (input_type_->GetValueMode() == ValueMode::kValue)
     non_attribute_value_ = SanitizeValue(default_value);
   has_been_password_field_ |= new_type_name == input_type_names::kPassword;
@@ -390,7 +389,7 @@ void HTMLInputElement::UpdateType() {
   DCHECK(input_type_view_);
 
   const AtomicString& new_type_name =
-      InputType::NormalizeTypeName(FastGetAttribute(kTypeAttr));
+      InputType::NormalizeTypeName(FastGetAttribute(html_names::kTypeAttr));
   if (input_type_->FormControlType() == new_type_name)
     return;
 
@@ -470,7 +469,7 @@ void HTMLInputElement::UpdateType() {
       (new_value_mode == ValueMode::kDefault ||
        new_value_mode == ValueMode::kDefaultOn)) {
     if (HasDirtyValue())
-      setAttribute(kValueAttr, AtomicString(non_attribute_value_));
+      setAttribute(html_names::kValueAttr, AtomicString(non_attribute_value_));
     non_attribute_value_ = String();
     has_dirty_value_ = false;
   }
@@ -482,7 +481,7 @@ void HTMLInputElement::UpdateType() {
   // set the control's dirty value flag to false.
   else if (old_value_mode != ValueMode::kValue &&
            new_value_mode == ValueMode::kValue) {
-    AtomicString value_string = FastGetAttribute(kValueAttr);
+    AtomicString value_string = FastGetAttribute(html_names::kValueAttr);
     input_type_->WarnIfValueIsInvalid(value_string);
     non_attribute_value_ = SanitizeValue(value_string);
     has_dirty_value_ = false;
@@ -499,7 +498,7 @@ void HTMLInputElement::UpdateType() {
   } else {
     // ValueMode wasn't changed, or kDefault <-> kDefaultOn.
     if (!HasDirtyValue()) {
-      String default_value = FastGetAttribute(kValueAttr);
+      String default_value = FastGetAttribute(html_names::kValueAttr);
       if (!default_value.IsNull())
         input_type_->WarnIfValueIsInvalid(default_value);
     }
@@ -522,19 +521,19 @@ void HTMLInputElement::UpdateType() {
       input_type_->ShouldRespectHeightAndWidthAttributes()) {
     DCHECK(GetElementData());
     AttributeCollection attributes = AttributesWithoutUpdate();
-    if (const Attribute* height = attributes.Find(kHeightAttr)) {
+    if (const Attribute* height = attributes.Find(html_names::kHeightAttr)) {
       TextControlElement::AttributeChanged(AttributeModificationParams(
-          kHeightAttr, height->Value(), height->Value(),
+          html_names::kHeightAttr, height->Value(), height->Value(),
           AttributeModificationReason::kDirectly));
     }
-    if (const Attribute* width = attributes.Find(kWidthAttr)) {
+    if (const Attribute* width = attributes.Find(html_names::kWidthAttr)) {
       TextControlElement::AttributeChanged(AttributeModificationParams(
-          kWidthAttr, width->Value(), width->Value(),
+          html_names::kWidthAttr, width->Value(), width->Value(),
           AttributeModificationReason::kDirectly));
     }
-    if (const Attribute* align = attributes.Find(kAlignAttr)) {
+    if (const Attribute* align = attributes.Find(html_names::kAlignAttr)) {
       TextControlElement::AttributeChanged(AttributeModificationParams(
-          kAlignAttr, align->Value(), align->Value(),
+          html_names::kAlignAttr, align->Value(), align->Value(),
           AttributeModificationReason::kDirectly));
     }
   }
@@ -705,9 +704,10 @@ void HTMLInputElement::AccessKeyAction(bool send_mouse_events) {
 bool HTMLInputElement::IsPresentationAttribute(
     const QualifiedName& name) const {
   // FIXME: Remove type check.
-  if (name == kVspaceAttr || name == kHspaceAttr || name == kAlignAttr ||
-      name == kWidthAttr || name == kHeightAttr ||
-      (name == kBorderAttr && type() == input_type_names::kImage))
+  if (name == html_names::kVspaceAttr || name == html_names::kHspaceAttr ||
+      name == html_names::kAlignAttr || name == html_names::kWidthAttr ||
+      name == html_names::kHeightAttr ||
+      (name == html_names::kBorderAttr && type() == input_type_names::kImage))
     return true;
   return TextControlElement::IsPresentationAttribute(name);
 }
@@ -716,22 +716,22 @@ void HTMLInputElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kVspaceAttr) {
+  if (name == html_names::kVspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
-  } else if (name == kHspaceAttr) {
+  } else if (name == html_names::kHspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
-  } else if (name == kAlignAttr) {
+  } else if (name == html_names::kAlignAttr) {
     if (input_type_->ShouldRespectAlignAttribute())
       ApplyAlignmentAttributeToStyle(value, style);
-  } else if (name == kWidthAttr) {
+  } else if (name == html_names::kWidthAttr) {
     if (input_type_->ShouldRespectHeightAndWidthAttributes())
       AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
-  } else if (name == kHeightAttr) {
+  } else if (name == html_names::kHeightAttr) {
     if (input_type_->ShouldRespectHeightAndWidthAttributes())
       AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
-  } else if (name == kBorderAttr &&
+  } else if (name == html_names::kBorderAttr &&
              type() == input_type_names::kImage) {  // FIXME: Remove type check.
     ApplyBorderAttributeToStyle(value, style);
   } else {
@@ -747,12 +747,12 @@ void HTMLInputElement::ParseAttribute(
   const QualifiedName& name = params.name;
   const AtomicString& value = params.new_value;
 
-  if (name == kNameAttr) {
+  if (name == html_names::kNameAttr) {
     RemoveFromRadioButtonGroup();
     name_ = value;
     AddToRadioButtonGroup();
     TextControlElement::ParseAttribute(params);
-  } else if (name == kAutocompleteAttr) {
+  } else if (name == html_names::kAutocompleteAttr) {
     if (DeprecatedEqualIgnoringCase(value, "off")) {
       autocomplete_ = kOff;
     } else {
@@ -761,9 +761,9 @@ void HTMLInputElement::ParseAttribute(
       else
         autocomplete_ = kOn;
     }
-  } else if (name == kTypeAttr) {
+  } else if (name == html_names::kTypeAttr) {
     UpdateType();
-  } else if (name == kValueAttr) {
+  } else if (name == html_names::kValueAttr) {
     // We only need to setChanged if the form is looking at the default value
     // right now.
     if (!HasDirtyValue()) {
@@ -772,14 +772,14 @@ void HTMLInputElement::ParseAttribute(
       UpdatePlaceholderVisibility();
       SetNeedsStyleRecalc(
           kSubtreeStyleChange,
-          StyleChangeReasonForTracing::FromAttribute(kValueAttr));
+          StyleChangeReasonForTracing::FromAttribute(html_names::kValueAttr));
     }
     needs_to_update_view_value_ = true;
     SetNeedsValidityCheck();
     input_type_->WarnIfValueIsInvalidAndElementIsVisible(value);
     input_type_->InRangeChanged();
     input_type_view_->ValueAttributeChanged();
-  } else if (name == kCheckedAttr) {
+  } else if (name == html_names::kCheckedAttr) {
     // Another radio button in the same group might be checked by state
     // restore. We shouldn't call setChecked() even if this has the checked
     // attribute. So, delay the setChecked() call until
@@ -791,11 +791,11 @@ void HTMLInputElement::ParseAttribute(
       dirty_checkedness_ = false;
     }
     PseudoStateChanged(CSSSelector::kPseudoDefault);
-  } else if (name == kMaxlengthAttr) {
+  } else if (name == html_names::kMaxlengthAttr) {
     SetNeedsValidityCheck();
-  } else if (name == kMinlengthAttr) {
+  } else if (name == html_names::kMinlengthAttr) {
     SetNeedsValidityCheck();
-  } else if (name == kSizeAttr) {
+  } else if (name == html_names::kSizeAttr) {
     unsigned size = 0;
     if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, size) ||
         size == 0 || size > 0x7fffffffu)
@@ -808,56 +808,57 @@ void HTMLInputElement::ParseAttribute(
                 layout_invalidation_reason::kAttributeChanged);
       }
     }
-  } else if (name == kAltAttr) {
+  } else if (name == html_names::kAltAttr) {
     input_type_view_->AltAttributeChanged();
-  } else if (name == kSrcAttr) {
+  } else if (name == html_names::kSrcAttr) {
     input_type_view_->SrcAttributeChanged();
-  } else if (name == kUsemapAttr || name == kAccesskeyAttr) {
+  } else if (name == html_names::kUsemapAttr ||
+             name == html_names::kAccesskeyAttr) {
     // FIXME: ignore for the moment
-  } else if (name == kOnsearchAttr) {
+  } else if (name == html_names::kOnsearchAttr) {
     // Search field and slider attributes all just cause updateFromElement to be
     // called through style recalcing.
     SetAttributeEventListener(event_type_names::kSearch,
                               CreateAttributeEventListener(this, name, value));
-  } else if (name == kIncrementalAttr) {
+  } else if (name == html_names::kIncrementalAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kIncrementalAttribute);
-  } else if (name == kMinAttr) {
+  } else if (name == html_names::kMinAttr) {
     input_type_view_->MinOrMaxAttributeChanged();
     input_type_->SanitizeValueInResponseToMinOrMaxAttributeChange();
     input_type_->InRangeChanged();
     SetNeedsValidityCheck();
     UseCounter::Count(GetDocument(), WebFeature::kMinAttribute);
-  } else if (name == kMaxAttr) {
+  } else if (name == html_names::kMaxAttr) {
     input_type_view_->MinOrMaxAttributeChanged();
     input_type_->SanitizeValueInResponseToMinOrMaxAttributeChange();
     input_type_->InRangeChanged();
     SetNeedsValidityCheck();
     UseCounter::Count(GetDocument(), WebFeature::kMaxAttribute);
-  } else if (name == kMultipleAttr) {
+  } else if (name == html_names::kMultipleAttr) {
     input_type_view_->MultipleAttributeChanged();
     SetNeedsValidityCheck();
-  } else if (name == kStepAttr) {
+  } else if (name == html_names::kStepAttr) {
     input_type_view_->StepAttributeChanged();
     SetNeedsValidityCheck();
     UseCounter::Count(GetDocument(), WebFeature::kStepAttribute);
-  } else if (name == kPatternAttr) {
+  } else if (name == html_names::kPatternAttr) {
     SetNeedsValidityCheck();
     UseCounter::Count(GetDocument(), WebFeature::kPatternAttribute);
-  } else if (name == kReadonlyAttr) {
+  } else if (name == html_names::kReadonlyAttr) {
     TextControlElement::ParseAttribute(params);
     input_type_view_->ReadonlyAttributeChanged();
-  } else if (name == kListAttr) {
+  } else if (name == html_names::kListAttr) {
     has_non_empty_list_ = !value.IsEmpty();
     if (has_non_empty_list_) {
       ResetListAttributeTargetObserver();
       ListAttributeTargetChanged();
     }
     UseCounter::Count(GetDocument(), WebFeature::kListAttribute);
-  } else if (name == kWebkitdirectoryAttr) {
+  } else if (name == html_names::kWebkitdirectoryAttr) {
     TextControlElement::ParseAttribute(params);
     UseCounter::Count(GetDocument(), WebFeature::kPrefixedDirectoryAttribute);
   } else {
-    if (name == kFormactionAttr)
+    if (name == html_names::kFormactionAttr)
       LogUpdateAttributeIfIsolatedWorldAndInDocument("input", params);
     TextControlElement::ParseAttribute(params);
   }
@@ -874,7 +875,7 @@ void HTMLInputElement::FinishParsingChildren() {
   DCHECK(input_type_view_);
   TextControlElement::FinishParsingChildren();
   if (!state_restored_) {
-    bool checked = hasAttribute(kCheckedAttr);
+    bool checked = hasAttribute(html_names::kCheckedAttr);
     if (checked)
       setChecked(checked);
     dirty_checkedness_ = false;
@@ -908,12 +909,12 @@ String HTMLInputElement::AltText() const {
   // http://www.w3.org/TR/1998/REC-html40-19980424/appendix/notes.html#altgen
   // also heavily discussed by Hixie on bugzilla
   // note this is intentionally different to HTMLImageElement::altText()
-  String alt = FastGetAttribute(kAltAttr);
+  String alt = FastGetAttribute(html_names::kAltAttr);
   // fall back to title attribute
   if (alt.IsNull())
-    alt = FastGetAttribute(kTitleAttr);
+    alt = FastGetAttribute(html_names::kTitleAttr);
   if (alt.IsNull())
-    alt = FastGetAttribute(kValueAttr);
+    alt = FastGetAttribute(html_names::kValueAttr);
   if (alt.IsNull())
     alt = GetLocale().QueryString(IDS_FORM_INPUT_ALT);
   return alt;
@@ -949,7 +950,7 @@ void HTMLInputElement::ResetImpl() {
     SetNeedsValidityCheck();
   }
 
-  setChecked(hasAttribute(kCheckedAttr));
+  setChecked(hasAttribute(html_names::kCheckedAttr));
   dirty_checkedness_ = false;
 }
 
@@ -1059,9 +1060,9 @@ String HTMLInputElement::value() const {
     case ValueMode::kFilename:
       return input_type_->ValueInFilenameValueMode();
     case ValueMode::kDefault:
-      return FastGetAttribute(kValueAttr);
+      return FastGetAttribute(html_names::kValueAttr);
     case ValueMode::kDefaultOn: {
-      AtomicString value_string = FastGetAttribute(kValueAttr);
+      AtomicString value_string = FastGetAttribute(html_names::kValueAttr);
       return value_string.IsNull() ? "on" : value_string;
     }
     case ValueMode::kValue:
@@ -1411,8 +1412,8 @@ bool HTMLInputElement::WillRespondToMouseClickEvents() {
 }
 
 bool HTMLInputElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == kSrcAttr ||
-         attribute.GetName() == kFormactionAttr ||
+  return attribute.GetName() == html_names::kSrcAttr ||
+         attribute.GetName() == html_names::kFormactionAttr ||
          TextControlElement::IsURLAttribute(attribute);
 }
 
@@ -1426,7 +1427,7 @@ const QualifiedName& HTMLInputElement::SubResourceAttributeName() const {
 }
 
 const AtomicString& HTMLInputElement::DefaultValue() const {
-  return FastGetAttribute(kValueAttr);
+  return FastGetAttribute(html_names::kValueAttr);
 }
 
 static inline bool IsRFC2616TokenCharacter(UChar ch) {
@@ -1474,20 +1475,21 @@ static Vector<String> ParseAcceptAttribute(const String& accept_string,
 }
 
 Vector<String> HTMLInputElement::AcceptMIMETypes() const {
-  return ParseAcceptAttribute(FastGetAttribute(kAcceptAttr), IsValidMIMEType);
+  return ParseAcceptAttribute(FastGetAttribute(html_names::kAcceptAttr),
+                              IsValidMIMEType);
 }
 
 Vector<String> HTMLInputElement::AcceptFileExtensions() const {
-  return ParseAcceptAttribute(FastGetAttribute(kAcceptAttr),
+  return ParseAcceptAttribute(FastGetAttribute(html_names::kAcceptAttr),
                               IsValidFileExtension);
 }
 
 const AtomicString& HTMLInputElement::Alt() const {
-  return FastGetAttribute(kAltAttr);
+  return FastGetAttribute(html_names::kAltAttr);
 }
 
 bool HTMLInputElement::Multiple() const {
-  return FastHasAttribute(kMultipleAttr);
+  return FastHasAttribute(html_names::kMultipleAttr);
 }
 
 void HTMLInputElement::setSize(unsigned size, ExceptionState& exception_state) {
@@ -1496,13 +1498,13 @@ void HTMLInputElement::setSize(unsigned size, ExceptionState& exception_state) {
         DOMExceptionCode::kIndexSizeError,
         "The value provided is 0, which is an invalid size.");
   } else {
-    SetUnsignedIntegralAttribute(kSizeAttr, size ? size : kDefaultSize,
-                                 kDefaultSize);
+    SetUnsignedIntegralAttribute(html_names::kSizeAttr,
+                                 size ? size : kDefaultSize, kDefaultSize);
   }
 }
 
 KURL HTMLInputElement::Src() const {
-  return GetDocument().CompleteURL(FastGetAttribute(kSrcAttr));
+  return GetDocument().CompleteURL(FastGetAttribute(html_names::kSrcAttr));
 }
 
 FileList* HTMLInputElement::files() const {
@@ -1590,8 +1592,8 @@ Node::InsertionNotificationRequest HTMLInputElement::InsertedInto(
   if (insertion_point.isConnected() && !Form())
     AddToRadioButtonGroup();
   ResetListAttributeTargetObserver();
-  LogAddElementIfIsolatedWorldAndInDocument("input", kTypeAttr,
-                                            kFormactionAttr);
+  LogAddElementIfIsolatedWorldAndInDocument("input", html_names::kTypeAttr,
+                                            html_names::kFormactionAttr);
   return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
 
@@ -1654,7 +1656,7 @@ HTMLDataListElement* HTMLInputElement::DataList() const {
     return nullptr;
 
   return ToHTMLDataListElementOrNull(
-      GetTreeScope().getElementById(FastGetAttribute(kListAttr)));
+      GetTreeScope().getElementById(FastGetAttribute(html_names::kListAttr)));
 }
 
 bool HTMLInputElement::HasValidDataListOptions() const {
@@ -1712,7 +1714,7 @@ void HTMLInputElement::SetListAttributeTargetObserver(
 }
 
 void HTMLInputElement::ResetListAttributeTargetObserver() {
-  const AtomicString& value = FastGetAttribute(kListAttr);
+  const AtomicString& value = FastGetAttribute(html_names::kListAttr);
   if (!value.IsNull() && isConnected()) {
     SetListAttributeTargetObserver(
         MakeGarbageCollected<ListAttributeTargetObserver>(value, this));
@@ -1826,11 +1828,11 @@ unsigned HTMLInputElement::width() const {
 }
 
 void HTMLInputElement::setHeight(unsigned height) {
-  SetUnsignedIntegralAttribute(kHeightAttr, height);
+  SetUnsignedIntegralAttribute(html_names::kHeightAttr, height);
 }
 
 void HTMLInputElement::setWidth(unsigned width) {
-  SetUnsignedIntegralAttribute(kWidthAttr, width);
+  SetUnsignedIntegralAttribute(html_names::kWidthAttr, width);
 }
 
 ListAttributeTargetObserver::ListAttributeTargetObserver(

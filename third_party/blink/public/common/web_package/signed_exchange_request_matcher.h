@@ -47,7 +47,8 @@ class BLINK_COMMON_EXPORT SignedExchangeRequestMatcher {
   static bool MatchRequest(const net::HttpRequestHeaders& request_headers,
                            const HeaderMap& response_headers);
   static std::vector<std::vector<std::string>> CacheBehavior(
-      const http_structured_header::ListOfLists& variants,
+      const std::vector<std::pair<std::string, std::vector<std::string>>>&
+          variants,
       const net::HttpRequestHeaders& request_headers);
 
   static std::vector<std::string>::const_iterator FindBestMatchingVariantKey(

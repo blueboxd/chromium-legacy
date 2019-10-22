@@ -29,7 +29,18 @@ Bug tracker: [Internals>WebLayer](https://bugs.chromium.org/p/chromium/issues/li
 
 `renderer` internal code which runs in the renderer process
 
-## Testing
+## Setting Up Your Build Environment
+
+If you haven't done this already, you first need to set up an Android build. If
+you are a Google employee, reach out to weblayer-team@google.com for internal
+instructions. Otherwise follow the [Android build instructions](/docs/android_build_instructions.md).
+
+## Building and Testing
+
+To run the sample app:
+
+$ autoninja -C out/Default run_weblayer_shell
+$ out/Default/bin/run_weblayer_shell
 
 To run instrumentation tests:
 

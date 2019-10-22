@@ -47,6 +47,10 @@ class ExtensionApps : public apps::mojom::Publisher,
                       public content_settings::Observer,
                       public ArcAppListPrefs::Observer {
  public:
+  // Record uninstall dialog action for Web apps and Chrome apps.
+  static void RecordUninstallCanceledAction(Profile* profile,
+                                            const std::string& app_id);
+
   ExtensionApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                 Profile* profile,
                 apps::mojom::AppType app_type);

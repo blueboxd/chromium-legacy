@@ -2904,18 +2904,6 @@
       ]
     },
     {
-      "id":275,
-      "cr_bugs": [838725],
-      "description": "Disable AImageReader on ARM GPUs as its buggy.",
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": "ARM.*",
-      "features": [
-        "disable_aimagereader"
-      ]
-    },
-    {
       "id": 277,
       "description": "Direct composition path is buggy on certain AMD devices/drivers",
       "cr_bugs": [800950],

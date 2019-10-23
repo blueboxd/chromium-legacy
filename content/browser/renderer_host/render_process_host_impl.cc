@@ -303,7 +303,7 @@ bool g_run_renderer_in_process = false;
 
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = nullptr;
 
-base::Thread* g_in_process_thread;
+base::Thread* g_in_process_thread = nullptr;
 
 RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
@@ -1655,10 +1655,11 @@ bool RenderProcessHostImpl::Init() {
     // thread in the renderer process runs the WebKit code and can sometimes
     // make blocking calls to the UI thread (i.e. this thread), they need to run
     // on separate threads.
-    in_process_renderer_.reset(
-        g_renderer_main_thread_factory(InProcessChildThreadParams(
+    in_process_renderer_.reset(g_renderer_main_thread_factory(
+        InProcessChildThreadParams(
             base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
-            &mojo_invitation_, child_connection_->service_token())));
+            &mojo_invitation_, child_connection_->service_token()),
+        base::checked_cast<int32_t>(id_)));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)

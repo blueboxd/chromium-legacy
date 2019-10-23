@@ -47,8 +47,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 // Gets the encoding for the form.
@@ -92,7 +90,7 @@ bool IsSelectInDefaultState(const HTMLSelectElement& select) {
   if (select.IsMultiple() || select.size() > 1) {
     for (auto* const option_element : select.GetOptionList()) {
       if (option_element->Selected() !=
-          option_element->FastHasAttribute(kSelectedAttr))
+          option_element->FastHasAttribute(html_names::kSelectedAttr))
         return false;
     }
     return true;
@@ -102,7 +100,7 @@ bool IsSelectInDefaultState(const HTMLSelectElement& select) {
   // least one item is selected, determine which one.
   HTMLOptionElement* initial_selected = nullptr;
   for (auto* const option_element : select.GetOptionList()) {
-    if (option_element->FastHasAttribute(kSelectedAttr)) {
+    if (option_element->FastHasAttribute(html_names::kSelectedAttr)) {
       // The page specified the option to select.
       initial_selected = option_element;
       break;
@@ -121,8 +119,10 @@ bool IsSelectInDefaultState(const HTMLSelectElement& select) {
 bool IsInDefaultState(const HTMLFormControlElement& form_element) {
   if (auto* input = ToHTMLInputElementOrNull(form_element)) {
     if (input->type() == input_type_names::kCheckbox ||
-        input->type() == input_type_names::kRadio)
-      return input->checked() == input->FastHasAttribute(kCheckedAttr);
+        input->type() == input_type_names::kRadio) {
+      return input->checked() ==
+             input->FastHasAttribute(html_names::kCheckedAttr);
+    }
   } else if (auto* select = DynamicTo<HTMLSelectElement>(form_element)) {
     return IsSelectInDefaultState(*select);
   }
@@ -223,7 +223,8 @@ WebSearchableFormData::WebSearchableFormData(
       static_cast<HTMLInputElement*>(selected_input_element);
 
   // Only consider forms that GET data.
-  if (EqualIgnoringASCIICase(form_element->getAttribute(kMethodAttr), "post"))
+  if (EqualIgnoringASCIICase(
+          form_element->getAttribute(html_names::kMethodAttr), "post"))
     return;
 
   WTF::TextEncoding encoding;

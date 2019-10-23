@@ -56,6 +56,7 @@ jumbo_source_set("unit_tests") {
 }
 
 mojom("mojo_bindings") {
+  generate_java = true
   sources = [
     "content_settings.mojom",
   ]

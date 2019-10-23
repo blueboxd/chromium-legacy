@@ -10,12 +10,6 @@ Tree: v1.2.0
 Revision: bcdbb81201faad37270b03f59a29f2f27cb70312
 Tree link: https://github.com/webcomponents/html-imports/tree/v1.2.0
 
-Name: html-imports
-Repository: https://github.com/webcomponents/html-imports.git
-Tree: v0
-Revision: 5832a3028a3bb6f8f29f0c53b0c8d631efdfa0b4
-Tree link: https://github.com/webcomponents/html-imports/tree/v0
-
 Name: iron-a11y-announcer
 Repository: https://github.com/PolymerElements/iron-a11y-announcer.git
 Tree: v2.1.0

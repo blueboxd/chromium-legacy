@@ -35,9 +35,13 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
@@ -435,9 +439,34 @@ TEST_F(AppListControllerImplTest,
             GetAppListView()->app_list_state());
 }
 
+class HotseatAppListControllerImplTest
+    : public AppListControllerImplTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  HotseatAppListControllerImplTest() = default;
+  ~HotseatAppListControllerImplTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(chromeos::features::kShelfHotseat);
+    } else {
+      feature_list_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
+    }
+    AppListControllerImplTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(HotseatAppListControllerImplTest);
+};
+
+// Tests with both hotseat disabled and enabled.
+INSTANTIATE_TEST_SUITE_P(, HotseatAppListControllerImplTest, testing::Bool());
+
 // Tests for HomeScreenDelegate::GetInitialAppListItemScreenBoundsForWindow
 // implemtenation.
-TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
+TEST_P(HotseatAppListControllerImplTest, GetItemBoundsForWindow) {
   // Populate app list model with 25 items, of which items at indices in
   // |folders| are folders containing a single item.
   const std::set<int> folders = {5, 23};
@@ -484,14 +513,18 @@ TEST_F(AppListControllerImplTest, GetItemBoundsForWindow) {
                     {"", base::nullopt},
                     {"fake_id_22", base::nullopt}};
 
+  // Tests the case app ID property is not set on the window.
+  std::unique_ptr<aura::Window> window_without_app_id(CreateTestWindow());
+
   HomeScreenDelegate* const home_screen_delegate =
       Shell::Get()->home_screen_controller()->delegate();
+  // NOTE: Calculate the apps grid bounds after test window is shown, as showing
+  // the window can change the app list layout (due to the change in the shelf
+  // height).
   const gfx::Rect apps_grid_bounds = apps_grid_view->GetBoundsInScreen();
   const gfx::Rect apps_grid_center =
       gfx::Rect(apps_grid_bounds.CenterPoint(), gfx::Size(1, 1));
 
-  // Tests the case app ID property is not set on the window.
-  std::unique_ptr<aura::Window> window_without_app_id(CreateTestWindow());
   EXPECT_EQ(apps_grid_center,
             home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
                 window_without_app_id.get()));

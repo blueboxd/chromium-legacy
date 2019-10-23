@@ -43,9 +43,11 @@ std::string TestDataSource::GetSource() {
 }
 
 void TestDataSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
+  // TODO(crbug/1009127): Make ReadFile take GURL().
   if (path == "strings.m.js") {
     std::string output = "import {loadTimeData} from ";
     output.append("'chrome://resources/js/load_time_data.m.js';\n");

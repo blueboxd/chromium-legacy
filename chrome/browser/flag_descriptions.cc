@@ -3208,6 +3208,11 @@ const char kArcVpnName[] = "Enable ARC VPN integration";
 const char kArcVpnDescription[] =
     "Allow Android VPN clients to tunnel Chrome traffic.";
 
+const char kAshDragWindowFromShelfName[] =
+    "Enable dragging a window from shelf to overview or home screen.";
+const char kAshDragWindowFromShelfDescription[] =
+    "Enable dragging a window from shelf to overview or home screen.";
+
 const char kAshEnableDisplayMoveWindowAccelsName[] =
     "Enable shortcuts for moving window between displays.";
 const char kAshEnableDisplayMoveWindowAccelsDescription[] =

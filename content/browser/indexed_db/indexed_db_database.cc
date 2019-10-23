@@ -478,14 +478,6 @@ leveldb::Status IndexedDBDatabase::CreateObjectStoreOperation(
   if (base::Contains(metadata_.object_stores, object_store_id))
     return leveldb::Status::InvalidArgument("Invalid object_store_id");
 
-  // Store creation is done synchronously, as it may be followed by
-  // index creation (also sync) since preemptive OpenCursor/SetIndexKeys
-  // may follow.
-
-  // TODO(dmurph): Remove this call once this method is asynchronous (scheduled
-  // on the transaction).
-  transaction->EnsureBackingStoreTransactionBegun();
-
   IndexedDBObjectStoreMetadata object_store_metadata;
   Status s = metadata_coding_->CreateObjectStore(
       transaction->BackingStoreTransaction()->transaction(),

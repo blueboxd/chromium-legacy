@@ -436,7 +436,7 @@ std::string ExtensionsInternalsSource::GetMimeType(const std::string& path) {
 }
 
 void ExtensionsInternalsSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string json = WriteToString();

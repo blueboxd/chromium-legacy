@@ -35,6 +35,7 @@ using passwords_helper::GetVerifierPasswordStore;
 using passwords_helper::RemoveLogin;
 using passwords_helper::RemoveLogins;
 using passwords_helper::UpdateLogin;
+using passwords_helper::UpdateLoginWithPrimaryKey;
 
 using autofill::PasswordForm;
 
@@ -333,6 +334,25 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ONLY(TwoClientAddPass)) {
     ASSERT_EQ(GetPasswordCount(i), init_password_count + num_clients()) <<
         "Total password count is wrong.";
   }
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, AddImmediatelyAfterDelete) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+
+  PasswordForm form0 = CreateTestPasswordForm(0);
+  AddLogin(GetVerifierPasswordStore(), form0);
+  AddLogin(GetPasswordStore(0), form0);
+
+  ASSERT_TRUE(SamePasswordFormsAsVerifierChecker(1).Wait());
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+
+  PasswordForm form1 = CreateTestPasswordForm(1);
+  UpdateLoginWithPrimaryKey(GetVerifierPasswordStore(), form1, form0);
+  UpdateLoginWithPrimaryKey(GetPasswordStore(0), form1, form0);
+
+  ASSERT_TRUE(SamePasswordFormsAsVerifierChecker(1).Wait());
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,

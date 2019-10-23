@@ -381,6 +381,22 @@ void ReportResult(base::Optional<mojom::AnnotateImageError>* const error,
   }
 }
 
+class TestAnnotatorClient : public Annotator::Client {
+ public:
+  explicit TestAnnotatorClient(service_manager::Connector* connector)
+      : connector_(connector) {}
+  ~TestAnnotatorClient() override = default;
+
+  // Annotator::Client implementation:
+  void BindJsonParser(mojo::PendingReceiver<data_decoder::mojom::JsonParser>
+                          receiver) override {
+    connector_->Connect(data_decoder::mojom::kServiceName, std::move(receiver));
+  }
+
+ private:
+  service_manager::Connector* const connector_;
+};
+
 }  // namespace
 
 // Test that annotation works for one client, and that the cache is populated.
@@ -395,7 +411,8 @@ TEST(AnnotatorTest, OcrSuccessAndCache) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
   TestImageProcessor processor;
 
   // First call performs original image annotation.
@@ -501,7 +518,8 @@ TEST(AnnotatorTest, DescriptionSuccess) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
   TestImageProcessor processor;
 
   base::Optional<mojom::AnnotateImageError> error;
@@ -608,7 +626,8 @@ TEST(AnnotatorTest, DoubleOcrResult) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
   TestImageProcessor processor;
 
   base::Optional<mojom::AnnotateImageError> error;
@@ -723,7 +742,8 @@ TEST(AnnotatorTest, HttpError) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor;
   base::Optional<mojom::AnnotateImageError> error;
@@ -779,7 +799,8 @@ TEST(AnnotatorTest, BackendError) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor;
   base::Optional<mojom::AnnotateImageError> error;
@@ -862,7 +883,8 @@ TEST(AnnotatorTest, OcrBackendError) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor;
   base::Optional<mojom::AnnotateImageError> error;
@@ -956,7 +978,8 @@ TEST(AnnotatorTest, DescriptionBackendError) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor;
   base::Optional<mojom::AnnotateImageError> error;
@@ -1046,7 +1069,8 @@ TEST(AnnotatorTest, ServerError) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor;
   base::Optional<mojom::AnnotateImageError> error;
@@ -1104,7 +1128,8 @@ TEST(AnnotatorTest, AdultError) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor;
   base::Optional<mojom::AnnotateImageError> error;
@@ -1179,7 +1204,8 @@ TEST(AnnotatorTest, ProcessorFails) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor[3];
   base::Optional<mojom::AnnotateImageError> error[3];
@@ -1259,7 +1285,8 @@ TEST(AnnotatorTest, ProcessorFailedPreviously) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor[2];
   base::Optional<mojom::AnnotateImageError> error[2];
@@ -1328,7 +1355,8 @@ TEST(AnnotatorTest, ProcessorDies) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor[3];
   base::Optional<mojom::AnnotateImageError> error[3];
@@ -1403,7 +1431,8 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       3 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor[3];
   base::Optional<mojom::AnnotateImageError> error[3];
@@ -1490,7 +1519,8 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       3 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor[2];
   base::Optional<mojom::AnnotateImageError> error[2];
@@ -1634,7 +1664,8 @@ TEST(AnnotatorTest, DuplicateWork) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor[4];
   base::Optional<mojom::AnnotateImageError> error[4];
@@ -1742,7 +1773,8 @@ TEST(AnnotatorTest, DescPolicy) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       3 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor[3];
   base::Optional<mojom::AnnotateImageError> error[3];
@@ -1944,7 +1976,8 @@ TEST(AnnotatorTest, DescLanguage) {
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
       3 /* batch_size */, 1.0 /* min_ocr_confidence */,
-      test_url_factory.AsSharedURLLoaderFactory(), test_dd_service.connector());
+      test_url_factory.AsSharedURLLoaderFactory(),
+      std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
 
   TestImageProcessor processor[3];
   base::Optional<mojom::AnnotateImageError> error[3];
@@ -2138,10 +2171,11 @@ TEST(AnnotatorTest, ApiKey) {
     TestServerURLLoaderFactory test_url_factory(
         "https://ia-pa.googleapis.com/v1/");
 
-    Annotator annotator(GURL(kTestServerUrl), "my_api_key", kThrottle,
-                        1 /* batch_size */, 1.0 /* min_ocr_confidence */,
-                        test_url_factory.AsSharedURLLoaderFactory(),
-                        test_dd_service.connector());
+    Annotator annotator(
+        GURL(kTestServerUrl), "my_api_key", kThrottle, 1 /* batch_size */,
+        1.0 /* min_ocr_confidence */,
+        test_url_factory.AsSharedURLLoaderFactory(),
+        std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
     TestImageProcessor processor;
 
     annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
@@ -2171,11 +2205,11 @@ TEST(AnnotatorTest, ApiKey) {
     TestServerURLLoaderFactory test_url_factory(
         "http://ia-pa.googleapis.com/v1/");
 
-    Annotator annotator(GURL("http://ia-pa.googleapis.com/v1/annotation"),
-                        "my_api_key", kThrottle, 1 /* batch_size */,
-                        1.0 /* min_ocr_confidence */,
-                        test_url_factory.AsSharedURLLoaderFactory(),
-                        test_dd_service.connector());
+    Annotator annotator(
+        GURL("http://ia-pa.googleapis.com/v1/annotation"), "my_api_key",
+        kThrottle, 1 /* batch_size */, 1.0 /* min_ocr_confidence */,
+        test_url_factory.AsSharedURLLoaderFactory(),
+        std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
     TestImageProcessor processor;
 
     annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
@@ -2202,11 +2236,11 @@ TEST(AnnotatorTest, ApiKey) {
   {
     TestServerURLLoaderFactory test_url_factory("https://datascraper.com/");
 
-    Annotator annotator(GURL("https://datascraper.com/annotation"),
-                        "my_api_key", kThrottle, 1 /* batch_size */,
-                        1.0 /* min_ocr_confidence */,
-                        test_url_factory.AsSharedURLLoaderFactory(),
-                        test_dd_service.connector());
+    Annotator annotator(
+        GURL("https://datascraper.com/annotation"), "my_api_key", kThrottle,
+        1 /* batch_size */, 1.0 /* min_ocr_confidence */,
+        test_url_factory.AsSharedURLLoaderFactory(),
+        std::make_unique<TestAnnotatorClient>(test_dd_service.connector()));
     TestImageProcessor processor;
 
     annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),

@@ -2535,6 +2535,75 @@ TEST_P(CertVerifyProcInternalTest, ValidityJustAfterNotAfter) {
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
 }
 
+TEST_P(CertVerifyProcInternalTest, FailedIntermediateSignatureValidation) {
+  base::FilePath certs_dir =
+      GetTestNetDataDirectory()
+          .AppendASCII("verify_certificate_chain_unittest")
+          .AppendASCII(
+              "intermediate-wrong-signature-no-authority-key-identifier");
+
+  CertificateList certs = CreateCertificateListFromFile(
+      certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(3U, certs.size());
+
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+  intermediates.push_back(bssl::UpRef(certs[1]->cert_buffer()));
+
+  scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromBuffer(
+      bssl::UpRef(certs[0]->cert_buffer()), std::move(intermediates));
+  ASSERT_TRUE(cert.get());
+
+  // Trust the root certificate.
+  ScopedTestRoot scoped_root(certs.back().get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(cert.get(), "test.example", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+
+  // The intermediate was signed by a different root with a different key but
+  // with the same name as the trusted one, and the intermediate has no
+  // authorityKeyIdentifier, so the verifier must try verifying the signature.
+  // Should fail with AUTHORITY_INVALID.
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
+}
+
+TEST_P(CertVerifyProcInternalTest, FailedTargetSignatureValidation) {
+  base::FilePath certs_dir =
+      GetTestNetDataDirectory()
+          .AppendASCII("verify_certificate_chain_unittest")
+          .AppendASCII("target-wrong-signature-no-authority-key-identifier");
+
+  CertificateList certs = CreateCertificateListFromFile(
+      certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(3U, certs.size());
+
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+  intermediates.push_back(bssl::UpRef(certs[1]->cert_buffer()));
+
+  scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromBuffer(
+      bssl::UpRef(certs[0]->cert_buffer()), std::move(intermediates));
+  ASSERT_TRUE(cert.get());
+
+  // Trust the root certificate.
+  ScopedTestRoot scoped_root(certs.back().get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(cert.get(), "test.example", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+
+  // The leaf was signed by a different intermediate with a different key but
+  // with the same name as the one in the chain, and the leaf has no
+  // authorityKeyIdentifier, so the verifier must try verifying the signature.
+  // Should fail with AUTHORITY_INVALID.
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
+}
+
 class CertVerifyProcNameNormalizationTest : public CertVerifyProcInternalTest {
  protected:
   void SetUp() override {

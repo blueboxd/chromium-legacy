@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 
 #include "cc/layers/surface_layer.h"
+#include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -12,6 +13,8 @@
 #include "third_party/blink/renderer/core/frame/remote_dom_window.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -36,7 +39,8 @@ namespace blink {
 RemoteFrame::RemoteFrame(RemoteFrameClient* client,
                          Page& page,
                          FrameOwner* owner,
-                         WindowAgentFactory* inheriting_agent_factory)
+                         WindowAgentFactory* inheriting_agent_factory,
+                         InterfaceRegistry* interface_registry)
     : Frame(client,
             page,
             owner,
@@ -44,6 +48,10 @@ RemoteFrame::RemoteFrame(RemoteFrameClient* client,
             inheriting_agent_factory),
       security_context_(MakeGarbageCollected<RemoteSecurityContext>()) {
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);
+
+  interface_registry->AddAssociatedInterface(WTF::BindRepeating(
+      &RemoteFrame::BindToReceiver, WrapWeakPersistent(this)));
+
   UpdateInertIfPossible();
   UpdateInheritedEffectiveTouchActionIfPossible();
   UpdateVisibleToHitTesting();
@@ -223,6 +231,27 @@ void RemoteFrame::DidChangeVisibleToHitTesting() {
       IsIgnoredForHitTest());
 }
 
+void RemoteFrame::WillEnterFullscreen() {
+  // This should only ever be called when the FrameOwner is local.
+  HTMLFrameOwnerElement* owner_element = To<HTMLFrameOwnerElement>(Owner());
+
+  // Call |requestFullscreen()| on |ownerElement| to make it the pending
+  // fullscreen element in anticipation of the coming |didEnterFullscreen()|
+  // call.
+  //
+  // PrefixedForCrossProcessDescendant is necessary because:
+  //  - The fullscreen element ready check and other checks should be bypassed.
+  //  - |ownerElement| will need :-webkit-full-screen-ancestor style in addition
+  //    to :fullscreen.
+  //
+  // TODO(alexmos): currently, this assumes prefixed requests, but in the
+  // future, this should plumb in information about which request type
+  // (prefixed or unprefixed) to use for firing fullscreen events.
+  Fullscreen::RequestFullscreen(
+      *owner_element, FullscreenOptions::Create(),
+      Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())
@@ -266,6 +295,13 @@ void RemoteFrame::DetachChildren() {
     children_to_detach.push_back(child);
   for (const auto& child : children_to_detach)
     child->Detach(FrameDetachType::kRemove);
+}
+
+void RemoteFrame::BindToReceiver(
+    blink::RemoteFrame* frame,
+    mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrame> receiver) {
+  DCHECK(frame);
+  frame->receiver_.Bind(std::move(receiver));
 }
 
 }  // namespace blink

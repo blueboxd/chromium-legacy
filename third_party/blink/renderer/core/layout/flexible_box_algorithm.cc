@@ -89,6 +89,7 @@ FlexItem::FlexItem(LayoutBox* box,
       main_axis_border_padding(main_axis_border_padding),
       main_axis_margin(main_axis_margin),
       frozen(false),
+      needs_relayout_for_stretch(false),
       ng_input_node(/* LayoutBox* */ nullptr) {
   DCHECK(!box->IsOutOfFlowPositioned());
   DCHECK_GE(min_max_sizes.max_size, LayoutUnit())
@@ -261,6 +262,54 @@ void FlexItem::ComputeStretchedSize() {
   }
 }
 
+// static
+LayoutUnit FlexItem::AlignmentOffset(LayoutUnit available_free_space,
+                                     ItemPosition position,
+                                     LayoutUnit ascent,
+                                     LayoutUnit max_ascent,
+                                     bool is_wrap_reverse,
+                                     bool is_deprecated_webkit_box) {
+  switch (position) {
+    case ItemPosition::kLegacy:
+    case ItemPosition::kAuto:
+    case ItemPosition::kNormal:
+      NOTREACHED();
+      break;
+    case ItemPosition::kStretch:
+      // Actual stretching must be handled by the caller. Since wrap-reverse
+      // flips cross start and cross end, stretch children should be aligned
+      // with the cross end. This matters because applyStretchAlignment
+      // doesn't always stretch or stretch fully (explicit cross size given, or
+      // stretching constrained by max-height/max-width). For flex-start and
+      // flex-end this is handled by alignmentForChild().
+      if (is_wrap_reverse)
+        return available_free_space;
+      break;
+    case ItemPosition::kFlexStart:
+      break;
+    case ItemPosition::kFlexEnd:
+      return available_free_space;
+    case ItemPosition::kCenter: {
+      const LayoutUnit result = (available_free_space / 2);
+      return is_deprecated_webkit_box ? result.ClampNegativeToZero() : result;
+    }
+    case ItemPosition::kBaseline:
+      // FIXME: If we get here in columns, we want the use the descent, except
+      // we currently can't get the ascent/descent of orthogonal children.
+      // https://bugs.webkit.org/show_bug.cgi?id=98076
+      return max_ascent - ascent;
+    case ItemPosition::kLastBaseline:
+    case ItemPosition::kSelfStart:
+    case ItemPosition::kSelfEnd:
+    case ItemPosition::kStart:
+    case ItemPosition::kEnd:
+    case ItemPosition::kLeft:
+    case ItemPosition::kRight:
+      // TODO(jfernandez): Implement these (https://crbug.com/722287).
+      break;
+  }
+  return LayoutUnit();
+}
 void FlexLine::FreezeViolations(ViolationsVector& violations) {
   const ComputedStyle& flex_box_style = algorithm->StyleRef();
   for (size_t i = 0; i < violations.size(); ++i) {
@@ -441,6 +490,11 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
   bool should_flip_main_axis =
       !algorithm->StyleRef().ResolvedIsColumnFlexDirection() &&
       !algorithm->IsLeftToRightFlow();
+  LayoutUnit width_for_rtl = container_logical_width;
+  // -webkit-box always started layout at an origin of 0, regardless of
+  // direction.
+  if (should_flip_main_axis && algorithm->StyleRef().IsDeprecatedWebkitBox())
+    width_for_rtl = sum_hypothetical_main_size;
   for (size_t i = 0; i < line_items.size(); ++i) {
     FlexItem& flex_item = line_items[i];
 
@@ -473,11 +527,11 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
     // In an RTL column situation, this will apply the margin-right/margin-end
     // on the left. This will be fixed later in
     // LayoutFlexibleBox::FlipForRightToLeftColumn.
-    flex_item.desired_location = LayoutPoint(
-        should_flip_main_axis
-            ? container_logical_width - main_axis_offset - child_main_extent
-            : main_axis_offset,
-        cross_axis_offset + flex_item.FlowAwareMarginBefore());
+    flex_item.desired_location =
+        LayoutPoint(should_flip_main_axis
+                        ? width_for_rtl - main_axis_offset - child_main_extent
+                        : main_axis_offset,
+                    cross_axis_offset + flex_item.FlowAwareMarginBefore());
     main_axis_offset += child_main_extent + flex_item.FlowAwareMarginEnd();
 
     if (i != line_items.size() - 1) {
@@ -655,6 +709,79 @@ void FlexLayoutAlgorithm::AlignFlexLines(LayoutUnit cross_axis_content_extent) {
   }
 }
 
+void FlexLayoutAlgorithm::AlignChildren() {
+  // Keep track of the space between the baseline edge and the after edge of
+  // the box for each line.
+  Vector<LayoutUnit> min_margin_after_baselines;
+
+  for (FlexLine& line_context : flex_lines_) {
+    LayoutUnit min_margin_after_baseline = LayoutUnit::Max();
+    LayoutUnit max_ascent = line_context.max_ascent;
+
+    for (FlexItem& flex_item : line_context.line_items) {
+      DCHECK(!flex_item.box->IsOutOfFlowPositioned());
+
+      if (flex_item.UpdateAutoMarginsInCrossAxis(
+              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace()))) {
+        continue;
+      }
+
+      ItemPosition position = flex_item.Alignment();
+      if (position == ItemPosition::kStretch) {
+        flex_item.ComputeStretchedSize();
+        flex_item.needs_relayout_for_stretch = true;
+      }
+      LayoutUnit available_space = flex_item.AvailableAlignmentSpace();
+      LayoutUnit offset = FlexItem::AlignmentOffset(
+          available_space, position, flex_item.MarginBoxAscent(), max_ascent,
+          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse,
+          StyleRef().IsDeprecatedWebkitBox());
+      flex_item.desired_location.Move(LayoutUnit(), offset);
+      if (position == ItemPosition::kBaseline &&
+          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {
+        min_margin_after_baseline =
+            std::min(min_margin_after_baseline,
+                     flex_item.AvailableAlignmentSpace() - offset);
+      }
+    }
+    min_margin_after_baselines.push_back(min_margin_after_baseline);
+  }
+
+  if (StyleRef().FlexWrap() != EFlexWrap::kWrapReverse)
+    return;
+
+  // wrap-reverse flips the cross axis start and end. For baseline alignment,
+  // this means we need to align the after edge of baseline elements with the
+  // after edge of the flex line.
+  wtf_size_t line_number = 0;
+  for (FlexLine& line_context : flex_lines_) {
+    LayoutUnit min_margin_after_baseline =
+        min_margin_after_baselines[line_number++];
+    for (FlexItem& flex_item : line_context.line_items) {
+      if (flex_item.Alignment() == ItemPosition::kBaseline &&
+          !flex_item.HasAutoMarginsInCrossAxis() && min_margin_after_baseline) {
+        flex_item.desired_location.Move(LayoutUnit(),
+                                        min_margin_after_baseline);
+      }
+    }
+  }
+}
+
+void FlexLayoutAlgorithm::FlipForWrapReverse(
+    LayoutUnit cross_axis_start_edge,
+    LayoutUnit cross_axis_content_size) {
+  DCHECK_EQ(Style()->FlexWrap(), EFlexWrap::kWrapReverse);
+  for (FlexLine& line_context : flex_lines_) {
+    LayoutUnit original_offset =
+        line_context.cross_axis_offset - cross_axis_start_edge;
+    LayoutUnit new_offset = cross_axis_content_size - original_offset -
+                            line_context.cross_axis_extent;
+    LayoutUnit wrap_reverse_difference = new_offset - original_offset;
+    for (FlexItem& flex_item : line_context.line_items)
+      flex_item.desired_location.Move(LayoutUnit(), wrap_reverse_difference);
+  }
+}
+
 TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode() const {
   return GetTransformedWritingMode(*style_);
 }
@@ -697,10 +824,19 @@ TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode(
 StyleContentAlignmentData FlexLayoutAlgorithm::ResolvedJustifyContent(
     const ComputedStyle& style) {
   const bool is_webkit_box = style.IsDeprecatedWebkitBox();
-  ContentPosition position = is_webkit_box
-                                 ? BoxPackToContentPosition(style.BoxPack())
-                                 : style.ResolvedJustifyContentPosition(
-                                       ContentAlignmentNormalBehavior());
+  ContentPosition position;
+  if (is_webkit_box) {
+    position = BoxPackToContentPosition(style.BoxPack());
+    // -webkit-box treats end as start for horizontal rtl.
+    if (position == ContentPosition::kFlexEnd &&
+        !style.ResolvedIsColumnReverseFlexDirection() &&
+        !style.IsLeftToRightDirection()) {
+      position = ContentPosition::kFlexStart;
+    }
+  } else {
+    position =
+        style.ResolvedJustifyContentPosition(ContentAlignmentNormalBehavior());
+  }
   ContentDistributionType distribution =
       is_webkit_box ? BoxPackToContentDistribution(style.BoxPack())
                     : style.ResolvedJustifyContentDistribution(

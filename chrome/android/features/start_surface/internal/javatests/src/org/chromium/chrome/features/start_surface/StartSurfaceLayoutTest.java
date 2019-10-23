@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
@@ -153,7 +154,7 @@ public class StartSurfaceLayoutTest {
     @DisabledTest(message = "crbug.com/991852 This test is flaky")
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
         // clang-format on
-        assertTrue(FeatureUtilities.isTabToGtsAnimationEnabled());
+        assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
 
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);

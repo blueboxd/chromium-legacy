@@ -186,23 +186,26 @@ void SetYuvPixmapsFromSizeInfo(SkPixmap* pixmap_y,
   DCHECK(pixmap_y);
   DCHECK(pixmap_u);
   DCHECK(pixmap_v);
-  const size_t y_width = yuva_size_info.fWidthBytes[SkYUVAIndex::kY_Index];
+  const size_t y_width_bytes =
+      yuva_size_info.fWidthBytes[SkYUVAIndex::kY_Index];
+  const size_t y_width = yuva_size_info.fSizes[SkYUVAIndex::kY_Index].width();
   const size_t y_height = yuva_size_info.fSizes[SkYUVAIndex::kY_Index].height();
-  const size_t u_width = yuva_size_info.fWidthBytes[SkYUVAIndex::kU_Index];
+  const size_t u_width_bytes =
+      yuva_size_info.fWidthBytes[SkYUVAIndex::kU_Index];
+  const size_t u_width = yuva_size_info.fSizes[SkYUVAIndex::kU_Index].width();
   const size_t u_height = yuva_size_info.fSizes[SkYUVAIndex::kU_Index].height();
-  const size_t v_width = yuva_size_info.fWidthBytes[SkYUVAIndex::kV_Index];
+  const size_t v_width_bytes =
+      yuva_size_info.fWidthBytes[SkYUVAIndex::kV_Index];
+  const size_t v_width = yuva_size_info.fSizes[SkYUVAIndex::kV_Index].width();
   const size_t v_height = yuva_size_info.fSizes[SkYUVAIndex::kV_Index].height();
   const SkImageInfo y_decode_info =
       info.makeColorType(kGray_8_SkColorType).makeWH(y_width, y_height);
   const SkImageInfo u_decode_info = y_decode_info.makeWH(u_width, u_height);
   const SkImageInfo v_decode_info = y_decode_info.makeWH(v_width, v_height);
   yuva_size_info.computePlanes(memory_ptr, planes);
-  pixmap_y->reset(y_decode_info, planes[SkYUVAIndex::kY_Index],
-                  y_decode_info.minRowBytes());
-  pixmap_u->reset(u_decode_info, planes[SkYUVAIndex::kU_Index],
-                  u_decode_info.minRowBytes());
-  pixmap_v->reset(v_decode_info, planes[SkYUVAIndex::kV_Index],
-                  v_decode_info.minRowBytes());
+  pixmap_y->reset(y_decode_info, planes[SkYUVAIndex::kY_Index], y_width_bytes);
+  pixmap_u->reset(u_decode_info, planes[SkYUVAIndex::kU_Index], u_width_bytes);
+  pixmap_v->reset(v_decode_info, planes[SkYUVAIndex::kV_Index], v_width_bytes);
 }
 
 // Helper method to fill in |scaled_u_size| and |scaled_v_size| by computing
@@ -280,8 +283,10 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
       draw_image.filter_quality() == kNone_SkFilterQuality;
   SkImageInfo info = pixmap.info();
   SkYUVASizeInfo yuva_size_info;
+  SkYUVAIndex plane_indices[SkYUVAIndex::kIndexCount];
   if (do_yuv_decode) {
-    const bool yuva_info_initialized = paint_image.IsYuv(&yuva_size_info);
+    const bool yuva_info_initialized =
+        paint_image.IsYuv(&yuva_size_info, plane_indices);
     DCHECK(yuva_info_initialized);
   }
   SkISize supported_size =
@@ -298,7 +303,7 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
       SetYuvPixmapsFromSizeInfo(pixmap_y, pixmap_u, pixmap_v, yuva_size_info,
                                 planes, info, pixmap.writable_addr());
       return paint_image.DecodeYuv(planes, draw_image.frame_index(), client_id,
-                                   yuva_size_info);
+                                   yuva_size_info, plane_indices);
     }
     return paint_image.Decode(pixmap.writable_addr(), &info, color_space,
                               draw_image.frame_index(), client_id);
@@ -346,11 +351,12 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
     yuva_size_info.computePlanes(decode_pixmap.writable_addr(), planes);
   }
   bool initial_decode_failed =
-      do_yuv_decode ? !paint_image.DecodeYuv(planes, draw_image.frame_index(),
-                                             client_id, yuva_size_info)
-                    : !paint_image.Decode(decode_pixmap.writable_addr(),
-                                          &decode_info, color_space,
-                                          draw_image.frame_index(), client_id);
+      do_yuv_decode
+          ? !paint_image.DecodeYuv(planes, draw_image.frame_index(), client_id,
+                                   yuva_size_info, plane_indices)
+          : !paint_image.Decode(decode_pixmap.writable_addr(), &decode_info,
+                                color_space, draw_image.frame_index(),
+                                client_id);
   if (initial_decode_failed)
     return false;
 
@@ -2301,7 +2307,6 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
       mode != DecodedDataMode::kCpu && !image_larger_than_max_texture;
   // TODO(crbug.com/910276): Change after alpha support.
   if (is_yuv) {
-    size_t y_size_bytes = image_info.width() * image_info.height();
     const gfx::Size target_raster_size(image_info.width(), image_info.height());
     gfx::Size unscaled_u_size(
         target_yuva_size_info.fSizes[SkYUVAIndex::kU_Index].width(),
@@ -2314,8 +2319,16 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
     ComputeMippedUVPlaneSizes(target_raster_size, unscaled_u_size,
                               unscaled_v_size, draw_image, &scaled_u_size,
                               &scaled_v_size);
-    size_t u_size_bytes = base::checked_cast<size_t>(scaled_u_size.GetArea());
-    size_t v_size_bytes = base::checked_cast<size_t>(scaled_v_size.GetArea());
+
+    size_t y_size_bytes =
+        target_yuva_size_info.fWidthBytes[SkYUVAIndex::kY_Index] *
+        target_yuva_size_info.fSizes[SkYUVAIndex::kY_Index].height();
+    size_t u_size_bytes =
+        target_yuva_size_info.fWidthBytes[SkYUVAIndex::kU_Index] *
+        target_yuva_size_info.fSizes[SkYUVAIndex::kU_Index].height();
+    size_t v_size_bytes =
+        target_yuva_size_info.fWidthBytes[SkYUVAIndex::kV_Index] *
+        target_yuva_size_info.fSizes[SkYUVAIndex::kV_Index].height();
     data_size = y_size_bytes + u_size_bytes + v_size_bytes;
   }
 

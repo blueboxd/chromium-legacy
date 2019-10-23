@@ -143,38 +143,38 @@ bool ProcessMitigationsWin32KLockdownPolicy::GenerateRules(
     TargetPolicy::Semantics semantics,
     LowLevelPolicy* policy) {
   PolicyRule rule(FAKE_SUCCESS);
-  if (!policy->AddRule(IPC_GDI_GDIDLLINITIALIZE_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_GDIDLLINITIALIZE, &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_GETSTOCKOBJECT_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_GETSTOCKOBJECT, &rule))
     return false;
-  if (!policy->AddRule(IPC_USER_REGISTERCLASSW_TAG, &rule))
+  if (!policy->AddRule(IpcTag::USER_REGISTERCLASSW, &rule))
     return false;
   if (semantics != TargetPolicy::IMPLEMENT_OPM_APIS)
     return true;
-  if (!policy->AddRule(IPC_USER_ENUMDISPLAYMONITORS_TAG, &rule))
+  if (!policy->AddRule(IpcTag::USER_ENUMDISPLAYMONITORS, &rule))
     return false;
-  if (!policy->AddRule(IPC_USER_ENUMDISPLAYDEVICES_TAG, &rule))
+  if (!policy->AddRule(IpcTag::USER_ENUMDISPLAYDEVICES, &rule))
     return false;
-  if (!policy->AddRule(IPC_USER_GETMONITORINFO_TAG, &rule))
+  if (!policy->AddRule(IpcTag::USER_GETMONITORINFO, &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_CREATEOPMPROTECTEDOUTPUTS_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_CREATEOPMPROTECTEDOUTPUTS, &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_GETCERTIFICATE_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_GETCERTIFICATE, &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_GETCERTIFICATESIZE_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_GETCERTIFICATESIZE, &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_DESTROYOPMPROTECTEDOUTPUT_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_DESTROYOPMPROTECTEDOUTPUT, &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_CONFIGUREOPMPROTECTEDOUTPUT_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_CONFIGUREOPMPROTECTEDOUTPUT, &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_GETOPMINFORMATION_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_GETOPMINFORMATION, &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_GETOPMRANDOMNUMBER_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_GETOPMRANDOMNUMBER, &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE_TAG,
+  if (!policy->AddRule(IpcTag::GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE,
                        &rule))
     return false;
-  if (!policy->AddRule(IPC_GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS_TAG, &rule))
+  if (!policy->AddRule(IpcTag::GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS, &rule))
     return false;
   return true;
 }

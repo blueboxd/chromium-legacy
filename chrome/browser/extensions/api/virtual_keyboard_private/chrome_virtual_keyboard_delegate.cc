@@ -392,6 +392,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag(
       "mozcinputlogic",
       base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicMozc)));
+  features->AppendString(GenerateFeatureFlag(
+      "borderedkey", base::FeatureList::IsEnabled(
+                         chromeos::features::kVirtualKeyboardBorderedKey)));
 
   results->Set("features", std::move(features));
 

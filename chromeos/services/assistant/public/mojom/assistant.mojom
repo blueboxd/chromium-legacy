@@ -80,7 +80,8 @@ interface Assistant {
   // result will contain TTS. Otherwise TTS will not be present in the
   // generated server response. Results will be returned through registered
   // |AssistantInteractionSubscriber|.
-  StartTextInteraction(string query, bool allow_tts);
+  StartTextInteraction(
+    string query, AssistantQuerySource source, bool allow_tts);
 
   // Starts a new Assistant voice interaction.
   StartVoiceInteraction();
@@ -141,6 +142,7 @@ interface Assistant {
 // Describes an Assistant interaction.
 struct AssistantInteractionMetadata {
   AssistantInteractionType type;
+  AssistantQuerySource source;
   string query;
 };
 
@@ -148,6 +150,20 @@ struct AssistantInteractionMetadata {
 enum AssistantInteractionType {
   kText,
   kVoice,
+};
+
+// Enumeration of possible Assistant query sources. These values are persisted
+// to logs. Entries should not be renumbered and numeric values should never
+// be reused. Append new values to the end.
+enum AssistantQuerySource {
+  kUnspecified = 0,
+  kDeepLink = 1,
+  kDialogPlateTextField = 2,
+  kStylus = 3,
+  kSuggestionChip = 4,
+  kVoiceInput = 5,
+  kProactiveSuggestions = 6,
+  kLibAssistantInitiated = 7,
 };
 
 // Subscribes to Assistant's interaction event. These events are server driven

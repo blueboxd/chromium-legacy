@@ -32,12 +32,11 @@ message UrlPattern {
 message SafetyTipsConfig {
   optional uint32 version_id = 1;
 
-  // List of flagged pages on which to show an experimental Safety Tip UX that
-  // warns the user about possible unwanted behavior or deception.
-  // This needs to be sorted and can contain duplicates.
+  // List of pages on which to show the Safety Tip UX. This must be sorted and
+  // may contain duplicate patterns (when flagged with multiple FlagTypes).
   repeated FlaggedPage flagged_page = 2;
 
-  // List of URL patterns that must be explicitly allowed. This needs to be
-  // sorted and can contain duplicates.
+  // List of patterns that are explicitly allowed. This must be sorted. Used to
+  // mitigate false positives.
   repeated UrlPattern allowed_pattern = 3;
 }

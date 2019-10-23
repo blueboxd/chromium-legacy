@@ -211,6 +211,11 @@ bool IconLabelBubbleView::ShouldShowSeparator() const {
 }
 
 double IconLabelBubbleView::WidthMultiplier() const {
+  // TODO(https://crbug.com/8944): Disable animations globally instead of having
+  // piecemeal opt ins for respecting prefers reduced motion.
+  if (gfx::Animation::PrefersReducedMotion())
+    return 1.0;
+
   if (!slide_animation_.is_animating() && !is_animation_paused_)
     return 1.0;
 

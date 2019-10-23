@@ -15,6 +15,7 @@
 #include "content/common/frame_proxy.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
 
@@ -22,6 +23,7 @@ struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_PostMessage_Params;
 
 namespace blink {
+class AssociatedInterfaceProvider;
 struct WebScrollIntoViewParams;
 }
 
@@ -137,6 +139,10 @@ class RenderFrameProxyHost : public IPC::Listener,
   // Returns if the RenderFrameProxy for this host is alive.
   bool is_render_frame_proxy_live() { return render_frame_proxy_created_; }
 
+  // Returns associated remote for the blink::mojom::RemoteFrame Mojo interface.
+  const mojo::AssociatedRemote<blink::mojom::RemoteFrame>&
+  GetAssociatedRemoteFrame();
+
  private:
   // IPC Message handlers.
   void OnDetach();
@@ -151,6 +157,8 @@ class RenderFrameProxyHost : public IPC::Listener,
   void OnAssociatedInterfaceRequest(
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
+
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces();
 
   // mojom::RenderFrameProxyHost
   void FrameFocused() override;
@@ -188,9 +196,15 @@ class RenderFrameProxyHost : public IPC::Listener,
   // some form of page context.
   scoped_refptr<RenderViewHostImpl> render_view_host_;
 
+  std::unique_ptr<blink::AssociatedInterfaceProvider>
+      remote_associated_interfaces_;
+
   // Mojo binding to this RenderFrameProxyHost.
   mojo::AssociatedBinding<mojom::RenderFrameProxyHost>
       frame_proxy_host_associated_binding_;
+
+  // Holder of Mojo connection with the Frame service in Blink.
+  mojo::AssociatedRemote<blink::mojom::RemoteFrame> remote_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };

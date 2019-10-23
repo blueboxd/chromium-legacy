@@ -441,8 +441,7 @@ class ProgressCenterPanel {
         case 'completed':
           // Create a completed panel for copies and moves.
           // TODO(crbug.com/947388) decide if we want these for delete, etc.
-          if (panelItem.hidden === false &&
-              (item.type === 'copy' || item.type === 'move')) {
+          if (item.type === 'copy' || item.type === 'move') {
             const donePanelItem = this.completedHost_.addPanelItem(item.id);
             donePanelItem.panelType = donePanelItem.panelTypeDone;
             donePanelItem.primaryText =

@@ -1074,7 +1074,8 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
 }
 
 void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {
-  client_controlled_state_->ResetDelegate();
+  if (client_controlled_state_)
+    client_controlled_state_->ResetDelegate();
   ShellSurfaceBase::OnSurfaceDestroying(surface);
 }
 

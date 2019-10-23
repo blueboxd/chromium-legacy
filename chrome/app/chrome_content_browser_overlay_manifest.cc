@@ -35,9 +35,6 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "extensions/buildflags/buildflags.h"
-#include "services/image_annotation/public/cpp/manifest.h"
-#include "services/image_annotation/public/mojom/constants.mojom.h"
-#include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/preferences/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
@@ -111,8 +108,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("device", "device:geolocation_config")
         .RequireCapability("device", "device:geolocation_control")
         .RequireCapability("device", "device:ip_geolocator")
-        .RequireCapability(image_annotation::mojom::kServiceName,
-                           image_annotation::mojom::kAnnotationCapability)
         .RequireCapability("ime", "input_engine")
         .RequireCapability("mirroring", "mirroring")
         .RequireCapability("nacl_broker", "browser")
@@ -203,7 +198,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 mojom::UsbInternalsPageHandler,
                 snippets_internals::mojom::PageHandlerFactory,
                 web_ui_test::mojom::TestRunner>())
-        .PackageService(image_annotation::GetManifest())
         .PackageService(prefs::GetManifest())
 #if defined(OS_CHROMEOS)
         .PackageService(chromeos::multidevice_setup::GetManifest())

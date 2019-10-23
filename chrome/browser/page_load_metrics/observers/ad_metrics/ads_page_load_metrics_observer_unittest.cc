@@ -2022,9 +2022,6 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(0 /* network noise */));
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Add enough data to trigger the intervention.
@@ -2043,9 +2040,6 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   feature_list.InitAndDisableFeature(features::kHeavyAdIntervention);
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(0 /* network noise */));
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Add enough data to trigger the intervention.
@@ -2067,9 +2061,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdPageReload_MetricsRecorded) {
   feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(0 /* network noise */));
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Add enough data to trigger the intervention.
@@ -2094,9 +2085,6 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-
-  OverrideHeavyAdNoiseProvider(
-      std::make_unique<MockNoiseProvider>(0 /* network noise */));
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Don't load enough to reach the heavy ad threshold.

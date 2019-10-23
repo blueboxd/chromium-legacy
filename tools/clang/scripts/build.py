@@ -52,6 +52,9 @@ BUG_REPORT_URL = ('https://crbug.com and run'
                   ' tools/clang/scripts/process_crashreports.py'
                   ' (only works inside Google) which will upload a report')
 
+FIRST_LLVM_COMMIT = '97724f18c79c7cc81ced24239eb5e883bf1398ef'
+
+
 
 def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
   """Run command and return success (True) or failure; or if fail_hard is
@@ -104,9 +107,11 @@ def CheckoutLLVM(commit, dir):
   if os.path.isdir(dir):
     os.chdir(dir)
     # git diff-index --quiet returns success when there is no diff.
+    # Also check that the first commit is reachable.
     if (RunCommand(['git', 'diff-index', '--quiet', 'HEAD'], fail_hard=False)
         and RunCommand(['git', 'fetch'], fail_hard=False)
-        and RunCommand(['git', 'checkout', commit], fail_hard=False)):
+        and RunCommand(['git', 'checkout', commit], fail_hard=False)
+        and RunCommand(['git', 'show', FIRST_LLVM_COMMIT], fail_hard=False)):
       return
 
     # If we can't use the current repo, delete it.
@@ -114,12 +119,7 @@ def CheckoutLLVM(commit, dir):
     print('Removing %s.' % dir)
     RmTree(dir)
 
-  # Do a somewhat shallow clone to save on bandwidth for GitHub and for us.
-  # The depth was chosen to be deep enough to contain the version we're
-  # building, and shallow enough to save significantly on bandwidth compared to
-  # a full clone.
-  clone_cmd = ['git', 'clone', '--depth', '10000',
-               'https://github.com/llvm/llvm-project/', dir]
+  clone_cmd = ['git', 'clone', 'https://github.com/llvm/llvm-project/', dir]
 
   if RunCommand(clone_cmd, fail_hard=False):
     os.chdir(dir)
@@ -147,12 +147,10 @@ def GetLatestLLVMCommit():
   return ref['object']['sha']
 
 
-def GetSvnRevision(commit):
-  """Get the svn revision corresponding to a git commit in the LLVM repo."""
-  commit = json.loads(UrlOpen(('https://api.github.com/repos/llvm/'
-                               'llvm-project/git/commits/' + commit)))
-  revision = re.search("llvm-svn: ([0-9]+)$", commit['message']).group(1)
-  return revision
+def GetCommitCount(commit):
+  """Get the number of commits from FIRST_LLVM_COMMIT to commit."""
+  return subprocess.check_output(['git', 'rev-list', '--count',
+                                  FIRST_LLVM_COMMIT + '..' + commit]).rstrip()
 
 
 def DeleteChromeToolsShim():
@@ -371,6 +369,9 @@ def main():
     return 1
 
 
+  # Don't buffer stdout, so that print statements are immediately flushed.
+  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
   # The gnuwin package also includes curl, which is needed to interact with the
   # github API below.
   # TODO(crbug.com/965937): Use urllib once our Python is recent enough, and
@@ -384,11 +385,13 @@ def main():
   global CLANG_REVISION, PACKAGE_VERSION
   if args.llvm_force_head_revision:
     CLANG_REVISION = GetLatestLLVMCommit()
-    PACKAGE_VERSION = '%s-%s-0' % (GetSvnRevision(CLANG_REVISION),
-                                   CLANG_REVISION[:8])
 
-  # Don't buffer stdout, so that print statements are immediately flushed.
-  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+  if not args.skip_checkout:
+    CheckoutLLVM(CLANG_REVISION, LLVM_DIR);
+
+  if args.llvm_force_head_revision:
+    PACKAGE_VERSION = 'n%s-%s-0' % (GetCommitCount(CLANG_REVISION),
+                                   CLANG_REVISION[:8])
 
   print('Locally building clang %s...' % PACKAGE_VERSION)
   WriteStampFile('', STAMP_FILE)
@@ -397,8 +400,6 @@ def main():
   AddCMakeToPath(args)
   DeleteChromeToolsShim()
 
-  if not args.skip_checkout:
-    CheckoutLLVM(CLANG_REVISION, LLVM_DIR);
 
   if args.skip_build:
     return 0

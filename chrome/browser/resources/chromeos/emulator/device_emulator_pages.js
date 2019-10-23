@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('device_emulator', {
-  audioSettings: null,
-  batterySettings: null,
-  bluetoothSettings: null,
-});
-
 Polymer({
   is: 'device-emulator-pages',
 
@@ -21,9 +15,6 @@ Polymer({
 
   /** @override */
   ready: function() {
-    for (const page of this.$$('iron-pages').children)
-      device_emulator[page.id] = page;
-
     chrome.send('initializeDeviceEmulator');
   },
 

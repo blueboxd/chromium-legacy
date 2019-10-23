@@ -90,6 +90,7 @@ class EphemeralTabSceneLayer : public SceneLayer {
   scoped_refptr<EphemeralTabLayer> ephemeral_tab_layer_;
   scoped_refptr<cc::SolidColorLayer> color_overlay_;
   scoped_refptr<cc::Layer> content_container_;
+  bool is_new_layout_;
   DISALLOW_COPY_AND_ASSIGN(EphemeralTabSceneLayer);
 };
 

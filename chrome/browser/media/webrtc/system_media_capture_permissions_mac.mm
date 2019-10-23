@@ -166,27 +166,46 @@ void RequestSystemMediaCapturePermission(NSString* media_type,
 }
 
 // Heuristic to check screen capture permission on macOS 10.15.
-// See https://crbug.com/993692#c3.
+// Screen Capture is considered allowed if the name of at least one normal,
+// dock or status window running on another process is visible.
+// See https://crbug.com/993692.
 bool IsScreenCaptureAllowed() {
   if (@available(macOS 10.15, *)) {
     if (!base::FeatureList::IsEnabled(
             features::kMacSystemScreenCapturePermissionCheck)) {
       return true;
     }
+
     base::ScopedCFTypeRef<CFArrayRef> window_list(CGWindowListCopyWindowInfo(
         kCGWindowListOptionOnScreenOnly, kCGNullWindowID));
-    NSUInteger num_windows = CFArrayGetCount(window_list);
-    NSUInteger num_windows_with_name = 0;
-    for (NSDictionary* dict in base::mac::CFToNSCast(window_list.get())) {
-      if ([dict objectForKey:base::mac::CFToNSCast(kCGWindowName)]) {
-        num_windows_with_name++;
-      } else {
-        // No kCGWindowName detected implies no permission.
-        break;
+    int current_pid = [[NSProcessInfo processInfo] processIdentifier];
+    for (NSDictionary* window in base::mac::CFToNSCast(window_list.get())) {
+      NSNumber* window_pid =
+          [window objectForKey:base::mac::CFToNSCast(kCGWindowOwnerPID)];
+      if (!window_pid || [window_pid integerValue] == current_pid)
+        continue;
+
+      NSString* window_name =
+          [window objectForKey:base::mac::CFToNSCast(kCGWindowName)];
+      if (!window_name)
+        continue;
+
+      NSNumber* layer =
+          [window objectForKey:base::mac::CFToNSCast(kCGWindowLayer)];
+      if (!layer)
+        continue;
+
+      NSInteger layer_integer = [layer integerValue];
+      if (layer_integer == CGWindowLevelForKey(kCGNormalWindowLevelKey) ||
+          layer_integer == CGWindowLevelForKey(kCGDockWindowLevelKey) ||
+          layer_integer == CGWindowLevelForKey(kCGStatusWindowLevelKey)) {
+        return true;
       }
     }
-    return num_windows == num_windows_with_name;
+    return false;
   }
+
+  // Screen capture is always allowed in older macOS versions.
   return true;
 }
 

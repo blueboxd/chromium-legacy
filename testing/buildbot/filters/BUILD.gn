@@ -48,7 +48,6 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/code_coverage.browser_tests.filter",
     "//testing/buildbot/filters/pixel_browser_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
-    "//testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter",
   ]
 }
 
@@ -123,14 +122,6 @@ source_set("fuchsia_filters") {
     "//testing/buildbot/filters/fuchsia.net_unittests.filter",
     "//testing/buildbot/filters/fuchsia.services_unittests.filter",
     "//testing/buildbot/filters/fuchsia.ui_base_unittests.filter",
-  ]
-}
-
-source_set("interactive_ui_tests_filters") {
-  testonly = true
-
-  data = [
-    "//testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter",
   ]
 }
 

@@ -48,7 +48,7 @@ interface VideoSourceProvider {
   // monitored outside the video capture service, and therefore the service
   // does not offer such monitoring.
   RegisterVirtualDevicesChangedObserver(
-      DevicesChangedObserver observer,
+      pending_remote<DevicesChangedObserver> observer,
       bool raise_event_if_virtual_devices_already_present);
 
   // Closes the connection and allows clients to wait until the disconnect has

@@ -23,7 +23,7 @@ namespace sandbox {
 NamedPipeDispatcher::NamedPipeDispatcher(PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall create_params = {
-      {IPC_CREATENAMEDPIPEW_TAG,
+      {IpcTag::CREATENAMEDPIPEW,
        {WCHAR_TYPE, UINT32_TYPE, UINT32_TYPE, UINT32_TYPE, UINT32_TYPE,
         UINT32_TYPE, UINT32_TYPE}},
       reinterpret_cast<CallbackGeneric>(&NamedPipeDispatcher::CreateNamedPipe)};
@@ -32,8 +32,8 @@ NamedPipeDispatcher::NamedPipeDispatcher(PolicyBase* policy_base)
 }
 
 bool NamedPipeDispatcher::SetupService(InterceptionManager* manager,
-                                       int service) {
-  if (IPC_CREATENAMEDPIPEW_TAG == service)
+                                       IpcTag service) {
+  if (IpcTag::CREATENAMEDPIPEW == service)
     return INTERCEPT_EAT(manager, kKerneldllName, CreateNamedPipeW,
                          CREATE_NAMED_PIPE_ID, 36);
 
@@ -69,7 +69,7 @@ bool NamedPipeDispatcher::CreateNamedPipe(IPCInfo* ipc,
   params[NameBased::NAME] = ParamPickerMake(pipe_name);
 
   EvalResult eval =
-      policy_base_->EvalPolicy(IPC_CREATENAMEDPIPEW_TAG, params.GetBase());
+      policy_base_->EvalPolicy(IpcTag::CREATENAMEDPIPEW, params.GetBase());
 
   // "For file I/O, the "\\?\" prefix to a path string tells the Windows APIs to
   // disable all string parsing and to send the string that follows it straight

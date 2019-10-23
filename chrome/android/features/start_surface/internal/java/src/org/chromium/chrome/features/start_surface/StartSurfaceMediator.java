@@ -249,6 +249,8 @@ class StartSurfaceMediator
                         : "HomeSurface";
                 RecordUserAction.record(
                         "StartSurface.TwoPanes.DefaultOn" + defaultOnUserActionString);
+            } else if (mSurfaceMode == SurfaceMode.TASKS_ONLY) {
+                RecordUserAction.record("StartSurface.TasksOnly");
             }
 
             // Make sure FeedSurfaceCoordinator is built before the explore surface is showing by

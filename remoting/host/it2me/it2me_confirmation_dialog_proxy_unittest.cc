@@ -13,11 +13,9 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::InvokeWithoutArgs;
-using ::testing::CreateFunctor;
 
 namespace remoting {
 
@@ -136,13 +134,11 @@ It2MeConfirmationDialogProxyTest::~It2MeConfirmationDialogProxyTest() = default;
 TEST_F(It2MeConfirmationDialogProxyTest, Show) {
   ResultCallbackTarget callback_target(main_task_runner());
 
+  StubIt2MeConfirmationDialog* confirm_dialog = dialog();
   EXPECT_CALL(*dialog(), OnShow())
-      .WillOnce(
-          InvokeWithoutArgs(
-              CreateFunctor(
-                  &StubIt2MeConfirmationDialog::ReportResult,
-                  base::Unretained(dialog()),
-                  It2MeConfirmationDialog::Result::CANCEL)));
+      .WillOnce(InvokeWithoutArgs([confirm_dialog]() {
+        confirm_dialog->ReportResult(It2MeConfirmationDialog::Result::CANCEL);
+      }));
 
   EXPECT_CALL(callback_target,
               OnDialogResult(It2MeConfirmationDialog::Result::CANCEL))

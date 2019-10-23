@@ -795,6 +795,7 @@ android_library("chrome_test_java") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/browser/android/metrics:ukm_java_test_support",
     "//chrome/browser/android/metrics:ukm_javatests",
+    "//chrome/browser/download/android:java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/ui/android/widget:test_support_java",
     "//chrome/browser/util/android:java",
@@ -2383,7 +2384,8 @@ if (public_android_sdk) {
     # Having //clank present causes different flags because of how play services
     # is wired up.
     # The channel is required because manifest entries vary based on channel.
-    if (!enable_chrome_android_internal && android_channel == "stable") {
+    if (check_android_configuration && !enable_chrome_android_internal &&
+        android_channel == "stable") {
       verify_android_configuration = true
     }
   }
@@ -2489,7 +2491,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/banners/AppBannerUiDelegateAndroid.java",
     "java/src/org/chromium/chrome/browser/bookmarks/BookmarkBridge.java",
     "java/src/org/chromium/chrome/browser/browserservices/OriginVerifier.java",
-    "java/src/org/chromium/chrome/browser/browserservices/UkmRecorder.java",
     "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/InstalledWebappBridge.java",
     "java/src/org/chromium/chrome/browser/browsing_data/UrlFilterBridge.java",
     "java/src/org/chromium/chrome/browser/childaccounts/ChildAccountFeedbackReporter.java",
@@ -2606,6 +2607,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/metrics/BackgroundTaskMemoryMetricsEmitter.java",
     "java/src/org/chromium/chrome/browser/metrics/LaunchMetrics.java",
     "java/src/org/chromium/chrome/browser/metrics/PageLoadMetrics.java",
+    "java/src/org/chromium/chrome/browser/metrics/UkmRecorder.java",
     "java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java",
     "java/src/org/chromium/chrome/browser/metrics/UmaUtils.java",
     "java/src/org/chromium/chrome/browser/metrics/VariationsSession.java",

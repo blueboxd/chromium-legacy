@@ -80,13 +80,14 @@ class DevToolsUIDataSourceTest : public testing::Test {
 
   std::string data() const { return data_; }
 
+  // TODO(crbug/1009127): pass in GURL instead.
   void StartRequest(const std::string& path) {
     data_received_ = false;
     data_.clear();
     std::string trimmed_path = path.substr(1);
     content::WebContents::Getter wc_getter;
     data_source()->StartDataRequest(
-        trimmed_path, std::move(wc_getter),
+        GURL("chrome://any-host/" + trimmed_path), std::move(wc_getter),
         base::BindRepeating(&DevToolsUIDataSourceTest::OnDataReceived,
                             base::Unretained(this)));
   }

@@ -61,11 +61,11 @@ std::string MostVisitedIframeSource::GetSource() {
 }
 
 void MostVisitedIframeSource::StartDataRequest(
-    const std::string& path_and_query,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
-  GURL url(chrome::kChromeSearchMostVisitedUrl + path_and_query);
-  std::string path(url.path());
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path(url.path());
 
   if (path == kSingleHTMLPath) {
     SendResource(IDR_MOST_VISITED_SINGLE_HTML, callback);

@@ -161,30 +161,4 @@ TEST_F(OnScreenKeyboardTest, OSKPath) {
   EXPECT_TRUE(base::PathExists(base::FilePath(osk_path)));
 }
 
-TEST_F(OnScreenKeyboardTest, InputPane) {
-  // InputPane is supported only on RS1 and later.
-  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
-    return;
-  std::unique_ptr<OnScreenKeyboardDisplayManagerInputPane>
-      keyboard_display_manager = CreateInputPane();
-
-  std::unique_ptr<MockInputMethodKeyboardControllerObserver> observer =
-      std::make_unique<MockInputMethodKeyboardControllerObserver>();
-
-  Microsoft::WRL::ComPtr<MockInputPane> input_pane =
-      Microsoft::WRL::Make<MockInputPane>();
-  keyboard_display_manager->SetInputPaneForTesting(input_pane);
-
-  EXPECT_CALL(*observer, OnKeyboardVisible(testing::_)).Times(1);
-  keyboard_display_manager->AddObserver(observer.get());
-  keyboard_display_manager->DisplayVirtualKeyboard();
-  WaitForEventsWithTimeDelay(100);
-
-  testing::Mock::VerifyAndClearExpectations(observer.get());
-  EXPECT_CALL(*observer, OnKeyboardHidden()).Times(1);
-  keyboard_display_manager->DismissVirtualKeyboard();
-  WaitForEventsWithTimeDelay(100);
-  keyboard_display_manager->RemoveObserver(observer.get());
-}
-
 }  // namespace ui

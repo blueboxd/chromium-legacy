@@ -19,32 +19,7 @@ int URLRequestDataJob::BuildResponse(const GURL& url,
                                      std::string* charset,
                                      std::string* data,
                                      HttpResponseHeaders* headers) {
-  if (!DataURL::Parse(url, mime_type, charset, data))
-    return ERR_INVALID_URL;
-
-  // |mime_type| set by DataURL::Parse() is guaranteed to be in
-  //     token "/" token
-  // form. |charset| can be an empty string.
-
-  DCHECK(!mime_type->empty());
-
-  if (headers) {
-    headers->ReplaceStatusLine("HTTP/1.1 200 OK");
-    // "charset" in the Content-Type header is specified explicitly to follow
-    // the "token" ABNF in the HTTP spec. When DataURL::Parse() call is
-    // successful, it's guaranteed that the string in |charset| follows the
-    // "token" ABNF.
-    std::string content_type_header = "Content-Type: " + *mime_type;
-    if (!charset->empty())
-      content_type_header.append(";charset=" + *charset);
-    headers->AddHeader(content_type_header);
-  }
-
-  if (base::EqualsCaseInsensitiveASCII(method, "HEAD")) {
-    data->clear();
-  }
-
-  return OK;
+  return DataURL::BuildResponse(url, method, mime_type, charset, data, headers);
 }
 
 URLRequestDataJob::URLRequestDataJob(

@@ -366,7 +366,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
       session_->CreateHandle(destination_);
   EXPECT_TRUE(handle->IsConnected());
   EXPECT_FALSE(handle->IsCryptoHandshakeConfirmed());
-  EXPECT_EQ(version_.transport_version, handle->GetQuicVersion());
+  EXPECT_EQ(version_, handle->GetQuicVersion());
   EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
@@ -394,7 +394,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   // Veirfy that the handle works correctly after the session is closed.
   EXPECT_FALSE(handle->IsConnected());
   EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
-  EXPECT_EQ(version_.transport_version, handle->GetQuicVersion());
+  EXPECT_EQ(version_, handle->GetQuicVersion());
   EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
@@ -418,7 +418,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   // Veirfy that the handle works correctly after the session is deleted.
   EXPECT_FALSE(handle->IsConnected());
   EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
-  EXPECT_EQ(version_.transport_version, handle->GetQuicVersion());
+  EXPECT_EQ(version_, handle->GetQuicVersion());
   EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);

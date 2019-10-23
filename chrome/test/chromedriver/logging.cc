@@ -22,16 +22,23 @@
 #include "chrome/test/chromedriver/chrome/console_logger.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command_listener_proxy.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/devtools_events_logger.h"
 #include "chrome/test/chromedriver/performance_logger.h"
 #include "chrome/test/chromedriver/session.h"
-#include "chrome/test/chromedriver/version.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
 #include <unistd.h>
 #endif
 
+const char* GetPortProtectionMessage() {
+  static std::string kPortProtectionMessage = base::StringPrintf(
+      "Please protect ports used by %s and related test frameworks to "
+      "prevent access by malicious code.",
+      kChromeDriverProductShortName);
+  return kPortProtectionMessage.c_str();
+}
 
 namespace {
 
@@ -340,8 +347,9 @@ bool InitLogging() {
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   bool res = logging::InitLogging(logging_settings);
   if (cmd_line->HasSwitch("log-path") && res) {
-    VLOG(0) << "Starting ChromeDriver " << kChromeDriverVersion;
-    VLOG(0) << kPortProtectionMessage;
+    VLOG(0) << "Starting " << kChromeDriverProductFullName << " "
+            << kChromeDriverVersion;
+    VLOG(0) << GetPortProtectionMessage();
   }
   return res;
 }

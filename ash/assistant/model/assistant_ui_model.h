@@ -57,10 +57,11 @@ enum class AssistantExitPoint {
 
 // Enumeration of Assistant UI modes.
 enum class AssistantUiMode {
+  kAmbientUi,
+  kLauncherEmbeddedUi,
   kMainUi,
   kMiniUi,
   kWebUi,
-  kLauncherEmbeddedUi,
 };
 
 // Enumeration of Assistant visibility states.

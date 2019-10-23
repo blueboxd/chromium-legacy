@@ -151,11 +151,18 @@ js_modulizer("modulize") {
     "web_ui_listener_behavior.js",
   ]
   deps = [
-    "cr/ui:modulize",
+    "cr:modulize",
   ]
 }
 
-js_type_check("closure_compile_modules") {
+group("closure_compile_modules") {
+  deps = [
+    ":js_resources_modules",
+    "cr:closure_compile_modules",
+  ]
+}
+
+js_type_check("js_resources_modules") {
   deps = [
     ":assert.m",
     ":cr.m",

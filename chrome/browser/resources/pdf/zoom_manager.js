@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+
+import {BrowserApi} from './browser_api.js';
 
 /**
  * Abstract parent of classes that manage updating the browser
  * with zoom changes and/or updating the viewer's zoom when
  * the browser zoom changes.
  */
-class ZoomManager {
+export class ZoomManager {
   /**
    * @param {function():number} getViewportZoom Callback to get the viewport's
    *     current zoom level.
@@ -27,7 +29,7 @@ class ZoomManager {
     this.getViewportZoom_ = getViewportZoom;
 
     /** @private {!EventTarget} */
-    this.eventTarget_ = new cr.EventTarget();
+    this.eventTarget_ = new EventTarget();
   }
 
   /** @return {!EventTarget} */
@@ -111,7 +113,7 @@ class ZoomManager {
  * InactiveZoomManager has no control over the browser's zoom
  * and does not respond to browser zoom changes.
  */
-class InactiveZoomManager extends ZoomManager {}
+export class InactiveZoomManager extends ZoomManager {}
 
 /**
  * ActiveZoomManager controls the browser's zoom.

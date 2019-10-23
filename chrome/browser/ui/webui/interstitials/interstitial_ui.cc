@@ -93,7 +93,7 @@ class InterstitialHTMLSource : public content::URLDataSource {
   std::string GetContentSecurityPolicyStyleSrc() override;
   std::string GetContentSecurityPolicyImgSrc() override;
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
 
@@ -468,9 +468,13 @@ std::string InterstitialHTMLSource::GetContentSecurityPolicyImgSrc() {
 }
 
 void InterstitialHTMLSource::StartDataRequest(
-    const std::string& path,
+    const GURL& request_url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  // TODO(crbug/1009127): Simplify usages of |path| since |request_url| is
+  // available.
+  const std::string path =
+      content::URLDataSource::URLToRequestPath(request_url);
   content::WebContents* web_contents = wc_getter.Run();
   if (!web_contents) {
     // When browser-side navigation is enabled, web_contents can be null if

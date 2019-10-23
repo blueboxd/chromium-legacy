@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -18,21 +19,16 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
-#include "services/image_annotation/public/mojom/constants.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -162,39 +158,29 @@ base::Optional<image_annotation::mojom::AnnotateImageError>
 
 // The fake ImageAnnotationService, which handles mojo calls from the renderer
 // process and passes them to FakeAnnotator.
-class FakeImageAnnotationService : public service_manager::Service {
+class FakeImageAnnotationService
+    : public image_annotation::mojom::ImageAnnotationService {
  public:
-  explicit FakeImageAnnotationService(
-      service_manager::mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {}
-
+  FakeImageAnnotationService() = default;
   ~FakeImageAnnotationService() override = default;
 
  private:
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
+  // image_annotation::mojom::ImageAnnotationService:
+  void BindAnnotator(mojo::PendingReceiver<image_annotation::mojom::Annotator>
+                         receiver) override {
+    annotator_.BindReceiver(std::move(receiver));
   }
-
-  void OnStart() override {
-    registry_.AddInterface<image_annotation::mojom::Annotator>(
-        base::BindRepeating(&FakeAnnotator::BindReceiver,
-                            base::Unretained(&annotator_)));
-  }
-
-  service_manager::BinderRegistry registry_;
-  service_manager::ServiceBinding service_binding_;
 
   FakeAnnotator annotator_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeImageAnnotationService);
 };
 
-void HandleImageAnnotatorServiceRequest(
-    service_manager::mojom::ServiceRequest request) {
-  new FakeImageAnnotationService(std::move(request));
+void BindImageAnnotatorService(
+    mojo::PendingReceiver<image_annotation::mojom::ImageAnnotationService>
+        receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FakeImageAnnotationService>(),
+                              std::move(receiver));
 }
 
 }  // namespace
@@ -221,19 +207,20 @@ class ImageAnnotationBrowserTest : public InProcessBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    content::ServiceManagerConnection* service_manager_connection =
-        content::BrowserContext::GetServiceManagerConnectionFor(
-            web_contents->GetBrowserContext());
-
-    service_manager_connection->AddServiceRequestHandler(
-        image_annotation::mojom::kServiceName,
-        base::BindRepeating(&HandleImageAnnotatorServiceRequest));
+    ProfileImpl::OverrideImageAnnotationServiceBinderForTesting(
+        base::BindRepeating(&BindImageAnnotatorService));
 
     ui::AXMode mode = ui::kAXModeComplete;
     mode.set_mode(ui::AXMode::kLabelImages, true);
     web_contents->SetAccessibilityMode(mode);
 
     SetAcceptLanguages("en,fr");
+  }
+
+  void TearDownOnMainThread() override {
+    ProfileImpl::OverrideImageAnnotationServiceBinderForTesting(
+        base::NullCallback());
+    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   void SetAcceptLanguages(const std::string& accept_languages) {

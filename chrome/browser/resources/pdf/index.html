@@ -2,13 +2,6 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <script src="chrome://resources/js/assert.js"></script>
-  <script src="chrome://resources/js/promise_resolver.js"></script>
-  <script src="chrome://resources/js/load_time_data.js"></script>
-  <script src="chrome://resources/js/util.js"></script>
-  <script src="chrome://resources/js/cr.js"></script>
-  <script src="chrome://resources/js/cr/event_target.js"></script>
-  <script src="chrome://resources/js/event_tracker.js"></script>
 
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <link rel="stylesheet" href="index.css">
@@ -33,17 +26,8 @@
 <div id="content"></div>
 
 </body>
-<script src="pdf_fitting_type.js"></script>
-<script src="toolbar_manager.js"></script>
-<script src="viewport.js"></script>
-<script src="open_pdf_params_parser.js"></script>
-<script src="navigator.js"></script>
-<script src="viewport_scroller.js"></script>
-<script src="zoom_manager.js"></script>
-<script src="gesture_detector.js"></script>
+<!-- TODO(crbug.com/1012574): Convert pdf_scripting_api.js to a JS module once
+  Print Preview has been migrated to JS modules as well -->
 <script src="pdf_scripting_api.js"></script>
-<script src="browser_api.js"></script>
-<script src="metrics.js"></script>
-<script src="controller.js"></script>
 <script type="module" src="main.js"></script>
 </html>

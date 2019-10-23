@@ -18,4 +18,14 @@ interface IRemoteFragmentClient {
   void superOnSaveInstanceState(in IObjectWrapper outState) = 10;
 
   IObjectWrapper getActivity() = 11;
+  boolean startActivityForResult(in IObjectWrapper intent,
+                                 int requestCode,
+                                 in IObjectWrapper options) = 12;
+  boolean startIntentSenderForResult(in IObjectWrapper intent,
+                                     int requestCode,
+                                     in IObjectWrapper fillInIntent,
+                                     int flagsMask,
+                                     int flagsValues,
+                                     int extraFlags,
+                                     in IObjectWrapper options) = 13;
 }

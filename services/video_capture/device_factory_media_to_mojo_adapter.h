@@ -56,8 +56,9 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
       mojo::PendingReceiver<mojom::TextureVirtualDevice>
           virtual_device_receiver) override;
   void RegisterVirtualDevicesChangedObserver(
-      mojom::DevicesChangedObserverPtr observer,
+      mojo::PendingRemote<mojom::DevicesChangedObserver> observer,
       bool raise_event_if_virtual_devices_already_present) override;
+
  private:
   struct ActiveDeviceEntry {
     ActiveDeviceEntry();

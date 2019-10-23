@@ -23,7 +23,7 @@ class ScreenlockIconSource : public content::URLDataSource {
   // content::URLDataSource implementation.
   std::string GetSource() const override;
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
 

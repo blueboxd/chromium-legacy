@@ -3529,7 +3529,7 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
 
   // Checking IsCustomElement() here is just an optimization because
   // IsValidName() is not cheap.
-  if (RuntimeEnabledFeatures::ElementInternalsEnabled() && IsCustomElement() &&
+  if (IsCustomElement() &&
       (CustomElement::IsValidName(localName()) || !IsValue().IsNull())) {
     auto* registry = CustomElement::Registry(*this);
     auto* definition =

@@ -19,6 +19,7 @@
 
 namespace views {
 
+class BubbleFrameView;
 class DialogClientView;
 class DialogObserver;
 class LabelButton;
@@ -154,6 +155,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // delegate's Window.
   const DialogClientView* GetDialogClientView() const;
   DialogClientView* GetDialogClientView();
+
+  // Returns the BubbleFrameView of this dialog delegate. A bubble frame view
+  // will only be created when use_custom_frame() is true.
+  BubbleFrameView* GetBubbleFrameView() const;
 
   // Helpers for accessing parts of the DialogClientView without needing to know
   // about DialogClientView. Do not call these before OnDialogInitialized.

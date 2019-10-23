@@ -653,6 +653,30 @@
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_EXTRA_DESCRIPTION" desc="Extra description for managing shared USB devices.">
        Only Android devices are currently supported.
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_TITLE" desc="Title of ARC ADB sideloading section.">
+      Develop Android apps
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_DESCRIPTION" desc="Description of ARC ADB sideloading in Settings.">
+      To create and test your apps, enable the Android Debug Bridge (ADB). Note that this action allows installation of Android apps that haven't been verified by Google, and requires a factory reset to disable.
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_LABEL" desc="Label for enabling ADB in ARC.">
+      Enable on this device
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_TITLE_ENABLE" desc="Confirmation dialog title to restart for enabling ADB.">
+      Enable ADB?
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_TITLE_DISABLE" desc="Confirmation dialog title to restart for disabling ADB.">
+      Disable ADB?
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_MESSAGE_ENABLE" desc="Describes what will happen if the user enables ADB Sideloading.">
+      To enable the Android Debug Bridge, first restart your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Disabling ADB requires a reset to factory settings.
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_MESSAGE_DISABLE" desc="Describes what will happen if the user disables ADB Sideloading.">
+      To disable ADB, restart your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. It will be reset to factory settings, and all user accounts and local data will be erased.
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_RESTART_BUTTON" desc="Label for the button that initiates the ADB enabling flow by restarting the device.">
+      Restart
+    </message>
 
     <!-- Plugin VM Page -->
     <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_TITLE" desc="The title of Plugin VM section.">

@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ANIMATED_CONTAINER_VIEW_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/ui/base/assistant_scroll_view.h"
@@ -46,8 +47,9 @@ class ElementAnimator;
 //       all |ElementAnimator| instances.
 //    8) Finally when this animation is complete the derived class is informed
 //       through |AnimatedContainerView::OnAllViewsAnimatedIn|.
-class AnimatedContainerView : public AssistantScrollView,
-                              public AssistantInteractionModelObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
+    : public AssistantScrollView,
+      public AssistantInteractionModelObserver {
  public:
   explicit AnimatedContainerView(AssistantViewDelegate* delegate);
   ~AnimatedContainerView() override;

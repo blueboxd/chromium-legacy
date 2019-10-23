@@ -347,7 +347,10 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
     return false;
 
   mode_ = mode;
-  last_event_location_ = base::make_optional(location);
+  if (mode_ != Mode::kDragWindowToHomeOrOverview &&
+      mode_ != Mode::kSwipeHomeToOverview) {
+    last_event_location_ = base::make_optional(location);
+  }
 
   OnDragStarted(location);
   return true;
@@ -362,8 +365,11 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
   if (!IsDragInProgress())
     return false;
 
-  last_event_location_ = base::make_optional(location);
-  last_scroll_y_ = scroll_y;
+  if (mode_ != Mode::kDragWindowToHomeOrOverview &&
+      mode_ != Mode::kSwipeHomeToOverview) {
+    last_event_location_ = base::make_optional(location);
+    last_scroll_y_ = scroll_y;
+  }
 
   DCHECK(display_.is_valid());
 
@@ -442,6 +448,10 @@ aura::Window* HomeLauncherGestureHandler::GetSecondaryWindow() {
   return secondary_window_->window();
 }
 
+bool HomeLauncherGestureHandler::IsDragInProgress() const {
+  return mode_ != Mode::kNone;
+}
+
 void HomeLauncherGestureHandler::AddObserver(
     HomeLauncherGestureHandlerObserver* observer) {
   observers_.AddObserver(observer);
@@ -496,13 +506,23 @@ void HomeLauncherGestureHandler::OnTabletModeEnded() {
   // When leaving tablet mode advance to the end of the in progress scroll
   // session or animation.
   StopObservingImplicitAnimations();
-  if (active_window_)
-    active_window_->StopAnimating();
-  if (secondary_window_)
-    secondary_window_->StopAnimating();
-  UpdateWindowsForSlideUpOrDown(IsFinalStateShow() ? 1.0 : 0.0,
-                                /*animate=*/false);
-  OnImplicitAnimationsCompleted();
+
+  if (mode_ == Mode::kDragWindowToHomeOrOverview) {
+    window_drag_controller_->CancelDrag();
+    RemoveObserversAndStopTracking();
+  } else if (mode_ == Mode::kSwipeHomeToOverview) {
+    swipe_home_to_overview_controller_->CancelDrag();
+    RemoveObserversAndStopTracking();
+  } else {
+    if (active_window_)
+      active_window_->StopAnimating();
+    if (secondary_window_)
+      secondary_window_->StopAnimating();
+
+    UpdateWindowsForSlideUpOrDown(/*progress=*/IsFinalStateShow() ? 1.0 : 0.0,
+                                  /*animate=*/false);
+    OnImplicitAnimationsCompleted();
+  }
 }
 
 void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
@@ -1005,8 +1025,6 @@ void HomeLauncherGestureHandler::OnDragContinued(const gfx::Point& location,
 bool HomeLauncherGestureHandler::OnDragEnded(const gfx::Point& location,
                                              base::Optional<float> velocity_y) {
   if (mode_ == Mode::kDragWindowToHomeOrOverview) {
-    last_event_location_ = base::make_optional(location);
-
     window_drag_controller_->EndDrag(location, velocity_y);
     RemoveObserversAndStopTracking();
   } else if (mode_ == Mode::kSwipeHomeToOverview) {

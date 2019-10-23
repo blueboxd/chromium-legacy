@@ -16,4 +16,9 @@
         <item name="android:textColor">@color/default_text_color_dark</item>
     </style>
 
+    <style name="TabGridDialogTitleTheme">
+        <item name="colorControlNormal">@color/divider_bg_color</item>
+        <item name="colorControlActivated">@color/filled_button_bg_color</item>
+        <item name="colorControlHighlight">@color/filled_button_bg_color</item>
+    </style>
 </resources>

@@ -151,6 +151,7 @@ class CONTENT_EXPORT RenderThreadImpl
       std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler);
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
+      int32_t client_id,
       std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler);
   ~RenderThreadImpl() override;
   void Shutdown() override;

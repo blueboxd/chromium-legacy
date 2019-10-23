@@ -28,13 +28,9 @@
              file="../../../third_party/polymer/v1_0/components-chromium/font-roboto/roboto.html"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_POLYMER_1_0_HTML_IMPORTS_HTML_IMPORTS_MIN_JS"
-             file="../../../third_party/polymer/v1_0/components-chromium/html-imports/html-imports.min.js"
-             type="chrome_html"
-             compress="gzip" />
   <if expr="chromeos">
-    <structure name="IDR_POLYMER_1_0_HTML_IMPORTS_V0_HTML_IMPORTS_MIN_JS"
-               file="../../../third_party/polymer/v1_0/components-chromium/html-imports-v0/html-imports.min.js"
+    <structure name="IDR_POLYMER_1_0_HTML_IMPORTS_HTML_IMPORTS_MIN_JS"
+               file="../../../third_party/polymer/v1_0/components-chromium/html-imports/html-imports.min.js"
                type="chrome_html"
                compress="gzip" />
   </if>

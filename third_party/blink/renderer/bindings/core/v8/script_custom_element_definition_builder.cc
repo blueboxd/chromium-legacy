@@ -130,7 +130,7 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
     }
   }
 
-  if (RuntimeEnabledFeatures::ElementInternalsEnabled()) {
+  {
     auto* isolate = Isolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
     v8::TryCatch try_catch(isolate);
@@ -153,7 +153,7 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
     }
   }
 
-  if (RuntimeEnabledFeatures::FormAssociatedCustomElementsEnabled()) {
+  {
     auto* isolate = Isolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
     v8::TryCatch try_catch(isolate);

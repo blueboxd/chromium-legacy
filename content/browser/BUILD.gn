@@ -1314,6 +1314,8 @@ jumbo_source_set("browser") {
     "picture_in_picture/picture_in_picture_window_controller_impl.h",
     "portal/portal.cc",
     "portal/portal.h",
+    "portal/portal_navigation_throttle.cc",
+    "portal/portal_navigation_throttle.h",
     "presentation/presentation_service_impl.cc",
     "presentation/presentation_service_impl.h",
     "process_internals/process_internals_handler_impl.cc",

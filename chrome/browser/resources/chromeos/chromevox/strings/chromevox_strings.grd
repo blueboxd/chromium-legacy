@@ -3745,6 +3745,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Announced when there is no available voice for a language." name="IDS_CHROMEVOX_VOICE_UNAVAILABLE_FOR_LANGUAGE">
         No voice available for language: <ph name="language">$1<ex>English</ex></ph>
       </message>
+      <message desc="Used to describe the link behind a url." name="IDS_CHROMEVOX_URL_BEHIND_LINK">
+        Link URL: <ph name="link_url">$1</ph>
+      </message>
     </messages>
   </release>
 </grit>

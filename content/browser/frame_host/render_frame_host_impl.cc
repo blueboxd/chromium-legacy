@@ -1678,8 +1678,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnUpdateUserActivationState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGestureBeforeNavigation,
                         OnSetHasReceivedUserGestureBeforeNavigation)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SetNeedsOcclusionTracking,
-                        OnSetNeedsOcclusionTracking);
     IPC_MESSAGE_HANDLER(FrameHostMsg_ScrollRectToVisibleInParentFrame,
                         OnScrollRectToVisibleInParentFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BubbleLogicalScrollInParentFrame,
@@ -1850,7 +1848,7 @@ void RenderFrameHostImpl::RenderProcessExited(
 
   // Ensure that the AssociatedRemote<blink::mojom::LocalFrame> works after a
   // crash.
-  local_frame_remote_.reset();
+  local_frame_.reset();
 
   // Any termination disablers in content loaded by the new process will
   // be sent again.
@@ -3194,13 +3192,13 @@ void RenderFrameHostImpl::RequestTextSurroundingSelection(
     blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
   DCHECK(!callback.is_null());
-  GetAssociatedLocalFrameRemote()->GetTextSurroundingSelection(
-      max_length, std::move(callback));
+  GetAssociatedLocalFrame()->GetTextSurroundingSelection(max_length,
+                                                         std::move(callback));
 }
 
 void RenderFrameHostImpl::SendInterventionReport(const std::string& id,
                                                  const std::string& message) {
-  GetAssociatedLocalFrameRemote()->SendInterventionReport(id, message);
+  GetAssociatedLocalFrame()->SendInterventionReport(id, message);
 }
 
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
@@ -3517,6 +3515,24 @@ void RenderFrameHostImpl::DidDisplayInsecureContent() {
 
 void RenderFrameHostImpl::DidContainInsecureFormAction() {
   delegate_->DidContainInsecureFormAction();
+}
+
+void RenderFrameHostImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
+  // Don't process the IPC if this RFH is pending deletion.  See also
+  // https://crbug.com/972566.
+  if (!is_active())
+    return;
+
+  RenderFrameProxyHost* proxy =
+      frame_tree_node()->render_manager()->GetProxyToParent();
+  if (!proxy) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_NO_PROXY_TO_PARENT);
+    return;
+  }
+
+  proxy->Send(new FrameMsg_SetNeedsOcclusionTracking(proxy->GetRoutingID(),
+                                                     needs_tracking));
 }
 
 void RenderFrameHostImpl::LifecycleStateChanged(
@@ -3929,8 +3945,7 @@ void RenderFrameHostImpl::EnterFullscreen(
 
     RenderFrameProxyHost* child_proxy =
         node->render_manager()->GetRenderFrameProxyHost(parent_site_instance);
-    child_proxy->Send(
-        new FrameMsg_WillEnterFullscreen(child_proxy->GetRoutingID()));
+    child_proxy->GetAssociatedRemoteFrame()->WillEnterFullscreen();
     notified_instances.insert(parent_site_instance);
   }
 
@@ -4050,24 +4065,6 @@ void RenderFrameHostImpl::OnUpdateUserActivationState(
 void RenderFrameHostImpl::OnSetHasReceivedUserGestureBeforeNavigation(
     bool value) {
   frame_tree_node_->OnSetHasReceivedUserGestureBeforeNavigation(value);
-}
-
-void RenderFrameHostImpl::OnSetNeedsOcclusionTracking(bool needs_tracking) {
-  // Don't process the IPC if this RFH is pending deletion.  See also
-  // https://crbug.com/972566.
-  if (!is_active())
-    return;
-
-  RenderFrameProxyHost* proxy =
-      frame_tree_node()->render_manager()->GetProxyToParent();
-  if (!proxy) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RFH_NO_PROXY_TO_PARENT);
-    return;
-  }
-
-  proxy->Send(new FrameMsg_SetNeedsOcclusionTracking(proxy->GetRoutingID(),
-                                                     needs_tracking));
 }
 
 void RenderFrameHostImpl::OnScrollRectToVisibleInParentFrame(
@@ -5979,10 +5976,10 @@ RenderFrameHostImpl::GetFindInPage() {
 }
 
 const mojo::AssociatedRemote<blink::mojom::LocalFrame>&
-RenderFrameHostImpl::GetAssociatedLocalFrameRemote() {
-  if (!local_frame_remote_)
-    GetRemoteAssociatedInterfaces()->GetInterface(&local_frame_remote_);
-  return local_frame_remote_;
+RenderFrameHostImpl::GetAssociatedLocalFrame() {
+  if (!local_frame_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&local_frame_);
+  return local_frame_;
 }
 
 void RenderFrameHostImpl::ResetLoadingState() {

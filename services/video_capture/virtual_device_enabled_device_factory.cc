@@ -7,6 +7,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "media/capture/video/video_capture_device_info.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
 #include "services/video_capture/texture_virtual_device_mojo_adapter.h"
@@ -18,44 +21,45 @@ class VirtualDeviceEnabledDeviceFactory::VirtualDeviceEntry {
   VirtualDeviceEntry(
       const media::VideoCaptureDeviceInfo& device_info,
       std::unique_ptr<SharedMemoryVirtualDeviceMojoAdapter> device,
-      std::unique_ptr<mojo::Binding<mojom::SharedMemoryVirtualDevice>>
-          producer_binding)
+      std::unique_ptr<mojo::Receiver<mojom::SharedMemoryVirtualDevice>>
+          producer_receiver)
       : device_info_(device_info),
         device_type_(DeviceType::kSharedMemory),
         shared_memory_device_(std::move(device)),
-        shared_memory_producer_binding_(std::move(producer_binding)) {}
+        shared_memory_producer_receiver_(std::move(producer_receiver)) {}
 
-  VirtualDeviceEntry(const media::VideoCaptureDeviceInfo& device_info,
-                     std::unique_ptr<TextureVirtualDeviceMojoAdapter> device,
-                     std::unique_ptr<mojo::Binding<mojom::TextureVirtualDevice>>
-                         producer_binding)
+  VirtualDeviceEntry(
+      const media::VideoCaptureDeviceInfo& device_info,
+      std::unique_ptr<TextureVirtualDeviceMojoAdapter> device,
+      std::unique_ptr<mojo::Receiver<mojom::TextureVirtualDevice>>
+          producer_receiver)
       : device_info_(device_info),
         device_type_(DeviceType::kTexture),
         texture_device_(std::move(device)),
-        texture_producer_binding_(std::move(producer_binding)) {}
+        texture_producer_receiver_(std::move(producer_receiver)) {}
 
   VirtualDeviceEntry(VirtualDeviceEntry&& other) = default;
   VirtualDeviceEntry& operator=(VirtualDeviceEntry&& other) = default;
 
-  bool HasConsumerBinding() { return consumer_binding_ != nullptr; }
+  bool HasConsumerBinding() { return consumer_receiver_ != nullptr; }
 
   void EstablishConsumerBinding(mojom::DeviceRequest device_request,
                                 base::OnceClosure connection_error_handler) {
     switch (device_type_) {
       case DeviceType::kSharedMemory:
-        consumer_binding_ = std::make_unique<mojo::Binding<mojom::Device>>(
+        consumer_receiver_ = std::make_unique<mojo::Receiver<mojom::Device>>(
             shared_memory_device_.get(), std::move(device_request));
         break;
       case DeviceType::kTexture:
-        consumer_binding_ = std::make_unique<mojo::Binding<mojom::Device>>(
+        consumer_receiver_ = std::make_unique<mojo::Receiver<mojom::Device>>(
             texture_device_.get(), std::move(device_request));
         break;
     }
-    consumer_binding_->set_connection_error_handler(
+    consumer_receiver_->set_disconnect_handler(
         std::move(connection_error_handler));
   }
 
-  void ResetConsumerBinding() { consumer_binding_.reset(); }
+  void ResetConsumerBinding() { consumer_receiver_.reset(); }
 
   void StopDevice() {
     if (shared_memory_device_)
@@ -74,15 +78,15 @@ class VirtualDeviceEnabledDeviceFactory::VirtualDeviceEntry {
 
   // Only valid for |device_type_ == kSharedMemory|
   std::unique_ptr<SharedMemoryVirtualDeviceMojoAdapter> shared_memory_device_;
-  std::unique_ptr<mojo::Binding<mojom::SharedMemoryVirtualDevice>>
-      shared_memory_producer_binding_;
+  std::unique_ptr<mojo::Receiver<mojom::SharedMemoryVirtualDevice>>
+      shared_memory_producer_receiver_;
 
   // Only valid for |device_type_ == kTexture|
   std::unique_ptr<TextureVirtualDeviceMojoAdapter> texture_device_;
-  std::unique_ptr<mojo::Binding<mojom::TextureVirtualDevice>>
-      texture_producer_binding_;
+  std::unique_ptr<mojo::Receiver<mojom::TextureVirtualDevice>>
+      texture_producer_receiver_;
 
-  std::unique_ptr<mojo::Binding<mojom::Device>> consumer_binding_;
+  std::unique_ptr<mojo::Receiver<mojom::Device>> consumer_receiver_;
 };
 
 VirtualDeviceEnabledDeviceFactory::VirtualDeviceEnabledDeviceFactory(
@@ -147,15 +151,15 @@ void VirtualDeviceEnabledDeviceFactory::AddSharedMemoryVirtualDevice(
   auto device = std::make_unique<SharedMemoryVirtualDeviceMojoAdapter>(
       std::move(producer),
       send_buffer_handles_to_producer_as_raw_file_descriptors);
-  auto producer_binding =
-      std::make_unique<mojo::Binding<mojom::SharedMemoryVirtualDevice>>(
+  auto producer_receiver =
+      std::make_unique<mojo::Receiver<mojom::SharedMemoryVirtualDevice>>(
           device.get(), std::move(virtual_device_receiver));
-  producer_binding->set_connection_error_handler(
+  producer_receiver->set_disconnect_handler(
       base::BindOnce(&VirtualDeviceEnabledDeviceFactory::
                          OnVirtualDeviceProducerConnectionErrorOrClose,
                      base::Unretained(this), device_id));
   VirtualDeviceEntry device_entry(device_info, std::move(device),
-                                  std::move(producer_binding));
+                                  std::move(producer_receiver));
   virtual_devices_by_id_.insert(
       std::make_pair(device_id, std::move(device_entry)));
   EmitDevicesChangedEvent();
@@ -174,24 +178,26 @@ void VirtualDeviceEnabledDeviceFactory::AddTextureVirtualDevice(
   }
 
   auto device = std::make_unique<TextureVirtualDeviceMojoAdapter>();
-  auto producer_binding =
-      std::make_unique<mojo::Binding<mojom::TextureVirtualDevice>>(
+  auto producer_receiver =
+      std::make_unique<mojo::Receiver<mojom::TextureVirtualDevice>>(
           device.get(), std::move(virtual_device_receiver));
-  producer_binding->set_connection_error_handler(
+  producer_receiver->set_disconnect_handler(
       base::BindOnce(&VirtualDeviceEnabledDeviceFactory::
                          OnVirtualDeviceProducerConnectionErrorOrClose,
                      base::Unretained(this), device_id));
   VirtualDeviceEntry device_entry(device_info, std::move(device),
-                                  std::move(producer_binding));
+                                  std::move(producer_receiver));
   virtual_devices_by_id_.insert(
       std::make_pair(device_id, std::move(device_entry)));
   EmitDevicesChangedEvent();
 }
 
 void VirtualDeviceEnabledDeviceFactory::RegisterVirtualDevicesChangedObserver(
-    mojom::DevicesChangedObserverPtr observer,
+    mojo::PendingRemote<mojom::DevicesChangedObserver> observer_pending_remote,
     bool raise_event_if_virtual_devices_already_present) {
-  observer.set_connection_error_handler(base::BindOnce(
+  mojo::Remote<mojom::DevicesChangedObserver> observer(
+      std::move(observer_pending_remote));
+  observer.set_disconnect_handler(base::BindOnce(
       &VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected,
       weak_factory_.GetWeakPtr(), observer.get()));
   if (!virtual_devices_by_id_.empty() &&
@@ -234,16 +240,13 @@ void VirtualDeviceEnabledDeviceFactory::EmitDevicesChangedEvent() {
 
 void VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected(
     mojom::DevicesChangedObserverPtr::Proxy* observer) {
-  auto iter = std::find_if(
-      devices_changed_observers_.begin(), devices_changed_observers_.end(),
-      [observer](const mojom::DevicesChangedObserverPtr& entry) {
-        return entry.get() == observer;
-      });
-  if (iter == devices_changed_observers_.end()) {
-    DCHECK(false);
-    return;
+  for (auto iter = devices_changed_observers_.begin();
+       iter != devices_changed_observers_.end(); ++iter) {
+    if (iter->get() == observer) {
+      devices_changed_observers_.erase(iter);
+      break;
+    }
   }
-  devices_changed_observers_.erase(iter);
 }
 
 }  // namespace video_capture

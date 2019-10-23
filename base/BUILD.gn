@@ -629,6 +629,7 @@ jumbo_component("base") {
     "profiler/stack_sampler_android.cc",
     "profiler/stack_sampler_impl.cc",
     "profiler/stack_sampler_impl.h",
+    "profiler/stack_sampler_ios.cc",
     "profiler/stack_sampler_mac.cc",
     "profiler/stack_sampler_win.cc",
     "profiler/stack_sampling_profiler.cc",
@@ -639,8 +640,6 @@ jumbo_component("base") {
     "profiler/suspendable_thread_delegate_win.cc",
     "profiler/suspendable_thread_delegate_win.h",
     "profiler/thread_delegate.h",
-    "profiler/thread_delegate_android.cc",
-    "profiler/thread_delegate_android.h",
     "profiler/unwinder.h",
     "rand_util.cc",
     "rand_util.h",
@@ -1185,7 +1184,6 @@ jumbo_component("base") {
       "process/process_handle_posix.cc",
       "process/process_metrics_posix.cc",
       "process/process_posix.cc",
-      "profiler/stack_sampler_posix.cc",
       "rand_util_posix.cc",
       "sampling_heap_profiler/module_cache_posix.cc",
       "strings/string_util_posix.h",
@@ -1222,6 +1220,14 @@ jumbo_component("base") {
 
     if (is_posix) {
       sources += [ "base_paths_posix.h" ]
+
+      if (!is_mac && !is_ios) {
+        sources += [
+          "profiler/stack_sampler_posix.cc",
+          "profiler/thread_delegate_posix.cc",
+          "profiler/thread_delegate_posix.h",
+        ]
+      }
     }
 
     if (is_linux) {
@@ -1819,10 +1825,7 @@ jumbo_component("base") {
 
   # Desktop Mac.
   if (is_mac) {
-    sources -= [
-      "process/launch_posix.cc",
-      "profiler/stack_sampler_posix.cc",
-    ]
+    sources -= [ "process/launch_posix.cc" ]
     sources += [
       "files/file_path_watcher_fsevents.cc",
       "files/file_path_watcher_fsevents.h",

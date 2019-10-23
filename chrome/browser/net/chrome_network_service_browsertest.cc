@@ -12,6 +12,7 @@
 #include "components/cookie_config/cookie_store_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -65,9 +66,17 @@ void FlushCookies(
 }
 
 // See |NetworkServiceBrowserTest| for content's version of tests.
-class ChromeNetworkServiceBrowserTest : public InProcessBrowserTest {
+class ChromeNetworkServiceBrowserTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface</*kNetworkServiceInProcess*/ bool> {
  public:
-  ChromeNetworkServiceBrowserTest() {}
+  ChromeNetworkServiceBrowserTest() {
+    bool in_process = GetParam();
+    // Verify that cookie encryption works both in-process and out of process.
+    if (in_process)
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kNetworkServiceInProcess);
+  }
 
  protected:
   mojo::PendingRemote<network::mojom::NetworkContext> CreateNetworkContext(
@@ -85,10 +94,12 @@ class ChromeNetworkServiceBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkServiceBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
+IN_PROC_BROWSER_TEST_P(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
   // First set a cookie with cookie encryption enabled.
   mojo::Remote<network::mojom::NetworkContext> context(
       CreateNetworkContext(/*enable_encrypted_cookies=*/true));
@@ -105,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
   FlushCookies(cookie_manager);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, EncryptedCookies) {
+IN_PROC_BROWSER_TEST_P(ChromeNetworkServiceBrowserTest, EncryptedCookies) {
   net::CookieCryptoDelegate* crypto_delegate =
       cookie_config::GetCookieCryptoDelegate();
   std::string ciphertext;
@@ -125,6 +136,14 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, EncryptedCookies) {
   EXPECT_EQ(kCookieName, cookies[0].Name());
   EXPECT_EQ("", cookies[0].Value());
 }
+
+INSTANTIATE_TEST_SUITE_P(InProcess,
+                         ChromeNetworkServiceBrowserTest,
+                         ::testing::Values(true));
+
+INSTANTIATE_TEST_SUITE_P(OutOfProcess,
+                         ChromeNetworkServiceBrowserTest,
+                         ::testing::Values(false));
 
 }  // namespace
 }  // namespace content

@@ -34,7 +34,6 @@
 #include "remoting/protocol/fake_desktop_capturer.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;

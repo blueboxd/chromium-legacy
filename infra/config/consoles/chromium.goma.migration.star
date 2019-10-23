@@ -315,11 +315,6 @@ luci.console_view(
             short_name = 'dbg',
         ),
         luci.console_view_entry(
-            builder = 'ci/Jumbo Linux x64',
-            category = 'week2d|linux',
-            short_name = 'jumbo',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Dawn Mac x64 Builder',
             category = 'week2d|mac|dawn',
         ),
@@ -360,11 +355,6 @@ luci.console_view(
             builder = 'ci/Mac deterministic (dbg)',
             category = 'week2d|mac|det',
             short_name = 'dbg',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Jumbo Mac',
-            category = 'week2d|mac',
-            short_name = 'jumbo',
         ),
         luci.console_view_entry(
             builder = 'ci/Linux Builder',
@@ -496,11 +486,6 @@ luci.console_view(
             builder = 'ci/mac-hermetic-upgrade-rel',
             category = 'week3c|mac',
             short_name = 'herm',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/mac-jumbo-rel',
-            category = 'week3c|mac',
-            short_name = 'jumbo',
         ),
         luci.console_view_entry(
             builder = 'ci/mac-mojo-rel',
@@ -695,6 +680,16 @@ luci.console_view(
             builder = 'ci/Android Release (Nexus 5X)',
             category = 'week13|android',
             short_name = 'n5x',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Linux ASan LSan Builder',
+            category = 'week14a|linux',
+            short_name = 'asanlsan',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Linux TSan Builder',
+            category = 'week14a|linux',
+            short_name = 'tsan',
         ),
         luci.console_view_entry(
             builder = 'ci/Win ASan Release',

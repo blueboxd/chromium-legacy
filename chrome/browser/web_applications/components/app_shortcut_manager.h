@@ -33,6 +33,7 @@ class AppShortcutManager {
   virtual ~AppShortcutManager();
 
   void SetSubsystems(AppRegistrar* registrar);
+  void Shutdown();
 
   void AddObserver(AppShortcutObserver* observer);
   void RemoveObserver(AppShortcutObserver* observer);

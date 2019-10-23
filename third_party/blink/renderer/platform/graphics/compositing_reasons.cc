@@ -58,6 +58,8 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "Has a backdrop filter"},
     {CompositingReason::kRootScroller, "rootScroller",
      "Is the document.rootScroller"},
+    {CompositingReason::kCrossOriginIframe, "crossOriginIframe",
+     "Is a cross-origin iframe"},
     {CompositingReason::kAssumedOverlap, "assumedOverlap",
      "Might overlap other composited content"},
     {CompositingReason::kOverlap, "overlap",

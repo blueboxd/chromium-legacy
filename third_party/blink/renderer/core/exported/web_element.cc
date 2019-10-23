@@ -47,8 +47,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 bool WebElement::IsFormControlElement() const {
   return ConstUnwrap<Element>()->IsFormControlElement();
 }
@@ -67,7 +65,8 @@ bool WebElement::IsEditable() const {
       return true;
   }
 
-  return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), "textbox");
+  return EqualIgnoringASCIICase(element->getAttribute(html_names::kRoleAttr),
+                                "textbox");
 }
 
 WebString WebElement::TagName() const {

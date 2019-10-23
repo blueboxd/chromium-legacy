@@ -408,7 +408,7 @@ void AssistantInteractionController::OnInteractionStarted(
     // pending query type will always be |kNull| here.
     if (model_.pending_query().type() == AssistantQueryType::kNull) {
       model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
-          metadata->query, AssistantQuerySource::kLibAssistantInitiated));
+          metadata->query, metadata->source));
     }
     model_.CommitPendingQuery();
     model_.SetMicState(MicState::kClosed);
@@ -878,7 +878,8 @@ void AssistantInteractionController::StartProactiveSuggestionsInteraction(
       description, AssistantQuerySource::kProactiveSuggestions));
 
   OnInteractionStarted(AssistantInteractionMetadata::New(
-      AssistantInteractionType::kText, /*query=*/description));
+      AssistantInteractionType::kText,
+      AssistantQuerySource::kProactiveSuggestions, /*query=*/description));
 
   OnHtmlResponse(proactive_suggestions->html(), /*fallback=*/std::string());
 
@@ -913,7 +914,7 @@ void AssistantInteractionController::StartTextInteraction(
   model_.SetPendingQuery(
       std::make_unique<AssistantTextQuery>(text, query_source));
 
-  assistant_->StartTextInteraction(text, allow_tts);
+  assistant_->StartTextInteraction(text, query_source, allow_tts);
 }
 
 void AssistantInteractionController::StartVoiceInteraction() {

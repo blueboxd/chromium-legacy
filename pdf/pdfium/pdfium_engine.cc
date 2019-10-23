@@ -1917,19 +1917,19 @@ void PDFiumEngine::ZoomUpdated(double new_zoom_level) {
 
 void PDFiumEngine::RotateClockwise() {
   desired_layout_options_.RotatePagesClockwise();
-  RotateInternal();
+  ProposeNextDocumentLayout();
 }
 
 void PDFiumEngine::RotateCounterclockwise() {
   desired_layout_options_.RotatePagesCounterclockwise();
-  RotateInternal();
+  ProposeNextDocumentLayout();
 }
 
 void PDFiumEngine::InvalidateAllPages() {
   CancelPaints();
   StopFind();
   DCHECK(document_loaded_);
-  LoadPageInfo();
+  RefreshCurrentDocumentLayout();
   client_->Invalidate(pp::Rect(plugin_size_));
 }
 
@@ -2488,15 +2488,18 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
 }
 
 void PDFiumEngine::LoadPageInfo() {
-  std::vector<pp::Size> page_sizes = LoadPageSizes();
-  if (page_sizes.empty())
-    return;
+  RefreshCurrentDocumentLayout();
 
-  if (two_up_view_) {
-    layout_.ComputeTwoUpViewLayout(page_sizes);
-  } else {
-    layout_.ComputeSingleViewLayout(page_sizes);
-  }
+  // TODO(crbug.com/1013800): RefreshCurrentDocumentLayout() should send some
+  // sort of "current layout changed" notification, instead of proposing a new
+  // layout. Proposals are never rejected currently, so this is OK for now.
+  ProposeNextDocumentLayout();
+}
+
+void PDFiumEngine::RefreshCurrentDocumentLayout() {
+  UpdateDocumentLayout(&layout_);
+  if (!layout_.dirty())
+    return;
 
   DCHECK_EQ(pages_.size(), layout_.page_count());
   for (size_t i = 0; i < layout_.page_count(); ++i) {
@@ -2504,14 +2507,35 @@ void PDFiumEngine::LoadPageInfo() {
     pages_[i]->set_rect(layout_.page_bounds_rect(i));
   }
 
+  layout_.clear_dirty();
+
   CalculateVisiblePages();
-  if (layout_.dirty()) {
-    layout_.clear_dirty();
-    client_->ProposeDocumentLayout(layout_);
+}
+
+void PDFiumEngine::ProposeNextDocumentLayout() {
+  DocumentLayout next_layout;
+  next_layout.SetOptions(desired_layout_options_);
+  UpdateDocumentLayout(&next_layout);
+
+  // The time windows between proposal and application may overlap, so we must
+  // always propose a new layout, regardless of the current layout state.
+  client_->ProposeDocumentLayout(next_layout);
+}
+
+void PDFiumEngine::UpdateDocumentLayout(DocumentLayout* layout) {
+  std::vector<pp::Size> page_sizes = LoadPageSizes(layout->options());
+  if (page_sizes.empty())
+    return;
+
+  if (two_up_view_) {
+    layout->ComputeTwoUpViewLayout(page_sizes);
+  } else {
+    layout->ComputeSingleViewLayout(page_sizes);
   }
 }
 
-std::vector<pp::Size> PDFiumEngine::LoadPageSizes() {
+std::vector<pp::Size> PDFiumEngine::LoadPageSizes(
+    const DocumentLayout::Options& layout_options) {
   std::vector<pp::Size> page_sizes;
   if (!doc_loader_)
     return page_sizes;
@@ -2541,7 +2565,10 @@ std::vector<pp::Size> PDFiumEngine::LoadPageSizes() {
       page_available = doc_complete;
     }
 
-    pp::Size size = page_available ? GetPageSize(i) : default_page_size_;
+    // TODO(crbug.com/1013800): It'd be better if page size were independent of
+    // layout options, and handled in the layout code.
+    pp::Size size = page_available ? GetPageSizeForLayout(i, layout_options)
+                                   : default_page_size_;
     EnlargePage(i, new_page_count, &size);
     page_sizes.push_back(size);
   }
@@ -2717,6 +2744,12 @@ bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
 }
 
 pp::Size PDFiumEngine::GetPageSize(int index) {
+  return GetPageSizeForLayout(index, layout_.options());
+}
+
+pp::Size PDFiumEngine::GetPageSizeForLayout(
+    int index,
+    const DocumentLayout::Options& layout_options) {
   pp::Size size;
   double width_in_points = 0;
   double height_in_points = 0;
@@ -2729,7 +2762,7 @@ pp::Size PDFiumEngine::GetPageSize(int index) {
     int height_in_pixels = static_cast<int>(
         ConvertUnitDouble(height_in_points, kPointsPerInch, kPixelsPerInch));
 
-    switch (layout_.options().default_page_orientation()) {
+    switch (layout_options.default_page_orientation()) {
       case PageOrientation::kOriginal:
       case PageOrientation::kClockwise180:
         // No axis swap needed.
@@ -3403,7 +3436,20 @@ void PDFiumEngine::OnSelectionPositionChanged() {
   client_->SelectionChanged(left, right);
 }
 
-void PDFiumEngine::RotateInternal() {
+pp::Size PDFiumEngine::ApplyDocumentLayout(
+    const DocumentLayout::Options& options) {
+  // We need to return early if the layout would not change, otherwise calling
+  // client_->ScrollToPage() would send another "viewport" message, triggering
+  // an infinite loop.
+  //
+  // TODO(crbug.com/1013800): The current implementation computes layout twice
+  // (here, and in InvalidateAllPages()). This shouldn't be too expensive at
+  // realistic page counts, but could be avoided.
+  layout_.SetOptions(options);
+  UpdateDocumentLayout(&layout_);
+  if (!layout_.dirty())
+    return layout_.size();
+
   // Store the current find index so that we can resume finding at that
   // particular index after we have recomputed the find results.
   std::string current_find_text = current_find_text_;
@@ -3412,7 +3458,6 @@ void PDFiumEngine::RotateInternal() {
   // Save the current page.
   int most_visible_page = most_visible_page_;
 
-  layout_.SetOptions(desired_layout_options_);
   InvalidateAllPages();
 
   // Restore find results.
@@ -3426,6 +3471,8 @@ void PDFiumEngine::RotateInternal() {
   // the scroll position has not. Re-adjust.
   // TODO(thestig): It would be better to also restore the position on the page.
   client_->ScrollToPage(most_visible_page);
+
+  return layout_.size();
 }
 
 void PDFiumEngine::SetSelecting(bool selecting) {

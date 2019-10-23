@@ -2318,4 +2318,138 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_OpenerAndOrigin) {
   }
 }
 
+// Tests updating a URL of a web tab to an about:blank.  Verify that the new
+// frame is placed in the correct process, has the correct origin and that no
+// DCHECKs are hit anywhere.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToAboutBlank) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("../simple_with_file"));
+  ASSERT_TRUE(extension);
+  GURL extension_url = extension->GetResourceURL("file.html");
+  url::Origin extension_origin = url::Origin::Create(extension_url);
+  GURL web_url = embedded_test_server()->GetURL("/title1.html");
+  url::Origin web_origin = url::Origin::Create(web_url);
+  GURL about_blank_url = GURL(url::kAboutBlankURL);
+
+  // Navigate a tab to an extension page.
+  ui_test_utils::NavigateToURL(browser(), extension_url);
+  content::WebContents* extension_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(extension_origin,
+            extension_contents->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Create another tab and navigate it to a web page.
+  content::WebContents* test_contents = nullptr;
+  {
+    content::WebContentsAddedObserver test_contents_observer;
+    content::TestNavigationObserver nav_observer(nullptr);
+    nav_observer.StartWatchingNewWebContents();
+    content::ExecuteScriptAsync(
+        extension_contents,
+        content::JsReplace("window.open($1, '_blank')", web_url));
+
+    test_contents = test_contents_observer.GetWebContents();
+    nav_observer.WaitForNavigationFinished();
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(web_url, nav_observer.last_navigation_url());
+  }
+  EXPECT_EQ(web_origin,
+            test_contents->GetMainFrame()->GetLastCommittedOrigin());
+  EXPECT_NE(extension_contents->GetMainFrame()->GetProcess(),
+            test_contents->GetMainFrame()->GetProcess());
+
+  // Use |chrome.tabs.update| API to navigate |test_contents| to an about:blank
+  // URL.
+  {
+    content::TestNavigationObserver nav_observer(test_contents, 1);
+    int test_tab_id = ExtensionTabUtil::GetTabId(test_contents);
+    content::ExecuteScriptAsync(
+        extension_contents,
+        content::JsReplace("chrome.tabs.update($1, { url: $2 })", test_tab_id,
+                           about_blank_url));
+    nav_observer.WaitForNavigationFinished();
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(about_blank_url, nav_observer.last_navigation_url());
+  }
+
+  // Verify the origin and process of the about:blank tab.
+  content::RenderFrameHost* test_frame = test_contents->GetMainFrame();
+  EXPECT_EQ(about_blank_url, test_frame->GetLastCommittedURL());
+  EXPECT_EQ(extension_contents->GetMainFrame()->GetProcess(),
+            test_contents->GetMainFrame()->GetProcess());
+
+  // The expectations below preserve the behavior at r704251.  It is not clear
+  // whether these are the right expectations - maybe about:blank should commit
+  // with an extension origin?  OTOH, committing with the extension origin
+  // wouldn't be possible when targeting an incognito window (see also
+  // IncognitoApiTest.Incognito test).
+  EXPECT_TRUE(test_frame->GetLastCommittedOrigin().opaque());
+  EXPECT_EQ(
+      extension_origin.GetTupleOrPrecursorTupleIfOpaque(),
+      test_frame->GetLastCommittedOrigin().GetTupleOrPrecursorTupleIfOpaque());
+}
+
+// Tests updating a URL of a web tab to a non-web-accessible-resource of an
+// extension - such navigation should be allowed.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsUpdate_WebToNonWAR) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("../simple_with_file"));
+  ASSERT_TRUE(extension);
+  GURL extension_url = extension->GetResourceURL("file.html");
+  url::Origin extension_origin = url::Origin::Create(extension_url);
+  GURL web_url = embedded_test_server()->GetURL("/title1.html");
+  url::Origin web_origin = url::Origin::Create(web_url);
+  GURL non_war_url = extension_url;
+
+  // Navigate a tab to an extension page.
+  ui_test_utils::NavigateToURL(browser(), extension_url);
+  content::WebContents* extension_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(extension_origin,
+            extension_contents->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Create another tab and navigate it to a web page.
+  content::WebContents* test_contents = nullptr;
+  {
+    content::WebContentsAddedObserver test_contents_observer;
+    content::TestNavigationObserver nav_observer(nullptr);
+    nav_observer.StartWatchingNewWebContents();
+    content::ExecuteScriptAsync(
+        extension_contents,
+        content::JsReplace("window.open($1, '_blank')", web_url));
+    test_contents = test_contents_observer.GetWebContents();
+    nav_observer.WaitForNavigationFinished();
+
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(web_url, nav_observer.last_navigation_url());
+  }
+  EXPECT_EQ(web_origin,
+            test_contents->GetMainFrame()->GetLastCommittedOrigin());
+  EXPECT_NE(extension_contents->GetMainFrame()->GetProcess(),
+            test_contents->GetMainFrame()->GetProcess());
+
+  // Use |chrome.tabs.update| API to navigate |test_contents| to a
+  // non-web-accessible-resource of an extension.
+  {
+    content::TestNavigationObserver nav_observer(test_contents, 1);
+    int test_tab_id = ExtensionTabUtil::GetTabId(test_contents);
+    content::ExecuteScriptAsync(
+        extension_contents,
+        content::JsReplace("chrome.tabs.update($1, { url: $2 })", test_tab_id,
+                           non_war_url));
+    nav_observer.WaitForNavigationFinished();
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(non_war_url, nav_observer.last_navigation_url());
+  }
+
+  // Verify the origin and process of the navigated tab.
+  content::RenderFrameHost* test_frame = test_contents->GetMainFrame();
+  EXPECT_EQ(non_war_url, test_frame->GetLastCommittedURL());
+  EXPECT_EQ(extension_origin, test_frame->GetLastCommittedOrigin());
+  EXPECT_EQ(extension_contents->GetMainFrame()->GetProcess(),
+            test_contents->GetMainFrame()->GetProcess());
+}
+
 }  // namespace extensions

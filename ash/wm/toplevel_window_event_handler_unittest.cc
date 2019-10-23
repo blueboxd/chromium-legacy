@@ -5,6 +5,9 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_view.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/home_screen/home_screen_controller.h"
@@ -1162,11 +1165,13 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, DonotStartGoingBack) {
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
 
-  // Should not go back if home screen is not visible.
+  // Should not go back if home screen is visible and in |kFullscreenAllApps|
+  // state.
   shell->overview_controller()->EndOverview();
   ASSERT_FALSE(shell->overview_controller()->InOverviewSession());
   shell->home_screen_controller()->GoHome(GetPrimaryDisplay().id());
   ASSERT_TRUE(shell->home_screen_controller()->IsHomeScreenVisible());
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
   generator->GestureScrollSequence(
       start,
       gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack + 10,
@@ -1174,6 +1179,22 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, DonotStartGoingBack) {
       base::TimeDelta::FromMilliseconds(100), 3);
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
+
+  // Should exit |kFullscreenSearch| to enter |kFullscreenAllApps| state while
+  // home screen search result page is opened.
+  generator->GestureTapAt(GetAppListTestHelper()
+                              ->GetAppListView()
+                              ->search_box_view()
+                              ->GetBoundsInScreen()
+                              .CenterPoint());
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
+  generator->GestureScrollSequence(
+      start,
+      gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack + 10,
+                 100),
+      base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 }
 
 namespace {
@@ -1347,10 +1368,10 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
        TapWindowInOverviewGridDuringWindowDrag) {
   TabletModeControllerTestApi().EnterTabletMode();
 
-  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(100, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
   // Drag the window to the right corner to avoid overlap with
   // |non_dragged_window_| in overview grid.
-  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+  SendGestureEvent(gfx::Point(600, 500), 600, 500,
                    ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
 
@@ -1382,8 +1403,8 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
   dragged_window_->SetProperty(aura::client::kResizeBehaviorKey,
                                aura::client::kResizeBehaviorNone);
 
-  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
-  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+  SendGestureEvent(gfx::Point(100, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(600, 500), 600, 500,
                    ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
 
@@ -1429,10 +1450,10 @@ TEST_F(ToplevelWindowEventHandlerDragTest, DisplayConfigurationChangeTest) {
 
   ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
 
-  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(100, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
   // Drag the window to the right corner to avoid overlap with
   // |non_dragged_window_| in overview grid.
-  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+  SendGestureEvent(gfx::Point(600, 500), 600, 500,
                    ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
 

@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
@@ -157,7 +158,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         setAlpha(inTabSwitcherMode ? 0.0f : 1.0f);
 
         boolean showZoomingAnimation = FeatureUtilities.isGridTabSwitcherEnabled()
-                && FeatureUtilities.isTabToGtsAnimationEnabled();
+                && TabFeatureUtilities.isTabToGtsAnimationEnabled();
         long duration = showZoomingAnimation
                 ? TopToolbarCoordinator.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
                 : TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;

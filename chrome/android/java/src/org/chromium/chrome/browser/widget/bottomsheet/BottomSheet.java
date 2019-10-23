@@ -1086,7 +1086,7 @@ public class BottomSheet
                 }
             }
         }
-        return (toolbarHeight + mToolbarShadowHeight) / mContainerHeight;
+        return (toolbarHeight + mToolbarShadowHeight) / (float) mContainerHeight;
     }
 
     private View getToolbarView() {
@@ -1114,8 +1114,9 @@ public class BottomSheet
         if (mContainerHeight <= 0) return 0;
         float customFullRatio =
                 mSheetContent != null ? mSheetContent.getCustomFullRatio() : INVALID_HEIGHT_RATIO;
-        return customFullRatio < 0 ? (mContainerHeight + mToolbarShadowHeight) / mContainerHeight
-                                   : customFullRatio;
+        return customFullRatio < 0
+                ? (mContainerHeight + mToolbarShadowHeight) / (float) mContainerHeight
+                : customFullRatio;
     }
 
     /**
@@ -1139,7 +1140,8 @@ public class BottomSheet
             return;
         }
 
-        float screenRatio = mContainerHeight > 0 ? offsetWithBrowserControls / mContainerHeight : 0;
+        float screenRatio =
+                mContainerHeight > 0 ? offsetWithBrowserControls / (float) mContainerHeight : 0;
 
         // This ratio is relative to the peek and full positions of the sheet.
         float hiddenFullRatio = MathUtils.clamp(
@@ -1404,7 +1406,8 @@ public class BottomSheet
 
     public boolean isSmallScreen() {
         // A small screen is defined by there being less than 160dp between half and full states.
-        float fullHeightRatio = (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
+        float fullHeightRatio =
+                (mContainerHeight + mToolbarShadowHeight) / (float) mContainerHeight;
         float fullToHalfDiff = (fullHeightRatio - HALF_HEIGHT_RATIO) * mContainerHeight;
         return fullToHalfDiff < mMinHalfFullDistance;
     }

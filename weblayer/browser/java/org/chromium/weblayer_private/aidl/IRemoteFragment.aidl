@@ -20,4 +20,8 @@ interface IRemoteFragment {
   void handleOnDetach() = 9;
   void handleOnDestroy() = 10;
   void handleOnSaveInstanceState(in IObjectWrapper outState) = 11;
+  // |data| is an Intent with the result returned from the activity.
+  void handleOnActivityResult(int requestCode,
+                              int resultCode,
+                              in IObjectWrapper data) = 12;
 }

@@ -5,6 +5,8 @@
 Polymer({
   is: 'battery-settings',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /** The system's battery percentage. */
     batteryPercent: Number,
@@ -127,6 +129,8 @@ Polymer({
   ],
 
   ready: function() {
+    this.addWebUIListener(
+        'power-properties-updated', this.onPowerPropertiesUpdated_.bind(this));
     chrome.send('requestPowerInfo');
   },
 
@@ -184,8 +188,9 @@ Polymer({
    *   battery_time_to_full_sec: number,
    *   external_power_source_id: string,
    * }} properties
+   * @private
    */
-  updatePowerProperties: function(properties) {
+  onPowerPropertiesUpdated_: function(properties) {
     this.batteryPercent = properties.battery_percent;
     this.batteryState = this.batteryStateOptions[properties.battery_state];
     this.timeUntilEmpty = properties.battery_time_to_empty_sec;

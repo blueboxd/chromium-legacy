@@ -17,20 +17,6 @@ source_set("cpp") {
   ]
 }
 
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  public_deps = [
-    "//base",
-    "//services/data_decoder/public/mojom:constants",
-    "//services/image_annotation/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
 source_set("tests") {
   testonly = true
 

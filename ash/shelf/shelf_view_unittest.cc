@@ -1440,7 +1440,35 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
-TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
+class HotseatShelfViewTest : public ShelfViewTest,
+                             public testing::WithParamInterface<bool> {
+ public:
+  HotseatShelfViewTest() = default;
+  ~HotseatShelfViewTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(chromeos::features::kShelfHotseat);
+    } else {
+      feature_list_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
+    }
+    ShelfViewTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(HotseatShelfViewTest);
+};
+
+// Tests with both hotseat enabled and disabled.
+INSTANTIATE_TEST_SUITE_P(, HotseatShelfViewTest, testing::Bool());
+
+TEST_P(HotseatShelfViewTest, ShouldHideTooltipTest) {
+  // TODO(https://crbug.com/1016823): Fix this test for the hotseat.
+  if (chromeos::switches::ShouldShowShelfHotseat())
+    return;
+
   ShelfID app_button_id = AddAppShortcut();
   ShelfID platform_button_id = AddApp();
   // TODO(manucornet): It should not be necessary to call this manually. The
@@ -1538,7 +1566,9 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
 
 // Test that by moving the mouse cursor off the button onto the bubble it closes
 // the bubble.
-TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
+TEST_P(HotseatShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
+  if (chromeos::switches::ShouldShowShelfHotseat())
+    return;
   ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
   tooltip_manager->set_timer_delay_for_test(0);
   ui::test::EventGenerator* generator = GetEventGenerator();

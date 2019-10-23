@@ -56,7 +56,9 @@ class SQLTableBuilder {
   void AddColumn(std::string name, std::string type);
 
   // As AddColumn but also adds column |name| to the primary key of the table.
-  void AddColumnToPrimaryKey(std::string name, std::string type);
+  // The column must be of type "INTEGER" and will be AUTO INCREMENT. This
+  // method can be called only once.
+  void AddPrimaryKeyColumn(std::string name);
 
   // As AddColumn but also adds column |name| to the unique key of the table.
   void AddColumnToUniqueKey(std::string name, std::string type);

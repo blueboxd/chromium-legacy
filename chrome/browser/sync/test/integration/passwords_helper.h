@@ -36,6 +36,12 @@ void AddLogin(password_manager::PasswordStore* store,
 void UpdateLogin(password_manager::PasswordStore* store,
                  const autofill::PasswordForm& form);
 
+// Removes |old_form| from password store |store| and immediately adds
+// |new_form|. This method blocks until the operation is complete.
+void UpdateLoginWithPrimaryKey(password_manager::PasswordStore* store,
+                               const autofill::PasswordForm& new_form,
+                               const autofill::PasswordForm& old_form);
+
 // Returns all logins from |store| matching a fake signon realm (see
 // CreateTestPasswordForm()).
 // TODO(treib): Rename this to make clear how specific it is.

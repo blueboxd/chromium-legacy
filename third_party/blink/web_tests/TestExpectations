@@ -1366,10 +1366,6 @@ crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html
 ### virtual/layout_ng_experimental/css3/flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/box-sizing-min-max-sizes.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/columns-center-with-margins-and-wrap.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/columns-center-with-margins.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-baseline.html [ Skip ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-end.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-vertical-writing-mode.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align.html [ Failure ]
@@ -1388,19 +1384,16 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-baseline.ht
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flexbox-overflow-auto.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/inline-flexbox-wrap-vertically-width-calculation.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/minimum-size-image.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-align-content-horizontal-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-align-self.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-justify-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-min-max.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-reverse-wrap-baseline.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline-reverse-wrap-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/order-painting.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-height-replaced-element.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relayout-align-items.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relpos-with-percentage-top.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/style-change.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/true-centering.html [ Failure ]
@@ -1411,32 +1404,19 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/mozilla/flexbox-ite
 
 ### virtual/layout_ng_experimental/external/wpt/css/css-flexbox/
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/Flexible-order.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-001.htm [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-003.htm [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-004.htm [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-002.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-003.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-008.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-009.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-baseline-overflow-non-visible.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/anonymous-flex-item-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/anonymous-flex-item-003.html [ Failure ]
 crbug.com/807497 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-column-reverse-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-column-reverse-wrap.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-column-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-column-wrap-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-row-reverse-wrap-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-row-wrap-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-align-items-center.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-basis-010.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-direction-row-vertical.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-003.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-006.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-009.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-010.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-011.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-flow-012.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-items-flexibility.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-004.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-005.xht [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-006.xht [ Failure ]
@@ -1449,34 +1429,19 @@ crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-order.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox-flex-direction-column-reverse.htm [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox-flex-wrap-wrap-reverse.htm [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-baseline.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-center-2.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-center.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-flexend-2.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-items-flexend.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-auto.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-baseline.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-center.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-flexend.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-flexstart.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_align-self-stretch.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_direction-column-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-reverse-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-reverse-wrap.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-wrap-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-row-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_inline.html [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_order-box.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_order.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_quirks_body.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_rtl-direction.html [ Skip ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_rtl-flow-reverse.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_rtl-order.html [ Skip ]
 crbug.com/336604 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
 crbug.com/336604 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_wrap-reverse.html [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/order_value.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/overflow-top-left.html [ Failure ]
@@ -1491,13 +1456,11 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/tab
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-direction-column-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-inline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-order.html [ Failure ]
-crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/hittest-overlapping-margin.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 
 ### virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-lines/
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-lines/multi-line-wrap-reverse-column-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-lines/multi-line-wrap-reverse-row-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-lines/multi-line-wrap-with-column-reverse.html [ Failure ]
 
 ### virtual/layout_ng_experimental/external/wpt/css/css-flexbox/getcomputedstyle/
@@ -2572,6 +2535,11 @@ crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/sc
 # 1px scroll offset difference for compositor threaded scrollbar scrolling on Linux.
 crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
+
+# TODO(arakeri): Mac is the only platform that runs with use_zoom_for_dsf=false. Get rid of this suite when crbug.com/716231 is fixed.
+# When DSF = 2 and use_zoom_for_dsf=false, the scroll offsets are different when compared to DSF = 2 and use_zoom_for_dsf=true.
+crbug.com/1016186 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016186 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -5307,6 +5275,7 @@ crbug.com/838348 external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
 
 # Sheriff 2019-04-17
 crbug.com/953534 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
+crbug.com/953534 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 
 crbug.com/953591 [ Win ] css3/masking/mask-repeat-space-padding.html [ Pass Failure ]
 crbug.com/953591 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
@@ -5462,7 +5431,6 @@ crbug.com/979593 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/service-wor
 
 # Sheriff 2019-07-03
 crbug.com/979490 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-referrer.html [ Pass Timeout ]
-crbug.com/981210 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 
 # Sheriff 2019-07-04
 crbug.com/981267 [ Linux ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
@@ -5710,7 +5678,7 @@ crbug.com/630695 virtual/scalefactor200/css3/filters/effect-drop-shadow-hw.html 
 crbug.com/1005128 crypto/subtle/abandon-crypto-operation2.html [ Pass Crash ]
 
 # Sheriff 2019-09-27
-crbug.com/1008826 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure Timeout ]
+crbug.com/1008826 [ Retina ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure Timeout ]
 
 # Sheriff 2019-09-30
 crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-properties.html [ Pass Failure Timeout ]
@@ -5764,7 +5732,6 @@ crbug.com/1014950 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-
 crbug.com/1015187 [ Linux Mac ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 
 # Sheriff 2019-10-18
-crbug.com/996250 external/wpt/web-nfc/NDEFReader_scan_iframe.https.html [ Timeout ]
 crbug.com/1015254 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 crbug.com/1015859 [ Linux ] http/tests/devtools/a11y-axe-core/performance/landing-page-a11y-test.js [ Pass Failure ]
 crbug.com/1015975 media/video-currentTime.html [ Pass Failure ]
@@ -5773,3 +5740,9 @@ crbug.com/1015975 virtual/audio-service/media/video-currentTime.html [ Pass Fail
 # Sheriff 2019-10-21
 crbug.com/1016364 [ Linux Mac Debug ] http/tests/devtools/console/console-search.js [ Pass Timeout ]
 crbug.com/1016457 [ Linux Mac Debug ] external/wpt/dom/ranges/Range-mutations-dataChange.html [ Pass Timeout ]
+
+# ecosystem-infra sheriff 2019-10-22
+crbug.com/1016762 external/wpt/html/cross-origin-opener-policy/popup-redirect-cache.https.html [ Pass Failure ]
+
+# cci-trooper 2019-10-22
+crbug.com/1016804 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Pass Failure ]

@@ -27,14 +27,9 @@
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 
-using testing::AnyNumber;
-using testing::CreateFunctor;
-using testing::Invoke;
-using testing::Return;
-using testing::StrEq;
 using testing::_;
+using testing::Return;
 
 namespace net {
 namespace test {

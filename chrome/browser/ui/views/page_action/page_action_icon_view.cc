@@ -177,7 +177,8 @@ const gfx::VectorIcon& PageActionIconView::GetVectorIconBadge() const {
 
 void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDialogDelegateView* bubble = GetBubble();
-  if (bubble)
+  // TODO(crbug.com/1016968): Remove OnAnchorBoundsChanged after fixing.
+  if (bubble && bubble->GetAnchorView())
     bubble->OnAnchorBoundsChanged();
   IconLabelBubbleView::OnBoundsChanged(previous_bounds);
 }

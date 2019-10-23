@@ -2023,6 +2023,9 @@ This file contains the strings for ash.
       <message name="IDS_ASSISTANT_EDIT_REMINDER_QUERY" desc="Query to issue to edit reminder.">
         Edit reminder
       </message>
+      <message name="IDS_ASSISTANT_AMBIENT_GREETING_MESSAGE" desc="Greetings message shown on Ambient Mode UI.">
+        Hi, <ph name="USERNAME">$1</ph>
+      </message>
 
       <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION" desc="The short message to encourage user to unlock the device so that Chrome OS can perform the notification action selected by user after unlocking.">
         Unlock device to perform the notification action

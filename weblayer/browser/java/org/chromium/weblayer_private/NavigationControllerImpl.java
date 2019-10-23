@@ -9,7 +9,6 @@ import android.os.RemoteException;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.INavigationController;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 
@@ -98,57 +97,33 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     }
 
     @CalledByNative
-    private void navigationStarted(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationStarted(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void navigationStarted(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.navigationStarted(navigation.getClientNavigation());
     }
 
     @CalledByNative
-    private void navigationRedirected(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationRedirected(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void navigationRedirected(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.navigationRedirected(navigation.getClientNavigation());
     }
 
     @CalledByNative
-    private void navigationCommitted(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationCommitted(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void navigationCommitted(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.navigationCommitted(navigation.getClientNavigation());
     }
 
     @CalledByNative
-    private void navigationCompleted(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationCompleted(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void navigationCompleted(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.navigationCompleted(navigation.getClientNavigation());
     }
 
     @CalledByNative
-    private void navigationFailed(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationFailed(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void navigationFailed(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.navigationFailed(navigation.getClientNavigation());
     }
 
     @CalledByNative
-    private void onFirstContentfulPaint() {
-        try {
-            mNavigationControllerClient.onFirstContentfulPaint();
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void onFirstContentfulPaint() throws RemoteException {
+        mNavigationControllerClient.onFirstContentfulPaint();
     }
 
     @NativeMethods

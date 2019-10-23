@@ -6,6 +6,8 @@ package org.chromium.weblayer_private;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.View;
@@ -64,6 +66,8 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
             throw new APICallException(e);
         }
     }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {}
 
     public void onStart() {
         try {
@@ -129,6 +133,26 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
         }
     }
 
+    public boolean startActivityForResult(Intent intent, int requestCode, Bundle options) {
+        try {
+            return mClient.startActivityForResult(
+                    ObjectWrapper.wrap(intent), requestCode, ObjectWrapper.wrap(options));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    public boolean startIntentSenderForResult(IntentSender intent, int requestCode,
+            Intent fillInIntent, int flagsMask, int flagsValues, int extraFlags, Bundle options) {
+        try {
+            return mClient.startIntentSenderForResult(ObjectWrapper.wrap(intent), requestCode,
+                    ObjectWrapper.wrap(fillInIntent), flagsMask, flagsValues, extraFlags,
+                    ObjectWrapper.wrap(options));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     // IRemoteFragment implementation below.
 
     @Override
@@ -189,5 +213,10 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
     @Override
     public final void handleOnSaveInstanceState(IObjectWrapper outState)  {
         onSaveInstaceState(ObjectWrapper.unwrap(outState, Bundle.class));
+    }
+
+    @Override
+    public final void handleOnActivityResult(int requestCode, int resultCode, IObjectWrapper data) {
+        onActivityResult(requestCode, resultCode, ObjectWrapper.unwrap(data, Intent.class));
     }
 }

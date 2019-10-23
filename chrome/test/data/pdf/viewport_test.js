@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_fitting_type.js';
+import {Viewport} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/viewport.js';
+
 import {MockDocumentDimensions, MockSizer, MockViewportChangedCallback, MockWindow} from './test_util.js';
 
 var tests = [

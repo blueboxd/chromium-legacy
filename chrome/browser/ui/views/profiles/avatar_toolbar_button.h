@@ -51,6 +51,11 @@ class AvatarToolbarButton : public ToolbarButton,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // views::View:
+  const char* GetClassName() const override;
+
+  static const char kAvatarToolbarButtonClassName[];
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
                            HighlightMeetsMinimumContrast);

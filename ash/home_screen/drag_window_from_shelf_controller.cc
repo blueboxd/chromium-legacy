@@ -6,6 +6,7 @@
 
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
@@ -108,12 +109,26 @@ class WindowTransformToHomeScreenAnimation
   // Returns the transform that should be applied to the dragged window if we
   // should head to homescreen after dragging.
   gfx::Transform GetWindowTransformToHomeScreen() {
-    const gfx::Rect work_area =
-        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-            window_);
     gfx::Transform transform;
-    transform.Translate(work_area.width() / 2, work_area.height() / 2);
-    transform.Scale(kWindowScaleDownFactor, kWindowScaleDownFactor);
+    HomeScreenDelegate* home_screen_delegate =
+        Shell::Get()->home_screen_controller()->delegate();
+    DCHECK(home_screen_delegate);
+    const gfx::Rect app_list_item_bounds =
+        home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
+            window_);
+    if (!app_list_item_bounds.IsEmpty()) {
+      const gfx::Rect window_bounds = window_->GetBoundsInScreen();
+      transform.Translate(app_list_item_bounds.x(), app_list_item_bounds.y());
+      transform.Scale(
+          float(app_list_item_bounds.width()) / float(window_bounds.width()),
+          float(app_list_item_bounds.height()) / float(window_bounds.height()));
+    } else {
+      const gfx::Rect work_area =
+          screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+              window_);
+      transform.Translate(work_area.width() / 2, work_area.height() / 2);
+      transform.Scale(kWindowScaleDownFactor, kWindowScaleDownFactor);
+    }
     return transform;
   }
 

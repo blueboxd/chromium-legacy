@@ -45,25 +45,6 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
     return null;
   }
 
-  /** @override */
-  get loaderFile() {
-    return 'subpage_loader.html';
-  }
-
-  // The name of the custom element under test. Should be overridden by
-  // subclasses that are loading the URL of a non-element.
-  get customElementName() {
-    const r = /chrome\:\/\/extensions\/(([a-zA-Z-_]+)\/)?([a-zA-Z-_]+)\.html/;
-    const result = r.exec(this.browsePreload);
-    if (result && result.length > 3) {
-      const element = result[3].replace(/_/gi, '-');
-      return result[2] === undefined ? 'extensions-' + element : element;
-    }
-
-    // Loading the main page, return extensions manager.
-    return 'extensions-manager';
-  }
-
   /** @param {string} testName The name of the test to run. */
   runMochaTest(testName) {
     runMochaTest(this.suiteName, testName);
@@ -229,12 +210,6 @@ var CrExtensionsActivityLogTest = class extends CrExtensionsBrowserTest {
     return super.extraLibraries.concat([
       'activity_log_test.js',
     ]);
-  }
-
-  /** @override */
-  get customElementName() {
-    // This element's naming scheme is unusual.
-    return 'extensions-activity-log';
   }
 };
 
@@ -845,12 +820,6 @@ var CrExtensionsNavigationHelperTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get suiteName() {
     return extension_navigation_helper_tests.suiteName;
-  }
-
-  /** @override */
-  get customElementName() {
-    // This test is verifying a class, not a custom element.
-    return null;
   }
 };
 

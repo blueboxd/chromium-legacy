@@ -712,8 +712,7 @@ class QuicNetworkTransactionTest
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
     EXPECT_TRUE(response->was_fetched_via_spdy);
     EXPECT_TRUE(response->was_alpn_negotiated);
-    EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(
-                  version_.transport_version),
+    EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(version_),
               response->connection_info);
   }
 
@@ -5374,9 +5373,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
   EXPECT_EQ("HTTP/1.1 425 TOO_EARLY", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_alpn_negotiated);
-  EXPECT_EQ(
-      QuicHttpStream::ConnectionInfoFromQuicVersion(version_.transport_version),
-      response->connection_info);
+  EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(version_),
+            response->connection_info);
 }
 
 TEST_P(QuicNetworkTransactionTest,
@@ -5561,9 +5559,8 @@ TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_alpn_negotiated);
-  EXPECT_EQ(
-      QuicHttpStream::ConnectionInfoFromQuicVersion(version_.transport_version),
-      response->connection_info);
+  EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(version_),
+            response->connection_info);
 
   std::string response_data;
   ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR, ReadTransaction(&trans, &response_data));
@@ -7307,8 +7304,7 @@ class QuicNetworkTransactionWithDestinationTest
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
     EXPECT_TRUE(response->was_fetched_via_spdy);
     EXPECT_TRUE(response->was_alpn_negotiated);
-    EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(
-                  version_.transport_version),
+    EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(version_),
               response->connection_info);
     EXPECT_EQ(443, response->remote_endpoint.port());
   }

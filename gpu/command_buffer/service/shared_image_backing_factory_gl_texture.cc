@@ -886,7 +886,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     // A SCANOUT image should not require copy.
     DCHECK(!image || image->ShouldBindOrCopy() == gl::GLImage::BIND);
     if (!image || !image->BindTexImage(target)) {
-      LOG(ERROR) << "CreateSharedImage: Failed to create image";
+      LOG(ERROR) << "CreateSharedImage: Failed to "
+                 << (image ? "bind" : "create") << " image";
       api->glDeleteTexturesFn(1, &service_id);
       return nullptr;
     }

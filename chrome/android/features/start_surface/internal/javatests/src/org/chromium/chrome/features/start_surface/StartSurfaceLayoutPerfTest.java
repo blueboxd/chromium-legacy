@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
@@ -105,7 +106,7 @@ public class StartSurfaceLayoutPerfTest {
             mWaitingTime = 1000;
             mTabNumCap = 0;
         }
-        assertTrue(FeatureUtilities.isTabToGtsAnimationEnabled());
+        assertTrue(TabFeatureUtilities.isTabToGtsAnimationEnabled());
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 mActivityTestRule.getActivity()

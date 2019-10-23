@@ -86,8 +86,7 @@ const base::FilePath::CharType
     ChromeBrowserCloudManagementController::kPolicyDir[] =
         FILE_PATH_LITERAL("Policy");
 
-bool ChromeBrowserCloudManagementController::
-    IsMachineLevelUserCloudPolicyEnabled() {
+bool ChromeBrowserCloudManagementController::IsEnabled() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return true;
 #else
@@ -105,7 +104,7 @@ ChromeBrowserCloudManagementController::
 std::unique_ptr<MachineLevelUserCloudPolicyManager>
 ChromeBrowserCloudManagementController::CreatePolicyManager(
     ConfigurationPolicyProvider* platform_provider) {
-  if (!IsMachineLevelUserCloudPolicyEnabled())
+  if (!IsEnabled())
     return nullptr;
 
   std::string enrollment_token =
@@ -153,7 +152,7 @@ ChromeBrowserCloudManagementController::CreatePolicyManager(
 void ChromeBrowserCloudManagementController::Init(
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  if (!IsMachineLevelUserCloudPolicyEnabled())
+  if (!IsEnabled())
     return;
 
   base::PostTask(

@@ -15,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/cursor_manager_test_api.h"
+#include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/env.h"
@@ -141,6 +142,24 @@ class RootWindowTransformersTest : public AshTestBase {
   }
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowTransformersTest);
+};
+
+class UnfiedRootWindowTransformersTest : public RootWindowTransformersTest {
+ public:
+  UnfiedRootWindowTransformersTest() = default;
+  ~UnfiedRootWindowTransformersTest() override = default;
+
+  // RootWindowTransformersTest:
+  void SetUp() override {
+    // kEnableUnifiedDesktop switch needs to be added before DisplayManager
+    // creation. Hence before calling SetUp.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableUnifiedDesktop);
+
+    RootWindowTransformersTest::SetUp();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(UnfiedRootWindowTransformersTest);
 };
 
 }  // namespace
@@ -567,6 +586,28 @@ TEST_F(RootWindowTransformersTest, ShouldSetWindowSizeDuringOpacityAnimation) {
   // animation, even there is an opacity animation.
   UpdateDisplay("800x600/r");
   EXPECT_EQ(root_window->GetTargetBounds(), gfx::Rect(0, 0, 600, 800));
+}
+
+TEST_F(UnfiedRootWindowTransformersTest, HostBoundsAndTransform) {
+  UpdateDisplay("800x600,800x600");
+  // Has only one logical root window.
+  EXPECT_EQ(1u, Shell::GetAllRootWindows().size());
+
+  MirrorWindowTestApi test_api;
+  std::vector<aura::WindowTreeHost*> hosts = test_api.GetHosts();
+  // Have 2 WindowTreeHosts, one per display.
+  ASSERT_EQ(2u, hosts.size());
+
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 600), hosts[0]->window()->GetBoundsInScreen());
+  gfx::Point viewport_0_origin(0, 0);
+  hosts[0]->window()->transform().TransformPointReverse(&viewport_0_origin);
+  EXPECT_EQ(gfx::Point(0, 0), viewport_0_origin);
+
+  EXPECT_EQ(gfx::Rect(800, 0, 800, 600),
+            hosts[1]->window()->GetBoundsInScreen());
+  gfx::Point viewport_1_origin(0, 0);
+  hosts[1]->window()->transform().TransformPointReverse(&viewport_1_origin);
+  EXPECT_EQ(gfx::Point(800, 0), viewport_1_origin);
 }
 
 }  // namespace ash

@@ -39,7 +39,7 @@ class DevToolsDataSource : public content::URLDataSource {
   // content::URLDataSource implementation.
   std::string GetSource() override;
 
-  void StartDataRequest(const std::string& path,
+  void StartDataRequest(const GURL& url,
                         const content::WebContents::Getter& wc_getter,
                         const GotDataCallback& callback) override;
 

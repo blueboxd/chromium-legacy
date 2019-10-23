@@ -42,11 +42,9 @@ uint32_t BufferUsageToGbmFlags(gfx::BufferUsage usage) {
       return GBM_BO_USE_TEXTURING;
     case gfx::BufferUsage::SCANOUT:
       return GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
-      break;
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
       return GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE | GBM_BO_USE_SCANOUT |
              GBM_BO_USE_TEXTURING;
-      break;
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
       return GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
@@ -309,8 +307,8 @@ void DrmThread::CheckOverlayCapabilities(
 }
 
 void DrmThread::GetDeviceCursor(
-    ozone::mojom::DeviceCursorAssociatedRequest request) {
-  cursor_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<ozone::mojom::DeviceCursor> receiver) {
+  cursor_receivers_.Add(this, std::move(receiver));
 }
 
 void DrmThread::RefreshNativeDisplays(

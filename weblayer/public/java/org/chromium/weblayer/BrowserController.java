@@ -8,6 +8,9 @@ import android.net.Uri;
 import android.os.RemoteException;
 import android.webkit.ValueCallback;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,6 +22,10 @@ import org.chromium.weblayer_private.aidl.IFullscreenDelegateClient;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
+/**
+ * Represents a web-browser. More specifically, owns a NavigationController, and allows configuring
+ * state of the browser, such as delegates and observers.
+ */
 public final class BrowserController {
     /** The top level key of the JSON object returned by executeScript(). */
     public static final String SCRIPT_RESULT_KEY = "result";
@@ -41,7 +48,7 @@ public final class BrowserController {
         mNavigationController = NavigationController.create(mImpl);
     }
 
-    public void setDownloadDelegate(DownloadDelegate delegate) {
+    public void setDownloadDelegate(@Nullable DownloadDelegate delegate) {
         try {
             if (delegate != null) {
                 mDownloadDelegateClient = new DownloadDelegateClientImpl(delegate);
@@ -55,13 +62,14 @@ public final class BrowserController {
         }
     }
 
-    public void setFullscreenDelegate(FullscreenDelegate delegate) {
+    public void setFullscreenDelegate(@Nullable FullscreenDelegate delegate) {
         try {
             if (delegate != null) {
                 mFullscreenDelegateClient = new FullscreenDelegateClientImpl(delegate);
                 mImpl.setFullscreenDelegateClient(mFullscreenDelegateClient);
             } else {
                 mImpl.setFullscreenDelegateClient(null);
+                mFullscreenDelegateClient = null;
             }
         } catch (RemoteException e) {
             throw new APICallException(e);
@@ -77,7 +85,8 @@ public final class BrowserController {
      * callback if provided. The object passed to the callback will have a single key
      * SCRIPT_RESULT_KEY which will hold the result of running the script.
      */
-    public void executeScript(String script, ValueCallback<JSONObject> callback) {
+    public void executeScript(
+            @NonNull String script, @Nullable ValueCallback<JSONObject> callback) {
         try {
             ValueCallback<String> stringCallback = (String result) -> {
                 if (callback == null) {
@@ -98,6 +107,7 @@ public final class BrowserController {
         }
     }
 
+    @Nullable
     public FullscreenDelegate getFullscreenDelegate() {
         return mFullscreenDelegateClient != null ? mFullscreenDelegateClient.getDelegate() : null;
     }
@@ -107,15 +117,16 @@ public final class BrowserController {
         // TODO(sky): figure out right assertion here if mProfile is non-null.
     }
 
+    @NonNull
     public NavigationController getNavigationController() {
         return mNavigationController;
     }
 
-    public void addObserver(BrowserObserver observer) {
+    public void addObserver(@Nullable BrowserObserver observer) {
         mObservers.addObserver(observer);
     }
 
-    public void removeObserver(BrowserObserver observer) {
+    public void removeObserver(@Nullable BrowserObserver observer) {
         mObservers.removeObserver(observer);
     }
 

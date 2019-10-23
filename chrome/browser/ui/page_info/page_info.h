@@ -329,6 +329,8 @@ class PageInfo : public content::WebContentsObserver {
 
   security_state::SecurityLevel security_level_;
 
+  security_state::VisibleSecurityState visible_security_state_for_metrics_;
+
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   // Used to handle changing password, and whitelisting site.
   safe_browsing::ChromePasswordProtectionService* password_protection_service_;

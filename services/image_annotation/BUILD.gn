@@ -22,7 +22,6 @@ source_set("lib") {
     "//services/data_decoder/public/mojom",
     "//services/image_annotation/public/mojom",
     "//services/network/public/cpp",
-    "//services/service_manager/public/cpp",
     "//url",
   ]
 }
@@ -33,13 +32,12 @@ source_set("service") {
     "image_annotation_service.h",
   ]
 
-  deps = [
+  public_deps = [
     ":lib",
     "//base",
+    "//services/data_decoder/public/mojom",
     "//services/image_annotation/public/mojom",
     "//services/network/public/cpp",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
     "//url",
   ]
 }
@@ -65,6 +63,7 @@ source_set("tests") {
     "//services/network/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
+    "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

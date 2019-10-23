@@ -24,14 +24,6 @@ PolymerTest.prototype = {
   browsePreload: 'chrome://chrome-urls/',
 
   /**
-   * The name of the custom element under test. Should be overridden by
-   * subclasses that are using the HTML imports polyfill and need to wait for
-   * a custom element to be defined before starting the test.
-   * @type {?string}
-   */
-  customElementName: null,
-
-  /**
    * The mocha adapter assumes all tests are async.
    * @override
    * @final
@@ -93,20 +85,6 @@ PolymerTest.prototype = {
         throw e;
       }
     };
-
-    if (typeof HTMLImports !== 'undefined') {
-      suiteSetup(() => {
-        return new Promise(resolve => {
-                 HTMLImports.whenReady(resolve);
-               })
-            .then(() => {
-              const customElementName = this.customElementName;
-              if (customElementName) {
-                return customElements.whenDefined(customElementName);
-              }
-            });
-      });
-    }
   },
 };
 

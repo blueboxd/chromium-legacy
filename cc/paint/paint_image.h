@@ -218,10 +218,14 @@ class CC_PAINT_EXPORT PaintImage {
   //  - The |frame_index| parameter will be passed along to
   //    ImageDecoder::DecodeToYUV but for multi-frame YUV support, ImageDecoder
   //    needs a separate YUV frame buffer cache.
+  //  - The mapping of source planes to channels is tracked by |plane_indices|.
+  //    This struct is initialized by QueryYUVA8 in calls to
+  //    PaintImage::IsYuv(), including within this method.
   bool DecodeYuv(void* planes[SkYUVASizeInfo::kMaxCount],
                  size_t frame_index,
                  GeneratorClientId client_id,
-                 const SkYUVASizeInfo& yuva_size_info) const;
+                 const SkYUVASizeInfo& yuva_size_info,
+                 SkYUVAIndex* plane_indices) const;
 
   Id stable_id() const { return id_; }
   const sk_sp<SkImage>& GetSkImage() const;

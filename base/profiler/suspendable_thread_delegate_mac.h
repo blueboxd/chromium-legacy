@@ -46,6 +46,7 @@ class BASE_EXPORT SuspendableThreadDelegateMac
   std::unique_ptr<SuspendableThreadDelegate::ScopedSuspendThread>
   CreateScopedSuspendThread() override;
   bool GetThreadContext(x86_thread_state64_t* thread_context) override;
+  PlatformThreadId GetThreadId() const override;
   uintptr_t GetStackBaseAddress() const override;
   bool CanCopyStack(uintptr_t stack_pointer) override;
   std::vector<uintptr_t*> GetRegistersToRewrite(
@@ -53,7 +54,7 @@ class BASE_EXPORT SuspendableThreadDelegateMac
 
  private:
   // Weak reference: Mach port for thread being profiled.
-  mach_port_t thread_port_;
+  const mach_port_t thread_port_;
 
   // The stack base address corresponding to |thread_port_|.
   const uintptr_t thread_stack_base_address_;

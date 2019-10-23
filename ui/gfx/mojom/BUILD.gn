@@ -5,6 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
+  generate_java = true
   sources = [
     "accelerated_widget.mojom",
     "buffer_types.mojom",

@@ -15,6 +15,9 @@ js_type_check("closure_compile") {
 }
 
 js_library("audio_settings") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
@@ -26,16 +29,19 @@ js_library("bluetooth_settings") {
 }
 
 js_library("battery_settings") {
+  deps = [
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("input_device_settings") {
+  deps = [
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("device_emulator_pages") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }

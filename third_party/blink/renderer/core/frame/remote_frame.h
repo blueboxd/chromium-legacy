@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_
 
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
@@ -18,18 +20,21 @@ class Layer;
 
 namespace blink {
 
+class InterfaceRegistry;
 class LocalFrame;
 class RemoteFrameClient;
 struct FrameLoadRequest;
 
-class CORE_EXPORT RemoteFrame final : public Frame {
+class CORE_EXPORT RemoteFrame final : public Frame,
+                                      public mojom::blink::RemoteFrame {
  public:
   // For a description of |inheriting_agent_factory| go see the comment on the
   // Frame constructor.
   RemoteFrame(RemoteFrameClient*,
               Page&,
               FrameOwner*,
-              WindowAgentFactory* inheriting_agent_factory);
+              WindowAgentFactory* inheriting_agent_factory,
+              InterfaceRegistry*);
   ~RemoteFrame() override;
 
   // Frame overrides:
@@ -68,6 +73,9 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   void DidChangeVisibleToHitTesting() override;
 
+  // blink::mojom::LocalFrame overrides:
+  void WillEnterFullscreen() override;
+
  private:
   // Frame protected overrides:
   void DetachImpl(FrameDetachType) override;
@@ -79,11 +87,17 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   void DetachChildren();
 
+  static void BindToReceiver(
+      blink::RemoteFrame* frame,
+      mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrame> receiver);
+
   Member<RemoteFrameView> view_;
   Member<RemoteSecurityContext> security_context_;
   cc::Layer* cc_layer_ = nullptr;
   bool prevent_contents_opaque_changes_ = false;
   bool is_surface_layer_ = false;
+
+  mojo::AssociatedReceiver<mojom::blink::RemoteFrame> receiver_{this};
 };
 
 inline RemoteFrameView* RemoteFrame::View() const {

@@ -112,6 +112,10 @@ const gfx::Image& GetAvatarImage(Profile* profile,
 
 }  // namespace
 
+// static
+const char AvatarToolbarButton::kAvatarToolbarButtonClassName[] =
+    "AvatarToolbarButton";
+
 AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
     : AvatarToolbarButton(browser, nullptr) {}
 
@@ -286,6 +290,10 @@ void AvatarToolbarButton::AddObserver(Observer* observer) {
 
 void AvatarToolbarButton::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+const char* AvatarToolbarButton::GetClassName() const {
+  return kAvatarToolbarButtonClassName;
 }
 
 void AvatarToolbarButton::NotifyClick(const ui::Event& event) {

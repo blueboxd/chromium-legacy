@@ -9,7 +9,6 @@ import android.os.RemoteException;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
 
 /**
@@ -34,30 +33,19 @@ public final class BrowserObserverProxy {
     }
 
     @CalledByNative
-    private void visibleUrlChanged(String string) {
-        try {
-            mClient.visibleUrlChanged(string);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void visibleUrlChanged(String string) throws RemoteException {
+        mClient.visibleUrlChanged(string);
     }
 
     @CalledByNative
-    private void loadingStateChanged(boolean isLoading, boolean toDifferentDocument) {
-        try {
-            mClient.loadingStateChanged(isLoading, toDifferentDocument);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void loadingStateChanged(boolean isLoading, boolean toDifferentDocument)
+            throws RemoteException {
+        mClient.loadingStateChanged(isLoading, toDifferentDocument);
     }
 
     @CalledByNative
-    private void loadProgressChanged(double progress) {
-        try {
-            mClient.loadProgressChanged(progress);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void loadProgressChanged(double progress) throws RemoteException {
+        mClient.loadProgressChanged(progress);
     }
 
     @NativeMethods

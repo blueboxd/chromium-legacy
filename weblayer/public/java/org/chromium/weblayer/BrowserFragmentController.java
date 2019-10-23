@@ -8,6 +8,9 @@ import android.os.RemoteException;
 import android.view.View;
 import android.webkit.ValueCallback;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
@@ -27,6 +30,7 @@ public final class BrowserFragmentController {
     }
 
     // TODO(pshmakov): rename this to BrowserTabController.
+    @NonNull
     public BrowserController getBrowserController() {
         if (mController == null) {
             try {
@@ -38,7 +42,7 @@ public final class BrowserFragmentController {
         return mController;
     }
 
-    public void setTopView(View view) {
+    public void setTopView(@Nullable View view) {
         try {
             mImpl.setTopView(ObjectWrapper.wrap(view));
         } catch (RemoteException e) {
@@ -55,6 +59,7 @@ public final class BrowserFragmentController {
      * @return a ListenableResult of whether the request succeeded. A request might fail if it is
      * subsumed by a subsequent request, or if this object is destroyed.
      */
+    @NonNull
     public ListenableResult<Boolean> setSupportsEmbedding(boolean enable) {
         try {
             final ListenableResult<Boolean> listenableResult = new ListenableResult<Boolean>();
@@ -75,6 +80,7 @@ public final class BrowserFragmentController {
      * Returns {@link Profile} associated with this Browser Fragment. Multiple fragments can share
      * the same Profile.
      */
+    @NonNull
     public Profile getProfile() {
         try {
             return mProfileManager.getProfileFor(mImpl.getProfile());

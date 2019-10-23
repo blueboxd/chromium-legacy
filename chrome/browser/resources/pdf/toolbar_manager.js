@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {isRTL} from 'chrome://resources/js/util.m.js';
 
 /** Idle time in ms before the UI is hidden. */
 const HIDE_TIMEOUT = 2000;
@@ -46,7 +46,7 @@ function isMouseNearSideToolbar(e, window, reverse) {
 }
 
 /** Responsible for co-ordinating between multiple toolbar elements. */
-class ToolbarManager {
+export class ToolbarManager {
   /**
    * @param {!Window} window The window containing the UI.
    * @param {?ViewerPdfToolbarElement} toolbar

@@ -39,11 +39,9 @@ namespace views {
 enum FocusTestEventType { ON_FOCUS = 0, ON_BLUR };
 
 struct FocusTestEvent {
-  FocusTestEvent(FocusTestEventType type, int view_id)
-      : type(type), view_id(view_id) {}
-
   FocusTestEventType type;
   int view_id;
+  FocusManager::FocusChangeReason focus_change_reason;
 };
 
 class SimpleTestView : public View {
@@ -55,11 +53,19 @@ class SimpleTestView : public View {
   }
 
   void OnFocus() override {
-    event_list_->push_back(FocusTestEvent(ON_FOCUS, GetID()));
+    event_list_->push_back({
+        ON_FOCUS,
+        GetID(),
+        GetFocusManager()->focus_change_reason(),
+    });
   }
 
   void OnBlur() override {
-    event_list_->push_back(FocusTestEvent(ON_BLUR, GetID()));
+    event_list_->push_back({
+        ON_BLUR,
+        GetID(),
+        GetFocusManager()->focus_change_reason(),
+    });
   }
 
  private:
@@ -84,6 +90,8 @@ TEST_F(FocusManagerTest, ViewFocusCallbacks) {
   ASSERT_EQ(1, static_cast<int>(event_list.size()));
   EXPECT_EQ(ON_FOCUS, event_list[0].type);
   EXPECT_EQ(kView1ID, event_list[0].view_id);
+  EXPECT_EQ(FocusChangeReason::kDirectFocusChange,
+            event_list[0].focus_change_reason);
 
   event_list.clear();
   view2->RequestFocus();
@@ -92,12 +100,18 @@ TEST_F(FocusManagerTest, ViewFocusCallbacks) {
   EXPECT_EQ(kView1ID, event_list[0].view_id);
   EXPECT_EQ(ON_FOCUS, event_list[1].type);
   EXPECT_EQ(kView2ID, event_list[1].view_id);
+  EXPECT_EQ(FocusChangeReason::kDirectFocusChange,
+            event_list[0].focus_change_reason);
+  EXPECT_EQ(FocusChangeReason::kDirectFocusChange,
+            event_list[1].focus_change_reason);
 
   event_list.clear();
   GetFocusManager()->ClearFocus();
   ASSERT_EQ(1, static_cast<int>(event_list.size()));
   EXPECT_EQ(ON_BLUR, event_list[0].type);
   EXPECT_EQ(kView2ID, event_list[0].view_id);
+  EXPECT_EQ(FocusChangeReason::kDirectFocusChange,
+            event_list[0].focus_change_reason);
 }
 
 TEST_F(FocusManagerTest, FocusChangeListener) {
@@ -706,7 +720,10 @@ TEST_P(FocusManagerArrowKeyTraversalTest, ArrowKeyTraversal) {
 }
 
 TEST_F(FocusManagerTest, StoreFocusedView) {
-  View* view = new View;
+  std::vector<FocusTestEvent> event_list;
+  const int kView1ID = 1;
+  SimpleTestView* view = new SimpleTestView(&event_list, kView1ID);
+
   // Add view to the view hierarchy and make it focusable.
   GetWidget()->GetRootView()->AddChildView(view);
   view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -716,13 +733,39 @@ TEST_F(FocusManagerTest, StoreFocusedView) {
   EXPECT_EQ(nullptr, GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
   EXPECT_EQ(view, GetFocusManager()->GetStoredFocusView());
+  ASSERT_EQ(3, static_cast<int>(event_list.size()));
+  EXPECT_EQ(ON_FOCUS, event_list[0].type);
+  EXPECT_EQ(kView1ID, event_list[0].view_id);
+  EXPECT_EQ(FocusChangeReason::kDirectFocusChange,
+            event_list[0].focus_change_reason);
+  EXPECT_EQ(ON_BLUR, event_list[1].type);
+  EXPECT_EQ(kView1ID, event_list[1].view_id);
+  EXPECT_EQ(FocusChangeReason::kDirectFocusChange,
+            event_list[1].focus_change_reason);
+  EXPECT_EQ(ON_FOCUS, event_list[2].type);
+  EXPECT_EQ(kView1ID, event_list[2].view_id);
+  EXPECT_EQ(FocusChangeReason::kFocusRestore,
+            event_list[2].focus_change_reason);
 
   // Repeat with |true|.
+  event_list.clear();
   GetFocusManager()->SetFocusedView(view);
   GetFocusManager()->StoreFocusedView(true);
   EXPECT_EQ(nullptr, GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
   EXPECT_EQ(view, GetFocusManager()->GetStoredFocusView());
+  ASSERT_EQ(2, static_cast<int>(event_list.size()));
+  EXPECT_EQ(ON_BLUR, event_list[0].type);
+  EXPECT_EQ(kView1ID, event_list[0].view_id);
+  EXPECT_EQ(FocusChangeReason::kDirectFocusChange,
+            event_list[0].focus_change_reason);
+  EXPECT_EQ(ON_FOCUS, event_list[1].type);
+  EXPECT_EQ(kView1ID, event_list[1].view_id);
+  EXPECT_EQ(FocusChangeReason::kFocusRestore,
+            event_list[1].focus_change_reason);
+
+  // Necessary for clean teardown.
+  GetFocusManager()->ClearFocus();
 }
 
 #if defined(OS_MACOSX)

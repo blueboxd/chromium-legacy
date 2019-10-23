@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer;
 
+import androidx.annotation.NonNull;
+
 /**
  * An interface that allows clients to handle download requests originating in the browser.
  */
@@ -17,6 +19,6 @@ public abstract class DownloadDelegate {
      * @param mimetype the mimetype of the content reported by the server
      * @param contentLength the file size reported by the server
      */
-    public abstract void downloadRequested(String url, String userAgent, String contentDisposition,
-            String mimetype, long contentLength);
+    public abstract void downloadRequested(@NonNull String url, @NonNull String userAgent,
+            @NonNull String contentDisposition, @NonNull String mimetype, long contentLength);
 }

@@ -154,31 +154,31 @@ bool FileSystemPolicy::GenerateRules(const wchar_t* name,
 
   if ((rule_to_add & kCallNtCreateFile) &&
       (!create.AddStringMatch(IF, OpenFile::NAME, name, CASE_INSENSITIVE) ||
-       !policy->AddRule(IPC_NTCREATEFILE_TAG, &create))) {
+       !policy->AddRule(IpcTag::NTCREATEFILE, &create))) {
     return false;
   }
 
   if ((rule_to_add & kCallNtOpenFile) &&
       (!open.AddStringMatch(IF, OpenFile::NAME, name, CASE_INSENSITIVE) ||
-       !policy->AddRule(IPC_NTOPENFILE_TAG, &open))) {
+       !policy->AddRule(IpcTag::NTOPENFILE, &open))) {
     return false;
   }
 
   if ((rule_to_add & kCallNtQueryAttributesFile) &&
       (!query.AddStringMatch(IF, FileName::NAME, name, CASE_INSENSITIVE) ||
-       !policy->AddRule(IPC_NTQUERYATTRIBUTESFILE_TAG, &query))) {
+       !policy->AddRule(IpcTag::NTQUERYATTRIBUTESFILE, &query))) {
     return false;
   }
 
   if ((rule_to_add & kCallNtQueryFullAttributesFile) &&
       (!query_full.AddStringMatch(IF, FileName::NAME, name, CASE_INSENSITIVE) ||
-       !policy->AddRule(IPC_NTQUERYFULLATTRIBUTESFILE_TAG, &query_full))) {
+       !policy->AddRule(IpcTag::NTQUERYFULLATTRIBUTESFILE, &query_full))) {
     return false;
   }
 
   if ((rule_to_add & kCallNtSetInfoRename) &&
       (!rename.AddStringMatch(IF, FileName::NAME, name, CASE_INSENSITIVE) ||
-       !policy->AddRule(IPC_NTSETINFO_RENAME_TAG, &rename))) {
+       !policy->AddRule(IpcTag::NTSETINFO_RENAME, &rename))) {
     return false;
   }
 
@@ -206,34 +206,34 @@ bool FileSystemPolicy::SetInitialRules(LowLevelPolicy* policy) {
   rv &= short_name.AddNumberMatch(IF_NOT, FileName::BROKER, BROKER_TRUE, AND);
   rv &= short_name.AddStringMatch(IF, FileName::NAME, L"*~*", CASE_SENSITIVE);
 
-  if (!rv || !policy->AddRule(IPC_NTCREATEFILE_TAG, &format))
+  if (!rv || !policy->AddRule(IpcTag::NTCREATEFILE, &format))
     return false;
 
-  if (!policy->AddRule(IPC_NTCREATEFILE_TAG, &short_name))
+  if (!policy->AddRule(IpcTag::NTCREATEFILE, &short_name))
     return false;
 
-  if (!policy->AddRule(IPC_NTOPENFILE_TAG, &format))
+  if (!policy->AddRule(IpcTag::NTOPENFILE, &format))
     return false;
 
-  if (!policy->AddRule(IPC_NTOPENFILE_TAG, &short_name))
+  if (!policy->AddRule(IpcTag::NTOPENFILE, &short_name))
     return false;
 
-  if (!policy->AddRule(IPC_NTQUERYATTRIBUTESFILE_TAG, &format))
+  if (!policy->AddRule(IpcTag::NTQUERYATTRIBUTESFILE, &format))
     return false;
 
-  if (!policy->AddRule(IPC_NTQUERYATTRIBUTESFILE_TAG, &short_name))
+  if (!policy->AddRule(IpcTag::NTQUERYATTRIBUTESFILE, &short_name))
     return false;
 
-  if (!policy->AddRule(IPC_NTQUERYFULLATTRIBUTESFILE_TAG, &format))
+  if (!policy->AddRule(IpcTag::NTQUERYFULLATTRIBUTESFILE, &format))
     return false;
 
-  if (!policy->AddRule(IPC_NTQUERYFULLATTRIBUTESFILE_TAG, &short_name))
+  if (!policy->AddRule(IpcTag::NTQUERYFULLATTRIBUTESFILE, &short_name))
     return false;
 
-  if (!policy->AddRule(IPC_NTSETINFO_RENAME_TAG, &format))
+  if (!policy->AddRule(IpcTag::NTSETINFO_RENAME, &format))
     return false;
 
-  if (!policy->AddRule(IPC_NTSETINFO_RENAME_TAG, &short_name))
+  if (!policy->AddRule(IpcTag::NTSETINFO_RENAME, &short_name))
     return false;
 
   return true;

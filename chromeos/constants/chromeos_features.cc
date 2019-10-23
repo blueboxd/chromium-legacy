@@ -20,6 +20,10 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable ARC ADB sideloading support.
+const base::Feature kArcAdbSideloadingFeature{
+    "ArcAdbSideloading", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables auto screen-brightness adjustment when ambient light
 // changes.
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
@@ -191,7 +195,7 @@ const base::Feature kShelfScrollable{"ShelfScrollable",
 
 // Enables or disables the shelf hotseat.
 const base::Feature kShelfHotseat{"ShelfHotseat",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables a toggle to enable Bluetooth debug logs.
 const base::Feature kShowBluetoothDebugLogToggle{
@@ -251,6 +255,10 @@ const base::Feature kUseSearchClickForRightClick{
 // Enable or disable native controls in video player on Chrome OS.
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable or disable bordered key for virtual keyboard on Chrome OS.
+const base::Feature kVirtualKeyboardBorderedKey{
+    "VirtualKeyboardBorderedKey", base::FEATURE_DISABLED_BY_DEFAULT};
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -13,6 +13,7 @@ if (is_android) {
 # renderer/platform. In particular these mojom interfaces can't use types that
 # are typemapped to a type in renderer/core.
 mojom("mojom_platform") {
+  generate_java = true
   sources = [
     "ad_tagging/ad_frame.mojom",
     "app_banner/app_banner.mojom",
@@ -209,6 +210,7 @@ mojom("mojom_platform") {
 # needed by Android's implementation (in chrome/android or in android_webview)
 # for following mojom files.
 mojom("android_mojo_bindings") {
+  generate_java = true
   sources = [
     "blob/blob.mojom",
     "blob/blob_registry.mojom",
@@ -265,6 +267,7 @@ mojom("android_mojo_bindings") {
 # modules dependencies if it looks necessary, at that time we can put all of
 # those high-level service worker mojom files there.
 mojom("mojom_core") {
+  generate_java = true
   sources = [
     "messaging/cloneable_message.mojom",
     "messaging/message_port_descriptor.mojom",
@@ -415,6 +418,7 @@ mojom("mojom_broadcastchannel_bindings") {
 }
 
 mojom("mojom_mhtml_load_result") {
+  generate_java = true
   sources = [
     "loader/mhtml_load_result.mojom",
   ]
@@ -428,6 +432,7 @@ mojom("mojom_mhtml_load_result") {
 # because the chromium typemap for blink mojo_bindings has private content
 # dependencies.
 mojom_component("web_feature_mojo_bindings") {
+  generate_java = true
   sources = [
     "use_counter/css_property_id.mojom",
     "web_feature/web_feature.mojom",
@@ -441,6 +446,7 @@ mojom_component("web_feature_mojo_bindings") {
 # mojom files because the chromium typemap for blink mojo_bindings has private
 # content dependencies.
 mojom("web_client_hints_types_mojo_bindings") {
+  generate_java = true
   sources = [
     "web_client_hints/web_client_hints_types.mojom",
   ]
@@ -473,6 +479,7 @@ mojom("embedded_frame_sink_mojo_bindings") {
 
 # This is a separate target because it needs unscrambled message IDs.
 mojom("authenticator_test_mojo_bindings") {
+  generate_java = true
   sources = [
     "webauthn/virtual_authenticator.mojom",
   ]

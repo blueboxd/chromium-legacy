@@ -113,9 +113,10 @@ std::string ExtensionIconSource::GetMimeType(const std::string&) {
 }
 
 void ExtensionIconSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   // This is where everything gets started. First, parse the request and make
   // the request data available for later.
   static int next_id = 0;

@@ -70,51 +70,51 @@ ProcessMitigationsWin32KDispatcher::ProcessMitigationsWin32KDispatcher(
     PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall enum_display_monitors_params = {
-      {IPC_USER_ENUMDISPLAYMONITORS_TAG, {INOUTPTR_TYPE}},
+      {IpcTag::USER_ENUMDISPLAYMONITORS, {INOUTPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::EnumDisplayMonitors)};
   static const IPCCall get_monitor_info_params = {
-      {IPC_USER_GETMONITORINFO_TAG, {VOIDPTR_TYPE, INOUTPTR_TYPE}},
+      {IpcTag::USER_GETMONITORINFO, {VOIDPTR_TYPE, INOUTPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::GetMonitorInfo)};
   static const IPCCall get_suggested_output_size_params = {
-      {IPC_GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE_TAG, {WCHAR_TYPE}},
+      {IpcTag::GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE, {WCHAR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::
               GetSuggestedOPMProtectedOutputArraySize)};
   static const IPCCall create_protected_outputs_params = {
-      {IPC_GDI_CREATEOPMPROTECTEDOUTPUTS_TAG, {WCHAR_TYPE, INOUTPTR_TYPE}},
+      {IpcTag::GDI_CREATEOPMPROTECTEDOUTPUTS, {WCHAR_TYPE, INOUTPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::CreateOPMProtectedOutputs)};
   static const IPCCall get_cert_size_params = {
-      {IPC_GDI_GETCERTIFICATESIZE_TAG, {WCHAR_TYPE, VOIDPTR_TYPE}},
+      {IpcTag::GDI_GETCERTIFICATESIZE, {WCHAR_TYPE, VOIDPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::GetCertificateSize)};
   static const IPCCall get_cert_params = {
-      {IPC_GDI_GETCERTIFICATE_TAG,
+      {IpcTag::GDI_GETCERTIFICATE,
        {WCHAR_TYPE, VOIDPTR_TYPE, VOIDPTR_TYPE, UINT32_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::GetCertificate)};
   static const IPCCall destroy_protected_output_params = {
-      {IPC_GDI_DESTROYOPMPROTECTEDOUTPUT_TAG, {VOIDPTR_TYPE}},
+      {IpcTag::GDI_DESTROYOPMPROTECTEDOUTPUT, {VOIDPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::DestroyOPMProtectedOutput)};
   static const IPCCall get_random_number_params = {
-      {IPC_GDI_GETOPMRANDOMNUMBER_TAG, {VOIDPTR_TYPE, INOUTPTR_TYPE}},
+      {IpcTag::GDI_GETOPMRANDOMNUMBER, {VOIDPTR_TYPE, INOUTPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::GetOPMRandomNumber)};
   static const IPCCall set_signing_key_params = {
-      {IPC_GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS_TAG,
+      {IpcTag::GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS,
        {VOIDPTR_TYPE, INOUTPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::
               SetOPMSigningKeyAndSequenceNumbers)};
   static const IPCCall configure_protected_output_params = {
-      {IPC_GDI_CONFIGUREOPMPROTECTEDOUTPUT_TAG, {VOIDPTR_TYPE, VOIDPTR_TYPE}},
+      {IpcTag::GDI_CONFIGUREOPMPROTECTEDOUTPUT, {VOIDPTR_TYPE, VOIDPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::ConfigureOPMProtectedOutput)};
   static const IPCCall get_information_params = {
-      {IPC_GDI_GETOPMINFORMATION_TAG, {VOIDPTR_TYPE, VOIDPTR_TYPE}},
+      {IpcTag::GDI_GETOPMINFORMATION, {VOIDPTR_TYPE, VOIDPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(
           &ProcessMitigationsWin32KDispatcher::GetOPMInformation)};
 
@@ -135,14 +135,14 @@ ProcessMitigationsWin32KDispatcher::~ProcessMitigationsWin32KDispatcher() {}
 
 bool ProcessMitigationsWin32KDispatcher::SetupService(
     InterceptionManager* manager,
-    int service) {
+    IpcTag service) {
   if (!(policy_base_->GetProcessMitigations() &
         sandbox::MITIGATION_WIN32K_DISABLE)) {
     return false;
   }
 
   switch (service) {
-    case IPC_GDI_GDIDLLINITIALIZE_TAG: {
+    case IpcTag::GDI_GDIDLLINITIALIZE: {
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", GdiDllInitialize,
                          GDIINITIALIZE_ID, 12)) {
         return false;
@@ -150,7 +150,7 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
       return true;
     }
 
-    case IPC_GDI_GETSTOCKOBJECT_TAG: {
+    case IpcTag::GDI_GETSTOCKOBJECT: {
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", GetStockObject,
                          GETSTOCKOBJECT_ID, 8)) {
         return false;
@@ -158,7 +158,7 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
       return true;
     }
 
-    case IPC_USER_REGISTERCLASSW_TAG: {
+    case IpcTag::USER_REGISTERCLASSW: {
       if (!INTERCEPT_EAT(manager, L"user32.dll", RegisterClassW,
                          REGISTERCLASSW_ID, 8)) {
         return false;
@@ -166,7 +166,7 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
       return true;
     }
 
-    case IPC_USER_ENUMDISPLAYMONITORS_TAG: {
+    case IpcTag::USER_ENUMDISPLAYMONITORS: {
       if (!INTERCEPT_EAT(manager, L"user32.dll", EnumDisplayMonitors,
                          ENUMDISPLAYMONITORS_ID, 20)) {
         return false;
@@ -174,7 +174,7 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
       return true;
     }
 
-    case IPC_USER_ENUMDISPLAYDEVICES_TAG: {
+    case IpcTag::USER_ENUMDISPLAYDEVICES: {
       if (!INTERCEPT_EAT(manager, L"user32.dll", EnumDisplayDevicesA,
                          ENUMDISPLAYDEVICESA_ID, 20)) {
         return false;
@@ -182,7 +182,7 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
       return true;
     }
 
-    case IPC_USER_GETMONITORINFO_TAG: {
+    case IpcTag::USER_GETMONITORINFO: {
       if (!INTERCEPT_EAT(manager, L"user32.dll", GetMonitorInfoA,
                          GETMONITORINFOA_ID, 12)) {
         return false;
@@ -195,14 +195,14 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
       return true;
     }
 
-    case IPC_GDI_CREATEOPMPROTECTEDOUTPUTS_TAG:
+    case IpcTag::GDI_CREATEOPMPROTECTEDOUTPUTS:
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", CreateOPMProtectedOutputs,
                          CREATEOPMPROTECTEDOUTPUTS_ID, 24)) {
         return false;
       }
       return true;
 
-    case IPC_GDI_GETCERTIFICATE_TAG:
+    case IpcTag::GDI_GETCERTIFICATE:
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", GetCertificate,
                          GETCERTIFICATE_ID, 20)) {
         return false;
@@ -215,7 +215,7 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
       }
       return true;
 
-    case IPC_GDI_GETCERTIFICATESIZE_TAG:
+    case IpcTag::GDI_GETCERTIFICATESIZE:
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", GetCertificateSize,
                          GETCERTIFICATESIZE_ID, 16)) {
         return false;
@@ -228,35 +228,35 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
       }
       return true;
 
-    case IPC_GDI_DESTROYOPMPROTECTEDOUTPUT_TAG:
+    case IpcTag::GDI_DESTROYOPMPROTECTEDOUTPUT:
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", DestroyOPMProtectedOutput,
                          DESTROYOPMPROTECTEDOUTPUT_ID, 8)) {
         return false;
       }
       return true;
 
-    case IPC_GDI_CONFIGUREOPMPROTECTEDOUTPUT_TAG:
+    case IpcTag::GDI_CONFIGUREOPMPROTECTEDOUTPUT:
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", ConfigureOPMProtectedOutput,
                          CONFIGUREOPMPROTECTEDOUTPUT_ID, 20)) {
         return false;
       }
       return true;
 
-    case IPC_GDI_GETOPMINFORMATION_TAG:
+    case IpcTag::GDI_GETOPMINFORMATION:
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", GetOPMInformation,
                          GETOPMINFORMATION_ID, 16)) {
         return false;
       }
       return true;
 
-    case IPC_GDI_GETOPMRANDOMNUMBER_TAG:
+    case IpcTag::GDI_GETOPMRANDOMNUMBER:
       if (!INTERCEPT_EAT(manager, L"gdi32.dll", GetOPMRandomNumber,
                          GETOPMRANDOMNUMBER_ID, 12)) {
         return false;
       }
       return true;
 
-    case IPC_GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE_TAG:
+    case IpcTag::GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE:
       if (!INTERCEPT_EAT(manager, L"gdi32.dll",
                          GetSuggestedOPMProtectedOutputArraySize,
                          GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE_ID, 12)) {
@@ -264,7 +264,7 @@ bool ProcessMitigationsWin32KDispatcher::SetupService(
       }
       return true;
 
-    case IPC_GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS_TAG:
+    case IpcTag::GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS:
       if (!INTERCEPT_EAT(manager, L"gdi32.dll",
                          SetOPMSigningKeyAndSequenceNumbers,
                          SETOPMSIGNINGKEYANDSEQUENCENUMBERS_ID, 12)) {

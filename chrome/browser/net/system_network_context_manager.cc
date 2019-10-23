@@ -87,6 +87,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#include "content/public/common/network_service_util.h"
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -669,9 +673,13 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   content::GetNetworkService()->SetCryptConfig(std::move(config));
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  std::string key = OSCrypt::GetRawEncryptionKey();
-  DCHECK(!key.empty());
-  content::GetNetworkService()->SetEncryptionKey(key);
+  // The OSCrypt keys are process bound, so if network service is out of
+  // process, send it the required key.
+  if (content::IsOutOfProcessNetworkService()) {
+    std::string key = OSCrypt::GetRawEncryptionKey();
+    DCHECK(!key.empty());
+    content::GetNetworkService()->SetEncryptionKey(key);
+  }
 #endif
 
   // Asynchronously reapply the most recently received CRLSet (if any).

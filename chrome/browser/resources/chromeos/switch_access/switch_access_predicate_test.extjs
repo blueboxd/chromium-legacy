@@ -101,19 +101,22 @@ TEST_F('SwitchAccessPredicateTest', 'IsInteresting', function() {
       function(desktop) {
         const t = getTree(desktop);
 
-        assertTrue(SwitchAccessPredicate.isInteresting(t.root, t.root));
-        assertTrue(SwitchAccessPredicate.isInteresting(t.upper1, t.root));
-        assertTrue(SwitchAccessPredicate.isInteresting(t.upper2, t.root));
-        assertTrue(SwitchAccessPredicate.isInteresting(t.lower1, t.upper1));
-        assertFalse(SwitchAccessPredicate.isInteresting(t.lower2, t.upper1));
-        assertFalse(SwitchAccessPredicate.isInteresting(t.lower3, t.root));
-        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf1, t.lower1));
-        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf2, t.lower1));
-        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf3, t.lower1));
-        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf4, t.upper1));
-        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf5, t.upper1));
-        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf6, t.lower3));
-        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf7, t.lower3));
+        // The scope is only used to verify the locations are not the same, and
+        // since the buildTree function depends on isInteresting, pass in null
+        // for the scope.
+        assertTrue(SwitchAccessPredicate.isInteresting(t.root, null));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.upper1, null));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.upper2, null));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.lower1, null));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.lower2, null));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.lower3, null));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf1, null));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf2, null));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf3, null));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf4, null));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf5, null));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf6, null));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf7, null));
       }
   );
 });
@@ -123,19 +126,22 @@ TEST_F('SwitchAccessPredicateTest', 'IsGroup', function() {
       function(desktop) {
         const t = getTree(desktop);
 
-        assertTrue(SwitchAccessPredicate.isGroup(t.root, t.root));
-        assertTrue(SwitchAccessPredicate.isGroup(t.upper1, t.root));
-        assertFalse(SwitchAccessPredicate.isGroup(t.upper2, t.root));
-        assertTrue(SwitchAccessPredicate.isGroup(t.lower1, t.upper1));
-        assertFalse(SwitchAccessPredicate.isGroup(t.lower2, t.upper1));
-        assertFalse(SwitchAccessPredicate.isGroup(t.lower3, t.root));
-        assertFalse(SwitchAccessPredicate.isGroup(t.leaf1, t.lower1));
-        assertFalse(SwitchAccessPredicate.isGroup(t.leaf2, t.lower1));
-        assertFalse(SwitchAccessPredicate.isGroup(t.leaf3, t.lower1));
-        assertFalse(SwitchAccessPredicate.isGroup(t.leaf4, t.upper1));
-        assertFalse(SwitchAccessPredicate.isGroup(t.leaf5, t.upper1));
-        assertFalse(SwitchAccessPredicate.isGroup(t.leaf6, t.lower3));
-        assertFalse(SwitchAccessPredicate.isGroup(t.leaf7, t.lower3));
+        // The scope is only used to verify the locations are not the same, and
+        // since the buildTree function depends on isGroup, pass in null for
+        // the scope.
+        assertTrue(SwitchAccessPredicate.isGroup(t.root, null));
+        assertTrue(SwitchAccessPredicate.isGroup(t.upper1, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.upper2, null));
+        assertTrue(SwitchAccessPredicate.isGroup(t.lower1, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.lower2, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.lower3, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.leaf1, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.leaf2, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.leaf3, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.leaf4, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.leaf5, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.leaf6, null));
+        assertFalse(SwitchAccessPredicate.isGroup(t.leaf7, null));
       }
   );
 });
@@ -275,20 +281,21 @@ TEST_F('SwitchAccessPredicateTest', 'LeafPredicate', function() {
         const t = getTree(desktop);
 
         // Start with root as scope
-        let leaf = SwitchAccessPredicate.leaf(t.root);
+        let leaf =
+              SwitchAccessPredicate.leaf(RootNodeWrapper.buildTree(t.root));
         assertFalse(leaf(t.root));
         assertTrue(leaf(t.upper1));
         assertTrue(leaf(t.upper2));
 
         // Set upper1 as scope
-        leaf = SwitchAccessPredicate.leaf(t.upper1);
+        leaf = SwitchAccessPredicate.leaf(RootNodeWrapper.buildTree(t.upper1));
         assertFalse(leaf(t.upper1));
         assertTrue(leaf(t.lower1));
         assertTrue(leaf(t.leaf4));
         assertTrue(leaf(t.leaf5));
 
         // Set lower1 as scope
-        leaf = SwitchAccessPredicate.leaf(t.lower1);
+        leaf = SwitchAccessPredicate.leaf(RootNodeWrapper.buildTree(t.lower1));
         assertFalse(leaf(t.lower1));
         assertTrue(leaf(t.leaf1));
         assertTrue(leaf(t.leaf2));
@@ -303,19 +310,20 @@ TEST_F('SwitchAccessPredicateTest', 'RootPredicate', function() {
         const t = getTree(desktop);
 
         // Start with root as scope
-        let root = SwitchAccessPredicate.root(t.root);
+        let root =
+              SwitchAccessPredicate.root(RootNodeWrapper.buildTree(t.root));
         assertTrue(root(t.root));
         assertFalse(root(t.upper1));
         assertFalse(root(t.upper2));
 
         // Set upper1 as scope
-        root = SwitchAccessPredicate.root(t.upper1);
+        root = SwitchAccessPredicate.root(RootNodeWrapper.buildTree(t.upper1));
         assertTrue(root(t.upper1));
         assertFalse(root(t.lower1));
         assertFalse(root(t.lower2));
 
         // Set lower1 as scope
-        root = SwitchAccessPredicate.root(t.lower1);
+        root = SwitchAccessPredicate.root(RootNodeWrapper.buildTree(t.lower1));
         assertTrue(root(t.lower1));
         assertFalse(root(t.leaf1));
         assertFalse(root(t.leaf2));
@@ -330,13 +338,15 @@ TEST_F('SwitchAccessPredicateTest', 'VisitPredicate', function() {
         const t = getTree(desktop);
 
         // Start with root as scope
-        let visit = SwitchAccessPredicate.visit(t.root);
+        let visit =
+              SwitchAccessPredicate.visit(RootNodeWrapper.buildTree(t.root));
         assertTrue(visit(t.root));
         assertTrue(visit(t.upper1));
         assertTrue(visit(t.upper2));
 
         // Set upper1 as scope
-        visit = SwitchAccessPredicate.visit(t.upper1);
+        visit =
+            SwitchAccessPredicate.visit(RootNodeWrapper.buildTree(t.upper1));
         assertTrue(visit(t.upper1));
         assertTrue(visit(t.lower1));
         assertFalse(visit(t.lower2));
@@ -344,7 +354,8 @@ TEST_F('SwitchAccessPredicateTest', 'VisitPredicate', function() {
         assertTrue(visit(t.leaf5));
 
         // Set lower1 as scope
-        visit = SwitchAccessPredicate.visit(t.lower1);
+        visit =
+            SwitchAccessPredicate.visit(RootNodeWrapper.buildTree(t.lower1));
         assertTrue(visit(t.lower1));
         assertTrue(visit(t.leaf1));
         assertFalse(visit(t.leaf2));

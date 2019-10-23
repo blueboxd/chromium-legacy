@@ -452,6 +452,27 @@ TEST_F(LoginDatabaseTest, RemoveLoginsByPrimaryKey) {
   EXPECT_EQ(0U, result.size());
 }
 
+TEST_F(LoginDatabaseTest, ShouldNotRecyclePrimaryKeys) {
+  std::vector<std::unique_ptr<PasswordForm>> result;
+
+  // Example password form.
+  PasswordForm form;
+  GenerateExamplePasswordForm(&form);
+
+  // Add the form.
+  PasswordStoreChangeList change_list = db().AddLogin(form);
+  ASSERT_EQ(1U, change_list.size());
+  int primary_key1 = change_list[0].primary_key();
+  change_list.clear();
+  // Delete the form
+  EXPECT_TRUE(db().RemoveLoginByPrimaryKey(primary_key1, &change_list));
+  ASSERT_EQ(1U, change_list.size());
+  // Add it again.
+  change_list = db().AddLogin(form);
+  ASSERT_EQ(1U, change_list.size());
+  EXPECT_NE(primary_key1, change_list[0].primary_key());
+}
+
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   std::vector<std::unique_ptr<PasswordForm>> result;
 

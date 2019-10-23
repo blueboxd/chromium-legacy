@@ -78,6 +78,10 @@ SuspendableThreadDelegateMac::CreateScopedSuspendThread() {
   return std::make_unique<ScopedSuspendThread>(thread_port_);
 }
 
+PlatformThreadId SuspendableThreadDelegateMac::GetThreadId() const {
+  return thread_port_;
+}
+
 // NO HEAP ALLOCATIONS.
 bool SuspendableThreadDelegateMac::GetThreadContext(
     x86_thread_state64_t* thread_context) {

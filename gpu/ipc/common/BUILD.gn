@@ -200,6 +200,7 @@ component("vulkan_ycbcr_info") {
 }
 
 mojom("interfaces") {
+  generate_java = true
   sources = [
     "capabilities.mojom",
     "context_result.mojom",
@@ -224,6 +225,7 @@ mojom("interfaces") {
 }
 
 mojom("gpu_preferences_interface") {
+  generate_java = true
   sources = [
     "gpu_preferences.mojom",
   ]

@@ -115,7 +115,7 @@ interface NFC {
   CancelAllWatches () => (NDEFError? error);
 
   // Suspends all pending NFC operations. Could be used when web page
-  // visibility or focus is lost.
+  // visibility is lost.
   SuspendNFCOperations();
 
   // Resumes all suspended NFC operations.

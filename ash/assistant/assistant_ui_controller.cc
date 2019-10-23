@@ -4,6 +4,7 @@
 
 #include "ash/assistant/assistant_ui_controller.h"
 
+#include "ash/ambient/ambient_controller.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
@@ -26,6 +27,7 @@
 #include "ash/system/toast/toast_manager_impl.h"
 #include "base/bind.h"
 #include "base/optional.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -468,7 +470,8 @@ void AssistantUiController::OnUiVisibilityChanged(
       assistant::util::RecordAssistantEntryPoint(entry_point.value());
 
       if (!container_view_) {
-        DCHECK_EQ(AssistantUiMode::kLauncherEmbeddedUi, model_.ui_mode());
+        DCHECK(model_.ui_mode() == AssistantUiMode::kAmbientUi ||
+               model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi);
         event_monitor_.reset();
         break;
       }
@@ -534,6 +537,13 @@ void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
     return;
   }
 
+  if (chromeos::features::IsAmbientModeEnabled() &&
+      Shell::Get()->ambient_controller()->is_showing()) {
+    model_.SetUiMode(AssistantUiMode::kAmbientUi);
+    model_.SetVisible(entry_point);
+    return;
+  }
+
   if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
     model_.SetUiMode(AssistantUiMode::kLauncherEmbeddedUi);
     model_.SetVisible(entry_point);
@@ -541,6 +551,7 @@ void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
   }
 
   DCHECK_NE(AssistantUiMode::kLauncherEmbeddedUi, model_.ui_mode());
+  DCHECK_NE(AssistantUiMode::kAmbientUi, model_.ui_mode());
 
   if (model_.visibility() == AssistantVisibility::kVisible) {
     // If Assistant window is already visible, we just try to retake focus.

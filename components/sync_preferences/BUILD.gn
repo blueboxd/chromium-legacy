@@ -26,6 +26,10 @@ static_library("sync_preferences") {
     "//services/preferences/public/cpp:service_main",
   ]
 
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
+
   if (!is_ios) {
     deps += [ "//components/policy/core/browser" ]
   }
@@ -67,4 +71,8 @@ source_set("unit_tests") {
     "//components/sync:test_support_model",
     "//testing/gtest",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
 }

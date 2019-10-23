@@ -25,6 +25,10 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 namespace sync_preferences {
 
 // TODO(tschumann): Handing out pointers to this in the constructor is an
@@ -236,11 +240,28 @@ void PrefServiceSyncable::AddRegisteredSyncablePreference(
   }
 #if defined(OS_CHROMEOS)
   if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF) {
-    os_pref_sync_associator_.RegisterPref(path);
+    if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+      // Register the pref under the new ModelType::OS_PREFERENCES.
+      os_pref_sync_associator_.RegisterPref(path);
+      // Also register under the old ModelType::PREFERENCES. This ensures that
+      // local changes to OS prefs are also synced to old clients that have the
+      // pref registered as a browser SYNCABLE_PREF.
+      pref_sync_associator_.RegisterPrefWithLegacyModelType(path);
+    } else {
+      // Behave like an old client and treat this pref like it was registered
+      // as a SYNCABLE_PREF under ModelType::PREFERENCES.
+      pref_sync_associator_.RegisterPref(path);
+    }
     return;
   }
   if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF) {
-    os_priority_pref_sync_associator_.RegisterPref(path);
+    // See comments for SYNCABLE_OS_PREF above.
+    if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+      os_priority_pref_sync_associator_.RegisterPref(path);
+      priority_pref_sync_associator_.RegisterPrefWithLegacyModelType(path);
+    } else {
+      priority_pref_sync_associator_.RegisterPref(path);
+    }
     return;
   }
 #endif

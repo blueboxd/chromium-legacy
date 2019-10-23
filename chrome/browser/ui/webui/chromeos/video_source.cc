@@ -67,9 +67,10 @@ std::string VideoSource::GetSource() {
 }
 
 void VideoSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& got_data_callback) {
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   if (!IsWhitelisted(path)) {
     got_data_callback.Run(nullptr);
     return;

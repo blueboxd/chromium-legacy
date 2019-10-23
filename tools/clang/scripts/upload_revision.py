@@ -18,7 +18,7 @@ import shutil
 import subprocess
 import sys
 
-from build import GetSvnRevision
+from build import GetCommitCount
 
 # Path constants.
 THIS_DIR = os.path.dirname(__file__)
@@ -66,14 +66,14 @@ def main():
   args = parser.parse_args()
 
   clang_git_revision = args.clang_git_revision[0]
-  clang_svn_revision = GetSvnRevision(clang_git_revision)
+  clang_svn_revision = GetCommitCount(clang_git_revision)
   clang_sub_revision = args.clang_sub_revision
 
   # Needs shell=True on Windows due to git.bat in depot_tools.
   git_revision = subprocess.check_output(
       ["git", "rev-parse", "origin/master"], shell=is_win).strip()
 
-  print("Making a patch for Clang {}-{}-{}".format(
+  print("Making a patch for Clang n{}-{}-{}".format(
       clang_svn_revision, clang_git_revision[:8], clang_sub_revision))
   print("Chrome revision: {}".format(git_revision))
 

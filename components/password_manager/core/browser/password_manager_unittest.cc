@@ -187,11 +187,18 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
+  MockPasswordManagerDriver() {
+    ON_CALL(*this, GetId()).WillByDefault(Return(0));
+    ON_CALL(*this, IsMainFrame()).WillByDefault(Return(true));
+  }
+
+  MOCK_CONST_METHOD0(GetId, int());
   MOCK_METHOD1(FormEligibleForGenerationFound,
                void(const autofill::PasswordFormGenerationData&));
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
+  MOCK_CONST_METHOD0(IsMainFrame, bool());
   MOCK_CONST_METHOD0(GetLastCommittedURL, const GURL&());
 };
 
@@ -3293,6 +3300,79 @@ TEST_F(PasswordManagerTest, UsernameFirstFlow) {
 
   EXPECT_EQ(username, saved_form.username_value);
   EXPECT_EQ(password, saved_form.password_value);
+}
+
+TEST_F(PasswordManagerTest, FormSubmittedOnMainFrame) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  PasswordForm form(MakeSimpleForm());
+
+  // Submit |form| on a main frame.
+  manager()->OnPasswordFormsParsed(&driver_, {form} /* observed */);
+  manager()->OnPasswordFormSubmitted(&driver_, form);
+
+  // Simulate finish loading of some iframe.
+  MockPasswordManagerDriver iframe_driver;
+  EXPECT_CALL(iframe_driver, IsMainFrame()).WillRepeatedly(Return(false));
+  EXPECT_CALL(iframe_driver, GetId()).WillRepeatedly(Return(123));
+  manager()->OnPasswordFormsRendered(&iframe_driver, {} /* observed */, true);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+  Mock::VerifyAndClearExpectations(&client_);
+
+  // Simulate finish loading of some iframe. Check that the prompt is shown.
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_));
+  manager()->OnPasswordFormsRendered(&driver_, {} /* observed */,
+                                     true /* did stop loading */);
+}
+
+TEST_F(PasswordManagerTest, FormSubmittedOnIFrame) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  PasswordForm form(MakeSimpleForm());
+
+  // Submit |form| on an iframe.
+  MockPasswordManagerDriver iframe_driver;
+  ON_CALL(iframe_driver, IsMainFrame()).WillByDefault(Return(false));
+  ON_CALL(iframe_driver, GetId()).WillByDefault(Return(123));
+  manager()->OnPasswordFormsParsed(&iframe_driver, {form} /* observed */);
+  manager()->OnPasswordFormSubmitted(&iframe_driver, form);
+
+  // Simulate finish loading of another iframe.
+  MockPasswordManagerDriver another_iframe_driver;
+  EXPECT_CALL(another_iframe_driver, IsMainFrame())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(another_iframe_driver, GetId()).WillRepeatedly(Return(456));
+  manager()->OnPasswordFormsRendered(&another_iframe_driver, {} /* observed */,
+                                     true);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+  Mock::VerifyAndClearExpectations(&client_);
+
+  // Simulate finish loading of the submitted form iframe. Check that the prompt
+  // is shown.
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_));
+  manager()->OnPasswordFormsRendered(&iframe_driver, {} /* observed */,
+                                     true /* did stop loading */);
+}
+
+TEST_F(PasswordManagerTest, FormSubmittedOnIFrameMainFrameLoaded) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  PasswordForm form(MakeSimpleForm());
+
+  // Simulate a form submission on an iframe.
+  MockPasswordManagerDriver iframe_driver;
+  ON_CALL(iframe_driver, IsMainFrame()).WillByDefault(Return(false));
+  ON_CALL(iframe_driver, GetId()).WillByDefault(Return(123));
+  manager()->OnPasswordFormsParsed(&iframe_driver, {form} /* observed */);
+  manager()->OnPasswordFormSubmitted(&iframe_driver, form);
+
+  // Simulate finish loading of the main frame. Check that the prompt is shown.
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_));
+  manager()->OnPasswordFormsRendered(&driver_, {} /* observed */,
+                                     true /* did stop loading */);
 }
 
 }  // namespace password_manager

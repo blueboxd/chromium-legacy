@@ -169,6 +169,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   base::WeakPtr<PasswordManagerDriver> GetDriver() const;
   const autofill::PasswordForm* GetSubmittedForm() const;
 
+  int driver_id() { return driver_id_; }
+
 #if defined(OS_IOS)
   // Presaves the form with |generated_password|. This function is called once
   // when the user accepts the generated password. The password was generated in
@@ -282,6 +284,10 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   PasswordManagerClient* client_;
 
   base::WeakPtr<PasswordManagerDriver> driver_;
+
+  // Id of |driver_|. Cached since |driver_| might become null when frame is
+  // close..
+  int driver_id_ = 0;
 
   // TODO(https://crbug.com/943045): use std::variant for keeping
   // |observed_form_| and |observed_not_web_form_digest_|.

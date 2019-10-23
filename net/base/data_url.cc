@@ -15,12 +15,12 @@
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "url/gurl.h"
 
 namespace net {
 
-// static
 bool DataURL::Parse(const GURL& url,
                     std::string* mime_type,
                     std::string* charset,
@@ -137,6 +137,40 @@ bool DataURL::Parse(const GURL& url,
 
   *data = UnescapeBinaryURLComponent(raw_body);
   return true;
+}
+
+Error DataURL::BuildResponse(const GURL& url,
+                             base::StringPiece method,
+                             std::string* mime_type,
+                             std::string* charset,
+                             std::string* data,
+                             HttpResponseHeaders* headers) {
+  DCHECK(data);
+
+  if (!DataURL::Parse(url, mime_type, charset, data))
+    return ERR_INVALID_URL;
+
+  // |mime_type| set by DataURL::Parse() is guaranteed to be in
+  //     token "/" token
+  // form. |charset| can be an empty string.
+  DCHECK(!mime_type->empty());
+
+  if (headers) {
+    headers->ReplaceStatusLine("HTTP/1.1 200 OK");
+    // "charset" in the Content-Type header is specified explicitly to follow
+    // the "token" ABNF in the HTTP spec. When the DataURL::Parse() call is
+    // successful, it's guaranteed that the string in |charset| follows the
+    // "token" ABNF.
+    std::string content_type_header = "Content-Type: " + *mime_type;
+    if (!charset->empty())
+      content_type_header.append(";charset=" + *charset);
+    headers->AddHeader(content_type_header);
+  }
+
+  if (base::EqualsCaseInsensitiveASCII(method, "HEAD"))
+    data->clear();
+
+  return OK;
 }
 
 }  // namespace net

@@ -26,6 +26,12 @@ class MenuManager {
     this.navigationManager_ = navigationManager;
 
     /**
+     * The text navigation manager.
+     * @private {!TextNavigationManager}
+     */
+    this.textNavigationManager_ = new TextNavigationManager();
+
+    /**
      * The root node of the screen.
      * @private {!chrome.automation.AutomationNode}
      */
@@ -39,20 +45,20 @@ class MenuManager {
 
     /**
      * The root node of the menu.
-     * @private {chrome.automation.AutomationNode}
+     * @private {SARootNode}
      */
     this.menuNode_;
 
     /**
      * The current node of the menu.
-     * @private {chrome.automation.AutomationNode}
+     * @private {SAChildNode}
      */
     this.node_;
 
     /**
      * The node that the menu has been opened for. Null if the menu is not
      * currently open.
-     * @private {chrome.automation.AutomationNode}
+     * @private {SAChildNode}
      */
     this.menuOriginNode_;
 
@@ -87,13 +93,24 @@ class MenuManager {
     this.menuPanel_;
 
     /**
-     * Callback for highlighting the first available action once a
-     * menu has been loaded in the panel. Bind creates a new function, so
-     * this function is saved as a field so that the event listener
-     * associated with this callback can be removed properly.
-     * @private {function(chrome.automation.AutomationEvent): undefined}
+     * Callback for highlighting the first available action once a menu has been
+     *     loaded in the panel. This function is created here, rather than below
+     *     with the other methods, because we need a consistent function object
+     *     to be able to add and remove the listener. If this function were a
+     *     method, it would need to have the |this| reference bound to it, and
+     *     each call to |.bind()| creates a new function (meaning the listener
+     *     could never be removed).
+     * Why does this work? While methods use call scoping (they look for
+     *     variables in the context of the call site), fat arrow functions,
+     *     like below, use lexical scoping (they look for variables in the
+     *     context of where the function was declared). So the proper |this|
+     *     object is referenced without the need for binding.
+     * @private {function()}
      */
-    this.onMenuPanelChildrenChanged_ = this.highlightFirstAction_.bind(this);
+    this.onMenuPanelChildrenChanged_ = () => {
+      this.buildMenuTree_();
+      this.highlightFirstAction_();
+    };
 
     /**
      * A stack to keep track of all menus that have been opened before
@@ -120,31 +137,38 @@ class MenuManager {
   /**
    * If multiple actions are available for the currently highlighted node,
    * opens the main menu. Otherwise, selects the node by default.
-   * @param {!chrome.automation.AutomationNode} navNode the currently
-   * highlighted node, for which the menu is to be displayed.
+   * @param {!SAChildNode} navNode the currently highlighted node, for which the
+   *     menu is to be displayed.
+   * @return {boolean} True if the menu opened or an action was selected, false
+   *     otherwise.
    */
   enter(navNode) {
     if (!this.menuPanel_) {
       console.log('Error: Menu panel has not loaded.');
-      return;
+      return false;
     }
+
+    // If the menu is already open, select the highlighted element.
+    if (this.selectCurrentNode()) return true;
 
     if (!this.openMenu_(navNode, SAConstants.MenuId.MAIN)) {
       // openMenu_ will return false (indicating that the menu was not opened
       // successfully) when there is only one interesting action (selection)
       // specific to this node. In this case, rather than forcing the user to
       // repeatedly disambiguate, we will simply select by default.
-      this.navigationManager_.selectCurrentNode();
-      return;
+      return false;
     }
 
     this.inMenu_ = true;
+    return true;
   }
 
   /**
    * Exits the menu.
    */
   exit() {
+    if (!this.inMenu_) return;
+
     this.closeCurrentMenu_();
     this.inMenu_ = false;
 
@@ -166,8 +190,8 @@ class MenuManager {
    * will be highlighted. Otherwise, the first available action will
    * be highlighted. Returns a boolean of whether or not the menu was
    * successfully opened.
-   * @param {!chrome.automation.AutomationNode} navNode The currently
-   *     highlighted node, for which the menu is being opened.
+   * @param {!SAChildNode} navNode The currently highlighted node, for which the
+   *     menu is being opened.
    * @param {!SAConstants.MenuId} menuId Indicates the menu being opened.
    * @param {boolean=} isSubmenu Whether or not the menu being opened is a
    *     submenu of the current menu.
@@ -177,7 +201,8 @@ class MenuManager {
   openMenu_(navNode, menuId, isSubmenu = false) {
     // Action currently highlighted in the menu (null if the menu was closed
     // before this function was called).
-    const actionNode = this.node_;
+    let actionNode = null;
+    if (this.node_) actionNode = this.node_.automationNode;
 
     const currentMenuId = this.menuPanel_.currentMenuId();
     const shouldReloadMenu = (currentMenuId === menuId);
@@ -198,14 +223,6 @@ class MenuManager {
       return false;
     }
 
-    if (!shouldReloadMenu) {
-      // Wait for the menu to appear in the panel before highlighting the
-      // first available action.
-      this.menuPanelNode_.addEventListener(
-          chrome.automation.EventType.CHILDREN_CHANGED,
-          this.onMenuPanelChildrenChanged_, false /** Don't use capture. */);
-    }
-
     // Converting to JSON strings to check equality of Array contents.
     if (JSON.stringify(actions) !== JSON.stringify(this.actions_)) {
       // Set new menu actions in the panel.
@@ -213,41 +230,48 @@ class MenuManager {
       this.menuPanel_.setActions(this.actions_, menuId);
     }
 
-    if (!navNode.location) {
+    const loc = navNode.location;
+    if (!loc) {
       console.log('Unable to show Switch Access menu.');
       return false;
     }
     // Show the menu panel.
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        true, navNode.location, actions.length);
+        true, loc, actions.length);
 
     this.menuOriginNode_ = navNode;
-    if (!shouldReloadMenu && window.switchAccess.improvedTextInputEnabled()) {
+
+    const autoNode = this.menuOriginNode_.automationNode;
+    if (autoNode && !shouldReloadMenu &&
+        window.switchAccess.improvedTextInputEnabled()) {
       const callback = this.reloadMenuForSelectionChange_.bind(this);
 
-      this.menuOriginNode_.addEventListener(
+      autoNode.addEventListener(
           chrome.automation.EventType.TEXT_SELECTION_CHANGED, callback,
           false /** use_capture */);
-      this.onExitCallback_ = this.menuOriginNode_.removeEventListener.bind(
-          this.menuOriginNode_,
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED, callback,
-          false /** use_capture */);
+      this.onExitCallback_ = autoNode.removeEventListener.bind(
+          autoNode, chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+          callback, false /** use_capture */);
     }
 
-    if (shouldReloadMenu && actionNode) {
-      let buttonId = actionNode.htmlAttributes.id;
+    if (shouldReloadMenu) {
+      this.buildMenuTree_();
+      let buttonId = actionNode ? actionNode.htmlAttributes.id : '';
       if (actions.includes(buttonId)) {
         // Highlight the same action that was highlighted before the menu was
         // reloaded.
-        this.node_ = actionNode;
         this.updateFocusRing_();
       } else {
-        while (!actions.includes(buttonId) && buttonId != 'back') {
-          this.moveForward();
-          buttonId = this.node_.htmlAttributes.id;
-        }
+        this.highlightFirstAction_();
       }
+    } else {
+      // Wait for the menu to appear in the panel before highlighting the
+      // first available action.
+      this.menuPanelNode_.addEventListener(
+          chrome.automation.EventType.CHILDREN_CHANGED,
+          this.onMenuPanelChildrenChanged_, false /** use_capture */);
     }
+
     return true;
   }
 
@@ -257,9 +281,7 @@ class MenuManager {
    */
   closeCurrentMenu_() {
     this.clearFocusRing_();
-    if (this.node_) {
-      this.node_ = null;
-    }
+    if (this.node_) this.node_ = null;
     this.menuPanel_.clear();
     this.actions_ = [];
     this.menuNode_ = null;
@@ -268,8 +290,8 @@ class MenuManager {
   /**
    * Get the actions applicable for |navNode| from the menu with given
    * |menuId|.
-   * @param {!chrome.automation.AutomationNode} navNode The currently selected
-   *     node, for which the menu is being opened.
+   * @param {!SAChildNode} navNode The currently selected node, for which the
+   *     menu is being opened.
    * @param {SAConstants.MenuId} menuId
    * @return {Array<SAConstants.MenuAction>}
    * @private
@@ -308,16 +330,9 @@ class MenuManager {
    * @private
    */
   highlightFirstAction_() {
-    let firstNode =
-        this.menuNode().find({role: chrome.automation.RoleType.BUTTON});
-
-    while (firstNode && !this.isActionAvailable_(firstNode.htmlAttributes.id))
-      firstNode = firstNode.nextSibling;
-
-    if (firstNode) {
-      this.node_ = firstNode;
-      this.updateFocusRing_();
-    }
+    if (!this.menuNode_) return;
+    this.node_ = this.menuNode_.firstChild;
+    this.updateFocusRing_();
 
     // The event is fired multiple times when a new menu is opened in the
     // panel, so remove the listener once the callback has been called once.
@@ -334,20 +349,10 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   moveForward() {
-    this.calculateCurrentNode();
-
-    if (!this.inMenu_ || !this.node_)
-      return false;
+    if (!this.inMenu_ || !this.node_) return false;
 
     this.clearFocusRing_();
-    const treeWalker = new AutomationTreeWalker(
-        this.node_, constants.Dir.FORWARD,
-        SwitchAccessPredicate.restrictions(this.menuNode()));
-    const node = treeWalker.next().node;
-    if (!node)
-      this.node_ = null;
-    else
-      this.node_ = node;
+    this.node_ = this.node_.next;
     this.updateFocusRing_();
     return true;
   }
@@ -358,29 +363,10 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   moveBackward() {
-    this.calculateCurrentNode();
-
-    if (!this.inMenu_ || !this.node_)
-      return false;
+    if (!this.inMenu_ || !this.node_) return false;
 
     this.clearFocusRing_();
-    const treeWalker = new AutomationTreeWalker(
-        this.node_, constants.Dir.BACKWARD,
-        SwitchAccessPredicate.restrictions(this.menuNode()));
-    let node = treeWalker.next().node;
-
-    // If node is null, find the last enabled button.
-    let lastChild = this.menuNode().lastChild;
-    while (!node && lastChild) {
-      if (SwitchAccessPredicate.isActionable(lastChild)) {
-        node = lastChild;
-        break;
-      } else {
-        lastChild = lastChild.previousSibling;
-      }
-    }
-
-    this.node_ = node;
+    this.node_ = this.node_.previous;
     this.updateFocusRing_();
     return true;
   }
@@ -390,18 +376,14 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   selectCurrentNode() {
-    this.calculateCurrentNode();
+    if (!this.inMenu_ || !this.node_) return false;
 
-    if (!this.inMenu_ || !this.node_) {
-      return false;
-    }
-
-    if (this.node_.role === RoleType.BUTTON) {
-      // A menu action was selected.
-      this.node_.doDefault();
-    } else {
+    if (this.node_ instanceof BackButtonNode) {
       // The back button was selected.
       this.selectBackButton();
+    } else {
+      // A menu action was selected.
+      this.node_.performAction(SAConstants.MenuAction.SELECT);
     }
     return true;
   }
@@ -449,36 +431,19 @@ class MenuManager {
       return;
     }
     this.menuPanelNode_ = node;
+    this.buildMenuTree_();
   }
 
   /**
-   * Get the menu node. With the current design, the menu panel should
-   * always contain at most one menu. When a menu is open in the panel,
-   * the menu node is the first child of the menu panel node.
-   * @return {!chrome.automation.AutomationNode}
+   * Builds the tree for the current menu.
    */
-  menuNode() {
-    if (this.menuNode_) {
-      return this.menuNode_;
+  buildMenuTree_() {
+    // menu_panel.html controls the contents of the menu panel, and we are
+    // guaranteed that the menu will be the first child.
+    if (this.menuPanelNode_ && this.menuPanelNode_.firstChild) {
+      this.menuNode_ =
+          RootNodeWrapper.buildTree(this.menuPanelNode_.firstChild);
     }
-
-    if (this.menuPanelNode_) {
-      if (this.menuPanelNode_.firstChild) {
-        this.menuNode_ = this.menuPanelNode_.firstChild;
-        return this.menuNode_;
-      }
-    }
-
-    return this.desktop_;
-  }
-
-  /**
-   * Whether or not the menu is currently open.
-   * @return {boolean}
-   * @public
-   */
-  inMenu() {
-    return this.inMenu_;
   }
 
   /**
@@ -507,13 +472,10 @@ class MenuManager {
    * @returns {boolean} whether or not there's a selection
    */
   nodeHasSelection_() {
-    if (this.menuOriginNode_) {
-      if (this.menuOriginNode_.textSelStart !==
-          this.menuOriginNode_.textSelEnd) {
-        return true;
-      } else {
-        return false;
-      }
+    const node = this.menuOriginNode_.automationNode;
+
+    if (node && node.textSelStart !== node.textSelEnd) {
+      return true;
     }
     return false;
   }
@@ -528,7 +490,7 @@ class MenuManager {
     if (this.selectionExists_ != newSelectionState) {
       this.selectionExists_ = newSelectionState;
       if (this.menuOriginNode_ &&
-          !this.navigationManager_.currentlySelecting()) {
+          !this.textNavigationManager_.currentlySelecting()) {
         let currentMenuId = this.menuPanel_.currentMenuId();
         if (currentMenuId) {
           this.openMenu_(this.menuOriginNode_, currentMenuId);
@@ -544,73 +506,40 @@ class MenuManager {
    * there are no node-specific actions, return |null|, to indicate that we
    * should select the current node automatically.
    *
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {!SAChildNode} node
    * @return {Array<!SAConstants.MenuAction>}
    * @private
    */
   getMainMenuActionsForNode_(node) {
-    let actions = [];
+    let actions = node.actions;
 
-    let scrollableAncestor = node;
-    while (!scrollableAncestor.scrollable && scrollableAncestor.parent)
-      scrollableAncestor = scrollableAncestor.parent;
-
-    if (scrollableAncestor.scrollable) {
-      if (scrollableAncestor.scrollX > scrollableAncestor.scrollXMin)
-        actions.push(SAConstants.MenuAction.SCROLL_LEFT);
-      if (scrollableAncestor.scrollX < scrollableAncestor.scrollXMax)
-        actions.push(SAConstants.MenuAction.SCROLL_RIGHT);
-      if (scrollableAncestor.scrollY > scrollableAncestor.scrollYMin)
-        actions.push(SAConstants.MenuAction.SCROLL_UP);
-      if (scrollableAncestor.scrollY < scrollableAncestor.scrollYMax)
-        actions.push(SAConstants.MenuAction.SCROLL_DOWN);
-    }
-    const standardActions = /** @type {!Array<!SAConstants.MenuAction>} */ (
-        node.standardActions.filter(
-            action => Object.values(SAConstants.MenuAction).includes(action)));
-
-    actions = actions.concat(standardActions);
-
-    if (SwitchAccessPredicate.isTextInput(node)) {
-      actions.push(SAConstants.MenuAction.KEYBOARD);
-      actions.push(SAConstants.MenuAction.DICTATION);
-
-      if (window.switchAccess.improvedTextInputEnabled() &&
-          node.state[StateType.FOCUSED]) {
-        actions.push(SAConstants.MenuAction.MOVE_CURSOR);
-        actions.push(SAConstants.MenuAction.SELECT_START);
-        if (this.navigationManager_.currentlySelecting()) {
-          actions.push(SAConstants.MenuAction.SELECT_END);
-        }
-        if (this.selectionExists_) {
-          actions.push(SAConstants.MenuAction.CUT);
-          actions.push(SAConstants.MenuAction.COPY);
-        }
-        if (this.clipboardHasData_) {
-          actions.push(SAConstants.MenuAction.PASTE);
-        }
+    // Add text editing and navigation options.
+    // TODO(anastasi): Move these actions into the node.
+    const autoNode = node.automationNode;
+    if (autoNode && window.switchAccess.improvedTextInputEnabled() &&
+        SwitchAccessPredicate.isTextInput(autoNode) &&
+        autoNode.state[StateType.FOCUSED]) {
+      actions.push(SAConstants.MenuAction.MOVE_CURSOR);
+      actions.push(SAConstants.MenuAction.SELECT_START);
+      if (this.textNavigationManager_.currentlySelecting()) {
+        actions.push(SAConstants.MenuAction.SELECT_END);
       }
-    } else if (actions.length > 0) {
-      actions.push(SAConstants.MenuAction.SELECT);
+      if (this.selectionExists_) {
+        actions.push(SAConstants.MenuAction.CUT);
+        actions.push(SAConstants.MenuAction.COPY);
+      }
+      if (this.clipboardHasData_) {
+        actions.push(SAConstants.MenuAction.PASTE);
+      }
     }
 
-    if (actions.length === 0)
-      return null;
+    // If there is at most one available action, perform it by default.
+    if (actions.length <= 1) return null;
 
+
+    // Add global actions.
     actions.push(SAConstants.MenuAction.SETTINGS);
     return actions;
-  }
-
-  /**
-   * Verify if a specified action is available in the current menu.
-   * @param {!SAConstants.MenuAction} action
-   * @return {boolean}
-   * @private
-   */
-  isActionAvailable_(action) {
-    if (!this.inMenu_)
-      return false;
-    return this.actions_.includes(action);
   }
 
   /**
@@ -618,110 +547,92 @@ class MenuManager {
    * @param {!SAConstants.MenuAction} action
    */
   performAction(action) {
-    if (!window.switchAccess.improvedTextInputEnabled()) {
+    // Some actions involve navigation events. Handle those explicitly.
+    if (action === SAConstants.MenuAction.SELECT &&
+        this.menuOriginNode_.isGroup()) {
+      this.navigationManager_.enterGroup();
       this.exit();
+      return;
+    }
+    if (action === SAConstants.MenuAction.OPEN_KEYBOARD) {
+      this.navigationManager_.enterKeyboard();
+      this.exit();
+      return;
     }
 
+    // Handle global actions.
+    if (action === SAConstants.MenuAction.SETTINGS) {
+      chrome.accessibilityPrivate.openSettingsSubpage(
+          'manageAccessibility/switchAccess');
+      this.exit();
+      return;
+    }
+
+    // Handle text editing actions.
+    // TODO(anastasi): Move these actions into the nodes themselves.
     switch (action) {
-      case SAConstants.MenuAction.SELECT:
-        if (window.switchAccess.improvedTextInputEnabled()) {
-          // Explicitly call exit for actions where the menu closes after
-          // the icon is clicked.
-          this.exit();
-        }
-        this.navigationManager_.selectCurrentNode();
-        break;
-      case SAConstants.MenuAction.KEYBOARD:
-        if (window.switchAccess.improvedTextInputEnabled()) {
-          this.exit();
-        }
-        this.navigationManager_.openKeyboard();
-        break;
-      case SAConstants.MenuAction.DICTATION:
-        if (window.switchAccess.improvedTextInputEnabled()) {
-          this.exit();
-        }
-        chrome.accessibilityPrivate.toggleDictation();
-        break;
-      case SAConstants.MenuAction.SETTINGS:
-        if (window.switchAccess.improvedTextInputEnabled()) {
-          this.exit();
-        }
-        chrome.accessibilityPrivate.openSettingsSubpage(
-            'manageAccessibility/switchAccess');
-        break;
-      case SAConstants.MenuAction.SCROLL_DOWN:
-      case SAConstants.MenuAction.SCROLL_UP:
-      case SAConstants.MenuAction.SCROLL_LEFT:
-      case SAConstants.MenuAction.SCROLL_RIGHT:
-        if (window.switchAccess.improvedTextInputEnabled()) {
-          this.exit();
-        }
-        this.navigationManager_.scroll(action);
-        break;
       case SAConstants.MenuAction.MOVE_CURSOR:
         if (this.menuOriginNode_) {
           this.openMenu_(
               this.menuOriginNode_, SAConstants.MenuId.TEXT_NAVIGATION,
               true /** Opening a submenu. */);
         }
-        break;
+        return;
       case SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT:
-        this.navigationManager_.jumpToBeginningOfText();
-        break;
+        this.textNavigationManager_.jumpToBeginning();
+        return;
       case SAConstants.MenuAction.JUMP_TO_END_OF_TEXT:
-        this.navigationManager_.jumpToEndOfText();
-        break;
+        this.textNavigationManager_.jumpToEnd();
+        return;
       case SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT:
-        this.navigationManager_.moveBackwardOneCharOfText();
-        break;
+        this.textNavigationManager_.moveBackwardOneChar();
+        return;
       case SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT:
-        this.navigationManager_.moveBackwardOneWordOfText();
-        break;
+        this.textNavigationManager_.moveBackwardOneWord();
+        return;
       case SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT:
-        this.navigationManager_.moveDownOneLineOfText();
-        break;
+        this.textNavigationManager_.moveDownOneLine();
+        return;
       case SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT:
-        this.navigationManager_.moveForwardOneCharOfText();
-        break;
+        this.textNavigationManager_.moveForwardOneChar();
+        return;
       case SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT:
-        this.navigationManager_.moveForwardOneWordOfText();
-        break;
+        this.textNavigationManager_.moveForwardOneWord();
+        return;
       case SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
-        this.navigationManager_.moveUpOneLineOfText();
-        break;
+        this.textNavigationManager_.moveUpOneLine();
+        return;
       case SAConstants.MenuAction.CUT:
-        this.navigationManager_.cut();
-        break;
+        EventHelper.simulateKeyPress(EventHelper.KeyCode.X, {ctrl: true});
+        return;
       case SAConstants.MenuAction.COPY:
-        this.navigationManager_.copy();
-        break;
+        EventHelper.simulateKeyPress(EventHelper.KeyCode.C, {ctrl: true});
+        return;
       case SAConstants.MenuAction.PASTE:
-        this.navigationManager_.paste();
-        break;
+        EventHelper.simulateKeyPress(EventHelper.KeyCode.V, {ctrl: true});
+        return;
       case SAConstants.MenuAction.SELECT_START:
-        this.navigationManager_.saveSelectStart();
+        this.textNavigationManager_.saveSelectStart();
         if (this.menuOriginNode_) {
           this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
         }
-        break;
+        return;
       case SAConstants.MenuAction.SELECT_END:
-        this.navigationManager_.endSelection();
-        if (this.menuOriginNode_)
+        this.textNavigationManager_.resetCurrentlySelecting();
+        if (this.menuOriginNode_) {
           this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
-        break;
-      default:
-        if (window.switchAccess.improvedTextInputEnabled()) {
-          this.exit();
         }
-        this.navigationManager_.performActionOnCurrentNode(action);
+        return;
     }
+
+    // Otherwise, ask the node to perform the action itself.
+    if (this.menuOriginNode_.performAction(action)) this.exit();
   }
 
   /**
    * Send a message to the menu to update the focus ring around the current
    * node.
-   * TODO(anastasi): Revisit focus rings before launch
+   * TODO(anastasi): Use real focus rings in the menu
    * @private
    * @param {boolean=} opt_clear If true, will clear the focus ring.
    */
@@ -731,11 +642,8 @@ class MenuManager {
       return;
     }
 
-    this.calculateCurrentNode();
-
-    if (!this.inMenu_ || !this.node_)
-      return;
-    let id = this.node_.htmlAttributes.id;
+    if (!this.inMenu_ || !this.node_) return;
+    let id = this.node_.automationNode.htmlAttributes.id;
 
     // If the selection will close the menu, highlight the back button.
     if (id === this.menuPanel_.currentMenuId()) {
@@ -744,27 +652,5 @@ class MenuManager {
 
     const enable = !opt_clear;
     this.menuPanel_.setFocusRing(id, enable);
-  }
-
-  /**
-   * Updates the value of |this.node_|.
-   *
-   * - If it has a value, change nothing.
-   * - Otherwise, if menu node has a reasonable value, set |this.node_| to menu
-   *   node.
-   * - If not, set it to null.
-   *
-   * Return |this.node_|'s value after the update.
-   *
-   * @private
-   * @return {chrome.automation.AutomationNode}
-   */
-  calculateCurrentNode() {
-    if (this.node_)
-      return this.node_;
-    this.node_ = this.menuNode();
-    if (this.node_ === this.desktop_)
-      this.node_ = null;
-    return this.node_;
   }
 }

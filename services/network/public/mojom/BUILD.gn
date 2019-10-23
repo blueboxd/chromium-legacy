@@ -10,6 +10,7 @@ import("//services/network/public/cpp/features.gni")
 # which comes from the fact that proxy_resolver service uses these interfaces,
 # and the network service uses the proxy_resolver service.
 mojom("mojom_ip_address") {
+  generate_java = true
   sources = [
     "address_family.mojom",
     "address_list.mojom",
@@ -26,6 +27,7 @@ mojom("mojom_ip_address") {
 # which comes from the fact that the typemap for url_loader.mojom
 # (ResourceRequestBody) uses these interfaces.
 mojom("data_pipe_interfaces") {
+  generate_java = true
   sources = [
     "chunked_data_pipe_getter.mojom",
     "data_pipe_getter.mojom",
@@ -43,6 +45,7 @@ mojom("data_pipe_interfaces") {
 }
 
 mojom("mutable_network_traffic_annotation_interface") {
+  generate_java = true
   sources = [
     "mutable_network_traffic_annotation_tag.mojom",
     "mutable_partial_network_traffic_annotation_tag.mojom",
@@ -52,6 +55,7 @@ mojom("mutable_network_traffic_annotation_interface") {
 # This target is split from "mojom" target as the lazy serialization may
 # cause problems. See https://crbug.com/822732.
 mojom("websocket_mojom") {
+  generate_java = true
   sources = [
     "network_param.mojom",
     "websocket.mojom",
@@ -72,6 +76,7 @@ mojom("websocket_mojom") {
 }
 
 mojom("mojom") {
+  generate_java = true
   sources = [
     "content_security_policy.mojom",
     "cookie_manager.mojom",

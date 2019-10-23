@@ -2736,7 +2736,7 @@ void RenderWidgetHostImpl::ClearPendingUserActivation() {
   pending_user_activation_timer_.Stop();
 }
 
-bool RenderWidgetHostImpl::ConsumePendingUserActivationIfAllowed() {
+bool RenderWidgetHostImpl::RemovePendingUserActivationIfAvailable() {
   if (pending_user_activation_counter_ > 0) {
     pending_user_activation_counter_--;
     return true;

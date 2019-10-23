@@ -67,6 +67,7 @@ void FakeAssistantManagerServiceImpl::StartMetalayerInteraction(
 
 void FakeAssistantManagerServiceImpl::StartTextInteraction(
     const std::string& query,
+    mojom::AssistantQuerySource source,
     bool allow_tts) {}
 
 void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}

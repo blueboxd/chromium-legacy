@@ -731,9 +731,6 @@ TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensity) {
   EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
                      ->last_start_arc_mini_container_request()
                      .lcd_density());
-  EXPECT_EQ(2u, chromeos::FakeSessionManagerClient::Get()
-                    ->last_start_arc_mini_container_request()
-                    .num_cores_disabled());
 }
 
 TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsync) {
@@ -754,9 +751,6 @@ TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsync) {
   EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
                      ->last_start_arc_mini_container_request()
                      .lcd_density());
-  EXPECT_EQ(2u, chromeos::FakeSessionManagerClient::Get()
-                    ->last_start_arc_mini_container_request()
-                    .num_cores_disabled());
 }
 
 TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsyncReversedOrder) {
@@ -776,9 +770,6 @@ TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsyncReversedOrder) {
   EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
                      ->last_start_arc_mini_container_request()
                      .lcd_density());
-  EXPECT_EQ(2u, chromeos::FakeSessionManagerClient::Get()
-                    ->last_start_arc_mini_container_request()
-                    .num_cores_disabled());
 }
 
 TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsyncCpuInfoEarly) {
@@ -798,9 +789,6 @@ TEST_F(ArcSessionImplTest, StartArcMiniContainerWithDensityAsyncCpuInfoEarly) {
   EXPECT_EQ(240, chromeos::FakeSessionManagerClient::Get()
                      ->last_start_arc_mini_container_request()
                      .lcd_density());
-  EXPECT_EQ(2u, chromeos::FakeSessionManagerClient::Get()
-                    ->last_start_arc_mini_container_request()
-                    .num_cores_disabled());
 }
 
 TEST_F(ArcSessionImplTest, StopWhileWaitingForLcdDensity) {

@@ -136,6 +136,7 @@ int MapSecurityError(int err) {
     case SEC_ERROR_UNKNOWN_ISSUER:
     case SEC_ERROR_UNTRUSTED_ISSUER:
     case SEC_ERROR_CA_CERT_INVALID:
+    case SEC_ERROR_BAD_SIGNATURE:
     case SEC_ERROR_APPLICATION_CALLBACK_ERROR:  // Rejected by
                                                 // chain_verify_callback.
       return ERR_CERT_AUTHORITY_INVALID;
@@ -149,7 +150,6 @@ int MapSecurityError(int err) {
     case SEC_ERROR_CERT_NOT_IN_NAME_SPACE:
       return ERR_CERT_NAME_CONSTRAINT_VIOLATION;
     case SEC_ERROR_BAD_DER:
-    case SEC_ERROR_BAD_SIGNATURE:
     case SEC_ERROR_CERT_NOT_VALID:
     // TODO(port): add an ERR_CERT_WRONG_USAGE error code.
     case SEC_ERROR_CERT_USAGES_INVALID:

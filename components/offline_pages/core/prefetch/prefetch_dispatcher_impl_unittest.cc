@@ -44,7 +44,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

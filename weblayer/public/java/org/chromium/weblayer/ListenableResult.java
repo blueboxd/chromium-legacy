@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 
 /**
@@ -21,7 +23,7 @@ public class ListenableResult<V> {
      * Call the callback with the result of computation.
      * Note callback may be called immediately.
      */
-    public void addCallback(Callback<V> callback) {
+    public void addCallback(@NonNull Callback<V> callback) {
         if (mHasResult) {
             callback.onResult(mResult);
             return;

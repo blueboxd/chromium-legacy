@@ -49,6 +49,8 @@ class ToolbarIconContainerView : public views::View,
 
   bool uses_highlight() { return uses_highlight_; }
 
+  static const char kToolbarIconContainerViewClassName[];
+
  private:
   friend class ToolbarAccountIconContainerViewBrowserTest;
 
@@ -57,6 +59,7 @@ class ToolbarIconContainerView : public views::View,
   void OnMouseExited(const ui::MouseEvent& event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
   gfx::Insets GetInsets() const override;
+  const char* GetClassName() const override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

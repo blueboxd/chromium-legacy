@@ -229,6 +229,16 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
     InitPrefAndAssociate(syncer::SyncData(), *pref_name_iter, &new_changes);
   }
 
+  for (const std::string& legacy_pref_name : legacy_model_type_preferences_) {
+    // Track preferences for which we have a local user-controlled value. That
+    // could be a value from last run, or a value just set by the initial sync.
+    // We don't call InitPrefAndAssociate because we don't want the initial sync
+    // to trigger outgoing changes -- these prefs are only tracked to send
+    // updates back to older clients.
+    if (pref_service_->GetUserPrefValue(legacy_pref_name))
+      synced_preferences_.insert(legacy_pref_name);
+  }
+
   // Push updates to sync.
   merge_result.set_error(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
@@ -474,15 +484,27 @@ void PrefModelAssociator::RegisterPref(const std::string& name) {
   DCHECK(registered_preferences_.count(name) == 0);
   registered_preferences_.insert(name);
 
-  // Make sure data in the local store matches the registered type.
+  // Make sure data in the local store matches the registered type (where "type"
+  // means base::Value data type like string, not ModelType like PREFERENCES).
   // If this results in a modification of the local pref store, we don't want
   // to tell ChromeSync about these -- it's a local anomaly,
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
   EnforceRegisteredTypeInStore(name);
 }
 
+void PrefModelAssociator::RegisterPrefWithLegacyModelType(
+    const std::string& name) {
+  DCHECK(legacy_model_type_preferences_.count(name) == 0);
+  DCHECK(registered_preferences_.count(name) == 0);
+  legacy_model_type_preferences_.insert(name);
+}
+
 bool PrefModelAssociator::IsPrefRegistered(const std::string& name) const {
   return registered_preferences_.count(name) > 0;
+}
+
+bool PrefModelAssociator::IsLegacyModelTypePref(const std::string& name) const {
+  return legacy_model_type_preferences_.count(name) > 0;
 }
 
 void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
@@ -500,10 +522,12 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
   if (!preference)
     return;
 
-  if (!IsPrefRegistered(name)) {
+  if (!IsPrefRegistered(name) && !IsLegacyModelTypePref(name)) {
     // We are not syncing this preference -- this also filters out synced
-    // preferences of the wrong type (priority preference are handled by a
-    // separate associator).
+    // preferences of the wrong type (e.g. priority preference are handled by a
+    // separate associator). Legacy model type preferences are allowed to
+    // continue because we want to push updates to old clients using the
+    // old ModelType.
     return;
   }
 
@@ -559,6 +583,12 @@ void PrefModelAssociator::NotifySyncedPrefObservers(const std::string& path,
   auto observer_iter = synced_pref_observers_.find(path);
   if (observer_iter == synced_pref_observers_.end())
     return;
+  // Don't notify for prefs we are only observing to support old clients.
+  // The PrefModelAssociator for the new ModelType will notify.
+  if (IsLegacyModelTypePref(path)) {
+    DCHECK(!from_sync);
+    return;
+  }
   for (auto& observer : *observer_iter->second)
     observer.OnSyncedPrefChanged(path, from_sync);
 }

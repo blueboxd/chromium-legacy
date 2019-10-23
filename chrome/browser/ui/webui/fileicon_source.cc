@@ -113,12 +113,14 @@ std::string FileIconSource::GetSource() {
 }
 
 void FileIconSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   base::FilePath file_path;
   IconLoader::IconSize icon_size = IconLoader::NORMAL;
   float scale_factor = 1.0f;
+  // TODO(crbug/1009127): Make ParseQueryParams take GURL.
   ParseQueryParams(path, &file_path, &scale_factor, &icon_size);
   FetchFileIcon(file_path, scale_factor, icon_size, callback);
 }

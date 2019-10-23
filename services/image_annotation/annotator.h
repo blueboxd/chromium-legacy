@@ -27,10 +27,6 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace image_annotation {
 
 // The annotator communicates with the external image annotation server to
@@ -46,6 +42,14 @@ namespace image_annotation {
 // images) or image pixels to the external server.
 class Annotator : public mojom::Annotator {
  public:
+  class Client {
+   public:
+    virtual ~Client() {}
+
+    virtual void BindJsonParser(
+        mojo::PendingReceiver<data_decoder::mojom::JsonParser> receiver) = 0;
+  };
+
   // The HTTP request header in which the API key should be transmitted.
   static constexpr char kGoogApiKeyHeader[] = "X-Goog-Api-Key";
 
@@ -76,7 +80,7 @@ class Annotator : public mojom::Annotator {
             int batch_size,
             double min_ocr_confidence,
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-            service_manager::Connector* connector);
+            std::unique_ptr<Client> client);
   ~Annotator() override;
 
   // Start providing behavior for the given Mojo receiver.
@@ -196,6 +200,8 @@ class Annotator : public mojom::Annotator {
       const std::set<RequestKey>& request_keys,
       const std::map<std::string, mojom::AnnotateImageResultPtr>& results);
 
+  const std::unique_ptr<Client> client_;
+
   // Maps from request key to previously-obtained annotation results.
   // TODO(crbug.com/916420): periodically clear entries from this cache.
   std::map<RequestKey, mojom::AnnotateImageResultPtr> cached_results_;
@@ -231,8 +237,6 @@ class Annotator : public mojom::Annotator {
   std::set<RequestKey> pending_requests_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
-  service_manager::Connector* const connector_;
 
   mojo::ReceiverSet<mojom::Annotator> receivers_;
 

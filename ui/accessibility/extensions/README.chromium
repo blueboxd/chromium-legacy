@@ -6,8 +6,7 @@ one-click install from the Settings page.
 # Building
 #
 
-Right now only the colorenhancer needs to be built, because it has localized
-strings. To build it:
+Some of the extensions have localized strings and need to be built:
 
 ninja -C out/Release ui/accessibility/extensions
 

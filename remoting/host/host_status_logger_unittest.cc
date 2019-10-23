@@ -10,7 +10,6 @@
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/xmpp_log_to_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 

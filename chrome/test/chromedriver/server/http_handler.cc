@@ -28,11 +28,11 @@
 #include "chrome/test/chromedriver/chrome/adb_impl.h"
 #include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
-#include "chrome/test/chromedriver/version.h"
 #include "chrome/test/chromedriver/webauthn_commands.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/server/http_server_request_info.h"
@@ -119,6 +119,15 @@ CommandMapping::CommandMapping(HttpMethod method,
 CommandMapping::CommandMapping(const CommandMapping& other) = default;
 
 CommandMapping::~CommandMapping() {}
+
+// Create a command mapping with a prefixed HTTP path (.e.g goog/).
+CommandMapping VendorPrefixedCommandMapping(HttpMethod method,
+                                            const char* path_pattern,
+                                            const Command& command) {
+  return CommandMapping(
+      method, base::StringPrintf(path_pattern, kChromeDriverCompanyPrefix),
+      command);
+}
 
 HttpHandler::HttpHandler(const std::string& url_base)
     : url_base_(url_base),
@@ -872,35 +881,37 @@ HttpHandler::HttpHandler(
       CommandMapping(kPost, "session/:sessionId/chromium/send_command",
                      WrapToCommand("SendCommand",
                                    base::BindRepeating(&ExecuteSendCommand))),
-      CommandMapping(
-          kPost, "session/:sessionId/goog/cdp/execute",
+      VendorPrefixedCommandMapping(
+          kPost, "session/:sessionId/%s/cdp/execute",
           WrapToCommand("ExecuteCDP",
                         base::BindRepeating(&ExecuteSendCommandAndGetResult))),
       CommandMapping(
           kPost, "session/:sessionId/chromium/send_command_and_get_result",
           WrapToCommand("SendCommandAndGetResult",
                         base::BindRepeating(&ExecuteSendCommandAndGetResult))),
-      CommandMapping(
-          kPost, "session/:sessionId/goog/page/freeze",
+      VendorPrefixedCommandMapping(
+          kPost, "session/:sessionId/%s/page/freeze",
           WrapToCommand("Freeze", base::BindRepeating(&ExecuteFreeze))),
-      CommandMapping(
-          kPost, "session/:sessionId/goog/page/resume",
+      VendorPrefixedCommandMapping(
+          kPost, "session/:sessionId/%s/page/resume",
           WrapToCommand("Resume", base::BindRepeating(&ExecuteResume))),
-      CommandMapping(kPost, "session/:sessionId/goog/cast/set_sink_to_use",
-                     WrapToCommand("SetSinkToUse",
-                                   base::BindRepeating(&ExecuteSetSinkToUse))),
-      CommandMapping(
-          kPost, "session/:sessionId/goog/cast/start_tab_mirroring",
+      VendorPrefixedCommandMapping(
+          kPost, "session/:sessionId/%s/cast/set_sink_to_use",
+          WrapToCommand("SetSinkToUse",
+                        base::BindRepeating(&ExecuteSetSinkToUse))),
+      VendorPrefixedCommandMapping(
+          kPost, "session/:sessionId/%s/cast/start_tab_mirroring",
           WrapToCommand("StartTabMirroring",
                         base::BindRepeating(&ExecuteStartTabMirroring))),
-      CommandMapping(kPost, "session/:sessionId/goog/cast/stop_casting",
-                     WrapToCommand("StopCasting",
-                                   base::BindRepeating(&ExecuteStopCasting))),
-      CommandMapping(
-          kGet, "session/:sessionId/goog/cast/get_sinks",
+      VendorPrefixedCommandMapping(
+          kPost, "session/:sessionId/%s/cast/stop_casting",
+          WrapToCommand("StopCasting",
+                        base::BindRepeating(&ExecuteStopCasting))),
+      VendorPrefixedCommandMapping(
+          kGet, "session/:sessionId/%s/cast/get_sinks",
           WrapToCommand("GetSinks", base::BindRepeating(&ExecuteGetSinks))),
-      CommandMapping(
-          kGet, "session/:sessionId/goog/cast/get_issue_message",
+      VendorPrefixedCommandMapping(
+          kGet, "session/:sessionId/%s/cast/get_issue_message",
           WrapToCommand("GetIssueMessage",
                         base::BindRepeating(&ExecuteGetIssueMessage))),
 
@@ -1082,9 +1093,9 @@ std::unique_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareLegacyResponse(
   if (status.IsError()) {
     Status full_status(status);
     full_status.AddDetails(base::StringPrintf(
-        "Driver info: chromedriver=%s,platform=%s %s %s",
-        kChromeDriverVersion,
-        base::SysInfo::OperatingSystemName().c_str(),
+        "Driver info: %s=%s,platform=%s %s %s",
+        base::ToLowerASCII(kChromeDriverProductShortName).c_str(),
+        kChromeDriverVersion, base::SysInfo::OperatingSystemName().c_str(),
         base::SysInfo::OperatingSystemVersion().c_str(),
         base::SysInfo::OperatingSystemArchitecture().c_str()));
     std::unique_ptr<base::DictionaryValue> error(new base::DictionaryValue());

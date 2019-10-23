@@ -23,6 +23,7 @@
 #if !defined(SANDBOX_FUZZ_TARGET)
 #include "sandbox/win/src/sandbox_nt_types.h"
 #endif
+#include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/sandbox_types.h"
 
 // This header is part of CrossCall: the sandbox inter-process communication.
@@ -128,7 +129,7 @@ struct CrossCallReturn {
 class CrossCallParams {
  public:
   // Returns the tag (ipc unique id) associated with this IPC.
-  uint32_t GetTag() const { return tag_; }
+  IpcTag GetTag() const { return tag_; }
 
   // Returns the beggining of the buffer where the IPC params can be stored.
   // prior to an IPC call
@@ -153,11 +154,11 @@ class CrossCallParams {
 
  protected:
   // constructs the IPC call params. Called only from the derived classes
-  CrossCallParams(uint32_t tag, uint32_t params_count)
+  CrossCallParams(IpcTag tag, uint32_t params_count)
       : tag_(tag), is_in_out_(0), params_count_(params_count) {}
 
  private:
-  uint32_t tag_;
+  IpcTag tag_;
   uint32_t is_in_out_;
   CrossCallReturn call_return;
   const uint32_t params_count_;
@@ -206,15 +207,14 @@ template <size_t NUMBER_PARAMS, size_t BLOCK_SIZE>
 class ActualCallParams : public CrossCallParams {
  public:
   // constructor. Pass the ipc unique tag as input
-  explicit ActualCallParams(uint32_t tag)
-      : CrossCallParams(tag, NUMBER_PARAMS) {
+  explicit ActualCallParams(IpcTag tag) : CrossCallParams(tag, NUMBER_PARAMS) {
     param_info_[0].offset_ =
         static_cast<uint32_t>(parameters_ - reinterpret_cast<char*>(this));
   }
 
   // Testing-only constructor. Allows setting the |number_params| to a
   // wrong value.
-  ActualCallParams(uint32_t tag, uint32_t number_params)
+  ActualCallParams(IpcTag tag, uint32_t number_params)
       : CrossCallParams(tag, number_params) {
     param_info_[0].offset_ =
         static_cast<uint32_t>(parameters_ - reinterpret_cast<char*>(this));
@@ -285,7 +285,7 @@ class ActualCallParams : public CrossCallParams {
   uint32_t GetSize() const { return param_info_[NUMBER_PARAMS].offset_; }
 
  protected:
-  ActualCallParams() : CrossCallParams(0, NUMBER_PARAMS) {}
+  ActualCallParams() : CrossCallParams(IpcTag::UNUSED, NUMBER_PARAMS) {}
 
  private:
   ParamInfo param_info_[NUMBER_PARAMS + 1];

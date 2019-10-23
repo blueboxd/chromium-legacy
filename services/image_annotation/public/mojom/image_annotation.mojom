@@ -64,3 +64,9 @@ interface Annotator {
                 pending_remote<ImageProcessor> image_processor)
                     => (AnnotateImageResult result);
 };
+
+// The main interface to the Image Annotation service.
+interface ImageAnnotationService {
+  // Binds an Annotator endpoint which can be used to annotate images.
+  BindAnnotator(pending_receiver<Annotator> receiver);
+};

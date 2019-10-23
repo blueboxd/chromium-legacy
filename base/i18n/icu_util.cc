@@ -281,28 +281,6 @@ PlatformFile GetIcuExtraDataFileHandle(MemoryMappedFile::Region* out_region) {
   return g_icudtl_extra_pf;
 }
 
-const uint8_t* GetRawIcuMemory() {
-  CHECK(g_icudtl_mapped_file);
-  return g_icudtl_mapped_file->data();
-}
-
-bool InitializeICUFromRawMemory(const uint8_t* raw_memory) {
-#if !defined(COMPONENT_BUILD)
-#if DCHECK_IS_ON()
-  DCHECK(!g_check_called_once || !g_called_once);
-  g_called_once = true;
-#endif
-
-  UErrorCode err = U_ZERO_ERROR;
-  udata_setCommonData(const_cast<uint8_t*>(raw_memory), &err);
-  // Never try to load ICU data from files.
-  udata_setFileAccess(UDATA_ONLY_PACKAGES, &err);
-  return err == U_ZERO_ERROR;
-#else
-  return true;
-#endif
-}
-
 bool InitializeExtraICU() {
   if (g_icudtl_pf != kInvalidPlatformFile) {
     // Must call InitializeExtraICU() before InitializeICU().

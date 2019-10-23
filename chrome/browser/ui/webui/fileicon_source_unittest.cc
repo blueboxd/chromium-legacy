@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -119,7 +120,9 @@ TEST_F(FileIconSourceTest, FileIconSource_Parse) {
                     base::FilePath(kBasicExpectations[i].unescaped_path),
                     kBasicExpectations[i].scale_factor,
                     kBasicExpectations[i].size, CallbackIsNull()));
-    source->StartDataRequest(kBasicExpectations[i].request_path,
-                             content::WebContents::Getter(), callback);
+    source->StartDataRequest(
+        GURL(base::StrCat(
+            {"chrome://any-host/", kBasicExpectations[i].request_path})),
+        content::WebContents::Getter(), callback);
   }
 }

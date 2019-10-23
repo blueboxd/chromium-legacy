@@ -28,8 +28,6 @@ cr.define('extension_toolbar_tests', function() {
     });
 
     test(assert(TestNames.Layout), function() {
-      extension_test_util.testIcons(toolbar);
-
       const testVisible = extension_test_util.testVisible.bind(null, toolbar);
       testVisible('#devMode', true);
       assertEquals(toolbar.$.devMode.disabled, false);

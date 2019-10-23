@@ -102,6 +102,11 @@ CredentialLeakDialogView::CredentialLeakDialogView(
     : controller_(controller), web_contents_(web_contents) {
   DCHECK(controller);
   DCHECK(web_contents);
+
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   controller_->GetAcceptButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   controller_->GetCancelButtonLabel());
 }
 
 CredentialLeakDialogView::~CredentialLeakDialogView() = default;
@@ -126,12 +131,6 @@ gfx::Size CredentialLeakDialogView::CalculatePreferredSize() const {
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-base::string16 CredentialLeakDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK ? controller_->GetAcceptButtonLabel()
-                                        : controller_->GetCancelButtonLabel();
 }
 
 bool CredentialLeakDialogView::Cancel() {

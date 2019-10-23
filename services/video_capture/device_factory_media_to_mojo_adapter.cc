@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/video_capture_device_info.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
@@ -157,7 +157,7 @@ void DeviceFactoryMediaToMojoAdapter::AddTextureVirtualDevice(
 }
 
 void DeviceFactoryMediaToMojoAdapter::RegisterVirtualDevicesChangedObserver(
-    mojom::DevicesChangedObserverPtr observer,
+    mojo::PendingRemote<mojom::DevicesChangedObserver> observer,
     bool raise_event_if_virtual_devices_already_present) {
   NOTIMPLEMENTED();
 }

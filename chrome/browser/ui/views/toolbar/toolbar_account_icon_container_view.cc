@@ -20,6 +20,11 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
 
+// static
+const char ToolbarAccountIconContainerView::
+    kToolbarAccountIconContainerViewClassName[] =
+        "ToolbarAccountIconContainerView";
+
 ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
     Browser* browser)
     : ToolbarIconContainerView(
@@ -71,6 +76,10 @@ ToolbarAccountIconContainerView::CreatePageActionIconBorder() const {
 void ToolbarAccountIconContainerView::OnThemeChanged() {
   // Update icon color.
   UpdateAllIcons();
+}
+
+const char* ToolbarAccountIconContainerView::GetClassName() const {
+  return kToolbarAccountIconContainerViewClassName;
 }
 
 SkColor ToolbarAccountIconContainerView::GetIconColor() const {

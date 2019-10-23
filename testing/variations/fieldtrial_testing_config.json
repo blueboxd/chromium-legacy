@@ -1839,6 +1839,24 @@
             ]
         }
     ],
+    "CrOSSystemAECDeactivatedGroups": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AecGroupIdsWithBrowserFallbackFromCrAS",
+                    "params": {
+                        "3": "true"
+                    },
+                    "enable_features": [
+                        "CrOSSystemAECDeactivatedGroups"
+                    ]
+                }
+            ]
+        }
+    ],
     "D3D11VideoDecoder": [
         {
             "platforms": [
@@ -4033,6 +4051,25 @@
                     "enable_features": [
                         "OmniboxGroupSuggestionsBySearchVsUrl",
                         "OmniboxPreserveDefaultMatchScore"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxOnDeviceHeadSuggest": [
+        {
+            "platforms": [
+                "android",
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Beta_OnDeviceHeadSuggest_Enabled",
+                    "enable_features": [
+                        "OmniboxOnDeviceHeadProvider"
                     ]
                 }
             ]

@@ -14,6 +14,7 @@
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/origin_policy_throttle.h"
 #include "content/browser/frame_host/webui_navigation_throttle.h"
+#include "content/browser/portal/portal_navigation_throttle.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace content {
@@ -115,6 +116,9 @@ void NavigationThrottleRunner::RegisterNavigationThrottles() {
 
   // Handle Origin Policy (if enabled)
   AddThrottle(OriginPolicyThrottle::MaybeCreateThrottleFor(handle_));
+
+  // Block certain requests that are not permitted for portals.
+  AddThrottle(PortalNavigationThrottle::MaybeCreateThrottleFor(handle_));
 
   for (auto& throttle :
        devtools_instrumentation::CreateNavigationThrottles(handle_)) {

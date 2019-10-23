@@ -9,10 +9,19 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -68,6 +77,18 @@ void CrostiniHandler::RegisterMessages() {
       base::BindRepeating(
           &CrostiniHandler::HandleCrostiniExportImportOperationStatusRequest,
           weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "requestArcAdbSideloadStatus",
+      base::BindRepeating(&CrostiniHandler::HandleQueryArcAdbRequest,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "enableArcAdbSideload",
+      base::BindRepeating(&CrostiniHandler::HandleEnableArcAdbRequest,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "disableArcAdbSideload",
+      base::BindRepeating(&CrostiniHandler::HandleDisableArcAdbRequest,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniHandler::OnJavascriptAllowed() {
@@ -252,6 +273,71 @@ void CrostiniHandler::OnCrostiniExportImportOperationStatusChanged(
   // Other side listens with cr.addWebUIListener
   FireWebUIListener("crostini-export-import-operation-status-changed",
                     base::Value(in_progress));
+}
+
+void CrostiniHandler::HandleQueryArcAdbRequest(const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(0U, args->GetSize());
+
+  chromeos::SessionManagerClient* client =
+      chromeos::SessionManagerClient::Get();
+  client->QueryAdbSideload(base::Bind(&CrostiniHandler::OnQueryAdbSideload,
+                                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniHandler::OnQueryAdbSideload(bool success, bool enabled) {
+  if (!success) {
+    LOG(ERROR) << "Failed to query adb sideload status";
+    enabled = false;
+  }
+  // Other side listens with cr.addWebUIListener
+  FireWebUIListener("crostini-arc-adb-sideload-status-changed",
+                    base::Value(enabled));
+}
+
+void CrostiniHandler::HandleEnableArcAdbRequest(const base::ListValue* args) {
+  CHECK_EQ(0U, args->GetSize());
+  if (!CheckEligibilityToChangeArcAdbSideloading())
+    return;
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kEnableAdbSideloadingRequested, true);
+  prefs->CommitPendingWrite();
+
+  chrome::AttemptRelaunch();
+}
+
+void CrostiniHandler::HandleDisableArcAdbRequest(const base::ListValue* args) {
+  CHECK_EQ(0U, args->GetSize());
+  if (!CheckEligibilityToChangeArcAdbSideloading())
+    return;
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+  prefs->CommitPendingWrite();
+
+  chromeos::PowerManagerClient::Get()->RequestRestart(
+      power_manager::REQUEST_RESTART_FOR_USER, "disable adb sideloading");
+}
+
+bool CrostiniHandler::CheckEligibilityToChangeArcAdbSideloading() const {
+  if (!chromeos::ProfileHelper::IsOwnerProfile(profile_)) {
+    DVLOG(1) << "Only the owner can change adb sideloading status";
+    return false;
+  }
+
+  if (user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
+    DVLOG(1) << "Child account is currently unsupported";
+    return false;
+  }
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->IsEnterpriseManaged()) {
+    DVLOG(1) << "adb sideloading is currently unsupported on managed device";
+    return false;
+  }
+  return true;
 }
 
 }  // namespace settings

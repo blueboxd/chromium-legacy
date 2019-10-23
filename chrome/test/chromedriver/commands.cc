@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -26,12 +27,12 @@
 #include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_commands.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
-#include "chrome/test/chromedriver/version.h"
 
 void ExecuteGetStatus(
     const base::DictionaryValue& params,
@@ -42,7 +43,8 @@ void ExecuteGetStatus(
   // so we are always ready.
   base::DictionaryValue info;
   info.SetBoolean("ready", true);
-  info.SetString("message", "ChromeDriver ready for new sessions.");
+  info.SetString("message", base::StringPrintf("%s ready for new sessions.",
+                                               kChromeDriverProductShortName));
 
   // ChromeDriver specific data:
   base::DictionaryValue build;

@@ -121,19 +121,14 @@ function formatJapaneseImperialEra(year, month) {
   if (year <= 1867 || year == 1868 && month <= 9)
     return '';
   if (!japaneseEraFormatter) {
-    japaneseEraFormatter =
-        new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {era: 'long'});
+    japaneseEraFormatter = new Intl.DateTimeFormat(
+        'ja-JP-u-ca-japanese', {era: 'long', year: 'numeric'});
   }
   // Produce the era for day 16 because it's almost the midpoint of a month.
   // 275760-09-13 is the last valid date in ECMAScript. We apply day 7 in that
   // case because it's the midpoint between 09-01 and 09-13.
   let sampleDay = year == 275760 && month == 8 ? 7 : 16;
-  let sampleDayString =
-      japaneseEraFormatter.format(new Date(year, month, sampleDay));
-  let nenIndex = sampleDayString.indexOf('\u5e74');
-  if (nenIndex == -1)
-    return '';
-  let yearPart = sampleDayString.substring(0, nenIndex + 1);
+  let yearPart = japaneseEraFormatter.format(new Date(year, month, sampleDay));
 
   // We don't show an imperial era if it is greater than 99 because of space
   // limitation.

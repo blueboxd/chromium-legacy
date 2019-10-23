@@ -26,7 +26,8 @@ const int kDenseShelfScreenSizeThreshold = 600;
 
 // Returns whether tablet mode is currently active.
 bool IsTabletMode() {
-  return Shell::Get()->tablet_mode_controller()->InTabletMode();
+  return Shell::Get()->tablet_mode_controller() &&
+         Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 }  // namespace
@@ -173,7 +174,7 @@ int ShelfConfig::control_size() const {
 
 int ShelfConfig::control_border_radius() const {
   return (chromeos::switches::ShouldShowShelfHotseat() && is_in_app() &&
-          Shell::Get()->tablet_mode_controller()->InTabletMode())
+          IsTabletMode())
              ? 0
              : control_size() / 2;
 }
@@ -219,8 +220,9 @@ void ShelfConfig::UpdateIsDense() {
 SkColor ShelfConfig::GetShelfControlButtonColor() const {
   if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode() &&
       Shell::Get()->session_controller()->GetSessionState() ==
-          session_manager::SessionState::ACTIVE)
+          session_manager::SessionState::ACTIVE) {
     return is_in_app() ? SK_ColorTRANSPARENT : GetDefaultShelfColor();
+  }
   return shelf_control_permanent_highlight_background_;
 }
 

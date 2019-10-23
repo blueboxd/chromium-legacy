@@ -9,7 +9,6 @@ import android.os.RemoteException;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IDownloadDelegateClient;
 
 /**
@@ -41,12 +40,8 @@ public final class DownloadDelegateProxy {
 
     @CalledByNative
     private void downloadRequested(String url, String userAgent, String contentDisposition,
-            String mimetype, long contentLength) {
-        try {
-            mClient.downloadRequested(url, userAgent, contentDisposition, mimetype, contentLength);
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+            String mimetype, long contentLength) throws RemoteException {
+        mClient.downloadRequested(url, userAgent, contentDisposition, mimetype, contentLength);
     }
 
     @NativeMethods

@@ -235,8 +235,19 @@ class Device final : public ui::GbmDevice {
                                               uint32_t flags) override {
     struct gbm_bo* bo =
         gbm_bo_create(device_, size.width(), size.height(), format, flags);
-    if (!bo)
+    if (!bo) {
+#if DCHECK_IS_ON()
+      const char fourcc_as_string[5] = {format & 0xFF, format >> 8 & 0xFF,
+                                        format >> 16 & 0xFF,
+                                        format >> 24 & 0xFF, 0};
+
+      LOG(WARNING) << "Failed to create GBM BO, " << fourcc_as_string << ", "
+                   << size.ToString() << ", flags: 0x" << std::hex << flags
+                   << "; gbm_device_is_format_supported() = "
+                   << gbm_device_is_format_supported(device_, format, flags);
+#endif
       return nullptr;
+    }
 
     return CreateBufferForBO(bo, format, size, flags);
   }

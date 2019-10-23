@@ -152,7 +152,7 @@ int MapCertChainErrorStatusToCertStatus(DWORD error_status) {
     if (error_status & CERT_TRUST_HAS_WEAK_SIGNATURE) {
       cert_status |= CERT_STATUS_WEAK_KEY;
     } else {
-      cert_status |= CERT_STATUS_INVALID;
+      cert_status |= CERT_STATUS_AUTHORITY_INVALID;
     }
   }
 

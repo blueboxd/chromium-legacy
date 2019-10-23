@@ -13,12 +13,9 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::MockCallback;
-using testing::CallbackToFunctor;
-using testing::InvokeWithoutArgs;
 using testing::StrictMock;
 
 namespace signin {

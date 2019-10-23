@@ -68,7 +68,7 @@ bool CallMonitorInfo(HMONITOR monitor, MONITORINFOEXW* monitor_info_ptr) {
   CrossCallReturn answer = {};
   SharedMemIPCClient ipc(ipc_memory);
   InOutCountedBuffer buffer(monitor_info_ptr, sizeof(*monitor_info_ptr));
-  ResultCode code = CrossCall(ipc, IPC_USER_GETMONITORINFO_TAG,
+  ResultCode code = CrossCall(ipc, IpcTag::USER_GETMONITORINFO,
                               static_cast<void*>(monitor), buffer, &answer);
 
   if (code != SBOX_ALL_OK)
@@ -123,7 +123,7 @@ BOOL WINAPI TargetEnumDisplayMonitors(EnumDisplayMonitorsFunction,
   InOutCountedBuffer result_buffer(&result, sizeof(result));
   SharedMemIPCClient ipc(ipc_memory);
   ResultCode code =
-      CrossCall(ipc, IPC_USER_ENUMDISPLAYMONITORS_TAG, result_buffer, &answer);
+      CrossCall(ipc, IpcTag::USER_ENUMDISPLAYMONITORS, result_buffer, &answer);
 
   if (code != SBOX_ALL_OK)
     return false;
@@ -230,7 +230,7 @@ static NTSTATUS GetCertificateCommon(
   CrossCallReturn answer = {};
   SharedMemIPCClient ipc(ipc_memory);
   ResultCode code =
-      CrossCall(ipc, IPC_GDI_GETCERTIFICATE_TAG, device_name_str.c_str(),
+      CrossCall(ipc, IpcTag::GDI_GETCERTIFICATE, device_name_str.c_str(),
                 protected_output_handle, buffer.handle(),
                 static_cast<uint32_t>(certificate_size), &answer);
 
@@ -278,7 +278,7 @@ static NTSTATUS GetCertificateSizeCommon(
     protected_output_handle = protected_output;
   }
   ResultCode code =
-      CrossCall(ipc, IPC_GDI_GETCERTIFICATESIZE_TAG, device_name_str.c_str(),
+      CrossCall(ipc, IpcTag::GDI_GETCERTIFICATESIZE, device_name_str.c_str(),
                 protected_output_handle, &answer);
 
   if (code != SBOX_ALL_OK) {
@@ -330,7 +330,7 @@ TargetDestroyOPMProtectedOutput(DestroyOPMProtectedOutputFunction,
 
   CrossCallReturn answer = {};
   SharedMemIPCClient ipc(ipc_memory);
-  ResultCode code = CrossCall(ipc, IPC_GDI_DESTROYOPMPROTECTEDOUTPUT_TAG,
+  ResultCode code = CrossCall(ipc, IpcTag::GDI_DESTROYOPMPROTECTEDOUTPUT,
                               static_cast<void*>(protected_output), &answer);
 
   if (code != SBOX_ALL_OK)
@@ -362,7 +362,7 @@ NTSTATUS WINAPI TargetConfigureOPMProtectedOutput(
   CrossCallReturn answer = {};
   SharedMemIPCClient ipc(ipc_memory);
   ResultCode code =
-      CrossCall(ipc, IPC_GDI_CONFIGUREOPMPROTECTEDOUTPUT_TAG,
+      CrossCall(ipc, IpcTag::GDI_CONFIGUREOPMPROTECTEDOUTPUT,
                 static_cast<void*>(protected_output), buffer.handle(), &answer);
 
   if (code != SBOX_ALL_OK) {
@@ -393,7 +393,7 @@ NTSTATUS WINAPI TargetGetOPMInformation(
   CrossCallReturn answer = {};
   SharedMemIPCClient ipc(ipc_memory);
   ResultCode code =
-      CrossCall(ipc, IPC_GDI_GETOPMINFORMATION_TAG,
+      CrossCall(ipc, IpcTag::GDI_GETOPMINFORMATION,
                 static_cast<void*>(protected_output), buffer.handle(), &answer);
 
   if (code != SBOX_ALL_OK)
@@ -421,7 +421,7 @@ TargetGetOPMRandomNumber(GetOPMRandomNumberFunction,
   SharedMemIPCClient ipc(ipc_memory);
   InOutCountedBuffer buffer(random_number, sizeof(*random_number));
   ResultCode code =
-      CrossCall(ipc, IPC_GDI_GETOPMRANDOMNUMBER_TAG,
+      CrossCall(ipc, IpcTag::GDI_GETOPMRANDOMNUMBER,
                 static_cast<void*>(protected_output), buffer, &answer);
 
   if (code != SBOX_ALL_OK)
@@ -445,7 +445,7 @@ NTSTATUS WINAPI TargetGetSuggestedOPMProtectedOutputArraySize(
   base::string16 device_name_str;
   UnicodeStringToString(device_name, &device_name_str);
   ResultCode code =
-      CrossCall(ipc, IPC_GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE_TAG,
+      CrossCall(ipc, IpcTag::GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE,
                 device_name_str.c_str(), &answer);
 
   if (code != SBOX_ALL_OK)
@@ -473,7 +473,7 @@ NTSTATUS WINAPI TargetSetOPMSigningKeyAndSequenceNumbers(
   SharedMemIPCClient ipc(ipc_memory);
   InOutCountedBuffer buffer(&temp_parameters, sizeof(temp_parameters));
   ResultCode code =
-      CrossCall(ipc, IPC_GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS_TAG,
+      CrossCall(ipc, IpcTag::GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS,
                 static_cast<void*>(protected_output), buffer, &answer);
 
   if (code != SBOX_ALL_OK)
@@ -508,7 +508,7 @@ TargetCreateOPMProtectedOutputs(CreateOPMProtectedOutputsFunction,
   InOutCountedBuffer buffer(outputs_array, array_size.ValueOrDie());
   base::string16 device_name_str;
   UnicodeStringToString(device_name, &device_name_str);
-  ResultCode code = CrossCall(ipc, IPC_GDI_CREATEOPMPROTECTEDOUTPUTS_TAG,
+  ResultCode code = CrossCall(ipc, IpcTag::GDI_CREATEOPMPROTECTEDOUTPUTS,
                               device_name_str.c_str(), buffer, &answer);
 
   if (code != SBOX_ALL_OK)

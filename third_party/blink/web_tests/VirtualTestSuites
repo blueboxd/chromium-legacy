@@ -525,6 +525,21 @@
              "--disable-smooth-scrolling"]
   },
   {
+    "prefix": "hidpi",
+    "base": "fast/scrolling/scrollbars/dsf-ready",
+    "args": ["--disable-smooth-scrolling",
+             "--force-device-scale-factor=2"]
+  },
+  {
+    "prefix": "compositor_threaded_scrollbar_scrolling_hidpi",
+    "base": "fast/scrolling/scrollbars/dsf-ready",
+    "args": ["--enable-features=CompositorThreadedScrollbarScrolling",
+             "--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text",
+             "--disable-smooth-scrolling",
+             "--force-device-scale-factor=2"]
+  },
+  {
     "prefix": "compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf",
     "base": "fast/scrolling/scrollbars",
     "args": ["--enable-features=CompositorThreadedScrollbarScrolling",

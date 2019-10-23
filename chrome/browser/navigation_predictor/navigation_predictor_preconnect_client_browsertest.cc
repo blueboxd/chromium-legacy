@@ -5,9 +5,10 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,7 +25,8 @@
 namespace {
 
 class NavigationPredictorPreconnectClientBrowserTest
-    : public subresource_filter::SubresourceFilterBrowserTest {
+    : public subresource_filter::SubresourceFilterBrowserTest,
+      public predictors::PreconnectManager::Observer {
  public:
   NavigationPredictorPreconnectClientBrowserTest()
       : subresource_filter::SubresourceFilterBrowserTest() {
@@ -45,36 +47,40 @@ class NavigationPredictorPreconnectClientBrowserTest
   void SetUpOnMainThread() override {
     subresource_filter::SubresourceFilterBrowserTest::SetUpOnMainThread();
     host_resolver()->ClearRules();
+
+    auto* loading_predictor =
+        predictors::LoadingPredictorFactory::GetForProfile(
+            browser()->profile());
+    ASSERT_TRUE(loading_predictor);
+    loading_predictor->preconnect_manager()->SetObserverForTesting(this);
   }
 
   const GURL GetTestURL(const char* file) const {
     return https_server_->GetURL(file);
   }
 
-  // Retries fetching |histogram_name| until it contains at least |count|
-  // samples.
-  void RetryForHistogramUntilCountReached(
-      const base::HistogramTester& histogram_tester,
-      const std::string& histogram_name,
-      size_t count) {
-    base::RunLoop().RunUntilIdle();
-    for (size_t attempt = 0; attempt < 50; ++attempt) {
-      const std::vector<base::Bucket> buckets =
-          histogram_tester.GetAllSamples(histogram_name);
-      size_t total_count = 0;
-      for (const auto& bucket : buckets)
-        total_count += bucket.count;
-      if (total_count >= count)
-        return;
-      content::FetchHistogramsFromChildProcesses();
-      SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-      base::RunLoop().RunUntilIdle();
+  void OnPreresolveFinished(const GURL& url, bool success) override {
+    EXPECT_TRUE(success);
+    preresolve_done_count_++;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void WaitForPreresolveCount(int expected_count) {
+    while (preresolve_done_count_ < expected_count) {
+      run_loop_ = std::make_unique<base::RunLoop>();
+      run_loop_->Run();
+      run_loop_.reset();
     }
   }
+
+ protected:
+  int preresolve_done_count_ = 0;
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPredictorPreconnectClientBrowserTest);
 };
@@ -100,26 +106,20 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
   model->SetUserSelectedDefaultSearchProvider(template_url);
   const GURL& url = GetTestURL("/anchors_different_area.html?q=cats");
 
-  base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), url);
   // There should be preconnect from navigation, but not preconnect client.
-  histogram_tester.ExpectTotalCount("LoadingPredictor.PreconnectCount", 1);
-
-  ui_test_utils::NavigateToURL(browser(), url);
-  // There should be 2 preconnects from navigation, but not any from preconnect
-  // client.
-  histogram_tester.ExpectTotalCount("LoadingPredictor.PreconnectCount", 2);
+  EXPECT_EQ(1, preresolve_done_count_);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
                        PreconnectNotSearch) {
   const GURL& url = GetTestURL("/anchors_different_area.html");
 
-  base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), url);
-  // There should be preconnect from navigation and one from preconnect client.
-  RetryForHistogramUntilCountReached(histogram_tester,
-                                     "LoadingPredictor.PreconnectCount", 2);
+  // There should be one preconnect from navigation and one from preconnect
+  // client.
+  WaitForPreresolveCount(2);
+  EXPECT_EQ(2, preresolve_done_count_);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
@@ -127,26 +127,26 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
   const GURL& url = GetTestURL("/anchors_different_area.html");
 
   browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  base::HistogramTester histogram_tester;
+
   ui_test_utils::NavigateToURL(browser(), url);
 
   // There should be a navigational preconnect.
-  histogram_tester.ExpectTotalCount("LoadingPredictor.PreconnectCount", 1);
+  EXPECT_EQ(1, preresolve_done_count_);
 
   // Change to visible.
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
 
   // After showing the contents, there should be a preconnect client preconnect.
-  RetryForHistogramUntilCountReached(histogram_tester,
-                                     "LoadingPredictor.PreconnectCount", 2);
+  WaitForPreresolveCount(2);
+  EXPECT_EQ(2, preresolve_done_count_);
 
   browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
 
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
   // After showing the contents again, there should be another preconnect client
   // preconnect.
-  RetryForHistogramUntilCountReached(histogram_tester,
-                                     "LoadingPredictor.PreconnectCount", 3);
+  WaitForPreresolveCount(3);
+  EXPECT_EQ(3, preresolve_done_count_);
 }
 
 class NavigationPredictorPreconnectClientBrowserTestWithUnusedIdleSocketTimeout
@@ -167,12 +167,16 @@ class NavigationPredictorPreconnectClientBrowserTestWithUnusedIdleSocketTimeout
 IN_PROC_BROWSER_TEST_F(
     NavigationPredictorPreconnectClientBrowserTestWithUnusedIdleSocketTimeout,
     ActionAccuracy_timeout) {
-  base::HistogramTester histogram_tester;
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
-  histogram_tester.ExpectTotalCount("LoadingPredictor.PreconnectCount", 1);
+  WaitForPreresolveCount(3);
+  EXPECT_EQ(3, preresolve_done_count_);
+
+  // Expect another one.
+  WaitForPreresolveCount(4);
+  EXPECT_EQ(4, preresolve_done_count_);
 }
 
 class NavigationPredictorPreconnectClientBrowserTestWithHoldback
@@ -193,15 +197,69 @@ IN_PROC_BROWSER_TEST_F(
     NoPreconnectHoldback) {
   const GURL& url = GetTestURL("/anchors_different_area.html");
 
-  base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), url);
   // There should be preconnect from navigation, but not preconnect client.
-  histogram_tester.ExpectTotalCount("LoadingPredictor.PreconnectCount", 1);
+  EXPECT_EQ(1, preresolve_done_count_);
 
   ui_test_utils::NavigateToURL(browser(), url);
   // There should be 2 preconnects from navigation, but not any from preconnect
   // client.
-  histogram_tester.ExpectTotalCount("LoadingPredictor.PreconnectCount", 2);
+  EXPECT_EQ(2, preresolve_done_count_);
+}
+
+const base::Feature kPreconnectOnDidFinishNavigation{
+    "PreconnectOnDidFinishNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+class
+    NavigationPredictorPreconnectClientBrowserTestPreconnectOnDidFinishNavigationSecondDelay
+    : public NavigationPredictorPreconnectClientBrowserTest {
+ public:
+  NavigationPredictorPreconnectClientBrowserTestPreconnectOnDidFinishNavigationSecondDelay()
+      : NavigationPredictorPreconnectClientBrowserTest() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        kPreconnectOnDidFinishNavigation,
+        {{"delay_after_commit_in_ms", "1000"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorPreconnectClientBrowserTestPreconnectOnDidFinishNavigationSecondDelay,
+    PreconnectNotSearch) {
+  const GURL& url = GetTestURL("/anchors_different_area.html");
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  // There should be preconnect from navigation and one from OnLoad client.
+  WaitForPreresolveCount(2);
+  EXPECT_EQ(2, preresolve_done_count_);
+}
+
+class
+    NavigationPredictorPreconnectClientBrowserTestPreconnectOnDidFinishNavigationNoDelay
+    : public NavigationPredictorPreconnectClientBrowserTest {
+ public:
+  NavigationPredictorPreconnectClientBrowserTestPreconnectOnDidFinishNavigationNoDelay()
+      : NavigationPredictorPreconnectClientBrowserTest() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        kPreconnectOnDidFinishNavigation, {{"delay_after_commit_in_ms", "0"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorPreconnectClientBrowserTestPreconnectOnDidFinishNavigationNoDelay,
+    PreconnectNotSearch) {
+  const GURL& url = GetTestURL("/anchors_different_area.html");
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  // There should be a navigation preconnect, a commit preconnect, and an OnLoad
+  // preconnect.
+  WaitForPreresolveCount(3);
+  EXPECT_EQ(3, preresolve_done_count_);
 }
 
 }  // namespace

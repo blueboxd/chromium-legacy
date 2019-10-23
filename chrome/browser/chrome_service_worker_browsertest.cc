@@ -697,7 +697,7 @@ class StaticURLDataSource : public content::URLDataSource {
 
   // content::URLDataSource:
   std::string GetSource() override { return source_; }
-  void StartDataRequest(const std::string& path,
+  void StartDataRequest(const GURL& url,
                         const content::WebContents::Getter& wc_getter,
                         const GotDataCallback& callback) override {
     std::string data(content_);

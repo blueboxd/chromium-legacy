@@ -19,7 +19,7 @@ SwitchAccessTextNavigationManagerTest.prototype =
       /** @override */
       setUp: function() {
         this.textNavigationManager =
-            switchAccess.navigationManager_.textNavigationManager_;
+            switchAccess.navigationManager_.menuManager_.textNavigationManager_;
         this.navigationManager =
             switchAccess.navigationManager_;
       }
@@ -61,7 +61,8 @@ function runTextNavigationTest(testHelper, textParams) {
     assertNotEquals(inputNode, null);
 
     setUpCursorChangeListener(
-        testHelper, inputNode, initialTextIndex, targetTextIndex, targetTextIndex);
+        testHelper, inputNode, initialTextIndex, targetTextIndex,
+        targetTextIndex);
 
     textNavigationAction();
   });
@@ -119,14 +120,16 @@ function runTextSelectionTest(testHelper, textParams) {
     assertNotEquals(inputNode, null);
     checkNodeIsFocused(inputNode);
     let callback = testHelper.newCallback(function() {
-      setUpCursorChangeListener(testHelper, inputNode, targetTextEndIndex, targetTextStartIndex, targetTextEndIndex);
+      setUpCursorChangeListener(testHelper, inputNode, targetTextEndIndex,
+                                targetTextStartIndex, targetTextEndIndex);
       testHelper.textNavigationManager.saveSelectEnd();
     });
 
     testHelper.textNavigationManager.saveSelectStart();
 
     setUpCursorChangeListener(
-        testHelper, inputNode, initialTextIndex, navigationTargetIndex, navigationTargetIndex, callback);
+        testHelper, inputNode, initialTextIndex, navigationTargetIndex,
+        navigationTargetIndex, callback);
 
     textNavigationAction();
   });
@@ -307,7 +310,7 @@ TEST_F('SwitchAccessTextNavigationManagerTest', 'MoveUpOneLine', function() {
     cols: 8,
     wrap: 'hard',
     navigationAction: () => {
-      this.textNavigationManager.moveUpOneLine()
+      this.textNavigationManager.moveUpOneLine();
     }
   });
 });

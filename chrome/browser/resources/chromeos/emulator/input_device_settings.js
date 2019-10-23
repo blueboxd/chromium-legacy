@@ -5,6 +5,15 @@
 Polymer({
   is: 'input-device-settings',
 
+  behaviors: [WebUIListenerBehavior],
+
+  ready: function() {
+    this.addWebUIListener(
+        'touchpad-exists-changed', this.setTouchpadExists_.bind(this));
+    this.addWebUIListener(
+        'mouse-exists-changed', this.setMouseExists_.bind(this));
+  },
+
   /**
    * @param {!Event} e
    * Callback when the user toggles the touchpad.
@@ -26,16 +35,18 @@ Polymer({
   /**
    * Callback when the existence of a fake mouse changes.
    * @param {boolean} exists
+   * @private
    */
-  setMouseExists: function(exists) {
+  setMouseExists_: function(exists) {
     this.$.mouse.checked = exists;
   },
 
   /**
    * Callback when the existence of a fake touchpad changes.
    * @param {boolean} exists
+   * @private
    */
-  setTouchpadExists: function(exists) {
+  setTouchpadExists_: function(exists) {
     this.$.touchpad.checked = exists;
   },
 });

@@ -37,7 +37,7 @@ bool SignedPolicy::GenerateRules(const wchar_t* name,
                                     CASE_INSENSITIVE)) {
     return false;
   }
-  if (!policy->AddRule(IPC_NTCREATESECTION_TAG, &signed_policy)) {
+  if (!policy->AddRule(IpcTag::NTCREATESECTION, &signed_policy)) {
     return false;
   }
 

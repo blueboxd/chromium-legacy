@@ -10,6 +10,12 @@ group("webrtc_overrides") {
   ]
 }
 
+component("webrtc_component") {
+  public_deps = [
+    "//third_party/webrtc/api:libjingle_peerconnection_api",
+  ]
+}
+
 source_set("webrtc") {
   public_deps = [
     # TODO(kjellander): Start cleaning up this target as soon as

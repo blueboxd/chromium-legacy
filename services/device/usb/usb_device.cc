@@ -73,6 +73,14 @@ uint16_t UsbDevice::device_version() const {
   return GetDeviceVersion(*device_info_);
 }
 
+const mojom::UsbConfigurationInfo* UsbDevice::GetActiveConfiguration() const {
+  for (const auto& config : configurations()) {
+    if (config->configuration_value == device_info_->active_configuration)
+      return config.get();
+  }
+  return nullptr;
+}
+
 void UsbDevice::CheckUsbAccess(ResultCallback callback) {
   // By default assume that access to the device is allowed. This is implemented
   // on Chrome OS by checking with permission_broker.
@@ -99,12 +107,6 @@ void UsbDevice::RemoveObserver(Observer* observer) {
 
 void UsbDevice::ActiveConfigurationChanged(int configuration_value) {
   device_info_->active_configuration = configuration_value;
-  for (const auto& config : configurations()) {
-    if (config->configuration_value == configuration_value) {
-      active_configuration_ = config.get();
-      return;
-    }
-  }
 }
 
 void UsbDevice::NotifyDeviceRemoved() {

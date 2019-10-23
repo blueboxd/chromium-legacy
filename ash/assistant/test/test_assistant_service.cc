@@ -199,9 +199,11 @@ void TestAssistantService ::StartMetalayerInteraction(const gfx::Rect& region) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void TestAssistantService ::StartTextInteraction(const std::string& query,
-                                                 bool allow_tts) {
-  StartInteraction(AssistantInteractionType::kText, query);
+void TestAssistantService ::StartTextInteraction(
+    const std::string& query,
+    chromeos::assistant::mojom::AssistantQuerySource source,
+    bool allow_tts) {
+  StartInteraction(AssistantInteractionType::kText, source, query);
   SendInteractionResponse();
 }
 
@@ -265,10 +267,11 @@ void TestAssistantService::CreateTimer(base::TimeDelta duration) {
 
 void TestAssistantService::StartInteraction(
     chromeos::assistant::mojom::AssistantInteractionType type,
+    chromeos::assistant::mojom::AssistantQuerySource source,
     const std::string& query) {
   for (auto& subscriber : interaction_subscribers_) {
     subscriber->OnInteractionStarted(
-        AssistantInteractionMetadata::New(type, query));
+        AssistantInteractionMetadata::New(type, source, query));
   }
 }
 

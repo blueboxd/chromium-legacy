@@ -26,38 +26,6 @@ namespace test {
 
 namespace {
 
-class CreateProfileHelper {
- public:
-  CreateProfileHelper() : profile_(NULL) {}
-
-  Profile* CreateAsync() {
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    base::FilePath temp_profile_dir =
-        profile_manager->user_data_dir().AppendASCII("Profile 1");
-    profile_manager->CreateProfileAsync(
-        temp_profile_dir,
-        base::Bind(&CreateProfileHelper::OnProfileCreated,
-                   base::Unretained(this)),
-        base::string16(),
-        std::string());
-    run_loop_.Run();
-    return profile_;
-  }
-
- private:
-  void OnProfileCreated(Profile* profile, Profile::CreateStatus status) {
-    if (status == Profile::CREATE_STATUS_INITIALIZED) {
-      profile_ = profile;
-      run_loop_.Quit();
-    }
-  }
-
-  base::RunLoop run_loop_;
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateProfileHelper);
-};
-
 // Create the icon image for the app-item with |id|.
 // TODO(mukai): consolidate the implementation with
 // ash/app_list/test/app_list_test_model.cc.
@@ -82,11 +50,6 @@ AppListClientImpl* GetAppListClient() {
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   client->UpdateProfile();
   return client;
-}
-
-Profile* CreateSecondProfileAsync() {
-  CreateProfileHelper helper;
-  return helper.CreateAsync();
 }
 
 void PopulateDummyAppListItems(int n) {

@@ -23,6 +23,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/net/adb_client_socket.h"
 #include "net/base/net_errors.h"
 
@@ -155,12 +156,13 @@ Status AdbImpl::ForwardPort(const std::string& device_serial,
   if (*local_port_output == 0) {
     return Status(
         kUnknownError,
-        "Failed to forward ports to device " + device_serial +
-            ". No port chosen: " + response +
-            ". Perhaps your adb version is out of date. "
-            "ChromeDriver 2.39 and newer require adb version 1.0.38 or newer. "
-            "Run 'adb version' in your terminal of the host device to find "
-            "your version of adb.");
+        base::StringPrintf(
+            "Failed to forward ports to device %s. No port chosen: %s. Perhaps "
+            "your adb version is out of date. %s 2.39 and newer require adb "
+            "version 1.0.38 or newer. Run 'adb version' in your terminal of "
+            "the host device to find your version of adb.",
+            device_serial.c_str(), response.c_str(),
+            kChromeDriverProductFullName));
   }
 
   return Status(kOk);

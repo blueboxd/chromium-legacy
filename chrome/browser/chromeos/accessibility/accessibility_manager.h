@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
 #include "chrome/browser/chromeos/accessibility/switch_access_panel.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/user_manager/user_manager.h"
@@ -35,7 +37,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class Browser;
-class Profile;
 class SwitchAccessEventHandlerDelegate;
 
 namespace ash {
@@ -109,7 +110,8 @@ class AccessibilityManager
       public extensions::ExtensionRegistryObserver,
       public user_manager::UserManager::UserSessionStateObserver,
       public input_method::InputMethodManager::Observer,
-      public CrasAudioHandler::AudioObserver {
+      public CrasAudioHandler::AudioObserver,
+      public ProfileObserver {
  public:
   // Creates an instance of AccessibilityManager, this should be called once,
   // because only one instance should exist at the same time.
@@ -429,8 +431,12 @@ class AccessibilityManager
   // CrasAudioHandler::AudioObserver:
   void OnActiveOutputNodeChanged() override;
 
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
+
   // Profile which has the current a11y context.
   Profile* profile_ = nullptr;
+  ScopedObserver<Profile, ProfileObserver> profile_observer_{this};
 
   content::NotificationRegistrar notification_registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

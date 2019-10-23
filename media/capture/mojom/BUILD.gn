@@ -5,6 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("video_capture") {
+  generate_java = true
   sources = [
     "video_capture.mojom",
     "video_capture_types.mojom",

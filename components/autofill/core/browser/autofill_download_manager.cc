@@ -852,6 +852,9 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   resource_request->url = request_url;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = method;
+  resource_request->trusted_params = network::ResourceRequest::TrustedParams();
+  resource_request->trusted_params->network_isolation_key =
+      driver_->NetworkIsolationKey();
 
   // Add Chrome experiment state to the request headers.
   variations::AppendVariationsHeaderUnknownSignedIn(

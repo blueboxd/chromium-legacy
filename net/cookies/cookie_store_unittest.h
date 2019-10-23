@@ -420,7 +420,7 @@ TYPED_TEST_P(CookieStoreTest, FilterTest) {
   std::unique_ptr<CanonicalCookie> cc(CanonicalCookie::CreateSanitizedCookie(
       this->www_foo_foo_.url(), "A", "B", std::string(), "/foo", one_hour_ago,
       one_hour_from_now, base::Time(), false, false,
-      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
+      CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT));
   ASSERT_TRUE(cc);
   EXPECT_TRUE(this->SetCanonicalCookie(cs, std::move(cc), "https",
                                        true /*modify_httponly*/));
@@ -430,7 +430,7 @@ TYPED_TEST_P(CookieStoreTest, FilterTest) {
   cc = CanonicalCookie::CreateSanitizedCookie(
       this->www_foo_bar_.url(), "C", "D", this->www_foo_bar_.domain(), "/bar",
       two_hours_ago, base::Time(), one_hour_ago, false, true,
-      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT);
+      CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT);
   ASSERT_TRUE(cc);
   EXPECT_TRUE(this->SetCanonicalCookie(cs, std::move(cc), "https",
                                        true /*modify_httponly*/));
@@ -547,7 +547,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
       std::make_unique<CanonicalCookie>(
           "A", "B", foo_foo_host, "/foo", one_hour_ago, one_hour_from_now,
           base::Time(), false /* secure */, false /* httponly */,
-          CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+          CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT),
       "http", true));
   // Note that for the creation time to be set exactly, without modification,
   // it must be different from the one set by the line above.
@@ -555,7 +555,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
       cs,
       std::make_unique<CanonicalCookie>(
           "C", "D", "." + foo_bar_domain, "/bar", two_hours_ago, base::Time(),
-          one_hour_ago, false, true, CookieSameSite::NO_RESTRICTION,
+          one_hour_ago, false, true, CookieSameSite::LAX_MODE,
           COOKIE_PRIORITY_DEFAULT),
       "http", true));
 
@@ -614,7 +614,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
                 std::make_unique<CanonicalCookie>(
                     "G", "H", http_foo_host, "/unique", base::Time(),
                     base::Time(), base::Time(), false /* secure */,
-                    true /* httponly */, CookieSameSite::NO_RESTRICTION,
+                    true /* httponly */, CookieSameSite::LAX_MODE,
                     COOKIE_PRIORITY_DEFAULT),
                 "http", false /* modify_http_only */)
             .HasExclusionReason(
@@ -641,7 +641,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
         std::make_unique<CanonicalCookie>(
             "G", "H", http_foo_host, "/unique", base::Time(), base::Time(),
             base::Time(), false /* secure */, true /* httponly */,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT),
         "http", true /* modify_http_only */));
 
     EXPECT_TRUE(
@@ -650,7 +650,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
                 std::make_unique<CanonicalCookie>(
                     "G", "H", http_foo_host, "/unique", base::Time(),
                     base::Time(), base::Time(), false /* secure */,
-                    true /* httponly */, CookieSameSite::NO_RESTRICTION,
+                    true /* httponly */, CookieSameSite::LAX_MODE,
                     COOKIE_PRIORITY_DEFAULT),
                 "http", false /* modify_http_only */)
             .HasExclusionReason(
@@ -662,7 +662,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
         std::make_unique<CanonicalCookie>(
             "G", "H", http_foo_host, "/unique", base::Time(), base::Time(),
             base::Time(), false /* secure */, true /* httponly */,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT),
         "http", true /* modify_http_only */));
   }
 

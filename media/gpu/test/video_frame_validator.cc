@@ -119,13 +119,15 @@ void VideoFrameValidator::ProcessVideoFrameTask(
   scoped_refptr<const VideoFrame> validated_frame = video_frame;
   // If this is a DMABuf-backed memory frame we need to map it before accessing.
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  if (validated_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
+  if (validated_frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
+      validated_frame->storage_type() ==
+          VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     // Create VideoFrameMapper if not yet created. The decoder's output pixel
     // format is not known yet when creating the VideoFrameValidator. We can
     // only create the VideoFrameMapper upon receiving the first video frame.
     if (!video_frame_mapper_) {
-      video_frame_mapper_ =
-          VideoFrameMapperFactory::CreateMapper(video_frame->format());
+      video_frame_mapper_ = VideoFrameMapperFactory::CreateMapper(
+          video_frame->format(), video_frame->storage_type());
       LOG_ASSERT(video_frame_mapper_) << "Failed to create VideoFrameMapper";
     }
 

@@ -19,6 +19,7 @@
  *   ANDROID_APPS: (undefined|!settings.Route),
  *   ANDROID_APPS_DETAILS: (undefined|!settings.Route),
  *   CROSTINI: (undefined|!settings.Route),
+ *   CROSTINI_ANDROID_ADB: (undefined|!settings.Route),
  *   CROSTINI_DETAILS: (undefined|!settings.Route),
  *   CROSTINI_EXPORT_IMPORT: (undefined|!settings.Route),
  *   CROSTINI_SHARED_PATHS: (undefined|!settings.Route),
@@ -471,6 +472,7 @@ cr.define('settings', function() {
     if (loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini')) {
       r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
+      r.CROSTINI_ANDROID_ADB = r.CROSTINI.createChild('/crostini/androidAdb');
       r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
       if (loadTimeData.valueExists('showCrostiniExportImport') &&
           loadTimeData.getBoolean('showCrostiniExportImport')) {

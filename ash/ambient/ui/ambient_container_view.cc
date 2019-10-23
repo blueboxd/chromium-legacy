@@ -4,10 +4,14 @@
 
 #include "ash/ambient/ui/ambient_container_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/ambient/ambient_controller.h"
-#include "ash/ambient/ui/ambient_container_view.h"
+#include "ash/ambient/ui/ambient_assistant_container_view.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/ambient/util/ambient_util.h"
+#include "ash/assistant/assistant_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -19,6 +23,9 @@
 namespace ash {
 
 namespace {
+
+// Ambient Assistant container view appearance.
+constexpr int kAmbientAssistantContainerViewPreferredHeightDip = 128;
 
 aura::Window* GetContainer() {
   aura::Window* container = nullptr;
@@ -60,6 +67,16 @@ gfx::Size AmbientContainerView::CalculatePreferredSize() const {
   return GetWidget()->GetNativeWindow()->GetRootWindow()->bounds().size();
 }
 
+void AmbientContainerView::Layout() {
+  if (!ambient_assistant_container_view_)
+    return;
+
+  // Set bounds for the ambient Assistant container view.
+  ambient_assistant_container_view_->SetBoundsRect(
+      gfx::Rect(0, 0, GetWidget()->GetRootView()->size().width(),
+                kAmbientAssistantContainerViewPreferredHeightDip));
+}
+
 void AmbientContainerView::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED) {
     event->SetHandled();
@@ -79,8 +96,12 @@ void AmbientContainerView::Init() {
   // TODO(b/139954108): Choose a better dark mode theme color.
   SetBackground(views::CreateSolidBackground(SK_ColorBLACK));
 
-  photo_view_ = new PhotoView(ambient_controller_);
-  AddChildView(photo_view_);
+  photo_view_ = AddChildView(std::make_unique<PhotoView>(ambient_controller_));
+
+  ambient_assistant_container_view_ =
+      AddChildView(std::make_unique<AmbientAssistantContainerView>(
+          ambient_controller_->assistant_controller()->view_delegate()));
+  ambient_assistant_container_view_->SetVisible(false);
 }
 
 }  // namespace ash

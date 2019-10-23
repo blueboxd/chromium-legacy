@@ -2055,27 +2055,27 @@ TEST_F(RenderWidgetHostTest, PendingUserActivationTimeout) {
 
   // One event allows one activation notification.
   SimulateMouseEvent(WebInputEvent::kMouseDown);
-  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
-  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_TRUE(host_->RemovePendingUserActivationIfAvailable());
+  EXPECT_FALSE(host_->RemovePendingUserActivationIfAvailable());
 
   // Mouse move and up does not increase pending user activation counter.
   SimulateMouseEvent(WebInputEvent::kMouseMove);
   SimulateMouseEvent(WebInputEvent::kMouseUp);
-  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_FALSE(host_->RemovePendingUserActivationIfAvailable());
 
   // 2 events allow 2 activation notifications.
   SimulateMouseEvent(WebInputEvent::kMouseDown);
   SimulateKeyboardEvent(WebInputEvent::kKeyDown);
-  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
-  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
-  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_TRUE(host_->RemovePendingUserActivationIfAvailable());
+  EXPECT_TRUE(host_->RemovePendingUserActivationIfAvailable());
+  EXPECT_FALSE(host_->RemovePendingUserActivationIfAvailable());
 
   // Timer reset the pending activation.
   SimulateMouseEvent(WebInputEvent::kMouseDown);
   SimulateMouseEvent(WebInputEvent::kMouseDown);
   task_environment_.FastForwardBy(
       RenderWidgetHostImpl::kActivationNotificationExpireTime);
-  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_FALSE(host_->RemovePendingUserActivationIfAvailable());
 }
 
 // Tests that fling events are not dispatched when the wheel event is consumed.

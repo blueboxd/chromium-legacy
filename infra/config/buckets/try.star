@@ -877,6 +877,7 @@ gpu_linux_builder(
 
 gpu_linux_builder(
     name = 'gpu-try-linux-nvidia-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
@@ -1246,10 +1247,6 @@ linux_builder(
 )
 
 linux_builder(
-    name = 'linux-jumbo-rel',
-)
-
-linux_builder(
     name = 'linux-libfuzzer-asan-rel',
     executable = luci.recipe(name = 'chromium_libfuzzer_trybot'),
     tryjob = tryjob(),
@@ -1263,6 +1260,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux-rel',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
     use_clang_coverage = True,
@@ -1301,6 +1299,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux_chromium_asan_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     ssd = True,
     tryjob = tryjob(),
@@ -1377,6 +1376,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux_chromium_tsan_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
@@ -1459,11 +1459,6 @@ def mac_builder(*, name, cores=None, os=os.MAC_ANY, **kwargs):
       os = os,
       **kwargs
   )
-
-mac_builder(
-    name = 'mac-jumbo-rel',
-    cores = 4,
-)
 
 mac_builder(
     name = 'mac-osxbeta-rel',
@@ -1669,10 +1664,6 @@ win_builder(
         'pool_size': 20,
         'tests': '*',
     },
-)
-
-win_builder(
-    name = 'win-jumbo-rel',
 )
 
 win_builder(

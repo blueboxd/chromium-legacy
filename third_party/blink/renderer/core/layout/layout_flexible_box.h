@@ -155,7 +155,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LayoutBox& child,
       LayoutUnit main_axis_border_and_padding,
       ChildLayoutType = kLayoutIfNeeded);
-  void AdjustAlignmentForChild(LayoutBox& child, LayoutUnit);
   void ResetAlignmentForChild(LayoutBox& child, LayoutUnit);
   bool MainAxisLengthIsDefinite(const LayoutBox& child,
                                 const Length& flex_basis,
@@ -201,11 +200,9 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
                            LayoutUnit cross_axis_offset,
                            LayoutUnit available_free_space);
   void AlignFlexLines(FlexLayoutAlgorithm&);
-  void AlignChildren(Vector<FlexLine>&);
+  void AlignChildren(FlexLayoutAlgorithm&);
   void ApplyStretchAlignmentToChild(FlexItem& child);
   void FlipForRightToLeftColumn(const Vector<FlexLine>& line_contexts);
-  void FlipForWrapReverse(const Vector<FlexLine>&,
-                          LayoutUnit cross_axis_start_edge);
 
   float CountIntrinsicSizeForAlgorithmChange(
       LayoutUnit max_preferred_width,

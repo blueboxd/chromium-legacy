@@ -257,14 +257,17 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
   ]
   java_files = [
     "javatests/src/org/chromium/weblayer/test/BrowserObserverTest.java",
-    "javatests/src/org/chromium/weblayer/test/EventUtils.java",
     "javatests/src/org/chromium/weblayer/test/DownloadDelegateTest.java",
+    "javatests/src/org/chromium/weblayer/test/EventUtils.java",
+    "javatests/src/org/chromium/weblayer/test/FullscreenDelegateTest.java",
     "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
     "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
+    "javatests/src/org/chromium/weblayer/test/EventUtils.java",
     "javatests/src/org/chromium/weblayer/test/ExecuteScriptTest.java",
     "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
     "javatests/src/org/chromium/weblayer/test/WebLayerShellActivityTestRule.java",
     "javatests/src/org/chromium/weblayer/test/FragmentRestoreTest.java",
+    "javatests/src/org/chromium/weblayer/test/FileInputTest.java",
     "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
   ]
   additional_apks = [

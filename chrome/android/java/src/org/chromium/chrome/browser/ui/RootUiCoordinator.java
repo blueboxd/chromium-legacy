@@ -24,6 +24,8 @@ import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.chrome.browser.metrics.UkmRecorder;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -136,8 +138,10 @@ public class RootUiCoordinator
 
             mFindToolbarManager.showToolbar();
 
+            Tab tab = mActivity.getActivityTabProvider().get();
             if (fromMenu) {
                 RecordUserAction.record("MobileMenuFindInPage");
+                new UkmRecorder.Bridge().recordEvent(tab.getWebContents(), "MobileMenu.FindInPage");
             } else {
                 RecordUserAction.record("MobileShortcutFindInPage");
             }

@@ -44,19 +44,17 @@ class OnScreenKeyboardDisplayManagerInputPane::VirtualKeyboardInputPane
   }
 
   void TryShowInBackgroundThread(HWND hwnd) {
+    // TODO(crbug.com/1007958): Remove this API after landing TSF virtual keyboard
     DCHECK(!main_task_runner_->BelongsToCurrentThread());
     if (!EnsureInputPanePointersInBackgroundThread(hwnd))
       return;
-    boolean res;
-    input_pane2_->TryShow(&res);
   }
 
   void TryHideInBackgroundThread() {
+    // TODO(crbug.com/1007958): Remove this API after landing TSF virtual keyboard
     DCHECK(!main_task_runner_->BelongsToCurrentThread());
     if (!input_pane2_)
       return;
-    boolean res;
-    input_pane2_->TryHide(&res);
   }
 
  private:

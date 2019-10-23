@@ -18,7 +18,6 @@ if (optimize_webui) {
     insert_in_head = "<base href=\"chrome://print\">"
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
     js_out_files = [ "crisper.js" ]
-    replace_for_html_imports_polyfill = "crisper.js"
 
     excludes = [ "pdf/pdf_scripting_api.js" ]
 

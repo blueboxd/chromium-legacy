@@ -862,7 +862,8 @@ bool V4L2MjpegDecodeAccelerator::ConvertOutputImage(
   // Dmabuf-backed frame needs to be mapped for SW access.
   if (dst_frame->HasDmaBufs()) {
     std::unique_ptr<VideoFrameMapper> frame_mapper =
-        VideoFrameMapperFactory::CreateMapper(dst_frame->format());
+        VideoFrameMapperFactory::CreateMapper(dst_frame->format(),
+                                              VideoFrame::STORAGE_DMABUFS);
     if (!frame_mapper) {
       VLOGF(1) << "Failed to create video frame mapper";
       return false;

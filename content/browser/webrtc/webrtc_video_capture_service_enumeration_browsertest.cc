@@ -14,7 +14,8 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
@@ -64,16 +65,16 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
       public testing::WithParamInterface<TestParams>,
       public video_capture::mojom::DevicesChangedObserver {
  public:
-  WebRtcVideoCaptureServiceEnumerationBrowserTest()
-      : devices_changed_observer_binding_(this) {
+  WebRtcVideoCaptureServiceEnumerationBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
   }
 
   ~WebRtcVideoCaptureServiceEnumerationBrowserTest() override {}
 
   void ConnectToService() {
-    video_capture::mojom::DevicesChangedObserverPtr observer;
-    devices_changed_observer_binding_.Bind(mojo::MakeRequest(&observer));
+    mojo::PendingRemote<video_capture::mojom::DevicesChangedObserver> observer;
+    devices_changed_observer_receiver_.Bind(
+        observer.InitWithNewPipeAndPassReceiver());
     switch (GetParam().api_to_use) {
       case ServiceApi::kSingleClient:
         GetVideoCaptureService().ConnectToDeviceFactory(
@@ -225,8 +226,8 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
       shared_memory_devices_by_id_;
 
  private:
-  mojo::Binding<video_capture::mojom::DevicesChangedObserver>
-      devices_changed_observer_binding_;
+  mojo::Receiver<video_capture::mojom::DevicesChangedObserver>
+      devices_changed_observer_receiver_{this};
   base::test::ScopedFeatureList scoped_feature_list_;
   video_capture::mojom::DeviceFactoryPtr factory_;
   video_capture::mojom::VideoSourceProviderPtr video_source_provider_;

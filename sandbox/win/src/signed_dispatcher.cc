@@ -23,14 +23,15 @@ namespace sandbox {
 SignedDispatcher::SignedDispatcher(PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall create_params = {
-      {IPC_NTCREATESECTION_TAG, {VOIDPTR_TYPE}},
+      {IpcTag::NTCREATESECTION, {VOIDPTR_TYPE}},
       reinterpret_cast<CallbackGeneric>(&SignedDispatcher::CreateSection)};
 
   ipc_calls_.push_back(create_params);
 }
 
-bool SignedDispatcher::SetupService(InterceptionManager* manager, int service) {
-  if (service == IPC_NTCREATESECTION_TAG)
+bool SignedDispatcher::SetupService(InterceptionManager* manager,
+                                    IpcTag service) {
+  if (service == IpcTag::NTCREATESECTION)
     return INTERCEPT_NT(manager, NtCreateSection, CREATE_SECTION_ID, 32);
   return false;
 }
@@ -53,7 +54,7 @@ bool SignedDispatcher::CreateSection(IPCInfo* ipc, HANDLE file_handle) {
   params[NameBased::NAME] = ParamPickerMake(module_name);
 
   EvalResult result =
-      policy_base_->EvalPolicy(IPC_NTCREATESECTION_TAG, params.GetBase());
+      policy_base_->EvalPolicy(IpcTag::NTCREATESECTION, params.GetBase());
 
   // Return operation status on the IPC.
   HANDLE section_handle = nullptr;

@@ -34,18 +34,11 @@
 #include "media/base/seekable_buffer.h"
 #include "media/base/test_data_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::base::ThreadTaskRunnerHandle;
 using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::AtLeast;
-using ::testing::Between;
-using ::testing::CreateFunctor;
 using ::testing::DoAll;
-using ::testing::Gt;
-using ::testing::InvokeWithoutArgs;
 using ::testing::NotNull;
 using ::testing::Return;
 

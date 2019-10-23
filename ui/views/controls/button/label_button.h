@@ -99,6 +99,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void SetBorder(std::unique_ptr<Border> border) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Size CalculatePreferredSize() const override;
+  gfx::Size GetMinimumSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
   void EnableCanvasFlippingForRTLUI(bool flip) override;
@@ -141,10 +142,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Updates the border as per the NativeTheme, unless a different border was
   // set with SetBorder.
   void UpdateThemedBorder();
-
-  // Returns the available area for the label and image. Subclasses can change
-  // these bounds if they need room to do manual painting.
-  gfx::Rect GetChildAreaBounds();
 
   // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;

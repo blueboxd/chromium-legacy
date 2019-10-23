@@ -192,6 +192,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "ash-drag-window-from-shelf",
+    "owners": [ "xdai" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "ash-enable-overview-rounded-corners",
     "owners": [ "sammiequon" ],
     "expiry_milestone": 78

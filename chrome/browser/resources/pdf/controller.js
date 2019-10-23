@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
+
+import {PartialPoint, Point, Viewport} from './viewport.js';
 
 /** @typedef {{ type: string }} */
-let MessageData;
+export let MessageData;
 
 /**
  * @typedef {{
@@ -37,7 +43,7 @@ let EmailMessageData;
  *   pageNumbers: !Array<number>
  * }}
  */
-let PrintPreviewParams;
+export let PrintPreviewParams;
 
 // Note: Redefining this type here, to work around the fact that ink externs
 // are only available on Chrome OS, so the targets that contain them cannot be
@@ -70,7 +76,7 @@ function createToken() {
 }
 
 /** @abstract */
-class ContentController {
+export class ContentController {
   constructor() {}
 
   beforeZoom() {}
@@ -127,7 +133,7 @@ class ContentController {
  * set-annotation-undo-state: Contains information about whether undo or redo
  *     options are available.
  */
-class InkController extends ContentController {
+export class InkController extends ContentController {
   /** @param {!Viewport} viewport */
   constructor(viewport) {
     super();
@@ -139,7 +145,7 @@ class InkController extends ContentController {
     this.inkHost_ = null;
 
     /** @private {!EventTarget} */
-    this.eventTarget_ = new cr.EventTarget();
+    this.eventTarget_ = new EventTarget();
 
     /** @type {?AnnotationTool} */
     this.tool_ = null;
@@ -218,7 +224,7 @@ class InkController extends ContentController {
  * element. Dispatches a 'plugin-message' event containing the message from the
  * plugin, if a message type not handled by this controller is received.
  */
-class PluginController extends ContentController {
+export class PluginController extends ContentController {
   /**
    * @param {!HTMLEmbedElement} plugin
    * @param {!Viewport} viewport
@@ -246,7 +252,7 @@ class PluginController extends ContentController {
         'message', e => this.handlePluginMessage_(e), false);
 
     /** @private {!EventTarget} */
-    this.eventTarget_ = new cr.EventTarget();
+    this.eventTarget_ = new EventTarget();
   }
 
   /** @return {!EventTarget} */

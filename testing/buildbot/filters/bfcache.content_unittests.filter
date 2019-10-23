@@ -12,14 +12,6 @@
 -RenderFrameHostManagerTest.CommitNewNavigationBeforeSendingSwapOut
 -RenderFrameHostManagerTest.SwapOutFrameAfterSwapOutACK
 
-# Test:
-# 1) Normal navigation to a non-webui URL.
-# 2) Add the webui capability to the RenderFrameHost.
-# 3) Navigate away.
-# 4) Navigate back. Hit a CHECK. RenderFrameHost with the webui capability can't
-#    have non-webUI URL.
--NavigationControllerTest.LoadURL_PrivilegedPending
-
 # navigation_simulator_impl.cc(581)] Check failed: state_ <= READY_TO_COMMIT
 -RenderFrameHostManagerTest.NavigateAfterMissingSwapOutACK
 

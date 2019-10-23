@@ -563,6 +563,15 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   std::string type = dict.Get(kType).AsString();
 
   if (type == kJSViewportType) {
+    pp::Var layout_options_var = dict.Get(kJSLayoutOptions);
+    if (!layout_options_var.is_undefined()) {
+      DocumentLayout::Options layout_options;
+      layout_options.FromVar(layout_options_var);
+      // TODO(crbug.com/1013800): Eliminate need to get document size from here.
+      document_size_ = engine_->ApplyDocumentLayout(layout_options);
+      OnGeometryChanged(zoom_, device_scale_);
+    }
+
     if (!(dict.Get(pp::Var(kJSXOffset)).is_number() &&
           dict.Get(pp::Var(kJSYOffset)).is_number() &&
           dict.Get(pp::Var(kJSZoom)).is_number() &&
@@ -1293,12 +1302,10 @@ void OutOfProcessInstance::FillRect(const pp::Rect& rect, uint32_t color) {
 }
 
 void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
-  document_size_ = layout.size();
-
   pp::VarDictionary dimensions;
   dimensions.Set(kType, kJSDocumentDimensionsType);
-  dimensions.Set(kJSDocumentWidth, pp::Var(document_size_.width()));
-  dimensions.Set(kJSDocumentHeight, pp::Var(document_size_.height()));
+  dimensions.Set(kJSDocumentWidth, pp::Var(layout.size().width()));
+  dimensions.Set(kJSDocumentHeight, pp::Var(layout.size().height()));
   dimensions.Set(kJSLayoutOptions, layout.options().ToVar());
   pp::VarArray page_dimensions_array;
   size_t num_pages = layout.page_count();
@@ -1316,8 +1323,6 @@ void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
   }
   dimensions.Set(kJSPageDimensions, page_dimensions_array);
   PostMessage(dimensions);
-
-  OnGeometryChanged(zoom_, device_scale_);
 }
 
 void OutOfProcessInstance::Invalidate(const pp::Rect& rect) {

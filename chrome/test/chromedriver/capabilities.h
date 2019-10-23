@@ -188,4 +188,7 @@ struct Capabilities {
   bool use_automation_extension;
 };
 
+bool GetChromeOptionsDictionary(const base::DictionaryValue& params,
+                                const base::DictionaryValue** out);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_

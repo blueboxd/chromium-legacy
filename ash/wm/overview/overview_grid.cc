@@ -1490,6 +1490,96 @@ void OverviewGrid::EndScroll() {
     PositionWindows(/*animate=*/false);
 }
 
+int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
+                                                           int height) {
+  const gfx::Size item_size(0, height);
+  gfx::RectF target_bounds = item->GetTargetBoundsInScreen();
+  float scale = item->GetItemScale(item_size);
+
+  // The drop target, unlike the other windows has its bounds set directly, so
+  // |GetTargetBoundsInScreen()| won't return the value we want. Instead, get
+  // the scale from the window it was meant to be a placeholder for.
+  if (IsDropTargetWindow(item->GetWindow())) {
+    aura::Window* dragged_window = nullptr;
+    OverviewItem* item =
+        overview_session_->window_drag_controller()
+            ? overview_session_->window_drag_controller()->item()
+            : nullptr;
+    if (item)
+      dragged_window = item->GetWindow();
+    else if (dragged_window_)
+      dragged_window = dragged_window_;
+
+    if (dragged_window && dragged_window->parent()) {
+      target_bounds = ::ash::GetTargetBoundsInScreen(dragged_window);
+      const gfx::SizeF inset_size(0, height - 2 * kWindowMargin);
+      scale = ScopedOverviewTransformWindow::GetItemScale(
+          target_bounds.size(), inset_size,
+          dragged_window->GetProperty(aura::client::kTopViewInset),
+          kHeaderHeightDp);
+    }
+  }
+
+  int width = std::max(
+      1, gfx::ToFlooredInt(target_bounds.width() * scale) + 2 * kWindowMargin);
+  switch (item->GetWindowDimensionsType()) {
+    case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
+      width =
+          ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold * height;
+      break;
+    case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed:
+      width =
+          height / ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold;
+      break;
+    default:
+      break;
+  }
+
+  // Get the bounds of the window if there is a snapped window or a window
+  // about to be snapped.
+  base::Optional<gfx::RectF> split_view_bounds =
+      GetSplitviewBoundsMaintainingAspectRatio(item->GetWindow());
+  if (!split_view_bounds) {
+    item->set_unclipped_size(base::nullopt);
+    return width;
+  }
+
+  const bool is_landscape = IsCurrentScreenOrientationLandscape();
+  gfx::Size unclipped_size;
+  if (is_landscape) {
+    unclipped_size.set_width(width - 2 * kWindowMargin);
+    unclipped_size.set_height(height - 2 * kWindowMargin);
+    // For landscape mode, shrink |width| so that the aspect ratio matches
+    // that of |split_view_bounds|.
+    width = std::max(1, gfx::ToFlooredInt(split_view_bounds->width() * scale) +
+                            2 * kWindowMargin);
+  } else {
+    // For portrait mode, we want |height| to stay the same, so calculate
+    // what the unclipped height would be based on |split_view_bounds|.
+
+    // Find the width so that it matches height and matches the aspect ratio of
+    // |split_view_bounds|. |height| includes the margins and overview header,
+    // so exclude those from the calculation.
+    width = (split_view_bounds->width() *
+             (height - 2 * kWindowMargin - kHeaderHeightDp) /
+             split_view_bounds->height());
+    // The unclipped height is the height which matches |width| but keeps the
+    // aspect ratio of |target_bounds|. Clipping takes the overview header into
+    // account, so add that back in.
+    const int unclipped_height =
+        width * target_bounds.height() / target_bounds.width();
+    unclipped_size.set_width(width);
+    unclipped_size.set_height(unclipped_height + kHeaderHeightDp);
+
+    // Add some space between this item and the next one (if it exists).
+    width += (2 * kWindowMargin);
+  }
+
+  DCHECK(!unclipped_size.IsEmpty());
+  item->set_unclipped_size(base::make_optional(unclipped_size));
+  return width;
+}
+
 void OverviewGrid::MaybeInitDesksWidget() {
   if (!desks_util::ShouldDesksBarBeCreated() || desks_widget_)
     return;
@@ -1796,84 +1886,6 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
 
   overview_session_->AddItem(dragged_window, /*reposition=*/false,
                              /*animate=*/false);
-}
-
-int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
-                                                           int height) {
-  const gfx::Size item_size(0, height);
-  gfx::RectF target_bounds = item->GetTargetBoundsInScreen();
-  float scale = item->GetItemScale(item_size);
-
-  // The drop target, unlike the other windows has its bounds set directly, so
-  // |GetTargetBoundsInScreen()| won't return the value we want. Instead, get
-  // the scale from the window it was meant to be a placeholder for.
-  if (IsDropTargetWindow(item->GetWindow())) {
-    aura::Window* dragged_window = nullptr;
-    OverviewItem* item =
-        overview_session_->window_drag_controller()
-            ? overview_session_->window_drag_controller()->item()
-            : nullptr;
-    if (item)
-      dragged_window = item->GetWindow();
-    else if (dragged_window_)
-      dragged_window = dragged_window_;
-
-    if (dragged_window && dragged_window->parent()) {
-      target_bounds = ::ash::GetTargetBoundsInScreen(dragged_window);
-      const gfx::SizeF inset_size(0, height - 2 * kWindowMargin);
-      scale = ScopedOverviewTransformWindow::GetItemScale(
-          target_bounds.size(), inset_size,
-          dragged_window->GetProperty(aura::client::kTopViewInset),
-          kHeaderHeightDp);
-    }
-  }
-
-  int width = std::max(
-      1, gfx::ToFlooredInt(target_bounds.width() * scale) + 2 * kWindowMargin);
-  switch (item->GetWindowDimensionsType()) {
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
-      width =
-          ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold * height;
-      break;
-    case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed:
-      width =
-          height / ScopedOverviewTransformWindow::kExtremeWindowRatioThreshold;
-      break;
-    default:
-      break;
-  }
-
-  // Get the bounds of the window if there is a snapped window or a window
-  // about to be snapped.
-  base::Optional<gfx::RectF> split_view_bounds =
-      GetSplitviewBoundsMaintainingAspectRatio(item->GetWindow());
-  if (!split_view_bounds) {
-    item->set_unclipped_size(base::nullopt);
-    return width;
-  }
-
-  const bool is_landscape = IsCurrentScreenOrientationLandscape();
-  gfx::Size unclipped_size;
-  if (is_landscape) {
-    unclipped_size.set_width(width - 2 * kWindowMargin);
-    unclipped_size.set_height(height - 2 * kWindowMargin);
-    // For landscape mode, shrink |width| so that the aspect ratio matches
-    // that of |split_view_bounds|.
-    width = std::max(1, gfx::ToFlooredInt(split_view_bounds->width() * scale) +
-                            2 * kWindowMargin);
-  } else {
-    // For portrait mode, we want |height| to stay the same, so calculate
-    // what the unclipped height would be based on |split_view_bounds|.
-    width = split_view_bounds->width() * height / split_view_bounds->height();
-    int unclipped_height =
-        (target_bounds.height() * width) / target_bounds.width();
-    unclipped_size.set_width(width);
-    unclipped_size.set_height(unclipped_height);
-  }
-
-  DCHECK(!unclipped_size.IsEmpty());
-  item->set_unclipped_size(base::make_optional(unclipped_size));
-  return width;
 }
 
 }  // namespace ash

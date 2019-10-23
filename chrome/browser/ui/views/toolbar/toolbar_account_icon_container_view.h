@@ -32,11 +32,14 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
 
   // views::View:
   void OnThemeChanged() override;
+  const char* GetClassName() const override;
 
   PageActionIconContainerView* page_action_icon_container() {
     return page_action_icon_container_view_;
   }
   AvatarToolbarButton* avatar_button() { return avatar_; }
+
+  static const char kToolbarAccountIconContainerViewClassName[];
 
  private:
   SkColor GetIconColor() const;

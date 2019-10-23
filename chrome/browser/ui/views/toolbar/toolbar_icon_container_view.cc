@@ -16,6 +16,10 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 
+// static
+const char ToolbarIconContainerView::kToolbarIconContainerViewClassName[] =
+    "ToolbarIconContainerView";
+
 ToolbarIconContainerView::ToolbarIconContainerView(bool uses_highlight)
     : uses_highlight_(uses_highlight) {
   views::AnimatingLayoutManager* animating_layout =
@@ -96,6 +100,10 @@ gfx::Insets ToolbarIconContainerView::GetInsets() const {
   // it. This prevents inadvertently increasing its size while the stroke is
   // drawn.
   return gfx::Insets();
+}
+
+const char* ToolbarIconContainerView::GetClassName() const {
+  return kToolbarIconContainerViewClassName;
 }
 
 bool ToolbarIconContainerView::ShouldDisplayHighlight() {

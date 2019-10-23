@@ -32,11 +32,11 @@ class LazyLoadImageObserver final
     bool is_initially_intersecting = false;
     bool has_initial_intersection_been_set = false;
 
-    // True if metrics need to be recorded and has not been recorded yet.
-    bool record_visibility_metrics = false;
-
     // Set when the image first becomes visible (i.e. appears in the viewport).
     base::TimeTicks time_when_first_visible;
+
+    // Set when the first load event is dispatched for the image.
+    base::TimeTicks time_when_first_load_finished;
   };
 
   LazyLoadImageObserver(const Document&);

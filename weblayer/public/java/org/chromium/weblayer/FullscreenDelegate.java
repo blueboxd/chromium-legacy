@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer;
 
+import androidx.annotation.NonNull;
+
 /**
  * Used to configure fullscreen related state. HTML fullscreen support is only enabled if a
  * FullscreenDelegate is set.
@@ -17,7 +19,7 @@ public abstract class FullscreenDelegate {
      *
      * NOTE: the Runnable must not be used synchronously.
      */
-    public abstract void enterFullscreen(Runnable exitFullscreenRunner);
+    public abstract void enterFullscreen(@NonNull Runnable exitFullscreenRunner);
 
     /**
      * The page has exited fullscreen mode and the system should be moved out of fullscreen mode.

@@ -421,8 +421,7 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
   // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() doesn't return a
   // valid token either. Once these are fixed the #if !defined can be removed.
 
-  if (!policy::ChromeBrowserCloudManagementController::
-          IsMachineLevelUserCloudPolicyEnabled()) {
+  if (!policy::ChromeBrowserCloudManagementController::IsEnabled()) {
     return;
   }
 

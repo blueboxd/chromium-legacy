@@ -679,6 +679,7 @@ RenderThreadImpl::DeprecatedGetMainTaskRunner() {
 // the browser
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
+    int32_t client_id,
     std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler)
     : ChildThreadImpl(base::DoNothing(),
                       Options::Builder()
@@ -689,10 +690,22 @@ RenderThreadImpl::RenderThreadImpl(
                           .Build()),
       main_thread_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
-      client_id_(1) {
+      client_id_(client_id) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   Init();
 }
+
+namespace {
+int32_t GetClientIdFromCommandLine() {
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kRendererClientId));
+  int32_t client_id;
+  base::StringToInt(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                        switches::kRendererClientId),
+                    &client_id);
+  return client_id;
+}
+}  // anonymous namespace
 
 // Multi-process mode.
 RenderThreadImpl::RenderThreadImpl(
@@ -706,13 +719,9 @@ RenderThreadImpl::RenderThreadImpl(
                           .Build()),
       main_thread_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
-      is_scroll_animator_enabled_(false) {
+      is_scroll_animator_enabled_(false),
+      client_id_(GetClientIdFromCommandLine()) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kRendererClientId));
-  base::StringToInt(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                        switches::kRendererClientId),
-                    &client_id_);
   Init();
 }
 

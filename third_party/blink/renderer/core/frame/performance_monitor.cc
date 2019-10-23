@@ -188,8 +188,6 @@ void PerformanceMonitor::Did(const probe::UpdateLayout& probe) {
 
 void PerformanceMonitor::Will(const probe::ExecuteScript& probe) {
   WillExecuteScript(probe.context);
-
-  probe.CaptureStartTime();
 }
 
 void PerformanceMonitor::Did(const probe::ExecuteScript& probe) {
@@ -227,10 +225,6 @@ void PerformanceMonitor::Did(const probe::CallFunction& probe) {
 
 void PerformanceMonitor::Will(const probe::V8Compile& probe) {
   UpdateTaskAttribution(probe.context);
-  if (!enabled_ || thresholds_[kLongTask].is_zero())
-    return;
-
-  v8_compile_start_time_ = probe.CaptureStartTime();
 }
 
 void PerformanceMonitor::Did(const probe::V8Compile& probe) {}
@@ -276,7 +270,6 @@ void PerformanceMonitor::WillProcessTask(base::TimeTicks start_time) {
   layout_depth_ = 0;
   per_task_style_and_layout_time_ = base::TimeDelta();
   user_callback_ = nullptr;
-  v8_compile_start_time_ = base::TimeTicks();
 }
 
 void PerformanceMonitor::DidProcessTask(base::TimeTicks start_time,

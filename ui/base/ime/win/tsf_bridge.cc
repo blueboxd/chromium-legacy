@@ -45,6 +45,7 @@ class TSFBridgeImpl : public TSFBridge {
   bool IsInputLanguageCJK() override;
   Microsoft::WRL::ComPtr<ITfThreadMgr> GetThreadManager() override;
   TextInputClient* GetFocusedTextInputClient() const override;
+  void SetInputPanelPolicy(bool input_panel_policy_manual) override;
 
  private:
   // Returns true if |tsf_document_map_| is successfully initialized. This
@@ -242,6 +243,18 @@ void TSFBridgeImpl::OnTextLayoutChanged() {
   if (!document->text_store)
     return;
   document->text_store->SendOnLayoutChange();
+}
+
+void TSFBridgeImpl::SetInputPanelPolicy(bool input_panel_policy_manual) {
+  TSFDocument* document = GetAssociatedDocument();
+  if (!document)
+    return;
+  if (!document->text_store)
+    return;
+
+  document->text_store->SetInputPanelPolicy(input_panel_policy_manual);
+  UpdateAssociateFocus();
+  thread_manager_->SetFocus(document->document_manager.Get());
 }
 
 bool TSFBridgeImpl::CancelComposition() {

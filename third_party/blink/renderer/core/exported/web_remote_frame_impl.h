@@ -31,15 +31,21 @@ class CORE_EXPORT WebRemoteFrameImpl final
     : public GarbageCollected<WebRemoteFrameImpl>,
       public WebRemoteFrame {
  public:
-  static WebRemoteFrameImpl* Create(WebTreeScopeType, WebRemoteFrameClient*);
+  static WebRemoteFrameImpl* Create(WebTreeScopeType,
+                                    WebRemoteFrameClient*,
+                                    InterfaceRegistry*);
   static WebRemoteFrameImpl* CreateMainFrame(WebView*,
                                              WebRemoteFrameClient*,
-                                             WebFrame* opener = nullptr);
+                                             InterfaceRegistry*,
+                                             WebFrame* opener);
   static WebRemoteFrameImpl* CreateForPortal(WebTreeScopeType,
                                              WebRemoteFrameClient*,
+                                             InterfaceRegistry*,
                                              const WebElement& portal_element);
 
-  WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
+  WebRemoteFrameImpl(WebTreeScopeType,
+                     WebRemoteFrameClient*,
+                     InterfaceRegistry*);
   ~WebRemoteFrameImpl() override;
 
   // WebFrame methods:
@@ -63,6 +69,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                     const FramePolicy&,
                                     FrameOwnerElementType,
                                     WebRemoteFrameClient*,
+                                    blink::InterfaceRegistry*,
                                     WebFrame* opener) override;
   void SetCcLayer(cc::Layer*,
                   bool prevent_contents_opaque_changes,
@@ -88,7 +95,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void DidStartLoading() override;
   void DidStopLoading() override;
   bool IsIgnoredForHitTest() const override;
-  void WillEnterFullscreen() override;
   void UpdateUserActivationState(UserActivationUpdateType) override;
   void TransferUserActivationFrom(blink::WebRemoteFrame* source_frame) override;
   void ScrollRectToVisible(const WebRect&,
@@ -132,6 +138,8 @@ class CORE_EXPORT WebRemoteFrameImpl final
   Member<RemoteFrame> frame_;
 
   ParsedFeaturePolicy feature_policy_header_;
+
+  InterfaceRegistry* const interface_registry_;
 
   // Oilpan: WebRemoteFrameImpl must remain alive until close() is called.
   // Accomplish that by keeping a self-referential Persistent<>. It is

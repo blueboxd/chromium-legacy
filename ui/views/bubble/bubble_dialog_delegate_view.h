@@ -36,7 +36,6 @@ class PageAgentViews;
 
 namespace views {
 
-class BubbleFrameView;
 class Button;
 
 // BubbleDialogDelegateView is a special DialogDelegateView for bubbles.
@@ -186,8 +185,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // Resize and potentially move the bubble to fit the content's preferred size.
   virtual void SizeToContents();
-
-  BubbleFrameView* GetBubbleFrameView() const;
 
   // Allows the up and down arrow keys to tab between items.
   void EnableUpDownKeyboardAccelerators();

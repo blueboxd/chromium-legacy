@@ -221,10 +221,12 @@ PolicyGlobal* GenerateBlankPolicy() {
 
   LowLevelPolicy policy_maker(policy);
 
-  for (int i = 0; i < IPC_LAST_TAG; i++) {
+  for (int i = static_cast<int>(IpcTag::UNUSED);
+       i < static_cast<int>(IpcTag::LAST); i++) {
+    IpcTag service = static_cast<IpcTag>(i);
     PolicyRule ask_broker(ASK_BROKER);
     ask_broker.Done();
-    policy_maker.AddRule(i, &ask_broker);
+    policy_maker.AddRule(service, &ask_broker);
   }
 
   policy_maker.Done();

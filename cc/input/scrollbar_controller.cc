@@ -354,7 +354,6 @@ float ScrollbarController::GetScrollerToScrollbarRatio(
   // - scrollbar_thumb_length
   // - scroll_layer_length
   // - viewport_length
-  // - device_scale_factor
   // - position_in_widget
   //
   // When a thumb drag is in progress, for every pixel that the pointer moves,
@@ -363,6 +362,8 @@ float ScrollbarController::GetScrollerToScrollbarRatio(
   // scaled_scroller_to_scrollbar_ratio =
   //  (scroll_layer_length - viewport_length) /
   //   (scrollbar_track_length - scrollbar_thumb_length)
+  //
+  // PS: Note that since this is a "ratio", it need not be scaled by the DSF.
   //
   // |<--------------------- scroll_layer_length -------------------------->|
   //
@@ -403,17 +404,8 @@ float ScrollbarController::GetScrollerToScrollbarRatio(
           ? owner_scroll_layer->scroll_container_bounds().height()
           : (owner_scroll_layer->scroll_container_bounds().width());
 
-  // For platforms which have use_zoom_for_dsf set to false (like Mac), the
-  // device_scale_factor should not be used while determining the
-  // scaled_scroller_to_scrollbar_ratio as thumb drag would appear jittery due
-  // to constant over and under corrections.
-  // (See ScrollbarController::ScreenSpaceScaleFactor()).
-  float scaled_scroller_to_scrollbar_ratio =
-      ((scroll_layer_length - viewport_length) /
-       (scrollbar_track_length - scrollbar_thumb_length)) *
-      ScreenSpaceScaleFactor();
-
-  return scaled_scroller_to_scrollbar_ratio;
+  return ((scroll_layer_length - viewport_length) /
+          (scrollbar_track_length - scrollbar_thumb_length));
 }
 
 void ScrollbarController::ResetState() {
@@ -608,7 +600,7 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
   switch (scrollbar_part) {
     case ScrollbarPart::BACK_BUTTON:
     case ScrollbarPart::FORWARD_BUTTON:
-      scroll_delta = kPixelsPerLineStep;
+      scroll_delta = kPixelsPerLineStep * ScreenSpaceScaleFactor();
       break;
     case ScrollbarPart::BACK_TRACK:
     case ScrollbarPart::FORWARD_TRACK:
@@ -629,7 +621,7 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
       scroll_delta = 0;
   }
 
-  return scroll_delta * ScreenSpaceScaleFactor();
+  return scroll_delta;
 }
 
 float ScrollbarController::ScreenSpaceScaleFactor() const {
@@ -640,7 +632,8 @@ float ScrollbarController::ScreenSpaceScaleFactor() const {
   // on arrows would be incorrectly calculated as 80px instead of 40px. This is
   // also necessary to ensure that hit testing works as intended.
   return layer_tree_host_impl_->settings().use_zoom_for_dsf
-             ? layer_tree_host_impl_->active_tree()->device_scale_factor()
+             ? layer_tree_host_impl_->active_tree()
+                   ->painted_device_scale_factor()
              : 1.f;
 }
 

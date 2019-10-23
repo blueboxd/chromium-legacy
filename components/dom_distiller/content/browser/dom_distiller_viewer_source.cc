@@ -236,9 +236,11 @@ std::string DomDistillerViewerSource::GetSource() {
 }
 
 void DomDistillerViewerSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  // TODO(crbug/1009127): simplify path matching.
+  const std::string path = URLDataSource::URLToRequestPath(url);
   content::WebContents* web_contents = wc_getter.Run();
   if (!web_contents)
     return;

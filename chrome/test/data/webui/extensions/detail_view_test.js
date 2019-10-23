@@ -52,8 +52,6 @@ cr.define('extension_detail_view_tests', function() {
     test(assert(TestNames.Layout), function() {
       Polymer.dom.flush();
 
-      extension_test_util.testIcons(item);
-
       const testIsVisible = test_util.isVisible.bind(null, item);
       expectTrue(testIsVisible('#closeButton'));
       expectTrue(testIsVisible('#icon'));

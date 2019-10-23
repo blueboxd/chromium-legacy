@@ -72,6 +72,10 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mTitleTextView.setCursorVisible(isVisible);
     }
 
+    void clearTitleTextFocus() {
+        mTitleTextView.clearFocus();
+    }
+
     ViewGroup getViewContainer() {
         return mContainerView;
     }
@@ -91,7 +95,6 @@ public class TabGroupUiToolbarView extends FrameLayout {
         if (mTitleTextView == null) {
             throw new IllegalStateException("Current Toolbar doesn't have a title text view");
         }
-
         mTitleTextView.setText(title);
     }
 

@@ -768,6 +768,7 @@ extern const char kDevicePolicyRefreshRate[];
 extern const char kFactoryResetRequested[];
 extern const char kFactoryResetTPMFirmwareUpdateMode[];
 extern const char kDebuggingFeaturesRequested[];
+extern const char kEnableAdbSideloadingRequested[];
 
 #if defined(OS_CHROMEOS)
 extern const char kSigninScreenTimezone[];

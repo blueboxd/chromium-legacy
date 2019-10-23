@@ -40,7 +40,7 @@ LowLevelPolicy::LowLevelPolicy(PolicyGlobal* policy_store)
 // Adding a rule is nothing more than pushing it into an stl container. Done()
 // is called for the rule in case the code that made the rule in the first
 // place has not done it.
-bool LowLevelPolicy::AddRule(int service, PolicyRule* rule) {
+bool LowLevelPolicy::AddRule(IpcTag service, PolicyRule* rule) {
   if (!rule->Done()) {
     return false;
   }
@@ -69,7 +69,7 @@ LowLevelPolicy::~LowLevelPolicy() {
 bool LowLevelPolicy::Done() {
   typedef std::list<RuleNode> RuleNodes;
   typedef std::list<const PolicyRule*> RuleList;
-  typedef std::map<uint32_t, RuleList> Mmap;
+  typedef std::map<IpcTag, RuleList> Mmap;
   Mmap mmap;
 
   for (RuleNodes::iterator it = rules_.begin(); it != rules_.end(); ++it) {
@@ -82,11 +82,11 @@ bool LowLevelPolicy::Done() {
   size_t avail_size = policy_store_->data_size;
 
   for (Mmap::iterator it = mmap.begin(); it != mmap.end(); ++it) {
-    uint32_t service = (*it).first;
-    if (service >= kMaxServiceCount) {
+    IpcTag service = (*it).first;
+    if (static_cast<size_t>(service) >= kMaxServiceCount) {
       return false;
     }
-    policy_store_->entry[service] = current_buffer;
+    policy_store_->entry[static_cast<size_t>(service)] = current_buffer;
 
     RuleList::iterator rules_it = (*it).second.begin();
     RuleList::iterator rules_it_end = (*it).second.end();

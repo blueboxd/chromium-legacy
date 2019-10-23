@@ -8,6 +8,7 @@
 #include "ash/ambient/model/photo_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/util/ambient_util.h"
+#include "ash/assistant/assistant_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/photo_controller.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -24,7 +25,8 @@ bool CanStartAmbientMode() {
 
 }  // namespace
 
-AmbientController::AmbientController() = default;
+AmbientController::AmbientController(AssistantController* assistant_controller)
+    : assistant_controller_(assistant_controller) {}
 
 AmbientController::~AmbientController() {
   DestroyContainerView();
@@ -34,6 +36,11 @@ void AmbientController::OnWidgetDestroying(views::Widget* widget) {
   refresh_timer_.Stop();
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
+
+  // If our widget is being destroyed, Assistant UI is no longer visible.
+  // If Assistant UI was already closed, this is a no-op.
+  assistant_controller_->ui_controller()->CloseUi(
+      AssistantExitPoint::kUnspecified);
 }
 
 void AmbientController::Toggle() {
@@ -56,6 +63,13 @@ void AmbientController::Start() {
     // TODO(wutao): Show a toast to indicate that Ambient mode is not ready.
     return;
   }
+
+  // CloseUi to ensure standalone Assistant Ui doesn't exist when entering
+  // Ambient mode to avoid strange behavior caused by standalone Ui was
+  // only hidden at that time. This will be a no-op if Ui was already closed.
+  // TODO(meilinw): Handle embedded Ui.
+  assistant_controller_->ui_controller()->CloseUi(
+      AssistantExitPoint::kUnspecified);
 
   CreateContainerView();
   container_view_->GetWidget()->Show();

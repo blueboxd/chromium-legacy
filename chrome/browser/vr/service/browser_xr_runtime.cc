@@ -236,8 +236,8 @@ BrowserXRRuntime::BrowserXRRuntime(
 
 BrowserXRRuntime::~BrowserXRRuntime() = default;
 
-void BrowserXRRuntime::ExitVrFromPresentingService() {
-  auto* service = GetPresentingVRService();
+void BrowserXRRuntime::ExitActiveImmersiveSession() {
+  auto* service = GetServiceWithActiveImmersiveSession();
   if (service) {
     service->ExitPresent();
   }

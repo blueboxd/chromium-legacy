@@ -99,7 +99,7 @@ std::string AppLauncherPageUI::HTMLSource::GetSource() {
 }
 
 void AppLauncherPageUI::HTMLSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

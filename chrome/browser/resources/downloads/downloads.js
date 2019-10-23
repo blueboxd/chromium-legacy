@@ -2,21 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function loadDownloads() {
-  return HTMLImports.whenReady(function() {
-    downloads.Manager.onLoad().then(function() {
-      requestIdleCallback(function() {
-        chrome.send(
-            'metricsHandler:recordTime',
-            ['Download.ResultsRenderedTime', window.performance.now()]);
-        document.fonts.load('bold 12px Roboto');
-      });
+window.addEventListener('load', function() {
+  downloads.Manager.onLoad().then(function() {
+    requestIdleCallback(function() {
+      chrome.send(
+          'metricsHandler:recordTime',
+          ['Download.ResultsRenderedTime', window.performance.now()]);
+      document.fonts.load('bold 12px Roboto');
     });
   });
-}
-
-if (document.readyState === 'complete') {
-  loadDownloads();
-} else {
-  window.addEventListener('load', loadDownloads);
-}
+});

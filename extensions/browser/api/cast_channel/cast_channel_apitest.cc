@@ -35,7 +35,6 @@
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 
 using ::cast_channel::CastMessage;
 using ::cast_channel::CastSocket;

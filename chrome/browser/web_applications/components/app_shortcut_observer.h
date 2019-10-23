@@ -13,6 +13,7 @@ namespace web_app {
 class AppShortcutObserver : public base::CheckedObserver {
  public:
   virtual void OnShortcutsCreated(const AppId& app_id) {}
+  virtual void OnShortcutManagerDestroyed() {}
 };
 
 }  // namespace web_app

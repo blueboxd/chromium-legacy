@@ -219,6 +219,11 @@ if (enable_mojom_typemapping) {
 #       will still be generated even when |cpp_only| is set to |true|, unless
 #       you also set |enable_fuzzing| to |false| in your mojom target.
 #
+#   generate_java (optional)
+#       If set to true, Java bindings are generated for Android builds. If
+#       |cpp_only| is set to true, it overrides this to prevent generation of
+#       Java bindings.
+#
 #   enable_fuzzing (optional)
 #       Enables generation of fuzzing sources for the target if the global build
 #       arg |enable_ipc_fuzzer| is also set to |true|. Defaults to |true|. If
@@ -773,6 +778,10 @@ template("mojom") {
       variant_suffix = "_${variant}"
       cpp_only = true
     }
+    generate_java = false
+    if (!cpp_only && defined(invoker.generate_java)) {
+      generate_java = invoker.generate_java
+    }
     type_mappings_target_name = "${target_name}${variant_suffix}__type_mappings"
     type_mappings_path =
         "$target_gen_dir/${target_name}${variant_suffix}__type_mappings"
@@ -1135,7 +1144,7 @@ template("mojom") {
       }
     }
 
-    if (!cpp_only && is_android) {
+    if (generate_java && is_android) {
       import("//build/config/android/rules.gni")
 
       java_generator_target_name = target_name + "_java__generator"

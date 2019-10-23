@@ -991,8 +991,7 @@ def main(argv):
 
   jar_path_options = ['jar_path', 'unprocessed_jar_path', 'interface_jar_path']
   required_options_map = {
-      'android_apk': ['build_config', 'dex_path', 'final_dex_path'] + \
-          jar_path_options,
+      'android_apk': ['build_config', 'dex_path'] + jar_path_options,
       'android_app_bundle_module': ['build_config', 'dex_path',
           'final_dex_path', 'res_size_info'] + jar_path_options,
       'android_assets': ['build_config'],

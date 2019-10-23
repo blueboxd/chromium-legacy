@@ -23214,11 +23214,6 @@
       }
     ]
   },
-  "android-jumbo-rel": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "android-kitkat-arm-rel": {
     "additional_compile_targets": [
       "cronet_test_instrumentation_apk",

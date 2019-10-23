@@ -14,7 +14,6 @@
 #include "base/sync_socket.h"
 #include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::CancelableSyncSocket;

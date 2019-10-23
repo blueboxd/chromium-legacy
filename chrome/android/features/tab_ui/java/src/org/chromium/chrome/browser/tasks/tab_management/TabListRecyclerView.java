@@ -32,8 +32,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
@@ -153,8 +153,9 @@ class TabListRecyclerView extends RecyclerView {
         assert mFadeOutAnimator == null;
         mListener.startedShowing(animate);
 
-        long duration = FeatureUtilities.isTabToGtsAnimationEnabled() ? FINAL_FADE_IN_DURATION_MS
-                                                                      : BASE_ANIMATION_DURATION_MS;
+        long duration = TabFeatureUtilities.isTabToGtsAnimationEnabled()
+                ? FINAL_FADE_IN_DURATION_MS
+                : BASE_ANIMATION_DURATION_MS;
 
         setAlpha(0);
         setVisibility(View.VISIBLE);
@@ -178,7 +179,7 @@ class TabListRecyclerView extends RecyclerView {
                     mRecyclerViewFooter.setVisibility(VISIBLE);
                 }
                 // TODO(crbug.com/972157): remove this band-aid after we know why GTS is invisible.
-                if (FeatureUtilities.isTabToGtsAnimationEnabled()) {
+                if (TabFeatureUtilities.isTabToGtsAnimationEnabled()) {
                     requestLayout();
                 }
             }

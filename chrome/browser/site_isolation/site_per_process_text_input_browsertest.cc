@@ -1134,6 +1134,14 @@ class InputMethodObserverForShowIme : public InputMethodObserverBase {
 // |TextInputState.show_ime_if_needed| is true. This should happen even when
 // the TextInputState has not changed (according to the platform), e.g., in
 // aura when receiving two consecutive updates with same |TextInputState.type|.
+
+// This test is disabled on Windows because we have removed TryShow/TryHide API
+// calls and replaced it with TSF input pane policy which is a policy applied by
+// text service framework on Windows based on whether TSF edit control has focus
+// or not. On Windows we have implemented TSF1 on Chromium that takes care of
+// IME compositions, handwriting panels, SIP visibility etc. Please see
+// (https://crbug.com/1007958) for more details.
+#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                        CorrectlyShowVirtualKeyboardIfEnabled) {
   // We only need the <iframe> page to create RWHV.
@@ -1159,9 +1167,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   // Set |TextInputState.show_ime_if_needed| to true. Expect IME.
   sender.SetShowVirtualKeyboardIfEnabled(true);
-#if defined(OS_WIN)
-  sender.SetLastPointerType(ui::EventPointerType::POINTER_TYPE_TOUCH);
-#endif
   EXPECT_TRUE(send_and_check_show_ime());
 
   // Send the same message. Expect IME (no change).
@@ -1179,16 +1184,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   sender.SetShowVirtualKeyboardIfEnabled(true);
   EXPECT_TRUE(send_and_check_show_ime());
 
-#if defined(OS_WIN)
-  // Set input type to mouse. Expect no IME.
-  sender.SetLastPointerType(ui::EventPointerType::POINTER_TYPE_MOUSE);
-  EXPECT_FALSE(send_and_check_show_ime());
-#endif
-
   // Set |TextInputState.type| to ui::TEXT_INPUT_TYPE_NONE. Expect no IME.
   sender.SetType(ui::TEXT_INPUT_TYPE_NONE);
   EXPECT_FALSE(send_and_check_show_ime());
 }
+#endif  // OS_WIN
+
 #endif  // USE_AURA
 
 // Ensure that a cross-process subframe can utilize keyboard edit commands.

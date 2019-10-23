@@ -663,7 +663,7 @@ Polymer({
       identity: OncMojo.getActiveString(eap.identity),
       inner: OncMojo.getActiveString(eap.inner),
       outer: OncMojo.getActiveString(eap.outer) || 'LEAP',
-      password: '',
+      password: OncMojo.getActiveString(eap.password),
       saveCredentials: this.getActiveBoolean_(eap.saveCredentials),
       serverCaPems: this.getActiveStringList_(eap.serverCaPems),
       subjectMatch: OncMojo.getActiveString(eap.subjectMatch),
@@ -715,11 +715,11 @@ Polymer({
       clientCertPkcs11Id: OncMojo.getActiveString(openVpn.clientCertPkcs11Id),
       clientCertType: OncMojo.getActiveString(openVpn.clientCertType),
       extraHosts: this.getActiveStringList_(openVpn.extraHosts),
+      otp: OncMojo.getActiveString(openVpn.otp),
+      password: OncMojo.getActiveString(openVpn.password),
       saveCredentials: this.getActiveBoolean_(openVpn.saveCredentials),
       serverCaPems: this.getActiveStringList_(openVpn.serverCaPems),
       serverCaRefs: this.getActiveStringList_(openVpn.serverCaRefs),
-      otp: OncMojo.getActiveString(openVpn.otp),
-      password: OncMojo.getActiveString(openVpn.password),
       userAuthenticationType:
           OncMojo.getActiveString(openVpn.userAuthenticationType),
       username: OncMojo.getActiveString(openVpn.username),
@@ -752,7 +752,7 @@ Polymer({
         const wifi = managedProperties.typeProperties.wifi;
         const configWifi = configProperties.typeConfig.wifi;
         autoConnect = this.getActiveBoolean_(wifi.autoConnect);
-        configWifi.passphrase = '';
+        configWifi.passphrase = OncMojo.getActiveString(wifi.passphrase);
         configWifi.ssid = OncMojo.getActiveString(wifi.ssid);
         if (wifi.eap) {
           configWifi.eap = this.getEAPConfigProperties_(wifi.eap);

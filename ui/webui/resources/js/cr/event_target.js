@@ -14,12 +14,12 @@ cr.define('cr', function() {
    * @constructor
    * @implements {EventTarget}
    */
-  const NativeEventTarget = self['EventTarget'];
+  /* #export */ const NativeEventTarget = self['EventTarget'];
 
   /** @override */ NativeEventTarget.prototype.addEventListener;
   /** @override */ NativeEventTarget.prototype.dispatchEvent;
   /** @override */ NativeEventTarget.prototype.removeEventListener;
 
-  // Export
+  // #cr_define_end
   return {EventTarget: NativeEventTarget};
 });

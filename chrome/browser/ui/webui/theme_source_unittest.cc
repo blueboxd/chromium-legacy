@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
@@ -24,8 +25,10 @@ class WebUISourcesTest : public testing::Test {
   size_t result_data_size() const { return result_data_size_; }
 
   void StartDataRequest(const std::string& source) {
-    theme_source()->StartDataRequest(source, content::WebContents::Getter(),
-                                     callback_);
+    theme_source()->StartDataRequest(
+        GURL(base::StrCat({content::kChromeUIScheme, "://",
+                           chrome::kChromeUIThemeHost, "/", source})),
+        content::WebContents::Getter(), callback_);
   }
 
   size_t result_data_size_;

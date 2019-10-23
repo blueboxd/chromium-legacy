@@ -81,7 +81,10 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   void StartCachedScreenContextInteraction() override;
   void StartEditReminderInteraction(const std::string& client_id) override;
   void StartMetalayerInteraction(const gfx::Rect& region) override;
-  void StartTextInteraction(const std::string& query, bool allow_tts) override;
+  void StartTextInteraction(
+      const std::string& query,
+      chromeos::assistant::mojom::AssistantQuerySource source,
+      bool allow_tts) override;
   void StartVoiceInteraction() override;
   void StartWarmerWelcomeInteraction(int num_warmer_welcome_triggered,
                                      bool allow_tts) override;
@@ -106,7 +109,9 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
  private:
   void StartInteraction(
       chromeos::assistant::mojom::AssistantInteractionType type,
-      const std::string& query = {});
+      chromeos::assistant::mojom::AssistantQuerySource source =
+          chromeos::assistant::mojom::AssistantQuerySource::kUnspecified,
+      const std::string& query = std::string());
   void SendInteractionResponse();
   InteractionResponse PopInteractionResponse();
 

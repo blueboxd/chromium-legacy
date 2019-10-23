@@ -111,16 +111,6 @@ ash::ShelfAction SelectItem(const ash::ShelfID& id,
   return SelectShelfItem(id, event_type, display_id);
 }
 
-class TestEvent : public ui::Event {
- public:
-  explicit TestEvent(ui::EventType type)
-      : ui::Event(type, base::TimeTicks(), 0) {}
-  ~TestEvent() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestEvent);
-};
-
 // Find the browser that associated with |app_name|.
 Browser* FindBrowserForApp(const std::string& app_name) {
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -219,17 +209,6 @@ class LauncherPlatformAppBrowserTest
   DISALLOW_COPY_AND_ASSIGN(LauncherPlatformAppBrowserTest);
 };
 
-enum RipOffCommand {
-  // Drag the item off the shelf and let the mouse go.
-  RIP_OFF_ITEM,
-  // Drag the item off the shelf, move the mouse back and then let go.
-  RIP_OFF_ITEM_AND_RETURN,
-  // Drag the item off the shelf and then issue a cancel command.
-  RIP_OFF_ITEM_AND_CANCEL,
-  // Drag the item off the shelf and do not release the mouse.
-  RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE,
-};
-
 class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
  protected:
   ShelfAppBrowserTest() {}
@@ -286,10 +265,6 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
     return item.id;
   }
 
-  ash::ShelfID PinFakeApp(const std::string& app_id) {
-    return controller_->CreateAppShortcutLauncherItem(
-        ash::ShelfID(app_id), shelf_model()->item_count());
-  }
 
   // Get the index of an item which has the given type.
   int GetIndexOfShelfItemType(ash::ShelfItemType type) {

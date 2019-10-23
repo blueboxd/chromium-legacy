@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 
 import org.chromium.base.ActivityState;
@@ -76,18 +77,25 @@ public class ActivityWindowAndroid
         return (ActivityKeyboardVisibilityDelegate) super.getKeyboardDelegate();
     }
 
+    /** Uses the provided intent sender to start the intent. */
+    protected boolean startIntentSenderForResult(IntentSender intentSender, int requestCode) {
+        Activity activity = getActivity().get();
+        if (activity == null) return false;
+
+        try {
+            activity.startIntentSenderForResult(intentSender, requestCode, new Intent(), 0, 0, 0);
+        } catch (SendIntentException e) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public int showCancelableIntent(
             PendingIntent intent, IntentCallback callback, Integer errorId) {
-        Activity activity = getActivity().get();
-        if (activity == null) return START_INTENT_FAILURE;
-
         int requestCode = generateNextRequestCode();
 
-        try {
-            activity.startIntentSenderForResult(
-                    intent.getIntentSender(), requestCode, new Intent(), 0, 0, 0);
-        } catch (SendIntentException e) {
+        if (!startIntentSenderForResult(intent.getIntentSender(), requestCode)) {
             return START_INTENT_FAILURE;
         }
 
@@ -95,16 +103,24 @@ public class ActivityWindowAndroid
         return requestCode;
     }
 
-    @Override
-    public int showCancelableIntent(Intent intent, IntentCallback callback, Integer errorId) {
+    /** Starts an activity for the provided intent. */
+    protected boolean startActivityForResult(Intent intent, int requestCode) {
         Activity activity = getActivity().get();
-        if (activity == null) return START_INTENT_FAILURE;
-
-        int requestCode = generateNextRequestCode();
+        if (activity == null) return false;
 
         try {
             activity.startActivityForResult(intent, requestCode);
         } catch (ActivityNotFoundException e) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int showCancelableIntent(Intent intent, IntentCallback callback, Integer errorId) {
+        int requestCode = generateNextRequestCode();
+
+        if (!startActivityForResult(intent, requestCode)) {
             return START_INTENT_FAILURE;
         }
 

@@ -5,9 +5,11 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.IProfile;
@@ -18,19 +20,28 @@ import org.chromium.weblayer_private.aidl.IProfile;
 public class BrowserFragmentControllerImpl extends IBrowserFragmentController.Stub {
     private final ProfileImpl mProfile;
     private BrowserControllerImpl mTabController;
+    private ActivityWindowAndroid mWindowAndroid;
 
     public BrowserFragmentControllerImpl(ProfileImpl profile, Bundle savedInstanceState) {
         mProfile = profile;
         // Restore tabs etc from savedInstanceState here.
     }
 
-    public void onFragmentAttached(Context context) {
-        mTabController = new BrowserControllerImpl(context, mProfile);
+    public void onFragmentAttached(Context context, ActivityWindowAndroid windowAndroid) {
+        mTabController = new BrowserControllerImpl(context, mProfile, windowAndroid);
+        mWindowAndroid = windowAndroid;
     }
 
     public void onFragmentDetached() {
         mTabController.destroy();
         mTabController = null;
+        mWindowAndroid = null;
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (mWindowAndroid != null) {
+            mWindowAndroid.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override

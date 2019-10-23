@@ -58,10 +58,6 @@ luci.console_view(
             short_name = 'm',
         ),
         luci.console_view_entry(
-            builder = 'ci/android-jumbo-rel',
-            category = 'builder',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Android arm Builder (dbg)',
             category = 'builder|arm',
             short_name = '32',

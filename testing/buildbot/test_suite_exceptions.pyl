@@ -2100,14 +2100,6 @@
       'Win 7 Tests x64 (1)',
     ],
   },
-  'webui_html_imports_polyfill_browser_tests': {
-    'remove_from': [
-      # chromium.win
-      'Win10 Tests x64 (dbg)',  # Matches browser_tests.
-      # chromium.clang
-      'CrWinAsan(dll)', # https://crbug.com/935598
-    ],
-  },
   'webview_instrumentation_test_apk': {
     'remove_from': [
       # This test frequently fails on Android, https://crbug.com/824959

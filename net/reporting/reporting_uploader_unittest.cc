@@ -452,7 +452,7 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
   auto cookie = CanonicalCookie::Create(url, "foo=bar", base::Time::Now(),
                                         base::nullopt /* server_time */);
   context_.cookie_store()->SetCanonicalCookieAsync(
-      std::move(cookie), url.scheme(), CookieOptions(),
+      std::move(cookie), url.scheme(), CookieOptions::MakeAllInclusive(),
       cookie_callback.MakeCallback());
   cookie_callback.WaitUntilDone();
   ASSERT_TRUE(cookie_callback.result().IsInclude());
@@ -485,7 +485,7 @@ TEST_F(ReportingUploaderTest, DontSaveCookies) {
 
   GetCookieListCallback cookie_callback;
   context_.cookie_store()->GetCookieListWithOptionsAsync(
-      server_.GetURL("/"), CookieOptions(),
+      server_.GetURL("/"), CookieOptions::MakeAllInclusive(),
       base::BindOnce(&GetCookieListCallback::Run,
                      base::Unretained(&cookie_callback)));
   cookie_callback.WaitUntilDone();

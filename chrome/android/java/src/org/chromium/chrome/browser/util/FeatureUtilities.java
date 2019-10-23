@@ -15,7 +15,6 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
-import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
@@ -63,8 +62,6 @@ import java.util.Map;
  * value in shared preferences.
  */
 public class FeatureUtilities {
-    private static final String TAG = "FeatureUtilities";
-
     /**
      * Key for whether DownloadResumptionBackgroundTask should load native in service manager only
      * mode.
@@ -186,7 +183,6 @@ public class FeatureUtilities {
 
     private static Map<String, Boolean> sFlags = new HashMap<>();
     private static Boolean sHasRecognitionIntentHandler;
-    private static Boolean sIsTabToGtsAnimationEnabled;
     private static String sReachedCodeProfilerTrialGroup;
 
     /**
@@ -584,31 +580,6 @@ public class FeatureUtilities {
         sFlags.put(START_SURFACE_ENABLED_KEY, isEnabled);
     }
 
-    /**
-     * Toggles whether the Tab-to-GTS animation is enabled for testing. Should be reset back to
-     * null after the test has finished.
-     */
-    @VisibleForTesting
-    public static void setIsTabToGtsAnimationEnabledForTesting(@Nullable Boolean enabled) {
-        sIsTabToGtsAnimationEnabled = enabled;
-    }
-
-    /**
-     * @return Whether the Tab-to-Grid (and Grid-to-Tab) transition animation is enabled.
-     */
-    public static boolean isTabToGtsAnimationEnabled() {
-        if (sIsTabToGtsAnimationEnabled != null) {
-            Log.d(TAG, "IsTabToGtsAnimationEnabled forced to " + sIsTabToGtsAnimationEnabled);
-            return sIsTabToGtsAnimationEnabled;
-        }
-        Log.d(TAG, "GTS.MinSdkVersion = " + GridTabSwitcherUtil.getMinSdkVersion());
-        Log.d(TAG, "GTS.MinMemoryMB = " + GridTabSwitcherUtil.getMinMemoryMB());
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-                && Build.VERSION.SDK_INT >= GridTabSwitcherUtil.getMinSdkVersion()
-                && SysUtils.amountOfPhysicalMemoryKB() / 1024
-                >= GridTabSwitcherUtil.getMinMemoryMB();
-    }
-
     private static boolean isHighEndPhone() {
         return !SysUtils.isLowEndDevice()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
@@ -741,36 +712,6 @@ public class FeatureUtilities {
         }
 
         return sReachedCodeProfilerTrialGroup;
-    }
-
-    private static class GridTabSwitcherUtil {
-        // Field trial parameter for the minimum Android SDK version to enable zooming animation.
-        private static final String MIN_SDK_PARAM = "zooming-min-sdk-version";
-        private static final int DEFAULT_MIN_SDK = Build.VERSION_CODES.O;
-
-        // Field trial parameter for the minimum physical memory size to enable zooming animation.
-        private static final String MIN_MEMORY_MB_PARAM = "zooming-min-memory-mb";
-        private static final int DEFAULT_MIN_MEMORY_MB = 2048;
-
-        private static int getMinSdkVersion() {
-            String sdkVersion = ChromeFeatureList.getFieldTrialParamByFeature(
-                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_SDK_PARAM);
-            try {
-                return Integer.valueOf(sdkVersion);
-            } catch (NumberFormatException e) {
-                return DEFAULT_MIN_SDK;
-            }
-        }
-
-        private static int getMinMemoryMB() {
-            String sdkVersion = ChromeFeatureList.getFieldTrialParamByFeature(
-                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_MEMORY_MB_PARAM);
-            try {
-                return Integer.valueOf(sdkVersion);
-            } catch (NumberFormatException e) {
-                return DEFAULT_MIN_MEMORY_MB;
-            }
-        }
     }
 
     private static void cacheFlag(String preferenceName, String featureName) {

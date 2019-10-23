@@ -260,7 +260,7 @@ void AffiliationDatabase::InitializeTableBuilders(
     SQLTableBuilder* eq_classes_builder,
     SQLTableBuilder* eq_class_members_builder) {
   // Version 1 of the affiliation database.
-  eq_classes_builder->AddColumnToPrimaryKey("id", "INTEGER");
+  eq_classes_builder->AddPrimaryKeyColumn("id");
   eq_classes_builder->AddColumn("last_update_time", "INTEGER");
   // The first call to |SealVersion| sets the version to 0, that's why it is
   // repeated.
@@ -268,7 +268,7 @@ void AffiliationDatabase::InitializeTableBuilders(
   unsigned eq_classes_version = eq_classes_builder->SealVersion();
   DCHECK_EQ(1u, eq_classes_version);
 
-  eq_class_members_builder->AddColumnToPrimaryKey("id", "INTEGER");
+  eq_class_members_builder->AddPrimaryKeyColumn("id");
   eq_class_members_builder->AddColumnToUniqueKey("facet_uri",
                                                  "LONGVARCHAR NOT NULL");
   eq_class_members_builder->AddColumn(

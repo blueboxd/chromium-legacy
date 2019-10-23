@@ -359,4 +359,26 @@ TEST_F(BinaryUploadServiceTest, OnGetSynchronousResponse) {
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::SUCCESS);
 }
 
+TEST_F(BinaryUploadServiceTest, ReturnsAsynchronouslyWithNoFCM) {
+  // Instantiate a BinaryUploadService with no FCM connection.
+  BinaryUploadService service(nullptr,
+                              std::unique_ptr<BinaryFCMService>(nullptr));
+
+  BinaryUploadService::Result scanning_result =
+      BinaryUploadService::Result::UNKNOWN;
+  DeepScanningClientResponse scanning_response;
+  std::unique_ptr<MockRequest> request =
+      MakeRequest(&scanning_result, &scanning_response);
+  request->set_request_dlp_scan(DlpDeepScanningClientRequest());
+  request->set_request_malware_scan(MalwareDeepScanningClientRequest());
+
+  service.UploadForDeepScanning(std::move(request));
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::FAILED_TO_GET_TOKEN);
+}
+
 }  // namespace safe_browsing

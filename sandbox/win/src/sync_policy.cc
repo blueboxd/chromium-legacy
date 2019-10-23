@@ -149,7 +149,7 @@ bool SyncPolicy::GenerateRules(const wchar_t* name,
     open.AddNumberMatch(IF_NOT, OpenEventParams::ACCESS, restricted_flags, AND);
   }
 
-  if (!policy->AddRule(IPC_OPENEVENT_TAG, &open))
+  if (!policy->AddRule(IpcTag::OPENEVENT, &open))
     return false;
 
   // If it's not a read only, add the create rule.
@@ -158,7 +158,7 @@ bool SyncPolicy::GenerateRules(const wchar_t* name,
     if (!create.AddStringMatch(IF, NameBased::NAME, name, CASE_INSENSITIVE))
       return false;
 
-    if (!policy->AddRule(IPC_CREATEEVENT_TAG, &create))
+    if (!policy->AddRule(IpcTag::CREATEEVENT, &create))
       return false;
   }
 

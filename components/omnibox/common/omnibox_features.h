@@ -9,7 +9,9 @@
 
 namespace omnibox {
 
-// TODO(dbeam): why is this list not sorted alphabetically?
+// Please do not add more features to this "big blob" list.
+// Instead, use the categorized and alphabetized lists below this "big blob".
+// You can create a new category if none of the existing ones fit.
 extern const base::Feature kHideFileUrlScheme;
 extern const base::Feature kHideSteadyStateUrlScheme;
 extern const base::Feature kHideSteadyStateUrlTrivialSubdomains;
@@ -57,6 +59,9 @@ extern const base::Feature kOnFocusSuggestions;
 extern const base::Feature kZeroSuggestionsOnNTP;
 extern const base::Feature kZeroSuggestionsOnNTPRealbox;
 extern const base::Feature kZeroSuggestionsOnSERP;
+
+// Suggestions UI - these affect the UI or function of the suggestions popup.
+extern const base::Feature kConfirmOmniboxSuggestionRemovals;
 
 }  // namespace omnibox
 

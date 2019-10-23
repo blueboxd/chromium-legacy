@@ -8,6 +8,7 @@ Provides functions to process intermediate results, and the entry point to
 the standalone version of Results Processor.
 """
 
+import datetime
 import json
 import logging
 import os
@@ -28,7 +29,12 @@ from tracing.value import histogram
 from tracing.value import histogram_set
 from tracing.value import legacy_unit_info
 
+# Telemetry results file is deprecated.
+# TODO(crbug.com/981349): Remove this constant after Telemetry swithes to
+# the new file.
 TELEMETRY_RESULTS = '_telemetry_results.jsonl'
+TEST_RESULTS = '_test_results.jsonl'
+DIAGNOSTICS_NAME = 'diagnostics.json'
 MEASUREMENTS_NAME = 'measurements.json'
 
 FORMATS_WITH_METRICS = ['csv', 'histograms', 'html']
@@ -48,17 +54,31 @@ def ProcessResults(options):
   if not getattr(options, 'output_formats', None):
     return 0
 
-  intermediate_results = _LoadIntermediateResults(
-      os.path.join(options.intermediate_dir, TELEMETRY_RESULTS))
+  test_results = _LoadTestResults(options.intermediate_dir)
+  if not test_results:
+    # TODO(crbug.com/981349): Make sure that no one is expecting Results
+    # Processor to output results in the case of empty input
+    # and make this an error.
+    logging.warning('No test results to process.')
 
-  AggregateTraces(intermediate_results)
+  upload_bucket = options.upload_bucket
+  results_label = options.results_label
+  test_suite_start = (test_results[0]['startTime'] if test_results
+                      else datetime.datetime.utcnow().isoformat() + 'Z')
+  run_identifier = RunIdentifier(results_label, test_suite_start)
+  should_compute_metrics = any(
+      fmt in FORMATS_WITH_METRICS for fmt in options.output_formats)
 
-  UploadArtifacts(
-      intermediate_results, options.upload_bucket, options.results_label)
+  util.ApplyInParallel(
+      lambda result: ProcessTestResult(
+          result, upload_bucket, results_label, run_identifier,
+          test_suite_start, should_compute_metrics),
+      test_results,
+      on_failure=lambda result: result.update(status='FAIL'),
+  )
 
-  if any(fmt in FORMATS_WITH_METRICS for fmt in options.output_formats):
-    histogram_dicts = _ComputeMetrics(intermediate_results,
-                                      options.results_label)
+  if should_compute_metrics:
+    histogram_dicts = ExtractHistograms(test_results)
 
   for output_format in options.output_formats:
     logging.info('Processing format: %s', output_format)
@@ -66,12 +86,33 @@ def ProcessResults(options):
     if output_format in FORMATS_WITH_METRICS:
       formatter.ProcessHistogramDicts(histogram_dicts, options)
     else:
-      formatter.ProcessIntermediateResults(intermediate_results, options)
+      formatter.ProcessIntermediateResults(test_results, options)
 
-  return GenerateExitCode(intermediate_results)
+  return GenerateExitCode(test_results)
 
 
-def GenerateExitCode(intermediate_results):
+def ProcessTestResult(test_result, upload_bucket, results_label,
+                      run_identifier, test_suite_start, should_compute_metrics):
+  AggregateTraces(test_result)
+  if upload_bucket is not None:
+    UploadArtifacts(test_result, upload_bucket, run_identifier)
+
+  if should_compute_metrics:
+    test_result['_histograms'] = histogram_set.HistogramSet()
+    compute_metrics.ComputeTBMv2Metrics(test_result)
+    ExtractMeasurements(test_result)
+    AddDiagnosticsToHistograms(test_result, test_suite_start, results_label)
+
+
+def ExtractHistograms(test_results):
+  histograms = histogram_set.HistogramSet()
+  for result in test_results:
+    histograms.Merge(result['_histograms'])
+  histograms.DeduplicateDiagnostics()
+  return histograms.AsDicts()
+
+
+def GenerateExitCode(test_results):
   """Generate an exit code as expected by callers.
 
   Returns:
@@ -79,69 +120,63 @@ def GenerateExitCode(intermediate_results):
     -1 if all tests were skipped.
     0 otherwise.
   """
-  if any(r['status'] == 'FAIL' for r in intermediate_results['testResults']):
+  if any(r['status'] == 'FAIL' for r in test_results):
     return 1
-  if all(r['status'] == 'SKIP' for r in intermediate_results['testResults']):
+  if all(r['status'] == 'SKIP' for r in test_results):
     return -1
   return 0
 
 
-def _LoadIntermediateResults(intermediate_file):
-  """Load intermediate results from a file into a single dict."""
-  results = {'benchmarkRun': {}, 'testResults': []}
+def _LoadTestResults(intermediate_dir):
+  """Load intermediate results from a file into a list of test results."""
+  # Try to load the results from the new file first, then from the old one.
+  # TODO(crbug.com/981349): Remove fallback when Telemetry switches to the
+  # new format.
+  intermediate_file = os.path.join(intermediate_dir, TEST_RESULTS)
+  if not os.path.exists(intermediate_file):
+    intermediate_file = os.path.join(intermediate_dir, TELEMETRY_RESULTS)
+
+  benchmark_run = {}
+  test_results = []
   with open(intermediate_file) as f:
     for line in f:
       record = json.loads(line)
+      # TODO(crbug.com/981349): Stop reading benchmarkRun messages when
+      # Telemetry switches to the new format.
       if 'benchmarkRun' in record:
-        results['benchmarkRun'].update(record['benchmarkRun'])
+        benchmark_run.update(record['benchmarkRun'])
       if 'testResult' in record:
-        test_result = record['testResult']
-        results['testResults'].append(test_result)
-  return results
+        test_results.append(record['testResult'])
+  for test_result in test_results:
+    test_result['_benchmarkRun'] = benchmark_run
+  return test_results
 
 
-def _AggregateTraceWorker(artifacts):
-  traces = [name for name in artifacts if name.startswith('trace/')]
-  trace_files = [artifacts.pop(name)['filePath'] for name in traces]
-  html_path = os.path.join(
-      os.path.dirname(os.path.commonprefix(trace_files)),
-      compute_metrics.HTML_TRACE_NAME)
-  trace_data.SerializeAsHtml(trace_files, html_path)
-  artifacts[compute_metrics.HTML_TRACE_NAME] = {
-    'filePath': html_path,
-    'contentType': 'text/html',
-  }
-
-
-def AggregateTraces(intermediate_results):
+def AggregateTraces(test_result):
   """Replace individual traces with an aggregate one for each test result.
 
-  For each test run with traces, generates an aggregate HTML trace. Removes
+  For a test run with traces, generates an aggregate HTML trace. Removes
   all entries for individual traces and adds one entry for aggregate one.
   """
-  work_list = []
-  for result in intermediate_results['testResults']:
-    artifacts = result.get('outputArtifacts', {})
-    # TODO(crbug.com/981349): Stop checking for HTML_TRACE_NAME after
-    # Telemetry does not aggregate traces anymore.
-    if (any(name.startswith('trace/') for name in artifacts) and
-        compute_metrics.HTML_TRACE_NAME not in artifacts):
-      work_list.append(artifacts)
-
-  if work_list:
-    for _ in util.ApplyInParallel(_AggregateTraceWorker, work_list):
-      pass
-
-  # TODO(crbug.com/981349): This is to clean up traces that have been
-  # aggregated by Telemetry. Remove this after Telemetry no longer does this.
-  for result in intermediate_results['testResults']:
-    artifacts = result.get('outputArtifacts', {})
-    for name in artifacts.keys():
-      if name.startswith('trace/'):
-        del artifacts[name]
+  artifacts = test_result.get('outputArtifacts', {})
+  traces = [name for name in artifacts if name.startswith('trace/')]
+  # TODO(crbug.com/981349): Stop checking for HTML_TRACE_NAME after
+  # Telemetry does not aggregate traces anymore.
+  if traces and compute_metrics.HTML_TRACE_NAME not in artifacts:
+    trace_files = [artifacts[name]['filePath'] for name in traces]
+    html_path = os.path.join(
+        os.path.dirname(os.path.commonprefix(trace_files)),
+        compute_metrics.HTML_TRACE_NAME)
+    trace_data.SerializeAsHtml(trace_files, html_path)
+    artifacts[compute_metrics.HTML_TRACE_NAME] = {
+      'filePath': html_path,
+      'contentType': 'text/html',
+    }
+  for name in traces:
+    del artifacts[name]
 
 
-def _RunIdentifier(results_label, start_time):
+def RunIdentifier(results_label, test_suite_start):
   """Construct an identifier for the current script run"""
   if results_label:
     identifier_parts = [re.sub(r'\W+', '_', results_label)]
@@ -149,79 +184,66 @@ def _RunIdentifier(results_label, start_time):
     identifier_parts = []
   # Time is rounded to seconds and delimiters are removed.
   # The first 19 chars of the string match 'YYYY-MM-DDTHH:MM:SS'.
-  identifier_parts.append(re.sub(r'\W+', '', start_time[:19]))
+  identifier_parts.append(re.sub(r'\W+', '', test_suite_start[:19]))
   identifier_parts.append(str(random.randint(1, 1e5)))
   return '_'.join(identifier_parts)
 
 
-def UploadArtifacts(intermediate_results, upload_bucket, results_label):
+def UploadArtifacts(test_result, upload_bucket, run_identifier):
   """Upload all artifacts to cloud.
 
-  For each test run, uploads all its artifacts to cloud and sets remoteUrl
+  For a test run, uploads all its artifacts to cloud and sets remoteUrl
   fields in intermediate_results.
   """
-  if upload_bucket is None:
-    return
-
-  run_identifier = _RunIdentifier(
-      results_label, intermediate_results['benchmarkRun']['startTime'])
-  work_list = []
-
-  for result in intermediate_results['testResults']:
-    artifacts = result.get('outputArtifacts', {})
-    for name, artifact in artifacts.iteritems():
-      if 'remoteUrl' in artifact:
-        continue
-      # TODO(crbug.com/981349): Remove this check after Telemetry does not
-      # save histograms as an artifact anymore.
-      if name == compute_metrics.HISTOGRAM_DICTS_FILE:
-        continue
-      remote_name = '/'.join([run_identifier, result['testPath'], name])
-      work_list.append((artifact, remote_name))
-
-  def PoolUploader(work_item):
-    artifact, remote_name = work_item
+  artifacts = test_result.get('outputArtifacts', {})
+  for name, artifact in artifacts.iteritems():
+    if 'remoteUrl' in artifact:
+      continue
+    # TODO(crbug.com/981349): Remove check for HISTOGRAM_DICTS_FILE
+    # after Telemetry does not save histograms as an artifact anymore.
+    # Another TODO(crbug.com/981349): Think of a more general way to
+    # specify which artifacts deserve uploading.
+    if name in [compute_metrics.HISTOGRAM_DICTS_FILE, MEASUREMENTS_NAME]:
+      continue
+    remote_name = '/'.join([run_identifier, test_result['testPath'], name])
     artifact['remoteUrl'] = cloud_storage.Insert(
         upload_bucket, remote_name, artifact['filePath'])
-
-  for _ in util.ApplyInParallel(PoolUploader, work_list):
-    pass
-
-  for result in intermediate_results['testResults']:
-    artifacts = result.get('outputArtifacts', {})
-    for name, artifact in artifacts.iteritems():
-      logging.info('Uploaded %s of %s to %s', name, result['testPath'],
-                   artifact['remoteUrl'])
+    logging.info('Uploaded %s of %s to %s', name, test_result['testPath'],
+                 artifact['remoteUrl'])
 
 
-def _ComputeMetrics(intermediate_results, results_label):
-  histogram_dicts = compute_metrics.ComputeTBMv2Metrics(intermediate_results)
-  histogram_dicts += ExtractMeasurements(intermediate_results)
-  histogram_dicts = AddDiagnosticsToHistograms(
-      histogram_dicts, intermediate_results, results_label)
-  return histogram_dicts
+def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label):
+  """Add diagnostics to all histograms of a test run.
 
+  Reads diagnostics from the test artifact and adds them to all histograms.
+  This overwrites the corresponding diagnostics previously set by e.g.
+  run_metrics.
+  """
+  artifacts = test_result.get('outputArtifacts', {})
+  if DIAGNOSTICS_NAME in artifacts:
+    with open(artifacts[DIAGNOSTICS_NAME]['filePath']) as f:
+      diagnostics = json.load(f)['diagnostics']
+  # TODO(crbug.com/981349): Remove this branch when Telemetry switches to the
+  # new format.
+  else:
+    diagnostics = test_result.get('_benchmarkRun', {}).get('diagnostics', {})
 
-def AddDiagnosticsToHistograms(histogram_dicts, intermediate_results,
-                                results_label):
-  """Add diagnostics to histogram dicts"""
-  histograms = histogram_set.HistogramSet()
-  histograms.ImportDicts(histogram_dicts)
-  diagnostics = intermediate_results['benchmarkRun'].get('diagnostics', {})
   for name, diag in diagnostics.items():
     # For now, we only support GenericSet diagnostics that are serialized
     # as lists of values.
     assert isinstance(diag, list)
-    histograms.AddSharedDiagnosticToAllHistograms(
+    test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
         name, generic_set.GenericSet(diag))
 
+  timestamp_ms = util.IsoTimestampToEpoch(test_suite_start) * 1e3
+  test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
+      reserved_infos.BENCHMARK_START.name, date_range.DateRange(timestamp_ms))
+
+
   if results_label is not None:
-    histograms.AddSharedDiagnosticToAllHistograms(
+    test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
         reserved_infos.LABELS.name,
         generic_set.GenericSet([results_label]))
-
-  histograms.DeduplicateDiagnostics()
-  return histograms.AsDicts()
 
 
 def MeasurementToHistogram(name, measurement):
@@ -238,22 +260,10 @@ def MeasurementToHistogram(name, measurement):
                                     description=description)
 
 
-def _GlobalDiagnostics(benchmark_run):
-  """Extract diagnostics information about the whole benchmark run.
-
-  These diagnostics will be added to ad-hoc measurements recorded by
-  benchmarks.
-  """
-  timestamp_ms = util.IsoTimestampToEpoch(benchmark_run['startTime']) * 1e3
-  return {
-    reserved_infos.BENCHMARK_START.name: date_range.DateRange(timestamp_ms),
-  }
-
-
 def _StoryDiagnostics(test_result):
   """Extract diagnostics information about the specific story.
 
-  These diagnostics will be added to ad-hoc measurements recorded by
+  These diagnostics will be added only to ad-hoc measurements recorded by
   benchmarks.
   """
   benchmark_name, story_name = test_result['testPath'].split('/', 1)
@@ -266,23 +276,16 @@ def _StoryDiagnostics(test_result):
   }
 
 
-def ExtractMeasurements(intermediate_results):
+def ExtractMeasurements(test_result):
   """Add ad-hoc measurements to histogram dicts"""
-  histograms = histogram_set.HistogramSet()
-  global_diagnostics = _GlobalDiagnostics(intermediate_results['benchmarkRun'])
-
-  for result in intermediate_results['testResults']:
-    artifacts = result.get('outputArtifacts', {})
-    if MEASUREMENTS_NAME in artifacts:
-      with open(artifacts[MEASUREMENTS_NAME]['filePath']) as f:
-        measurements = json.load(f)['measurements']
-      diagnostics = global_diagnostics.copy()
-      diagnostics.update(_StoryDiagnostics(result))
-      for name, measurement in measurements.iteritems():
-        histograms.AddHistogram(MeasurementToHistogram(name, measurement),
-                                diagnostics=diagnostics)
-
-  return histograms.AsDicts()
+  artifacts = test_result.get('outputArtifacts', {})
+  if MEASUREMENTS_NAME in artifacts:
+    with open(artifacts[MEASUREMENTS_NAME]['filePath']) as f:
+      measurements = json.load(f)['measurements']
+    diagnostics = _StoryDiagnostics(test_result)
+    for name, measurement in measurements.iteritems():
+      test_result['_histograms'].AddHistogram(
+          MeasurementToHistogram(name, measurement), diagnostics=diagnostics)
 
 
 def main(args=None):

@@ -86,7 +86,7 @@ import java.util.List;
  */
 @JNINamespace("content")
 public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData {
-    private static final String TAG = "cr_Ime";
+    private static final String TAG = "Ime";
     private static final boolean DEBUG_LOGS = false;
 
     private static final float SUGGESTION_HIGHLIGHT_BACKGROUND_TRANSPARENCY = 0.4f;
@@ -604,10 +604,11 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
             // show soft keyboard (for IME composition window only) if a hardware keyboard is
             // present.
             restartInput();
-            if (!isHardwareKeyboardAttached())
+            if (!isHardwareKeyboardAttached()) {
                 hideKeyboard();
-            else
+            } else {
                 showSoftKeyboard();
+            }
         }
     }
 

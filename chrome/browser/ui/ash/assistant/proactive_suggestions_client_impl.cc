@@ -174,7 +174,8 @@ void ProactiveSuggestionsClientImpl::SetActiveUrl(const GURL& url) {
   // The previous set of proactive suggestions is no longer valid.
   SetActiveProactiveSuggestions(nullptr);
 
-  if (active_url_.is_empty()) {
+  // We only load proactive suggestions for http/https schemes.
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
     loader_.reset();
     return;
   }

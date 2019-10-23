@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
+  generate_java = true
   sources = [
     "battery_monitor.mojom",
     "battery_status.mojom",
@@ -63,6 +64,7 @@ mojom("mojom") {
 }
 
 mojom("generic_sensor") {
+  generate_java = true
   sources = [
     "sensor.mojom",
     "sensor_provider.mojom",
@@ -86,6 +88,7 @@ mojom("generic_sensor") {
 }
 
 mojom("constants") {
+  generate_java = true
   sources = [
     "constants.mojom",
   ]
@@ -101,6 +104,7 @@ mojom("constants") {
 }
 
 mojom("usb") {
+  generate_java = true
   sources = [
     "usb_device.mojom",
     "usb_enumeration_options.mojom",

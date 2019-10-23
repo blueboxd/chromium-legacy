@@ -49,6 +49,7 @@
 #include "chrome/test/chromedriver/chrome/user_data_dir.h"
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/log_replay/chrome_replay_impl.h"
 #include "chrome/test/chromedriver/log_replay/replay_http_client.h"
 #include "chrome/test/chromedriver/net/net_util.h"
@@ -134,11 +135,14 @@ Status PrepareDesktopCommandLine(const Capabilities& capabilities,
   base::FilePath program = capabilities.binary;
   if (program.empty()) {
     if (!FindChrome(&program))
-      return Status(kUnknownError, "cannot find Chrome binary");
+      return Status(kUnknownError, base::StringPrintf("cannot find %s binary",
+                                                      kBrowserShortName));
   } else if (!base::PathExists(program)) {
-    return Status(kUnknownError,
-                  base::StringPrintf("no chrome binary at %" PRFilePath,
-                                     program.value().c_str()));
+    return Status(
+        kUnknownError,
+        base::StringPrintf("no %s binary at %" PRFilePath,
+                           base::ToLowerASCII(kBrowserShortName).c_str(),
+                           program.value().c_str()));
   }
   base::CommandLine command(program);
   Switches switches;
@@ -258,27 +262,28 @@ Status WaitForDevToolsAndCheckVersion(
     LOG(WARNING) << "You are using an unsupported command-line switch: "
                     "--disable-build-check. Please don't report bugs that "
                     "cannot be reproduced with this switch removed.";
-  } else if (browser_info->major_version != kSupportedChromeMajorVersion) {
+  } else if (browser_info->major_version != kSupportedBrowserMajorVersion) {
     if (browser_info->major_version == 0) {
       // TODO(https://crbug.com/932013): Content Shell doesn't report a version
       // number. Skip version checking with a warning.
-      LOG(WARNING) << "Unable to retrieve Chrome version. "
-                      "Unable to verify browser compatibility.";
+      LOG(WARNING) << "Unable to retrieve " << kBrowserShortName
+                   << " version. Unable to verify browser compatibility.";
     } else if (browser_info->major_version ==
-               kSupportedChromeMajorVersion + 1) {
+               kSupportedBrowserMajorVersion + 1) {
       // TODO(https://crbug.com/chromedriver/2656): Since we don't currently
       // release ChromeDriver for dev or canary channels, allow using
       // ChromeDriver version n (e.g., Beta) with Chrome version n+1 (e.g., Dev
       // or Canary), with a warning.
-      LOG(WARNING) << "This version of ChromeDriver has not been tested with "
-                   << "Chrome version " << browser_info->major_version << ".";
+      LOG(WARNING) << "This version of " << kChromeDriverProductFullName
+                   << " has not been tested with " << kBrowserShortName
+                   << " version " << browser_info->major_version << ".";
     } else {
       *retry = false;
       return Status(
           kSessionNotCreated,
-          base::StringPrintf(
-              "This version of ChromeDriver only supports Chrome version %d",
-              kSupportedChromeMajorVersion));
+          base::StringPrintf("This version of %s only supports %s version %d",
+                             kChromeDriverProductFullName, kBrowserShortName,
+                             kSupportedBrowserMajorVersion));
     }
   }
 
@@ -351,9 +356,12 @@ Status LaunchRemoteChromeSession(
       capabilities.debugger_address, factory, socket_factory, &capabilities, 60,
       &devtools_http_client, &retry);
   if (status.IsError()) {
-    return Status(kUnknownError, "cannot connect to chrome at " +
-                      capabilities.debugger_address.ToString(),
-                  status);
+    return Status(
+        kUnknownError,
+        base::StringPrintf("cannot connect to %s at %s",
+                           base::ToLowerASCII(kBrowserShortName).c_str(),
+                           capabilities.debugger_address.ToString().c_str()),
+        status);
   }
 
   std::unique_ptr<DevToolsClient> devtools_websocket_client;
@@ -463,10 +471,13 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
 #else
   std::string command_string = command.GetCommandLineString();
 #endif
-  VLOG(0) << "Launching chrome: " << command_string;
+  VLOG(0) << "Launching " << base::ToLowerASCII(kBrowserShortName) << ": "
+          << command_string;
   base::Process process = base::LaunchProcess(command, options);
   if (!process.IsValid())
-    return Status(kUnknownError, "Failed to create a Chrome process.");
+    return Status(
+        kUnknownError,
+        base::StringPrintf("Failed to create %s process.", kBrowserShortName));
 
   // Attempt to connect to devtools in order to send commands to Chrome. If
   // attempts fail, check if Chrome has crashed and return error.
@@ -509,8 +520,10 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
                       "argument, or don't use --user-data-dir");
       std::string termination_reason =
           internal::GetTerminationReason(chrome_status);
-      Status failure_status = Status(
-          kUnknownError, "Chrome failed to start: " + termination_reason);
+      Status failure_status =
+          Status(kUnknownError, base::StringPrintf("%s failed to start: %s.",
+                                                   kBrowserShortName,
+                                                   termination_reason.c_str()));
       failure_status.AddDetails(status.message());
       // There is a use case of someone passing a path to a binary to us in
       // capabilities that is not an actual Chrome binary but a script that
@@ -523,23 +536,27 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
       // the Chrome binary at the end of your script, you must find a way to
       // properly handle our termination signal so that you don't have zombie
       // Chrome processes running after the test is completed.
-      failure_status.AddDetails("The process started from chrome location " +
-                                command.GetProgram().AsUTF8Unsafe() +
-                                " is no longer running, so ChromeDriver is "
-                                "assuming that Chrome has "
-                                "crashed.");
+      failure_status.AddDetails(base::StringPrintf(
+          "The process started from %s location %s is no longer running, "
+          "so %s is assuming that %s has crashed.",
+          base::ToLowerASCII(kBrowserShortName).c_str(),
+          command.GetProgram().AsUTF8Unsafe().c_str(),
+          kChromeDriverProductShortName, kBrowserShortName));
       return failure_status;
     }
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
 
   if (status.IsError()) {
-    VLOG(0) << "Failed to connect to Chrome. Attempting to kill it.";
+    VLOG(0) << "Failed to connect to " << kBrowserShortName
+            << ". Attempting to kill it.";
     if (!process.Terminate(0, true)) {
       int exit_code;
       if (base::GetTerminationStatus(process.Handle(), &exit_code) ==
           base::TERMINATION_STATUS_STILL_RUNNING)
-        return Status(kUnknownError, "cannot kill Chrome", status);
+        return Status(kUnknownError,
+                      base::StringPrintf("cannot kill %s", kBrowserShortName),
+                      status);
     }
     return status;
   }
@@ -1074,11 +1091,11 @@ Status RemoveOldDevToolsActivePortFile(const base::FilePath& user_data_dir) {
   }
   return Status(
       kUnknownError,
-      std::string("Could not remove old devtools port file. Perhaps "
-                  "the given user-data-dir at ") +
-          user_data_dir.AsUTF8Unsafe() +
-          std::string(" is still attached to a running Chrome or Chromium "
-                      "process."));
+      base::StringPrintf(
+          "Could not remove old devtools port file. Perhaps the given "
+          "user-data-dir at %s is still attached to a running %s or "
+          "Chromium process",
+          user_data_dir.AsUTF8Unsafe().c_str(), kBrowserShortName));
 }
 
 std::string GetTerminationReason(base::TerminationStatus status) {

@@ -276,6 +276,7 @@ action_foreach("validation_test_data_list") {
 
 mojom("test_interfaces") {
   testonly = true
+  generate_java = true
   sources = [
     "math_calculator.mojom",
     "no_module.mojom",
@@ -391,6 +392,7 @@ mojom("test_export2") {
 
 mojom("test_mojom_import") {
   testonly = true
+  generate_java = true
   sources = [
     "sample_import.mojom",
   ]
@@ -398,6 +400,7 @@ mojom("test_mojom_import") {
 
 mojom("test_mojom_import_wrapper") {
   testonly = true
+  generate_java = true
   public_deps = [
     ":test_mojom_import",
   ]
@@ -405,6 +408,7 @@ mojom("test_mojom_import_wrapper") {
 
 mojom("test_mojom_import_wrapper_wrapper") {
   testonly = true
+  generate_java = true
   public_deps = [
     ":test_mojom_import_wrapper",
   ]
@@ -412,6 +416,7 @@ mojom("test_mojom_import_wrapper_wrapper") {
 
 mojom("test_mojom_import2") {
   testonly = true
+  generate_java = true
   sources = [
     "sample_import2.mojom",
   ]
@@ -480,6 +485,7 @@ mojom("test_no_sources") {
 
 mojom("echo") {
   testonly = true
+  generate_java = true
   sources = [
     "echo.mojom",
     "echo_import/echo_import.mojom",
@@ -489,6 +495,7 @@ mojom("echo") {
 # These could probably be merged with "test_interfaces" at some point.
 mojom("other_test_interfaces") {
   testonly = true
+  generate_java = true
   sources = [
     "new_endpoint_types.test-mojom",
   ]

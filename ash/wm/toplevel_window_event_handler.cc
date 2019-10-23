@@ -4,7 +4,9 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
@@ -128,9 +130,13 @@ bool CanStartGoingBack(aura::Window* target) {
     return false;
   }
 
-  // Do not enable back gesture if home screen is visible.
-  if (shell->home_screen_controller()->IsHomeScreenVisible())
+  // Do not enable back gesture if home screen is visible but not in
+  // |kFullscreenSearch| state.
+  if (shell->home_screen_controller()->IsHomeScreenVisible() &&
+      shell->app_list_controller()->GetAppListViewState() !=
+          AppListViewState::kFullscreenSearch) {
     return false;
+  }
 
   views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(target);
   if (!widget)

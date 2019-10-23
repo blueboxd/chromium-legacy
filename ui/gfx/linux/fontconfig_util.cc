@@ -44,10 +44,16 @@ class GFX_EXPORT GlobalFontConfig {
   ~GlobalFontConfig() { FcConfigDestroy(fc_config_); }
 
   // Retrieve the native font-config FcConfig pointer.
-  FcConfig* Get() const { return fc_config_; }
+  FcConfig* Get() const {
+    DCHECK_EQ(fc_config_, FcConfigGetCurrent());
+    return fc_config_;
+  }
 
   // Override the font-config configuration.
-  void OverrideForTesting(FcConfig* config) { fc_config_ = config; }
+  void OverrideForTesting(FcConfig* config) {
+    FcConfigSetCurrent(config);
+    fc_config_ = config;
+  }
 
   // Retrieve the global font-config configuration.
   static GlobalFontConfig* GetInstance() {

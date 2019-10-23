@@ -36,8 +36,6 @@
 
 namespace blink {
 
-using namespace xpath;
-
 XPathExpression* XPathEvaluator::createExpression(
     const String& expression,
     XPathNSResolver* resolver,
@@ -56,7 +54,7 @@ XPathResult* XPathEvaluator::evaluate(const String& expression,
                                       uint16_t type,
                                       const ScriptValue&,
                                       ExceptionState& exception_state) {
-  if (!IsValidContextNode(context_node)) {
+  if (!xpath::IsValidContextNode(context_node)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The node provided is '" + context_node->nodeName() +

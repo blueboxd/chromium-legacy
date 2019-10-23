@@ -59,7 +59,7 @@
     // FIXME: onerror should be an OnErrorEventHandler.
     attribute EventHandler onerror;
     attribute EventHandler onfocus;
-    [RuntimeEnabled=FormDataEvent] attribute EventHandler onformdata;
+    attribute EventHandler onformdata;
     attribute EventHandler oninput;
     attribute EventHandler oninvalid;
     attribute EventHandler onkeydown;

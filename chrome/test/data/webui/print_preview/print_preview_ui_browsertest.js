@@ -20,22 +20,9 @@ const PrintPreviewTest = class extends PolymerTest {
     ];
   }
 
-  /** @override */
-  get loaderFile() {
-    return 'subpage_loader.html';
-  }
-
   // The name of the mocha suite. Should be overridden by subclasses.
   get suiteName() {
     return null;
-  }
-
-  // The name of the custom element under test. Should be overridden by
-  // subclasses that are not directly loading the URL of a custom element.
-  get customElementName() {
-    const r = /chrome\:\/\/print\/([a-zA-Z-_]+)\/([a-zA-Z-_]+)\.html/;
-    const result = r.exec(this.browsePreload);
-    return 'print-preview-' + result[2].replace(/_/gi, '-');
   }
 
   /** @param {string} testName The name of the test to run. */
@@ -227,12 +214,6 @@ var PrintPreviewSelectBehaviorTest = class extends PrintPreviewTest {
   /** @override */
   get suiteName() {
     return select_behavior_test.suiteName;
-  }
-
-  /** @override */
-  get customElementName() {
-    // This test is loading a behavior, not an element.
-    return null;
   }
 };
 
@@ -645,12 +626,6 @@ var PrintPreviewDestinationStoreTest = class extends PrintPreviewTest {
   /** @override */
   get suiteName() {
     return destination_store_test.suiteName;
-  }
-
-  /** @override */
-  get customElementName() {
-    // This test is loading a data class, not an element.
-    return null;
   }
 };
 

@@ -17,7 +17,7 @@
 #include <windows.h>
 #elif defined(OS_MACOSX)
 #include <mach/machine/thread_status.h>
-#elif defined(OS_ANDROID) && !defined(ARCH_CPU_64_BITS)
+#elif defined(OS_ANDROID) || defined(OS_LINUX)
 #include <sys/ucontext.h>
 #endif
 
@@ -85,7 +85,8 @@ inline uintptr_t& RegisterContextInstructionPointer(
   return AsUintPtr(&context->__rip);
 }
 
-#elif defined(OS_ANDROID) && defined(ARCH_CPU_ARM_FAMILY) && \
+#elif (defined(OS_ANDROID) || defined(OS_LINUX)) && \
+    defined(ARCH_CPU_ARM_FAMILY) &&                 \
     defined(ARCH_CPU_32_BITS)  // #if defined(OS_WIN)
 
 using RegisterContext = mcontext_t;

@@ -32,10 +32,6 @@ package-lock.json
 html-imports/src/*
 html-imports/gulpfile.js
 
-# html-imports-v0
-html-imports-v0/src/*
-html-imports-v0/gulpfile.js
-
 # iron-autogrow-textarea
 iron-autogrow-textarea/*
 

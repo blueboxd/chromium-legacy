@@ -142,7 +142,6 @@ class CORE_EXPORT PerformanceMonitor final
   unsigned layout_depth_ = 0;
   unsigned user_callback_depth_ = 0;
   const void* user_callback_;
-  base::TimeTicks v8_compile_start_time_;
 
   base::TimeDelta thresholds_[kAfterLast];
 

@@ -140,7 +140,7 @@
     <!-- Preview tab dimensions -->
     <dimen name="preview_tab_toolbar_height">70dp</dimen>
     <dimen name="preview_tab_favicon_size">24dp</dimen>
-    <dimen name="preview_tab_security_icon_size">16dp</dimen>
+    <dimen name="preview_tab_security_icon_size">22dp</dimen>
 
     <!-- Autofill keyboard accessory dimensions -->
     <dimen name="keyboard_accessory_height_with_shadow">56dp</dimen>

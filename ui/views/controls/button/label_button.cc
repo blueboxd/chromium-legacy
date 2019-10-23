@@ -224,6 +224,24 @@ gfx::Size LabelButton::CalculatePreferredSize() const {
   return cached_preferred_size_.value();
 }
 
+gfx::Size LabelButton::GetMinimumSize() const {
+  if (label_->GetElideBehavior() == gfx::ElideBehavior::NO_ELIDE)
+    return GetPreferredSize();
+
+  gfx::Size size = image_->GetPreferredSize();
+  const gfx::Insets insets(GetInsets());
+  size.Enlarge(insets.width(), insets.height());
+
+  size.SetToMax(GetMinSize());
+  const gfx::Size max_size = GetMaxSize();
+  if (max_size.width() > 0)
+    size.set_width(std::min(max_size.width(), size.width()));
+  if (max_size.height() > 0)
+    size.set_height(std::min(max_size.height(), size.height()));
+
+  return size;
+}
+
 int LabelButton::GetHeightForWidth(int width) const {
   const gfx::Size size_without_label = GetUnclampedSizeWithoutLabel();
   // Get label height for the remaining width.
@@ -245,21 +263,19 @@ int LabelButton::GetHeightForWidth(int width) const {
 }
 
 void LabelButton::Layout() {
-  ink_drop_container_->SetBoundsRect(GetLocalBounds());
+  gfx::Rect child_area = GetLocalBounds();
 
-  // By default, GetChildAreaBounds() ignores the top and bottom border, but we
-  // want the image to respect it.
-  gfx::Rect child_area(GetChildAreaBounds());
+  ink_drop_container_->SetBoundsRect(child_area);
   // The space that the label can use. Its actual bounds may be smaller if the
   // label is short.
-  gfx::Rect label_area(child_area);
+  gfx::Rect label_area = child_area;
 
   gfx::Insets insets = GetInsets();
   child_area.Inset(insets);
   // Labels can paint over the vertical component of the border insets.
   label_area.Inset(insets.left(), 0, insets.right(), 0);
 
-  gfx::Size image_size(image_->GetPreferredSize());
+  gfx::Size image_size = image_->GetPreferredSize();
   image_size.SetToMin(child_area.size());
 
   const auto horizontal_alignment = GetHorizontalAlignment();
@@ -275,7 +291,7 @@ void LabelButton::Layout() {
       std::min(label_area.width(), label_->GetPreferredSize().width()),
       label_area.height());
 
-  gfx::Point image_origin(child_area.origin());
+  gfx::Point image_origin = child_area.origin();
   if (label_->GetMultiLine()) {
     // Right now this code currently only works for CheckBox and RadioButton
     // descendants that have multi-line enabled for their label.
@@ -389,10 +405,6 @@ void LabelButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
   ink_drop_container()->RemoveLayerBeneathView(old_layer);
   ink_drop_container()->SetVisible(false);
   image()->DestroyLayer();
-}
-
-gfx::Rect LabelButton::GetChildAreaBounds() {
-  return GetLocalBounds();
 }
 
 void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {

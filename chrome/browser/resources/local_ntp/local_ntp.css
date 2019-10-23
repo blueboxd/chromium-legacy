@@ -264,7 +264,7 @@ body.hide-fakebox #fakebox {
   -webkit-mask-size: 20px;
 }
 
-html[dir=rtl] #realbox-matches :-webkit-any(.clock-icon, .search-icon) {
+html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
   right: 16px;
 }
 

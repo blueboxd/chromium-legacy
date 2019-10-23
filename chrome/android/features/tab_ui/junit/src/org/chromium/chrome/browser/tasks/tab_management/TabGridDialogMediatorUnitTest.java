@@ -308,12 +308,15 @@ public class TabGridDialogMediatorUnitTest {
         KeyboardVisibilityDelegate.KeyboardVisibilityListener listener =
                 mMediator.getKeyboardVisibilityListenerForTesting();
         mModel.set(TabGridPanelProperties.TITLE_CURSOR_VISIBILITY, false);
+        mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
 
         listener.keyboardVisibilityChanged(true);
         assertThat(mModel.get(TabGridPanelProperties.TITLE_CURSOR_VISIBILITY), equalTo(true));
+        assertThat(mModel.get(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED), equalTo(true));
 
         listener.keyboardVisibilityChanged(false);
         assertThat(mModel.get(TabGridPanelProperties.TITLE_CURSOR_VISIBILITY), equalTo(false));
+        assertThat(mModel.get(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED), equalTo(false));
     }
 
     @Test
@@ -648,6 +651,32 @@ public class TabGridDialogMediatorUnitTest {
         verify(mTabGroupTitleEditor).updateTabGroupTitle(eq(mTab1), eq(CUSTOMIZED_DIALOG_TITLE));
         assertThat(
                 mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(CUSTOMIZED_DIALOG_TITLE));
+    }
+
+    @Test
+    public void hideDialog_ModifiedGroupTitleEmpty() {
+        mMediator.setCurrentTabIdForTest(TAB1_ID);
+        mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
+
+        // Mock that tab1 is in a group.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
+
+        // Mock that we have a modified group title which is an empty string.
+        TextWatcher textWatcher = mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER);
+        View.OnFocusChangeListener onFocusChangeListener =
+                mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER);
+        onFocusChangeListener.onFocusChange(mTitleTextView, true);
+        doReturn("").when(mEditable).toString();
+        textWatcher.afterTextChanged(mEditable);
+        assertThat(mMediator.getCurrentGroupModifiedTitleForTesting(), equalTo(""));
+
+        mMediator.hideDialog(false);
+
+        // When updated title is a empty string, delete stored title and restore default title in
+        // PropertyModel.
+        verify(mTabGroupTitleEditor).deleteTabGroupTitle(eq(TAB1_ID));
+        assertThat(mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(DIALOG_TITLE2));
+        verify(mTabGroupTitleEditor).updateTabGroupTitle(eq(mTab1), eq(DIALOG_TITLE2));
     }
 
     @Test

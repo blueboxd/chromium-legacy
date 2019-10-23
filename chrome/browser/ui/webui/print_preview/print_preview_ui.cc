@@ -57,7 +57,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/resources/grit/webui_resources.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -400,9 +399,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
     source->AddResourcePath(kPrintPreviewResources[i].name,
                             kPrintPreviewResources[i].value);
   }
-  // Add the subpage loader, to load subpages in non-optimized builds.
-  source->AddResourcePath("subpage_loader.html", IDR_WEBUI_HTML_SUBPAGE_LOADER);
-  source->AddResourcePath("subpage_loader.js", IDR_WEBUI_JS_SUBPAGE_LOADER);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
 #endif
   SetupPrintPreviewPlugin(source);

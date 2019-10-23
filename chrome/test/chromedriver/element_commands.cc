@@ -26,6 +26,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/element_util.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
@@ -392,12 +393,11 @@ Status ExecuteClearElement(Session* session,
   }
   static bool isClearWarningNotified = false;
   if (!isClearWarningNotified) {
-    std::string messageClearWarning =
-        "\n\t=== NOTE: ===\n"
-        "\tThe Clear command in ChromeDriver 2.43 and above\n"
-        "\thas been updated to conform to the current standard,\n"
-        "\tincluding raising blur event after clearing.\n";
-    VLOG(0) << messageClearWarning;
+    VLOG(0) << "\n\t=== NOTE: ===\n"
+            << "\tThe Clear command in " << kChromeDriverProductShortName
+            << " 2.43 and above\n"
+            << "\thas been updated to conform to the current standard,\n"
+            << "\tincluding raising blur event after clearing.\n";
     isClearWarningNotified = true;
   }
   base::ListValue args;

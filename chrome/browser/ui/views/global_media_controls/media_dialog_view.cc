@@ -70,7 +70,7 @@ MediaNotificationContainerImpl* MediaDialogView::ShowMediaSession(
   observed_containers_[id] = container_ptr;
 
   active_sessions_view_->ShowNotification(id, std::move(container));
-  OnAnchorBoundsChanged();
+  SizeToContents();
 
   for (auto& observer : observers_)
     observer.OnMediaSessionShown();
@@ -84,7 +84,7 @@ void MediaDialogView::HideMediaSession(const std::string& id) {
   if (active_sessions_view_->empty())
     HideDialog();
   else
-    OnAnchorBoundsChanged();
+    SizeToContents();
 
   for (auto& observer : observers_)
     observer.OnMediaSessionHidden();
@@ -125,7 +125,7 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
 }
 
 void MediaDialogView::OnContainerExpanded(bool expanded) {
-  OnAnchorBoundsChanged();
+  SizeToContents();
 }
 
 void MediaDialogView::OnContainerMetadataChanged() {

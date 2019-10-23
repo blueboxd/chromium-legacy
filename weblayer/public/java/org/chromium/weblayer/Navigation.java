@@ -7,6 +7,8 @@ package org.chromium.weblayer;
 import android.net.Uri;
 import android.os.RemoteException;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IClientNavigation;
 import org.chromium.weblayer_private.aidl.INavigation;
@@ -58,6 +60,7 @@ public final class Navigation extends IClientNavigation.Stub {
      * The uri the main frame is navigating to. This may change during the navigation when
      * encountering a server redirect.
      */
+    @NonNull
     public Uri getUri() {
         try {
             return Uri.parse(mNavigationImpl.getUri());
@@ -70,6 +73,7 @@ public final class Navigation extends IClientNavigation.Stub {
      * Returns the redirects that occurred on the way to the current page. The current page is the
      * last one in the list (so even when there's no redirect, there will be one entry in the list).
      */
+    @NonNull
     public List<Uri> getRedirectChain() {
         try {
             List<Uri> redirects = new ArrayList<Uri>();

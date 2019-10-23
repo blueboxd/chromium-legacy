@@ -583,7 +583,7 @@ TEST(CanonicalCookieTest, GetEffectiveSameSite) {
 TEST(CanonicalCookieTest, IncludeForRequestURL) {
   GURL url("http://www.example.com");
   base::Time creation_time = base::Time::Now();
-  CookieOptions options;
+  CookieOptions options = CookieOptions::MakeAllInclusive();
   base::Optional<base::Time> server_time = base::nullopt;
 
   std::unique_ptr<CanonicalCookie> cookie(

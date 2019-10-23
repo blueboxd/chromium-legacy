@@ -981,7 +981,7 @@ need to be translated for each locale.-->
         {DAYS, plural, =0 {Active today} =1 {Active 1 day ago} other {Active # days ago}}
       </message>
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_INITIATING_ORIGIN" desc="The label for the initiating origin shown in Click to Call dialogs.">
-        Number initiated from <ph name="ORIGIN">$1<ex>https://google.com</ex></ph>
+        Number from <ph name="ORIGIN">$1<ex>https://google.com</ex></ph>
       </message>
 
       <!-- Sharing content types -->

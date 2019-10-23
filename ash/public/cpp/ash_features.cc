@@ -97,7 +97,7 @@ const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSwipingFromLeftEdgeToGoBack{
-    "SwipingFromLeftEdgeToGoBack", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SwipingFromLeftEdgeToGoBack", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDragFromShelfToHomeOrOverview{
     "DragFromShelfToHomeOrOverview", base::FEATURE_DISABLED_BY_DEFAULT};

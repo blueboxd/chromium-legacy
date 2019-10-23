@@ -5,6 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom_component("base") {
+  generate_java = true
   sources = [
     "application_state.mojom",
     "big_buffer.mojom",

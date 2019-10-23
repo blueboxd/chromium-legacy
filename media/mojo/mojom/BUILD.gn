@@ -6,6 +6,8 @@ import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
+  generate_java = true
+
   # TODO(crbug.com/676224): Conditionally add source files in this list when we
   # support EnabledIf attribute in mojom files.
   sources = [

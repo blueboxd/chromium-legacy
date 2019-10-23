@@ -939,7 +939,7 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   NavigationControllerImpl& controller = controller_impl();
 
   // First make some history, starting with a privileged URL.
-  const GURL kExistingURL1("http://privileged");
+  const GURL kExistingURL1("chrome://privileged");
   auto navigation =
       NavigationSimulator::CreateBrowserInitiated(kExistingURL1, contents());
   navigation->Start();
@@ -947,7 +947,9 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   // Pretend it has bindings so we can tell if we incorrectly copy it. This has
   // to be done after ReadyToCommit, otherwise we won't use the current RFH to
   // commit since its bindings don't match the URL.
+  EXPECT_EQ(0, main_test_rfh()->GetEnabledBindings());
   main_test_rfh()->AllowBindings(BINDINGS_POLICY_MOJO_WEB_UI);
+  EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI, main_test_rfh()->GetEnabledBindings());
   navigation->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;

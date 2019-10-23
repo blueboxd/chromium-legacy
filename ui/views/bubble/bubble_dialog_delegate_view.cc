@@ -460,12 +460,6 @@ void BubbleDialogDelegateView::SizeToContents() {
   GetWidget()->SetBounds(bubble_bounds);
 }
 
-BubbleFrameView* BubbleDialogDelegateView::GetBubbleFrameView() const {
-  const NonClientView* view =
-      GetWidget() ? GetWidget()->non_client_view() : nullptr;
-  return view ? static_cast<BubbleFrameView*>(view->frame_view()) : nullptr;
-}
-
 void BubbleDialogDelegateView::UpdateColorsFromTheme() {
   if (!color_explicitly_set_)
     color_ = GetNativeTheme()->GetSystemColor(

@@ -591,11 +591,6 @@
         },
         'os_type': 'android',
       },
-      'android-jumbo-rel': {
-        'additional_compile_targets': [
-          'all'
-        ]
-      },
       'android-kitkat-arm-rel': {
         'mixins': [
           'kitkat',
@@ -1395,21 +1390,6 @@
   {
     'name': 'chromium.fyi',
     'machines': {
-      'Jumbo Linux x64': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'Jumbo Mac': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'Jumbo Win x64': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'Linux Builder Goma Canary': {
         'mixins': [
           'linux-xenial',
@@ -3479,11 +3459,6 @@
           'empty_main',
         ],
       },
-      'linux-jumbo-rel': {
-        'additional_compile_targets': [
-          'all'
-        ]
-      },
       'linux-ozone-rel': {
         'mixins': [
           'linux-xenial',
@@ -3674,11 +3649,6 @@
             }
           ],
         },
-      },
-      'mac-jumbo-rel': {
-        'additional_compile_targets': [
-          'all'
-        ]
       },
     },
   },
@@ -4160,11 +4130,6 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_dbg_isolated_scripts',
         },
-      },
-      'win-jumbo-rel': {
-        'additional_compile_targets': [
-          'all'
-        ]
       },
     },
   },

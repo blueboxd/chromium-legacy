@@ -41,7 +41,7 @@ class VideoSourceProviderImpl : public mojom::VideoSourceProvider {
       mojo::PendingReceiver<mojom::TextureVirtualDevice>
           virtual_device_receiver) override;
   void RegisterVirtualDevicesChangedObserver(
-      mojom::DevicesChangedObserverPtr observer,
+      mojo::PendingRemote<mojom::DevicesChangedObserver> observer,
       bool raise_event_if_virtual_devices_already_present) override;
   void Close(CloseCallback callback) override;
 

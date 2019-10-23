@@ -90,6 +90,6 @@ interface DrmDevice {
   // Provides a DeviceCursor interface. The provided interface needs to be
   // associated because the AcceleratedWidgets referenced by its methods are
   // registered via CreateWindow() in this interface.
-  GetDeviceCursor(associated DeviceCursor& cursor);
+  GetDeviceCursor(pending_associated_receiver<DeviceCursor> cursor);
 };
 

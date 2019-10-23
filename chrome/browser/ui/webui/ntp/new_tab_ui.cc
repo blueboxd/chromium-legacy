@@ -152,11 +152,12 @@ std::string NewTabUI::NewTabHTMLSource::GetSource() {
 }
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.

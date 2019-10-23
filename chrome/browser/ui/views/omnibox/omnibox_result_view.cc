@@ -233,6 +233,12 @@ void OmniboxResultView::ButtonPressed(views::Button* button,
   if (button == suggestion_tab_switch_button_) {
     OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
   } else if (button == remove_suggestion_button_) {
+    if (!base::FeatureList::IsEnabled(
+            omnibox::kConfirmOmniboxSuggestionRemovals)) {
+      RemoveSuggestion();
+      return;
+    }
+
     // Temporarily inhibit the popup closing on blur while we open the remove
     // suggestion confirmation bubble.
     popup_contents_view_->model()->set_popup_closes_on_blur(false);

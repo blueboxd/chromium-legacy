@@ -7,11 +7,16 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
+#include "base/strings/string_piece.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 
 class GURL;
 
 namespace net {
+
+class HttpResponseHeaders;
 
 // See RFC 2397 for a complete description of the 'data' URL scheme.
 //
@@ -55,11 +60,25 @@ class NET_EXPORT DataURL {
   //
   // OPTIONAL: If |data| is NULL, then the <data> section will not be parsed
   //           or validated.
-  //
   static bool Parse(const GURL& url,
                     std::string* mime_type,
                     std::string* charset,
-                    std::string* data);
+                    std::string* data) WARN_UNUSED_RESULT;
+
+  // Similar to parse, except that it also generates a bogus set of response
+  // headers, with Content-Type populated, and takes a method. Only the "HEAD"
+  // method modifies the response, resulting in a 0-length body. All arguments
+  // except |headers| must be non-null. Return net::OK on success.
+  //
+  // TODO(mmenke): Make headers mandatory, once URLRequestDataJob has been
+  // removed. Also improve how it's returned, as requiring consumer to create
+  // an empty object is strange.
+  static Error BuildResponse(const GURL& url,
+                             base::StringPiece method,
+                             std::string* mime_type,
+                             std::string* charset,
+                             std::string* data,
+                             HttpResponseHeaders* headers) WARN_UNUSED_RESULT;
 };
 
 }  // namespace net

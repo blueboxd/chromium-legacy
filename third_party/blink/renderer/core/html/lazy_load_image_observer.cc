@@ -93,6 +93,76 @@ bool IsElementInInvisibleSubTree(const Element& element) {
   return false;
 }
 
+void RecordVisibleLoadTimeForImage(
+    const LazyLoadImageObserver::VisibleLoadTimeMetrics&
+        visible_load_time_metrics) {
+  DCHECK(visible_load_time_metrics.has_initial_intersection_been_set);
+  DCHECK(!visible_load_time_metrics.time_when_first_visible.is_null());
+  DCHECK(!visible_load_time_metrics.time_when_first_load_finished.is_null());
+
+  base::TimeDelta visible_load_delay =
+      visible_load_time_metrics.time_when_first_load_finished -
+      visible_load_time_metrics.time_when_first_visible;
+  if (visible_load_delay < base::TimeDelta())
+    visible_load_delay = base::TimeDelta();
+
+  switch (GetNetworkStateNotifier().EffectiveType()) {
+    case WebEffectiveConnectionType::kTypeSlow2G:
+      if (visible_load_time_metrics.is_initially_intersecting) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadImages.AboveTheFold.Slow2G",
+            visible_load_delay);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.Slow2G",
+            visible_load_delay);
+      }
+      break;
+
+    case WebEffectiveConnectionType::kType2G:
+      if (visible_load_time_metrics.is_initially_intersecting) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadImages.AboveTheFold.2G",
+            visible_load_delay);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.2G",
+            visible_load_delay);
+      }
+      break;
+
+    case WebEffectiveConnectionType::kType3G:
+      if (visible_load_time_metrics.is_initially_intersecting) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadImages.AboveTheFold.3G",
+            visible_load_delay);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.3G",
+            visible_load_delay);
+      }
+      break;
+
+    case WebEffectiveConnectionType::kType4G:
+      if (visible_load_time_metrics.is_initially_intersecting) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadImages.AboveTheFold.4G",
+            visible_load_delay);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.4G",
+            visible_load_delay);
+      }
+      break;
+
+    case WebEffectiveConnectionType::kTypeUnknown:
+    case WebEffectiveConnectionType::kTypeOffline:
+      // No VisibleLoadTime histograms are recorded for these effective
+      // connection types.
+      break;
+  }
+}
+
 }  // namespace
 
 LazyLoadImageObserver::LazyLoadImageObserver(const Document& document)
@@ -183,8 +253,9 @@ void LazyLoadImageObserver::StartMonitoringVisibility(
 
   VisibleLoadTimeMetrics& visible_load_time_metrics =
       image_element->EnsureVisibleLoadTimeMetrics();
-  if (visible_load_time_metrics.has_initial_intersection_been_set) {
-    // The element has already been monitored.
+  if (!visible_load_time_metrics.time_when_first_visible.is_null()) {
+    // The time when the image first became visible has already been measured,
+    // so there's no need to monitor the visibility of the image any more.
     return;
   }
   if (!visibility_metrics_observer_) {
@@ -193,82 +264,23 @@ void LazyLoadImageObserver::StartMonitoringVisibility(
         WTF::BindRepeating(&LazyLoadImageObserver::OnVisibilityChanged,
                            WrapWeakPersistent(this)));
   }
-  visible_load_time_metrics.record_visibility_metrics = true;
   visibility_metrics_observer_->observe(image_element);
 }
 
 void LazyLoadImageObserver::OnLoadFinished(HTMLImageElement* image_element) {
   DCHECK(RuntimeEnabledFeatures::LazyImageVisibleLoadTimeMetricsEnabled());
-
   VisibleLoadTimeMetrics& visible_load_time_metrics =
       image_element->EnsureVisibleLoadTimeMetrics();
-  if (!visible_load_time_metrics.record_visibility_metrics)
+
+  if (!visible_load_time_metrics.time_when_first_load_finished.is_null())
+    return;
+  visible_load_time_metrics.time_when_first_load_finished =
+      base::TimeTicks::Now();
+
+  if (visible_load_time_metrics.time_when_first_visible.is_null())
     return;
 
-  visible_load_time_metrics.record_visibility_metrics = false;
-  visibility_metrics_observer_->unobserve(image_element);
-
-  base::TimeDelta visible_load_delay;
-  if (!visible_load_time_metrics.time_when_first_visible.is_null()) {
-    visible_load_delay = base::TimeTicks::Now() -
-                         visible_load_time_metrics.time_when_first_visible;
-  }
-
-  switch (GetNetworkStateNotifier().EffectiveType()) {
-    case WebEffectiveConnectionType::kTypeSlow2G:
-      if (visible_load_time_metrics.is_initially_intersecting) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Blink.VisibleLoadTime.LazyLoadImages.AboveTheFold.Slow2G",
-            visible_load_delay);
-      } else {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.Slow2G",
-            visible_load_delay);
-      }
-      break;
-
-    case WebEffectiveConnectionType::kType2G:
-      if (visible_load_time_metrics.is_initially_intersecting) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Blink.VisibleLoadTime.LazyLoadImages.AboveTheFold.2G",
-            visible_load_delay);
-      } else {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.2G",
-            visible_load_delay);
-      }
-      break;
-
-    case WebEffectiveConnectionType::kType3G:
-      if (visible_load_time_metrics.is_initially_intersecting) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Blink.VisibleLoadTime.LazyLoadImages.AboveTheFold.3G",
-            visible_load_delay);
-      } else {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.3G",
-            visible_load_delay);
-      }
-      break;
-
-    case WebEffectiveConnectionType::kType4G:
-      if (visible_load_time_metrics.is_initially_intersecting) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Blink.VisibleLoadTime.LazyLoadImages.AboveTheFold.4G",
-            visible_load_delay);
-      } else {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold.4G",
-            visible_load_delay);
-      }
-      break;
-
-    case WebEffectiveConnectionType::kTypeUnknown:
-    case WebEffectiveConnectionType::kTypeOffline:
-      // No VisibleLoadTime histograms are recorded for these effective
-      // connection types.
-      break;
-  }
+  RecordVisibleLoadTimeForImage(visible_load_time_metrics);
 }
 
 void LazyLoadImageObserver::OnVisibilityChanged(
@@ -276,44 +288,45 @@ void LazyLoadImageObserver::OnVisibilityChanged(
   DCHECK(!entries.IsEmpty());
 
   for (auto entry : entries) {
-    if (auto* image_element = ToHTMLImageElementOrNull(entry->target())) {
-      VisibleLoadTimeMetrics& visible_load_time_metrics =
-          image_element->EnsureVisibleLoadTimeMetrics();
-      if (!visible_load_time_metrics.has_initial_intersection_been_set) {
-        visible_load_time_metrics.is_initially_intersecting =
-            entry->isIntersecting();
-        visible_load_time_metrics.has_initial_intersection_been_set = true;
-      }
-      if (entry->isIntersecting()) {
-        DCHECK(visible_load_time_metrics.time_when_first_visible.is_null());
-        visible_load_time_metrics.time_when_first_visible =
-            base::TimeTicks::Now();
+    auto* image_element = ToHTMLImageElementOrNull(entry->target());
+    if (!image_element)
+      continue;
 
-        if (visible_load_time_metrics.record_visibility_metrics &&
-            image_element->GetDocument().GetFrame()) {
-          // Since the visibility metrics are recorded when the image finishes
-          // loading, this means that the image became visible before it
-          // finished loading.
+    VisibleLoadTimeMetrics& visible_load_time_metrics =
+        image_element->EnsureVisibleLoadTimeMetrics();
+    // The image's visiblity shouldn't still be monitored if the time when the
+    // image first became visible has already been measured.
+    DCHECK(visible_load_time_metrics.time_when_first_visible.is_null());
 
-          // Note: If the WebEffectiveConnectionType enum ever gets out of sync
-          // with net::EffectiveConnectionType, then both the AboveTheFold and
-          // BelowTheFold histograms here will have to be updated to record the
-          // sample in terms of net::EffectiveConnectionType instead of
-          // WebEffectiveConnectionType.
-          if (visible_load_time_metrics.is_initially_intersecting) {
-            UMA_HISTOGRAM_ENUMERATION(
-                "Blink.VisibleBeforeLoaded.LazyLoadImages.AboveTheFold",
-                GetNetworkStateNotifier().EffectiveType());
-          } else {
-            UMA_HISTOGRAM_ENUMERATION(
-                "Blink.VisibleBeforeLoaded.LazyLoadImages.BelowTheFold",
-                GetNetworkStateNotifier().EffectiveType());
-          }
-        }
-
-        visibility_metrics_observer_->unobserve(image_element);
-      }
+    if (!visible_load_time_metrics.has_initial_intersection_been_set) {
+      visible_load_time_metrics.has_initial_intersection_been_set = true;
+      visible_load_time_metrics.is_initially_intersecting =
+          entry->isIntersecting();
     }
+    if (!entry->isIntersecting())
+      continue;
+
+    visible_load_time_metrics.time_when_first_visible = base::TimeTicks::Now();
+    if (visible_load_time_metrics.time_when_first_load_finished.is_null()) {
+      // Note: If the WebEffectiveConnectionType enum ever gets out of sync
+      // with net::EffectiveConnectionType, then both the AboveTheFold and
+      // BelowTheFold histograms here will have to be updated to record the
+      // sample in terms of net::EffectiveConnectionType instead of
+      // WebEffectiveConnectionType.
+      if (visible_load_time_metrics.is_initially_intersecting) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Blink.VisibleBeforeLoaded.LazyLoadImages.AboveTheFold",
+            GetNetworkStateNotifier().EffectiveType());
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Blink.VisibleBeforeLoaded.LazyLoadImages.BelowTheFold",
+            GetNetworkStateNotifier().EffectiveType());
+      }
+    } else {
+      RecordVisibleLoadTimeForImage(visible_load_time_metrics);
+    }
+
+    visibility_metrics_observer_->unobserve(image_element);
   }
 }
 

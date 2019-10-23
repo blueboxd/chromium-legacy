@@ -8,9 +8,6 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/ime/ime_bridge.h"
 
@@ -268,7 +265,6 @@ InputImeEventRouterFactory* InputImeEventRouterFactory::GetInstance() {
 }
 
 InputImeEventRouterFactory::InputImeEventRouterFactory() = default;
-
 InputImeEventRouterFactory::~InputImeEventRouterFactory() = default;
 
 InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
@@ -426,23 +422,15 @@ InputImeAPI::InputImeAPI(content::BrowserContext* context)
 
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, input_ime::OnFocus::kEventName);
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllSources());
-}
-
-void InputImeAPI::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-  extensions::InputImeEventRouterFactory::GetInstance()->RemoveProfile(
-      content::Source<Profile>(source).ptr());
 }
 
 InputImeAPI::~InputImeAPI() = default;
 
 void InputImeAPI::Shutdown() {
+  extension_registry_observer_.RemoveAll();
+  InputImeEventRouterFactory::GetInstance()->RemoveProfile(
+      Profile::FromBrowserContext(browser_context_));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
-  registrar_.RemoveAll();
   if (observer_ && ui::IMEBridge::Get()) {
     ui::IMEBridge::Get()->RemoveObserver(observer_.get());
   }
@@ -459,8 +447,7 @@ BrowserContextKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {
 InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {
   if (!profile)
     return nullptr;
-  return extensions::InputImeEventRouterFactory::GetInstance()->GetRouter(
-      profile);
+  return InputImeEventRouterFactory::GetInstance()->GetRouter(profile);
 }
 
 }  // namespace extensions

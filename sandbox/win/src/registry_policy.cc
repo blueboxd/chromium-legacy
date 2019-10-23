@@ -156,12 +156,12 @@ bool RegistryPolicy::GenerateRules(const wchar_t* name,
   }
 
   if (!create.AddStringMatch(IF, OpenKey::NAME, name, CASE_INSENSITIVE) ||
-      !policy->AddRule(IPC_NTCREATEKEY_TAG, &create)) {
+      !policy->AddRule(IpcTag::NTCREATEKEY, &create)) {
     return false;
   }
 
   if (!open.AddStringMatch(IF, OpenKey::NAME, name, CASE_INSENSITIVE) ||
-      !policy->AddRule(IPC_NTOPENKEY_TAG, &open)) {
+      !policy->AddRule(IpcTag::NTOPENKEY, &open)) {
     return false;
   }
 

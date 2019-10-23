@@ -127,10 +127,13 @@
 ../gn_helpers.py
 ../util/lib/common/chrome_test_server_spawner.py
 ../util/lib/common/unittest_util.py
+convert_dex_profile.py
 devil_chromium.py
+gyp/dex.py
 gyp/util/__init__.py
 gyp/util/build_utils.py
 gyp/util/md5_check.py
+gyp/util/zipalign.py
 incremental_install/__init__.py
 incremental_install/installer.py
 pylib/__init__.py

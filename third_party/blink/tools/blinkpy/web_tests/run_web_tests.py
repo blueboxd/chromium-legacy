@@ -499,13 +499,11 @@ def parse_args(args):
     # FIXME: Move these into json_results_generator.py.
     option_group_definitions.append(
         ('Result JSON Options', [
-            optparse.make_option(
-                '--build-name',
-                default='DUMMY_BUILD_NAME',
-                help='The name of the builder used in its path, e.g. webkit-rel.'),
+            # TODO(qyearsley): --build-name is unused and should be removed.
+            optparse.make_option('--build-name', help=optparse.SUPPRESS_HELP),
             optparse.make_option(
                 '--step-name',
-                default='webkit_tests',
+                default='blink_web_tests',
                 help='The name of the step in a build running this script.'),
             optparse.make_option(
                 '--build-number',
@@ -514,15 +512,16 @@ def parse_args(args):
             optparse.make_option(
                 '--builder-name',
                 default='',
-                help=('The name of the builder shown on the waterfall running this script '
-                      'e.g. WebKit.')),
-            optparse.make_option(
-                '--master-name',
-                help='The name of the buildbot master.'),
+                help='The name of the builder shown on the waterfall running '
+                     'this script, e.g. "Mac10.13 Tests".'),
+            # TODO(crbug/1002702): Remove this, it's not actually a Buildbot
+            # master since Buildbot is gone.
+            optparse.make_option('--master-name'),
             optparse.make_option(
                 '--test-results-server',
                 default='',
-                help='If specified, upload results json files to this appengine server.'),
+                help='If specified, upload results JSON files to this '
+                     'App Engine server.'),
         ]))
 
     option_parser = optparse.OptionParser(

@@ -21,22 +21,9 @@ const PrintPreviewInteractiveUITest = class extends PolymerInteractiveUITest {
     ];
   }
 
-  /** @override */
-  get loaderFile() {
-    return 'subpage_loader.html';
-  }
-
   // The name of the mocha suite. Should be overridden by subclasses.
   get suiteName() {
     return null;
-  }
-
-  // The name of the custom element under test. Should be overridden by
-  // subclasses that are not directly loading the URL of a custom element.
-  get customElementName() {
-    const r = /chrome\:\/\/print\/([a-zA-Z-_]+)\/([a-zA-Z-_]+)\.html/;
-    const result = r.exec(this.browsePreload);
-    return 'print-preview-' + result[2].replace(/_/gi, '-');
   }
 
   /** @param {string} testName The name of the test to run. */

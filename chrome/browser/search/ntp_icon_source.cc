@@ -260,14 +260,15 @@ std::string NtpIconSource::GetSource() {
 }
 
 void NtpIconSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::EXPLICIT_ACCESS);
 
-  const ParsedNtpIconPath parsed = ParseNtpIconPath(path);
+  const ParsedNtpIconPath parsed =
+      ParseNtpIconPath(content::URLDataSource::URLToRequestPath(url));
 
   if (parsed.url.is_valid()) {
     int icon_size_in_pixels =

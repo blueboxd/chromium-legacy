@@ -95,9 +95,9 @@ void RemoteFrameOwner::SetNeedsOcclusionTracking(bool needs_tracking) {
   if (needs_tracking == needs_occlusion_tracking_)
     return;
   needs_occlusion_tracking_ = needs_tracking;
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(To<LocalFrame>(*frame_));
-  web_frame->Client()->SetNeedsOcclusionTracking(needs_tracking);
+  LocalFrame* local_frame = To<LocalFrame>(frame_.Get());
+  local_frame->GetLocalFrameHostRemote().SetNeedsOcclusionTracking(
+      needs_tracking);
 }
 
 bool RemoteFrameOwner::ShouldLazyLoadChildren() const {

@@ -124,7 +124,7 @@ SAConstants.MenuAction = {
   // Move text caret to the end of the text field.
   JUMP_TO_END_OF_TEXT: 'jumpToEndOfText',
   // Open and jump to the virtual keyboard
-  KEYBOARD: 'keyboard',
+  OPEN_KEYBOARD: 'keyboard',
   // Move text caret one character backward.
   MOVE_BACKWARD_ONE_CHAR_OF_TEXT: 'moveBackwardOneCharOfText',
   // Move text caret one word backward.

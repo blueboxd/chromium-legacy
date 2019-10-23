@@ -434,8 +434,8 @@ std::string DeepScanningDialogDelegate::GetDMToken() {
   // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
   // valid token either.  Once these are fixed the #if !defined can be removed.
 
-  if (dm_token.empty() && policy::ChromeBrowserCloudManagementController::
-                              IsMachineLevelUserCloudPolicyEnabled()) {
+  if (dm_token.empty() &&
+      policy::ChromeBrowserCloudManagementController::IsEnabled()) {
     dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
   }
 #endif

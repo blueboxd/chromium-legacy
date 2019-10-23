@@ -23,8 +23,10 @@ python_library("sizes_py") {
   ]
 }
 
-group("caspian") {
-  deps = [
-    "//tools/binary_size/libsupersize/caspian:cli($host_toolchain)",
-  ]
+if (is_linux) {
+  group("caspian") {
+    deps = [
+      "//tools/binary_size/libsupersize/caspian:cli($host_toolchain)",
+    ]
+  }
 }

@@ -32,6 +32,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "ipc/ipc_message.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace content {
 
@@ -251,6 +252,30 @@ void RenderFrameProxyHost::OnAssociatedInterfaceRequest(
       mojom::RenderFrameProxyHostAssociatedRequest(std::move(handle)));
 }
 
+blink::AssociatedInterfaceProvider*
+RenderFrameProxyHost::GetRemoteAssociatedInterfaces() {
+  if (!remote_associated_interfaces_) {
+    mojo::AssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
+        remote_interfaces;
+    IPC::ChannelProxy* channel = GetProcess()->GetChannel();
+    if (channel) {
+      RenderProcessHostImpl* process =
+          static_cast<RenderProcessHostImpl*>(GetProcess());
+      process->GetRemoteRouteProvider()->GetRoute(
+          GetRoutingID(), remote_interfaces.BindNewEndpointAndPassReceiver());
+    } else {
+      // The channel may not be initialized in some tests environments. In this
+      // case we set up a dummy interface provider.
+      ignore_result(remote_interfaces
+                        .BindNewEndpointAndPassDedicatedReceiverForTesting());
+    }
+    remote_associated_interfaces_ =
+        std::make_unique<blink::AssociatedInterfaceProvider>(
+            remote_interfaces.Unbind());
+  }
+  return remote_associated_interfaces_.get();
+}
+
 void RenderFrameProxyHost::SetRenderFrameProxyCreated(bool created) {
   if (!created) {
     // If the renderer process has gone away, created can be false. In that
@@ -258,6 +283,13 @@ void RenderFrameProxyHost::SetRenderFrameProxyCreated(bool created) {
     frame_proxy_host_associated_binding_.Close();
   }
   render_frame_proxy_created_ = created;
+}
+
+const mojo::AssociatedRemote<blink::mojom::RemoteFrame>&
+RenderFrameProxyHost::GetAssociatedRemoteFrame() {
+  if (!remote_frame_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&remote_frame_);
+  return remote_frame_;
 }
 
 void RenderFrameProxyHost::UpdateOpener() {

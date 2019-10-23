@@ -578,10 +578,10 @@ ResultCode PolicyBase::SetDisconnectCsrss() {
   return SBOX_ALL_OK;
 }
 
-EvalResult PolicyBase::EvalPolicy(int service,
+EvalResult PolicyBase::EvalPolicy(IpcTag service,
                                   CountedParameterSetBase* params) {
   if (policy_) {
-    if (!policy_->entry[service]) {
+    if (!policy_->entry[static_cast<size_t>(service)]) {
       // There is no policy for this particular service. This is not a big
       // deal.
       return DENY_ACCESS;
@@ -592,7 +592,7 @@ EvalResult PolicyBase::EvalPolicy(int service,
         return SIGNAL_ALARM;
       }
     }
-    PolicyProcessor pol_evaluator(policy_->entry[service]);
+    PolicyProcessor pol_evaluator(policy_->entry[static_cast<size_t>(service)]);
     PolicyResult result =
         pol_evaluator.Evaluate(kShortEval, params->parameters, params->count);
     if (POLICY_MATCH == result)
@@ -674,8 +674,9 @@ ResultCode PolicyBase::SetupAllInterceptions(TargetProcess* target) {
   InterceptionManager manager(target, relaxed_interceptions_);
 
   if (policy_) {
-    for (int i = 0; i < IPC_LAST_TAG; i++) {
-      if (policy_->entry[i] && !dispatcher_->SetupService(&manager, i))
+    for (size_t i = 0; i < kMaxIpcTag; i++) {
+      if (policy_->entry[i] &&
+          !dispatcher_->SetupService(&manager, static_cast<IpcTag>(i)))
         return SBOX_ERROR_SETUP_INTERCEPTION_SERVICE;
     }
   }

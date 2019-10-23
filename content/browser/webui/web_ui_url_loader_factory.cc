@@ -163,9 +163,7 @@ void StartURLLoader(const network::ResourceRequest& request,
     return;
   }
 
-  std::string path;
-  URLDataManagerBackend::URLToRequestPath(request.url, &path);
-
+  std::string path = URLDataSource::URLToRequestPath(request.url);
   std::string origin_header;
   request.headers.GetHeader(net::HttpRequestHeaders::kOrigin, &origin_header);
 
@@ -203,7 +201,7 @@ void StartURLLoader(const network::ResourceRequest& request,
   scoped_refptr<base::SingleThreadTaskRunner> target_runner =
       source->source()->TaskRunnerForRequestPath(path);
   if (!target_runner) {
-    source->source()->StartDataRequest(path, std::move(wc_getter),
+    source->source()->StartDataRequest(request.url, std::move(wc_getter),
                                        std::move(data_available_callback));
     return;
   }
@@ -213,7 +211,7 @@ void StartURLLoader(const network::ResourceRequest& request,
   target_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&URLDataSource::StartDataRequest,
-                     base::Unretained(source->source()), path,
+                     base::Unretained(source->source()), request.url,
                      std::move(wc_getter), std::move(data_available_callback)));
 }
 

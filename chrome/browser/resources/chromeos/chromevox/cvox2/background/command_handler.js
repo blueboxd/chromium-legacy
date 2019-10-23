@@ -971,6 +971,23 @@ CommandHandler.onCommand = function(command) {
         }
       }
       return false;
+    case 'readLinkURL':
+      var node = ChromeVoxState.instance.currentRange.start.node;
+      var rootNode = node.root;
+      while (node && !node.url) {
+        // URL could be an ancestor of current range.
+        node = node.parent;
+      }
+      // Announce node's URL if it's not the root node; we don't want to
+      // announce the URL of the current page.
+      var url = (node && node !== rootNode) ? node.url : '';
+      new Output()
+          .withString(
+              url ? Msgs.getMsg('url_behind_link', [url]) :
+                    Msgs.getMsg('no_url_found'))
+          .withQueueMode(cvox.QueueMode.CATEGORY_FLUSH)
+          .go();
+      return false;
     default:
       return true;
   }

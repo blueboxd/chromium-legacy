@@ -2117,6 +2117,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(0, process->get_media_stream_count_for_testing());
 }
 
+#if defined(OS_CHROMEOS)
+// ChromeOS failures are tracked in https://crbug.com/954217
+#define MAYBE_VisibilityScrolledOutOfView DISABLED_VisibilityScrolledOutOfView
+#else
+#define MAYBE_VisibilityScrolledOutOfView VisibilityScrolledOutOfView
+#endif
 // Test that a frame is visible/hidden depending on its WebContents visibility
 // state.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,

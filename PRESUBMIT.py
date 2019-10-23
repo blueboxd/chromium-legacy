@@ -3123,11 +3123,9 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   # Extract the tag from lines like `Log.d(TAG, "*");` or `Log.d("TAG", "*");`
   log_call_pattern = input_api.re.compile(r'^\s*Log\.\w\((?P<tag>\"?\w+\"?)\,')
   log_decl_pattern = input_api.re.compile(
-      r'^\s*private static final String TAG = "(?P<name>(.*))";',
-      input_api.re.MULTILINE)
+      r'static final String TAG = "(?P<name>(.*))"')
 
-  REF_MSG = ('See docs/android_logging.md '
-            'or contact dgn@chromium.org for more info.')
+  REF_MSG = ('See docs/android_logging.md for more info.')
   sources = lambda x: input_api.FilterSourceFile(x, white_list=[r'.*\.java$'],
       black_list=cr_log_check_excluded_paths)
 

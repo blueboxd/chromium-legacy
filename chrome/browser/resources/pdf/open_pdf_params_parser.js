@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {FittingType} from './pdf_fitting_type.js';
 
 /**
  * Parses the open pdf parameters passed in the url to set initial viewport
  * settings for opening the pdf.
  */
-class OpenPdfParamsParser {
+export class OpenPdfParamsParser {
   /**
    * @param {function(string):void} getNamedDestinationCallback
    *     Function called to fetch information for a named destination.

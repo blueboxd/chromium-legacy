@@ -363,48 +363,21 @@ Args that affect build speed:
    * What it does: Disables ProGuard (slow build step)
 
 #### Incremental Install
-"Incremental install" uses reflection and side-loading to speed up the edit
-& deploy cycle (normally < 10 seconds). The initial launch of the apk will be
-a little slower since updated dex files are installed manually.
+[Incremental Install](/build/android/incremental_install/README.md) uses
+reflection and sideloading to speed up the edit & deploy cycle (normally < 10
+seconds). The initial launch of the apk will be a lot slower on older Android
+versions (pre-N) where the OS needs to pre-optimize the side-loaded files, but
+then be only marginally slower after the first launch.
 
-*   All apk targets have \*`_incremental` targets defined (e.g.
-    `chrome_public_apk_incremental`) except for Webview and Monochrome
-
-Here's an example:
-
-```shell
-autoninja -C out/Default chrome_public_apk_incremental
-out/Default/bin/chrome_public_apk install --incremental --verbose
-```
-
-For gunit tests (note that run_*_incremental automatically add
-`--fast-local-dev` when calling `test_runner.py`):
-
-```shell
-autoninja -C out/Default base_unittests_incremental
-out/Default/bin/run_base_unittests_incremental
-```
-
-For instrumentation tests:
-
-```shell
-autoninja -C out/Default chrome_public_test_apk_incremental
-out/Default/bin/run_chrome_public_test_apk_incremental
-```
-
-To uninstall:
-
-```shell
-out/Default/bin/chrome_public_apk uninstall
-```
-
-To avoid typing `_incremental` when building targets, you can use the GN arg:
+To enable Incremental Install, add the gn args:
 
 ```gn
-incremental_apk_by_default = true
+incremental_install = true
 ```
 
-This will make `chrome_public_apk` build in incremental mode.
+Some APKs (e.g. WebView) do not work with incremental install, and are
+blacklisted from being built as such (via `never_incremental = true`), so are
+build as normal APKs even when `incremental_install = true`.
 
 ## Installing and Running Chromium on an Emulator
 

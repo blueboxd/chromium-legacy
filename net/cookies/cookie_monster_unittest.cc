@@ -206,22 +206,22 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         cm,
         std::make_unique<CanonicalCookie>(
             "dom_1", "A", ".harvard.edu", "/", base::Time(), base::Time(),
-            base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
+            base::Time(), false, false, CookieSameSite::LAX_MODE,
             COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
     EXPECT_TRUE(this->SetCanonicalCookie(
         cm,
         std::make_unique<CanonicalCookie>(
             "dom_2", "B", ".math.harvard.edu", "/", base::Time(), base::Time(),
-            base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
+            base::Time(), false, false, CookieSameSite::LAX_MODE,
             COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
     EXPECT_TRUE(this->SetCanonicalCookie(
         cm,
         std::make_unique<CanonicalCookie>(
             "dom_3", "C", ".bourbaki.math.harvard.edu", "/", base::Time(),
-            base::Time(), base::Time(), false, false,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
+            COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
 
     // Host cookies
@@ -229,22 +229,22 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         cm,
         std::make_unique<CanonicalCookie>(
             "host_1", "A", url_top_level_domain_plus_1, "/", base::Time(),
-            base::Time(), base::Time(), false, false,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
+            COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
     EXPECT_TRUE(this->SetCanonicalCookie(
         cm,
         std::make_unique<CanonicalCookie>(
             "host_2", "B", url_top_level_domain_plus_2, "/", base::Time(),
-            base::Time(), base::Time(), false, false,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
+            COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
     EXPECT_TRUE(this->SetCanonicalCookie(
         cm,
         std::make_unique<CanonicalCookie>(
             "host_3", "C", url_top_level_domain_plus_3, "/", base::Time(),
-            base::Time(), base::Time(), false, false,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
+            COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
 
     // http_only cookie
@@ -252,8 +252,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         cm,
         std::make_unique<CanonicalCookie>(
             "httpo_check", "A", url_top_level_domain_plus_2, "/", base::Time(),
-            base::Time(), base::Time(), false, true,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            base::Time(), base::Time(), false, true, CookieSameSite::LAX_MODE,
+            COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
 
     // same-site cookie
@@ -287,15 +287,15 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         cm,
         std::make_unique<CanonicalCookie>(
             "dom_path_1", "A", ".math.harvard.edu", "/dir1", base::Time(),
-            base::Time(), base::Time(), false, false,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
+            COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
     EXPECT_TRUE(this->SetCanonicalCookie(
         cm,
         std::make_unique<CanonicalCookie>(
             "dom_path_2", "B", ".math.harvard.edu", "/dir1/dir2", base::Time(),
-            base::Time(), base::Time(), false, false,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
+            COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
 
     // Host path cookies
@@ -304,7 +304,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         std::make_unique<CanonicalCookie>(
             "host_path_1", "A", url_top_level_domain_plus_2, "/dir1",
             base::Time(), base::Time(), base::Time(), false, false,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
 
     EXPECT_TRUE(this->SetCanonicalCookie(
@@ -312,7 +312,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         std::make_unique<CanonicalCookie>(
             "host_path_2", "B", url_top_level_domain_plus_2, "/dir1/dir2",
             base::Time(), base::Time(), base::Time(), false, false,
-            CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+            CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT),
         "http", true /*modify_httponly*/));
 
     EXPECT_EQ(14U, this->GetAllCookies(cm).size());

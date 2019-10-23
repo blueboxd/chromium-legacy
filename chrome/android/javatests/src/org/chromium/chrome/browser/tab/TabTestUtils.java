@@ -111,4 +111,14 @@ public class TabTestUtils {
             Tab tab, WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
         tab.swapWebContents(webContents, didStartLoad, didFinishLoad);
     }
+
+    /**
+     * Sets whether the tab is showing an error page.  This is reset whenever the tab finishes a
+     * navigation.
+     * @param tab {@link Tab} object.
+     * @param isShowingErrorPage Whether the tab shows an error page.
+     */
+    public void setIsShowingErrorPage(Tab tab, boolean isShowingErrorPage) {
+        tab.setIsShowingErrorPage(isShowingErrorPage);
+    }
 }

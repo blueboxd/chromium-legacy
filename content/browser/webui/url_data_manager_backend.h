@@ -65,10 +65,6 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   // Returns whether |url| passes some sanity checks and is a valid GURL.
   static bool CheckURLIsValid(const GURL& url);
 
-  // Parse |url| to get the path which will be used to resolve the request. The
-  // path is the remaining portion after the scheme and hostname.
-  static void URLToRequestPath(const GURL& url, std::string* path);
-
   // Check if the given integer is a valid network error code.
   static bool IsValidNetworkErrorCode(int error_code);
 

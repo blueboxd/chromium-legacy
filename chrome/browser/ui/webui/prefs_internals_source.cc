@@ -28,7 +28,7 @@ std::string PrefsInternalsSource::GetMimeType(const std::string& path) {
 }
 
 void PrefsInternalsSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

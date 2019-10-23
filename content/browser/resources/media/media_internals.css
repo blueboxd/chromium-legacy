@@ -237,3 +237,18 @@ label.destructed-player {
 #audio-focus-session-list {
   list-style: none;
 }
+
+#devtools-notice-window {
+  background-color: rgb(252, 247, 134);
+  border: 1px solid black;
+  border-radius: 4px;
+  font-size: 10px;
+  height: 40px;
+  left: 50%;
+  line-height: 20px;
+  margin-inline-start: -300px;
+  position: fixed;
+  text-align: center;
+  top: 10px;
+  width: 450px;
+}

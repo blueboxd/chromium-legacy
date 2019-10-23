@@ -147,6 +147,7 @@ group("gn_all") {
       "//third_party/webrtc/rtc_tools:frame_analyzer",
       "//tools/perf/clear_system_cache",
       "//tools/polymer:polymer_tools_python_unittests",
+      "//ui/accessibility:accessibility_perftests",
       "//ui/accessibility:accessibility_unittests",
       "//ui/accessibility/extensions",
     ]

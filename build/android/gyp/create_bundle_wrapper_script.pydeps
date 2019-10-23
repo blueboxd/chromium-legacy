@@ -87,6 +87,7 @@
 ../../gn_helpers.py
 ../adb_command_line.py
 ../apk_operations.py
+../convert_dex_profile.py
 ../devil_chromium.py
 ../incremental_install/__init__.py
 ../incremental_install/installer.py
@@ -101,7 +102,9 @@
 ../pylib/utils/time_profile.py
 bundletool.py
 create_bundle_wrapper_script.py
+dex.py
 util/__init__.py
 util/build_utils.py
 util/md5_check.py
 util/resource_utils.py
+util/zipalign.py

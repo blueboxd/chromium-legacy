@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -776,7 +777,7 @@ class TabListMediator {
      * The selected border should re-appear in the final fading-in stage.
      */
     void prepareOverview() {
-        if (!FeatureUtilities.isTabToGtsAnimationEnabled()
+        if (!TabFeatureUtilities.isTabToGtsAnimationEnabled()
                 || !mTabModelSelector.getTabModelFilterProvider()
                             .getCurrentTabModelFilter()
                             .isTabModelRestored()) {
@@ -900,7 +901,7 @@ class TabListMediator {
                 && (mModel.get(index).model.get(TabProperties.THUMBNAIL_FETCHER) == null
                         || forceUpdate || isUpdatingId)) {
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, forceUpdate,
-                    forceUpdate && !FeatureUtilities.isTabToGtsAnimationEnabled());
+                    forceUpdate && !TabFeatureUtilities.isTabToGtsAnimationEnabled());
             mModel.get(index).model.set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
     }
@@ -1071,7 +1072,7 @@ class TabListMediator {
 
         if (mThumbnailProvider != null && mVisible) {
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected,
-                    isSelected && !FeatureUtilities.isTabToGtsAnimationEnabled());
+                    isSelected && !TabFeatureUtilities.isTabToGtsAnimationEnabled());
             tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
         tab.addObserver(mTabObserver);

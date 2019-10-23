@@ -23,21 +23,6 @@ DownloadsTest.prototype = {
   },
 
   /** @override */
-  loaderFile: 'subpage_loader.html',
-
-  // The name of the custom element under test. Should be overridden by
-  // subclasses that are loading the URL of a non-element.
-  get customElementName() {
-    const r = /chrome\:\/\/downloads\/([a-zA-Z-_]+)\.html/;
-    const result = r.exec(this.browsePreload);
-    if (!result || result.length < 1) {
-      // Loading the main page, so wait for downloads manager.
-      return 'downloads-manager';
-    }
-    return 'downloads-' + result[1].replace(/_/gi, '-');
-  },
-
-  /** @override */
   runAccessibilityChecks: true,
 };
 
@@ -125,14 +110,6 @@ DownloadsUrlTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://downloads/a/b/',
-
-  /** @override */
-  loaderFile: '',
-
-  /** @override */
-  get customElementName() {
-    return null;
-  }
 };
 
 TEST_F('DownloadsUrlTest', 'All', function() {

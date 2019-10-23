@@ -247,10 +247,16 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       scroll_view_(nullptr),
       handled_result_(false),
       install_button_enabled_(false) {
+  DCHECK(prompt_->extension());
+
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
   DialogDelegate::set_draggable(true);
   if (prompt_->has_webstore_data())
     DialogDelegate::SetExtraView(CreatePromptLink(this));
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   prompt_->GetAcceptButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   prompt_->GetAbortButtonLabel());
   set_close_on_deactivate(false);
   CreateContents();
 
@@ -402,19 +408,6 @@ int ExtensionInstallDialogView::GetDialogButtons() const {
   // GetDialogButtons in dialog_delegate.h for reasons.
   DCHECK_GT(buttons & ui::DIALOG_BUTTON_CANCEL, 0);
   return buttons;
-}
-
-base::string16 ExtensionInstallDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      return prompt_->GetAcceptButtonLabel();
-    case ui::DIALOG_BUTTON_CANCEL:
-      return prompt_->GetAbortButtonLabel();
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
 }
 
 bool ExtensionInstallDialogView::IsDialogButtonEnabled(

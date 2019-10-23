@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {PDFMetrics} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/metrics.js';
+import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_fitting_type.js';
+
 chrome.test.runTests(function() {
   'use strict';
 

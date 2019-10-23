@@ -26,8 +26,8 @@ class NetworkService;
 // across threads.
 class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
  public:
-  explicit TestSharedURLLoaderFactory(
-      NetworkService* network_service = nullptr);
+  explicit TestSharedURLLoaderFactory(NetworkService* network_service = nullptr,
+                                      bool is_trusted = false);
 
   // URLLoaderFactory implementation:
   void CreateLoaderAndStart(mojom::URLLoaderRequest loader,

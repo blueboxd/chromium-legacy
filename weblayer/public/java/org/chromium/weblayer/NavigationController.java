@@ -7,6 +7,8 @@ package org.chromium.weblayer;
 import android.net.Uri;
 import android.os.RemoteException;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IClientNavigation;
@@ -37,7 +39,7 @@ public final class NavigationController {
         mObservers = new ObserverList<NavigationObserver>();
     }
 
-    public void navigate(Uri uri) {
+    public void navigate(@NonNull Uri uri) {
         try {
             mNavigationController.navigate(uri.toString());
         } catch (RemoteException e) {
@@ -109,6 +111,7 @@ public final class NavigationController {
         }
     }
 
+    @NonNull
     public Uri getNavigationEntryDisplayUri(int index) {
         try {
             return Uri.parse(mNavigationController.getNavigationEntryDisplayUri(index));
@@ -117,11 +120,11 @@ public final class NavigationController {
         }
     }
 
-    public void addObserver(NavigationObserver observer) {
+    public void addObserver(@NonNull NavigationObserver observer) {
         mObservers.addObserver(observer);
     }
 
-    public void removeObserver(NavigationObserver observer) {
+    public void removeObserver(@NonNull NavigationObserver observer) {
         mObservers.removeObserver(observer);
     }
 

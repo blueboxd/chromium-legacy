@@ -2905,6 +2905,9 @@ gfx::Rect AppsGridView::GetExpectedItemBoundsInFirstPage(
     return gfx::Rect(GetContentsBounds().CenterPoint(), gfx::Size(1, 1));
 
   const int model_index = GetModelIndexOfItem(item);
+  if (model_index >= view_model_.view_size())
+    return gfx::Rect(GetContentsBounds().CenterPoint(), gfx::Size(1, 1));
+
   const GridIndex grid_index = GetIndexFromModelIndex(model_index);
   if (grid_index.page != 0)
     return gfx::Rect(GetContentsBounds().CenterPoint(), gfx::Size(1, 1));

@@ -226,7 +226,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
     const network_handler::ErrorCallback& error_callback,
     bool check_error_state,
     ConnectCallbackMode mode) {
-  NET_LOG_USER("ConnectToNetwork", service_path);
+  NET_LOG_USER("ConnectToNetworkRequested", service_path);
   for (auto& observer : observers_)
     observer.ConnectToNetworkRequested(service_path);
 

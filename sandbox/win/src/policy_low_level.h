@@ -17,7 +17,7 @@
 #include "sandbox/win/src/policy_engine_params.h"
 
 // Low level policy classes.
-// Built on top of the PolicyOpcode and OpcodeFatory, the low level policy
+// Built on top of the PolicyOpcode and OpcodeFactory, the low level policy
 // provides a way to define rules on strings and numbers but it is unaware
 // of Windows specific details or how the Interceptions must be set up.
 // To use these classes you construct one or more rules and add them to the
@@ -41,10 +41,6 @@
 // to the target process where it can be evaluated.
 
 namespace sandbox {
-
-// TODO(cpu): Move this constant to crosscall_client.h.
-const size_t kMaxServiceCount = 64;
-static_assert(IPC_LAST_TAG <= kMaxServiceCount, "kMaxServiceCount is too low");
 
 // Defines the memory layout of the policy. This memory is filled by
 // LowLevelPolicy object.
@@ -93,7 +89,7 @@ class LowLevelPolicy {
   // service: The id of the service that this rule is associated with,
   // for example the 'Open Thread' service or the "Create File" service.
   // returns false on error.
-  bool AddRule(int service, PolicyRule* rule);
+  bool AddRule(IpcTag service, PolicyRule* rule);
 
   // Generates all the rules added with AddRule() into the memory area
   // passed on the constructor. Returns false on error.
@@ -102,7 +98,7 @@ class LowLevelPolicy {
  private:
   struct RuleNode {
     const PolicyRule* rule;
-    int service;
+    IpcTag service;
   };
   std::list<RuleNode> rules_;
   PolicyGlobal* policy_store_;

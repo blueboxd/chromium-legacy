@@ -322,6 +322,7 @@ public class TabGridDialogMediator {
     private void setupToolbarEditText() {
         mKeyboardVisibilityListener = isShowing -> {
             mModel.set(TabGridPanelProperties.TITLE_CURSOR_VISIBILITY, isShowing);
+            mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, isShowing);
             if (!isShowing) {
                 saveCurrentGroupModifiedTitle();
             }
@@ -420,6 +421,18 @@ public class TabGridDialogMediator {
         assert mTabGroupTitleEditor != null;
 
         Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
+        if (mCurrentGroupModifiedTitle.length() == 0) {
+            // When dialog title is empty, delete previously stored title and restore default title.
+            mTabGroupTitleEditor.deleteTabGroupTitle(currentTab.getRootId());
+            int tabsCount = getRelatedTabs(mCurrentTabId).size();
+            assert tabsCount >= 2;
+
+            String originalTitle = mContext.getResources().getQuantityString(
+                    R.plurals.bottom_tab_grid_title_placeholder, tabsCount, tabsCount);
+            mModel.set(TabGridPanelProperties.HEADER_TITLE, originalTitle);
+            mTabGroupTitleEditor.updateTabGroupTitle(currentTab, originalTitle);
+            return;
+        }
         mTabGroupTitleEditor.storeTabGroupTitle(currentTab.getRootId(), mCurrentGroupModifiedTitle);
         mTabGroupTitleEditor.updateTabGroupTitle(currentTab, mCurrentGroupModifiedTitle);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, mCurrentGroupModifiedTitle);

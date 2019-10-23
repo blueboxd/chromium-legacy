@@ -303,7 +303,7 @@ QuicChromiumClientSession::Handle::Handle(
       quic_error_(quic::QUIC_NO_ERROR),
       port_migration_detected_(false),
       server_id_(session_->server_id()),
-      quic_version_(session->connection()->transport_version()),
+      quic_version_(session->connection()->version()),
       push_handle_(nullptr),
       was_ever_used_(false) {
   DCHECK(session_);
@@ -326,7 +326,7 @@ void QuicChromiumClientSession::Handle::OnCryptoHandshakeConfirmed() {
 }
 
 void QuicChromiumClientSession::Handle::OnSessionClosed(
-    quic::QuicTransportVersion quic_version,
+    quic::ParsedQuicVersion quic_version,
     int net_error,
     quic::QuicErrorCode quic_error,
     bool port_migration_detected,
@@ -368,12 +368,12 @@ void QuicChromiumClientSession::Handle::PopulateNetErrorDetails(
   }
 }
 
-quic::QuicTransportVersion QuicChromiumClientSession::Handle::GetQuicVersion()
+quic::ParsedQuicVersion QuicChromiumClientSession::Handle::GetQuicVersion()
     const {
   if (!session_)
     return quic_version_;
 
-  return session_->connection()->transport_version();
+  return session_->GetQuicVersion();
 }
 
 void QuicChromiumClientSession::Handle::ResetPromised(
@@ -1019,9 +1019,9 @@ void QuicChromiumClientSession::OnStreamFrame(
 void QuicChromiumClientSession::AddHandle(Handle* handle) {
   if (going_away_) {
     RecordUnexpectedObservers(ADD_OBSERVER);
-    handle->OnSessionClosed(connection()->transport_version(), ERR_UNEXPECTED,
-                            error(), port_migration_detected_,
-                            GetConnectTiming(), WasConnectionEverUsed());
+    handle->OnSessionClosed(connection()->version(), ERR_UNEXPECTED, error(),
+                            port_migration_detected_, GetConnectTiming(),
+                            WasConnectionEverUsed());
     return;
   }
 
@@ -2428,9 +2428,9 @@ void QuicChromiumClientSession::CloseAllHandles(int net_error) {
   while (!handles_.empty()) {
     Handle* handle = *handles_.begin();
     handles_.erase(handle);
-    handle->OnSessionClosed(connection()->transport_version(), net_error,
-                            error(), port_migration_detected_,
-                            GetConnectTiming(), WasConnectionEverUsed());
+    handle->OnSessionClosed(connection()->version(), net_error, error(),
+                            port_migration_detected_, GetConnectTiming(),
+                            WasConnectionEverUsed());
   }
 }
 
@@ -3199,8 +3199,8 @@ QuicChromiumClientSession::GetConnectTiming() {
   return connect_timing_;
 }
 
-quic::QuicTransportVersion QuicChromiumClientSession::GetQuicVersion() const {
-  return connection()->transport_version();
+quic::ParsedQuicVersion QuicChromiumClientSession::GetQuicVersion() const {
+  return connection()->version();
 }
 
 size_t QuicChromiumClientSession::EstimateMemoryUsage() const {

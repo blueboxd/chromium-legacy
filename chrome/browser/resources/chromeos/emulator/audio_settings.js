@@ -122,7 +122,8 @@ Polymer({
   },
 
   ready: function() {
-    chrome.send('requestAudioNodes');
+    cr.sendWithPromise('requestAudioNodes').then(
+        this.updateAudioNodes_.bind(this));
   },
 
   /**
@@ -201,8 +202,9 @@ Polymer({
   /**
    * Called by the WebUI which provides a list of nodes.
    * @param {!Array<!AudioNode>} nodeList A list of audio nodes.
+   * @private
    */
-  updateAudioNodes: function(nodeList) {
+  updateAudioNodes_: function(nodeList) {
     /** @type {!Array<!AudioNode>} */ var newNodeList = [];
     for (var i = 0; i < nodeList.length; ++i) {
       // Create a new audio node and add all the properties from |nodeList[i]|.

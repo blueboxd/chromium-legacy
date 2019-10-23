@@ -182,7 +182,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
         break;
     }
     NOTREACHED();
-    return GetSymbol(isolate, "unexpected cached accessor");
+    return GetEmptySymbol();
   }
 
   // This is a hack for PopStateEvent to get the same private property of
@@ -190,10 +190,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
   static Symbol GetHistoryStateSymbol(v8::Isolate* isolate) {
     static int private_property_key;
     return GetSymbol(isolate, &private_property_key, "History#State");
-  }
-
-  static Symbol GetSymbol(v8::Isolate* isolate, const char* symbol) {
-    return Symbol(isolate, CreateCachedV8Private(isolate, symbol));
   }
 
   // Returns a Symbol to access a private property. Symbol instances from same
@@ -213,6 +209,12 @@ class PLATFORM_EXPORT V8PrivateProperty {
       v8_private = iter->value.Get(isolate);
     }
     return Symbol(isolate, v8_private);
+  }
+
+  // This function is always called after NOTREACHED(). The Symbol returned from
+  // this function must not be used.
+  static Symbol GetEmptySymbol() {
+    return Symbol(nullptr, v8::Local<v8::Private>());
   }
 
  private:

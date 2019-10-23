@@ -1042,6 +1042,15 @@
           "keyCode": [65, 67]
         }
       }
+    },
+     {
+      "command": "readLinkURL",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 76]
+        }
+      }
     }
   ]
 }

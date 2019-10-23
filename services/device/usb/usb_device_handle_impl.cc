@@ -1000,7 +1000,7 @@ void UsbDeviceHandleImpl::RefreshEndpointMap() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(device_);
   endpoint_map_.clear();
-  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
+  const mojom::UsbConfigurationInfo* config = device_->GetActiveConfiguration();
   if (!config)
     return;
 

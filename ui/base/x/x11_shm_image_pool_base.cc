@@ -129,7 +129,8 @@ bool XShmImagePoolBase::Resize(const gfx::Size& pixel_size) {
 
     for (FrameState& state : frame_states_) {
       state.shminfo_.shmid =
-          shmget(IPC_PRIVATE, frame_bytes_, IPC_CREAT | SHM_R | SHM_W);
+          shmget(IPC_PRIVATE, frame_bytes_,
+                 IPC_CREAT | SHM_R | SHM_W | (SHM_R >> 6) | (SHM_W >> 6));
       if (state.shminfo_.shmid < 0)
         return false;
       state.shminfo_.shmaddr =

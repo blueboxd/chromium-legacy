@@ -381,7 +381,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::string robot_account_username_;
   std::string serialized_config_;
   std::string host_owner_;
-  bool use_service_account_ = false;
   bool enable_vp9_ = false;
   bool enable_h264_ = false;
 
@@ -748,8 +747,8 @@ void HostProcess::CreateAuthenticatorFactory() {
     }
 
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
-        use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_list_, pin_hash_, pairing_registry);
+        host_owner_, local_certificate, key_pair_, client_domain_list_,
+        pin_hash_, pairing_registry);
 
     host_->set_pairing_registry(pairing_registry);
   } else {
@@ -772,8 +771,8 @@ void HostProcess::CreateAuthenticatorFactory() {
         new TokenValidatorFactoryImpl(third_party_auth_config_, key_pair_,
                                       context_->url_request_context_getter());
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
-        use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_list_, token_validator_factory);
+        host_owner_, local_certificate, key_pair_, client_domain_list_,
+        token_validator_factory);
   }
 
 #if defined(OS_POSIX)
@@ -1027,15 +1026,11 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
   if (!host_owner_ptr) {
     host_owner_ptr = config.FindStringPath(kHostOwnerConfigPath);
   }
-  if (host_owner_ptr) {
-    // Service account configs have a host_owner, different from the xmpp_login.
-    host_owner_ = *host_owner_ptr;
-    use_service_account_ = true;
-  } else {
-    // User credential configs only have an xmpp_login, which is also the owner.
-    host_owner_ = robot_account_username_;
-    use_service_account_ = false;
+  if (!host_owner_ptr) {
+    LOG(ERROR) << "Host config has no host_owner or host_owner_email fields.";
+    return false;
   }
+  host_owner_ = *host_owner_ptr;
 
   // Allow offering of VP9 encoding to be overridden by the command-line.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
@@ -1406,7 +1401,8 @@ void HostProcess::InitializeSignaling() {
 
   auto oauth_credentials =
       std::make_unique<OAuthTokenGetter::OAuthAuthorizationCredentials>(
-          robot_account_username_, oauth_refresh_token_, use_service_account_);
+          robot_account_username_, oauth_refresh_token_,
+          /* is_service_account */ true);
   // Unretained is sound because we own the OAuthTokenGetterImpl, and the
   // callback will never be invoked once it is destroyed.
   oauth_token_getter_ = std::make_unique<OAuthTokenGetterImpl>(

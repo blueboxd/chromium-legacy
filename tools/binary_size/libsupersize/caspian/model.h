@@ -8,7 +8,6 @@
 #include <stdlib.h>
 
 #include <deque>
-#include <string>
 #include <vector>
 
 #include "third_party/jsoncpp/source/include/json/json.h"
@@ -25,13 +24,11 @@ struct Symbol {
   int32_t size = 0;
   int32_t flags = 0;
   int32_t padding = 0;
-  std::string full_name;
-  std::string template_name;
-  std::string name;
-  const std::string* object_path = nullptr;
-  const std::string* section_name = nullptr;
-  const std::string* source_path = nullptr;
-  const std::string* component = nullptr;
+  const char* full_name = nullptr;
+  const char* section_name = nullptr;
+  const char* object_path = nullptr;
+  const char* source_path = nullptr;
+  const char* component = nullptr;
   std::vector<Symbol*>* aliases = nullptr;
 };
 
@@ -45,11 +42,11 @@ struct SizeInfo {
   Json::Value metadata;
 
   // Entries in |raw_symbols| hold pointers to this data.
-  // Appending to one will change their capacity and invalidate pointers.
-  std::vector<std::string> object_paths;
-  std::vector<std::string> source_paths;
-  std::vector<std::string> components;
-  std::vector<std::string> section_names;
+  std::vector<const char*> object_paths;
+  std::vector<const char*> source_paths;
+  std::vector<const char*> components;
+  std::vector<const char*> section_names;
+  std::vector<char> raw_decompressed;
 
   // A container for each symbol group.
   std::deque<std::vector<Symbol*>> alias_groups;

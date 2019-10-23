@@ -9,16 +9,13 @@ import multiprocessing
 from multiprocessing.dummy import Pool as ThreadPool
 
 
-def ApplyInParallel(function, work_list):
+def ApplyInParallel(function, work_list, on_failure=None):
   """Apply a function to all values in work_list in parallel.
 
   Args:
     function: A function with one argument.
     work_list: Any iterable with arguments for the function.
-
-  Returns:
-    A generator over results. The order of results might not match the
-    order of the arguments in the work_list.
+    on_failure: A function to run in case of a failure.
   """
   if not work_list:
     return
@@ -35,17 +32,17 @@ def ApplyInParallel(function, work_list):
 
   def function_with_try(arg):
     try:
-      return function(arg)
+      function(arg)
     except Exception:  # pylint: disable=broad-except
       # logging exception here is the only way to get a stack trace since
       # multiprocessing's pool implementation does not save that data. See
       # crbug.com/953365.
       logging.exception('Exception while running %s' % function.__name__)
-      raise
+      if on_failure:
+        on_failure(arg)
 
   try:
-    for result in pool.imap_unordered(function_with_try, work_list):
-      yield result
+    pool.imap_unordered(function_with_try, work_list)
     pool.close()
     pool.join()
   finally:

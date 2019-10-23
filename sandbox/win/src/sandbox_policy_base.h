@@ -105,7 +105,7 @@ class PolicyBase final : public TargetPolicy {
   // with the job.
   bool OnJobEmpty(HANDLE job);
 
-  EvalResult EvalPolicy(int service, CountedParameterSetBase* params);
+  EvalResult EvalPolicy(IpcTag service, CountedParameterSetBase* params);
 
   HANDLE GetStdoutHandle();
   HANDLE GetStderrHandle();

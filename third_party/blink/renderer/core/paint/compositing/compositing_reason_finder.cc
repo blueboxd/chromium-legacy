@@ -12,10 +12,13 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+
+#include "third_party/blink/public/common/features.h"
 
 namespace blink {
 
@@ -185,19 +188,33 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
       layer.CompositingContainer()->GetLayoutObject().IsVideo())
     direct_reasons |= CompositingReason::kVideoOverlay;
 
+  const Node* node = layer.GetLayoutObject().GetNode();
+
   // Special case for immersive-ar DOM overlay mode, see also
   // PaintLayerCompositor::ApplyXrImmersiveDomOverlayIfNeeded()
-  if (const Node* node = layer.GetLayoutObject().GetNode()) {
-    if (node->IsElementNode() && node->GetDocument().IsImmersiveArOverlay() &&
-        node == Fullscreen::FullscreenElementFrom(node->GetDocument())) {
-      direct_reasons |= CompositingReason::kImmersiveArOverlay;
-    }
+  if (node && node->IsElementNode() &&
+      node->GetDocument().IsImmersiveArOverlay() &&
+      node == Fullscreen::FullscreenElementFrom(node->GetDocument())) {
+    direct_reasons |= CompositingReason::kImmersiveArOverlay;
   }
 
   if (layer.IsRootLayer() &&
       (RequiresCompositingForScrollableFrame(*layout_object.View()) ||
        layout_object.GetFrame()->IsLocalRoot())) {
     direct_reasons |= CompositingReason::kRoot;
+  }
+
+  // Composite all cross-origin iframes, to improve compositor hit testing for
+  // input event targeting. crbug.com/1014273
+  if (node && node->IsFrameOwnerElement() &&
+      base::FeatureList::IsEnabled(
+          blink::features::kCompositeCrossOriginIframes)) {
+    if (Frame* iframe_frame = To<HTMLFrameOwnerElement>(node)->ContentFrame()) {
+      if (!iframe_frame->GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+              node->GetDocument().GetSecurityOrigin())) {
+        direct_reasons |= CompositingReason::kCrossOriginIframe;
+      }
+    }
   }
 
   direct_reasons |= layout_object.AdditionalCompositingReasons();

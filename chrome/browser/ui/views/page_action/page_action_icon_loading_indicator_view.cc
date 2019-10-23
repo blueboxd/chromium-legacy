@@ -17,6 +17,8 @@ PageActionIconLoadingIndicatorView::PageActionIconLoadingIndicatorView(
     PageActionIconView* parent)
     : parent_(parent) {
   parent_->AddObserver(this);
+  // Don't let the loading indicator process events.
+  set_can_process_events_within_subtree(false);
 }
 
 PageActionIconLoadingIndicatorView::~PageActionIconLoadingIndicatorView() {

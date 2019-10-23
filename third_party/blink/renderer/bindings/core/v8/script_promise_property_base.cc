@@ -208,7 +208,7 @@ V8PrivateProperty::Symbol ScriptPromisePropertyBase::PromiseSymbol() {
 #undef P
   }
   NOTREACHED();
-  return V8PrivateProperty::GetSymbol(isolate_, "noPromise");
+  return V8PrivateProperty::GetEmptySymbol();
 }
 
 V8PrivateProperty::Symbol ScriptPromisePropertyBase::ResolverSymbol() {
@@ -223,7 +223,7 @@ V8PrivateProperty::Symbol ScriptPromisePropertyBase::ResolverSymbol() {
 #undef P
   }
   NOTREACHED();
-  return V8PrivateProperty::GetSymbol(isolate_, "noResolver");
+  return V8PrivateProperty::GetEmptySymbol();
 }
 
 void ScriptPromisePropertyBase::Trace(blink::Visitor* visitor) {

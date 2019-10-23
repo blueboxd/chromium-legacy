@@ -5,7 +5,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
@@ -78,10 +79,10 @@ TEST_F(VideoCaptureServiceTest, VirtualDeviceEnumeratedAfterAdd) {
 
 TEST_F(VideoCaptureServiceTest,
        AddingAndRemovingVirtualDevicesRaisesDevicesChangedEvent) {
-  mojom::DevicesChangedObserverPtr observer;
+  mojo::PendingRemote<mojom::DevicesChangedObserver> observer;
   MockDevicesChangedObserver mock_observer;
-  mojo::Binding<mojom::DevicesChangedObserver> observer_binding(
-      &mock_observer, mojo::MakeRequest(&observer));
+  mojo::Receiver<mojom::DevicesChangedObserver> observer_receiver(
+      &mock_observer, observer.InitWithNewPipeAndPassReceiver());
   factory_->RegisterVirtualDevicesChangedObserver(
       std::move(observer),
       false /*raise_event_if_virtual_devices_already_present*/);
@@ -125,16 +126,16 @@ TEST_F(VideoCaptureServiceTest,
 // crash or bad state.
 TEST_F(VideoCaptureServiceTest,
        AddAndRemoveVirtualDeviceAfterObserverHasDisconnected) {
-  mojom::DevicesChangedObserverPtr observer;
+  mojo::PendingRemote<mojom::DevicesChangedObserver> observer;
   MockDevicesChangedObserver mock_observer;
-  mojo::Binding<mojom::DevicesChangedObserver> observer_binding(
-      &mock_observer, mojo::MakeRequest(&observer));
+  mojo::Receiver<mojom::DevicesChangedObserver> observer_receiver(
+      &mock_observer, observer.InitWithNewPipeAndPassReceiver());
   factory_->RegisterVirtualDevicesChangedObserver(
       std::move(observer),
       false /*raise_event_if_virtual_devices_already_present*/);
 
   // Disconnect observer
-  observer_binding.Close();
+  observer_receiver.reset();
 
   auto device_context = AddTextureVirtualDevice("TestDevice");
   device_context = nullptr;

@@ -414,7 +414,6 @@ void HTMLFormElement::Submit(Event* event,
   }
 
   if (is_constructing_entry_list_) {
-    DCHECK(RuntimeEnabledFeatures::FormDataEventEnabled());
     GetDocument().AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning,
@@ -450,7 +449,7 @@ void HTMLFormElement::Submit(Event* event,
   FormSubmission* form_submission =
       FormSubmission::Create(this, attributes_, event, submit_button);
   // 'formdata' event handlers might disconnect the form.
-  if (RuntimeEnabledFeatures::FormDataEventEnabled() && !isConnected()) {
+  if (!isConnected()) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kWarning,
@@ -491,8 +490,7 @@ FormData* HTMLFormElement::ConstructEntryList(
         form_data.SetContainsPasswordData(true);
     }
   }
-  if (RuntimeEnabledFeatures::FormDataEventEnabled())
-    DispatchEvent(*MakeGarbageCollected<FormDataEvent>(form_data));
+  DispatchEvent(*MakeGarbageCollected<FormDataEvent>(form_data));
 
   if (submit_button)
     submit_button->SetActivatedSubmit(false);

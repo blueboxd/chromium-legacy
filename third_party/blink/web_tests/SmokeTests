@@ -754,6 +754,7 @@ fast/text/international/bidi-LDB-2-formatting-characters.html
 fast/text/international/bidi-LDB-2-HTML.html
 fast/text/international/bidi-neutral-directionality-paragraph-start.html
 fast/text/international/rtl-mark.html
+fast/text/small-caps-aat.html
 fast/text/stroking-decorations.html
 fast/text/vertical-spacing-crash.html
 fast/text/whitespace/whitespace-and-margin-wrap-after-list-marker-crash.html

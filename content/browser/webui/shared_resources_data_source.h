@@ -22,7 +22,7 @@ class SharedResourcesDataSource : public URLDataSource {
   // URLDataSource implementation.
   std::string GetSource() override;
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const WebContents::Getter& wc_getter,
       const URLDataSource::GotDataCallback& callback) override;
   bool AllowCaching() override;

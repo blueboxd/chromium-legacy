@@ -16,7 +16,9 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_sheet_peek_height"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
         <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/toolbar_left_button"
             style="@style/BottomToolbarButton"
@@ -27,7 +29,6 @@
             tools:ignore="LabelFor"
             android:id="@+id/title"
             android:cursorVisible="false"
-            android:background="@android:color/transparent"
             android:layout_height="@dimen/bottom_sheet_peek_height"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -36,6 +37,7 @@
             android:textAppearance="@style/TextAppearance.BlackTitle1"
             android:inputType="text|textNoSuggestions"
             android:imeOptions="actionDone"
+            android:theme="@style/TabGridDialogTitleTheme"
             android:gravity="center"/>
         <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/toolbar_right_button"

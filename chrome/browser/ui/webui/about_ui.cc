@@ -595,9 +595,11 @@ std::string AboutUIHTMLSource::GetSource() {
 }
 
 void AboutUIHTMLSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   std::string response;
   // Add your data source here, in alphabetical order.
   if (source_name_ == chrome::kChromeUIChromeURLsHost) {

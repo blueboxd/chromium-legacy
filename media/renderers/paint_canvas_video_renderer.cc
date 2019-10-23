@@ -433,7 +433,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
       const uint8_t* data = video_frame->visible_data(plane);
       int rows = video_frame->rows(plane);
       meta.data =
-          data + meta.stride * chunk_start * rows_per_chunk * rows / height;
+          data + meta.stride * (chunk_start * rows_per_chunk * rows / height);
     }
   }
 

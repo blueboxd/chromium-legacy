@@ -38,7 +38,8 @@ class MockVideoSourceProvider
       mojo::PendingReceiver<video_capture::mojom::TextureVirtualDevice>
           virtual_device_receiver) override;
   void RegisterVirtualDevicesChangedObserver(
-      video_capture::mojom::DevicesChangedObserverPtr observer,
+      mojo::PendingRemote<video_capture::mojom::DevicesChangedObserver>
+          observer,
       bool raise_event_if_virtual_devices_already_present) override {
     NOTIMPLEMENTED();
   }

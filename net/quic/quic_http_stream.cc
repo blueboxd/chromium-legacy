@@ -85,8 +85,8 @@ QuicHttpStream::~QuicHttpStream() {
 }
 
 HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
-    quic::QuicTransportVersion quic_version) {
-  switch (quic_version) {
+    quic::ParsedQuicVersion quic_version) {
+  switch (quic_version.transport_version) {
     case quic::QUIC_VERSION_UNSUPPORTED:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION;
     case quic::QUIC_VERSION_43:
@@ -348,7 +348,7 @@ int64_t QuicHttpStream::GetTotalReceivedBytes() const {
   // When QPACK is enabled, headers are sent and received on the stream, so
   // the headers bytes do not need to be accounted for independently.
   int64_t total_received_bytes =
-      quic::VersionUsesHttp3(quic_session()->GetQuicVersion())
+      quic::VersionUsesHttp3(quic_session()->GetQuicVersion().transport_version)
           ? 0
           : headers_bytes_received_;
   if (stream_) {
@@ -365,7 +365,7 @@ int64_t QuicHttpStream::GetTotalSentBytes() const {
   // When QPACK is enabled, headers are sent and received on the stream, so
   // the headers bytes do not need to be accounted for independently.
   int64_t total_sent_bytes =
-      quic::VersionUsesHttp3(quic_session()->GetQuicVersion())
+      quic::VersionUsesHttp3(quic_session()->GetQuicVersion().transport_version)
           ? 0
           : headers_bytes_sent_;
   if (stream_) {

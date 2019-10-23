@@ -89,12 +89,21 @@ gfx::RectF TestAutofillDriver::TransformBoundingBoxToViewportCoordinates(
   return bounding_box;
 }
 
+net::NetworkIsolationKey TestAutofillDriver::NetworkIsolationKey() {
+  return network_isolation_key_;
+}
+
 void TestAutofillDriver::SetIsIncognito(bool is_incognito) {
   is_incognito_ = is_incognito;
 }
 
 void TestAutofillDriver::SetIsInMainFrame(bool is_in_main_frame) {
   is_in_main_frame_ = is_in_main_frame;
+}
+
+void TestAutofillDriver::SetNetworkIsolationKey(
+    const net::NetworkIsolationKey& network_isolation_key) {
+  network_isolation_key_ = network_isolation_key;
 }
 
 void TestAutofillDriver::SetSharedURLLoaderFactory(

@@ -208,7 +208,7 @@ void VRServiceImpl::OnWebContentsFocusChanged(content::RenderWidgetHost* host,
   in_focused_frame_ = focused;
   if (ListeningForActivate()) {
     BrowserXRRuntime* immersive_runtime =
-        runtime_manager_->GetImmersiveRuntime();
+        runtime_manager_->GetImmersiveVrRuntime();
     if (immersive_runtime)
       immersive_runtime->UpdateListeningForActivate(this);
   }
@@ -536,7 +536,9 @@ void VRServiceImpl::SupportsSession(
 }
 
 void VRServiceImpl::ExitPresent() {
-  BrowserXRRuntime* immersive_runtime = runtime_manager_->GetImmersiveRuntime();
+  BrowserXRRuntime* immersive_runtime =
+      runtime_manager_->GetCurrentlyPresentingImmersiveRuntime();
+  DVLOG(2) << __func__ << ": !!immersive_runtime=" << !!immersive_runtime;
   if (immersive_runtime)
     immersive_runtime->ExitPresent(this);
 }
@@ -545,7 +547,7 @@ void VRServiceImpl::SetFramesThrottled(bool throttled) {
   if (throttled != frames_throttled_) {
     frames_throttled_ = throttled;
     BrowserXRRuntime* immersive_runtime =
-        runtime_manager_->GetImmersiveRuntime();
+        runtime_manager_->GetCurrentlyPresentingImmersiveRuntime();
     if (immersive_runtime) {
       immersive_runtime->SetFramesThrottled(this, frames_throttled_);
     }
@@ -560,7 +562,8 @@ void VRServiceImpl::SetListeningForActivate(
     display_client_.Bind(std::move(display_client));
   else
     display_client_.reset();
-  BrowserXRRuntime* immersive_runtime = runtime_manager_->GetImmersiveRuntime();
+  BrowserXRRuntime* immersive_runtime =
+      runtime_manager_->GetImmersiveVrRuntime();
   if (immersive_runtime && display_client_) {
     immersive_runtime->UpdateListeningForActivate(this);
   }
@@ -575,7 +578,8 @@ void VRServiceImpl::GetImmersiveVRDisplayInfo(
     return;
   }
 
-  BrowserXRRuntime* immersive_runtime = runtime_manager_->GetImmersiveRuntime();
+  BrowserXRRuntime* immersive_runtime =
+      runtime_manager_->GetImmersiveVrRuntime();
   if (immersive_runtime) {
     immersive_runtime->InitializeAndGetDisplayInfo(render_frame_host_,
                                                    std::move(callback));

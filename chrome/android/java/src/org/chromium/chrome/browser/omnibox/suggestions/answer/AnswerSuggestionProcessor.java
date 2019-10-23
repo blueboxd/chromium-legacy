@@ -232,6 +232,6 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
             assert suggestion.getType() == OmniboxSuggestionType.CALCULATOR;
             return R.drawable.ic_equals_sign_round;
         }
-        return 0;
+        return R.drawable.ic_google_round;
     }
 }

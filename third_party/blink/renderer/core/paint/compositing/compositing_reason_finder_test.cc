@@ -7,6 +7,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -200,6 +201,43 @@ TEST_F(CompositingReasonFinderTest, DontPromoteEmptyIframe) {
   ASSERT_TRUE(child_frame_view);
   EXPECT_EQ(kNotComposited,
             child_frame_view->GetLayoutView()->Layer()->GetCompositingState());
+}
+
+TEST_F(CompositingReasonFinderTest, PromoteCrossOriginIframe) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <iframe id=iframe></iframe>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* iframe = GetDocument().getElementById("iframe");
+  ASSERT_TRUE(iframe);
+  PaintLayer* iframe_layer =
+      ToLayoutBoxModelObject(iframe->GetLayoutObject())->Layer();
+  ASSERT_TRUE(iframe_layer);
+  ASSERT_FALSE(To<HTMLFrameOwnerElement>(iframe)
+                   ->ContentFrame()
+                   ->IsCrossOriginSubframe());
+  EXPECT_EQ(kNotComposited, iframe_layer->DirectCompositingReasons());
+
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <iframe id=iframe sandbox></iframe>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  iframe = GetDocument().getElementById("iframe");
+  ASSERT_TRUE(iframe);
+  iframe_layer = ToLayoutBoxModelObject(iframe->GetLayoutObject())->Layer();
+  ASSERT_TRUE(iframe_layer);
+  ASSERT_TRUE(To<HTMLFrameOwnerElement>(iframe)
+                  ->ContentFrame()
+                  ->IsCrossOriginSubframe());
+  EXPECT_EQ(CompositingReason::kCrossOriginIframe,
+            iframe_layer->DirectCompositingReasons());
 }
 
 }  // namespace blink

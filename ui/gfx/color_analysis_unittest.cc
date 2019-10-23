@@ -323,7 +323,7 @@ TEST_F(ColorAnalysisTest, CalculateKMeanColorOfBitmap) {
   EXPECT_TRUE(ChannelApproximatelyEqual(200, SkColorGetB(color)));
 }
 
-// Regression test for heap-buffer-underlow. https://crbug.com/970343
+// Regression test for heap-buffer-underflow. https://crbug.com/970343
 TEST_F(ColorAnalysisTest, CalculateKMeanColorOfSmallImage) {
   SkBitmap bitmap;
 

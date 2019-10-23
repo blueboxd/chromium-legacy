@@ -38,7 +38,6 @@ class SwitchAccessInterface {
    */
   setInKeyboard(inKeyboard) {}
 
-
   /**
    * Check whether or not the feature flag
    * for improved text input is enabled.

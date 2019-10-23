@@ -229,7 +229,7 @@ TEST_F(SQLTableBuilderTest, MigrateFrom) {
 }
 
 TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddColumns) {
-  builder()->AddColumnToPrimaryKey("id", "INTEGER");
+  builder()->AddPrimaryKeyColumn("id");
   builder()->AddColumn("old_name", "INTEGER");
   EXPECT_EQ(0u, builder()->SealVersion());
 
@@ -258,8 +258,7 @@ TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddColumns) {
 }
 
 TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddAndDropColumns) {
-  builder()->AddColumnToPrimaryKey("pk_1", "VARCHAR NOT NULL");
-  builder()->AddColumnToPrimaryKey("pk_2", "VARCHAR NOT NULL");
+  builder()->AddPrimaryKeyColumn("pk_1");
   builder()->AddColumnToUniqueKey("uni", "VARCHAR NOT NULL");
   builder()->AddColumn("old_name", "INTEGER");
   EXPECT_EQ(0u, builder()->SealVersion());
@@ -279,18 +278,16 @@ TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddAndDropColumns) {
   EXPECT_FALSE(db()->DoesColumnExist("my_logins_table", "old_name"));
   EXPECT_FALSE(db()->DoesColumnExist("my_logins_table", "added"));
   EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "pk_1"));
-  EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "pk_2"));
   EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "uni"));
   EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "new_name"));
   EXPECT_TRUE(IsColumnOfType("new_name", "INTEGER"));
-  EXPECT_EQ(5u, builder()->NumberOfColumns());
-  EXPECT_EQ("signon_realm, pk_1, pk_2, uni, new_name",
+  EXPECT_EQ(4u, builder()->NumberOfColumns());
+  EXPECT_EQ("signon_realm, pk_1, uni, new_name",
             builder()->ListAllColumnNames());
   EXPECT_EQ("new_name=?", builder()->ListAllNonuniqueKeyNames());
   EXPECT_EQ("signon_realm=? AND uni=?", builder()->ListAllUniqueKeyNames());
 
-  EXPECT_THAT(builder()->AllPrimaryKeyNames(),
-              UnorderedElementsAre("pk_1", "pk_2"));
+  EXPECT_THAT(builder()->AllPrimaryKeyNames(), UnorderedElementsAre("pk_1"));
 }
 
 TEST_F(SQLTableBuilderTest, MigrateFrom_AddPrimaryKey) {
@@ -298,7 +295,7 @@ TEST_F(SQLTableBuilderTest, MigrateFrom_AddPrimaryKey) {
   EXPECT_EQ(0u, builder()->SealVersion());
   EXPECT_TRUE(builder()->CreateTable(db()));
 
-  builder()->AddColumnToPrimaryKey("pk_1", "VARCHAR NOT NULL");
+  builder()->AddPrimaryKeyColumn("pk_1");
   EXPECT_EQ(1u, builder()->SealVersion());
 
   EXPECT_FALSE(db()->DoesColumnExist("my_logins_table", "pk_1"));
@@ -308,8 +305,9 @@ TEST_F(SQLTableBuilderTest, MigrateFrom_AddPrimaryKey) {
   EXPECT_TRUE(builder()->MigrateFrom(0, db()));
 
   EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "pk_1"));
-  EXPECT_TRUE(db()->GetSchema().find("PRIMARY KEY (pk_1)") !=
-              std::string::npos);
+  EXPECT_TRUE(
+      db()->GetSchema().find("pk_1 INTEGER PRIMARY KEY AUTOINCREMENT") !=
+      std::string::npos);
 }
 
 }  // namespace password_manager

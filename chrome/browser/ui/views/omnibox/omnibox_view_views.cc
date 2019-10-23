@@ -1308,8 +1308,15 @@ void OmniboxViewViews::OnFocus() {
   // TODO(tommycli): This does not seem like it should be necessary.
   // Investigate why it's needed and see if we can remove it.
   model()->ResetDisplayTexts();
+
+  bool suppress = suppress_on_focus_suggestions_;
+  if (GetFocusManager() &&
+      GetFocusManager()->focus_change_reason() !=
+          views::FocusManager::FocusChangeReason::kDirectFocusChange) {
+    suppress = true;
+  }
   // TODO(oshima): Get control key state.
-  model()->OnSetFocus(false, suppress_on_focus_suggestions_);
+  model()->OnSetFocus(false, suppress);
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
 
   // Restore the selection we saved in OnBlur() if it's still valid.

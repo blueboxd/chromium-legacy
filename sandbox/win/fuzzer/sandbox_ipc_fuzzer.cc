@@ -7,6 +7,7 @@
 
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/ipc_args.h"
+#include "sandbox/win/src/ipc_tags.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   uint32_t output_size = 0;
@@ -17,9 +18,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (!params.get())
     return 0;
 
-  uint32_t tag = params->GetTag();
-  sandbox::IPCParams ipc_params = {0};
-  ipc_params.ipc_tag = tag;
+  sandbox::IpcTag tag = params->GetTag();
+  sandbox::IPCParams ipc_params = {tag};
   void* args[sandbox::kMaxIpcParams];
   sandbox::GetArgs(params.get(), &ipc_params, args);
   sandbox::ReleaseArgs(&ipc_params, args);

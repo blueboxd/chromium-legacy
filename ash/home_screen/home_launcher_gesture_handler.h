@@ -84,7 +84,7 @@ class ASH_EXPORT HomeLauncherGestureHandler
   aura::Window* GetActiveWindow();
   aura::Window* GetSecondaryWindow();
 
-  bool IsDragInProgress() const { return last_event_location_.has_value(); }
+  bool IsDragInProgress() const;
 
   void AddObserver(HomeLauncherGestureHandlerObserver* observer);
   void RemoveObserver(HomeLauncherGestureHandlerObserver* obsever);

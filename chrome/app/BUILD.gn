@@ -429,7 +429,6 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//components/services/heap_profiling/public/mojom",
     "//components/translate/content/common",
     "//extensions/buildflags",
-    "//services/image_annotation/public/cpp:manifest",
     "//services/preferences/public/cpp:manifest",
     "//services/service_manager/public/cpp",
     "//third_party/blink/public/common",

@@ -788,7 +788,7 @@ void QuicStreamFactory::Job::PopulateNetErrorDetails(
   if (!session_)
     return;
   details->connection_info = QuicHttpStream::ConnectionInfoFromQuicVersion(
-      session_->connection()->transport_version());
+      session_->connection()->version());
   details->quic_connection_error = session_->error();
 }
 

@@ -304,6 +304,21 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
+// Ensure normal sites with low engagement are not blocked in incognito.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NoShowOnLowEngagementIncognito) {
+  Browser* incognito_browser = new Browser(Browser::CreateParams(
+      browser()->profile()->GetOffTheRecordProfile(), true));
+  auto kNavigatedUrl = GetURL("site1.com");
+  SetEngagementScore(incognito_browser, kNavigatedUrl, kLowEngagement);
+  NavigateToURL(incognito_browser, kNavigatedUrl,
+                WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+
+  ASSERT_NO_FATAL_FAILURE(
+      CheckPageInfoDoesNotShowSafetyTipInfo(incognito_browser));
+}
+
 // Ensure blocked sites with high engagement are not blocked.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        NoShowOnHighEngagement) {
@@ -317,6 +332,23 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
+// Ensure blocked sites with high engagement are not blocked in incognito.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NoShowOnHighEngagementIncognito) {
+  Browser* incognito_browser = new Browser(Browser::CreateParams(
+      browser()->profile()->GetOffTheRecordProfile(), true));
+  auto kNavigatedUrl = GetURL("site1.com");
+  SetSafetyTipBadRepPatterns({"site1.com/"});
+
+  SetEngagementScore(incognito_browser, kNavigatedUrl, kHighEngagement);
+  NavigateToURL(incognito_browser, kNavigatedUrl,
+                WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+
+  ASSERT_NO_FATAL_FAILURE(
+      CheckPageInfoDoesNotShowSafetyTipInfo(incognito_browser));
+}
+
 // Ensure blocked sites get blocked.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
   auto kNavigatedUrl = GetURL("site1.com");
@@ -327,6 +359,23 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
 
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
       browser(), security_state::SafetyTipStatus::kBadReputation, GURL()));
+}
+
+// Ensure blocked sites get blocked in incognito.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       ShowOnBlockIncognito) {
+  Browser* incognito_browser = new Browser(Browser::CreateParams(
+      browser()->profile()->GetOffTheRecordProfile(), true));
+  auto kNavigatedUrl = GetURL("site1.com");
+  SetSafetyTipBadRepPatterns({"site1.com/"});
+
+  NavigateToURL(incognito_browser, kNavigatedUrl,
+                WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(IsUIShowingIfEnabled());
+
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
+      incognito_browser, security_state::SafetyTipStatus::kBadReputation,
+      GURL()));
 }
 
 // Ensure explicitly-allowed sites don't get blocked when the site is otherwise

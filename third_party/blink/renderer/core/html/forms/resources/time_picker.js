@@ -252,8 +252,9 @@ class TimePicker extends HTMLElement {
   }
 }
 TimePicker.ClassName = 'time-picker';
-TimePicker.Height = 273;
-TimePicker.ColumnWidth = 54;
+TimePicker.Height = 300;
+TimePicker.ColumnWidth = 56;
+TimePicker.BorderWidth = 1;
 window.customElements.define('time-picker', TimePicker);
 
 /**
@@ -266,7 +267,7 @@ class TimeColumns extends HTMLElement {
 
     this.className = TimeColumns.ClassName;
     this.hourColumn_ = new TimeColumn(TimeColumnType.HOUR, timePicker);
-    this.width_ = 0;
+    this.width_ = TimePicker.BorderWidth * 2 + TimeColumns.Margin * 2;
     this.minuteColumn_ = new TimeColumn(TimeColumnType.MINUTE, timePicker);
     if (timePicker.hasAMPM) {
       this.ampmColumn_ = new TimeColumn(TimeColumnType.AMPM, timePicker);
@@ -321,6 +322,7 @@ class TimeColumns extends HTMLElement {
   };
 }
 TimeColumns.ClassName = 'time-columns';
+TimeColumns.Margin = 1;
 window.customElements.define('time-columns', TimeColumns);
 
 /**

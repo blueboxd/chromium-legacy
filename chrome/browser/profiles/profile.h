@@ -45,6 +45,12 @@ class IdentityService;
 }  // namespace mojom
 }  // namespace identity
 
+namespace image_annotation {
+namespace mojom {
+class ImageAnnotationService;
+}
+}  // namespace image_annotation
+
 namespace policy {
 class SchemaRegistryService;
 class ProfilePolicyConnector;
@@ -387,6 +393,11 @@ class Profile : public content::BrowserContext {
   // Exposes access to the profile's Identity Service instance. This may return
   // null if the profile does not have a corresponding service instance.
   virtual identity::mojom::IdentityService* GetIdentityService();
+
+  // Exposes access to the profile's Image Annotation service instance. This may
+  // return null if the profile does not have a corresponding service instance.
+  virtual image_annotation::mojom::ImageAnnotationService*
+  GetImageAnnotationService();
 
   // Stop sending accessibility events until ResumeAccessibilityEvents().
   // Calls to Pause nest; no events will be sent until the number of

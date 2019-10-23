@@ -88,6 +88,14 @@ class TestURLRequestContext : public URLRequestContext {
     create_default_http_user_agent_settings_ = value;
   }
 
+  // Like CreateRequest, but also updates |site_for_cookies| to give the request
+  // a 1st-party context.
+  std::unique_ptr<URLRequest> CreateFirstPartyRequest(
+      const GURL& url,
+      RequestPriority priority,
+      URLRequest::Delegate* delegate,
+      NetworkTrafficAnnotationTag traffic_annotation) const;
+
  private:
   bool initialized_ = false;
 

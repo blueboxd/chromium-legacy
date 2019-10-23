@@ -82,6 +82,8 @@
 #include "ui/android/window_android.h"
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/verify_pending_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/verify_pending_dialog_view.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
@@ -267,6 +269,26 @@ void ChromeAutofillClient::ShowLocalCardMigrationResults(
                                    delete_local_card_callback);
 #endif
 }
+
+#if !defined(OS_ANDROID)
+void ChromeAutofillClient::ShowVerifyPendingDialog(
+    base::OnceClosure cancel_card_verification_callback) {
+  autofill::VerifyPendingDialogControllerImpl::CreateForWebContents(
+      web_contents());
+  autofill::VerifyPendingDialogControllerImpl::FromWebContents(web_contents())
+      ->ShowDialog(std::move(cancel_card_verification_callback));
+}
+
+void ChromeAutofillClient::CloseVerifyPendingDialog() {
+  VerifyPendingDialogControllerImpl* controller =
+      autofill::VerifyPendingDialogControllerImpl::FromWebContents(
+          web_contents());
+  if (!controller)
+    return;
+
+  controller->OnCardVerificationCompleted();
+}
+#endif
 
 void ChromeAutofillClient::ShowWebauthnOfferDialog(
     WebauthnOfferDialogCallback callback) {

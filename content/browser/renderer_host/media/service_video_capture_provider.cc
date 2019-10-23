@@ -157,10 +157,10 @@ void ServiceVideoCaptureProvider::OnServiceStarted() {
   // change events when virtual devices are added to or removed from the
   // service.
   auto service_connection = LazyConnectToService();
-  video_capture::mojom::DevicesChangedObserverPtr observer;
-  mojo::MakeStrongBinding(
+  mojo::PendingRemote<video_capture::mojom::DevicesChangedObserver> observer;
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<VirtualVideoCaptureDevicesChangedObserver>(),
-      mojo::MakeRequest(&observer));
+      observer.InitWithNewPipeAndPassReceiver());
   service_connection->source_provider()->RegisterVirtualDevicesChangedObserver(
       std::move(observer),
       true /*raise_event_if_virtual_devices_already_present*/);

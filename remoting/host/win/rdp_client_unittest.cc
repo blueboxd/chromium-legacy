@@ -20,7 +20,6 @@
 #include "remoting/host/screen_resolution.h"
 #include "remoting/host/win/wts_terminal_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 

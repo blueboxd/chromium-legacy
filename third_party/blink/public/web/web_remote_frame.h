@@ -40,16 +40,20 @@ class WebRemoteFrame : public WebFrame {
   // Factory methods for creating a WebRemoteFrame. The WebRemoteFrameClient
   // argument must be non-null for all creation methods.
   BLINK_EXPORT static WebRemoteFrame* Create(WebTreeScopeType,
-                                             WebRemoteFrameClient*);
+                                             WebRemoteFrameClient*,
+                                             InterfaceRegistry*);
 
-  BLINK_EXPORT static WebRemoteFrame*
-  CreateMainFrame(WebView*, WebRemoteFrameClient*, WebFrame* opener = nullptr);
+  BLINK_EXPORT static WebRemoteFrame* CreateMainFrame(WebView*,
+                                                      WebRemoteFrameClient*,
+                                                      InterfaceRegistry*,
+                                                      WebFrame* opener);
 
   // Also performs core initialization to associate the created remote frame
   // with the provided <portal> element.
   BLINK_EXPORT static WebRemoteFrame* CreateForPortal(
       WebTreeScopeType,
       WebRemoteFrameClient*,
+      InterfaceRegistry*,
       const WebElement& portal_element);
 
   // Specialized factory methods to allow the embedder to replicate the frame
@@ -75,6 +79,7 @@ class WebRemoteFrame : public WebFrame {
                                             const FramePolicy&,
                                             FrameOwnerElementType,
                                             WebRemoteFrameClient*,
+                                            blink::InterfaceRegistry*,
                                             WebFrame* opener) = 0;
 
   // Layer for the in-process compositor.
@@ -128,13 +133,6 @@ class WebRemoteFrame : public WebFrame {
 
   // Returns true if this frame should be ignored during hittesting.
   virtual bool IsIgnoredForHitTest() const = 0;
-
-  // This is called in OOPIF scenarios when an element contained in this
-  // frame is about to enter fullscreen.  This frame's owner
-  // corresponds to the HTMLFrameOwnerElement to be fullscreened. Calling
-  // this prepares FullscreenController to enter fullscreen for that frame
-  // owner.
-  virtual void WillEnterFullscreen() = 0;
 
   // Update the user activation state in appropriate part of this frame's
   // "local" frame tree (ancestors-only vs all-nodes).

@@ -109,7 +109,6 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   void set_preload_test_fixture(const std::string& preload_test_fixture);
   void set_preload_test_name(const std::string& preload_test_name);
 
-  void set_loader_file(const std::string& loader_file);
   void set_webui_host(const std::string& webui_host);
 
   // Enable command line flags for test.
@@ -166,11 +165,6 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   // PreloadJavascriptLibraries().
   std::string preload_test_fixture_;
   std::string preload_test_name_;
-
-  // When this is non-empty, this is the file to be substituted for the file in
-  // browsePreload, to load the HTML Imports polyfill and then load the real
-  // file after the polyfill is ready.
-  std::string loader_file_;
 
   // When this is non-NULL, this is The WebUI instance used for testing.
   // Otherwise the selected tab's web_ui is used.

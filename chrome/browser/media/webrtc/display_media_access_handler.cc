@@ -210,7 +210,7 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
         system_media_permissions::CheckSystemScreenCapturePermission() !=
             system_media_permissions::SystemPermission::kAllowed) {
       request_result =
-          blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
+          blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED;
     }
 #endif
     if (request_result == blink::mojom::MediaStreamRequestResult::OK) {

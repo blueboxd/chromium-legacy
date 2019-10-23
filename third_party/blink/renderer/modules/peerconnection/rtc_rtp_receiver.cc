@@ -47,25 +47,23 @@ RTCDtlsTransport* RTCRtpReceiver::rtcpTransport() {
   return nullptr;
 }
 
-double RTCRtpReceiver::jitterBufferDelayHint(bool& is_null, ExceptionState&) {
-  is_null = !jitter_buffer_delay_hint_.has_value();
-  return jitter_buffer_delay_hint_.value_or(0.0);
+double RTCRtpReceiver::playoutDelayHint(bool& is_null, ExceptionState&) {
+  is_null = !playout_delay_hint_.has_value();
+  return playout_delay_hint_.value_or(0.0);
 }
 
-void RTCRtpReceiver::setJitterBufferDelayHint(double value,
-                                              bool is_null,
-                                              ExceptionState& exception_state) {
+void RTCRtpReceiver::setPlayoutDelayHint(double value,
+                                         bool is_null,
+                                         ExceptionState& exception_state) {
   base::Optional<double> hint =
       is_null ? base::nullopt : base::Optional<double>(value);
   if (hint && *hint < 0.0) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "jitterBufferDelayHint can't be negative");
+    exception_state.ThrowTypeError("playoutDelayHint can't be negative");
     return;
   }
 
-  jitter_buffer_delay_hint_ = hint;
-  receiver_->SetJitterBufferMinimumDelay(jitter_buffer_delay_hint_);
+  playout_delay_hint_ = hint;
+  receiver_->SetJitterBufferMinimumDelay(playout_delay_hint_);
 }
 
 HeapVector<Member<RTCRtpSynchronizationSource>>

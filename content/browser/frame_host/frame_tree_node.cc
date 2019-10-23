@@ -640,7 +640,7 @@ bool FrameTreeNode::VerifyUserActivation() {
     return true;
   return render_manager_.current_frame_host()
       ->GetRenderWidgetHost()
-      ->ConsumePendingUserActivationIfAllowed();
+      ->RemovePendingUserActivationIfAvailable();
 }
 
 bool FrameTreeNode::UpdateUserActivationState(

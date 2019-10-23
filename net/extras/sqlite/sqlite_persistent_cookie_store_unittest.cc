@@ -1239,7 +1239,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
       GURL("ftp://subdomain.ftperiffic.com/page"), "A=B; max-age=3600",
       base::Time::Now(), base::nullopt /* server_time */);
   cookie_monster->SetCanonicalCookieAsync(
-      std::move(cookie), "ftp", CookieOptions(),
+      std::move(cookie), "ftp", CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
@@ -1256,7 +1256,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
         "A=B; max-age=3600", base::Time::Now(),
         base::nullopt /* server_time */);
     cookie_monster->SetCanonicalCookieAsync(
-        std::move(canonical_cookie), "http", CookieOptions(),
+        std::move(canonical_cookie), "http", CookieOptions::MakeAllInclusive(),
         base::BindOnce(&ResultSavingCookieCallback<
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&set_cookie_callback2)));
@@ -1284,7 +1284,8 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // Now try to get the cookie back.
   GetCookieListCallback get_callback;
   cookie_monster->GetCookieListWithOptionsAsync(
-      GURL("ftp://subdomain.ftperiffic.com/page"), CookieOptions(),
+      GURL("ftp://subdomain.ftperiffic.com/page"),
+      CookieOptions::MakeAllInclusive(),
       base::BindOnce(&GetCookieListCallback::Run,
                      base::Unretained(&get_callback)));
   get_callback.WaitUntilDone();
@@ -1311,7 +1312,7 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
                                         "A=B; max-age=3600", base::Time::Now(),
                                         base::nullopt /* server_time */);
   cookie_monster->SetCanonicalCookieAsync(
-      std::move(cookie), "http", CookieOptions(),
+      std::move(cookie), "http", CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));

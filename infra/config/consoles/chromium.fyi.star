@@ -57,16 +57,6 @@ luci.console_view(
             short_name = 'beta',
         ),
         luci.console_view_entry(
-            builder = 'ci/mac-jumbo-rel',
-            category = 'mac',
-            short_name = 'jmb',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/win-jumbo-rel',
-            category = 'win',
-            short_name = 'jmb',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Mac deterministic',
             category = 'deterministic|mac',
             short_name = 'rel',
@@ -197,18 +187,6 @@ luci.console_view(
             builder = 'ci/ios13-beta-simulator',
             category = 'iOS|iOS13',
             short_name = 'ios13',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Jumbo Linux x64',
-            category = 'jumbo',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Jumbo Mac',
-            category = 'jumbo',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Jumbo Win x64',
-            category = 'jumbo',
         ),
         luci.console_view_entry(
             builder = 'ci/linux-blink-animation-use-time-delta',

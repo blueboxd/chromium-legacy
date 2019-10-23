@@ -161,7 +161,6 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   resource_request->url = optimization_guide_service_url_;
 
   resource_request->method = "POST";
-  resource_request->load_flags = net::LOAD_BYPASS_PROXY;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),

@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "pdf/document_layout.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/ppb_input_event.h"
@@ -54,8 +55,6 @@ class VarDictionary;
 }
 
 namespace chrome_pdf {
-
-class DocumentLayout;
 
 // Do one time initialization of the SDK.
 // If |enable_v8| is false, then the PDFEngine will not be able to run
@@ -138,9 +137,9 @@ class PDFEngine {
    public:
     virtual ~Client() {}
 
-    // Proposes a document layout to the client.
-    // TODO(crbug.com/885110): Layout still occurs immediately for now. In the
-    // future, the client will need to accept the layout before it takes effect.
+    // Proposes a document layout to the client. For the proposed layout to
+    // become effective, the client must call PDFEngine::ApplyDocumentLayout()
+    // with the new layout options (although this call can be asynchronous).
     virtual void ProposeDocumentLayout(const DocumentLayout& layout) = 0;
 
     // Informs the client that the given rect needs to be repainted.
@@ -322,6 +321,13 @@ class PDFEngine {
   virtual void ZoomUpdated(double new_zoom_level) = 0;
   virtual void RotateClockwise() = 0;
   virtual void RotateCounterclockwise() = 0;
+
+  // Applies the document layout options proposed by a call to
+  // PDFEngine::Client::ProposeDocumentLayout(), returning the overall size of
+  // the new effective layout.
+  virtual pp::Size ApplyDocumentLayout(
+      const DocumentLayout::Options& options) = 0;
+
   virtual std::string GetSelectedText() = 0;
   // Returns true if focus is within an editable form text area.
   virtual bool CanEditText() = 0;

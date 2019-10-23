@@ -2338,4 +2338,32 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectParentChanged) {
   ASSERT_TRUE(saw_parent_changed);
 }
 
+TEST_F(AXPlatformNodeAuraLinuxTest, TestScrolledToAnchorEvent) {
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kListBox;
+  root_data.child_ids.push_back(2);
+
+  AXNodeData item_1_data;
+  item_1_data.id = 2;
+  item_1_data.role = ax::mojom::Role::kListBoxOption;
+
+  Init(root_data, item_1_data);
+
+  AXNode* item_1 = GetRootNode()->children()[0];
+  AtkObject* atk_object = AtkObjectFromNode(item_1);
+
+  bool saw_caret_moved = false;
+  g_signal_connect(
+      atk_object, "text-caret-moved",
+      G_CALLBACK(+[](AtkObject*, int position, bool* saw_caret_moved) {
+        *saw_caret_moved = true;
+      }),
+      &saw_caret_moved);
+
+  GetPlatformNode(item_1)->OnScrolledToAnchor();
+
+  ASSERT_TRUE(saw_caret_moved);
+}
+
 }  // namespace ui

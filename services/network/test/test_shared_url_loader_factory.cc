@@ -12,7 +12,8 @@
 namespace network {
 
 TestSharedURLLoaderFactory::TestSharedURLLoaderFactory(
-    NetworkService* network_service) {
+    NetworkService* network_service,
+    bool is_trusted) {
   url_request_context_ = std::make_unique<net::TestURLRequestContext>();
   mojo::Remote<mojom::NetworkContext> network_context;
   network_context_ = std::make_unique<NetworkContext>(
@@ -23,6 +24,7 @@ TestSharedURLLoaderFactory::TestSharedURLLoaderFactory(
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
+  params->is_trusted = is_trusted;
   network_context_->CreateURLLoaderFactory(
       url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
 }

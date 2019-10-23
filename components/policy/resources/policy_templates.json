@@ -5221,7 +5221,7 @@
       'tags': ['website-sharing'],
       'desc': '''Allows you to specify a list of url patterns that specify sites for which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> should automatically select a client certificate, if the site requests a certificate.
 
-          The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. For example, if $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER contains an "ISSUER" and a "SUBJECT" section, a client certificate must satisfy both conditions to be selected. If $FILTER specifies an organization ("O"), a certificate must have at least one organization which matches the specified value to be selected. If $FILTER specifies an organization unit ("OU"), a certificate must have at least one organization unit which matches the specified value to be selected. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
+          The value must be an array of stringified JSON dictionaries. Each dictionary must have the form <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE">{ "pattern": "$URL_PATTERN", "filter" : $FILTER }</ph>, where <ph name="URL_PATTERN_PLACEHOLDER">$URL_PATTERN</ph> is a content setting pattern. <ph name="FILTER_PLACEHOLDER">$FILTER</ph> restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. For example, if <ph name="FILTER_PLACEHOLDER">$FILTER</ph> has the form <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE">{ "ISSUER": { "CN": "$ISSUER_CN" } }</ph>, additionally only client certificates are selected that are issued by a certificate with the CommonName <ph name="ISSUER_CN_PLACEHOLDER">$ISSUER_CN</ph>. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> contains an <ph name="ISSUER_STRING_VALUE">"ISSUER"</ph> and a <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> section, a client certificate must satisfy both conditions to be selected. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> specifies an organization ("O"), a certificate must have at least one organization which matches the specified value to be selected. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> specifies an organization unit ("OU"), a certificate must have at least one organization unit which matches the specified value to be selected. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> is the empty dictionary <ph name="EMPTY_DICTIONARY">{}</ph>, the selection of client certificates is not additionally restricted.
 
           If this policy is left not set, no auto-selection will be done for any site.''',
     },
@@ -5264,7 +5264,7 @@
       'tags': ['website-sharing'],
       'desc': '''Allows you to specify a list of url patterns that specify sites for which a client certificate is automatically selected on the sign-in screen in the frame hosting the SAML flow, if the site requests a certificate. An example usage is to configure a device-wide certificate to be presented to the SAML IdP.
 
-      The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
+      The value must be an array of stringified JSON dictionaries. Each dictionary must have the form <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE">'{ "pattern": "$URL_PATTERN", "filter" : $FILTER }'</ph>, where <ph name="URL_PATTERN_PLACEHOLDER">$URL_PATTERN</ph> is a content setting pattern. <ph name="FILTER_PLACEHOLDER">$FILTER</ph> restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> has the form <ph name="JSON_DICTIONARY_EXAMPLE">'{ "ISSUER": { "CN": "$ISSUER_CN" } }'</ph>, additionally only client certificates are selected that are issued by a certificate with the CommonName <ph name="ISSUER_CN_PLACEHOLDER">$ISSUER_CN</ph>. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> is the empty dictionary {}, the selection of client certificates is not additionally restricted.
 
       If this policy is left not set, no auto-selection will be done for any site.''',
     },
@@ -14462,7 +14462,7 @@
 
       If this policy is set to a non empty string, that string will be used as the device hostname during DHCP request.
 
-      The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
+      The string can contain variables <ph name="ASSET_ID_PLACEHOLDER">${ASSET_ID}</ph>, <ph name="SERIAL_NUM_PLACEHOLDER">${SERIAL_NUM}</ph>, <ph name="MAC_ADDR_PLACEHOLDER">${MAC_ADDR}</ph>, <ph name="MACHINE_NAME_PLACEHOLDER">${MACHINE_NAME}</ph> that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. '''
     },
@@ -16350,9 +16350,9 @@
 
       When this policy is left unset, a platform-specific default is used: Internet Explorer for Windows, or Safari for Mac OS X. On Linux, launching an alternative browser will fail when this is unset.
 
-      When this policy is set to one of ${ie}, ${firefox}, ${safari} or
-      ${opera}, that browser will launch if it is installed. ${ie} is only
-      available on Windows, and ${safari} is only available on Windows and Mac
+      When this policy is set to one of <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph>, <ph name="FIREFOX_VALUE_PLACEHOLDER">${firefox}</ph>, <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph> or
+      <ph name="OPERA_VALUE_PLACEHOLDER">${opera}</ph>, that browser will launch if it is installed. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph> is only
+      available on Windows, and <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph> is only available on Windows and Mac
       OS X.
 
       When this policy is set to a file path, that file is used as an executable
@@ -16387,11 +16387,11 @@
 
       When this policy is set to a list of strings, each string is passed to the alternative browser as a separate command-line parameters. On Windows, the parameters are joined with spaces. On Mac OS X and Linux, a parameter may contain spaces, and still be treated as a single parameter.
 
-      If an element contains ${url}, it gets replaced with the URL of the page to open.
+      If an element contains <ph name="URL_PLACEHOLDER"> ${url}</ph>, it gets replaced with the URL of the page to open.
 
-      If no element contains ${url}, the URL is appended at the end of the command line.
+      If no element contains <ph name="URL_PLACEHOLDER"> ${url}</ph>, the URL is appended at the end of the command line.
 
-      Environment variables are expanded. On Windows, %ABC% is replaced with the value of the ABC environment variable. On Mac OS X and Linux, ${ABC} is replaced with the value of the ABC environment variable.''',
+      Environment variables are expanded. On Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE">%ABC%</ph> is replaced with the value of the <ph name="ENV_VARIABLE_VALUE">ABC</ph> environment variable. On Mac OS X and Linux, <ph name="ENV_VARIABLE_UNIX_EXAMPLE">${ABC}</ph> is replaced with the value of the <ph name="ENV_VARIABLE">ABC</ph> environment variable.''',
     },
     {
       'id': 530,
@@ -16415,7 +16415,7 @@
 
       When this policy is set, it will be used to launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
 
-      This policy can be set to an executable file path, or ${chrome} to auto-detect Chrome's install location.''',
+      This policy can be set to an executable file path, or <ph name="PRODUCT_NAME_PLACEHOLDER">${chrome}</ph> to auto-detect Chrome's install location.''',
     },
     {
       'id': 531,
@@ -16444,11 +16444,11 @@
 
       When this policy is set to a list of strings, the strings are joined with spaces and passed to Chrome as command-line parameters.
 
-      If an element contains ${url}, it gets replaced with the URL of the page to open.
+      If an element contains <ph name="URL_PLACEHOLDER"> ${url}</ph>, it gets replaced with the URL of the page to open.
 
-      If no element contains ${url}, the URL is appended at the end of the command line.
+      If no element contains <ph name="URL_PLACEHOLDER"> ${url}</ph>, the URL is appended at the end of the command line.
 
-      Environment variables are expanded. On Windows, %ABC% is replaced with the value of the ABC environment variable.''',
+      Environment variables are expanded. On Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE">%ABC%</ph> is replaced with the value of the ABC environment variable.''',
     },
     {
       'id': 496,
@@ -17693,12 +17693,12 @@
           'type': 'object',
           'properties': {
             'principal': {
-              'description': '''User principal 'user@realm'. The placeholder ${{LOGIN_ID}} is replaced by the username 'user'. The placeholder ${{LOGIN_EMAIL}} is replaced by the full principal 'user@realm'.''',
+              'description': '''User principal 'user@realm'. The placeholder <ph name="LOGIN_ID_PLACEHOLDER">${{LOGIN_ID}}</ph> is replaced by the username 'user'. The placeholder <ph name="LOGIN_EMAIL_PLACEHOLDER">${{LOGIN_EMAIL}}</ph> is replaced by the full principal 'user@realm'.''',
               'type': 'string',
               'pattern': '^(?:[^@]+@[^@]+)|(?:\\${LOGIN_ID})|(?:\\${LOGIN_EMAIL})$',
             },
             'password': {
-              'description': '''Kerberos password. The placeholder ${{PASSWORD}} is replaced by the login password.''',
+              'description': '''Kerberos password. The placeholder <ph name="PASSWORD_PLACEHOLDER">${{PASSWORD}}</ph> is replaced by the login password.''',
               'type': 'string',
               'sensitiveValue': True,
             },
@@ -17755,7 +17755,7 @@
       'id': 560,
       'caption': '''Configure Kerberos accounts''',
       'tags': ['website-sharing'],
-      'desc': '''Adds prefilled Kerberos accounts. If the Kerberos credentials match the login credentials, an account can be configured to reuse the login credentials by specifying '${{LOGIN_EMAIL}}' and '${{PASSWORD}}' for principal and password, respectively, so that the Kerberos ticket can be retrieved automatically unless two-factor authentication is configured. Users cannot modify accounts added via this policy.
+      'desc': '''Adds prefilled Kerberos accounts. If the Kerberos credentials match the login credentials, an account can be configured to reuse the login credentials by specifying '<ph name="LOGIN_EMAIL_PLACEHOLDER">${{LOGIN_EMAIL}}</ph>' and <ph name="PASSWORD_PLACEHOLDER">${{PASSWORD}}</ph>' for principal and password, respectively, so that the Kerberos ticket can be retrieved automatically unless two-factor authentication is configured. Users cannot modify accounts added via this policy.
 
           If this policy is enabled, the list of accounts defined by the policy is added to the Kerberos Accounts settings.
 

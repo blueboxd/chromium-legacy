@@ -363,6 +363,11 @@ class ASH_EXPORT TabletModeController
   // not enter tablet mode if this is true.
   bool has_external_pointing_device_ = false;
 
+  // Set to true temporarily when the tablet mode is enabled/disabled via the
+  // developer's keyboard shortcut in order to update the visibility of the
+  // overview tray button, even though internal events are not blocked.
+  bool force_notify_events_blocking_changed_ = false;
+
   // Counts the app window drag from top in tablet mode.
   int app_window_drag_count_ = 0;
 

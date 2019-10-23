@@ -18,11 +18,11 @@
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "ui/base/ime/ime_bridge_observer.h"
@@ -177,15 +177,14 @@ class InputImeSendKeyEventsFunction : public ExtensionFunction {
 
 class InputImeAPI : public BrowserContextKeyedAPI,
                     public ExtensionRegistryObserver,
-                    public EventRouter::Observer,
-                    public content::NotificationObserver {
+                    public EventRouter::Observer {
  public:
   explicit InputImeAPI(content::BrowserContext* context);
   ~InputImeAPI() override;
 
-  // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<InputImeAPI>* GetFactoryInstance();
 
+  // BrowserContextKeyedAPI implementation.
   void Shutdown() override;
 
   // ExtensionRegistryObserver implementation.
@@ -197,11 +196,6 @@ class InputImeAPI : public BrowserContextKeyedAPI,
 
   // EventRouter::Observer implementation.
   void OnListenerAdded(const EventListenerInfo& details) override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<InputImeAPI>;
@@ -219,9 +213,16 @@ class InputImeAPI : public BrowserContextKeyedAPI,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_{this};
 
-  content::NotificationRegistrar registrar_;
-
   std::unique_ptr<ui::IMEBridgeObserver> observer_;
+};
+
+template <>
+struct BrowserContextFactoryDependencies<InputImeAPI> {
+  static void DeclareFactoryDependencies(
+      BrowserContextKeyedAPIFactory<InputImeAPI>* factory) {
+    factory->DependsOn(EventRouterFactory::GetInstance());
+    factory->DependsOn(ExtensionRegistryFactory::GetInstance());
+  }
 };
 
 InputImeEventRouter* GetInputImeEventRouter(Profile* profile);

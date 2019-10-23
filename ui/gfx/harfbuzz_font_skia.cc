@@ -89,11 +89,15 @@ hb_bool_t GetGlyph(hb_font_t* font,
   FontData* font_data = reinterpret_cast<FontData*>(data);
   GlyphCache* cache = font_data->glyph_cache_;
 
-  bool exists = cache->count(unicode) != 0;
-  if (!exists)
-    (*cache)[unicode] = font_data->font_.unicharToGlyph(unicode);
+  GlyphCache::iterator iter = cache->find(unicode);
+  if (iter == cache->end()) {
+    auto result = cache->insert(
+        std::make_pair(unicode, font_data->font_.unicharToGlyph(unicode)));
+    DCHECK(result.second);
+    iter = result.first;
+  }
 
-  *glyph = (*cache)[unicode];
+  *glyph = iter->second;
   return !!*glyph;
 }
 

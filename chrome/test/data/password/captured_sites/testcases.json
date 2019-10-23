@@ -45,7 +45,7 @@
     { "scenario_dir":"sign_in_pass", "site_name":"instagram" },
     { "scenario_dir":"sign_in_pass", "site_name":"kakao" },
     { "scenario_dir":"sign_in_pass", "site_name":"librus" },
-    { "scenario_dir":"sign_in_pass", "site_name":"marriott" },
+    { "scenario_dir":"sign_in_pass", "site_name":"marriott", "disabled":true, "bug_number":984662 },
     { "scenario_dir":"sign_in_pass", "site_name":"mit" },
     { "scenario_dir":"sign_in_pass", "site_name":"naukri" },
     { "scenario_dir":"sign_in_pass", "site_name":"nexon" },

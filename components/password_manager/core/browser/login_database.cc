@@ -55,7 +55,7 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 25;
+const int kCurrentVersionNumber = 26;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 19;
@@ -491,14 +491,13 @@ void InitializeBuilders(SQLTableBuilders builders) {
   SealVersion(builders, /*expected_version=*/19u);
 
   // Version 20.
-  builders.logins->AddColumnToPrimaryKey("id", "INTEGER");
+  builders.logins->AddPrimaryKeyColumn("id");
   SealVersion(builders, /*expected_version=*/20u);
 
   // Version 21.
-  builders.sync_entities_metadata->AddColumnToPrimaryKey("storage_key",
-                                                         "INTEGER");
+  builders.sync_entities_metadata->AddPrimaryKeyColumn("storage_key");
   builders.sync_entities_metadata->AddColumn("metadata", "VARCHAR NOT NULL");
-  builders.sync_model_metadata->AddColumnToPrimaryKey("id", "INTEGER");
+  builders.sync_model_metadata->AddPrimaryKeyColumn("id");
   builders.sync_model_metadata->AddColumn("model_metadata", "VARCHAR NOT NULL");
   SealVersion(builders, /*expected_version=*/21u);
 
@@ -519,6 +518,9 @@ void InitializeBuilders(SQLTableBuilders builders) {
   // column. MigrateLogins() will take care of migrating the data.
   builders.logins->AddColumn("date_last_used", "INTEGER NOT NULL DEFAULT 0");
   SealVersion(builders, /*expected_version=*/25u);
+
+  // Version 26 is the first version where the id is AUTOINCREMENT.
+  SealVersion(builders, /*expected_version=*/26u);
 
   DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builders.logins->NumberOfColumns())
       << "Adjust LoginDatabaseTableColumns if you change column definitions "
@@ -561,7 +563,7 @@ bool MigrateLogins(unsigned current_version,
 
   // Sync Metadata tables have been introduced in version 21. It is enough to
   // drop all data because Sync would populate the tables properly at startup.
-  if (current_version == 21 || current_version == 22 || current_version == 23) {
+  if (current_version >= 21 && current_version < 26) {
     if (!ClearAllSyncMetadata(db))
       return false;
   }
@@ -584,6 +586,45 @@ bool MigrateLogins(unsigned current_version,
     preferred_stmt.BindInt64(0, base::TimeDelta::FromDays(1).InMicroseconds());
     if (!preferred_stmt.Run())
       return false;
+  }
+
+  // In version 26, the primary key of the logins table became an AUTOINCREMENT
+  // field. Since SQLite doesn't allow changing the column type, the only way is
+  // to actually create a temp table with the primary key propely set as an
+  // AUTOINCREMENT field, and move the data there. The code has been adjusted
+  // such that newly created tables have the primary key properly set as
+  // AUTOINCREMENT.
+  if (current_version < 26) {
+    // This statement creates the logins database similar to version 26 with the
+    // primary key column set to AUTOINCREMENT.
+    std::string temp_table_create_statement_version_26 =
+        "CREATE TABLE logins_temp (origin_url VARCHAR NOT NULL,action_url "
+        "VARCHAR,username_element VARCHAR,username_value "
+        "VARCHAR,password_element VARCHAR,password_value BLOB,submit_element "
+        "VARCHAR,signon_realm VARCHAR NOT NULL,preferred INTEGER NOT "
+        "NULL,date_created INTEGER NOT NULL,blacklisted_by_user INTEGER NOT "
+        "NULL,scheme INTEGER NOT NULL,password_type INTEGER,times_used "
+        "INTEGER,form_data BLOB,date_synced INTEGER,display_name "
+        "VARCHAR,icon_url VARCHAR,federation_url VARCHAR,skip_zero_click "
+        "INTEGER,generation_upload_status INTEGER,possible_username_pairs "
+        "BLOB,id INTEGER PRIMARY KEY AUTOINCREMENT,date_last_used "
+        "INTEGER,UNIQUE (origin_url, username_element, username_value, "
+        "password_element, signon_realm))";
+    std::string move_data_statement =
+        "INSERT INTO logins_temp SELECT * from logins";
+    std::string drop_table_statement = "DROP TABLE logins";
+    std::string rename_table_statement =
+        "ALTER TABLE logins_temp RENAME TO logins";
+
+    sql::Transaction transaction(db);
+    if (!(transaction.Begin() &&
+          db->Execute(temp_table_create_statement_version_26.c_str()) &&
+          db->Execute(move_data_statement.c_str()) &&
+          db->Execute(drop_table_statement.c_str()) &&
+          db->Execute(rename_table_statement.c_str()) &&
+          transaction.Commit())) {
+      return false;
+    }
   }
 
   return true;

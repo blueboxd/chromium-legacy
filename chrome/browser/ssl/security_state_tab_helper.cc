@@ -179,6 +179,9 @@ void SecurityStateTabHelper::DidStartNavigation(
     UMA_HISTOGRAM_ENUMERATION(
         "Security.SafetyTips.FormSubmission",
         GetVisibleSecurityState()->safety_tip_info.status);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Security.LegacyTLS.FormSubmission",
+        GetLegacyTLSWarningStatus(*GetVisibleSecurityState()));
   }
 }
 

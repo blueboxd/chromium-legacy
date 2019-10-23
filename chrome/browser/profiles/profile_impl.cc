@@ -23,6 +23,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -150,6 +151,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/buildflags/buildflags.h"
@@ -158,9 +160,9 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/identity/identity_service.h"
 #include "services/image_annotation/image_annotation_service.h"
-#include "services/image_annotation/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
@@ -336,6 +338,28 @@ bool LocaleNotChanged(const std::string& pref_locale,
   return pref_locale == new_locale_converted;
 }
 #endif  // defined(OS_CHROMEOS)
+
+class ImageAnnotatorClient : public image_annotation::Annotator::Client {
+ public:
+  ImageAnnotatorClient() = default;
+  ~ImageAnnotatorClient() override = default;
+
+  // image_annotation::Annotator::Client implementation:
+  void BindJsonParser(mojo::PendingReceiver<data_decoder::mojom::JsonParser>
+                          receiver) override {
+    content::GetSystemConnector()->Connect(data_decoder::mojom::kServiceName,
+                                           std::move(receiver));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImageAnnotatorClient);
+};
+
+ProfileImpl::ImageAnnotationServiceBinder&
+GetImageAnnotationServiceBinderOverride() {
+  static base::NoDestructor<ProfileImpl::ImageAnnotationServiceBinder> binder;
+  return *binder;
+}
 
 }  // namespace
 
@@ -1075,6 +1099,24 @@ identity::mojom::IdentityService* ProfileImpl::GetIdentityService() {
   return remote_identity_service_.get();
 }
 
+image_annotation::mojom::ImageAnnotationService*
+ProfileImpl::GetImageAnnotationService() {
+  if (!remote_image_annotation_service_) {
+    auto receiver =
+        remote_image_annotation_service_.BindNewPipeAndPassReceiver();
+    const auto& binder = GetImageAnnotationServiceBinderOverride();
+    if (binder) {
+      binder.Run(std::move(receiver));
+    } else {
+      image_annotation_service_impl_ =
+          std::make_unique<image_annotation::ImageAnnotationService>(
+              std::move(receiver), APIKeyForChannel(), GetURLLoaderFactory(),
+              std::make_unique<ImageAnnotatorClient>());
+    }
+  }
+  return remote_image_annotation_service_.get();
+}
+
 PrefService* ProfileImpl::GetPrefs() {
   return const_cast<PrefService*>(
       static_cast<const ProfileImpl*>(this)->GetPrefs());
@@ -1295,11 +1337,6 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
         ->CreatePrefService(std::move(request));
   }
 
-  if (service_name == image_annotation::mojom::kServiceName) {
-    return std::make_unique<image_annotation::ImageAnnotationService>(
-        std::move(request), APIKeyForChannel(), GetURLLoaderFactory());
-  }
-
 #if defined(OS_CHROMEOS)
   if (service_name == chromeos::multidevice_setup::mojom::kServiceName) {
     chromeos::android_sms::AndroidSmsService* android_sms_service =
@@ -1472,6 +1509,12 @@ void ProfileImpl::InitChromeOSPreferences() {
 
 void ProfileImpl::SetCreationTimeForTesting(base::Time creation_time) {
   creation_time_ = creation_time;
+}
+
+// static
+void ProfileImpl::OverrideImageAnnotationServiceBinderForTesting(
+    ImageAnnotationServiceBinder binder) {
+  GetImageAnnotationServiceBinderOverride() = std::move(binder);
 }
 
 GURL ProfileImpl::GetHomePage() {

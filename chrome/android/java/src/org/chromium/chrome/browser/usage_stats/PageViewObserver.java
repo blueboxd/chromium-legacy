@@ -196,7 +196,6 @@ public class PageViewObserver {
     }
 
     private void activeTabChanged(Tab tab) {
-        assert tab != null;
         if (tab == mCurrentTab || mTabModelSelector.getCurrentTab() != tab) return;
 
         switchObserverToTab(tab);

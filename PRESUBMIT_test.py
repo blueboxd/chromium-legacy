@@ -1267,6 +1267,12 @@ class LogUsageTest(unittest.TestCase):
         'private static final String TAG = "cr_foo.bar";',
         'Log.d(TAG, "foo");',
       ]),
+      MockAffectedFile('HasDottedTagPublic.java', [
+        'import org.chromium.base.Log;',
+        'some random stuff',
+        'public static final String TAG = "cr_foo.bar";',
+        'Log.d(TAG, "foo");',
+      ]),
       MockAffectedFile('HasNoTagDecl.java', [
         'import org.chromium.base.Log;',
         'some random stuff',
@@ -1332,9 +1338,10 @@ class LogUsageTest(unittest.TestCase):
 
     # Tag must not contain
     nb = len(msgs[4].items)
-    self.assertEqual(2, nb,
+    self.assertEqual(3, nb,
                      'Expected %d items, found %d: %s' % (2, nb, msgs[4].items))
     self.assertTrue('HasDottedTag.java' in msgs[4].items)
+    self.assertTrue('HasDottedTagPublic.java' in msgs[4].items)
     self.assertTrue('HasOldTag.java' in msgs[4].items)
 
 

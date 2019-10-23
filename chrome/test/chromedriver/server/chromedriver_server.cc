@@ -36,9 +36,9 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
-#include "chrome/test/chromedriver/version.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -382,8 +382,8 @@ void StartServerOnIOThread(uint16_t port,
     // https://chromium.googlesource.com/chromium/src/+/69.0.3464.0/net/socket/socket_descriptor.cc#28.
     need_ipv4 = NeedIPv4::NOT_NEEDED;
 #else
-    LOG(WARNING)
-        << "Running on a platform not officially supported by ChromeDriver.";
+    LOG(WARNING) << "Running on a platform not officially supported by "
+                 << kChromeDriverProductFullName << ".";
     need_ipv4 = NeedIPv4::UNKNOWN;
 #endif
   }
@@ -417,7 +417,8 @@ void RunServer(uint16_t port,
                const std::vector<net::IPAddress>& whitelisted_ips,
                const std::string& url_base,
                int adb_port) {
-  base::Thread io_thread("ChromeDriver IO");
+  base::Thread io_thread(
+      base::StringPrintf("%s IO", kChromeDriverProductShortName));
   CHECK(io_thread.StartWithOptions(
       base::Thread::Options(base::MessagePumpType::IO, 0)));
 
@@ -490,9 +491,6 @@ int main(int argc, char *argv[]) {
             "print the version number and exit",
         "url-base",
             "base URL path prefix for commands, e.g. wd/url",
-        "whitelisted-ips",
-            "comma-separated whitelist of remote IP addresses "
-            "which are allowed to connect to ChromeDriver",
         "readable-timestamp",
             "add readable timestamps to log",
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -506,12 +504,20 @@ int main(int argc, char *argv[]) {
           "  --%-30s%s\n",
           kOptionAndDescriptions[i], kOptionAndDescriptions[i + 1]);
     }
+
+    // Add helper info for whitelisted-ips since the product name may be
+    // different.
+    options += base::StringPrintf(
+        "  --%-30scomma-separated whitelist of remote IP addresses which are "
+        "allowed to connect to %s\n",
+        "whitelisted-ips", kChromeDriverProductShortName);
+
     printf("Usage: %s [OPTIONS]\n\nOptions\n%s", argv[0], options.c_str());
     return 0;
   }
   bool early_exit = false;
   if (cmd_line->HasSwitch("v") || cmd_line->HasSwitch("version")) {
-    printf("ChromeDriver %s\n", kChromeDriverVersion);
+    printf("%s %s\n", kChromeDriverProductFullName, kChromeDriverVersion);
     early_exit = true;
   }
   if (early_exit)
@@ -573,7 +579,8 @@ int main(int argc, char *argv[]) {
   }
   if (!cmd_line->HasSwitch("silent") &&
       cmd_line->GetSwitchValueASCII("log-level") != "OFF") {
-    printf("Starting ChromeDriver %s on port %u\n", kChromeDriverVersion, port);
+    printf("Starting %s %s on port %u\n", kChromeDriverProductShortName,
+           kChromeDriverVersion, port);
     if (!allow_remote) {
       printf("Only local connections are allowed.\n");
     } else if (!whitelisted_ips.empty()) {
@@ -582,7 +589,7 @@ int main(int argc, char *argv[]) {
     } else {
       printf("All remote connections are allowed. Use a whitelist instead!\n");
     }
-    printf("%s\n", kPortProtectionMessage);
+    printf("%s\n", GetPortProtectionMessage());
     fflush(stdout);
   }
 
@@ -597,7 +604,8 @@ int main(int argc, char *argv[]) {
 
   mojo::core::Init();
 
-  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("ChromeDriver");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      kChromeDriverProductShortName);
 
   RunServer(port, allow_remote, whitelisted_ips, url_base, adb_port);
 

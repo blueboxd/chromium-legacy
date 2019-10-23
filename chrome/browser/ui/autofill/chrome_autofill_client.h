@@ -86,6 +86,11 @@ class ChromeAutofillClient
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
+#if !defined(OS_ANDROID)
+  void ShowVerifyPendingDialog(
+      base::OnceClosure cancel_card_verification_callback) override;
+  void CloseVerifyPendingDialog() override;
+#endif  // !defined(OS_ANDROID)
   void ShowWebauthnOfferDialog(WebauthnOfferDialogCallback callback) override;
   bool CloseWebauthnOfferDialog() override;
   void UpdateWebauthnOfferDialogWithError() override;

@@ -31,13 +31,14 @@
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/command_listener.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
-#include "chrome/test/chromedriver/version.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace {
@@ -87,26 +88,27 @@ InitSessionParams::~InitSessionParams() {}
 bool GetW3CSetting(const base::DictionaryValue& params) {
   bool w3c;
   const base::ListValue* list;
-  const base::DictionaryValue* dict;
+  const base::DictionaryValue* caps_dict;
+  const base::DictionaryValue* options_dict;
 
-  if (params.GetDictionary("capabilities.alwaysMatch", &dict)) {
-    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
-        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
+  if (params.GetDictionary("capabilities.alwaysMatch", &caps_dict)) {
+    if (GetChromeOptionsDictionary(*caps_dict, &options_dict) &&
+        options_dict->GetBoolean("w3c", &w3c)) {
       return w3c;
     }
   }
 
   if (params.GetList("capabilities.firstMatch", &list) &&
-      list->GetDictionary(0, &dict)) {
-    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
-        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
+      list->GetDictionary(0, &caps_dict)) {
+    if (GetChromeOptionsDictionary(*caps_dict, &options_dict) &&
+        options_dict->GetBoolean("w3c", &w3c)) {
       return w3c;
     }
   }
 
-  if (params.GetDictionary("desiredCapabilities", &dict)) {
-    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
-        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
+  if (params.GetDictionary("desiredCapabilities", &caps_dict)) {
+    if (GetChromeOptionsDictionary(*caps_dict, &options_dict) &&
+        options_dict->GetBoolean("w3c", &w3c)) {
       return w3c;
     }
   }
@@ -131,7 +133,7 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
 
   // Capabilities defined by W3C. Some of these capabilities have different
   // names in legacy mode.
-  caps->SetString("browserName", "chrome");
+  caps->SetString("browserName", base::ToLowerASCII(kBrowserShortName));
   caps->SetString(session->w3c_compliant ? "browserVersion" : "version",
                   session->chrome->GetBrowserInfo()->browser_version);
   std::string operatingSystemName = session->chrome->GetOperatingSystemName();
@@ -171,14 +173,21 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
                   session->unhandled_prompt_behavior);
 
   // Chrome-specific extensions.
-  caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
+  const std::string chromedriverVersionKey = base::StringPrintf(
+      "%s.%sVersion", base::ToLowerASCII(kBrowserShortName).c_str(),
+      base::ToLowerASCII(kChromeDriverProductShortName).c_str());
+  caps->SetString(chromedriverVersionKey, kChromeDriverVersion);
+  const std::string debuggerAddressKey =
+      base::StringPrintf("%s.debuggerAddress", kChromeDriverOptionsKeyPrefixed);
   caps->SetString(
-      "goog:chromeOptions.debuggerAddress",
+      debuggerAddressKey,
       session->chrome->GetBrowserInfo()->debugger_address.ToString());
   ChromeDesktopImpl* desktop = NULL;
   Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsOk()) {
-    caps->SetString("chrome.userDataDir",
+    const std::string userDataDirKey = base::StringPrintf(
+        "%s.userDataDir", base::ToLowerASCII(kBrowserShortName).c_str());
+    caps->SetString(userDataDirKey,
                     desktop->command().GetSwitchValueNative("user-data-dir"));
     caps->SetBoolean("networkConnectionEnabled",
                      desktop->IsNetworkConnectionEnabled());
@@ -407,7 +416,7 @@ bool MergeCapabilities(const base::DictionaryValue* always_match,
 bool MatchCapabilities(const base::DictionaryValue* capabilities) {
   const base::Value* name;
   if (capabilities->Get("browserName", &name) && !name->is_none()) {
-    if (!(name->is_string() && name->GetString() == "chrome"))
+    if (!(name->is_string() && name->GetString() == kBrowserCapabilityName))
       return false;
   }
 
@@ -424,10 +433,14 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities) {
       std::string actual_first_token =
         actual_platform_name.substr(0, actual_platform_name.find(' '));
 
-      bool is_android = capabilities->FindPath(
-                            "goog:chromeOptions.androidPackage") != nullptr;
-      bool is_remote = capabilities->FindPath(
-                           "goog:chromeOptions.debuggerAddress") != nullptr;
+      const base::DictionaryValue* chrome_options;
+      const bool has_chrome_options =
+          GetChromeOptionsDictionary(*capabilities, &chrome_options);
+
+      bool is_android = has_chrome_options && chrome_options->FindStringKey(
+                                                  "androidPackage") != nullptr;
+      bool is_remote = has_chrome_options && chrome_options->FindStringKey(
+                                                 "debuggerAddress") != nullptr;
       if (requested_platform_name == "any" || is_remote ||
           (is_android && requested_platform_name == "android")) {
         // "any" can be used as a wild card for platformName.

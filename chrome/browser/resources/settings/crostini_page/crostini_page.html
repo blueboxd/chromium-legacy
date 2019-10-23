@@ -9,6 +9,7 @@
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="crostini_arc_adb.html">
 <link rel="import" href="crostini_browser_proxy.html">
 <link rel="import" href="crostini_export_import.html">
 <link rel="import" href="crostini_shared_paths.html">
@@ -59,6 +60,15 @@
             page-title="$i18n{crostiniPageLabel}">
           <settings-crostini-subpage prefs="{{prefs}}">
           </settings-crostini-subpage>
+        </settings-subpage>
+      </template>
+
+      <template is="dom-if" route-path="/crostini/androidAdb">
+        <settings-subpage
+            associated-control="[[$$('#crostini')]]"
+            page-title="$i18n{crostiniArcAdbTitle}">
+          <settings-crostini-arc-adb prefs="{{prefs}}">
+          </settings-crostini-arc-adb>
         </settings-subpage>
       </template>
 

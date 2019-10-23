@@ -10,11 +10,7 @@ const NO_SELECT_INDEX = -1;
  * navigation and selection in editable text fields is supported.
  */
 class TextNavigationManager {
-  /** @param {!NavigationManager} navigationManager */
-  constructor(navigationManager) {
-    /** @private {!NavigationManager} */
-    this.navigationManager_ = navigationManager;
-
+  constructor() {
     /** @private {number} */
     this.selectionStartIndex_ = NO_SELECT_INDEX;
 
@@ -37,7 +33,6 @@ class TextNavigationManager {
   /**
    * Jumps to the beginning of the text field (does nothing
    * if already at the beginning).
-   * @public
    */
   jumpToBeginning() {
     if (this.currentlySelecting_)
@@ -48,7 +43,6 @@ class TextNavigationManager {
   /**
    * Jumps to the end of the text field (does nothing if
    * already at the end).
-   * @public
    */
   jumpToEnd() {
     if (this.currentlySelecting_)
@@ -60,7 +54,6 @@ class TextNavigationManager {
    * Moves the text caret one character back (does nothing
    * if there are no more characters preceding the current
    * location of the caret).
-   * @public
    */
   moveBackwardOneChar() {
     if (this.currentlySelecting_)
@@ -72,7 +65,6 @@ class TextNavigationManager {
    * Moves the text caret one character forward (does nothing
    * if there are no more characters following the current
    * location of the caret).
-   * @public
    */
   moveForwardOneChar() {
     if (this.currentlySelecting_)
@@ -85,7 +77,6 @@ class TextNavigationManager {
    * if already at the beginning of the field). If the
    * text caret is in the middle of a word, moves the caret
    * to the beginning of that word.
-   * @public
    */
   moveBackwardOneWord() {
     if (this.currentlySelecting_)
@@ -98,7 +89,6 @@ class TextNavigationManager {
    * already at the end of the field). If the text caret is
    * in the middle of a word, moves the caret to the end of
    * that word.
-   * @public
    */
   moveForwardOneWord() {
     if (this.currentlySelecting_)
@@ -110,7 +100,6 @@ class TextNavigationManager {
    * Moves the text caret one line up (does nothing
    * if there are no lines above the current location of
    * the caret).
-   * @public
    */
   moveUpOneLine() {
     if (this.currentlySelecting_)
@@ -122,7 +111,6 @@ class TextNavigationManager {
    * Moves the text caret one line down (does nothing
    * if there are no lines below the current location of
    * the caret).
-   * @public
    */
   moveDownOneLine() {
     if (this.currentlySelecting_)
@@ -184,7 +172,6 @@ class TextNavigationManager {
   /**
    * Returns the selection end index.
    * @return {number}
-   * @public
    */
   getSelEndIndex() {
     return this.selectionEndIndex_;
@@ -200,7 +187,6 @@ class TextNavigationManager {
   /**
    * Returns the selection start index.
    * @return {number}
-   * @public
    */
   getSelStartIndex() {
     return this.selectionStartIndex_;
@@ -210,7 +196,6 @@ class TextNavigationManager {
    * Sets the selection start index.
    * @param {number} startIndex
    * @param {!chrome.automation.AutomationNode} textNode
-   * @public
    */
   setSelStartIndexAndNode(startIndex, textNode) {
     this.selectionStartIndex_ = startIndex;
@@ -220,7 +205,6 @@ class TextNavigationManager {
   /**
    * Returns if the selection start index is set in the current node.
    * @return {boolean}
-   * @public
    */
   currentlySelecting() {
     return (
@@ -253,7 +237,6 @@ class TextNavigationManager {
   /**
    * Sets the selectionStart variable based on the selection of the current
    * node. Also sets the currently selecting boolean to true.
-   * @public
    */
   saveSelectStart() {
     chrome.automation.getFocus((focusedNode) => {
@@ -297,7 +280,6 @@ class TextNavigationManager {
   /**
    * Reset the currentlySelecting variable to false, reset the selection
    * indices, and remove the listener on navigation.
-   * @public
    */
   resetCurrentlySelecting() {
     this.currentlySelecting_ = false;
@@ -308,7 +290,6 @@ class TextNavigationManager {
 
   /**
    * Sets the selectionEnd variable based on the selection of the current node.
-   * @public
    */
   saveSelectEnd() {
     chrome.automation.getFocus((focusedNode) => {

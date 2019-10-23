@@ -173,7 +173,8 @@ bool SuspendableThreadDelegateWin::ScopedSuspendThread::WasSuccessful() const {
 
 SuspendableThreadDelegateWin::SuspendableThreadDelegateWin(
     PlatformThreadId thread_id)
-    : thread_handle_(GetThreadHandle(thread_id)),
+    : thread_id_(thread_id),
+      thread_handle_(GetThreadHandle(thread_id)),
       thread_stack_base_address_(reinterpret_cast<uintptr_t>(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase)) {}
 
@@ -182,6 +183,10 @@ SuspendableThreadDelegateWin::~SuspendableThreadDelegateWin() = default;
 std::unique_ptr<SuspendableThreadDelegate::ScopedSuspendThread>
 SuspendableThreadDelegateWin::CreateScopedSuspendThread() {
   return std::make_unique<ScopedSuspendThread>(thread_handle_.Get());
+}
+
+PlatformThreadId SuspendableThreadDelegateWin::GetThreadId() const {
+  return thread_id_;
 }
 
 // NO HEAP ALLOCATIONS.

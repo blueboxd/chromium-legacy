@@ -103,44 +103,14 @@ bool GetDomainReliabilityBeaconStatus(
 std::string GetDomainReliabilityProtocol(
     net::HttpResponseInfo::ConnectionInfo connection_info,
     bool ssl_info_populated) {
-  switch (connection_info) {
-    case net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN:
-      return "";
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP0_9:
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_0:
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1:
+  switch (net::HttpResponseInfo::ConnectionInfoToCoarse(connection_info)) {
+    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_HTTP1:
       return ssl_info_populated ? "HTTPS" : "HTTP";
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY2:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY3:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_14:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_15:
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP2:
+    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_HTTP2:
       return "SPDY";
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_32:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_33:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_34:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_35:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_36:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_37:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_38:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_39:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_40:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_41:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_42:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_43:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_46:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_47:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_48:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_49:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_50:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_999:
+    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_QUIC:
       return "QUIC";
-    case net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS:
-      NOTREACHED();
+    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_OTHER:
       return "";
   }
   NOTREACHED();

@@ -43,8 +43,8 @@ class RTCRtpReceiver final : public ScriptWrappable {
   MediaStreamTrack* track() const;
   RTCDtlsTransport* transport();
   RTCDtlsTransport* rtcpTransport();
-  double jitterBufferDelayHint(bool&, ExceptionState&);
-  void setJitterBufferDelayHint(double, bool, ExceptionState&);
+  double playoutDelayHint(bool&, ExceptionState&);
+  void setPlayoutDelayHint(double, bool, ExceptionState&);
   RTCRtpReceiveParameters* getParameters();
   HeapVector<Member<RTCRtpSynchronizationSource>> getSynchronizationSources();
   HeapVector<Member<RTCRtpContributingSource>> getContributingSources();
@@ -77,7 +77,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
   // Hint to the WebRTC Jitter Buffer about desired playout delay. Actual
   // observed delay may differ depending on the congestion control. |nullopt|
   // means default value must be used.
-  base::Optional<double> jitter_buffer_delay_hint_;
+  base::Optional<double> playout_delay_hint_;
 };
 
 }  // namespace blink

@@ -15,7 +15,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -95,6 +94,11 @@ double MagnificationManager::GetSavedScreenMagnifierScale() const {
       ash::prefs::kAccessibilityScreenMagnifierScale);
 }
 
+void MagnificationManager::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK_EQ(profile_, profile);
+  SetProfile(nullptr);
+}
+
 void MagnificationManager::OnViewEvent(views::View* view,
                                        ax::mojom::Event event_type) {
   if (!fullscreen_magnifier_enabled_ && !IsDockedMagnifierEnabled())
@@ -113,8 +117,6 @@ void MagnificationManager::SetProfileForTest(Profile* profile) {
 
 MagnificationManager::MagnificationManager() {
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
   // TODO(warx): observe focus changed in page notification when either
   // fullscreen magnifier or docked magnifier is enabled.
@@ -142,13 +144,6 @@ void MagnificationManager::Observe(
         SetProfile(profile);
       break;
     }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      // Update |profile_| when exiting a session or shutting down.
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (profile_ == profile)
-        SetProfile(NULL);
-      break;
-    }
     case content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE: {
       HandleFocusChangedInPage(details);
       break;
@@ -170,6 +165,10 @@ void MagnificationManager::SetProfileByUser(const user_manager::User* user) {
 }
 
 void MagnificationManager::SetProfile(Profile* profile) {
+  if (profile_)
+    profile_observer_.Remove(profile_);
+  DCHECK(!profile_observer_.IsObservingSources());
+
   pref_change_registrar_.reset();
 
   if (profile) {
@@ -193,6 +192,8 @@ void MagnificationManager::SetProfile(Profile* profile) {
         base::BindRepeating(
             &MagnificationManager::UpdateDockedMagnifierFromPrefs,
             base::Unretained(this)));
+
+    profile_observer_.Add(profile);
   }
 
   profile_ = profile;

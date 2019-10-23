@@ -23,7 +23,6 @@
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/image_annotation/image_annotation_metrics.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 namespace image_annotation {
@@ -348,9 +347,9 @@ Annotator::Annotator(
     const int batch_size,
     const double min_ocr_confidence,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    service_manager::Connector* const connector)
-    : url_loader_factory_(std::move(url_loader_factory)),
-      connector_(connector),
+    std::unique_ptr<Client> client)
+    : client_(std::move(client)),
+      url_loader_factory_(std::move(url_loader_factory)),
       server_request_timer_(
           FROM_HERE,
           throttle,
@@ -359,9 +358,7 @@ Annotator::Annotator(
       server_url_(std::move(server_url)),
       api_key_(std::move(api_key)),
       batch_size_(batch_size),
-      min_ocr_confidence_(min_ocr_confidence) {
-  DCHECK(connector_);
-}
+      min_ocr_confidence_(min_ocr_confidence) {}
 
 Annotator::~Annotator() {
   // Report any clients still connected at service shutdown.
@@ -712,11 +709,8 @@ void Annotator::ProcessResults(
 
 data_decoder::mojom::JsonParser* Annotator::GetJsonParser() {
   if (!json_parser_) {
-    connector_->Connect(data_decoder::mojom::kServiceName,
-                        json_parser_.BindNewPipeAndPassReceiver());
-    json_parser_.set_disconnect_handler(base::BindOnce(
-        [](Annotator* const annotator) { annotator->json_parser_.reset(); },
-        base::Unretained(this)));
+    client_->BindJsonParser(json_parser_.BindNewPipeAndPassReceiver());
+    json_parser_.reset_on_disconnect();
   }
 
   return json_parser_.get();

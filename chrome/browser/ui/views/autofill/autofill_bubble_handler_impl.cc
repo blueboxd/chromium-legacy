@@ -136,7 +136,10 @@ AutofillBubbleHandlerImpl::ShowLocalCardMigrationBubble(
 }
 
 void AutofillBubbleHandlerImpl::OnPasswordSaved() {
-  ShowAvatarHighlightAnimation();
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardUploadFeedback)) {
+    ShowAvatarHighlightAnimation();
+  }
 }
 
 void AutofillBubbleHandlerImpl::HideSignInPromo() {

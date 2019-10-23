@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -368,16 +369,19 @@ void HostDrmDevice::OnGpuServiceLaunchedOnUIThread(
 
   // Create two DeviceCursor connections: one for the UI thread and one for the
   // IO thread.
-  ui::ozone::mojom::DeviceCursorAssociatedPtr cursor_ptr_ui, cursor_ptr_io;
-  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_ui));
-  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_io));
+  mojo::PendingAssociatedRemote<ui::ozone::mojom::DeviceCursor> cursor_ui,
+      cursor_io;
+  drm_device_ptr_->GetDeviceCursor(
+      cursor_ui.InitWithNewEndpointAndPassReceiver());
+  drm_device_ptr_->GetDeviceCursor(
+      cursor_io.InitWithNewEndpointAndPassReceiver());
 
   // The cursor is special since it will process input events on the IO thread
-  // and can by-pass the UI thread. As a result, it has an InterfacePtr for both
-  // the UI and I/O thread.  cursor_ptr_io is already bound correctly to an I/O
-  // thread by GpuProcessHost.
-  cursor_proxy_ = std::make_unique<HostCursorProxy>(std::move(cursor_ptr_ui),
-                                                    std::move(cursor_ptr_io));
+  // and can by-pass the UI thread. As a result, it has a Remote for both the UI
+  // and I/O thread. cursor_io is already bound correctly to an I/O thread by
+  // GpuProcessHost.
+  cursor_proxy_ = std::make_unique<HostCursorProxy>(std::move(cursor_ui),
+                                                    std::move(cursor_io));
 
   OnDrmServiceStarted();
 }

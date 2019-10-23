@@ -1913,7 +1913,9 @@ class AssistantInteractionHelper
 
   void SendTextQuery(const std::string& query, bool allow_tts) {
     // Start text interaction with Assistant server.
-    assistant_->StartTextInteraction(query, allow_tts);
+    assistant_->StartTextInteraction(
+        query, chromeos::assistant::mojom::AssistantQuerySource::kUnspecified,
+        allow_tts);
 
     query_status_->SetKey("queryText", base::Value(query));
   }

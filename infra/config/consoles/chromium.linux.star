@@ -19,11 +19,6 @@ luci.console_view(
             short_name = 'gcc',
         ),
         luci.console_view_entry(
-            builder = 'ci/linux-jumbo-rel',
-            category = 'release',
-            short_name = 'jmb',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Deterministic Linux',
             category = 'release',
             short_name = 'det',

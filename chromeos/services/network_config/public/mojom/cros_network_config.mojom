@@ -436,6 +436,8 @@ struct ManagedEAPProperties {
   ManagedString? identity;
   ManagedString? inner;
   ManagedString? outer;
+  // Note: |password| contains a placeholder if set to avoid leaking secrets.
+  ManagedString? password;
   ManagedBoolean? save_credentials;
   ManagedStringList? server_ca_pems;
   ManagedStringList? server_ca_refs;
@@ -464,6 +466,7 @@ struct ManagedIPSecProperties {
   ManagedEAPProperties? eap;
   ManagedString? group;
   ManagedInt32? ike_version;
+  // Note: |psk| contains a placeholder if set to avoid leaking secrets.
   ManagedString? psk;
   ManagedBoolean? save_credentials;
   ManagedStringList? server_ca_pems;
@@ -472,6 +475,7 @@ struct ManagedIPSecProperties {
 
 struct ManagedL2TPProperties {
   ManagedBoolean? lcp_echo_disabled;
+  // Note: |password| contains a placeholder if set to avoid leaking secrets.
   ManagedString? password;
   ManagedBoolean? save_credentials;
   ManagedString? username;
@@ -516,6 +520,8 @@ struct ManagedOpenVPNProperties {
   ManagedBoolean? ignore_default_route;
   ManagedString? key_direction;
   ManagedString? ns_cert_type;
+  // Note: |password| contains a placeholder if set to avoid leaking secrets.
+  ManagedString? password;
   ManagedInt32? port;
   ManagedString? proto;
   ManagedBoolean? push_peer_info;
@@ -600,6 +606,8 @@ struct ManagedWiFiProperties {
   ManagedBoolean? ft_enabled;
   ManagedString? hex_ssid;
   ManagedBoolean? hidden_ssid;
+  // Note: |passphrase| contains a placeholder if set to avoid leaking secrets.
+  ManagedString? passphrase;
   ManagedInt32? roam_threshold;
   ManagedString ssid;
   SecurityType security;

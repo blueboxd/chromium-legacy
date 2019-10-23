@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/system_clock_observer.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -54,8 +52,6 @@ SystemClock::SystemClock() {
   if (LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
 
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllSources());
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
@@ -67,7 +63,6 @@ SystemClock::~SystemClock() {
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
-// LoginState::Observer overrides.
 void SystemClock::LoggedInStateChanged() {
   // It apparently sometimes takes a while after login before the current user
   // is recognized as the owner. Make sure that the system-wide clock setting
@@ -76,15 +71,11 @@ void SystemClock::LoggedInStateChanged() {
     SetShouldUse24HourClock(ShouldUse24HourClock());
 }
 
-// content::NotificationObserver implementation.
-void SystemClock::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
-  if (OnProfileDestroyed(content::Source<Profile>(source).ptr())) {
-    registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                      content::NotificationService::AllSources());
-  }
+void SystemClock::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK_EQ(profile, user_profile_);
+  profile_observer_.Remove(profile);
+  user_pref_registrar_.reset();
+  user_profile_ = nullptr;
 }
 
 void SystemClock::ActiveUserChanged(user_manager::User* active_user) {
@@ -110,6 +101,8 @@ void SystemClock::SetProfileByUser(const user_manager::User* user) {
 
 void SystemClock::SetProfile(Profile* profile) {
   user_profile_ = profile;
+  profile_observer_.RemoveAll();
+  profile_observer_.Add(profile);
   PrefService* prefs = profile->GetPrefs();
   user_pref_registrar_.reset(new PrefChangeRegistrar);
   user_pref_registrar_->Init(prefs);
@@ -117,14 +110,6 @@ void SystemClock::SetProfile(Profile* profile) {
       prefs::kUse24HourClock,
       base::Bind(&SystemClock::UpdateClockType, base::Unretained(this)));
   UpdateClockType();
-}
-
-bool SystemClock::OnProfileDestroyed(Profile* profile) {
-  if (profile != user_profile_)
-    return false;
-  user_pref_registrar_.reset();
-  user_profile_ = NULL;
-  return true;
 }
 
 void SystemClock::SetLastFocusedPodHourClockType(

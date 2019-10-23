@@ -783,9 +783,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // the first message after frame type changes.
   bool needs_dwm_frame_clear_ = true;
 
-  // True if user is in remote session.
-  bool is_remote_session_;
-
   // True if is handling mouse WM_INPUT messages.
   bool using_wm_input_ = false;
 

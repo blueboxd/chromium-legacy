@@ -3186,6 +3186,12 @@ void AXPlatformNodeAuraLinux::OnWindowVisibilityChanged() {
   atk_object_notify_state_change(atk_object, ATK_STATE_ICONIFIED, minimized);
 }
 
+void AXPlatformNodeAuraLinux::OnScrolledToAnchor() {
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  DCHECK(ATK_IS_TEXT(atk_object));
+  g_signal_emit_by_name(atk_object, "text-caret-moved", 0);
+}
+
 void AXPlatformNodeAuraLinux::OnFocused() {
   AtkObject* atk_object = GetOrCreateAtkObject();
 

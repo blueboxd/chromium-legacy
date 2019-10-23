@@ -14,7 +14,7 @@ jinja_template("weblayer_client_manifest") {
 }
 
 android_resources("client_resources") {
-  resource_dirs = []
+  resource_dirs = [ "res" ]
   android_manifest = weblayer_client_manifest
   android_manifest_dep = ":weblayer_client_manifest"
 }
@@ -43,6 +43,8 @@ template("weblayer_java") {
     ]
 
     deps = [
+      ":weblayer_client_manifest",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_deps:com_android_support_support_fragment_java",
       "//weblayer/browser/java:client_java",
     ]
@@ -51,6 +53,8 @@ template("weblayer_java") {
     # Needed for android.webkit.WebViewDelegate.
     alternative_android_sdk_dep =
         "//third_party/android_sdk:public_framework_system_java"
+
+    android_manifest_for_lint = weblayer_client_manifest
   }
 }
 

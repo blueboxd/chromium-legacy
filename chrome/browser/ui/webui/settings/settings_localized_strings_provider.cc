@@ -19,6 +19,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -136,6 +137,12 @@ namespace {
 base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
   return base::ASCIIToUTF16(original_url +
                             "&b=" + base::SysInfo::GetLsbReleaseBoard());
+}
+
+bool IsEnterpriseManaged() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->IsEnterpriseManaged();
 }
 #endif
 
@@ -566,6 +573,15 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_EXTRA_DESCRIPTION},
       {"crostiniSharedUsbDevicesListEmptyMessage",
        IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE},
+      {"crostiniArcAdbTitle", IDS_SETTINGS_CROSTINI_ARC_ADB_TITLE},
+      {"crostiniArcAdbDescription", IDS_SETTINGS_CROSTINI_ARC_ADB_DESCRIPTION},
+      {"crostiniArcAdbLabel", IDS_SETTINGS_CROSTINI_ARC_ADB_LABEL},
+      {"crostiniArcAdbRestartButton",
+       IDS_SETTINGS_CROSTINI_ARC_ADB_RESTART_BUTTON},
+      {"crostiniArcAdbConfirmationTitleEnable",
+       IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_TITLE_ENABLE},
+      {"crostiniArcAdbConfirmationTitleDisable",
+       IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_TITLE_DISABLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -578,6 +594,16 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
                                                IDS_SETTINGS_CROSTINI_REMOVE,
                                                ui::GetChromeOSDeviceName()));
   html_source->AddString(
+      "crostiniArcAdbConfirmationMessageEnable",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_MESSAGE_ENABLE,
+          ui::GetChromeOSDeviceName()));
+  html_source->AddString(
+      "crostiniArcAdbConfirmationMessageDisable",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_MESSAGE_DISABLE,
+          ui::GetChromeOSDeviceName()));
+  html_source->AddString(
       "crostiniSharedPathsInstructionsLocate",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_LOCATE,
@@ -586,6 +612,12 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "showCrostiniExportImport",
       crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile));
+  html_source->AddBoolean("ArcAdbSideloadingSupported",
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kArcAdbSideloadingFeature));
+  html_source->AddBoolean("isOwnerProfile",
+                          chromeos::ProfileHelper::IsOwnerProfile(profile));
+  html_source->AddBoolean("isEnterpriseManaged", IsEnterpriseManaged());
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,
@@ -1670,10 +1702,7 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("isActiveDirectoryUser",
                           user && user->IsActiveDirectoryUser());
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!connector->IsEnterpriseManaged() &&
-      !user_manager->IsCurrentUserOwner()) {
+  if (!IsEnterpriseManaged() && !user_manager->IsCurrentUserOwner()) {
     html_source->AddString("ownerEmail",
                            user_manager->GetOwnerAccountId().GetUserEmail());
   }

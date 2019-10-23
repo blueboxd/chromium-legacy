@@ -38,6 +38,11 @@ void AppShortcutManager::SetSubsystems(AppRegistrar* registrar) {
   registrar_ = registrar;
 }
 
+void AppShortcutManager::Shutdown() {
+  for (auto& observer : observers_)
+    observer.OnShortcutManagerDestroyed();
+}
+
 void AppShortcutManager::AddObserver(AppShortcutObserver* observer) {
   observers_.AddObserver(observer);
 }

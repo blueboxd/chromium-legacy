@@ -100,7 +100,6 @@ FormData* FormData::Create(HTMLFormElement* form,
                            ExceptionState& exception_state) {
   FormData* form_data = form->ConstructEntryList(nullptr, UTF8Encoding());
   if (!form_data) {
-    DCHECK(RuntimeEnabledFeatures::FormDataEventEnabled());
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The form is constructing entry list.");
     return nullptr;

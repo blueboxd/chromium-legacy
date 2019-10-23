@@ -8,21 +8,14 @@
 
      In the new layout, we display security level information with URL like in
      CCT header. Always visible. -->
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/ephemeral_tab_caption_view"
     android:orientation="horizontal"
     android:gravity="center"
     style="@style/ContextualSearchTextViewLayout" >
-    <org.chromium.ui.widget.ChromeImageView
-        android:id="@+id/security_icon"
-        android:layout_width="@dimen/preview_tab_security_icon_size"
-        android:layout_height="@dimen/preview_tab_security_icon_size"
-        android:layout_marginStart="4dp"
-        android:visibility="gone"
-        app:tint="@color/default_icon_color" />
     <TextView
         android:id="@+id/ephemeral_tab_caption"
         style="@style/ContextualSearchCaptionTextView" />
-</LinearLayout>
+</FrameLayout>

@@ -20,6 +20,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
 
@@ -56,8 +57,11 @@ void BinaryUploadService::UploadForDeepScanning(
   active_requests_[raw_request] = std::move(request);
 
   if (!binary_fcm_service_) {
-    FinishRequest(raw_request, Result::FAILED_TO_GET_TOKEN,
-                  DeepScanningClientResponse());
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&BinaryUploadService::FinishRequest,
+                                  weakptr_factory_.GetWeakPtr(), raw_request,
+                                  Result::FAILED_TO_GET_TOKEN,
+                                  DeepScanningClientResponse()));
     return;
   }
 

@@ -336,11 +336,15 @@ blink::WebDeviceEmulationParams EmulationHandler::GetDeviceEmulationParams() {
 void EmulationHandler::SetDeviceEmulationParams(
     const blink::WebDeviceEmulationParams& params) {
   bool enabled = params != blink::WebDeviceEmulationParams();
-  if (params != device_emulation_params_) {
-    device_emulation_enabled_ = enabled;
-    device_emulation_params_ = params;
-    UpdateDeviceEmulationState();
-  }
+  bool enable_changed = enabled != device_emulation_enabled_;
+  bool params_changed = params != device_emulation_params_;
+  if (!device_emulation_enabled_ && !enable_changed)
+    return;  // Still disabled.
+  if (!enable_changed && !params_changed)
+    return;  // Nothing changed.
+  device_emulation_enabled_ = enabled;
+  device_emulation_params_ = params;
+  UpdateDeviceEmulationState();
 }
 
 WebContentsImpl* EmulationHandler::GetWebContents() {

@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer;
 
+import androidx.annotation.NonNull;
+
 /**
  * Informed of interesting events that happen during the lifetime of NavigationController. This
  * interface is only notified of main frame navigations.
@@ -37,14 +39,14 @@ public abstract class NavigationObserver {
      *
      * @param navigation the unique object for this navigation.
      */
-    public void navigationStarted(Navigation navigation) {}
+    public void navigationStarted(@NonNull Navigation navigation) {}
 
     /**
      * Called when a navigation encountered a server redirect.
      *
      * @param navigation the unique object for this navigation.
      */
-    public void navigationRedirected(Navigation navigation) {}
+    public void navigationRedirected(@NonNull Navigation navigation) {}
 
     /**
      * Called when the navigation is ready to be committed in a renderer. A navigation is considered
@@ -59,7 +61,7 @@ public abstract class NavigationObserver {
      *
      * @param navigation the unique object for this navigation.
      */
-    public void navigationCommitted(Navigation navigation) {}
+    public void navigationCommitted(@NonNull Navigation navigation) {}
 
     /**
      * Called when a navigation completes successfully in the BrowserController.
@@ -77,7 +79,7 @@ public abstract class NavigationObserver {
      *
      * @param navigation the unique object for this navigation.
      */
-    public void navigationCompleted(Navigation navigation) {}
+    public void navigationCompleted(@NonNull Navigation navigation) {}
 
     /**
      * Called when a navigation aborts in the BrowserController.
@@ -87,7 +89,7 @@ public abstract class NavigationObserver {
      *
      * @param navigation the unique object for this navigation.
      */
-    public void navigationFailed(Navigation navigation) {}
+    public void navigationFailed(@NonNull Navigation navigation) {}
 
     /**
      * This is fired after each navigation has completed to indicate that the first paint after a

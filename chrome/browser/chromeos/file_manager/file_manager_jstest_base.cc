@@ -42,9 +42,10 @@ class TestFilesDataSource : public content::URLDataSource {
   std::string GetSource() override { return "file_manager_test"; }
 
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override {
+    const std::string path = content::URLDataSource::URLToRequestPath(url);
     base::PostTask(FROM_HERE,
                    {base::ThreadPool(), base::MayBlock(),
                     base::TaskPriority::USER_BLOCKING},

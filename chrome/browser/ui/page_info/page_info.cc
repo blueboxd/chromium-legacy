@@ -343,6 +343,7 @@ PageInfo::PageInfo(
       did_revoke_user_ssl_decisions_(false),
       profile_(profile),
       security_level_(security_state::NONE),
+      visible_security_state_for_metrics_(visible_security_state),
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       password_protection_service_(
           safe_browsing::ChromePasswordProtectionService::
@@ -390,6 +391,11 @@ PageInfo::~PageInfo() {
                                                 safety_tip_info_.status),
       base::TimeTicks::Now() - start_time_,
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
+  base::UmaHistogramCustomTimes(
+      security_state::GetLegacyTLSHistogramName(
+          kPageInfoTimePrefix, visible_security_state_for_metrics_),
+      base::TimeTicks::Now() - start_time_,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
 
   if (did_perform_action_) {
     base::UmaHistogramCustomTimes(
@@ -401,6 +407,12 @@ PageInfo::~PageInfo() {
     base::UmaHistogramCustomTimes(
         security_state::GetSafetyTipHistogramName(kPageInfoTimeActionPrefix,
                                                   safety_tip_info_.status),
+        base::TimeTicks::Now() - start_time_,
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
+        100);
+    base::UmaHistogramCustomTimes(
+        security_state::GetLegacyTLSHistogramName(
+            kPageInfoTimeActionPrefix, visible_security_state_for_metrics_),
         base::TimeTicks::Now() - start_time_,
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
@@ -417,12 +429,19 @@ PageInfo::~PageInfo() {
         base::TimeTicks::Now() - start_time_,
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
+    base::UmaHistogramCustomTimes(
+        security_state::GetLegacyTLSHistogramName(
+            kPageInfoTimeNoActionPrefix, visible_security_state_for_metrics_),
+        base::TimeTicks::Now() - start_time_,
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
+        100);
   }
 }
 
 void PageInfo::UpdateSecurityState(
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state) {
+  visible_security_state_for_metrics_ = visible_security_state;
   ComputeUIInputs(site_url_, security_level, visible_security_state);
   PresentSiteIdentity();
 }
@@ -437,6 +456,11 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
       security_state::GetSafetyTipHistogramName(
           "Security.SafetyTips.PageInfo.Action", safety_tip_info_.status),
       action, PAGE_INFO_COUNT);
+
+  base::UmaHistogramEnumeration(security_state::GetLegacyTLSHistogramName(
+                                    "Security.LegacyTLS.PageInfo.Action",
+                                    visible_security_state_for_metrics_),
+                                action, PAGE_INFO_COUNT);
 
   std::string histogram_name;
   if (site_url_.SchemeIsCryptographic()) {

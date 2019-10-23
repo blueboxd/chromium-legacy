@@ -41,7 +41,6 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 #include "components/prefs/testing_pref_service.h"

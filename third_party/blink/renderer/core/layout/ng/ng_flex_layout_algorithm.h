@@ -50,6 +50,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   NGConstraintSpace BuildConstraintSpaceForDeterminingFlexBasis(
       const NGBlockNode& flex_item) const;
   void ConstructAndAppendFlexItems();
+  void ApplyStretchAlignmentToChild(FlexItem& flex_item);
   void GiveLinesAndItemsFinalPositionAndSize();
   // This is same method as FlexItem but we need that logic before FlexItem is
   // constructed.

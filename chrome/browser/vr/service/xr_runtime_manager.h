@@ -76,7 +76,18 @@ class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   bool HasRuntime(device::mojom::XRDeviceId id);
   BrowserXRRuntime* GetRuntimeForOptions(
       device::mojom::XRSessionOptions* options);
-  BrowserXRRuntime* GetImmersiveRuntime();
+
+  // Gets the system default immersive-vr runtime if available.
+  BrowserXRRuntime* GetImmersiveVrRuntime();
+
+  // Gets the system default immersive-ar runtime if available.
+  BrowserXRRuntime* GetImmersiveArRuntime();
+
+  // Gets the runtime matching a currently-active immersive session, if any.
+  // This is either the VR or AR runtime, or null if there's no matching
+  // runtime or if there's no active immersive session.
+  BrowserXRRuntime* GetCurrentlyPresentingImmersiveRuntime();
+
   device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo(
       VRServiceImpl* service);
 

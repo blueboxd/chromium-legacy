@@ -2,8 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {$, hasKeyModifiers, isRTL} from 'chrome://resources/js/util.m.js';
+
+import {BrowserApi} from './browser_api.js';
+import {ContentController, InkController, MessageData, PluginController, PrintPreviewParams} from './controller.js';
 import {Bookmark} from './elements/viewer-bookmark.js';
 import {FitToChangedEvent} from './elements/viewer-zoom-toolbar.js';
+import {GestureDetector} from './gesture_detector.js';
+import {PDFMetrics} from './metrics.js';
+import {NavigatorDelegate, PdfNavigator} from './navigator.js';
+import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
+import {FittingType} from './pdf_fitting_type.js';
+import {ToolbarManager} from './toolbar_manager.js';
+import {LayoutOptions, Point, Viewport} from './viewport.js';
+import {ViewportScroller} from './viewport_scroller.js';
+import {ZoomManager} from './zoom_manager.js';
 
 /**
  * @typedef {{
@@ -1489,8 +1506,8 @@ export class PDFViewer {
   }
 }
 
-// Export PDFViewer on |window| such that scripts injected from
-// pdf_extension_test.cc can access it.
+// Export on |window| such that scripts injected from pdf_extension_test.cc can
+// access it.
 window.PDFViewer = PDFViewer;
 
 /**

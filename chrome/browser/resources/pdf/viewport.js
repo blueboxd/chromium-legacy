@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
+
+import {FittingType} from './pdf_fitting_type.js';
+import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
+
 /**
  * @typedef {{
  *   width: number,
@@ -13,13 +20,13 @@
 let DocumentDimensions;
 
 /** @typedef {{defaultPageOrientation: number}} */
-let LayoutOptions;
+export let LayoutOptions;
 
 /** @typedef {{x: number, y: number}} */
-let Point;
+export let Point;
 
 /** @typedef {{x: (number|undefined), y: (number|undefined)}} */
-let PartialPoint;
+export let PartialPoint;
 
 /** @typedef {{width: number, height: number}} */
 let Size;
@@ -77,7 +84,7 @@ function frameToPluginCoordinate(coordinateInFrame) {
   };
 }
 
-class Viewport {
+export class Viewport {
   /**
    * @param {!Window} window
    * @param {!HTMLDivElement} sizer The element which represents the size of the

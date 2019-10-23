@@ -491,9 +491,9 @@ UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
       blocking_task_runner_(UsbService::CreateBlockingTaskRunner()) {
   DCHECK(!composite);
   // Windows only supports configuration 1, which therefore must be active.
-  DCHECK(device_->active_configuration());
+  DCHECK(device_->GetActiveConfiguration());
 
-  for (const auto& interface : device_->active_configuration()->interfaces) {
+  for (const auto& interface : device_->GetActiveConfiguration()->interfaces) {
     for (const auto& alternate : interface->alternates) {
       if (alternate->alternate_setting != 0)
         continue;

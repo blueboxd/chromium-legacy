@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
+#include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
 
 namespace sandbox {
@@ -39,7 +41,7 @@ class ProcessMitigationsWin32KDispatcher : public Dispatcher {
   ~ProcessMitigationsWin32KDispatcher() override;
 
   // Dispatcher interface.
-  bool SetupService(InterceptionManager* manager, int service) override;
+  bool SetupService(InterceptionManager* manager, IpcTag service) override;
 
   bool EnumDisplayMonitors(IPCInfo* ipc, CountedBuffer* buffer);
   bool GetMonitorInfo(IPCInfo* ipc, void* monitor, CountedBuffer* buffer);

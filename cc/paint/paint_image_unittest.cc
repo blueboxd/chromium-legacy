@@ -150,8 +150,10 @@ TEST(PaintImageTest, DecodeToYuv420NoAlpha) {
   ASSERT_TRUE(image.IsYuv(&image_yuv_size_info, image_plane_indices));
   ASSERT_EQ(yuva_size_info, image_yuv_size_info);
 
+  SkYUVAIndex plane_indices[SkYUVAIndex::kIndexCount];
   image.DecodeYuv(planes, 1u /* frame_index */,
-                  PaintImage::kDefaultGeneratorClientId, yuva_size_info);
+                  PaintImage::kDefaultGeneratorClientId, yuva_size_info,
+                  plane_indices);
   ASSERT_EQ(yuv_generator->frames_decoded().size(), 1u);
   EXPECT_EQ(yuv_generator->frames_decoded().count(1u), 1u);
   yuv_generator->reset_frames_decoded();

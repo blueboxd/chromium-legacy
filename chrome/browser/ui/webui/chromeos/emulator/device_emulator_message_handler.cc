@@ -51,17 +51,6 @@ const char kUpdatePowerSourceId[] = "updatePowerSourceId";
 const char kSetHasTouchpad[] = "setHasTouchpad";
 const char kSetHasMouse[] = "setHasMouse";
 
-// Define callback functions that will update the JavaScript variable
-// and the web UI.
-const char kUpdateAudioNodes[] =
-    "device_emulator.audioSettings.updateAudioNodes";
-const char kUpdatePowerPropertiesJSCallback[] =
-    "device_emulator.batterySettings.updatePowerProperties";
-const char kTouchpadExistsCallback[] =
-    "device_emulator.inputDeviceSettings.setTouchpadExists";
-const char kMouseExistsCallback[] =
-    "device_emulator.inputDeviceSettings.setMouseExists";
-
 const char kPairedPropertyName[] = "Paired";
 
 // Wattages to use as max power for power sources.
@@ -178,8 +167,7 @@ void DeviceEmulatorMessageHandler::PowerObserver::PowerChanged(
   power_properties.SetString("external_power_source_id",
                              proto.external_power_source_id());
 
-  owner_->web_ui()->CallJavascriptFunctionUnsafe(
-      kUpdatePowerPropertiesJSCallback, power_properties);
+  owner_->FireWebUIListener("power-properties-updated", power_properties);
 }
 
 DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
@@ -290,6 +278,9 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
 
 void DeviceEmulatorMessageHandler::HandleRequestAudioNodes(
     const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value& callback_id = args->GetList()[0];
+
   // Get every active audio node and create a dictionary to
   // send it to JavaScript.
   base::ListValue audio_nodes;
@@ -307,7 +298,8 @@ void DeviceEmulatorMessageHandler::HandleRequestAudioNodes(
 
     audio_nodes.Append(std::move(audio_node));
   }
-  web_ui()->CallJavascriptFunctionUnsafe(kUpdateAudioNodes, audio_nodes);
+
+  ResolveJavascriptCallback(callback_id, audio_nodes);
 }
 
 void DeviceEmulatorMessageHandler::HandleInsertAudioNode(
@@ -650,15 +642,13 @@ void DeviceEmulatorMessageHandler::ConnectToBluetoothDevice(
 void DeviceEmulatorMessageHandler::TouchpadExists(bool exists) {
   if (!IsJavascriptAllowed())
     return;
-  web_ui()->CallJavascriptFunctionUnsafe(kTouchpadExistsCallback,
-                                         base::Value(exists));
+  FireWebUIListener("touchpad-exists-changed", base::Value(exists));
 }
 
 void DeviceEmulatorMessageHandler::MouseExists(bool exists) {
   if (!IsJavascriptAllowed())
     return;
-  web_ui()->CallJavascriptFunctionUnsafe(kMouseExistsCallback,
-                                         base::Value(exists));
+  FireWebUIListener("mouse-exists-changed", base::Value(exists));
 }
 
 }  // namespace chromeos

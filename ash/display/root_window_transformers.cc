@@ -310,7 +310,7 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
   }
   gfx::Insets GetHostInsets() const override { return gfx::Insets(); }
   gfx::Transform GetInsetsAndScaleTransform() const override {
-    return gfx::Transform();
+    return transform_;
   }
 
  private:

@@ -870,6 +870,16 @@ if (is_android) {
   }
 }
 
+fuzzer_test("color_analysis_fuzzer") {
+  sources = [
+    "color_analysis_fuzzer.cc",
+  ]
+
+  deps = [
+    ":gfx",
+  ]
+}
+
 fuzzer_test("color_transform_fuzzer") {
   sources = [
     "color_transform_fuzzer.cc",

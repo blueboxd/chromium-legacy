@@ -5,11 +5,14 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.FileProvider;
 import android.webkit.ValueCallback;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.UsedByReflection;
@@ -27,6 +30,8 @@ import org.chromium.weblayer_private.aidl.IWebLayer;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 import org.chromium.weblayer_private.aidl.WebLayerVersion;
 
+import java.io.File;
+
 @UsedByReflection("WebLayer")
 public final class WebLayerImpl extends IWebLayer.Stub {
     // TODO: should there be one tag for all this code?
@@ -36,6 +41,17 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
 
     private final ProfileManager mProfileManager = new ProfileManager();
+
+    private static class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
+        // Keep this variable in sync with the value defined in AndroidManifest.xml.
+        private static final String API_AUTHORITY = "org.chromium.weblayer.client.FileProvider";
+
+        @Override
+        public Uri getContentUriFromFile(File file) {
+            Context appContext = ContextUtils.getApplicationContext();
+            return FileProvider.getUriForFile(appContext, API_AUTHORITY, file);
+        }
+    }
 
     @UsedByReflection("WebLayer")
     public static IBinder create() {
@@ -78,6 +94,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         }
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
+        ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
 
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBLAYER);
 

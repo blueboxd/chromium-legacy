@@ -68,10 +68,10 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
     return parent_->GetMimeType(path);
   }
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const WebContents::Getter& wc_getter,
       const URLDataSource::GotDataCallback& callback) override {
-    return parent_->StartDataRequest(path, wc_getter, callback);
+    return parent_->StartDataRequest(url, wc_getter, callback);
   }
   bool ShouldReplaceExistingSource() override {
     return parent_->replace_existing_source_;
@@ -273,9 +273,10 @@ std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
 }
 
 void WebUIDataSourceImpl::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const WebContents::Getter& wc_getter,
     const URLDataSource::GotDataCallback& callback) {
+  const std::string path = URLDataSource::URLToRequestPath(url);
   if (!should_handle_request_callback_.is_null() &&
       should_handle_request_callback_.Run(path)) {
     filter_callback_.Run(path, callback);

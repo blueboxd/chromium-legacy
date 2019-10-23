@@ -130,7 +130,7 @@ bool DeviceImpl::HasControlTransferPermission(
     return true;
   }
 
-  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
+  const mojom::UsbConfigurationInfo* config = device_->GetActiveConfiguration();
   if (!config)
     return false;
 
@@ -218,7 +218,7 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
     return;
   }
 
-  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
+  const mojom::UsbConfigurationInfo* config = device_->GetActiveConfiguration();
   if (!config) {
     std::move(callback).Run(false);
     return;

@@ -305,4 +305,9 @@ const base::Feature kZeroSuggestionsOnSERP{"OmniboxZeroSuggestionsOnSERP",
 const base::Feature kOnDeviceHeadProvider{"OmniboxOnDeviceHeadProvider",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, shows a confirm dialog before removing search suggestions from
+// the omnibox. See ConfirmNtpSuggestionRemovals for the NTP equivalent.
+const base::Feature kConfirmOmniboxSuggestionRemovals{
+    "ConfirmOmniboxSuggestionRemovals", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox

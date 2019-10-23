@@ -122,9 +122,11 @@ void VideoFrameFileWriter::ProcessVideoFrameTask(
   // Create VideoFrameMapper if not yet created. The decoder's output pixel
   // format is not known yet when creating the VideoFrameWriter. We can only
   // create the VideoFrameMapper upon receiving the first video frame.
-  if (!video_frame_mapper_) {
-    video_frame_mapper_ =
-        VideoFrameMapperFactory::CreateMapper(video_frame->format());
+  if ((video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
+       video_frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) &&
+      !video_frame_mapper_) {
+    video_frame_mapper_ = VideoFrameMapperFactory::CreateMapper(
+        video_frame->format(), video_frame->storage_type());
     LOG_ASSERT(video_frame_mapper_) << "Failed to create VideoFrameMapper";
   }
 #endif
@@ -151,8 +153,12 @@ void VideoFrameFileWriter::WriteVideoFramePNG(
 
   auto mapped_frame = video_frame;
 #if defined(OS_CHROMEOS)
-  if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS)
+  if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
+      video_frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    DCHECK(video_frame_mapper_);
     mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
+  }
+
 #endif
 
   if (!mapped_frame) {
@@ -193,8 +199,11 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
 
   auto mapped_frame = video_frame;
 #if defined(OS_CHROMEOS)
-  if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS)
+  if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
+      video_frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    DCHECK(video_frame_mapper_);
     mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
+  }
 #endif
 
   if (!mapped_frame) {

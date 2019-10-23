@@ -197,6 +197,7 @@ ClientView* DialogDelegate::CreateClientView(Widget* widget) {
 NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
   if (use_custom_frame())
     return CreateDialogFrameView(widget);
+
   return WidgetDelegate::CreateNonClientFrameView(widget);
 }
 
@@ -235,6 +236,15 @@ DialogClientView* DialogDelegate::GetDialogClientView() {
   if (!GetWidget())
     return nullptr;
   return GetWidget()->client_view()->AsDialogClientView();
+}
+
+BubbleFrameView* DialogDelegate::GetBubbleFrameView() const {
+  if (!use_custom_frame())
+    return nullptr;
+
+  const NonClientView* view =
+      GetWidget() ? GetWidget()->non_client_view() : nullptr;
+  return view ? static_cast<BubbleFrameView*>(view->frame_view()) : nullptr;
 }
 
 views::LabelButton* DialogDelegate::GetOkButton() {

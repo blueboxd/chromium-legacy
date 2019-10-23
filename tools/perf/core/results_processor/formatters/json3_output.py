@@ -9,6 +9,7 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/testing/json_test_r
 """
 
 import collections
+import datetime
 import json
 import os
 import urllib
@@ -19,18 +20,18 @@ from core.results_processor import util
 OUTPUT_FILENAME = 'test-results.json'
 
 
-def ProcessIntermediateResults(intermediate_results, options):
+def ProcessIntermediateResults(test_results, options):
   """Process intermediate results and write output in output_dir."""
-  results = Convert(intermediate_results, options.output_dir)
+  results = Convert(test_results, options.output_dir)
   with open(os.path.join(options.output_dir, OUTPUT_FILENAME), 'w') as f:
     json.dump(results, f, sort_keys=True, indent=4, separators=(',', ': '))
 
 
-def Convert(in_results, base_dir):
+def Convert(test_results, base_dir):
   """Convert intermediate results to the JSON Test Results Format.
 
   Args:
-    in_results: The parsed intermediate results.
+    test_results: The parsed intermediate results.
     base_dir: A string with the path to a base directory; artifact file paths
       will be written relative to this.
 
@@ -40,7 +41,7 @@ def Convert(in_results, base_dir):
   results = {'tests': {}}
   status_counter = collections.Counter()
 
-  for result in in_results['testResults']:
+  for result in test_results:
     benchmark_name, story_name = result['testPath'].split('/')
     story_name = urllib.unquote(story_name)
     actual_status = result['status']
@@ -77,10 +78,17 @@ def Convert(in_results, base_dir):
       if test['shard'] is None:
         del test['shard']
 
-  benchmark_run = in_results['benchmarkRun']
+  # Test results are written in order of execution, so the first test start
+  # time is approximately the start time of the whole suite.
+  test_suite_start_time = (test_results[0]['startTime'] if test_results
+                           else datetime.datetime.utcnow().isoformat() + 'Z')
+  # If Telemetry stops with a unhandleable error, then remaining stories
+  # are marked as unexpectedly skipped.
+  interrupted = any(t['status'] == 'SKIP' and not t['isExpected']
+                    for t in test_results)
   results.update(
-      seconds_since_epoch=util.IsoTimestampToEpoch(benchmark_run['startTime']),
-      interrupted=benchmark_run['interrupted'],
+      seconds_since_epoch=util.IsoTimestampToEpoch(test_suite_start_time),
+      interrupted=interrupted,
       num_failures_by_type=dict(status_counter),
       path_delimiter='/',
       version=3,

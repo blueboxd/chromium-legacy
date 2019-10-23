@@ -164,6 +164,16 @@ void TestURLRequestContext::Init() {
   }
 }
 
+std::unique_ptr<URLRequest> TestURLRequestContext::CreateFirstPartyRequest(
+    const GURL& url,
+    RequestPriority priority,
+    URLRequest::Delegate* delegate,
+    NetworkTrafficAnnotationTag traffic_annotation) const {
+  auto req = CreateRequest(url, priority, delegate, traffic_annotation);
+  req->set_site_for_cookies(url);
+  return req;
+}
+
 TestURLRequestContextGetter::TestURLRequestContextGetter(
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
     : network_task_runner_(network_task_runner) {

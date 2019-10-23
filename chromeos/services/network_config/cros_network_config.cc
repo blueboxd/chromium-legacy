@@ -992,6 +992,7 @@ mojom::ManagedEAPPropertiesPtr GetManagedEAPProperties(const base::Value* dict,
   eap->identity = GetManagedString(eap_dict, ::onc::eap::kIdentity);
   eap->inner = GetManagedString(eap_dict, ::onc::eap::kInner);
   eap->outer = GetManagedString(eap_dict, ::onc::eap::kOuter);
+  eap->password = GetManagedString(eap_dict, ::onc::eap::kPassword);
   eap->save_credentials =
       GetManagedBoolean(eap_dict, ::onc::eap::kSaveCredentials);
   eap->server_ca_pems =
@@ -1096,6 +1097,7 @@ mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
       GetManagedString(openvpn_dict, ::onc::openvpn::kKeyDirection);
   openvpn->ns_cert_type =
       GetManagedString(openvpn_dict, ::onc::openvpn::kNsCertType);
+  openvpn->password = GetManagedString(openvpn_dict, ::onc::openvpn::kPassword);
   openvpn->port = GetManagedInt32(openvpn_dict, ::onc::openvpn::kPort);
   openvpn->proto = GetManagedString(openvpn_dict, ::onc::openvpn::kProto);
   openvpn->push_peer_info =
@@ -1397,6 +1399,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->hex_ssid = GetManagedString(wifi_dict, ::onc::wifi::kHexSSID);
       wifi->hidden_ssid =
           GetManagedBoolean(wifi_dict, ::onc::wifi::kHiddenSSID);
+      wifi->passphrase = GetManagedString(wifi_dict, ::onc::wifi::kPassphrase);
       wifi->roam_threshold =
           GetManagedInt32(wifi_dict, ::onc::wifi::kRoamThreshold);
       wifi->ssid = GetRequiredManagedString(wifi_dict, ::onc::wifi::kSSID);

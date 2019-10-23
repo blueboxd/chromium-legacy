@@ -49,9 +49,11 @@ bool TerminalSource::AllowCaching() {
 #endif
 
 void TerminalSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   // Reparse path to strip any query or fragment, skip first '/' in path.
   std::string reparsed =
       GURL(chrome::kChromeUITerminalURL + path).path().substr(1);

@@ -65,6 +65,11 @@ class TestAutofillClient : public AutofillClient {
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  void ShowVerifyPendingDialog(
+      base::OnceClosure cancel_card_verification_callback) override;
+  void CloseVerifyPendingDialog() override;
+#endif
   void ShowWebauthnOfferDialog(WebauthnOfferDialogCallback callback) override;
   bool CloseWebauthnOfferDialog() override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,

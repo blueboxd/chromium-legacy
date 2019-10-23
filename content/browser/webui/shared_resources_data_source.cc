@@ -50,9 +50,6 @@ const char kPolymerHtml[] = "polymer/v1_0/polymer/polymer.html";
 const char kPolymerJs[] = "polymer/v1_0/polymer/polymer-extracted.js";
 const char kPolymer2Html[] = "polymer/v1_0/polymer2/polymer.html";
 const char kPolymer2Js[] = "polymer/v1_0/polymer2/polymer-extracted.js";
-const char kHtmlImportsJs[] = "polymer/v1_0/html-imports/html-imports.min.js";
-const char kHtmlImportsV0Js[] =
-    "polymer/v1_0/html-imports-v0/html-imports.min.js";
 
 // Utility for determining if both Polymer 1 and Polymer 2 are needed.
 bool UsingMultiplePolymerVersions() {
@@ -191,11 +188,7 @@ bool ShouldIgnore(std::string resource) {
   if (base::StartsWith(
           resource,
           "../../../third_party/polymer/v1_0/components-chromium/polymer/",
-          base::CompareCase::SENSITIVE) ||
-      base::StartsWith(resource,
-                       "../../../third_party/polymer/v1_0/components-chromium/"
-                       "html-imports-v0/",
-                       base::CompareCase::SENSITIVE)) {
+          base::CompareCase::SENSITIVE)) {
     return true;
   }
 
@@ -294,22 +287,18 @@ std::string SharedResourcesDataSource::GetSource() {
 }
 
 void SharedResourcesDataSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const WebContents::Getter& wc_getter,
     const URLDataSource::GotDataCallback& callback) {
+  const std::string path = URLDataSource::URLToRequestPath(url);
   std::string updated_path = path;
 #if defined(OS_CHROMEOS)
   // If this is a Polymer request and multiple Polymer versions are enabled,
   // return the Polymer 2 path unless the request is from the
   // |disabled_polymer2_host_|.
-  if ((path == kPolymerHtml || path == kPolymerJs || path == kHtmlImportsJs) &&
-      UsingMultiplePolymerVersions()) {
-    bool polymer2 = !IsPolymer2DisabledForPage(wc_getter);
-    if (polymer2 && (path == kPolymerHtml || path == kPolymerJs)) {
-      updated_path = path == kPolymerHtml ? kPolymer2Html : kPolymer2Js;
-    } else if (!polymer2 && path == kHtmlImportsJs) {
-      updated_path = kHtmlImportsV0Js;
-    }
+  if ((path == kPolymerHtml || path == kPolymerJs) &&
+      UsingMultiplePolymerVersions() && !IsPolymer2DisabledForPage(wc_getter)) {
+    updated_path = path == kPolymerHtml ? kPolymer2Html : kPolymer2Js;
   }
 #endif  // defined(OS_CHROMEOS)
 

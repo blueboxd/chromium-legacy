@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -33,11 +34,16 @@ const base::Feature kNavigationPredictorPreconnectHoldback {
 #endif
 };
 
+// Experiment with which event triggers the preconnect after commit.
+const base::Feature kPreconnectOnDidFinishNavigation{
+    "PreconnectOnDidFinishNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace
 
 NavigationPredictorPreconnectClient::NavigationPredictorPreconnectClient(
     content::WebContents* web_contents)
-    : browser_context_(web_contents->GetBrowserContext()),
+    : content::WebContentsObserver(web_contents),
+      browser_context_(web_contents->GetBrowserContext()),
       current_visibility_(web_contents->GetVisibility()) {}
 
 NavigationPredictorPreconnectClient::~NavigationPredictorPreconnectClient() =
@@ -51,6 +57,20 @@ void NavigationPredictorPreconnectClient::DidFinishNavigation(
 
   // New page, so stop the preconnect timer.
   timer_.Stop();
+
+  if (base::FeatureList::IsEnabled(kPreconnectOnDidFinishNavigation)) {
+    int delay_ms = base::GetFieldTrialParamByFeatureAsInt(
+        kPreconnectOnDidFinishNavigation, "delay_after_commit_in_ms", 3000);
+    if (delay_ms <= 0) {
+      MaybePreconnectNow();
+      return;
+    }
+
+    timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
+        base::BindOnce(&NavigationPredictorPreconnectClient::MaybePreconnectNow,
+                       base::Unretained(this)));
+  }
 }
 
 void NavigationPredictorPreconnectClient::OnVisibilityChanged(

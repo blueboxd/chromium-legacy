@@ -306,9 +306,21 @@ class AutofillClient : public RiskDataLoader {
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) = 0;
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Will show a dialog indicating the card verification is in progress. It is
+  // shown after verification starts only if the WebAuthn is enabled.
+  // Implemented only on desktop.
+  virtual void ShowVerifyPendingDialog(
+      base::OnceClosure cancel_card_verification_callback) = 0;
+
+  // Close the verify pending dialog once the card verificiation is completed or
+  // verification falls back to CVC.
+  virtual void CloseVerifyPendingDialog() = 0;
+#endif
+
   // Will show a dialog offering the option to use device's platform
   // authenticator in the future instead of CVC to verify the card being
-  // unmasked. Runs |callback| is the OK button or the cancel button in the
+  // unmasked. Runs |callback| if the OK button or the cancel button in the
   // dialog is clicked. This is only implemented on desktop.
   virtual void ShowWebauthnOfferDialog(
       WebauthnOfferDialogCallback callback) = 0;

@@ -26,6 +26,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
+#include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -50,6 +51,10 @@ class SequencedTaskRunner;
 
 namespace identity {
 class IdentityService;
+}
+
+namespace image_annotation {
+class ImageAnnotationService;
 }
 
 namespace policy {
@@ -166,6 +171,8 @@ class ProfileImpl : public Profile {
   bool ShouldRestoreOldSessionCookies() override;
   bool ShouldPersistSessionCookies() override;
   identity::mojom::IdentityService* GetIdentityService() override;
+  image_annotation::mojom::ImageAnnotationService* GetImageAnnotationService()
+      override;
 
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) override;
@@ -174,6 +181,13 @@ class ProfileImpl : public Profile {
 #endif  // defined(OS_CHROMEOS)
 
   void SetCreationTimeForTesting(base::Time creation_time) override;
+
+  // Overrides how the ImageAnnotationService service instance is bound in a
+  // testing environment. If |binder| is null, any existing override is removed.
+  using ImageAnnotationServiceBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<image_annotation::mojom::ImageAnnotationService>)>;
+  static void OverrideImageAnnotationServiceBinderForTesting(
+      ImageAnnotationServiceBinder binder);
 
  private:
 #if defined(OS_CHROMEOS)
@@ -246,6 +260,12 @@ class ProfileImpl : public Profile {
   // A Mojo connection to the above service instance. Exposed to clients via
   // |GetIdentityService()|.
   mojo::Remote<identity::mojom::IdentityService> remote_identity_service_;
+
+  // The Image Annotation service instance for this profile.
+  std::unique_ptr<image_annotation::ImageAnnotationService>
+      image_annotation_service_impl_;
+  mojo::Remote<image_annotation::mojom::ImageAnnotationService>
+      remote_image_annotation_service_;
 
   // !!! BIG HONKING WARNING !!!
   //  The order of the members below is important. Do not change it unless

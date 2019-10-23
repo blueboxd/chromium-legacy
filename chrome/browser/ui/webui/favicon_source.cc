@@ -75,9 +75,10 @@ std::string FaviconSource::GetSource() {
 }
 
 void FaviconSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::EXPLICIT_ACCESS);

@@ -281,6 +281,13 @@ class SignedExchangeRequestHandlerBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
+#if defined(OS_CHROMEOS)
+  // https://crbug.com/1016865 tracks the test failures on CrOS that are only
+  // happening in the mode special-cased below.
+  if (UsePrefetch() && SXGPrefetchCacheIsEnabled())
+    return;
+#endif
+
   InstallMockCert();
   InstallMockCertChainInterceptor();
 
@@ -355,6 +362,13 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, VariantMatch) {
+#if defined(OS_CHROMEOS)
+  // https://crbug.com/1016865 tracks the test failures on CrOS that are only
+  // happening in the mode special-cased below.
+  if (UsePrefetch() && SXGPrefetchCacheIsEnabled())
+    return;
+#endif
+
   if (!SetAcceptLangs("en-US,fr"))
     return;
   InstallUrlInterceptor(

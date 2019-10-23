@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "base/base64.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -231,12 +230,7 @@ bool OSCrypt::Init(PrefService* local_state) {
 void OSCrypt::SetRawEncryptionKey(const std::string& raw_key) {
   DCHECK(!g_use_mock_key) << "Mock key in use.";
   DCHECK(!raw_key.empty()) << "Bad key.";
-#if DCHECK_IS_ON()
-  if (!GetEncryptionKeyFactory().empty()) {
-    DCHECK_EQ(raw_key, GetEncryptionKeyFactory())
-        << "Different key already set.";
-  }
-#endif
+  DCHECK(GetEncryptionKeyFactory().empty()) << "Key already set.";
   GetEncryptionKeyFactory().assign(raw_key);
 }
 

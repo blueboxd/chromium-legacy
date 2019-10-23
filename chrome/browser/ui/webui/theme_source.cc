@@ -82,9 +82,11 @@ std::string ThemeSource::GetSource() {
 }
 
 void ThemeSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   // Default scale factor if not specified.
   float scale = 1.0f;
   // All frames by default if not specified.

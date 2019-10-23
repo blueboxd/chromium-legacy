@@ -164,14 +164,14 @@ download the tools manually ([tools link]).
 
 ### Step 1 Build
 In Chromium, to compile code with coverage enabled, one needs to add
-`use_clang_coverage=true` and `is_component_build=false` GN flags to the args.gn
-file in the build output directory. Under the hood, they ensure
-`-fprofile-instr-generate` and `-fcoverage-mapping` flags are passed to the
-compiler.
+`use_clang_coverage=true`, `is_component_build=false` and `is_debug=false` GN
+flags to the args.gn file in the build output directory. Under the hood, they
+ensure `-fprofile-instr-generate` and `-fcoverage-mapping` flags are passed to
+the compiler.
 
 ```
 $ gn gen out/coverage \
-    --args='use_clang_coverage=true is_component_build=false'
+    --args='use_clang_coverage=true is_component_build=false is_debug=false'
 $ gclient runhooks
 $ autoninja -C out/coverage crypto_unittests url_unittests
 ```
@@ -322,10 +322,7 @@ only reports generated on Linux and CrOS are available on the
 
 ### Is coverage reported for the code executed inside the sandbox?
 
-Not at the moment until [crbug.com/842424] is resolved. We do not disable the
-sandbox when running the tests. However, if there are any other non-sandbox'ed
-tests for the same code, the coverage should be reported from those. For more
-information, see [crbug.com/842424].
+Yes!
 
 
 [assert]: http://man7.org/linux/man-pages/man3/assert.3.html
@@ -342,7 +339,6 @@ information, see [crbug.com/842424].
 [crbug.com/821617]: https://crbug.com/821617
 [crbug.com/831939]: https://crbug.com/831939
 [crbug.com/834781]: https://crbug.com/834781
-[crbug.com/842424]: https://crbug.com/842424
 [crrev.com/c/1172932]: https://crrev.com/c/1172932
 [clang roll]: https://crbug.com/841908
 [dead code example]: https://chromium.googlesource.com/chromium/src/+/ac6e09311fcc7e734be2ef21a9ccbbe04c4c4706
@@ -353,4 +349,3 @@ information, see [crbug.com/842424].
 [How do crashes affect code coverage?]: #how-do-crashes-affect-code-coverage
 [known issues]: https://bugs.chromium.org/p/chromium/issues/list?q=component:Infra%3ETest%3ECodeCoverage
 [tools link]: https://storage.googleapis.com/chromium-browser-clang-staging/
-[test suite]: https://cs.chromium.org/chromium/src/tools/code_coverage/test_suite.txt

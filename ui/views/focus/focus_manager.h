@@ -171,9 +171,7 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   // a reason). If the focus change should only happen if the view is
   // currenty focusable, enabled, and visible, call view->RequestFocus().
   void SetFocusedViewWithReason(View* view, FocusChangeReason reason);
-  void SetFocusedView(View* view) {
-    SetFocusedViewWithReason(view, FocusChangeReason::kDirectFocusChange);
-  }
+  void SetFocusedView(View* view);
 
   // Get the reason why the focus most recently changed.
   FocusChangeReason focus_change_reason() const { return focus_change_reason_; }
@@ -377,6 +375,9 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   // FocusTraversable level. Currently only used on Mac, when Full Keyboard
   // access is enabled.
   bool keyboard_accessible_ = false;
+
+  // Whether FocusManager is currently trying to restore a focused view.
+  bool in_restoring_focused_view_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FocusManager);
 };

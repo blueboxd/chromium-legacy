@@ -819,11 +819,13 @@ std::string LocalNtpSource::GetSource() {
 }
 
 void LocalNtpSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   std::string stripped_path = StripParameters(path);
   if (stripped_path == kConfigDataFilename) {
     std::string config_data_js = search_config_provider_->config_data_js();

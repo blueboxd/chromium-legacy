@@ -416,10 +416,16 @@ void LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems(
 
   AlignFlexLines(algorithm);
 
-  AlignChildren(line_contexts);
+  AlignChildren(algorithm);
 
-  if (StyleRef().FlexWrap() == EFlexWrap::kWrapReverse)
-    FlipForWrapReverse(line_contexts, cross_axis_start_edge);
+  if (StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {
+    algorithm.FlipForWrapReverse(cross_axis_start_edge,
+                                 CrossAxisContentExtent());
+    for (FlexLine& line_context : line_contexts) {
+      for (FlexItem& flex_item : line_context.line_items)
+        ResetAlignmentForChild(*flex_item.box, flex_item.desired_location.Y());
+    }
+  }
 
   // direction:rtl + flex-direction:column means the cross-axis direction is
   // flipped.
@@ -1198,54 +1204,6 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
                           border_and_padding, margin);
 }
 
-static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
-                                  ItemPosition position,
-                                  LayoutUnit ascent,
-                                  LayoutUnit max_ascent,
-                                  bool is_wrap_reverse,
-                                  bool is_deprecated_webkit_box) {
-  switch (position) {
-    case ItemPosition::kLegacy:
-    case ItemPosition::kAuto:
-    case ItemPosition::kNormal:
-      NOTREACHED();
-      break;
-    case ItemPosition::kStretch:
-      // Actual stretching must be handled by the caller. Since wrap-reverse
-      // flips cross start and cross end, stretch children should be aligned
-      // with the cross end. This matters because applyStretchAlignment
-      // doesn't always stretch or stretch fully (explicit cross size given, or
-      // stretching constrained by max-height/max-width). For flex-start and
-      // flex-end this is handled by alignmentForChild().
-      if (is_wrap_reverse)
-        return available_free_space;
-      break;
-    case ItemPosition::kFlexStart:
-      break;
-    case ItemPosition::kFlexEnd:
-      return available_free_space;
-    case ItemPosition::kCenter: {
-      const LayoutUnit result = (available_free_space / 2);
-      return is_deprecated_webkit_box ? result.ClampNegativeToZero() : result;
-    }
-    case ItemPosition::kBaseline:
-      // FIXME: If we get here in columns, we want the use the descent, except
-      // we currently can't get the ascent/descent of orthogonal children.
-      // https://bugs.webkit.org/show_bug.cgi?id=98076
-      return max_ascent - ascent;
-    case ItemPosition::kLastBaseline:
-    case ItemPosition::kSelfStart:
-    case ItemPosition::kSelfEnd:
-    case ItemPosition::kStart:
-    case ItemPosition::kEnd:
-    case ItemPosition::kLeft:
-    case ItemPosition::kRight:
-      // TODO(jferanndez): Implement these (https://crbug.com/722287).
-      break;
-  }
-  return LayoutUnit();
-}
-
 void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(FlexItem& item) {
   if (MainAxisIsInlineAxis(*item.box)) {
     item.box->SetOverrideLogicalWidth(item.FlexedBorderBoxSize());
@@ -1273,7 +1231,7 @@ LayoutUnit LayoutFlexibleBox::StaticCrossAxisPositionForPositionedChild(
     const LayoutBox& child) {
   LayoutUnit available_space =
       CrossAxisContentExtent() - CrossAxisExtentForChild(child);
-  return AlignmentOffset(
+  return FlexItem::AlignmentOffset(
       available_space,
       FlexLayoutAlgorithm::AlignmentForChild(StyleRef(), child.StyleRef()),
       LayoutUnit(), LayoutUnit(),
@@ -1562,14 +1520,6 @@ void LayoutFlexibleBox::AlignFlexLines(FlexLayoutAlgorithm& algorithm) {
   }
 }
 
-void LayoutFlexibleBox::AdjustAlignmentForChild(LayoutBox& child,
-                                                LayoutUnit delta) {
-  DCHECK(!child.IsOutOfFlowPositioned());
-
-  SetFlowAwareLocationForChild(child, FlowAwareLocationForChild(child) +
-                                          LayoutSize(LayoutUnit(), delta));
-}
-
 void LayoutFlexibleBox::ResetAlignmentForChild(
     LayoutBox& child,
     LayoutUnit new_cross_axis_position) {
@@ -1577,60 +1527,20 @@ void LayoutFlexibleBox::ResetAlignmentForChild(
       child, {FlowAwareLocationForChild(child).X(), new_cross_axis_position});
 }
 
-void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
-  // Keep track of the space between the baseline edge and the after edge of
-  // the box for each line.
-  // TODO(cbiesinger): This should be stored in FlexLine
-  Vector<LayoutUnit> min_margin_after_baselines;
+void LayoutFlexibleBox::AlignChildren(FlexLayoutAlgorithm& algorithm) {
+  Vector<FlexLine>& line_contexts = algorithm.FlexLines();
 
-  for (FlexLine& line_context : line_contexts) {
-    LayoutUnit min_margin_after_baseline = LayoutUnit::Max();
-    LayoutUnit max_ascent = line_context.max_ascent;
-
+  algorithm.AlignChildren();
+  for (unsigned line_number = 0; line_number < line_contexts.size();
+       ++line_number) {
+    FlexLine& line_context = line_contexts[line_number];
     for (FlexItem& flex_item : line_context.line_items) {
-      DCHECK(!flex_item.box->IsOutOfFlowPositioned());
-
-      if (flex_item.UpdateAutoMarginsInCrossAxis(
-              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace()))) {
-        ResetAlignmentForChild(*flex_item.box, flex_item.desired_location.Y());
-        continue;
-      }
-
-      ItemPosition position = flex_item.Alignment();
-      if (position == ItemPosition::kStretch) {
-        flex_item.ComputeStretchedSize();
+      if (flex_item.needs_relayout_for_stretch) {
+        DCHECK(flex_item.Alignment() == ItemPosition::kStretch);
         ApplyStretchAlignmentToChild(flex_item);
+        flex_item.needs_relayout_for_stretch = false;
       }
-      LayoutUnit available_space = flex_item.AvailableAlignmentSpace();
-      LayoutUnit offset = AlignmentOffset(
-          available_space, position, flex_item.MarginBoxAscent(), max_ascent,
-          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse,
-          StyleRef().IsDeprecatedWebkitBox());
-      AdjustAlignmentForChild(*flex_item.box, offset);
-      if (position == ItemPosition::kBaseline &&
-          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {
-        min_margin_after_baseline =
-            std::min(min_margin_after_baseline,
-                     flex_item.AvailableAlignmentSpace() - offset);
-      }
-    }
-    min_margin_after_baselines.push_back(min_margin_after_baseline);
-  }
-
-  if (StyleRef().FlexWrap() != EFlexWrap::kWrapReverse)
-    return;
-
-  // wrap-reverse flips the cross axis start and end. For baseline alignment,
-  // this means we need to align the after edge of baseline elements with the
-  // after edge of the flex line.
-  wtf_size_t line_number = 0;
-  for (FlexLine& line_context : line_contexts) {
-    LayoutUnit min_margin_after_baseline =
-        min_margin_after_baselines[line_number++];
-    for (FlexItem& flex_item : line_context.line_items) {
-      if (flex_item.Alignment() == ItemPosition::kBaseline &&
-          !flex_item.HasAutoMarginsInCrossAxis() && min_margin_after_baseline)
-        AdjustAlignmentForChild(*flex_item.box, min_margin_after_baseline);
+      ResetAlignmentForChild(*flex_item.box, flex_item.desired_location.Y());
     }
   }
 }
@@ -1680,22 +1590,6 @@ void LayoutFlexibleBox::FlipForRightToLeftColumn(
       // y, so using the y axis for a column cross axis extent is correct.
       location.SetY(cross_extent - flex_item.cross_axis_size - location.Y());
       SetFlowAwareLocationForChild(*flex_item.box, location);
-    }
-  }
-}
-
-void LayoutFlexibleBox::FlipForWrapReverse(
-    const Vector<FlexLine>& line_contexts,
-    LayoutUnit cross_axis_start_edge) {
-  LayoutUnit content_extent = CrossAxisContentExtent();
-  for (const FlexLine& line_context : line_contexts) {
-    for (const FlexItem& flex_item : line_context.line_items) {
-      LayoutUnit line_cross_axis_extent = line_context.cross_axis_extent;
-      LayoutUnit original_offset =
-          line_context.cross_axis_offset - cross_axis_start_edge;
-      LayoutUnit new_offset =
-          content_extent - original_offset - line_cross_axis_extent;
-      AdjustAlignmentForChild(*flex_item.box, new_offset - original_offset);
     }
   }
 }

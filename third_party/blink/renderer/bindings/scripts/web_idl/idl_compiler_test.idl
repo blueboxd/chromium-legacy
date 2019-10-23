@@ -10,3 +10,9 @@
   [Custom] constructor(Node node);
   [RuntimeEnabled=Hoge] constructor(long num);
 };
+
+namespace TestNamespace {
+  readonly attribute boolean attr1;
+  readonly attribute DOMString attr2;
+  void op1();
+};

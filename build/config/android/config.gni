@@ -182,14 +182,9 @@ if (is_android || is_chromeos) {
     # Set to false to disable the Errorprone compiler
     use_errorprone_java_compiler = true
 
-    # Disables process isolation when building _incremental targets.
-    # Required for Android M+ due to SELinux policies (stronger sandboxing).
-    disable_incremental_isolated_processes = false
-
     # Build incremental targets whenever possible.
-    # Ex. with this arg set to true, the chrome_public_apk target result in
-    # chrome_public_apk_incremental being built.
-    incremental_apk_by_default = false
+    # See //build/android/incremental_install/README.md for more details.
+    incremental_install = false
 
     # When true, updates all android_aar_prebuilt() .info files during gn gen.
     # Refer to android_aar_prebuilt() for more details.
@@ -216,6 +211,9 @@ if (is_android || is_chromeos) {
     # once P builds are no longer supported. https://crbug.com/943637
     trichrome_shared_assets = android_sdk_release == "q"
   }
+
+  # TODO(agrieve): Remove once unused downstream.
+  incremental_apk_by_default = incremental_install
 
   if (notouch_build && defined(extra_keymappings)) {
     keycode_conversion_data_android_path = extra_keymappings

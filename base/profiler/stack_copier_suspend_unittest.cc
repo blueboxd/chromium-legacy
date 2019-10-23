@@ -63,6 +63,8 @@ class TestSuspendableThreadDelegate : public SuspendableThreadDelegate {
     return true;
   }
 
+  PlatformThreadId GetThreadId() const override { return PlatformThreadId(); }
+
   uintptr_t GetStackBaseAddress() const override {
     return reinterpret_cast<uintptr_t>(&fake_stack_[0] + fake_stack_.size());
   }

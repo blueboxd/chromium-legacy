@@ -6,11 +6,7 @@
  * Class to handle focus rings.
  */
 class FocusRingManager {
-  /**
-   * @param {!SwitchAccessInterface} switchAccess
-   * @param {!BackButtonManager} backButtonManager
-   */
-  constructor(switchAccess, backButtonManager) {
+  constructor() {
     /**
      * A map of all the focus rings.
      * @private {!Map<SAConstants.Focus.ID,
@@ -26,22 +22,21 @@ class FocusRingManager {
     this.colorPattern_ = /^#[0-9A-F]{3,8}$/i;
 
     /**
-     * A reference to the Switch Access object.
-     * @private {!SwitchAccessInterface}
+     * Reference to the menu panel object.
+     * @private {PanelInterface}
      */
-    this.switchAccess_ = switchAccess;
+    this.menuPanel_;
+  }
 
-    /**
-     * The back button manager.
-     * @private {!BackButtonManager}
-     */
-    this.backButtonManager_ = backButtonManager;
+  /** @param {!PanelInterface} panel */
+  setMenuPanel(panel) {
+    this.menuPanel_ = panel;
   }
 
   /** Finishes setup of focus rings once the preferences are loaded. */
   onPrefsReady() {
     // Currently all focus rings share the same color.
-    // TODO(anastasi): Make the primary color a preference.
+    // TODO(crbug/996852): Make the primary focus color a preference.
     const color = SAConstants.Focus.PRIMARY_COLOR;
 
     // Create each focus ring.
@@ -84,15 +79,17 @@ class FocusRingManager {
   /**
    * Sets the primary and next focus rings based on the current primary and
    *     group nodes used for navigation.
-   * @param {!chrome.automation.AutomationNode} primary
-   * @param {!chrome.automation.AutomationNode} group
+   * @param {!SAChildNode} primary
+   * @param {!SARootNode} group
    */
   setFocusNodes(primary, group) {
     if (this.rings_.size === 0) return;
 
-    if (primary === this.backButtonManager_.backButtonNode()) {
-      this.backButtonManager_.show(group.location);
-
+    if (primary instanceof BackButtonNode) {
+      // TODO(anastasi): Use standard focus rings.
+      if (this.menuPanel_) {
+        this.menuPanel_.setFocusRing(SAConstants.BACK_ID, true);
+      }
       this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [];
       // Clear the dashed ring between transitions, as the animation is
       // distracting.
@@ -102,16 +99,13 @@ class FocusRingManager {
       this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [group.location];
       this.updateFocusRings_();
       return;
+    } else if (this.menuPanel_) {
+      this.menuPanel_.setFocusRing(SAConstants.BACK_ID, false);
     }
-    this.backButtonManager_.hide();
 
     // If the primary node is a group, show its first child as the "next" focus.
-    if (SwitchAccessPredicate.isGroup(primary, group)) {
-      const firstChild = new AutomationTreeWalker(
-                             primary, constants.Dir.FORWARD,
-                             SwitchAccessPredicate.restrictions(primary))
-                             .next()
-                             .node;
+    if (primary.isGroup()) {
+      const firstChild = primary.asRootNode().firstChild;
 
       // Clear the dashed ring between transitions, as the animation is
       // distracting.
@@ -119,13 +113,13 @@ class FocusRingManager {
       this.updateFocusRings_();
 
       let focusRect = primary.location;
-      if (firstChild && firstChild.location) {
+      let childRect = firstChild ? firstChild.location : null;
+      if (childRect) {
         // If the current element is not the back button, the focus rect should
         // expand to contain the child rect.
         focusRect = RectHelper.expandToFitWithPadding(
-            SAConstants.Focus.GROUP_BUFFER, focusRect, firstChild.location);
-        this.rings_.get(SAConstants.Focus.ID.NEXT).rects =
-            [firstChild.location];
+            SAConstants.Focus.GROUP_BUFFER, focusRect, childRect);
+        this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [childRect];
       }
       this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [focusRect];
       this.updateFocusRings_();

@@ -25148,6 +25148,8 @@ Called by update_net_error_codes.py.-->
   <int value="3059" label="NonOriginCleanImageBitmapTransfer"/>
   <int value="3060" label="CompressionStreamConstructor"/>
   <int value="3061" label="DecompressionStreamConstructor"/>
+  <int value="3062" label="V8RTCRtpReceiver_PlayoutDelayHint_AttributeGetter"/>
+  <int value="3063" label="V8RTCRtpReceiver_PlayoutDelayHint_AttributeSetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35491,6 +35493,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1826309726" label="ArcCustomTabsExperiment:disabled"/>
   <int value="-1823193038" label="QuietNotificationPrompts:disabled"/>
+  <int value="-1822825246" label="DragFromShelfToHomeOrOverview:enabled"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1818947212" label="OutOfBlinkCors:disabled"/>
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
@@ -38053,6 +38056,7 @@ from previous Chrome versions.
   <int value="1530113113" label="disable-pushstate-throttle"/>
   <int value="1530177325" label="LanguagesPreference:disabled"/>
   <int value="1531164533" label="SyncPseudoUSSFavicons:disabled"/>
+  <int value="1531741496" label="DragFromShelfToHomeOrOverview:disabled"/>
   <int value="1534222388" label="EnableEphemeralFlashPermission:enabled"/>
   <int value="1534386287" label="SendTabToSelfWhenSignedIn:enabled"/>
   <int value="1536921097" label="NavigationMojoResponse:disabled"/>

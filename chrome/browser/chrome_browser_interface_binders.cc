@@ -7,15 +7,14 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/image_annotation/public/mojom/constants.mojom-forward.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -36,13 +35,13 @@
 namespace chrome {
 namespace internal {
 
-// Forward image Annotator requests to the image_annotation service.
+// Forward image Annotator requests to the profile's ImageAnnotationService.
 void BindImageAnnotator(
     content::RenderFrameHost* const frame_host,
     mojo::PendingReceiver<image_annotation::mojom::Annotator> receiver) {
-  content::BrowserContext::GetConnectorFor(
-      frame_host->GetProcess()->GetBrowserContext())
-      ->Connect(image_annotation::mojom::kServiceName, std::move(receiver));
+  Profile::FromBrowserContext(frame_host->GetProcess()->GetBrowserContext())
+      ->GetImageAnnotationService()
+      ->BindAnnotator(std::move(receiver));
 }
 
 #if defined(OS_ANDROID)

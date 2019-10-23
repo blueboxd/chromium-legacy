@@ -296,12 +296,12 @@ class PDFScriptingAPI {
  *
  * @param {string} src the source URL of the PDF to load initially.
  * @param {string} baseUrl the base URL of the PDF viewer
- * @return {HTMLIFrameElement} the iframe element containing the PDF viewer.
+ * @return {!HTMLIFrameElement} the iframe element containing the PDF viewer.
  */
 function PDFCreateOutOfProcessPlugin(src, baseUrl) {
   const client = new PDFScriptingAPI(window, null);
-  const iframe = assertInstanceof(
-      window.document.createElement('iframe'), HTMLIFrameElement);
+  const iframe = /** @type {!HTMLIFrameElement} */ (
+      window.document.createElement('iframe'));
   iframe.setAttribute('src', baseUrl + '/index.html?' + src);
 
   iframe.onload = function() {

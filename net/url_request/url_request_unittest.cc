@@ -1394,7 +1394,7 @@ TEST_F(URLRequestTest, DelayedCookieCallback) {
     TestNetworkDelegate network_delegate;
     context.set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotSend=1"), DEFAULT_PRIORITY,
         &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1409,7 +1409,7 @@ TEST_F(URLRequestTest, DelayedCookieCallback) {
     TestNetworkDelegate network_delegate;
     context.set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1533,12 +1533,13 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
                                          base::Time::Now(),
                                          base::nullopt /* server_time */);
   delayed_cm->SetCanonicalCookieAsync(std::move(cookie1), url.scheme(),
-                                      CookieOptions(),
+                                      net::CookieOptions::MakeAllInclusive(),
                                       CookieStore::SetCookiesCallback());
   auto cookie2 = CanonicalCookie::Create(url, "AlreadySetCookie=1;Secure",
                                          base::Time::Now(),
                                          base::nullopt /* server_time */);
-  cm->SetCanonicalCookieAsync(std::move(cookie2), url.scheme(), CookieOptions(),
+  cm->SetCanonicalCookieAsync(std::move(cookie2), url.scheme(),
+                              net::CookieOptions::MakeAllInclusive(),
                               CookieStore::SetCookiesCallback());
 
   std::vector<std::string> cookie_lines(
@@ -1557,17 +1558,18 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
   for (auto first_cookie_line : cookie_lines) {
     for (auto second_cookie_line : cookie_lines) {
       // Run with the delayed cookie monster.
-      std::unique_ptr<URLRequest> request = async_context.CreateRequest(
-          test_server.GetURL("/set-cookie?" + first_cookie_line + "&" +
-                             second_cookie_line),
-          DEFAULT_PRIORITY, &async_delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+      std::unique_ptr<URLRequest> request =
+          async_context.CreateFirstPartyRequest(
+              test_server.GetURL("/set-cookie?" + first_cookie_line + "&" +
+                                 second_cookie_line),
+              DEFAULT_PRIORITY, &async_delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
 
       request->Start();
       async_delegate.RunUntilComplete();
       EXPECT_THAT(async_delegate.request_status(), IsOk());
 
       // Run with the regular cookie monster.
-      request = sync_context.CreateRequest(
+      request = sync_context.CreateFirstPartyRequest(
           test_server.GetURL("/set-cookie?" + first_cookie_line + "&" +
                              second_cookie_line),
           DEFAULT_PRIORITY, &sync_delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -1616,7 +1618,7 @@ TEST_F(URLRequestTest, DoNotSendCookies) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotSend=1"), DEFAULT_PRIORITY,
         &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1630,7 +1632,7 @@ TEST_F(URLRequestTest, DoNotSendCookies) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1647,7 +1649,7 @@ TEST_F(URLRequestTest, DoNotSendCookies) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->SetLoadFlags(LOAD_DO_NOT_SEND_COOKIES);
@@ -1672,7 +1674,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotUpdate=2"), DEFAULT_PRIORITY,
         &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1688,7 +1690,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotSave=1&CookieToNotUpdate=1"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->SetLoadFlags(LOAD_DO_NOT_SAVE_COOKIES);
@@ -1707,7 +1709,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1733,7 +1735,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotSend=1"), DEFAULT_PRIORITY,
         &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1748,7 +1750,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1772,7 +1774,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
     network_delegate.set_cookie_options(TestNetworkDelegate::NO_GET_COOKIES);
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1805,7 +1807,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotUpdate=2"), DEFAULT_PRIORITY,
         &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1826,7 +1828,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy) {
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
     network_delegate.set_cookie_options(TestNetworkDelegate::NO_SET_COOKIE);
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotSave=1&CookieToNotUpdate=1"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1846,7 +1848,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1871,7 +1873,7 @@ TEST_F(URLRequestTest, DoNotSaveEmptyCookies) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1892,7 +1894,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy_Async) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotSend=1"), DEFAULT_PRIORITY,
         &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1907,7 +1909,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy_Async) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1926,7 +1928,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy_Async) {
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
     network_delegate.set_cookie_options(TestNetworkDelegate::NO_GET_COOKIES);
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1949,7 +1951,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy_Async) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotUpdate=2"), DEFAULT_PRIORITY,
         &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1965,7 +1967,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy_Async) {
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
     network_delegate.set_cookie_options(TestNetworkDelegate::NO_SET_COOKIE);
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/set-cookie?CookieToNotSave=1&CookieToNotUpdate=1"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -1981,7 +1983,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy_Async) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2290,7 +2292,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixOnNonsecureOrigin) {
   // Try to set a Secure __Secure- cookie.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         http_server.GetURL("/set-cookie?__Secure-nonsecure-origin=1;Secure"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2302,7 +2304,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixOnNonsecureOrigin) {
   // Verify that the cookie is not set.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         https_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2329,7 +2331,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixNonsecure) {
   // Try to set a non-Secure __Secure- cookie.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         https_server.GetURL("/set-cookie?__Secure-foo=1"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2342,7 +2344,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixNonsecure) {
   // Verify that the cookie is not set.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         https_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2368,7 +2370,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixSecure) {
   // Try to set a Secure __Secure- cookie.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         https_server.GetURL("/set-cookie?__Secure-bar=1;Secure"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2380,7 +2382,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixSecure) {
   // Verify that the cookie is set.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         https_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2412,7 +2414,7 @@ TEST_F(URLRequestTest, StrictSecureCookiesOnNonsecureOrigin) {
   // Try to set a Secure cookie, with experimental features enabled.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         http_server.GetURL("/set-cookie?nonsecure-origin=1;Secure"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2424,7 +2426,7 @@ TEST_F(URLRequestTest, StrictSecureCookiesOnNonsecureOrigin) {
   // Verify that the cookie is not set.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
+    std::unique_ptr<URLRequest> req(context.CreateFirstPartyRequest(
         https_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2476,10 +2478,11 @@ TEST_P(URLRequestTestParameterizedSameSite, CookieAgeMetrics) {
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(http_server.Start());
 
-  // Set two test cookies.
+  // Set two test cookies. The set is always done as a first-party. The
+  // partiness for getting the cookies is what varies with GetParam().
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context_.CreateRequest(
+    std::unique_ptr<URLRequest> req(context_.CreateFirstPartyRequest(
         http_server.GetURL(kHost_, "/set-cookie?cookie=value&cookie2=value2"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2568,7 +2571,7 @@ TEST_P(URLRequestTestParameterizedSameSite,
   // Set cookies.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context_.CreateRequest(
+    std::unique_ptr<URLRequest> req(context_.CreateFirstPartyRequest(
         https_server_.GetURL(kHost_,
                              "/set-cookie?session-cookie=value;Secure&"
                              "longlived-cookie=value;Secure;domain=" +
@@ -2616,7 +2619,7 @@ TEST_P(URLRequestTestParameterizedSameSite,
   // Set cookie.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context_.CreateRequest(
+    std::unique_ptr<URLRequest> req(context_.CreateFirstPartyRequest(
         https_server_.GetURL(kHost_, "/set-cookie?cookie=value;Max-Age=3600"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2662,7 +2665,7 @@ TEST_P(URLRequestTestParameterizedSameSite,
   // Set cookies.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context_.CreateRequest(
+    std::unique_ptr<URLRequest> req(context_.CreateFirstPartyRequest(
         https_server_.GetURL(kHost_,
                              "/set-cookie?session-cookie=value&"
                              "longlived-cookie=value;Max-Age=360000"),
@@ -2710,7 +2713,7 @@ TEST_P(URLRequestTestParameterizedSameSite,
   // Set cookie.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context_.CreateRequest(
+    std::unique_ptr<URLRequest> req(context_.CreateFirstPartyRequest(
         https_server_.GetURL(kHost_, "/set-cookie?cookie=value;domain=" +
                                          kHost_ + ";Max-Age=3600"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -2757,7 +2760,7 @@ TEST_P(URLRequestTestParameterizedSameSite,
   // Set cookies.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context_.CreateRequest(
+    std::unique_ptr<URLRequest> req(context_.CreateFirstPartyRequest(
         https_server_.GetURL(
             kHost_, "/set-cookie?session-cookie=value;domain=" + kHost_ + "&" +
                         "longlived-cookie=value;domain=" + kHost_ +
@@ -2806,7 +2809,7 @@ TEST_P(URLRequestTestParameterizedSameSite,
   // Set cookie.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context_.CreateRequest(
+    std::unique_ptr<URLRequest> req(context_.CreateFirstPartyRequest(
         https_server_.GetURL(kHost_, "/set-cookie?cookie=value;domain=" +
                                          kHost_ + ";Max-Age=3600"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -2850,7 +2853,7 @@ TEST_P(URLRequestTestParameterizedSameSite, CookieNetworkSecurityMetricNoHSTS) {
   // Set cookies.
   {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(context_.CreateRequest(
+    std::unique_ptr<URLRequest> req(context_.CreateFirstPartyRequest(
         https_server_.GetURL(kHost_,
                              "/set-cookie?cookie=value;domain=" + kHost_ +
                                  ";Max-Age=3600&host-cookie=value"),
@@ -2960,7 +2963,7 @@ TEST_F(URLRequestTest, AcceptClockSkewCookieWithWrongDateTimezone) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL(
             "/set-cookie?StillGood=1;expires=Mon,18-Apr-1977,22:50:13,GMT"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -2972,7 +2975,7 @@ TEST_F(URLRequestTest, AcceptClockSkewCookieWithWrongDateTimezone) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -2985,7 +2988,7 @@ TEST_F(URLRequestTest, AcceptClockSkewCookieWithWrongDateTimezone) {
     FixedDateNetworkDelegate network_delegate("18-Apr-1977 22:49:13 UTC");
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL(
             "/set-cookie?StillGood=1;expires=Mon,18-Apr-1977,22:50:13,GMT"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -2997,7 +3000,7 @@ TEST_F(URLRequestTest, AcceptClockSkewCookieWithWrongDateTimezone) {
     TestNetworkDelegate network_delegate;
     default_context().set_network_delegate(&network_delegate);
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
@@ -3071,7 +3074,7 @@ class URLRequestTestHTTP : public URLRequestTest {
                               bool include_data) {
     static const char kData[] = "hello world";
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_method(request_method);
     if (include_data) {
@@ -3117,7 +3120,7 @@ class URLRequestTestHTTP : public URLRequestTest {
                                     const std::string& redirect_method,
                                     const std::string& expected_origin_value) {
     TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> req(default_context().CreateFirstPartyRequest(
         redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_method(request_method);
     req->SetExtraRequestHeaderByName(HttpRequestHeaders::kOrigin,
@@ -3187,7 +3190,7 @@ class URLRequestTestHTTP : public URLRequestTest {
 
   bool DoManyCookiesRequest(int num_cookies) {
     TestDelegate d;
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+    std::unique_ptr<URLRequest> r(default_context().CreateFirstPartyRequest(
         test_server_.GetURL("/set-many-cookies?" +
                             base::NumberToString(num_cookies)),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -7284,9 +7287,10 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     auto another_cookie = CanonicalCookie::Create(
         url_requiring_auth_wo_cookies, "another_cookie=true", base::Time::Now(),
         base::nullopt /* server_time */);
-    cm->SetCanonicalCookieAsync(
-        std::move(another_cookie), url_requiring_auth_wo_cookies.scheme(),
-        CookieOptions(), CookieStore::SetCookiesCallback());
+    cm->SetCanonicalCookieAsync(std::move(another_cookie),
+                                url_requiring_auth_wo_cookies.scheme(),
+                                net::CookieOptions::MakeAllInclusive(),
+                                CookieStore::SetCookiesCallback());
     context.set_cookie_store(cm.get());
     context.Init();
 
@@ -7316,9 +7320,10 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     auto one_more_cookie = CanonicalCookie::Create(
         url_requiring_auth_wo_cookies, "one_more_cookie=true",
         base::Time::Now(), base::nullopt /* server_time */);
-    cm->SetCanonicalCookieAsync(
-        std::move(one_more_cookie), url_requiring_auth_wo_cookies.scheme(),
-        CookieOptions(), CookieStore::SetCookiesCallback());
+    cm->SetCanonicalCookieAsync(std::move(one_more_cookie),
+                                url_requiring_auth_wo_cookies.scheme(),
+                                net::CookieOptions::MakeAllInclusive(),
+                                CookieStore::SetCookiesCallback());
 
     request->SetAuth(AuthCredentials(kUser, kSecret));
     delegate.RunUntilComplete();
@@ -7694,7 +7699,8 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
         original_url, "another_cookie=true", base::Time::Now(),
         base::nullopt /* server_time */);
     cm->SetCanonicalCookieAsync(std::move(another_cookie),
-                                original_url.scheme(), CookieOptions(),
+                                original_url.scheme(),
+                                net::CookieOptions::MakeAllInclusive(),
                                 CookieStore::SetCookiesCallback());
     context.set_cookie_store(cm.get());
     context.Init();
@@ -7724,9 +7730,10 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     auto one_more_cookie = CanonicalCookie::Create(
         original_url_wo_cookie, "one_more_cookie=true", base::Time::Now(),
         base::nullopt /* server_time */);
-    cm->SetCanonicalCookieAsync(
-        std::move(one_more_cookie), original_url_wo_cookie.scheme(),
-        CookieOptions(), CookieStore::SetCookiesCallback());
+    cm->SetCanonicalCookieAsync(std::move(one_more_cookie),
+                                original_url_wo_cookie.scheme(),
+                                net::CookieOptions::MakeAllInclusive(),
+                                CookieStore::SetCookiesCallback());
 
     request->FollowDeferredRedirect(base::nullopt, base::nullopt);
     delegate.RunUntilComplete();

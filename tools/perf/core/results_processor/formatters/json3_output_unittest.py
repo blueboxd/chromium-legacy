@@ -13,13 +13,11 @@ class Json3OutputTest(unittest.TestCase):
   def setUp(self):
     self.base_dir = 'base_dir'
 
-  def Convert(self, test_results, **kwargs):
-    base_dir = kwargs.pop('base_dir', self.base_dir)
-    original_results = testing.IntermediateResults(test_results, **kwargs)
-    intermediate_results = copy.deepcopy(original_results)
-    results = json3_output.Convert(intermediate_results, base_dir)
+  def Convert(self, test_results):
+    test_results_copy = copy.deepcopy(test_results)
+    results = json3_output.Convert(test_results_copy, self.base_dir)
     # Convert should not modify the original intermediate results.
-    self.assertEqual(intermediate_results, original_results)
+    self.assertEqual(test_results_copy, test_results)
     return results
 
   def FindTestResult(self, results, benchmark, story):
@@ -29,15 +27,15 @@ class Json3OutputTest(unittest.TestCase):
       node = node[key]
     return node
 
-  def testEmptyResults(self):
-    results = self.Convert(
-        [], start_time='2009-02-13T23:31:30.987000Z', interrupted=False)
+  def testStartTime(self):
+    results = self.Convert([
+        testing.TestResult('benchmark/story',
+                           start_time='2009-02-13T23:31:30.987000Z')
+    ])
 
     self.assertFalse(results['interrupted'])
-    self.assertEqual(results['num_failures_by_type'], {})
     self.assertEqual(results['path_delimiter'], '/')
     self.assertEqual(results['seconds_since_epoch'], 1234567890.987)
-    self.assertEqual(results['tests'], {})
     self.assertEqual(results['version'], 3)
 
   def testSingleTestCase(self):

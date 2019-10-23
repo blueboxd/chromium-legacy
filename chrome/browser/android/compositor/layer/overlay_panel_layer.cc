@@ -115,7 +115,17 @@ void OverlayPanelLayer::SetProperties(
     panel_shadow_->SetPosition(shadow_position);
   }
 
+  // ---------------------------------------------------------------------------
+  // Content setup, to center in space below drag handle (when present).
+  // ---------------------------------------------------------------------------
+  int content_top_y = bar_top_y;
+  int content_height = bar_height;
   int rounded_top_adjust = 0;
+  if (rounded_bar_top_resource_id_ != kInvalidResourceID) {
+    content_top_y += bar_margin_top;
+    content_height -= bar_margin_top;
+  }
+
   // ---------------------------------------------------------------------------
   // Rounded Bar Top
   // ---------------------------------------------------------------------------
@@ -172,9 +182,10 @@ void OverlayPanelLayer::SetProperties(
       ui::ANDROID_RESOURCE_TYPE_DYNAMIC, bar_text_resource_id_);
 
   if (bar_text_resource) {
-    // Centers the text vertically in the Search Bar.
-    float bar_padding_top =
-        bar_top_y + bar_height / 2 - bar_text_resource->size().height() / 2;
+    // Centers the text vertically in the section of the Search Bar below the
+    // drag handle.
+    float bar_padding_top = content_top_y + content_height / 2 -
+                            bar_text_resource->size().height() / 2;
     bar_text_->SetUIResourceId(bar_text_resource->ui_resource()->id());
     bar_text_->SetBounds(bar_text_resource->size());
     bar_text_->SetPosition(gfx::PointF(0.f, bar_padding_top));
@@ -202,7 +213,7 @@ void OverlayPanelLayer::SetProperties(
 
     // Centers the Icon vertically in the bar.
     float icon_y =
-        bar_top_y + bar_height / 2 - icon_layer->bounds().height() / 2;
+        content_top_y + content_height / 2 - icon_layer->bounds().height() / 2;
 
     icon_layer->SetPosition(gfx::PointF(icon_x, icon_y));
   }
@@ -252,8 +263,8 @@ void OverlayPanelLayer::SetProperties(
     }
 
     // Centers the Close Icon vertically in the bar.
-    float close_icon_top =
-        bar_top_y + bar_height / 2 - close_icon_resource->size().height() / 2;
+    float close_icon_top = content_top_y + content_height / 2 -
+                           close_icon_resource->size().height() / 2;
     close_icon_->SetUIResourceId(close_icon_resource->ui_resource()->id());
     close_icon_->SetBounds(close_icon_resource->size());
     close_icon_->SetPosition(gfx::PointF(close_icon_left, close_icon_top));
@@ -268,7 +279,7 @@ void OverlayPanelLayer::SetProperties(
         resource_manager_->GetStaticResourceWithTint(open_tab_icon_resource_id_,
                                                      icon_tint);
     // Positions the icon at the end of the bar.
-    float open_tab_top = bar_top_y + bar_height / 2 -
+    float open_tab_top = content_top_y + content_height / 2 -
                          open_tab_icon_resource->size().height() / 2;
     float open_tab_left;
     float spacing_between_icons = 2 * bar_margin_side;
@@ -287,7 +298,7 @@ void OverlayPanelLayer::SetProperties(
   }
 
   // ---------------------------------------------------------------------------
-  // Content
+  // Overlay Web Content
   // ---------------------------------------------------------------------------
   content_container_->SetPosition(
       gfx::PointF(0.f, content_offset_y));

@@ -116,17 +116,13 @@
         <include name="IDR_BROWSER_SWITCH_INTERNALS_JS" file="resources\browser_switch\internals\browser_switch_internals.js" compress="gzip" type="BINDATA" />
       </if>
       <if expr="is_win">
-        <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\conflicts\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_ABOUT_CONFLICTS_JS" file="resources\conflicts\about_conflicts.js" type="BINDATA" />
-      </if>
-      <if expr="enable_plugins">
-        <include name="IDR_ABOUT_FLASH_HTML" file="resources\about_flash.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_ABOUT_FLASH_JS" file="resources\about_flash.js" type="BINDATA" />
+        <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\conflicts\about_conflicts.html" compress="gzip" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_ABOUT_CONFLICTS_JS" file="resources\conflicts\about_conflicts.js" compress="gzip" type="BINDATA" />
       </if>
       <if expr="not disable_nacl">
-        <include name="IDR_ABOUT_NACL_HTML" file="resources\about_nacl\about_nacl.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_ABOUT_NACL_CSS" file="resources\about_nacl\about_nacl.css" flattenhtml="true" type="chrome_html" />
-        <include name="IDR_ABOUT_NACL_JS" file="resources\about_nacl\about_nacl.js" type="BINDATA" />
+        <include name="IDR_ABOUT_NACL_HTML" file="resources\about_nacl\about_nacl.html" compress="gzip" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_ABOUT_NACL_CSS" file="resources\about_nacl\about_nacl.css" compress="gzip" flattenhtml="true" type="chrome_html" />
+        <include name="IDR_ABOUT_NACL_JS" file="resources\about_nacl\about_nacl.js" compress="gzip" type="BINDATA" />
       </if>
       <if expr="not is_android">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys\about_sys.html" compress="gzip" type="BINDATA" />
@@ -138,9 +134,9 @@
       <include name="IDR_ACCESSIBILITY_JS" file="resources\accessibility\accessibility.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_AD_NETWORK_HASHES" file="resources\ad_networks.dat" type="BINDATA" />
       <if expr="is_posix and not is_macosx">
-        <include name="IDR_CERTIFICATE_VIEWER_HTML" file="resources\certificate_viewer.html" type="BINDATA" />
-        <include name="IDR_CERTIFICATE_VIEWER_JS" file="resources\certificate_viewer.js" type="BINDATA" />
-        <include name="IDR_CERTIFICATE_VIEWER_CSS" file="resources\certificate_viewer.css" type="BINDATA" />
+        <include name="IDR_CERTIFICATE_VIEWER_HTML" file="resources\certificate_viewer.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_CERTIFICATE_VIEWER_JS" file="resources\certificate_viewer.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_CERTIFICATE_VIEWER_CSS" file="resources\certificate_viewer.css" compress="gzip" type="BINDATA" />
       </if>
       <if expr="enable_app_list">
         <include name="IDR_CHROME_APP_MANIFEST" file="resources\chrome_app\manifest.json" type="BINDATA" />
@@ -219,13 +215,13 @@
 
       <if expr="not is_android">
         <!-- History. -->
-        <include name="IDR_HISTORY_CONSTANTS_HTML" file="resources\history\constants.html" type="BINDATA" />
-        <include name="IDR_HISTORY_CONSTANTS_JS" file="resources\history\constants.js" type="BINDATA" />
+        <include name="IDR_HISTORY_CONSTANTS_HTML" file="resources\history\constants.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_HISTORY_CONSTANTS_JS" file="resources\history\constants.js" compress="gzip" type="BINDATA" />
         <include name="IDR_HISTORY_HISTORY_HTML" file="resources\history\history.html" preprocess="true" type="BINDATA" compress="gzip" />
-        <include name="IDR_HISTORY_HISTORY_JS" file="resources\history\history.js" type="BINDATA" />
-        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG" file="resources\history\images\sign_in_promo_dark.svg" type="BINDATA" />
-        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG" file="resources\history\images\sign_in_promo.svg" type="BINDATA" />
-        <include name="IDR_HISTORY_STRINGS_HTML" file="resources\history\strings.html" type="BINDATA" />
+        <include name="IDR_HISTORY_HISTORY_JS" file="resources\history\history.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG" file="resources\history\images\sign_in_promo_dark.svg" compress="gzip" type="BINDATA" />
+        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG" file="resources\history\images\sign_in_promo.svg" compress="gzip" type="BINDATA" />
+        <include name="IDR_HISTORY_STRINGS_HTML" file="resources\history\strings.html" compress="gzip" type="BINDATA" />
         <if expr="optimize_webui">
           <then>
             <include name="IDR_HISTORY_APP_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\history\app.vulcanized.html" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
@@ -418,7 +414,7 @@
             <include name="IDR_INTERNET_DETAIL_DIALOG_JS" file="resources\chromeos\internet_detail_dialog\internet_detail_dialog.js" type="chrome_html" />
           </else>
         </if>
-        <include name="IDR_CERT_MANAGER_DIALOG_HTML" file="resources\chromeos\certificate_manager_dialog.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_CERT_MANAGER_DIALOG_HTML" file="resources\chromeos\certificate_manager_dialog.html" flattenhtml="true" type="BINDATA" compress="gzip" />
         <include name="IDR_SLOW_CSS" file="resources\chromeos\slow.css" type="BINDATA" compress="gzip" />
         <include name="IDR_SLOW_HTML" file="resources\chromeos\slow.html" type="BINDATA" compress="gzip" />
         <include name="IDR_SLOW_JS" file="resources\chromeos\slow.js" type="BINDATA" compress="gzip" />
@@ -453,17 +449,17 @@
         <include name="IDR_USER_MANAGER_TUTORIAL_JS" file="resources\user_manager\user_manager_tutorial.js" type="BINDATA" />
       </if>
       <if expr="not is_android">
-        <include name="IDR_IDENTITY_INTERNALS_HTML" file="resources\identity_internals\identity_internals.html" type="BINDATA" />
-        <include name="IDR_IDENTITY_INTERNALS_CSS" file="resources\identity_internals\identity_internals.css" type="BINDATA" />
-        <include name="IDR_IDENTITY_INTERNALS_JS" file="resources\identity_internals\identity_internals.js" type="BINDATA" />
+        <include name="IDR_IDENTITY_INTERNALS_HTML" file="resources\identity_internals\identity_internals.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_IDENTITY_INTERNALS_CSS" file="resources\identity_internals\identity_internals.css" compress="gzip" type="BINDATA" />
+        <include name="IDR_IDENTITY_INTERNALS_JS" file="resources\identity_internals\identity_internals.js" compress="gzip" type="BINDATA" />
       </if>
       <include name="IDR_DEVICE_LOG_UI_HTML" file="resources\device_log_ui\device_log_ui.html" type="BINDATA" compress="gzip" />
       <include name="IDR_DEVICE_LOG_UI_JS" file="resources\device_log_ui\device_log_ui.js" type="BINDATA" compress="gzip" />
       <include name="IDR_DEVICE_LOG_UI_CSS" file="resources\device_log_ui\device_log_ui.css" type="BINDATA" compress="gzip" />
       <if expr="chromeos">
-        <include name="IDR_NETWORK_UI_HTML" file="resources\chromeos\network_ui\network_ui.html" type="BINDATA" />
-        <include name="IDR_NETWORK_UI_JS" file="resources\chromeos\network_ui\network_ui.js" type="BINDATA" />
-        <include name="IDR_NETWORK_UI_CSS" file="resources\chromeos\network_ui\network_ui.css" type="BINDATA" />
+        <include name="IDR_NETWORK_UI_HTML" file="resources\chromeos\network_ui\network_ui.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_NETWORK_UI_JS" file="resources\chromeos\network_ui\network_ui.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_NETWORK_UI_CSS" file="resources\chromeos\network_ui\network_ui.css" compress="gzip" type="BINDATA" />
       </if>
       <if expr="_google_chrome">
         <include name="IDR_PREF_HASH_SEED_BIN" file="resources\settings_internal\pref_hash_seed.bin" type="BINDATA" />
@@ -497,22 +493,22 @@
         <include name="IDR_SOUND_DICTATION_CANCEL_WAV" file="resources\chromeos\sounds\earcons\null_selection.wav" type="BINDATA" />
       </if>
      <if expr="chromeos">
-        <include name="IDR_ABOUT_POWER_HTML" file="resources\chromeos\power.html" type="BINDATA" />
-        <include name="IDR_ABOUT_POWER_JS" file="resources\chromeos\power.js" type="BINDATA" />
-        <include name="IDR_ABOUT_POWER_CSS" file="resources\chromeos\power.css" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_HTML" file="resources\chromeos\emulator\device_emulator.html" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_AUDIO_SETTINGS_HTML" file="resources\chromeos\emulator\audio_settings.html" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_AUDIO_SETTINGS_JS" file="resources\chromeos\emulator\audio_settings.js" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_BATTERY_SETTINGS_HTML" file="resources\chromeos\emulator\battery_settings.html" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_BATTERY_SETTINGS_JS" file="resources\chromeos\emulator\battery_settings.js" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_BLUETOOTH_SETTINGS_HTML" file="resources\chromeos\emulator\bluetooth_settings.html" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_BLUETOOTH_SETTINGS_JS" file="resources\chromeos\emulator\bluetooth_settings.js" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_ICONS_HTML" file="resources\chromeos\emulator\icons.html" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_INPUT_DEVICE_SETTINGS_HTML" file="resources\chromeos\emulator\input_device_settings.html" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_INPUT_DEVICE_SETTINGS_JS" file="resources\chromeos\emulator\input_device_settings.js" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_PAGES_HTML" file="resources\chromeos\emulator\device_emulator_pages.html" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_PAGES_JS" file="resources\chromeos\emulator\device_emulator_pages.js" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_SHARED_STYLES_HTML" file="resources\chromeos\emulator\shared_styles.html" type="BINDATA" />
+        <include name="IDR_ABOUT_POWER_HTML" file="resources\chromeos\power.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_ABOUT_POWER_JS" file="resources\chromeos\power.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_ABOUT_POWER_CSS" file="resources\chromeos\power.css" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_HTML" file="resources\chromeos\emulator\device_emulator.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_AUDIO_SETTINGS_HTML" file="resources\chromeos\emulator\audio_settings.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_AUDIO_SETTINGS_JS" file="resources\chromeos\emulator\audio_settings.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_BATTERY_SETTINGS_HTML" file="resources\chromeos\emulator\battery_settings.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_BATTERY_SETTINGS_JS" file="resources\chromeos\emulator\battery_settings.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_BLUETOOTH_SETTINGS_HTML" file="resources\chromeos\emulator\bluetooth_settings.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_BLUETOOTH_SETTINGS_JS" file="resources\chromeos\emulator\bluetooth_settings.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_ICONS_HTML" file="resources\chromeos\emulator\icons.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_INPUT_DEVICE_SETTINGS_HTML" file="resources\chromeos\emulator\input_device_settings.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_INPUT_DEVICE_SETTINGS_JS" file="resources\chromeos\emulator\input_device_settings.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_PAGES_HTML" file="resources\chromeos\emulator\device_emulator_pages.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_PAGES_JS" file="resources\chromeos\emulator\device_emulator_pages.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_SHARED_STYLES_HTML" file="resources\chromeos\emulator\shared_styles.html" compress="gzip" type="BINDATA" />
       </if>
       <if expr="chromeos">
         <include name="IDR_SET_TIME_HTML" file="resources\chromeos\set_time_dialog\set_time.html" type="BINDATA" compress="gzip" />
@@ -537,9 +533,9 @@
         <include name="IDR_BRAILLE_MANIFEST" file="resources\chromeos\braille_ime\manifest.json" type="BINDATA" />
       </if>
       <if expr="not is_android">
-        <include name="IDR_MEDIA_ROUTER_INTERNALS_HTML" file="resources\media_router\media_router_internals.html" type="BINDATA" />
-        <include name="IDR_MEDIA_ROUTER_INTERNALS_CSS" file="resources\media_router\media_router_internals.css" type="BINDATA" />
-        <include name="IDR_MEDIA_ROUTER_INTERNALS_JS" file="resources\media_router\media_router_internals.js" type="BINDATA" />
+        <include name="IDR_MEDIA_ROUTER_INTERNALS_HTML" file="resources\media_router\media_router_internals.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_MEDIA_ROUTER_INTERNALS_CSS" file="resources\media_router\media_router_internals.css" compress="gzip" type="BINDATA" />
+        <include name="IDR_MEDIA_ROUTER_INTERNALS_JS" file="resources\media_router\media_router_internals.js" compress="gzip" type="BINDATA" />
       </if>
       <if expr="chromeos or is_win or is_macosx">
         <include name="IDR_CAST_HTML" file="resources\cast\cast.html" type="BINDATA" />
@@ -570,12 +566,12 @@
         <include name="IDR_SMB_CREDENTIALS_DIALOG_CONTAINER_HTML" file="resources\chromeos\smb_shares\smb_credentials_dialog_container.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <include name="IDR_SMB_CREDENTIALS_DIALOG_HTML" file="resources\chromeos\smb_shares\smb_credentials_dialog.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <include name="IDR_SMB_CREDENTIALS_DIALOG_JS" file="resources\chromeos\smb_shares\smb_credentials_dialog.js" type="chrome_html" />
-        <include name="IDR_SYS_INTERNALS_HTML" file="resources\chromeos\sys_internals\index.html" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_CSS" file="resources\chromeos\sys_internals\index.css" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_JS" file="resources\chromeos\sys_internals\index.js" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_CONSTANT_JS" file="resources\chromeos\sys_internals\constants.js" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_LINE_CHART_CSS" file="resources\chromeos\sys_internals\line_chart\line_chart.css" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_LINE_CHART_JS" file="resources\chromeos\sys_internals\line_chart\index.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_HTML" file="resources\chromeos\sys_internals\index.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_CSS" file="resources\chromeos\sys_internals\index.css" compress="gzip" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_JS" file="resources\chromeos\sys_internals\index.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_CONSTANT_JS" file="resources\chromeos\sys_internals\constants.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_LINE_CHART_CSS" file="resources\chromeos\sys_internals\line_chart\line_chart.css" compress="gzip" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_LINE_CHART_JS" file="resources\chromeos\sys_internals\line_chart\index.js" compress="gzip" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SYS_INTERNALS_IMAGE_MENU_SVG" file="resources\chromeos\sys_internals\img\menu.svg" type="BINDATA" />
         <include name="IDR_SYS_INTERNALS_IMAGE_INFO_SVG" file="resources\chromeos\sys_internals\img\info.svg" type="BINDATA" />
         <include name="IDR_SYS_INTERNALS_IMAGE_CPU_SVG" file="resources\chromeos\sys_internals\img\cpu.svg" type="BINDATA" />

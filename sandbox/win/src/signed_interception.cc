@@ -58,7 +58,7 @@ TargetNtCreateSection(NtCreateSectionFunction orig_CreateSection,
     params[NameBased::NAME] = ParamPickerMake(const_name);
 
     // Check if this will be sent to the broker.
-    if (!QueryBroker(IPC_NTCREATESECTION_TAG, params.GetBase()))
+    if (!QueryBroker(IpcTag::NTCREATESECTION, params.GetBase()))
       break;
 
     if (!ValidParameter(section_handle, sizeof(HANDLE), WRITE))
@@ -68,7 +68,7 @@ TargetNtCreateSection(NtCreateSectionFunction orig_CreateSection,
     answer.nt_status = STATUS_INVALID_IMAGE_HASH;
     SharedMemIPCClient ipc(memory);
     ResultCode code =
-        CrossCall(ipc, IPC_NTCREATESECTION_TAG, file_handle, &answer);
+        CrossCall(ipc, IpcTag::NTCREATESECTION, file_handle, &answer);
 
     if (code != SBOX_ALL_OK)
       break;

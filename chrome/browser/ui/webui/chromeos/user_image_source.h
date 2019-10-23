@@ -32,7 +32,7 @@ class UserImageSource : public content::URLDataSource {
   // content::URLDataSource implementation.
   std::string GetSource() override;
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) override;

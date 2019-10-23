@@ -61,12 +61,15 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -1631,7 +1634,64 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
 
+class HotseatDisabledOverviewSessionTest : public OverviewSessionTest {
+ public:
+  HotseatDisabledOverviewSessionTest() = default;
+  ~HotseatDisabledOverviewSessionTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    feature_list_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
+    OverviewSessionTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(HotseatDisabledOverviewSessionTest);
+};
+
+INSTANTIATE_TEST_SUITE_P(, HotseatDisabledOverviewSessionTest, testing::Bool());
+
+TEST_P(HotseatDisabledOverviewSessionTest,
+       NoWindowsIndicatorPositionSplitview) {
+  UpdateDisplay("400x300");
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_session());
+  RoundedLabelWidget* no_windows_widget =
+      overview_session()->no_windows_widget_for_testing();
+  EXPECT_FALSE(no_windows_widget);
+
+  // Tests that when snapping a window to the left in splitview, the no windows
+  // indicator shows up in the middle of the right side of the screen.
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  no_windows_widget = overview_session()->no_windows_widget_for_testing();
+  ASSERT_TRUE(no_windows_widget);
+
+  // There is a 8dp divider in splitview, the indicator should take that into
+  // account.
+  const int bounds_left = 200 + 4;
+  int expected_x = bounds_left + (400 - (bounds_left)) / 2;
+  const int expected_y = (300 - ShelfConfig::Get()->shelf_size()) / 2;
+  EXPECT_EQ(gfx::Point(expected_x, expected_y),
+            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  // Tests that when snapping a window to the right in splitview, the no windows
+  // indicator shows up in the middle of the left side of the screen.
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::RIGHT);
+  expected_x = /*bounds_right=*/(200 - 4) / 2;
+  EXPECT_EQ(gfx::Point(expected_x, expected_y),
+            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
+}
+
 TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
+  // TODO(https://crbug.com/1009550): Make the shelf in-app for split view and
+  // overview.
+  if (chromeos::switches::ShouldShowShelfHotseat())
+    return;
+
   UpdateDisplay("400x300");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
@@ -5206,6 +5266,36 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   // representations of bounds rects rather than individual components of
   // origins and sizes. Those string representations of bounds rects are most
   // readable when hard-coded.
+  if (chromeos::switches::ShouldShowShelfHotseat()) {
+    ASSERT_EQ(
+        "0,0 800x552",
+        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+            root_windows[0])
+            .ToString());
+    ASSERT_EQ(
+        "800,0 800x552",
+        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+            root_windows[1])
+            .ToString());
+
+    EXPECT_EQ("0,0 400x552",
+              SplitViewController::Get(root_windows[0])
+                  ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT)
+                  .ToString());
+    EXPECT_EQ("400,0 400x552",
+              SplitViewController::Get(root_windows[0])
+                  ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT)
+                  .ToString());
+    EXPECT_EQ("800,0 400x552",
+              SplitViewController::Get(root_windows[1])
+                  ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT)
+                  .ToString());
+    EXPECT_EQ("1200,0 400x552",
+              SplitViewController::Get(root_windows[1])
+                  ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT)
+                  .ToString());
+    return;
+  }
   ASSERT_EQ("0,0 800x544",
             screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
                 root_windows[0])

@@ -57,6 +57,9 @@ void InputMethodWinTSF::OnBlur() {
     return;
   }
   tsf_event_router_->SetManager(nullptr);
+  // Set the policy back to manual as window has lost focus
+  ui::TSFBridge::GetInstance()->SetInputPanelPolicy(
+      /*inputPanelPolicyManual*/ true);
   ui::TSFBridge::GetInstance()->RemoveInputMethodDelegate();
 }
 
@@ -126,6 +129,9 @@ void InputMethodWinTSF::DetachTextInputClient(TextInputClient* client) {
     return;
   }
   InputMethodWinBase::DetachTextInputClient(client);
+  // Set the policy back to manual as the TextInputClient is no longer valid.
+  ui::TSFBridge::GetInstance()->SetInputPanelPolicy(
+      /*inputPanelPolicyManual*/ true);
   ui::TSFBridge::GetInstance()->RemoveFocusedClient(client);
 }
 
@@ -178,6 +184,12 @@ void InputMethodWinTSF::ConfirmCompositionText(bool reset_engine) {
     InputMethodWinBase::ResetEngine();
   if (ui::TSFBridge::GetInstance())
     ui::TSFBridge::GetInstance()->ConfirmComposition();
+}
+
+void InputMethodWinTSF::ShowVirtualKeyboardIfEnabled() {
+  if (ui::TSFBridge::GetInstance())
+    ui::TSFBridge::GetInstance()->SetInputPanelPolicy(
+        /*inputPanelPolicyManual*/ false);
 }
 
 }  // namespace ui

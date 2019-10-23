@@ -568,6 +568,22 @@ void SurfaceAggregator::EmitSurfaceContent(
     RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
     gfx::Rect output_rect = source.output_rect;
+
+    // TODO(ericrk): This is incorrect in the non de-jelly case as well, but we
+    // restrict the fix to de-jelly for merge safety. Implement a full fix.
+    // crbug.com/1016677
+    if (de_jelly_enabled_) {
+      if (referenced_passes[j] == render_pass_list.back()) {
+        DCHECK(!merge_pass);
+        // We are processing the root RenderPass. If this does not produce the
+        // full SurfaceDrawQuad, we will end up with errors in the
+        // !|merge_pass| path below. Expand the RenderPass.
+        gfx::Rect scaled_rect(gfx::ScaleToEnclosingRect(
+            source_rect, layer_to_content_scale_x, layer_to_content_scale_y));
+        output_rect.Union(scaled_rect);
+      }
+    }
+
     if (max_texture_size_ > 0) {
       output_rect.set_width(std::min(output_rect.width(), max_texture_size_));
       output_rect.set_height(std::min(output_rect.height(), max_texture_size_));

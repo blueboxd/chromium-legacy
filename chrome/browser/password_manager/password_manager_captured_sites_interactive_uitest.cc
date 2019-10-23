@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/test_utils.h"
 
 using captured_sites_test_utils::CapturedSiteParams;
@@ -173,6 +174,8 @@ class CapturedSitesPasswordManagerBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kUsernameFirstFlow}, {});
     InProcessBrowserTest::SetUpCommandLine(command_line);
     captured_sites_test_utils::TestRecipeReplayer::SetUpCommandLine(
         command_line);
@@ -204,6 +207,7 @@ class CapturedSitesPasswordManagerBrowserTest
  private:
   std::unique_ptr<captured_sites_test_utils::TestRecipeReplayer>
       recipe_replayer_;
+  base::test::ScopedFeatureList feature_list_;
   content::WebContents* web_contents_ = nullptr;
   std::unique_ptr<ServerUrlLoader> server_url_loader_;
 

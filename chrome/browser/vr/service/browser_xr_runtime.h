@@ -58,7 +58,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
       device::mojom::VRDisplayInfoPtr info);
   ~BrowserXRRuntime() override;
 
-  void ExitVrFromPresentingService();
+  void ExitActiveImmersiveSession();
   bool SupportsFeature(device::mojom::XRSessionFeature feature) const;
   bool SupportsAllFeatures(
       const std::vector<device::mojom::XRSessionFeature>& features) const;
@@ -76,7 +76,9 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void RequestSession(VRServiceImpl* service,
                       const device::mojom::XRRuntimeSessionOptionsPtr& options,
                       RequestSessionCallback callback);
-  VRServiceImpl* GetPresentingVRService() { return presenting_service_; }
+  VRServiceImpl* GetServiceWithActiveImmersiveSession() {
+    return presenting_service_;
+  }
   void UpdateListeningForActivate(VRServiceImpl* service);
 
   device::mojom::VRDisplayInfoPtr GetVRDisplayInfo() {

@@ -2186,6 +2186,9 @@ const char kFactoryResetTPMFirmwareUpdateMode[] =
 // Indicates that debugging features were requested from oobe screen.
 const char kDebuggingFeaturesRequested[] = "DebuggingFeaturesRequested";
 
+// Indicates that the user has requested that ARC APK Sideloading be enabled.
+const char kEnableAdbSideloadingRequested[] = "EnableAdbSideloadingRequested";
+
 #if defined(OS_CHROMEOS)
 // This setting controls initial device timezone that is used before user
 // session started. It is controlled by device owner.

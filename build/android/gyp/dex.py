@@ -45,10 +45,6 @@ def _ParseArgs(args):
       '--incremental-dir',
       help='Path of directory to put intermediate dex files.')
   parser.add_argument(
-      '--merge-incrementals',
-      action='store_true',
-      help='Combine all per-class .dex files into a single classes.dex')
-  parser.add_argument(
       '--main-dex-list-path',
       help='File containing a list of the classes to include in the main dex.')
   parser.add_argument(
@@ -272,22 +268,22 @@ def _PerformDexlayout(tmp_dir, tmp_dex_output, options):
   return final_output
 
 
-def _CreateFinalDex(options, d8_inputs, tmp_dir, dex_cmd):
+def _CreateFinalDex(d8_inputs, output, tmp_dir, dex_cmd, options=None):
   tmp_dex_output = os.path.join(tmp_dir, 'tmp_dex_output.zip')
-  if (options.merge_incrementals or options.output.endswith('.dex')
+  if (output.endswith('.dex')
       or not all(f.endswith('.dex') for f in d8_inputs)):
-    if options.multi_dex and options.main_dex_list_path:
+    if options and options.main_dex_list_path:
       # Provides a list of classes that should be included in the main dex file.
       dex_cmd = dex_cmd + ['--main-dex-list', options.main_dex_list_path]
 
     tmp_dex_dir = os.path.join(tmp_dir, 'tmp_dex_dir')
     os.mkdir(tmp_dex_dir)
     _RunD8(dex_cmd, d8_inputs, tmp_dex_dir)
-    logging.info('Performed dex merging')
+    logging.debug('Performed dex merging')
 
     dex_files = [os.path.join(tmp_dex_dir, f) for f in os.listdir(tmp_dex_dir)]
 
-    if options.output.endswith('.dex'):
+    if output.endswith('.dex'):
       if len(dex_files) > 1:
         raise Exception('%d files created, expected 1' % len(dex_files))
       tmp_dex_output = dex_files[0]
@@ -296,13 +292,13 @@ def _CreateFinalDex(options, d8_inputs, tmp_dir, dex_cmd):
   else:
     # Skip dexmerger. Just put all incrementals into the .jar individually.
     _ZipAligned(sorted(d8_inputs), tmp_dex_output)
-    logging.info('Quick-zipped %d files', len(d8_inputs))
+    logging.debug('Quick-zipped %d files', len(d8_inputs))
 
-  if options.dexlayout_profile:
+  if options and options.dexlayout_profile:
     tmp_dex_output = _PerformDexlayout(tmp_dir, tmp_dex_output, options)
 
   # The dex file is complete and can be moved out of tmp_dir.
-  shutil.move(tmp_dex_output, options.output)
+  shutil.move(tmp_dex_output, output)
 
 
 def _IntermediateDexFilePathsFromInputJars(class_inputs, incremental_dir):
@@ -354,18 +350,18 @@ def _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd):
     changes = None
   class_files = _ExtractClassFiles(changes, tmp_extract_dir,
                                    options.class_inputs)
-  logging.info('Extracted class files: %d', len(class_files))
+  logging.debug('Extracted class files: %d', len(class_files))
 
   # If the only change is deleting a file, class_files will be empty.
   if class_files:
     # Dex necessary classes into intermediate dex files.
     dex_cmd = dex_cmd + ['--intermediate', '--file-per-class']
     _RunD8(dex_cmd, class_files, options.incremental_dir)
-    logging.info('Dexed class files.')
+    logging.debug('Dexed class files.')
 
 
 def _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd):
-  logging.info('_OnStaleMd5')
+  logging.debug('_OnStaleMd5')
   with build_utils.TempDir() as tmp_dir:
     if options.incremental_dir:
       # Create directory for all intermediate dex files.
@@ -373,11 +369,23 @@ def _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd):
         os.makedirs(options.incremental_dir)
 
       _DeleteStaleIncrementalDexFiles(options.incremental_dir, final_dex_inputs)
-      logging.info('Stale files deleted')
+      logging.debug('Stale files deleted')
       _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd)
 
-    _CreateFinalDex(options, final_dex_inputs, tmp_dir, dex_cmd)
-  logging.info('Dex finished for: %s', options.output)
+    _CreateFinalDex(
+        final_dex_inputs, options.output, tmp_dir, dex_cmd, options=options)
+  logging.debug('Dex finished for: %s', options.output)
+
+
+def MergeDexForIncrementalInstall(r8_jar_path, src_paths, dest_dex_jar):
+  dex_cmd = [
+      build_utils.JAVA_PATH,
+      '-jar',
+      r8_jar_path,
+      'd8',
+  ]
+  with build_utils.TempDir() as tmp_dir:
+    _CreateFinalDex(src_paths, dest_dex_jar, tmp_dir, dex_cmd)
 
 
 def main(args):
@@ -400,8 +408,10 @@ def main(args):
     final_dex_inputs = _IntermediateDexFilePathsFromInputJars(
         options.class_inputs, options.incremental_dir)
     output_paths += final_dex_inputs
+    track_subpaths_whitelist = options.class_inputs
   else:
     final_dex_inputs = list(options.class_inputs)
+    track_subpaths_whitelist = None
   final_dex_inputs += options.dex_inputs
 
   dex_cmd = [
@@ -421,7 +431,7 @@ def main(args):
       input_paths=input_paths,
       input_strings=dex_cmd + [bool(options.incremental_dir)],
       pass_changes=True,
-      track_subpaths_whitelist=options.class_inputs)
+      track_subpaths_whitelist=track_subpaths_whitelist)
 
 
 if __name__ == '__main__':

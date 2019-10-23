@@ -76,6 +76,12 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // Utility function for going from width to icon counts.
   size_t WidthToIconCount(int x_offset);
 
+  gfx::ImageSkia GetExtensionIcon(ToolbarActionView* extension_view);
+
+  // Sets a pinned extension button's image to be shown/hidden.
+  void SetExtensionIconVisibility(ToolbarActionsModel::ActionId id,
+                                  bool visible);
+
   // ExtensionsContainer:
   ToolbarActionViewController* GetActionForId(
       const std::string& action_id) override;

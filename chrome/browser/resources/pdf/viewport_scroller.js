@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * Creates a new ViewportScroller.
  * A ViewportScroller scrolls the page in response to drag selection with the
  * mouse.
  *
  */
-class ViewportScroller {
+export class ViewportScroller {
   /**
    * @param {Object} viewport The viewport info of the page.
    * @param {Object} plugin The PDF plugin element.

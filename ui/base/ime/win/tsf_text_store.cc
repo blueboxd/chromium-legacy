@@ -217,11 +217,10 @@ STDMETHODIMP TSFTextStore::GetStatus(TS_STATUS* status) {
   if (!status)
     return E_INVALIDARG;
 
-  // Setting input pane policy to manual so TryShow/TryHide APIs can function
-  // properly. We definitely need to think about a good solution here (i.e.
-  // remove TryShow/TryHide APIs if possible) and let TSF handle SIP based on
-  // textstore document focus.
-  status->dwDynamicFlags = TS_SD_INPUTPANEMANUALDISPLAYENABLE;
+  if (input_panel_policy_manual_)
+    status->dwDynamicFlags |= TS_SD_INPUTPANEMANUALDISPLAYENABLE;
+  else
+    status->dwDynamicFlags &= ~TS_SD_INPUTPANEMANUALDISPLAYENABLE;
   // We don't support hidden text.
   // TODO(IME): Remove TS_SS_TRANSITORY to support Korean reconversion
   status->dwStaticFlags = TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT;
@@ -1206,6 +1205,10 @@ bool TSFTextStore::ConfirmComposition() {
   composition_start_ = selection_.end();
 
   return TerminateComposition();
+}
+
+void TSFTextStore::SetInputPanelPolicy(bool input_panel_policy_manual) {
+  input_panel_policy_manual_ = input_panel_policy_manual;
 }
 
 void TSFTextStore::SendOnLayoutChange() {

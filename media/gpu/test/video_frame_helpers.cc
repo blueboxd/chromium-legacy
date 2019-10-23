@@ -132,8 +132,8 @@ bool CopyVideoFrame(const VideoFrame* src_frame,
   // buffer into memory. We use a VideoFrameMapper to create a memory-based
   // VideoFrame that refers to the |dst_frame|'s buffer.
   if (dst_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
-    auto video_frame_mapper =
-        VideoFrameMapperFactory::CreateMapper(dst_frame->format(), true);
+    auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper(
+        dst_frame->format(), VideoFrame::STORAGE_DMABUFS, true);
     LOG_ASSERT(video_frame_mapper);
     dst_frame = video_frame_mapper->Map(std::move(dst_frame));
     if (!dst_frame) {

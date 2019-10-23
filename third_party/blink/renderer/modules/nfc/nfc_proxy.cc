@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_reader.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_writer.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
@@ -36,7 +35,6 @@ NFCProxy* NFCProxy::From(Document& document) {
 // NFCProxy
 NFCProxy::NFCProxy(Document& document)
     : PageVisibilityObserver(document.GetPage()),
-      FocusChangedObserver(document.GetPage()),
       Supplement<Document>(document),
       client_receiver_(this) {}
 
@@ -50,7 +48,6 @@ void NFCProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(writers_);
   visitor->Trace(readers_);
   PageVisibilityObserver::Trace(visitor);
-  FocusChangedObserver::Trace(visitor);
   Supplement<Document>::Trace(visitor);
 }
 
@@ -147,14 +144,6 @@ void NFCProxy::OnReaderRegistered(NDEFReader* reader,
 }
 
 void NFCProxy::PageVisibilityChanged() {
-  UpdateSuspendedStatus();
-}
-
-void NFCProxy::FocusedFrameChanged() {
-  UpdateSuspendedStatus();
-}
-
-void NFCProxy::UpdateSuspendedStatus() {
   // If service is not initialized, there cannot be any pending NFC activities.
   if (!nfc_remote_)
     return;
@@ -163,26 +152,10 @@ void NFCProxy::UpdateSuspendedStatus() {
   // https://w3c.github.io/web-nfc/#nfc-suspended
   // TODO(https://crbug.com/520391): Suspend/Resume NFC in the browser process
   // instead to prevent a compromised renderer from using NFC in the background.
-  if (ShouldSuspendNFC())
+  if (!GetPage()->IsPageVisible())
     nfc_remote_->SuspendNFCOperations();
   else
     nfc_remote_->ResumeNFCOperations();
-}
-
-bool NFCProxy::ShouldSuspendNFC() const {
-  if (!GetPage()->IsPageVisible())
-    return true;
-
-  LocalFrame* focused_frame = GetPage()->GetFocusController().FocusedFrame();
-  LocalFrame* this_frame = GetSupplementable()->GetFrame();
-
-  if (!focused_frame || !this_frame)
-    return true;
-
-  if (focused_frame != this_frame)
-    return true;
-
-  return false;
 }
 
 void NFCProxy::EnsureMojoConnection() {

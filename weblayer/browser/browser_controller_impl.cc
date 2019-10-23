@@ -6,10 +6,12 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
+#include "weblayer/browser/file_select_helper.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/browser_observer.h"
@@ -192,6 +194,14 @@ void BrowserControllerImpl::DidNavigateMainFramePostCommit(
     observer.DisplayedUrlChanged(web_contents->GetVisibleURL());
 }
 
+void BrowserControllerImpl::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
+    const blink::mojom::FileChooserParams& params) {
+  FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
+                                   params);
+}
+
 int BrowserControllerImpl::GetTopControlsHeight() {
 #if defined(OS_ANDROID)
   return top_controls_container_view_->GetTopControlsHeight();
@@ -259,7 +269,7 @@ void BrowserControllerImpl::OnExitFullscreen() {
   // If |processing_enter_fullscreen_| is true, it means the callback is being
   // called while processing EnterFullscreenModeForTab(). WebContents doesn't
   // deal well with this. FATAL as Android generally doesn't run with DCHECKs.
-  LOG_IF(FATAL, !processing_enter_fullscreen_)
+  LOG_IF(FATAL, processing_enter_fullscreen_)
       << "exiting fullscreen while entering fullscreen is not supported";
   web_contents_->ExitFullscreen(/* will_cause_resize */ false);
 }

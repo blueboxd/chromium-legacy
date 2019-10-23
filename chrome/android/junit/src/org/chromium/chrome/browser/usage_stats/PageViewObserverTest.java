@@ -418,6 +418,17 @@ public final class PageViewObserverTest {
         verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStartEvent(DIFFERENT_FQDN)));
     }
 
+    @Test
+    public void construction_nullInitialTab() {
+        doReturn(null).when(mTabModelSelector).getCurrentTab();
+        PageViewObserver observer = createPageViewObserver();
+
+        doReturn(mTab).when(mTabModelSelector).getCurrentTab();
+        doReturn(STARTING_URL).when(mTab).getUrl();
+        didSelectTab(mTab, TabSelectionType.FROM_USER);
+        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+    }
+
     private PageViewObserver createPageViewObserver() {
         PageViewObserver observer = new PageViewObserver(
                 mActivity, mTabModelSelector, mEventTracker, mTokenTracker, mSuspensionTracker);

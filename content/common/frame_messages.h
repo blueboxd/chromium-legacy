@@ -813,12 +813,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_ViewChanged,
 // support cross-process focused frame changes.
 IPC_MESSAGE_ROUTED0(FrameMsg_SetFocusedFrame)
 
-// Sent to a frame proxy when its real frame is preparing to enter fullscreen
-// in another process.  Actually entering fullscreen will be done separately as
-// part of ViewMsg_Resize, once the browser process has resized the tab for
-// fullscreen.
-IPC_MESSAGE_ROUTED0(FrameMsg_WillEnterFullscreen)
-
 // Send to the RenderFrame to set text tracks state and style settings.
 // Sent for top-level frames.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
@@ -1243,12 +1237,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateViewportIntersection,
                     gfx::Rect /* viewport_intersection */,
                     gfx::Rect /* compositor_visible_rect */,
                     blink::FrameOcclusionState /* occlusion_state */)
-
-// Indicates that a child frame requires its parent frame to send it information
-// about whether it is occluded or has visual effects applied, in order to
-// service IntersectionObserver's that track visibility.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_SetNeedsOcclusionTracking,
-                    bool /* needs_tracking */)
 
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged,

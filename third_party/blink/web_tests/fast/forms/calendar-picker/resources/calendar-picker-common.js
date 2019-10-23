@@ -81,16 +81,16 @@ function clickDayCellAt(column, row) {
 }
 
 function hoverOverTimeCellAt(column, row) {
-    const timeCellWidth = 52;
-    const timeCellHeight = 32;
+  const timeCellWidth = 56;
+  const timeCellHeight = 36;
 
-    skipAnimation();
-    var offset = cumulativeOffset(popupWindow.global.picker.timeColumns);
-    var x = offset[0];
-    var y = offset[1];
-    x += (column + 0.5) * timeCellWidth;
-    y += (row + 0.5) * timeCellHeight;
-    eventSender.mouseMoveTo(x, y);
+  skipAnimation();
+  var offset = cumulativeOffset(popupWindow.global.picker.timeColumns);
+  var x = offset[0];
+  var y = offset[1];
+  x += (column + 0.5) * timeCellWidth;
+  y += (row + 0.5) * timeCellHeight;
+  eventSender.mouseMoveTo(x, y);
 }
 
 function clickTimeCellAt(column, row) {

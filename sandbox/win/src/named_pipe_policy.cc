@@ -54,7 +54,7 @@ bool NamedPipePolicy::GenerateRules(const wchar_t* name,
   if (!pipe.AddStringMatch(IF, NameBased::NAME, name, CASE_INSENSITIVE)) {
     return false;
   }
-  if (!policy->AddRule(IPC_CREATENAMEDPIPEW_TAG, &pipe)) {
+  if (!policy->AddRule(IpcTag::CREATENAMEDPIPEW, &pipe)) {
     return false;
   }
   return true;

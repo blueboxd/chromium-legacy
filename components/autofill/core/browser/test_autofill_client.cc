@@ -107,6 +107,13 @@ void TestAutofillClient::ShowLocalCardMigrationResults(
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     MigrationDeleteCardCallback delete_local_card_callback) {}
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void TestAutofillClient::ShowVerifyPendingDialog(
+    base::OnceClosure cancel_card_verification_callback) {}
+
+void TestAutofillClient::CloseVerifyPendingDialog() {}
+#endif
+
 void TestAutofillClient::ShowWebauthnOfferDialog(
     WebauthnOfferDialogCallback callback) {}
 

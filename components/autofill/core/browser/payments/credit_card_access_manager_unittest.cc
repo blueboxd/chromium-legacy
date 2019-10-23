@@ -836,6 +836,29 @@ TEST_F(CreditCardAccessManagerTest, FIDONewCardAuthorization) {
       AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
 }
 
+// Ensures expired cards always invoke a CVC prompt instead of WebAuthn.
+TEST_F(CreditCardAccessManagerTest, FetchExpiredServerCardInvokesCvcPrompt) {
+  // Creating an expired server card and opting the user in with authorized
+  // card.
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  card->SetExpirationYearFromString(base::UTF8ToUTF16("2010"));
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(true);
+  payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
+                                        kGooglePaymentsRpid);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  WaitForCallbacks();
+
+  // Expect CVC prompt to be invoked.
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+}
+
 #if defined(OS_ANDROID)
 // Ensures that the WebAuthn enrollment prompt is invoked after user opts in.
 TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentSuccess_Android) {

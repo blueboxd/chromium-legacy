@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 #include "net/base/data_url.h"
+
+#include "base/memory/ref_counted.h"
+#include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -15,7 +20,7 @@ struct ParseTestData {
   bool is_valid;
   const char* mime_type;
   const char* charset;
-  const char* data;
+  const std::string data;
 };
 
 }  // namespace
@@ -131,7 +136,16 @@ TEST(DataURLTest, Parse) {
       {"data:text/plain,this/is/a/test/%23include/#dontinclude", true,
        "text/plain", "", "this/is/a/test/#include/"},
 
-      // TODO(darin): add more interesting tests
+      // More unescaping tests and tests with nulls.
+      {"data:%00text/plain%41,foo", true, "%00text/plain%41", "", "foo"},
+      {"data:text/plain;charset=%00US-ASCII%41,foo", true, "text/plain",
+       "%00US-ASCII%41", "foo"},
+      {"data:text/plain,%00_%41", true, "text/plain", "",
+       std::string("\x00_A", 3)},
+      {"data:text/plain;base64,AA//", true, "text/plain", "",
+       std::string("\x00\x0F\xFF", 3)},
+      // "%62ase64" unescapes to base64, but should not be treated as such.
+      {"data:text/plain;%62ase64,AA//", true, "text/plain", "", "AA//"},
   };
 
   for (const auto& test : tests) {
@@ -146,6 +160,100 @@ TEST(DataURLTest, Parse) {
       EXPECT_EQ(test.data, data);
     }
   }
+}
+
+TEST(DataURLTest, BuildResponseSimple) {
+  std::string mime_type;
+  std::string charset;
+  std::string data;
+  scoped_refptr<HttpResponseHeaders> headers(
+      new HttpResponseHeaders(std::string()));
+
+  ASSERT_EQ(OK, DataURL::BuildResponse(GURL("data:,Hello"), "GET", &mime_type,
+                                       &charset, &data, headers.get()));
+
+  EXPECT_EQ("text/plain", mime_type);
+  EXPECT_EQ("US-ASCII", charset);
+  EXPECT_EQ("Hello", data);
+
+  const HttpVersion& version = headers->GetHttpVersion();
+  EXPECT_EQ(1, version.major_value());
+  EXPECT_EQ(1, version.minor_value());
+  EXPECT_EQ("OK", headers->GetStatusText());
+  std::string value;
+  EXPECT_TRUE(headers->GetNormalizedHeader("Content-Type", &value));
+  EXPECT_EQ(value, "text/plain;charset=US-ASCII");
+  value.clear();
+}
+
+TEST(DataURLTest, BuildResponseHead) {
+  for (const char* method : {"HEAD", "head", "hEaD"}) {
+    SCOPED_TRACE(method);
+
+    std::string mime_type;
+    std::string charset;
+    std::string data;
+    scoped_refptr<HttpResponseHeaders> headers =
+        HttpResponseHeaders::TryToCreate("");
+    ASSERT_EQ(OK,
+              DataURL::BuildResponse(GURL("data:,Hello"), method, &mime_type,
+                                     &charset, &data, headers.get()));
+
+    EXPECT_EQ("text/plain", mime_type);
+    EXPECT_EQ("US-ASCII", charset);
+    EXPECT_EQ("", data);
+
+    HttpVersion version = headers->GetHttpVersion();
+    EXPECT_EQ(1, version.major_value());
+    EXPECT_EQ(1, version.minor_value());
+    EXPECT_EQ("OK", headers->GetStatusText());
+    std::string content_type;
+    EXPECT_TRUE(headers->GetNormalizedHeader("Content-Type", &content_type));
+    EXPECT_EQ(content_type, "text/plain;charset=US-ASCII");
+  }
+}
+
+TEST(DataURLTest, BuildResponseInput) {
+  std::string mime_type;
+  std::string charset;
+  std::string data;
+  scoped_refptr<HttpResponseHeaders> headers(
+      new HttpResponseHeaders(std::string()));
+
+  ASSERT_EQ(ERR_INVALID_URL,
+            DataURL::BuildResponse(GURL("bogus"), "GET", &mime_type, &charset,
+                                   &data, headers.get()));
+}
+
+TEST(DataURLTest, BuildResponseInvalidMimeType) {
+  std::string mime_type;
+  std::string charset;
+  std::string data;
+  scoped_refptr<HttpResponseHeaders> headers(
+      new HttpResponseHeaders(std::string()));
+
+  // MIME type contains delimiters. Must be accepted but Content-Type header
+  // should be generated as if the mediatype was text/plain.
+  ASSERT_EQ(OK,
+            DataURL::BuildResponse(GURL("data:f(o/b)r,test"), "GET", &mime_type,
+                                   &charset, &data, headers.get()));
+
+  std::string value;
+  EXPECT_TRUE(headers->GetNormalizedHeader("Content-Type", &value));
+  EXPECT_EQ(value, "text/plain;charset=US-ASCII");
+}
+
+TEST(DataURLTest, InvalidCharset) {
+  std::string mime_type;
+  std::string charset;
+  std::string data;
+  scoped_refptr<HttpResponseHeaders> headers(
+      new HttpResponseHeaders(std::string()));
+
+  // MIME type contains delimiters. Must be rejected.
+  ASSERT_EQ(ERR_INVALID_URL, DataURL::BuildResponse(
+                                 GURL("data:text/html;charset=(),test"), "GET",
+                                 &mime_type, &charset, &data, headers.get()));
 }
 
 }  // namespace net

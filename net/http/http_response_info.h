@@ -69,6 +69,13 @@ class NET_EXPORT HttpResponseInfo {
     NUM_OF_CONNECTION_INFOS,
   };
 
+  enum ConnectionInfoCoarse {
+    CONNECTION_INFO_COARSE_HTTP1,  // HTTP/0.9, 1.0 and 1.1
+    CONNECTION_INFO_COARSE_HTTP2,
+    CONNECTION_INFO_COARSE_QUIC,
+    CONNECTION_INFO_COARSE_OTHER,
+  };
+
   // Used for categorizing transactions for reporting in histograms.
   // CacheEntryStatus covers relatively common use cases being measured and
   // considered for optimization. Many use cases that are more complex or
@@ -96,6 +103,10 @@ class NET_EXPORT HttpResponseInfo {
     ENTRY_CANT_CONDITIONALIZE,
     ENTRY_MAX,
   };
+
+  // Returns a more coarse-grained description of the protocol used to fetch the
+  // response.
+  static ConnectionInfoCoarse ConnectionInfoToCoarse(ConnectionInfo info);
 
   HttpResponseInfo();
   HttpResponseInfo(const HttpResponseInfo& rhs);

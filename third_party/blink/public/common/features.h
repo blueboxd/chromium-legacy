@@ -38,6 +38,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kOffMainThreadServiceWorkerStartup;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
+BLINK_COMMON_EXPORT extern const base::Feature kPortalsCrossOrigin;
 BLINK_COMMON_EXPORT extern const base::Feature
     kPreviewsResourceLoadingHintsSpecificResourceTypes;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -127,6 +128,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kARIAAnnotationRoles;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDisableDirectlyCompositedImages;
+BLINK_COMMON_EXPORT extern const base::Feature kCompositeCrossOriginIframes;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
 

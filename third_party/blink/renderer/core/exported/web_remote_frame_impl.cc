@@ -27,8 +27,6 @@
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
-#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -58,36 +56,45 @@ FloatRect DeNormalizeRect(const WebFloatRect& normalized, const IntRect& base) {
 }  // namespace
 
 WebRemoteFrame* WebRemoteFrame::Create(WebTreeScopeType scope,
-                                       WebRemoteFrameClient* client) {
-  return WebRemoteFrameImpl::Create(scope, client);
+                                       WebRemoteFrameClient* client,
+                                       InterfaceRegistry* interface_registry) {
+  return WebRemoteFrameImpl::Create(scope, client, interface_registry);
 }
 
-WebRemoteFrame* WebRemoteFrame::CreateMainFrame(WebView* web_view,
-                                                WebRemoteFrameClient* client,
-                                                WebFrame* opener) {
-  return WebRemoteFrameImpl::CreateMainFrame(web_view, client, opener);
+WebRemoteFrame* WebRemoteFrame::CreateMainFrame(
+    WebView* web_view,
+    WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
+    WebFrame* opener) {
+  return WebRemoteFrameImpl::CreateMainFrame(web_view, client,
+                                             interface_registry, opener);
 }
 
 WebRemoteFrame* WebRemoteFrame::CreateForPortal(
     WebTreeScopeType scope,
     WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
     const WebElement& portal_element) {
-  return WebRemoteFrameImpl::CreateForPortal(scope, client, portal_element);
+  return WebRemoteFrameImpl::CreateForPortal(scope, client, interface_registry,
+                                             portal_element);
 }
 
-WebRemoteFrameImpl* WebRemoteFrameImpl::Create(WebTreeScopeType scope,
-                                               WebRemoteFrameClient* client) {
-  WebRemoteFrameImpl* frame =
-      MakeGarbageCollected<WebRemoteFrameImpl>(scope, client);
+WebRemoteFrameImpl* WebRemoteFrameImpl::Create(
+    WebTreeScopeType scope,
+    WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry) {
+  WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
+      scope, client, interface_registry);
   return frame;
 }
 
 WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
     WebFrame* opener) {
   WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      WebTreeScopeType::kDocument, client);
+      WebTreeScopeType::kDocument, client, interface_registry);
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   // It would be nice to DCHECK that the main frame is not set yet here.
@@ -107,9 +114,10 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
 WebRemoteFrameImpl* WebRemoteFrameImpl::CreateForPortal(
     WebTreeScopeType scope,
     WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
     const WebElement& portal_element) {
-  WebRemoteFrameImpl* frame =
-      MakeGarbageCollected<WebRemoteFrameImpl>(scope, client);
+  WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
+      scope, client, interface_registry);
 
   Element* element = portal_element;
   DCHECK(element->HasTagName(html_names::kPortalTag));
@@ -198,7 +206,8 @@ void WebRemoteFrameImpl::InitializeCoreFrame(
     const AtomicString& name,
     WindowAgentFactory* window_agent_factory) {
   SetCoreFrame(MakeGarbageCollected<RemoteFrame>(frame_client_.Get(), page,
-                                                 owner, window_agent_factory));
+                                                 owner, window_agent_factory,
+                                                 interface_registry_));
   GetFrame()->CreateView();
   frame_->Tree().SetName(name);
 }
@@ -209,8 +218,10 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     const FramePolicy& frame_policy,
     FrameOwnerElementType frame_owner_element_type,
     WebRemoteFrameClient* client,
+    blink::InterfaceRegistry* interface_registry,
     WebFrame* opener) {
-  WebRemoteFrameImpl* child = WebRemoteFrameImpl::Create(scope, client);
+  WebRemoteFrameImpl* child =
+      WebRemoteFrameImpl::Create(scope, client, interface_registry);
   child->SetOpener(opener);
   AppendChild(child);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
@@ -374,28 +385,6 @@ bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {
   return GetFrame()->IsIgnoredForHitTest();
 }
 
-void WebRemoteFrameImpl::WillEnterFullscreen() {
-  // This should only ever be called when the FrameOwner is local.
-  HTMLFrameOwnerElement* owner_element =
-      To<HTMLFrameOwnerElement>(GetFrame()->Owner());
-
-  // Call |requestFullscreen()| on |ownerElement| to make it the pending
-  // fullscreen element in anticipation of the coming |didEnterFullscreen()|
-  // call.
-  //
-  // PrefixedForCrossProcessDescendant is necessary because:
-  //  - The fullscreen element ready check and other checks should be bypassed.
-  //  - |ownerElement| will need :-webkit-full-screen-ancestor style in addition
-  //    to :fullscreen.
-  //
-  // TODO(alexmos): currently, this assumes prefixed requests, but in the
-  // future, this should plumb in information about which request type
-  // (prefixed or unprefixed) to use for firing fullscreen events.
-  Fullscreen::RequestFullscreen(
-      *owner_element, FullscreenOptions::Create(),
-      Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
-}
-
 void WebRemoteFrameImpl::UpdateUserActivationState(
     UserActivationUpdateType update_type) {
   switch (update_type) {
@@ -518,10 +507,12 @@ void WebRemoteFrameImpl::RenderFallbackContent() const {
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
-                                       WebRemoteFrameClient* client)
+                                       WebRemoteFrameClient* client,
+                                       InterfaceRegistry* interface_registry)
     : WebRemoteFrame(scope),
       client_(client),
       frame_client_(MakeGarbageCollected<RemoteFrameClientImpl>(this)),
+      interface_registry_(interface_registry),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   DCHECK(client);
 }

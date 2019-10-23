@@ -751,6 +751,13 @@ void PasswordManager::OnPasswordFormsRendered(
     return;
   }
 
+  if (!driver->IsMainFrame() &&
+      submitted_manager->driver_id() != driver->GetId()) {
+    // Frames different from the main frame and the frame of the submitted form
+    // are unlikely relevant to success of submission.
+    return;
+  }
+
   // If we see the login form again, then the login failed.
   if (submitted_manager->GetPendingCredentials().scheme ==
       PasswordForm::Scheme::kHtml) {

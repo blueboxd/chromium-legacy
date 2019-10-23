@@ -7,8 +7,6 @@ import logging
 import os
 import time
 
-from core.results_processor import util
-
 from tracing.metrics import metric_runner
 
 
@@ -24,7 +22,7 @@ HISTOGRAM_DICTS_KEY = 'histogram_dicts'
 HISTOGRAM_DICTS_FILE = 'histogram_dicts.json'
 
 
-def _PoolWorker(test_result):
+def _RunMetric(test_result):
   metrics = [tag['value'] for tag in test_result['tags']
              if tag['key'] == 'tbmv2']
   html_trace = test_result['outputArtifacts'][HTML_TRACE_NAME]
@@ -56,7 +54,7 @@ def _PoolWorker(test_result):
   return mre_result.pairs.get('histograms', [])
 
 
-def ComputeTBMv2Metrics(intermediate_results):
+def ComputeTBMv2Metrics(test_result):
   """Compute metrics on aggregated traces in parallel.
 
   For each test run that has an aggregate trace and some TBMv2 metrics listed
@@ -64,40 +62,32 @@ def ComputeTBMv2Metrics(intermediate_results):
   histograms. Note: the order of histograms in the results may be different
   from the order of tests in intermediate_results.
   """
-  histogram_dicts = []
-  work_list = []
-  for test_result in intermediate_results['testResults']:
-    artifacts = test_result.get('outputArtifacts', {})
-    # TODO(crbug.com/981349): If metrics have already been computed in
-    # Telemetry, we read it from the file. Remove this branch after Telemetry
-    # does not compute metrics anymore.
-    if HISTOGRAM_DICTS_FILE in artifacts:
-      with open(artifacts[HISTOGRAM_DICTS_FILE]['filePath']) as f:
-        histogram_dicts += json.load(f)
-      del artifacts[HISTOGRAM_DICTS_FILE]
-      continue
+  artifacts = test_result.get('outputArtifacts', {})
+  # TODO(crbug.com/981349): If metrics have already been computed in
+  # Telemetry, we read it from the file. Remove this branch after Telemetry
+  # does not compute metrics anymore.
+  if HISTOGRAM_DICTS_FILE in artifacts:
+    with open(artifacts[HISTOGRAM_DICTS_FILE]['filePath']) as f:
+      test_result['_histograms'].ImportDicts(json.load(f))
+    del artifacts[HISTOGRAM_DICTS_FILE]
+    return
 
-    if test_result['status'] == 'SKIP':
-      continue
+  if test_result['status'] == 'SKIP':
+    return
 
-    if (HTML_TRACE_NAME not in artifacts or
-        not any(tag['key'] == 'tbmv2' for tag in test_result.get('tags', []))):
-      continue
+  if (HTML_TRACE_NAME not in artifacts or
+      not any(tag['key'] == 'tbmv2' for tag in test_result.get('tags', []))):
+    return
 
-    trace_size_in_mib = (os.path.getsize(artifacts[HTML_TRACE_NAME]['filePath'])
-                         / (2 ** 20))
-    # Bails out on traces that are too big. See crbug.com/812631 for more
-    # details.
-    # TODO(crbug.com/1010041): Return a non-zero exit code in this case.
-    if trace_size_in_mib > 400:
-      test_result['status'] = 'FAIL'
-      logging.error('%s: Trace size is too big: %s MiB',
-                    test_result['testPath'], trace_size_in_mib)
-      continue
+  trace_size_in_mib = (os.path.getsize(artifacts[HTML_TRACE_NAME]['filePath'])
+                       / (2 ** 20))
+  # Bails out on traces that are too big. See crbug.com/812631 for more
+  # details.
+  # TODO(crbug.com/1010041): Return a non-zero exit code in this case.
+  if trace_size_in_mib > 400:
+    test_result['status'] = 'FAIL'
+    logging.error('%s: Trace size is too big: %s MiB',
+                  test_result['testPath'], trace_size_in_mib)
+    return
 
-    work_list.append(test_result)
-
-  for dicts in util.ApplyInParallel(_PoolWorker, work_list):
-    histogram_dicts += dicts
-
-  return histogram_dicts
+  test_result['_histograms'].ImportDicts(_RunMetric(test_result))

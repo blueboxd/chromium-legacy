@@ -44,5 +44,13 @@
                  android:isolatedProcess="false"
                  android:exported="false" />
         {% endfor %}
+
+        <provider android:name="android.support.v4.content.FileProvider"
+            android:authorities="org.chromium.weblayer.client.FileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

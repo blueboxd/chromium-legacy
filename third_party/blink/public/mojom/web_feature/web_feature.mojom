@@ -2443,6 +2443,8 @@ enum WebFeature {
   kNonOriginCleanImageBitmapTransfer = 3059,
   kCompressionStreamConstructor = 3060,
   kDecompressionStreamConstructor = 3061,
+  kV8RTCRtpReceiver_PlayoutDelayHint_AttributeGetter = 3062,
+  kV8RTCRtpReceiver_PlayoutDelayHint_AttributeSetter = 3063,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -860,6 +860,22 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
+#ifdef OS_ANDROID
+const FeatureEntry::FeatureParam kOmniboxNTPZPSLocal[] = {
+    {"ZeroSuggestVariant:7:*", "Local"},
+    {"ZeroSuggestVariant:8:*", "Local"}};
+
+const FeatureEntry::FeatureParam kOmniboxNTPZPSRemote[] = {
+    {"ZeroSuggestVariant:7:*", "RemoteNoUrl"},
+    {"ZeroSuggestVariant:8:*", "RemoteNoUrl"}};
+
+const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
+    {"ZPS on NTP: Local History", kOmniboxNTPZPSLocal,
+     base::size(kOmniboxNTPZPSLocal), nullptr},
+    {"ZPS on NTP: Remote History", kOmniboxNTPZPSRemote,
+     base::size(kOmniboxNTPZPSRemote), "t3314248"},
+};
+#else
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
     {"ZeroSuggestVariant:6:*", "RemoteSendUrl"}};
 const FeatureEntry::FeatureParam
@@ -889,6 +905,7 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
      base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal),
      "t3316133" /* variation_id */},
 };
+#endif
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
@@ -3924,6 +3941,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseFakeDeviceForMediaStreamName,
      flag_descriptions::kUseFakeDeviceForMediaStreamDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(media::kUseFakeDeviceForMediaStream)},
+
+    {"ash-drag-window-from-shelf",
+     flag_descriptions::kAshDragWindowFromShelfName,
+     flag_descriptions::kAshDragWindowFromShelfDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDragFromShelfToHomeOrOverview)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -4176,7 +4198,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDoNotMigrateUnsupportedLocalCards)},
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
-     flag_descriptions::kUnsafeWebGPUDescription, kOsMac,
+     flag_descriptions::kUnsafeWebGPUDescription, kOsMac | kOsWin,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},
 
 #if defined(OS_ANDROID)

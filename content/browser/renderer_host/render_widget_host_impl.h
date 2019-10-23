@@ -780,12 +780,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
 
-  // This function validates a renderer's attempt to enable user activation on a
-  // frame. Gaining user activation is allowed if this widget had previously
-  // seen an input event (e.g., mousedown or keydown) that may lead to user
-  // activation; in this case, this "pending user activation" is consumed and
-  // this function returns true.  Otherwise, this function returns false.
-  bool ConsumePendingUserActivationIfAllowed();
+  // This function validates a renderer's attempt to activate frames. It
+  // removes one pending user activation if available and returns true;
+  // otherwise, it returns false.  See comments on
+  // Add/ClearPendingUserActivation() for details.
+  bool RemovePendingUserActivationIfAvailable();
 
  protected:
   // ---------------------------------------------------------------------------
@@ -1019,11 +1018,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // The following functions are used to keep track of pending user activation
   // events, which are input events (e.g., mousedown or keydown) that allow a
-  // renderer to gain user activation.  AddPendingUserActivation() increments a
-  // counter of such events and sets a timer, which allows the renderer to claim
-  // user activation within |kActivationNotificationExpireTime| ms.
-  // ClearPendingUserActivation() clears the counter and is called after
-  // navigations or timeouts
+  // renderer to gain user activation.  AddPendingUserActivation() increments
+  // |pending_user_activation_counter_| and sets a timer, which allows the
+  // renderer to claim user activation within
+  // |kActivationNotificationExpireTime| ms.  ClearPendingUserActivation()
+  // clears the counter and is called after navigations or timeouts.
   void AddPendingUserActivation(const blink::WebInputEvent& event);
   void ClearPendingUserActivation();
 

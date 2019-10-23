@@ -337,3 +337,21 @@ fuzzer_test("ax_table_fuzzer") {
 
   seed_corpus = "fuzz_corpus"
 }
+
+test("accessibility_perftests") {
+  testonly = true
+  sources = [
+    "ax_node_position_perftest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/core/test:run_all_unittests",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//testing/perf",
+    "//ui/accessibility/mojom",
+  ]
+}

@@ -95,7 +95,7 @@ bool ProcessPolicy::GenerateRules(const wchar_t* name,
   if (!process->AddStringMatch(IF, NameBased::NAME, name, CASE_INSENSITIVE)) {
     return false;
   }
-  if (!policy->AddRule(IPC_CREATEPROCESSW_TAG, process.get())) {
+  if (!policy->AddRule(IpcTag::CREATEPROCESSW, process.get())) {
     return false;
   }
   return true;

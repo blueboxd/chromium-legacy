@@ -165,13 +165,15 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
 #endif
   if (!pixmap.get()) {
     LOG(ERROR) << "Failed to create pixmap " << size.ToString() << ", "
-               << gfx::BufferFormatToString(format);
+               << gfx::BufferFormatToString(format) << ", usage "
+               << gfx::BufferUsageToString(usage);
     return nullptr;
   }
   auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
   if (!image->Initialize(std::move(pixmap))) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
-               << gfx::BufferFormatToString(format);
+               << gfx::BufferFormatToString(format) << ", usage "
+               << gfx::BufferUsageToString(usage);
     return nullptr;
   }
   *is_cleared = true;

@@ -5,6 +5,7 @@
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 
 #include "chromeos/network/network_device_handler.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/services/network_config/cros_network_config.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 
@@ -12,16 +13,21 @@ namespace chromeos {
 namespace network_config {
 
 CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper() {
-  network_device_handler_ =
-      chromeos::NetworkDeviceHandler::InitializeForTesting(
-          network_state_helper_.network_state_handler());
-  cros_network_config_impl_ =
-      std::make_unique<chromeos::network_config::CrosNetworkConfig>(
-          network_state_helper_.network_state_handler(),
-          network_device_handler_.get(),
-          /*network_configuration_handler=*/nullptr,
-          /*network_connection_handler=*/nullptr,
-          /*network_certificate_handler=*/nullptr);
+  if (NetworkHandler::IsInitialized()) {
+    cros_network_config_impl_ = std::make_unique<CrosNetworkConfig>();
+  } else {
+    network_state_helper_ = std::make_unique<NetworkStateTestHelper>(
+        false /* use_default_devices_and_services */);
+    network_device_handler_ =
+        chromeos::NetworkDeviceHandler::InitializeForTesting(
+            network_state_helper_->network_state_handler());
+    cros_network_config_impl_ = std::make_unique<CrosNetworkConfig>(
+        network_state_helper_->network_state_handler(),
+        network_device_handler_.get(),
+        /*network_configuration_handler=*/nullptr,
+        /*network_connection_handler=*/nullptr,
+        /*network_certificate_handler=*/nullptr);
+  }
   OverrideInProcessInstanceForTesting(cros_network_config_impl_.get());
 }
 

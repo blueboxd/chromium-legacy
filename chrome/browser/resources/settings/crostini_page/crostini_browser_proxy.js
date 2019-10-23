@@ -72,6 +72,15 @@ cr.define('settings', function() {
      * Import crostini container.
      */
     importCrostiniContainer() {}
+
+    /** Queries the current status of ARC ADB Sideloading. */
+    requestArcAdbSideloadStatus() {}
+
+    /** Initiates the flow to enable ARC ADB Sideloading. */
+    enableArcAdbSideload() {}
+
+    /** Initiates the flow to disable ARC ADB Sideloading. */
+    disableArcAdbSideload() {}
   }
 
   /** @implements {settings.CrostiniBrowserProxy} */
@@ -124,6 +133,21 @@ cr.define('settings', function() {
     /** @override */
     importCrostiniContainer() {
       chrome.send('importCrostiniContainer');
+    }
+
+    /** @override */
+    requestArcAdbSideloadStatus() {
+      chrome.send('requestArcAdbSideloadStatus');
+    }
+
+    /** @override */
+    enableArcAdbSideload() {
+      chrome.send('enableArcAdbSideload');
+    }
+
+    /** @override */
+    disableArcAdbSideload() {
+      chrome.send('disableArcAdbSideload');
     }
   }
 

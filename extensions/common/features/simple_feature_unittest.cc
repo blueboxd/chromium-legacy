@@ -22,6 +22,7 @@
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -991,8 +992,7 @@ TEST(SimpleFeatureUnitTest, TestExperimentalExtensionApisSwitch) {
 }
 
 TEST(SimpleFeatureUnitTest, DisallowForServiceWorkers) {
-  // Service Worker features are only available on the trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+  ScopedWorkerBasedExtensionsChannel worker_channel_override;
 
   SimpleFeature feature;
   feature.set_name("somefeature");

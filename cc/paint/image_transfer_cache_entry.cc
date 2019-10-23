@@ -250,7 +250,6 @@ void ClientImageTransferCacheEntry::ValidateYUVDataBeforeSerializing() const {
     DCHECK_GT(plane->width(), 0);
     DCHECK_GT(plane->height(), 0);
   }
-  DCHECK(yuv_color_space_);
 }
 
 bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {

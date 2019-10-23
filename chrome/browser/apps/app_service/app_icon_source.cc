@@ -57,10 +57,11 @@ std::string AppIconSource::GetSource() {
 }
 
 void AppIconSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
-  std::string path_lower = base::ToLowerASCII(path);
+  const std::string path_lower =
+      base::ToLowerASCII(content::URLDataSource::URLToRequestPath(url));
   std::vector<std::string> path_parts = base::SplitString(
       path_lower, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 

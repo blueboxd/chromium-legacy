@@ -502,6 +502,17 @@
     </message>
   </if>
 
+
+  <!-- Verify pending dialog (Desktop only) -->
+  <if expr="not is_ios and not is_android">
+    <message name="IDS_AUTOFILL_VERIFY_PENDING_DIALOG_TITLE" desc="Headline showing the card verification is in progress.">
+        Verifying your identity...
+    </message>
+    <message name="IDS_AUTOFILL_VERIFY_PENDING_DIALOG_CANCEL_BUTTON_LABEL" desc="Button that allows the user to cancel the card verification.">
+        Cancel
+    </message>
+  </if>
+
   <message name="IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT" desc="Text for link that allows users to see and edit their Wallet information." formatter_data="android_java">
     Edit
   </message>

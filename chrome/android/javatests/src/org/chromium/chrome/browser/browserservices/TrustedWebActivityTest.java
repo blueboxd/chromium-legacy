@@ -32,6 +32,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -179,7 +180,8 @@ public class TrustedWebActivityTest {
      * in the intent).
      */
     @Test
-    @MediumTest
+    @DisabledTest(message = "crbug.com/1016743")
+    //@MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testStatusBarColorCertificateError() throws ExecutionException, TimeoutException {
@@ -256,7 +258,8 @@ public class TrustedWebActivityTest {
      * (and origin verification succeeds).
      */
     @Test
-    @MediumTest
+    @DisabledTest(message = "crbug.com/1016743")
+    //@MediumTest
     public void testToolbarVisibleCertificateError() throws ExecutionException, TimeoutException {
         final String pageWithoutCertError =
                 mEmbeddedTestServerRule.getServer().getURL("/chrome/test/data/android/about.html");

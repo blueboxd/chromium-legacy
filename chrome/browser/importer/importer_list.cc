@@ -94,8 +94,13 @@ void DetectFirefoxProfiles(const std::string locale,
                            std::vector<importer::SourceProfile>* profiles) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-
-  base::FilePath profile_path = GetFirefoxProfilePath();
+#if defined(OS_WIN)
+  const std::string firefox_install_id =
+      shell_integration::GetFirefoxProgIdSuffix();
+#else
+  const std::string firefox_install_id;
+#endif  // defined(OS_WIN)
+  base::FilePath profile_path = GetFirefoxProfilePath(firefox_install_id);
   if (profile_path.empty())
     return;
 

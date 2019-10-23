@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {PdfNavigator} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/navigator.js';
+import {OpenPdfParamsParser} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/open_pdf_params_parser.js';
+import {Viewport} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/viewport.js';
+
 import {MockDocumentDimensions, MockSizer, MockViewportChangedCallback, MockWindow} from './test_util.js';
 
 class MockNavigatorDelegate {

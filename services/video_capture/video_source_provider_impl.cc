@@ -72,7 +72,7 @@ void VideoSourceProviderImpl::AddTextureVirtualDevice(
 }
 
 void VideoSourceProviderImpl::RegisterVirtualDevicesChangedObserver(
-    mojom::DevicesChangedObserverPtr observer,
+    mojo::PendingRemote<mojom::DevicesChangedObserver> observer,
     bool raise_event_if_virtual_devices_already_present) {
   device_factory_->RegisterVirtualDevicesChangedObserver(
       std::move(observer), raise_event_if_virtual_devices_already_present);

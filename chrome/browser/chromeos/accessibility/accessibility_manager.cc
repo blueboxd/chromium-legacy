@@ -48,7 +48,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -240,8 +239,6 @@ void AccessibilityManager::ShowAccessibilityHelp(Browser* browser) {
 AccessibilityManager::AccessibilityManager() {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                               content::NotificationService::AllSources());
@@ -1052,9 +1049,18 @@ void AccessibilityManager::OnActiveOutputNodeChanged() {
   }
 }
 
+void AccessibilityManager::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK_EQ(profile_, profile);
+  SetProfile(nullptr);
+}
+
 void AccessibilityManager::SetProfile(Profile* profile) {
   if (profile_ == profile)
     return;
+
+  if (profile_)
+    profile_observer_.Remove(profile_);
+  DCHECK(!profile_observer_.IsObservingSources());
 
   pref_change_registrar_.reset();
   local_state_pref_change_registrar_.reset();
@@ -1141,6 +1147,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         extensions::ExtensionRegistry::Get(profile);
     if (!extension_registry_observer_.IsObserving(registry))
       extension_registry_observer_.Add(registry);
+
+    profile_observer_.Add(profile);
   }
 
   bool had_profile = (profile_ != NULL);
@@ -1276,13 +1284,6 @@ void AccessibilityManager::Observe(
       Profile* profile = ProfileManager::GetActiveUserProfile();
       if (ProfileHelper::IsSigninProfile(profile))
         SetProfile(profile);
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      // Update |profile_| when exiting a session or shutting down.
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (profile_ == profile)
-        SetProfile(nullptr);
       break;
     }
     case chrome::NOTIFICATION_APP_TERMINATING: {

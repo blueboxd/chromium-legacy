@@ -4,7 +4,11 @@
 
 #include <memory>
 
+#if defined(ENABLE_VIDEO_WITH_MIXED_AUDIO)
+#include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h" // nogncheck
+#else
 #include "chromecast/media/cma/backend/desktop/media_pipeline_backend_desktop.h"
+#endif
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
@@ -40,7 +44,11 @@ VideoPlane* CastMediaShlib::GetVideoPlane() {
 
 MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
     const MediaPipelineDeviceParams& params) {
+#if defined(ENABLE_VIDEO_WITH_MIXED_AUDIO)
+  return new MediaPipelineBackendForMixer(params);
+#else
   return new MediaPipelineBackendDesktop();
+#endif
 }
 
 double CastMediaShlib::GetMediaClockRate() {
@@ -52,7 +60,10 @@ double CastMediaShlib::MediaClockRatePrecision() {
 }
 
 void CastMediaShlib::MediaClockRateRange(double* minimum_rate,
-                                         double* maximum_rate) {}
+                                         double* maximum_rate) {
+  *minimum_rate = 0.0;
+  *maximum_rate = 1.0;
+}
 
 bool CastMediaShlib::SetMediaClockRate(double new_rate) {
   return false;

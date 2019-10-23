@@ -118,7 +118,8 @@ class StoragePartitionImpl;
 struct ChildProcessTerminationInfo;
 
 typedef base::Thread* (*RendererMainThreadFactoryFunction)(
-    const InProcessChildThreadParams& params);
+    const InProcessChildThreadParams& params,
+    int32_t renderer_client_id);
 
 // Implements a concrete RenderProcessHost for the browser process for talking
 // to actual renderer processes (as opposed to mocks).

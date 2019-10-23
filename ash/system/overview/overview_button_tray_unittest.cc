@@ -425,4 +425,37 @@ TEST_F(OverviewButtonTrayTest, LeaveTabletModeBecauseExternalMouse) {
   EXPECT_TRUE(GetTray()->GetVisible());
 }
 
+// Using the developers keyboard shortcut to enable tablet mode should force the
+// overview tray button visible, even though the events are not blocked.
+TEST_F(OverviewButtonTrayTest, ForDevTabletModeForcesTheButtonShown) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForDev(true);
+  EXPECT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
+  EXPECT_FALSE(TabletModeControllerTestApi().AreEventsBlocked());
+  EXPECT_TRUE(GetTray()->GetVisible());
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForDev(false);
+  EXPECT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
+  EXPECT_FALSE(GetTray()->GetVisible());
+
+  // When there is a window, a screenshot will be taken and entering tablet mode
+  // becomes asynchronous.
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+
+  EXPECT_FALSE(GetTray()->GetVisible());
+  TabletMode::Waiter waiter(/*enable=*/true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForDev(true);
+  EXPECT_FALSE(GetTray()->GetVisible());
+
+  waiter.Wait();
+
+  EXPECT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
+  EXPECT_TRUE(GetTray()->GetVisible());
+
+  // However, disabling tablet mode is always synchronous.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForDev(false);
+  EXPECT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
+  EXPECT_FALSE(GetTray()->GetVisible());
+}
+
 }  // namespace ash

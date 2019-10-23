@@ -337,10 +337,6 @@ android_builder(
 )
 
 android_builder(
-    name = 'android-jumbo-rel',
-)
-
-android_builder(
     name = 'android-kitkat-arm-rel',
     goma_backend = goma.backend.RBE_PROD,
 )
@@ -1063,11 +1059,6 @@ fyi_builder(
 )
 
 fyi_builder(
-    name = 'Jumbo Linux x64',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-fyi_builder(
     name = 'Linux Viz',
     goma_backend = goma.backend.RBE_PROD,
 )
@@ -1322,12 +1313,6 @@ def fyi_mac_builder(
   )
 
 fyi_mac_builder(
-    name = 'Jumbo Mac',
-    cores = 4,
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-fyi_mac_builder(
     name = 'Mac deterministic',
     cores = None,
     executable = luci.recipe(name = 'swarming/deterministic_build'),
@@ -1377,10 +1362,6 @@ fyi_windows_builder(
 fyi_windows_builder(
     name = 'Win10 Tests x64 1803',
     os = os.WINDOWS_10,
-)
-
-fyi_windows_builder(
-    name = 'Jumbo Win x64',
 )
 
 fyi_windows_builder(
@@ -1971,10 +1952,6 @@ linux_builder(
 )
 
 linux_builder(
-    name = 'linux-jumbo-rel',
-)
-
-linux_builder(
     name = 'linux-ozone-rel',
     goma_backend = goma.backend.RBE_PROD,
 )
@@ -2044,13 +2021,6 @@ mac_builder(
     os = os.MAC_10_13,
 )
 
-mac_builder(
-    name = 'mac-jumbo-rel',
-    cores = 4,
-    os = os.MAC_ANY,
-)
-
-
 def mac_ios_builder(*, name, **kwargs):
   return mac_builder(
       name = name,
@@ -2112,6 +2082,7 @@ memory_builder(
 
 memory_builder(
     name = 'Linux ASan LSan Builder',
+    goma_backend = goma.backend.RBE_PROD,
     ssd = True,
 )
 
@@ -2160,6 +2131,7 @@ memory_builder(
 
 memory_builder(
     name = 'Linux TSan Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 memory_builder(
@@ -2276,11 +2248,6 @@ win_builder(
     name = 'Windows deterministic',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-)
-
-win_builder(
-    name = 'win-jumbo-rel',
-    os = os.WINDOWS_ANY,
 )
 
 

@@ -5,6 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
+  generate_java = true
   sources = [
     "bitmap.mojom",
     "blur_image_filter_tile_mode.mojom",

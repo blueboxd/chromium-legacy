@@ -94,7 +94,7 @@ bool IsSizeWithinRange(uint32_t buffer_size,
   return true;
 }
 
-CrossCallParamsEx::CrossCallParamsEx() : CrossCallParams(0, 0) {}
+CrossCallParamsEx::CrossCallParamsEx() : CrossCallParams(IpcTag::UNUSED, 0) {}
 
 // We override the delete operator because the object's backing memory
 // is hand allocated in CreateFromBuffer. We don't override the new operator

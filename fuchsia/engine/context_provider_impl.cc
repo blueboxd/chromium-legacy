@@ -253,6 +253,8 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitch(switches::kEnableOopRasterization);
     launch_command.AppendSwitchASCII(switches::kUseGL,
                                      gl::kGLImplementationStubName);
+    launch_command.AppendSwitchASCII(switches::kGrContextType,
+                                     switches::kGrContextTypeVulkan);
   }
 
   if (enable_widevine) {

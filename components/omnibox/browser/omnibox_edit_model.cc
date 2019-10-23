@@ -1192,11 +1192,13 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
     // we should revert the temporary text same as what pressing escape would
     // have done.
     //
-    // This doesn't apply for on-focus suggestions, for which the first result
-    // can be completely distinct from the omnibox contents. We enforce that
-    // via user_input_in_progress_, which is false for ZeroSuggest.
+    // Reverting, however, does not make sense for on-focus suggestions
+    // (user_input_in_progress_ is false) unless the first result is a
+    // verbatim match of the omnibox input (on-focus query refinements on SERP).
     const size_t line_no = GetNewSelectedLine(count);
-    if (has_temporary_text_ && line_no == 0 && user_input_in_progress_) {
+    if (has_temporary_text_ && line_no == 0 &&
+        (user_input_in_progress_ ||
+         result().default_match()->IsVerbatimType())) {
       RevertTemporaryTextAndPopup();
     } else {
       popup_model()->MoveTo(line_no);

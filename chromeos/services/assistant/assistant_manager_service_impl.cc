@@ -447,8 +447,10 @@ void AssistantManagerServiceImpl::StartMetalayerInteraction(
                      /*assistant_tree=*/nullptr));
 }
 
-void AssistantManagerServiceImpl::StartTextInteraction(const std::string& query,
-                                                       bool allow_tts) {
+void AssistantManagerServiceImpl::StartTextInteraction(
+    const std::string& query,
+    mojom::AssistantQuerySource source,
+    bool allow_tts) {
   assistant_client::VoicelessOptions options;
   options.is_user_initiated = true;
 
@@ -462,7 +464,7 @@ void AssistantManagerServiceImpl::StartTextInteraction(const std::string& query,
   options.conversation_turn_id = base::NumberToString(next_interaction_id_++);
   pending_interactions_[options.conversation_turn_id] =
       mojom::AssistantInteractionMetadata::New(
-          /*type=*/mojom::AssistantInteractionType::kText, /*query=*/query);
+          mojom::AssistantInteractionType::kText, source, query);
 
   if (base::FeatureList::IsEnabled(
           assistant::features::kEnableTextQueriesWithClientDiscourseContext) &&
@@ -1259,6 +1261,7 @@ void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
     metadata_ptr->type = metadata.is_mic_open
                              ? mojom::AssistantInteractionType::kVoice
                              : mojom::AssistantInteractionType::kText;
+    metadata_ptr->source = mojom::AssistantQuerySource::kLibAssistantInitiated;
   }
 
   for (auto& it : interaction_subscribers_)

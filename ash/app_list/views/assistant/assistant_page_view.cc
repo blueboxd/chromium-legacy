@@ -4,6 +4,7 @@
 
 #include "ash/app_list/views/assistant/assistant_page_view.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -139,6 +140,7 @@ void AssistantPageView::RequestFocus() {
       }
       NOTREACHED();
       break;
+    case AssistantUiMode::kAmbientUi:
     case AssistantUiMode::kMainUi:
     case AssistantUiMode::kMiniUi:
       NOTREACHED();
@@ -259,6 +261,7 @@ void AssistantPageView::OnUiModeChanged(AssistantUiMode ui_mode,
       }
       NOTREACHED();
       break;
+    case AssistantUiMode::kAmbientUi:
     case AssistantUiMode::kMainUi:
     case AssistantUiMode::kMiniUi:
       NOTREACHED();
@@ -310,6 +313,7 @@ int AssistantPageView::GetChildViewHeightForWidth(int width) const {
         }
         NOTREACHED();
         break;
+      case AssistantUiMode::kAmbientUi:
       case AssistantUiMode::kMainUi:
       case AssistantUiMode::kMiniUi:
         NOTREACHED();

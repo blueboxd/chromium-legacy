@@ -80,7 +80,7 @@ class TestWebUIDataSource : public URLDataSource {
   std::string GetSource() override { return "webui"; }
 
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const WebContents::Getter& wc_getter,
       const URLDataSource::GotDataCallback& callback) override {
     std::string dummy_html = "<html><body>Foo</body></html>";

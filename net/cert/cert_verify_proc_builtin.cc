@@ -387,8 +387,10 @@ void MapPathBuilderErrorsToCertStatus(const CertPathErrors& errors,
     *cert_status |= CERT_STATUS_DATE_INVALID;
   }
 
-  if (errors.ContainsError(cert_errors::kDistrustedByTrustStore))
+  if (errors.ContainsError(cert_errors::kDistrustedByTrustStore) ||
+      errors.ContainsError(cert_errors::kVerifySignedDataFailed)) {
     *cert_status |= CERT_STATUS_AUTHORITY_INVALID;
+  }
 
   // IMPORTANT: If the path was invalid for a reason that was not
   // explicity checked above, set a general error. This is important as

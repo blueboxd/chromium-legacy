@@ -16,6 +16,8 @@ import android.webkit.ValueCallback;
 import android.webkit.WebViewDelegate;
 import android.webkit.WebViewFactory;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.BrowserFragmentArgs;
 import org.chromium.weblayer_private.aidl.IBrowserFragment;
@@ -104,6 +106,7 @@ public final class WebLayer {
      * @return a ListenableFuture whose value will contain the WebLayer once initialization
      * completes
      */
+    @NonNull
     public static ListenableFuture<WebLayer> create(Context appContext)
             throws UnsupportedVersionException {
         if (sFuture == null) {
@@ -182,6 +185,7 @@ public final class WebLayer {
         mImpl = iWebLayer;
     }
 
+    @NonNull
     public static BrowserFragment createBrowserFragment(String profilePath) {
         // TODO: use a profile id instead of the path to the actual file.
         Bundle args = new Bundle();

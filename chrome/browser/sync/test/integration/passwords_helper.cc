@@ -164,6 +164,18 @@ void UpdateLogin(PasswordStore* store, const PasswordForm& form) {
   wait_event.Wait();
 }
 
+void UpdateLoginWithPrimaryKey(PasswordStore* store,
+                               const PasswordForm& new_form,
+                               const PasswordForm& old_form) {
+  ASSERT_TRUE(store);
+  base::WaitableEvent wait_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  store->UpdateLoginWithPrimaryKey(new_form, old_form);
+  store->ScheduleTask(base::BindOnce(&PasswordStoreCallback, &wait_event));
+  wait_event.Wait();
+}
+
 std::vector<std::unique_ptr<PasswordForm>> GetLogins(PasswordStore* store) {
   EXPECT_TRUE(store);
   password_manager::PasswordStore::FormDigest matcher_form = {

@@ -213,7 +213,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     thread_ = new RenderThreadImpl(
         InProcessChildThreadParams(io_task_runner, &invitation,
                                    child_connection_->service_token()),
-        std::move(main_thread_scheduler));
+        /*renderer_client_id=*/1, std::move(main_thread_scheduler));
     cmd->InitFromArgv(old_argv);
 
     run_loop_ = std::make_unique<base::RunLoop>();

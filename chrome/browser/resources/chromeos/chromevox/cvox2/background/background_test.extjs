@@ -2119,3 +2119,21 @@ TEST_F('ChromeVoxBackgroundTest', 'NonModalDialogHeadingJump', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'ReadLinkURLTest', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <a href="https://www.google.com/">A popular link</a>
+    <button>Not a link</button>
+  */}, function(root) {
+    mockFeedback.call(doCmd('nextLink'))
+        .expectSpeech('A popular link', 'Link', 'Press Search+Space to activate.')
+        .call(doCmd('readLinkURL'))
+        .expectSpeech('Link URL: https://www.google.com/')
+        .call(doCmd('nextObject'))
+        .expectSpeech('Not a link', 'Button', 'Press Search+Space to activate.')
+        .call(doCmd('readLinkURL'))
+        .expectSpeech('No URL found')
+        .replay();
+  });
+});

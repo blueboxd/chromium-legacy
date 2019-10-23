@@ -29,6 +29,7 @@
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/frame_owner_properties.h"
 #include "content/renderer/loader/web_url_request_util.h"
+#include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -85,8 +86,8 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   // When a RenderFrame is replaced by a RenderProxy, the WebRemoteFrame should
   // always come from WebRemoteFrame::create and a call to WebFrame::swap must
   // follow later.
-  blink::WebRemoteFrame* web_frame =
-      blink::WebRemoteFrame::Create(scope, proxy.get());
+  blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::Create(
+      scope, proxy.get(), proxy->blink_interface_registry_.get());
 
   bool parent_is_local =
       !frame_to_replace->GetWebFrame()->Parent() ||
@@ -133,7 +134,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     // Create a top level WebRemoteFrame.
     render_view = RenderViewImpl::FromRoutingID(render_view_routing_id);
     web_frame = blink::WebRemoteFrame::CreateMainFrame(
-        render_view->GetWebView(), proxy.get(), opener);
+        render_view->GetWebView(), proxy.get(),
+        proxy->blink_interface_registry_.get(), opener);
     render_widget = render_view->GetWidget();
   } else {
     // Create a frame under an existing parent. The parent is always expected
@@ -143,7 +145,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         replicated_state.scope,
         blink::WebString::FromUTF8(replicated_state.name),
         replicated_state.frame_policy,
-        replicated_state.frame_owner_element_type, proxy.get(), opener);
+        replicated_state.frame_owner_element_type, proxy.get(),
+        proxy->blink_interface_registry_.get(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
     render_widget = parent->render_widget_;
@@ -172,7 +175,8 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
       new RenderFrameProxy(proxy_routing_id));
   proxy->devtools_frame_token_ = devtools_frame_token;
   blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::CreateForPortal(
-      blink::WebTreeScopeType::kDocument, proxy.get(), portal_element);
+      blink::WebTreeScopeType::kDocument, proxy.get(),
+      proxy->blink_interface_registry_.get(), portal_element);
   proxy->Init(web_frame, parent->render_view(),
               parent->GetLocalRootRenderWidget(), true);
   return proxy.release();
@@ -218,6 +222,8 @@ RenderFrameProxy::RenderFrameProxy(int routing_id)
       g_routing_id_proxy_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
   RenderThread::Get()->AddRoute(routing_id_, this);
+  blink_interface_registry_.reset(new BlinkInterfaceRegistryImpl(
+      binder_registry_.GetWeakPtr(), associated_interfaces_.GetWeakPtr()));
 }
 
 RenderFrameProxy::~RenderFrameProxy() {
@@ -421,7 +427,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_EnableAutoResize, OnEnableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_DisableAutoResize, OnDisableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
-    IPC_MESSAGE_HANDLER(FrameMsg_WillEnterFullscreen, OnWillEnterFullscreen)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateUserActivationState,
                         OnUpdateUserActivationState)
     IPC_MESSAGE_HANDLER(FrameMsg_TransferUserActivationFrom,
@@ -437,6 +442,12 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
 
   // Note: If |handled| is true, |this| may have been deleted.
   return handled;
+}
+
+void RenderFrameProxy::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  associated_interfaces_.TryBindInterface(interface_name, &handle);
 }
 
 bool RenderFrameProxy::Send(IPC::Message* message) {
@@ -556,10 +567,6 @@ void RenderFrameProxy::OnSetFocusedFrame() {
   // This uses focusDocumentView rather than setFocusedFrame so that blur
   // events are properly dispatched on any currently focused elements.
   render_view_->webview()->FocusDocumentView(web_frame_);
-}
-
-void RenderFrameProxy::OnWillEnterFullscreen() {
-  web_frame_->WillEnterFullscreen();
 }
 
 void RenderFrameProxy::OnUpdateUserActivationState(

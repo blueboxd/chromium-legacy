@@ -81,7 +81,8 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
 #if defined(OS_LINUX)
     if (input_type == VideoFrame::STORAGE_DMABUFS) {
       video_frame_mapper = VideoFrameMapperFactory::CreateMapper(
-          input_config.fourcc.ToVideoPixelFormat(), true);
+          input_config.fourcc.ToVideoPixelFormat(), VideoFrame::STORAGE_DMABUFS,
+          true);
       if (video_frame_mapper) {
         input_storage_type = input_type;
         break;

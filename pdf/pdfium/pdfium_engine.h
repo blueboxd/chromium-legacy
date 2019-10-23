@@ -87,6 +87,7 @@ class PDFiumEngine : public PDFEngine,
   void ZoomUpdated(double new_zoom_level) override;
   void RotateClockwise() override;
   void RotateCounterclockwise() override;
+  pp::Size ApplyDocumentLayout(const DocumentLayout::Options& options) override;
   std::string GetSelectedText() override;
   bool CanEditText() override;
   bool HasEditableText() override;
@@ -248,6 +249,16 @@ class PDFiumEngine : public PDFEngine,
   // Loads information about the pages in the document and performs layout.
   void LoadPageInfo();
 
+  // Refreshes the document layout using the current pages and layout options.
+  void RefreshCurrentDocumentLayout();
+
+  // Proposes the next document layout using the current pages and
+  // |desired_layout_options_|.
+  void ProposeNextDocumentLayout();
+
+  // Updates |layout| using the current page sizes.
+  void UpdateDocumentLayout(DocumentLayout* layout);
+
   // Loads information about the pages in the document, calculating and
   // returning the individual page sizes.
   //
@@ -256,7 +267,8 @@ class PDFiumEngine : public PDFEngine,
   //
   // TODO(kmoon): LoadPageSizes() is a bit misnomer, but LoadPageInfo() is
   // taken right now...
-  std::vector<pp::Size> LoadPageSizes();
+  std::vector<pp::Size> LoadPageSizes(
+      const DocumentLayout::Options& layout_options);
 
   void LoadBody();
 
@@ -284,6 +296,8 @@ class PDFiumEngine : public PDFEngine,
   // Helper function to get a given page's size in pixels.  This is not part of
   // PDFiumPage because we might not have that structure when we need this.
   pp::Size GetPageSize(int index);
+  pp::Size GetPageSizeForLayout(int index,
+                                const DocumentLayout::Options& layout_options);
 
   // Helper function for getting the inset sizes for the current layout. If
   // |two_up_view_| is true, the configuration of inset sizes depends on

@@ -118,6 +118,57 @@ enum {
   // For now, we don't support storing those.
 };
 
+HttpResponseInfo::ConnectionInfoCoarse HttpResponseInfo::ConnectionInfoToCoarse(
+    ConnectionInfo info) {
+  switch (info) {
+    case CONNECTION_INFO_HTTP0_9:
+    case CONNECTION_INFO_HTTP1_0:
+    case CONNECTION_INFO_HTTP1_1:
+      return CONNECTION_INFO_COARSE_HTTP1;
+
+    case CONNECTION_INFO_HTTP2:
+    case CONNECTION_INFO_DEPRECATED_SPDY2:
+    case CONNECTION_INFO_DEPRECATED_SPDY3:
+    case CONNECTION_INFO_DEPRECATED_HTTP2_14:
+    case CONNECTION_INFO_DEPRECATED_HTTP2_15:
+      return CONNECTION_INFO_COARSE_HTTP2;
+
+    case CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
+    case CONNECTION_INFO_QUIC_32:
+    case CONNECTION_INFO_QUIC_33:
+    case CONNECTION_INFO_QUIC_34:
+    case CONNECTION_INFO_QUIC_35:
+    case CONNECTION_INFO_QUIC_36:
+    case CONNECTION_INFO_QUIC_37:
+    case CONNECTION_INFO_QUIC_38:
+    case CONNECTION_INFO_QUIC_39:
+    case CONNECTION_INFO_QUIC_40:
+    case CONNECTION_INFO_QUIC_41:
+    case CONNECTION_INFO_QUIC_42:
+    case CONNECTION_INFO_QUIC_43:
+    case CONNECTION_INFO_QUIC_44:
+    case CONNECTION_INFO_QUIC_45:
+    case CONNECTION_INFO_QUIC_46:
+    case CONNECTION_INFO_QUIC_47:
+    case CONNECTION_INFO_QUIC_48:
+    case CONNECTION_INFO_QUIC_49:
+    case CONNECTION_INFO_QUIC_50:
+    case CONNECTION_INFO_QUIC_99:
+    case CONNECTION_INFO_QUIC_999:
+      return CONNECTION_INFO_COARSE_QUIC;
+
+    case CONNECTION_INFO_UNKNOWN:
+      return CONNECTION_INFO_COARSE_OTHER;
+
+    case NUM_OF_CONNECTION_INFOS:
+      NOTREACHED();
+      return CONNECTION_INFO_COARSE_OTHER;
+  }
+
+  NOTREACHED();
+  return CONNECTION_INFO_COARSE_OTHER;
+}
+
 HttpResponseInfo::HttpResponseInfo()
     : was_cached(false),
       cache_entry_status(CacheEntryStatus::ENTRY_UNDEFINED),

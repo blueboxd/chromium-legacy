@@ -4,18 +4,12 @@
 
 #include "chrome/browser/chromeos/note_taking_controller_client.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 
 namespace chromeos {
 
 NoteTakingControllerClient::NoteTakingControllerClient(NoteTakingHelper* helper)
     : helper_(helper) {
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllSources());
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
@@ -41,20 +35,18 @@ void NoteTakingControllerClient::ActiveUserChanged(
                      weak_ptr_factory_.GetWeakPtr(), active_user));
 }
 
-void NoteTakingControllerClient::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
+void NoteTakingControllerClient::OnProfileWillBeDestroyed(Profile* profile) {
   // Update |profile_| when exiting a session or shutting down.
-  Profile* profile = content::Source<Profile>(source).ptr();
-  if (profile_ == profile)
-    profile_ = nullptr;
+  DCHECK_EQ(profile_, profile);
+  profile_observer_.Remove(profile_);
+  profile_ = nullptr;
 }
 
 void NoteTakingControllerClient::SetProfileByUser(
     const user_manager::User* user) {
   profile_ = ProfileHelper::Get()->GetProfileByUser(user);
+  profile_observer_.RemoveAll();
+  profile_observer_.Add(profile_);
 }
 
 }  // namespace chromeos

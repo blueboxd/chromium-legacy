@@ -237,9 +237,7 @@ UiElementContainerView::UiElementContainerView(AssistantViewDelegate* delegate)
   InitLayout();
 }
 
-UiElementContainerView::~UiElementContainerView() {
-  delegate()->RemoveInteractionModelObserver(this);
-}
+UiElementContainerView::~UiElementContainerView() = default;
 
 const char* UiElementContainerView::GetClassName() const {
   return "UiElementContainerView";

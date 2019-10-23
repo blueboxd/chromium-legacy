@@ -106,10 +106,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void BindInterfaceDrmDevice(
       ui::ozone::mojom::DrmDevicePtr* drm_device_ptr) const;
 
-  // BindInterface arranges for the cursor_ptr to be wired up.
-  void BindInterfaceDeviceCursor(
-      ui::ozone::mojom::DeviceCursorPtr* cursor_ptr) const;
-
   void OnDrmServiceStarted();
 
   // TODO(rjkroege): Get rid of the need for this method in a subsequent CL.

@@ -68,7 +68,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
   void SetPriority(RequestPriority priority) override;
 
   static HttpResponseInfo::ConnectionInfo ConnectionInfoFromQuicVersion(
-      quic::QuicTransportVersion quic_version);
+      quic::ParsedQuicVersion quic_version);
 
  private:
   friend class test::QuicHttpStreamPeer;

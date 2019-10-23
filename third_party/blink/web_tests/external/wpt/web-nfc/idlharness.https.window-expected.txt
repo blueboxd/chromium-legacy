@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 88 tests; 81 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 70 tests; 62 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS NDEFMessage interface: existence and properties of interface object
@@ -24,9 +24,6 @@ PASS NDEFRecord interface: attribute id
 PASS NDEFRecord interface: attribute data
 FAIL NDEFRecord interface: attribute encoding assert_true: The prototype object must have a property "encoding" expected true got false
 FAIL NDEFRecord interface: attribute lang assert_true: The prototype object must have a property "lang" expected true got false
-PASS NDEFRecord interface: operation text()
-PASS NDEFRecord interface: operation arrayBuffer()
-PASS NDEFRecord interface: operation json()
 FAIL NDEFRecord interface: operation toRecords() assert_own_property: interface prototype object missing non-static operation expected property "toRecords" missing
 PASS NDEFRecord must be primary interface of new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"});
 PASS Stringification of new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"});
@@ -36,9 +33,6 @@ PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text
 FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "data" with the proper type Unrecognized type DataView
 FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "encoding" with the proper type assert_inherits: property "encoding" not found in prototype chain
 FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "lang" with the proper type assert_inherits: property "lang" not found in prototype chain
-PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "text()" with the proper type
-PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "arrayBuffer()" with the proper type
-PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "json()" with the proper type
 FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "toRecords()" with the proper type assert_inherits: property "toRecords" not found in prototype chain
 PASS NDEFWriter interface: existence and properties of interface object
 PASS NDEFWriter interface object length
@@ -58,12 +52,10 @@ PASS NDEFReader interface: existence and properties of interface prototype objec
 PASS NDEFReader interface: existence and properties of interface prototype object's "constructor" property
 PASS NDEFReader interface: existence and properties of interface prototype object's @@unscopables property
 PASS NDEFReader interface: attribute onreading
-PASS NDEFReader interface: attribute onerror
-PASS NDEFReader interface: operation scan(NDEFScanOptions)
+FAIL NDEFReader interface: operation scan(NDEFScanOptions) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
 PASS NDEFReader must be primary interface of new NDEFReader();
 PASS Stringification of new NDEFReader();
 PASS NDEFReader interface: new NDEFReader(); must inherit property "onreading" with the proper type
-PASS NDEFReader interface: new NDEFReader(); must inherit property "onerror" with the proper type
 PASS NDEFReader interface: new NDEFReader(); must inherit property "scan(NDEFScanOptions)" with the proper type
 PASS NDEFReader interface: calling scan(NDEFScanOptions) on new NDEFReader(); with too few arguments must throw TypeError
 PASS NDEFReadingEvent interface: existence and properties of interface object
@@ -78,15 +70,5 @@ PASS NDEFReadingEvent must be primary interface of new NDEFReadingEvent("reading
 PASS Stringification of new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} })
 PASS NDEFReadingEvent interface: new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "serialNumber" with the proper type
 PASS NDEFReadingEvent interface: new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "message" with the proper type
-PASS NDEFErrorEvent interface: existence and properties of interface object
-PASS NDEFErrorEvent interface object length
-PASS NDEFErrorEvent interface object name
-PASS NDEFErrorEvent interface: existence and properties of interface prototype object
-PASS NDEFErrorEvent interface: existence and properties of interface prototype object's "constructor" property
-PASS NDEFErrorEvent interface: existence and properties of interface prototype object's @@unscopables property
-PASS NDEFErrorEvent interface: attribute error
-PASS NDEFErrorEvent must be primary interface of new NDEFErrorEvent("error", { error: new DOMException() });
-PASS Stringification of new NDEFErrorEvent("error", { error: new DOMException() });
-PASS NDEFErrorEvent interface: new NDEFErrorEvent("error", { error: new DOMException() }); must inherit property "error" with the proper type
 Harness: the test ran to completion.
 

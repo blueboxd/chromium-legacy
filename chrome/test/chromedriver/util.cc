@@ -24,6 +24,7 @@
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/command_listener.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/key_converter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "third_party/zlib/google/zip.h"
@@ -46,8 +47,10 @@ Status FlattenStringArray(const base::ListValue* src, base::string16* dest) {
       return Status(kUnknownError, "keys should be a string");
     for (size_t j = 0; j < keys_list_part.size(); ++j) {
       if (CBU16_IS_SURROGATE(keys_list_part[j])) {
-        return Status(kUnknownError,
-                      "ChromeDriver only supports characters in the BMP");
+        return Status(
+            kUnknownError,
+            base::StringPrintf("%s only supports characters in the BMP",
+                               kChromeDriverProductShortName));
       }
     }
     keys.append(keys_list_part);

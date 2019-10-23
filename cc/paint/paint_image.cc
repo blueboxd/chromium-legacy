@@ -193,19 +193,17 @@ bool PaintImage::Decode(void* memory,
                            client_id);
 }
 
-bool PaintImage::DecodeYuv(void* planes[SkYUVASizeInfo::kMaxCount],
-                           size_t frame_index,
-                           GeneratorClientId client_id,
-                           const SkYUVASizeInfo& yuva_size_info) const {
-  SkYUVAIndex indices[SkYUVAIndex::kIndexCount];
-  // Passing nullptr for the SkYUVASizeInfo forces IsYuv to create and fill out
-  // a temporary object instead because |yuva_size_info| is const.
-  bool is_yuv = IsYuv(nullptr, indices);
-  DCHECK(is_yuv);
+bool PaintImage::DecodeYuv(
+    void* planes[SkYUVASizeInfo::kMaxCount],
+    size_t frame_index,
+    GeneratorClientId client_id,
+    const SkYUVASizeInfo& yuva_size_info,
+    SkYUVAIndex plane_indices[SkYUVAIndex::kIndexCount]) const {
+  DCHECK(plane_indices != nullptr);
   DCHECK(CanDecodeFromGenerator());
   const uint32_t lazy_pixel_ref = unique_id();
-  return paint_image_generator_->GetYUVA8Planes(yuva_size_info, indices, planes,
-                                                frame_index, lazy_pixel_ref);
+  return paint_image_generator_->GetYUVA8Planes(
+      yuva_size_info, plane_indices, planes, frame_index, lazy_pixel_ref);
 }
 
 bool PaintImage::DecodeFromGenerator(void* memory,

@@ -208,22 +208,6 @@ cr.define('extension_test_util', function() {
   }
 
   /**
-   * Tests that any visible iron-icon child of an HTML element has a
-   * corresponding non-empty svg element.
-   * @param {HTMLElement} e The element to check the iron icons in.
-   */
-  function testIcons(e) {
-    e.querySelectorAll('* /deep/ iron-icon').forEach(function(icon) {
-      if (isElementVisible(icon)) {
-        const svg = icon.$$('svg');
-        expectTrue(
-            !!svg && svg.innerHTML != '',
-            'icon "' + icon.icon + '" is not present');
-      }
-    });
-  }
-
-  /**
    * Finds all nodes matching |query| under |root|, within self and children's
    * Shadow DOM.
    * @param {!Node} root
@@ -261,7 +245,6 @@ cr.define('extension_test_util', function() {
     isElementVisible: isElementVisible,
     testVisible: testVisible,
     createExtensionInfo: createExtensionInfo,
-    testIcons: testIcons,
     findMatches: findMatches,
   };
 });

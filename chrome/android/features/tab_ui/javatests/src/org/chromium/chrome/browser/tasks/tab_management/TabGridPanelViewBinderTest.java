@@ -419,6 +419,25 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         Assert.assertTrue(mTitleTextView.isCursorVisible());
     }
 
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testSetIsTitleTextFocused() {
+        Assert.assertFalse(mTitleTextView.isFocused());
+
+        mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, true);
+
+        // Binder should ignore set focus signal to avoid duplicate setting.
+        Assert.assertFalse(mTitleTextView.isFocused());
+
+        mTitleTextView.requestFocus();
+        Assert.assertTrue(mTitleTextView.isFocused());
+
+        mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
+
+        Assert.assertFalse(mTitleTextView.isFocused());
+    }
+
     @Override
     public void tearDownTest() throws Exception {
         mMCP.destroy();

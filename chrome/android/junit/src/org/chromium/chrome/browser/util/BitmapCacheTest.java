@@ -97,13 +97,13 @@ public class BitmapCacheTest {
         Assert.assertEquals(1, BitmapCache.dedupCacheSizeForTesting());
     }
 
-    /*
-     * {@link BitmapCache.clearDedupCacheForTesting} is supposed to be called in
+    /**
+     * {@link BitmapCache#clearDedupCacheForTesting} is supposed to be called in
      * setUp() only, and should not be called inside a @Test, or it would leak
      * too much implementation details. However, it is required to do it to
      * properly test the cache eviction without relying on GC. In order to make
-     * sure {@link testLowCapacity} tests what we want to test, this test verifies
-     * that calling {@link BitmapCache.clearDedupCacheForTesting} is not the reason
+     * sure {@link #testLowCapacity} tests what we want to test, this test verifies
+     * that calling {@link BitmapCache#clearDedupCacheForTesting} is not the reason
      * the cache returns null.
      */
     @Test

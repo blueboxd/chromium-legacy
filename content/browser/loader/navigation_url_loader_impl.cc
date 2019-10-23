@@ -747,7 +747,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (should_clear_upload) {
       // The request body is no longer applicable.
       resource_request_->request_body.reset();
-      blob_handles_.clear();
     }
 
     resource_request_->url = redirect_info_.new_url;
@@ -1132,7 +1131,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   std::vector<std::string> url_loader_removed_headers_;
   net::HttpRequestHeaders url_loader_modified_headers_;
 
-  BlobHandles blob_handles_;
   std::vector<GURL> url_chain_;
 
   // Current URL that is being navigated, updated after redirection.

@@ -18,14 +18,12 @@
 #include "base/supports_user_data.h"
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
-#include "content/browser/resource_context_impl.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -262,28 +260,6 @@ storage::BlobStorageContext* GetBlobStorageContext(
   if (!blob_storage_context)
     return nullptr;
   return blob_storage_context->context();
-}
-
-bool GetBodyBlobDataHandles(network::ResourceRequestBody* body,
-                            ResourceContext* resource_context,
-                            BlobHandles* blob_handles) {
-  blob_handles->clear();
-
-  storage::BlobStorageContext* blob_context = GetBlobStorageContext(
-      GetChromeBlobStorageContextForResourceContext(resource_context));
-
-  DCHECK(blob_context);
-  for (size_t i = 0; i < body->elements()->size(); ++i) {
-    const network::DataElement& element = (*body->elements())[i];
-    if (element.type() != network::mojom::DataElementType::kBlob)
-      continue;
-    std::unique_ptr<storage::BlobDataHandle> handle =
-        blob_context->GetBlobDataFromUUID(element.blob_uuid());
-    if (!handle)
-      return false;
-    blob_handles->push_back(std::move(handle));
-  }
-  return true;
 }
 
 const char kBlobStorageContextKeyName[] = "content_blob_storage_context";

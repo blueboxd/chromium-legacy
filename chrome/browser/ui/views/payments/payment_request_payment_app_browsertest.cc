@@ -469,6 +469,28 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithBasicCard) {
   }
 }
 
+// Test can cancel payment with 'basic-card' payment method from alicepay.
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithBasicCardCancel) {
+  InstallAlicePayForMethod("basic-card");
+  {
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
+    NavigateTo(
+        "/payment_request_bobpay_and_basic_card_with_modifiers_test.html");
+    InvokePaymentRequestUI();
+    ClickOnCancel();
+    ExpectBodyContains({"User closed the Payment Request UI."});
+  }
+  // Repeat should have identical results.
+  {
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
+    NavigateTo(
+        "/payment_request_bobpay_and_basic_card_with_modifiers_test.html");
+    InvokePaymentRequestUI();
+    ClickOnCancel();
+    ExpectBodyContains({"User closed the Payment Request UI."});
+  }
+}
+
 class PaymentRequestPaymentAppTestWithPaymentHandlersAndUiSkip
     : public PaymentRequestPaymentAppTest {
  public:

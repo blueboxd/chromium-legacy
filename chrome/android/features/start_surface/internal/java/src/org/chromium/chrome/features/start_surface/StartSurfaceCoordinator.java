@@ -139,20 +139,31 @@ public class StartSurfaceCoordinator implements StartSurface {
     }
 
     private @SurfaceMode int computeSurfaceMode() {
+        // Check the cached flag before getting the parameter to be consistent with the other
+        // places. Note that the cached flag may have been set before native initialization.
+        if (!FeatureUtilities.isStartSurfaceEnabled()) {
+            return SurfaceMode.NO_START_SURFACE;
+        }
+
         String feature = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
 
-        // Do not enable two panes when the bottom bar is enabled since it will
-        // overlap the two panes' bottom bar.
-        if (feature.equals("twopanes") && !FeatureUtilities.isBottomToolbarEnabled()) {
-            return SurfaceMode.TWO_PANES;
+        if (feature.equals("twopanes")) {
+            // Do not enable two panes when the bottom bar is enabled since it will
+            // overlap the two panes' bottom bar.
+            return FeatureUtilities.isBottomToolbarEnabled() ? SurfaceMode.SINGLE_PANE
+                                                             : SurfaceMode.TWO_PANES;
         }
 
         if (feature.equals("single")) return SurfaceMode.SINGLE_PANE;
 
         if (feature.equals("tasksonly")) return SurfaceMode.TASKS_ONLY;
 
-        return SurfaceMode.NO_START_SURFACE;
+        // Default to SurfaceMode.TASKS_ONLY. This could happen when the start surface has been
+        // changed from enabled to disabled in native side, but the cached flag has not been updated
+        // yet, so FeatureUtilities.isStartSurfaceEnabled() above returns true.
+        // TODO(crbug.com/1016548): Remember the last surface mode so as to default to it.
+        return SurfaceMode.TASKS_ONLY;
     }
 
     private void createAndSetStartSurface() {

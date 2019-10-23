@@ -149,6 +149,9 @@ class SharedImageRepresentationGLTexturePassthroughD3D
   }
 
  private:
+  bool BeginAccess(GLenum mode) override;
+  void EndAccess() override;
+
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 };
 
@@ -205,7 +208,8 @@ class SharedImageBackingD3D : public SharedImageBacking {
       scoped_refptr<gl::GLImageD3D> image,
       size_t buffer_index,
       Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
-      base::win::ScopedHandle shared_handle)
+      base::win::ScopedHandle shared_handle,
+      Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dxgi_keyed_mutex)
       : SharedImageBacking(mailbox,
                            format,
                            size,
@@ -220,7 +224,8 @@ class SharedImageBackingD3D : public SharedImageBacking {
         image_(std::move(image)),
         buffer_index_(buffer_index),
         d3d11_texture_(std::move(d3d11_texture)),
-        shared_handle_(std::move(shared_handle)) {
+        shared_handle_(std::move(shared_handle)),
+        dxgi_keyed_mutex_(std::move(dxgi_keyed_mutex)) {
     DCHECK(d3d11_texture_);
     DCHECK((texture_ && !texture_passthrough_) ||
            (!texture_ && texture_passthrough_));
@@ -273,6 +278,9 @@ class SharedImageBackingD3D : public SharedImageBacking {
     }
     swap_chain_ = nullptr;
     d3d11_texture_.Reset();
+    dxgi_keyed_mutex_.Reset();
+    keyed_mutex_acquire_key_ = 0;
+    keyed_mutex_acquired_ = false;
     shared_handle_.Close();
   }
 
@@ -294,6 +302,48 @@ class SharedImageBackingD3D : public SharedImageBacking {
 
     // Swap chain textures only have one level backed by an image.
     image_->OnMemoryDump(pmd, client_tracing_id, dump_name);
+  }
+
+  bool BeginAccessD3D12(uint64_t* acquire_key) {
+    if (keyed_mutex_acquired_) {
+      DLOG(ERROR) << "Recursive BeginAccess not supported";
+      return false;
+    }
+    *acquire_key = keyed_mutex_acquire_key_;
+    keyed_mutex_acquire_key_++;
+    keyed_mutex_acquired_ = true;
+    return true;
+  }
+
+  void EndAccessD3D12() { keyed_mutex_acquired_ = false; }
+
+  bool BeginAccessD3D11() {
+    if (dxgi_keyed_mutex_) {
+      if (keyed_mutex_acquired_) {
+        DLOG(ERROR) << "Recursive BeginAccess not supported";
+        return false;
+      }
+      const HRESULT hr =
+          dxgi_keyed_mutex_->AcquireSync(keyed_mutex_acquire_key_, INFINITE);
+      if (FAILED(hr)) {
+        DLOG(ERROR) << "Unable to acquire the keyed mutex " << std::hex << hr;
+        return false;
+      }
+      keyed_mutex_acquire_key_++;
+      keyed_mutex_acquired_ = true;
+    }
+    return true;
+  }
+  void EndAccessD3D11() {
+    if (dxgi_keyed_mutex_) {
+      const HRESULT hr =
+          dxgi_keyed_mutex_->ReleaseSync(keyed_mutex_acquire_key_);
+      if (FAILED(hr)) {
+        DLOG(ERROR) << "Unable to release the keyed mutex " << std::hex << hr;
+        return;
+      }
+      keyed_mutex_acquired_ = false;
+    }
   }
 
   HANDLE GetSharedHandle() const { return shared_handle_.Get(); }
@@ -362,7 +412,20 @@ class SharedImageBackingD3D : public SharedImageBacking {
   scoped_refptr<gl::GLImageD3D> image_;
   const size_t buffer_index_;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture_;
+
+  // If d3d11_texture_ has a keyed mutex, it will be stored in
+  // dxgi_keyed_mutex. The keyed mutex is used to synchronize
+  // D3D11 and D3D12 Chromium components.
+  // dxgi_keyed_mutex_ is the D3D11 side of the keyed mutex.
+  // To create the corresponding D3D12 interface, pass the handle
+  // stored in shared_handle_ to ID3D12Device::OpenSharedHandle.
+  // Only one component is allowed to read/write to the texture
+  // at a time. keyed_mutex_acquire_key_ is incremented on every
+  // Acquire/Release usage.
   base::win::ScopedHandle shared_handle_;
+  Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dxgi_keyed_mutex_;
+  uint64_t keyed_mutex_acquire_key_ = 0;
+  bool keyed_mutex_acquired_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingD3D);
 };
@@ -382,6 +445,11 @@ DawnTexture SharedImageRepresentationDawnD3D::BeginAccess(
     return nullptr;
   }
 
+  uint64_t shared_mutex_acquire_key;
+  if (!d3d_image_backing->BeginAccessD3D12(&shared_mutex_acquire_key)) {
+    return nullptr;
+  }
+
   DawnTextureDescriptor desc;
   desc.nextInChain = nullptr;
   desc.format = dawn_texture_format.value();
@@ -392,8 +460,8 @@ DawnTexture SharedImageRepresentationDawnD3D::BeginAccess(
   desc.mipLevelCount = 1;
   desc.sampleCount = 1;
 
-  texture_ =
-      dawn_native::d3d12::WrapSharedHandle(device_, &desc, shared_handle, 0);
+  texture_ = dawn_native::d3d12::WrapSharedHandle(device_, &desc, shared_handle,
+                                                  shared_mutex_acquire_key);
   if (texture_) {
     // Keep a reference to the texture so that it stays valid (its content
     // might be destroyed).
@@ -406,6 +474,8 @@ DawnTexture SharedImageRepresentationDawnD3D::BeginAccess(
     // uninitialized data. When !IsCleared we should tell dawn_native to
     // consider the texture lazy-cleared.
     SetCleared();
+  } else {
+    d3d_image_backing->EndAccessD3D12();
   }
 
   return texture_;
@@ -416,6 +486,9 @@ void SharedImageRepresentationDawnD3D::EndAccess() {
     return;
   }
 
+  SharedImageBackingD3D* d3d_image_backing =
+      static_cast<SharedImageBackingD3D*>(backing());
+
   // TODO(cwallez@chromium.org): query dawn_native to know if the texture was
   // cleared and set IsCleared appropriately.
 
@@ -425,8 +498,23 @@ void SharedImageRepresentationDawnD3D::EndAccess() {
 
   dawn_procs_.textureRelease(texture_);
   texture_ = nullptr;
+
+  d3d_image_backing->EndAccessD3D12();
 }
 #endif  // BUILDFLAG(USE_DAWN)
+
+bool SharedImageRepresentationGLTexturePassthroughD3D::BeginAccess(
+    GLenum mode) {
+  SharedImageBackingD3D* d3d_image_backing =
+      static_cast<SharedImageBackingD3D*>(backing());
+  return d3d_image_backing->BeginAccessD3D11();
+}
+
+void SharedImageRepresentationGLTexturePassthroughD3D::EndAccess() {
+  SharedImageBackingD3D* d3d_image_backing =
+      static_cast<SharedImageBackingD3D*>(backing());
+  d3d_image_backing->EndAccessD3D11();
+}
 
 SharedImageBackingFactoryD3D::SharedImageBackingFactoryD3D(bool use_passthrough)
     : use_passthrough_(use_passthrough),
@@ -478,6 +566,8 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
   api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+  Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dxgi_keyed_mutex;
+
   if (swap_chain) {
     DCHECK(!d3d11_texture);
     DCHECK(!shared_handle.IsValid());
@@ -487,9 +577,16 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
       DLOG(ERROR) << "GetBuffer failed with error " << std::hex;
       return nullptr;
     }
-  } else {
-    DCHECK(d3d11_texture);
+  } else if (shared_handle.IsValid()) {
+    const HRESULT hr = d3d11_texture.As(&dxgi_keyed_mutex);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Unable to QueryInterface for IDXGIKeyedMutex on texture "
+                     "with shared handle "
+                  << std::hex;
+      return nullptr;
+    }
   }
+  DCHECK(d3d11_texture);
 
   // The GL internal format can differ from the underlying swap chain format
   // e.g. RGBA8 or RGB8 instead of BGRA8.
@@ -538,7 +635,8 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
   return std::make_unique<SharedImageBackingD3D>(
       mailbox, format, size, color_space, usage, std::move(swap_chain), texture,
       std::move(texture_passthrough), std::move(image), buffer_index,
-      std::move(d3d11_texture), std::move(shared_handle));
+      std::move(d3d11_texture), std::move(shared_handle),
+      std::move(dxgi_keyed_mutex));
 }
 
 SharedImageBackingFactoryD3D::SwapChainBackings
@@ -671,8 +769,8 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
   desc.Usage = D3D11_USAGE_DEFAULT;
   desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
   desc.CPUAccessFlags = 0;
-  desc.MiscFlags =
-      D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED;
+  desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_NTHANDLE |
+                   D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
   HRESULT hr = d3d11_device_->CreateTexture2D(&desc, nullptr, &d3d11_texture);
   if (FAILED(hr)) {

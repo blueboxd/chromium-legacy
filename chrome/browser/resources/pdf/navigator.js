@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
+import {Viewport} from './viewport.js';
 
 /**
  * NavigatorDelegate for calling browser-specific functions to do the actual
  * navigating.
  */
-class NavigatorDelegate {
+export class NavigatorDelegate {
   /**
    * @param {number} tabId The tab ID of the PDF viewer or -1 if the viewer is
    *     not displayed in a tab.
@@ -63,7 +64,7 @@ class NavigatorDelegate {
 }
 
 /** Navigator for navigating to links inside or outside the PDF. */
-class PdfNavigator {
+export class PdfNavigator {
   /**
    * @param {string} originalUrl The original page URL.
    * @param {!Viewport} viewport The viewport info of the page.
@@ -261,3 +262,7 @@ PdfNavigator.WindowOpenDisposition = {
   NEW_WINDOW: 6,
   SAVE_TO_DISK: 7
 };
+
+// Export on |window| such that scripts injected from pdf_extension_test.cc can
+// access it.
+window.PdfNavigator = PdfNavigator;

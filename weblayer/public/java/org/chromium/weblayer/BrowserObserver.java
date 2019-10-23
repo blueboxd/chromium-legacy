@@ -6,6 +6,8 @@ package org.chromium.weblayer;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 /**
  * Informed of interesting events that happen during the lifetime of a BrowserController.
  */
@@ -15,7 +17,7 @@ public abstract class BrowserObserver {
      *
      * @param url The new user-visible url.
      */
-    public void visibleUrlChanged(Uri url) {}
+    public void visibleUrlChanged(@NonNull Uri url) {}
 
     /**
      * The load state of the document has changed.

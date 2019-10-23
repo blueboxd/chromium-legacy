@@ -9,7 +9,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/page/focus_changed_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -25,7 +24,6 @@ class NDEFWriter;
 // to implementation of device::mojom::blink::NFC interface.
 class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
                                       public PageVisibilityObserver,
-                                      public FocusChangedObserver,
                                       public Supplement<Document>,
                                       public device::mojom::blink::NFCClient {
   USING_GARBAGE_COLLECTED_MIXIN(NFCProxy);
@@ -67,12 +65,6 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
 
   // Implementation of PageVisibilityObserver.
   void PageVisibilityChanged() override;
-
-  // Implementation of FocusChangedObserver.
-  void FocusedFrameChanged() override;
-
-  void UpdateSuspendedStatus();
-  bool ShouldSuspendNFC() const;
 
   void EnsureMojoConnection();
 

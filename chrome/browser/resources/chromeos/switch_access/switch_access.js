@@ -54,6 +54,18 @@ class SwitchAccess {
      */
     this.enableImprovedTextInput_ = false;
 
+    /**
+     * The automation node for the back button.
+     * @private {chrome.automation.AutomationNode}
+     */
+    this.backButtonAutomationNode_;
+
+    /**
+     * The desktop node.
+     * @private {chrome.automation.AutomationNode}
+     */
+    this.desktop_;
+
     this.init_();
   }
 
@@ -73,10 +85,11 @@ class SwitchAccess {
         new SwitchAccessPreferences(this, this.onPrefsReady_.bind(this));
 
     chrome.automation.getDesktop(function(desktop) {
-      this.navigationManager_ = new NavigationManager(desktop, this);
+      this.navigationManager_ = new NavigationManager(desktop);
+      this.desktop_ = desktop;
+      this.findBackButtonNode_();
 
-      if (this.navReadyCallback_)
-        this.navReadyCallback_();
+      if (this.navReadyCallback_) this.navReadyCallback_();
     }.bind(this));
   }
 
@@ -85,8 +98,7 @@ class SwitchAccess {
    * @override
    */
   enterMenu() {
-    if (this.navigationManager_)
-      this.navigationManager_.enterMenu();
+    if (this.navigationManager_) this.navigationManager_.enterMenu();
   }
 
   /**
@@ -94,8 +106,7 @@ class SwitchAccess {
    * @override
    */
   moveForward() {
-    if (this.navigationManager_)
-      this.navigationManager_.moveForward();
+    if (this.navigationManager_) this.navigationManager_.moveForward();
     this.onMoveForwardForTesting_ && this.onMoveForwardForTesting_();
   }
 
@@ -104,8 +115,7 @@ class SwitchAccess {
    * @override
    */
   moveBackward() {
-    if (this.navigationManager_)
-      this.navigationManager_.moveBackward();
+    if (this.navigationManager_) this.navigationManager_.moveBackward();
   }
 
   /**
@@ -113,8 +123,7 @@ class SwitchAccess {
    * @override
    */
   selectCurrentNode() {
-    if (this.navigationManager_)
-      this.navigationManager_.selectCurrentNode();
+    if (this.navigationManager_) this.navigationManager_.selectCurrentNode();
   }
 
   /**
@@ -242,8 +251,9 @@ class SwitchAccess {
   connectMenuPanel(menuPanel) {
     // Because this may be called before init_(), check if navigationManager_
     // is initialized.
-    if (this.navigationManager_)
+    if (this.navigationManager_) {
       return this.navigationManager_.connectMenuPanel(menuPanel);
+    }
 
     // If not, set navReadyCallback_ to have the menuPanel try again.
     this.navReadyCallback_ = menuPanel.connectToBackground.bind(menuPanel);
@@ -255,8 +265,30 @@ class SwitchAccess {
    */
   onPrefsReady_() {
     this.autoScanManager_.onPrefsReady();
-    if (this.navigationManager_) {
-      this.navigationManager_.focusRingManager.onPrefsReady();
+    if (this.navigationManager_) this.navigationManager_.onPrefsReady();
+  }
+
+  /** @return {chrome.automation.AutomationNode} */
+  getBackButtonAutomationNode() {
+    if (!this.backButtonAutomationNode_) {
+      this.findBackButtonNode_();
+      if (!this.backButtonAutomationNode_) {
+        console.log('Error: unable to find back button');
+      }
     }
+    return this.backButtonAutomationNode_;
+  }
+
+  /**
+   * Looks for the back button node.
+   */
+  findBackButtonNode_() {
+    if (!this.desktop_) return;
+    this.backButtonAutomationNode_ =
+        new AutomationTreeWalker(
+            this.desktop_, constants.Dir.FORWARD,
+            {visit: (node) => node.htmlAttributes.id === SAConstants.BACK_ID})
+            .next()
+            .node;
   }
 }

@@ -69,17 +69,6 @@ namespace {
 constexpr char kContactsMimeType[] = "text/json+contacts";
 #endif
 
-// Converts a list of FilePaths to a list of ui::SelectedFileInfo.
-std::vector<ui::SelectedFileInfo> FilePathListToSelectedFileInfoList(
-    const std::vector<base::FilePath>& paths) {
-  std::vector<ui::SelectedFileInfo> selected_files;
-  for (size_t i = 0; i < paths.size(); ++i) {
-    selected_files.push_back(
-        ui::SelectedFileInfo(paths[i], paths[i]));
-  }
-  return selected_files;
-}
-
 void DeleteFiles(std::vector<base::FilePath> paths) {
   for (auto& file_path : paths)
     base::DeleteFile(file_path, false);
@@ -207,7 +196,7 @@ void FileSelectHelper::MultiFilesSelected(
     const std::vector<base::FilePath>& files,
     void* params) {
   std::vector<ui::SelectedFileInfo> selected_files =
-      FilePathListToSelectedFileInfoList(files);
+      ui::FilePathListToSelectedFileInfoList(files);
 
   MultiFilesSelectedWithExtraInfo(selected_files, params);
 }
@@ -281,7 +270,7 @@ void FileSelectHelper::OnListDone(int error) {
   }
 
   std::vector<ui::SelectedFileInfo> selected_files =
-      FilePathListToSelectedFileInfoList(entry->results_);
+      ui::FilePathListToSelectedFileInfoList(entry->results_);
 
   if (dialog_type_ == ui::SelectFileDialog::SELECT_UPLOAD_FOLDER) {
     LaunchConfirmationDialog(entry->path_, std::move(selected_files));

@@ -31,6 +31,14 @@
           on-click="onExportImportClick_">
       </cr-link-row>
     </template>
+    <template is="dom-if" if="[[showArcAdbSideloading_]]">
+      <cr-link-row
+          class="hr"
+          label="$i18n{crostiniArcAdbTitle}"
+          id="crostini-enable-arc-adb"
+          on-click="onEnableArcAdbClick_">
+      </cr-link-row>
+    </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
       <div id="remove" class="settings-box">
         <div id="removeCrostiniLabel" class="start">$i18n{crostiniRemove}</div>

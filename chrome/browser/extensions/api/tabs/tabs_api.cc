@@ -1362,8 +1362,14 @@ bool TabsUpdateFunction::UpdateURL(const std::string& url_string,
   // does not show in the omnibox until it commits.  This avoids URL spoofs
   // since URLs can be opened on behalf of untrusted content.
   load_params.is_renderer_initiated = true;
+  // All renderer-initiated navigations need to have an initiator origin.
   load_params.initiator_origin = url::Origin::Create(
       Extension::GetBaseURLFromExtensionId(extension()->id()));
+  // |source_site_instance| needs to be set so that a renderer process
+  // compatible with |initiator_origin| is picked by Site Isolation.
+  load_params.source_site_instance = content::SiteInstance::CreateForURL(
+      web_contents_->GetBrowserContext(),
+      load_params.initiator_origin->GetURL());
 
   web_contents_->GetController().LoadURLWithParams(load_params);
 

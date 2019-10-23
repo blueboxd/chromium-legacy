@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -124,7 +125,9 @@ class ChromeOSTermsTest : public testing::Test {
                     TestDataReceiver* data_receiver) {
     content::WebContents::Getter wc_getter;
     tested_html_source_->StartDataRequest(
-        request_url, std::move(wc_getter),
+        GURL(base::StrCat(
+            {"chrome://", chrome::kChromeUITermsHost, "/", request_url})),
+        std::move(wc_getter),
         base::BindRepeating(&TestDataReceiver::OnDataReceived,
                             base::Unretained(data_receiver)));
     task_environment_.RunUntilIdle();

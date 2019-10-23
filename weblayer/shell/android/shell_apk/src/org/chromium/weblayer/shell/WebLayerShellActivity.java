@@ -59,6 +59,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private int mMainViewId;
     private ViewGroup mTopContentsContainer;
     private BrowserFragment mFragment;
+    private IntentInterceptor mIntentInterceptor;
 
     public BrowserController getBrowserController() {
         return mBrowserController;
@@ -66,6 +67,25 @@ public class WebLayerShellActivity extends FragmentActivity {
 
     public BrowserFragmentController getBrowserFragmentController() {
         return mBrowserFragmentController;
+    }
+
+    /** Interface used to intercept intents for testing. */
+    public static interface IntentInterceptor {
+        void interceptIntent(Fragment fragment, Intent intent, int requestCode, Bundle options);
+    }
+
+    public void setIntentInterceptor(IntentInterceptor interceptor) {
+        mIntentInterceptor = interceptor;
+    }
+
+    @Override
+    public void startActivityFromFragment(
+            Fragment fragment, Intent intent, int requestCode, Bundle options) {
+        if (mIntentInterceptor != null) {
+            mIntentInterceptor.interceptIntent(fragment, intent, requestCode, options);
+            return;
+        }
+        super.startActivityFromFragment(fragment, intent, requestCode, options);
     }
 
     @Override

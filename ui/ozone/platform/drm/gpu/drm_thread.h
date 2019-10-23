@@ -13,7 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
@@ -146,7 +148,8 @@ class DrmThread : public base::Thread,
                               const OverlaySurfaceCandidateList&,
                               const OverlayStatusList&)> callback) override;
   void GetDeviceCursor(
-      ozone::mojom::DeviceCursorAssociatedRequest cursor) override;
+      mojo::PendingAssociatedReceiver<ozone::mojom::DeviceCursor> receiver)
+      override;
 
   // ozone::mojom::DeviceCursor
   void SetCursor(gfx::AcceleratedWidget widget,
@@ -184,9 +187,9 @@ class DrmThread : public base::Thread,
 
   base::OnceClosure complete_early_binding_requests_;
 
-  // The mojo implementation requires an AssociatedBindingSet because the
+  // The mojo implementation requires an AssociatedReceiverSet because the
   // DrmThread serves requests from two different client threads.
-  mojo::AssociatedBindingSet<ozone::mojom::DeviceCursor> cursor_bindings_;
+  mojo::AssociatedReceiverSet<ozone::mojom::DeviceCursor> cursor_receivers_;
 
   // This is a BindingSet because the regular Binding causes the sequence
   // checker in InterfaceEndpointClient to fail during teardown.

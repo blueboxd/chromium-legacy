@@ -115,6 +115,8 @@ class UserCloudPolicyTokenForwarderTest : public testing::Test {
 
   void TearDown() override {
     user_policy_manager_->core()->Disconnect();
+    // Must be torn down before |profile_manager_|.
+    user_policy_manager_.reset();
     chromeos::DBusThreadManager::Shutdown();
   }
 

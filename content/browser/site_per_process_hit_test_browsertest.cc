@@ -6616,13 +6616,13 @@ IN_PROC_BROWSER_TEST_P(
   // notification, and it has user activation.
   EXPECT_FALSE(root->current_frame_host()
                    ->GetRenderWidgetHost()
-                   ->ConsumePendingUserActivationIfAllowed());
+                   ->RemovePendingUserActivationIfAvailable());
   EXPECT_TRUE(root->HasTransientUserActivation());
   // Child frame doesn't have allowed_activation state set, and does not have
   // user activation.
   EXPECT_FALSE(child->current_frame_host()
                    ->GetRenderWidgetHost()
-                   ->ConsumePendingUserActivationIfAllowed());
+                   ->RemovePendingUserActivationIfAvailable());
   EXPECT_FALSE(child->HasTransientUserActivation());
 
   // Clear the activation state.
@@ -6641,13 +6641,13 @@ IN_PROC_BROWSER_TEST_P(
   // the activation notification, and it has user activation.
   EXPECT_FALSE(child->current_frame_host()
                    ->GetRenderWidgetHost()
-                   ->ConsumePendingUserActivationIfAllowed());
+                   ->RemovePendingUserActivationIfAvailable());
   EXPECT_TRUE(child->HasTransientUserActivation());
   // Root frame doesn't have allowed_activation state set, but has user
   // activation because with UAv2, ancestor frames get activated as well.
   EXPECT_FALSE(root->current_frame_host()
                    ->GetRenderWidgetHost()
-                   ->ConsumePendingUserActivationIfAllowed());
+                   ->RemovePendingUserActivationIfAvailable());
   EXPECT_TRUE(root->HasTransientUserActivation());
 }
 

@@ -113,11 +113,10 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 
   source->AddBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
 
-  struct UncompressedResource {
+  const struct {
     const char* path;
     int idr;
-  };
-  const UncompressedResource uncompressed_resources[] = {
+  } unbundled_resources[] = {
     {"constants.html", IDR_HISTORY_CONSTANTS_HTML},
     {"constants.js", IDR_HISTORY_CONSTANTS_JS},
     {"history.js", IDR_HISTORY_HISTORY_JS},
@@ -154,7 +153,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 #endif
   };
 
-  for (const auto& resource : uncompressed_resources) {
+  for (const auto& resource : unbundled_resources) {
     source->AddResourcePath(resource.path, resource.idr);
   }
 

@@ -74,13 +74,6 @@ template("optimize_webui") {
         invoker.insert_in_head,
       ]
     }
-
-    if (defined(invoker.replace_for_html_imports_polyfill)) {
-      args += [
-        "--replace-for-html-imports-polyfill",
-        invoker.replace_for_html_imports_polyfill,
-      ]
-    }
   }
 }
 

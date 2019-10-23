@@ -18,6 +18,7 @@ namespace {
 
 using ::testing::InSequence;
 using ::testing::NiceMock;
+using ::testing::Return;
 
 MATCHER_P2(LayoutWithSize, width, height, "") {
   return arg.size() == pp::Size(width, height);
@@ -34,6 +35,7 @@ class MockTestClient : public TestClient {
 
   // TODO(crbug.com/989095): MOCK_METHOD() triggers static_assert on Windows.
   MOCK_METHOD1(ProposeDocumentLayout, void(const DocumentLayout& layout));
+  MOCK_METHOD1(ScrollToPage, void(int page));
 };
 
 class PDFiumEngineTest : public PDFiumTestBase {
@@ -49,7 +51,15 @@ class PDFiumEngineTest : public PDFiumTestBase {
 
 TEST_F(PDFiumEngineTest, InitializeWithRectanglesMultiPagesPdf) {
   NiceMock<MockTestClient> client;
-  EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)));
+
+  // ProposeDocumentLayout() gets called twice during loading because
+  // PDFiumEngine::ContinueLoadingDocument() calls LoadBody() (which eventually
+  // triggers a layout proposal), and then calls FinishLoadingDocument() (since
+  // the document is complete), which calls LoadBody() again. Coalescing these
+  // proposals is not correct unless we address the issue covered by
+  // PDFiumEngineTest.ProposeDocumentLayoutWithOverlap.
+  EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)))
+      .Times(2);
 
   std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
       &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
@@ -67,7 +77,8 @@ TEST_F(PDFiumEngineTest, AppendBlankPagesWithFewerPages) {
   NiceMock<MockTestClient> client;
   {
     InSequence normal_then_append;
-    EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)));
+    EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)))
+        .Times(2);
     EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(276, 1037)));
   }
 
@@ -87,7 +98,8 @@ TEST_F(PDFiumEngineTest, AppendBlankPagesWithMorePages) {
   NiceMock<MockTestClient> client;
   {
     InSequence normal_then_append;
-    EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)));
+    EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)))
+        .Times(2);
     EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(276, 2425)));
   }
 
@@ -105,6 +117,37 @@ TEST_F(PDFiumEngineTest, AppendBlankPagesWithMorePages) {
   ExpectPageRect(engine.get(), 4, {5, 1391, 266, 333});
   ExpectPageRect(engine.get(), 5, {5, 1738, 266, 333});
   ExpectPageRect(engine.get(), 6, {5, 2085, 266, 333});
+}
+
+TEST_F(PDFiumEngineTest, ProposeDocumentLayoutWithOverlap) {
+  NiceMock<MockTestClient> client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(engine);
+
+  EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1463)))
+      .WillOnce(Return());
+  engine->RotateClockwise();
+
+  EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)))
+      .WillOnce(Return());
+  engine->RotateCounterclockwise();
+}
+
+TEST_F(PDFiumEngineTest, ApplyDocumentLayoutAvoidsInfiniteLoop) {
+  NiceMock<MockTestClient> client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(engine);
+
+  DocumentLayout::Options options;
+  EXPECT_CALL(client, ScrollToPage(-1)).Times(0);
+  CompareSize({343, 1664}, engine->ApplyDocumentLayout(options));
+
+  options.RotatePagesClockwise();
+  EXPECT_CALL(client, ScrollToPage(-1)).Times(1);
+  CompareSize({343, 1463}, engine->ApplyDocumentLayout(options));
+  CompareSize({343, 1463}, engine->ApplyDocumentLayout(options));
 }
 
 }  // namespace

@@ -10,7 +10,6 @@ import android.webkit.ValueCallback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IFullscreenDelegateClient;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
@@ -44,31 +43,23 @@ public final class FullscreenDelegateProxy {
     }
 
     @CalledByNative
-    private void enterFullscreen() {
-        try {
-            ValueCallback<Void> exitFullscreenCallback = new ValueCallback<Void>() {
-                @Override
-                public void onReceiveValue(Void result) {
-                    if (mNativeFullscreenDelegateProxy == 0) {
-                        throw new IllegalStateException("Called after destroy()");
-                    }
-                    FullscreenDelegateProxyJni.get().doExitFullscreen(
-                            mNativeFullscreenDelegateProxy, FullscreenDelegateProxy.this);
+    private void enterFullscreen() throws RemoteException {
+        ValueCallback<Void> exitFullscreenCallback = new ValueCallback<Void>() {
+            @Override
+            public void onReceiveValue(Void result) {
+                if (mNativeFullscreenDelegateProxy == 0) {
+                    throw new IllegalStateException("Called after destroy()");
                 }
-            };
-            mClient.enterFullscreen(ObjectWrapper.wrap(exitFullscreenCallback));
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+                FullscreenDelegateProxyJni.get().doExitFullscreen(
+                        mNativeFullscreenDelegateProxy, FullscreenDelegateProxy.this);
+            }
+        };
+        mClient.enterFullscreen(ObjectWrapper.wrap(exitFullscreenCallback));
     }
 
     @CalledByNative
-    private void exitFullscreen() {
-        try {
-            mClient.exitFullscreen();
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+    private void exitFullscreen() throws RemoteException {
+        mClient.exitFullscreen();
     }
 
     @NativeMethods

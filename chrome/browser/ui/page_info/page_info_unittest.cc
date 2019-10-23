@@ -21,6 +21,7 @@
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/tls_deprecation_test_utils.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -1253,6 +1254,122 @@ TEST_F(PageInfoTest, SafetyTipTimeOpenMetrics) {
     } else {
       histograms.ExpectTotalCount(
           kHistogramPrefix + "NoAction." + test.safety_tip_status_name, 1);
+    }
+  }
+
+  // PageInfoTest expects a valid PageInfo instance to exist at end of test.
+  ResetMockUI();
+  SetDefaultUIExpectations(mock_ui());
+  page_info();
+}
+
+// Tests that metrics are recorded on a PageInfo for pages with
+// various Legacy TLS statuses.
+TEST_F(PageInfoTest, LegacyTLSMetrics) {
+  const struct TestCase {
+    const bool connection_used_legacy_tls;
+    const bool should_suppress_legacy_tls_warning;
+    const std::string histogram_suffix;
+  } kTestCases[] = {
+      {true, false, "LegacyTLS_Triggered"},
+      {true, true, "LegacyTLS_NotTriggered"},
+      {false, false, "LegacyTLS_NotTriggered"},
+  };
+
+  const std::string kHistogramPrefix("Security.LegacyTLS.PageInfo.Action");
+  const char kGenericHistogram[] = "WebsiteSettings.Action";
+
+  InitializeEmptyLegacyTLSConfig();
+
+  for (const auto& test : kTestCases) {
+    base::HistogramTester histograms;
+    SetURL("https://example.test");
+    visible_security_state_.connection_used_legacy_tls =
+        test.connection_used_legacy_tls;
+    visible_security_state_.should_suppress_legacy_tls_warning =
+        test.should_suppress_legacy_tls_warning;
+    ResetMockUI();
+    ClearPageInfo();
+    SetDefaultUIExpectations(mock_ui());
+
+    histograms.ExpectTotalCount(kGenericHistogram, 0);
+    histograms.ExpectTotalCount(kHistogramPrefix + "." + test.histogram_suffix,
+                                0);
+
+    page_info()->RecordPageInfoAction(
+        PageInfo::PageInfoAction::PAGE_INFO_OPENED);
+
+    // RecordPageInfoAction() is called during PageInfo creation in addition to
+    // the explicit RecordPageInfoAction() call, so it is called twice in total.
+    histograms.ExpectTotalCount(kGenericHistogram, 2);
+    histograms.ExpectBucketCount(kGenericHistogram,
+                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+
+    histograms.ExpectTotalCount(kHistogramPrefix + "." + test.histogram_suffix,
+                                2);
+    histograms.ExpectBucketCount(kHistogramPrefix + "." + test.histogram_suffix,
+                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+  }
+}
+
+// Tests that the duration of time the PageInfo is open is recorded for pages
+// with various Legacy TLS statuses.
+TEST_F(PageInfoTest, LegacyTLSTimeOpenMetrics) {
+  const struct TestCase {
+    const bool connection_used_legacy_tls;
+    const bool should_suppress_legacy_tls_warning;
+    const std::string legacy_tls_status_name;
+    const PageInfo::PageInfoAction action;
+  } kTestCases[] = {
+      // PAGE_INFO_COUNT used as shorthand for "take no action".
+      {true, false, "LegacyTLS_Triggered", PageInfo::PAGE_INFO_COUNT},
+      {true, true, "LegacyTLS_NotTriggered", PageInfo::PAGE_INFO_COUNT},
+      {false, false, "LegacyTLS_NotTriggered", PageInfo::PAGE_INFO_COUNT},
+      {true, false, "LegacyTLS_Triggered",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+      {true, true, "LegacyTLS_NotTriggered",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+      {false, false, "LegacyTLS_NotTriggered",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+  };
+
+  const std::string kHistogramPrefix("Security.PageInfo.TimeOpen.");
+
+  InitializeEmptyLegacyTLSConfig();
+
+  for (const auto& test : kTestCases) {
+    base::HistogramTester histograms;
+    SetURL("https://example.test");
+    visible_security_state_.connection_used_legacy_tls =
+        test.connection_used_legacy_tls;
+    visible_security_state_.should_suppress_legacy_tls_warning =
+        test.should_suppress_legacy_tls_warning;
+    ResetMockUI();
+    ClearPageInfo();
+    SetDefaultUIExpectations(mock_ui());
+
+    histograms.ExpectTotalCount(kHistogramPrefix + test.legacy_tls_status_name,
+                                0);
+    histograms.ExpectTotalCount(
+        kHistogramPrefix + "Action." + test.legacy_tls_status_name, 0);
+    histograms.ExpectTotalCount(
+        kHistogramPrefix + "NoAction." + test.legacy_tls_status_name, 0);
+
+    PageInfo* test_page_info = page_info();
+    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+      test_page_info->RecordPageInfoAction(test.action);
+    }
+    ClearPageInfo();
+
+    histograms.ExpectTotalCount(kHistogramPrefix + test.legacy_tls_status_name,
+                                1);
+
+    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+      histograms.ExpectTotalCount(
+          kHistogramPrefix + "Action." + test.legacy_tls_status_name, 1);
+    } else {
+      histograms.ExpectTotalCount(
+          kHistogramPrefix + "NoAction." + test.legacy_tls_status_name, 1);
     }
   }
 

@@ -991,6 +991,7 @@ test("content_browsertests") {
     "../browser/pointer_lock_browsertest.h",
     "../browser/pointer_lock_browsertest_mac.mm",
     "../browser/portal/portal_browsertest.cc",
+    "../browser/portal/portal_navigation_throttle_browsertest.cc",
     "../browser/power_monitor_browsertest.cc",
     "../browser/process_internals/process_internals_browsertest.cc",
     "../browser/renderer_host/input/autoscroll_browsertest.cc",

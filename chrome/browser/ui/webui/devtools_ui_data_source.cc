@@ -95,10 +95,12 @@ GURL GetCustomDevToolsFrontendURL() {
 }
 
 void DevToolsDataSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
     const GotDataCallback& callback) {
   // Serve request to devtools://bundled/ from local bundle.
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
   bundled_path_prefix += "/";
   if (base::StartsWith(path, bundled_path_prefix,

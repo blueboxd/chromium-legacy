@@ -106,12 +106,13 @@ void XRRuntimeManager::ExitImmersivePresentation() {
     return;
   }
 
-  auto* browser_xr_runtime = g_xr_runtime_manager->GetImmersiveRuntime();
+  auto* browser_xr_runtime =
+      g_xr_runtime_manager->GetCurrentlyPresentingImmersiveRuntime();
   if (!browser_xr_runtime) {
     return;
   }
 
-  browser_xr_runtime->ExitVrFromPresentingService();
+  browser_xr_runtime->ExitActiveImmersiveSession();
 }
 
 void XRRuntimeManager::AddService(VRServiceImpl* service) {
@@ -163,7 +164,7 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
   }
 
   if (options->immersive) {
-    auto* runtime = GetImmersiveRuntime();
+    auto* runtime = GetImmersiveVrRuntime();
     return runtime && runtime->SupportsAllFeatures(options->required_features)
                ? runtime
                : nullptr;
@@ -182,7 +183,7 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
   }
 }
 
-BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
+BrowserXRRuntime* XRRuntimeManager::GetImmersiveVrRuntime() {
 #if defined(OS_ANDROID)
   auto* gvr = GetRuntime(device::mojom::XRDeviceId::GVR_DEVICE_ID);
   if (gvr)
@@ -216,11 +217,18 @@ BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
   return nullptr;
 }
 
+BrowserXRRuntime* XRRuntimeManager::GetImmersiveArRuntime() {
+  device::mojom::XRSessionOptions options = {};
+  options.immersive = true;
+  options.environment_integration = true;
+  return GetRuntimeForOptions(&options);
+}
+
 device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
     VRServiceImpl* service) {
   DVLOG(1) << __func__;
-  // Get an immersive runtime if there is one.
-  auto* immersive_runtime = GetImmersiveRuntime();
+  // Get an immersive VR runtime if there is one.
+  auto* immersive_runtime = GetImmersiveVrRuntime();
   if (immersive_runtime) {
     // Listen to changes for this runtime.
     immersive_runtime->OnServiceAdded(service);
@@ -233,9 +241,7 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
   }
 
   // Get an AR runtime if there is one.
-  device::mojom::XRSessionOptions options = {};
-  options.environment_integration = true;
-  auto* ar_runtime = GetRuntimeForOptions(&options);
+  auto* ar_runtime = GetImmersiveArRuntime();
   if (ar_runtime) {
     // Listen to  changes for this runtime.
     ar_runtime->OnServiceAdded(service);
@@ -264,16 +270,28 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
   return device_info;
 }
 
+BrowserXRRuntime* XRRuntimeManager::GetCurrentlyPresentingImmersiveRuntime() {
+  auto* vr_runtime = GetImmersiveVrRuntime();
+  if (vr_runtime && vr_runtime->GetServiceWithActiveImmersiveSession()) {
+    return vr_runtime;
+  }
+
+  auto* ar_runtime = GetImmersiveArRuntime();
+  if (ar_runtime && ar_runtime->GetServiceWithActiveImmersiveSession()) {
+    return ar_runtime;
+  }
+
+  return nullptr;
+}
+
 bool XRRuntimeManager::IsOtherClientPresenting(VRServiceImpl* service) {
   DCHECK(service);
 
-  auto* runtime = GetImmersiveRuntime();
+  auto* runtime = GetCurrentlyPresentingImmersiveRuntime();
   if (!runtime)
     return false;  // No immersive runtime to be presenting.
 
-  VRServiceImpl* presenting_service = runtime->GetPresentingVRService();
-  if (!presenting_service)
-    return false;  // No VRServiceImpl is presenting.
+  auto* presenting_service = runtime->GetServiceWithActiveImmersiveSession();
 
   // True if some other VRServiceImpl is presenting.
   return (presenting_service != service);

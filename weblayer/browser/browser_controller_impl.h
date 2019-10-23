@@ -80,6 +80,9 @@ class BrowserControllerImpl : public BrowserController,
                            double progress) override;
   void DidNavigateMainFramePostCommit(
       content::WebContents* web_contents) override;
+  void RunFileChooser(content::RenderFrameHost* render_frame_host,
+                      std::unique_ptr<content::FileSelectListener> listener,
+                      const blink::mojom::FileChooserParams& params) override;
   int GetTopControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* web_contents) override;

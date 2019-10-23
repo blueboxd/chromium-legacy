@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -24,9 +23,6 @@
 #include "chrome/common/extensions/api/chrome_web_view_internal.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/context_menu_params.h"
@@ -317,14 +313,15 @@ const char MenuManager::kOnWebviewContextMenus[] =
 MenuManager::MenuManager(content::BrowserContext* context, StateStore* store)
     : browser_context_(context), store_(store) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllSources());
+  Profile* profile = Profile::FromBrowserContext(context);
+  observed_profiles_.Add(profile);
+  if (profile->HasOffTheRecordProfile())
+    observed_profiles_.Add(profile->GetOffTheRecordProfile());
   if (store_)
     store_->RegisterKey(kContextMenusKey);
 }
 
-MenuManager::~MenuManager() {
-}
+MenuManager::~MenuManager() = default;
 
 // static
 MenuManager* MenuManager::Get(content::BrowserContext* context) {
@@ -883,18 +880,14 @@ void MenuManager::OnExtensionUnloaded(content::BrowserContext* browser_context,
   }
 }
 
-void MenuManager::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-  Profile* profile = content::Source<Profile>(source).ptr();
-  // We cannot use profile_->HasOffTheRecordProfile as it may already be
-  // false at this point, if for example the incognito profile was destroyed
-  // using DestroyOffTheRecordProfile.
-  if (profile->GetOriginalProfile() == browser_context_ &&
-      profile->GetOriginalProfile() != profile) {
+void MenuManager::OnOffTheRecordProfileCreated(Profile* off_the_record) {
+  observed_profiles_.Add(off_the_record);
+}
+
+void MenuManager::OnProfileWillBeDestroyed(Profile* profile) {
+  observed_profiles_.Remove(profile);
+  if (profile->IsOffTheRecord())
     RemoveAllIncognitoContextItems();
-  }
 }
 
 gfx::Image MenuManager::GetIconForExtension(const std::string& extension_id) {

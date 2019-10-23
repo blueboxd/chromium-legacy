@@ -52,7 +52,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 

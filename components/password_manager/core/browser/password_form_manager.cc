@@ -165,6 +165,9 @@ PasswordFormManager::PasswordFormManager(
                           metrics_recorder,
                           PasswordStore::FormDigest(observed_form)) {
   driver_ = driver;
+  if (driver_)
+    driver_id_ = driver->GetId();
+
   observed_form_ = observed_form;
   metrics_recorder_->RecordFormSignature(CalculateFormSignature(observed_form));
   // Do not fetch saved credentials for Chrome sync form, since nor filling nor

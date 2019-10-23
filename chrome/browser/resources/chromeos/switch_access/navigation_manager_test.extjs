@@ -16,17 +16,20 @@ SwitchAccessNavigationManagerTest.prototype = {
   __proto__: SwitchAccessE2ETest.prototype
 }
 
-function navigateToWebpage(desktop) {
-  assertTrue(desktop != null);
-  const node = new AutomationTreeWalker(desktop, constants.Dir.FORWARD,
-      { visit: (node) => node.role === chrome.automation.RoleType.ROOT_WEB_AREA
-                      && SwitchAccessPredicate.isInterestingSubtree(node, node)
-      }
-  ).next().node;
+function moveToPageContents() {
+  const navigator = switchAccess.navigationManager_;
+  // Start from the desktop node.
+  navigator.group_ = RootNodeWrapper.buildDesktopTree(navigator.desktop_);
+  navigator.node_ = navigator.group_.firstChild;
 
-  assertTrue(node != null);
-  switchAccess.navigationManager_.node_ = node;
-  switchAccess.moveForward();
+  // The first item should be the browser window.
+  navigator.selectCurrentNode();
+
+  // The third item in the browser window is the page contents.
+  // TODO(anastasi): find the browser window dynamically.
+  navigator.moveForward();
+  navigator.moveForward();
+  navigator.selectCurrentNode();
 }
 
 function currentNode() {
@@ -34,154 +37,30 @@ function currentNode() {
 }
 
 TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
-  const website = `data:text/html;charset=utf-8,
-                  <button id="test" aria-pressed="false"></button>
-                  <script>
-                    var state = false;
-                    var button = document.getElementById("test");
-                    button.onclick = () => {
-                      state = !state;
-                      button.setAttribute("aria-pressed", state);
-                    };
-                  </script>`;
+  const website =
+      `data:text/html;charset=utf-8,
+      <button id="test" aria-pressed="false">First Button</button>
+      <button>Second Button</button>
+      <script>
+        var state = false;
+        var button = document.getElementById("test");
+        button.onclick = () => {
+          state = !state;
+          button.setAttribute("aria-pressed", state);
+        };
+      </script>`;
 
   this.runWithLoadedTree(website, function(desktop) {
-    navigateToWebpage(desktop);
+    moveToPageContents();
 
-    currentNode().addEventListener(
-        chrome.automation.EventType.CHECKED_STATE_CHANGED,
-        this.newCallback(function(event) {
-          assertEquals(this.node.name, event.target.name);
-        }.bind({node: currentNode()}))
-    );
+    let node = currentNode().automationNode;
+    assertTrue(!!node);
+    assertEquals(node.name, "First Button");
+
+    node.addEventListener(
+      chrome.automation.EventType.CHECKED_STATE_CHANGED,
+      this.newCallback((event) => assertEquals(node.name, event.target.name)));
 
     switchAccess.selectCurrentNode();
-  });
-});
-
-// The back button is inconsistently loaded before this test runs.
-// TODO(anastasi): Fix flakiness and re-enable the tests.
-TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
-  const website = `data:text/html;charset=utf-8,
-                  <button>button1</button>
-                  <button>button2</button>
-                  <button>button3</button>`;
-
-  this.runWithLoadedTree(website, function(desktop) {
-    navigateToWebpage(desktop);
-
-    const initialScope = currentNode();
-    // We need to enter the container containing the buttons.
-    assertEquals(initialScope.role, chrome.automation.RoleType.GENERIC_CONTAINER);
-    switchAccess.selectCurrentNode();
-
-    const button1 = currentNode();
-    assertEquals('button1', button1.name);
-
-    switchAccess.moveForward();
-
-    const button2 = currentNode();
-    assertEquals('button2', button2.name);
-
-    switchAccess.moveForward();
-
-    const button3 = currentNode();
-    assertEquals('button3', button3.name);
-
-    switchAccess.moveForward();
-
-    // check that the initialScope is the final element.
-    assertEquals(currentNode(), initialScope);
-
-    switchAccess.moveForward();
-
-    // check that we loop around again.
-    assertEquals(currentNode(), button1);
-  });
-});
-
-// The back button is inconsistently loaded before this test runs.
-// TODO(anastasi): Fix flakiness and re-enable the tests.
-TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveBackward', function() {
-  const website = `data:text/html;charset=utf-8,
-                  <button>button1</button>
-                  <button>button2</button>
-                  <button>button3</button>`;
-
-  this.runWithLoadedTree(website, function(desktop) {
-    navigateToWebpage(desktop);
-
-    const initialScope = currentNode();
-    // We need to enter the container containing the buttons.
-    assertEquals(initialScope.role, chrome.automation.RoleType.GENERIC_CONTAINER);
-    switchAccess.selectCurrentNode();
-
-    const button1 = currentNode();
-    assertEquals('button1', button1.name);
-
-    switchAccess.moveBackward();
-
-    // Moving backwards from the first button should take us to the initialScope.
-    assertEquals(currentNode(), initialScope);
-
-    switchAccess.moveBackward();
-
-    // Moving backwards from the initialScope should take us to the last button.
-    const button3 = currentNode();
-    assertEquals('button3', button3.name);
-
-    switchAccess.moveBackward();
-
-    const button2 = currentNode();
-    assertEquals('button2', button2.name);
-
-    switchAccess.moveBackward();
-
-    // We should be back at buttton 1.
-    assertEquals(currentNode(), button1);
-  });
-});
-
-// The back button is inconsistently loaded before this test runs.
-// TODO(anastasi): Fix flakiness and re-enable the tests.
-TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveBackAndForth', function() {
-  const website = `data:text/html;charset=utf-8,
-                  <button>button1</button>
-                  <button>button2</button>
-                  <button>button3</button>`;
-
-  this.runWithLoadedTree(website, function(desktop) {
-    navigateToWebpage(desktop);
-
-    const initialScope = currentNode();
-    // We need to enter the container containing the buttons.
-    switchAccess.selectCurrentNode();
-
-    const button1 = currentNode();
-    assertEquals('button1', button1.name);
-
-    switchAccess.moveBackward();
-
-    // Moving backwards from the first button should take us to the initialScope.
-    assertEquals(currentNode(), initialScope);
-
-    switchAccess.moveBackward();
-
-    // Moving backwards from the initialScope should take us to the last button.
-    const button3 = currentNode();
-    assertEquals('button3', button3.name);
-
-    switchAccess.moveForward();
-
-    assertEquals(currentNode(), initialScope);
-
-    switchAccess.moveForward();
-
-    assertEquals(currentNode(), button1);
-
-    switchAccess.moveForward();
-
-    const button2 = currentNode();
-    assertEquals('button2', button2.name);
   });
 });

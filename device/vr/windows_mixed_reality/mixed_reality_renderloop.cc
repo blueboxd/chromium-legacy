@@ -427,7 +427,11 @@ void MixedRealityRenderLoop::UpdateVisibilityState() {
     // and the headset is being worn, but a modal dialog is capturing input.
     case HolographicSpaceUserPresence::
         HolographicSpaceUserPresence_PresentPassive:
-      SetVisibilityState(device::mojom::XRVisibilityState::VISIBLE_BLURRED);
+      // TODO(1016907): Should report VISIBLE_BLURRED, but changed to VISIBLE to
+      // work around an issue in some versions of Windows Mixed Reality which
+      // only report PresentPassive and never PresentActive. Should be reverted
+      // after the Windows fix has been widely released.
+      SetVisibilityState(device::mojom::XRVisibilityState::VISIBLE);
       return;
     // Indicates that the browsers immersive content is not visible in the
     // headset or the user is not wearing the headset.

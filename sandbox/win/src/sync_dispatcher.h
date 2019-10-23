@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "sandbox/win/src/crosscall_server.h"
+#include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
 
 namespace sandbox {
@@ -21,7 +22,7 @@ class SyncDispatcher : public Dispatcher {
   ~SyncDispatcher() override {}
 
   // Dispatcher interface.
-  bool SetupService(InterceptionManager* manager, int service) override;
+  bool SetupService(InterceptionManager* manager, IpcTag service) override;
 
  private:
   // Processes IPC requests coming from calls to CreateEvent in the target.

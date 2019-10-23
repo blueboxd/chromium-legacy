@@ -62,6 +62,8 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.is_partial = is_partial
             self.attributes = list(attributes)
             self.constants = list(constants)
+            self.constructors = []
+            self.constructor_groups = []
             self.operations = list(operations)
             self.operation_groups = []
 

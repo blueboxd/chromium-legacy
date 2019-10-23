@@ -182,17 +182,6 @@ bool URLDataManagerBackend::CheckURLIsValid(const GURL& url) {
   return true;
 }
 
-void URLDataManagerBackend::URLToRequestPath(const GURL& url,
-                                             std::string* path) {
-  const std::string& spec = url.possibly_invalid_spec();
-  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
-  // + 1 to skip the slash at the beginning of the path.
-  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
-
-  if (offset < static_cast<int>(spec.size()))
-    path->assign(spec.substr(offset));
-}
-
 bool URLDataManagerBackend::IsValidNetworkErrorCode(int error_code) {
   std::unique_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
   const base::DictionaryValue* net_error_codes_dict = nullptr;

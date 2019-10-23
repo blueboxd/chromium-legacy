@@ -109,22 +109,11 @@ void TransactionImpl::CreateObjectStore(int64_t object_store_id,
   if (!connection->IsConnected())
     return;
 
-  if (base::Contains(connection->database()->metadata().object_stores,
-                     object_store_id)) {
-    DLOG(ERROR) << "Invalid object_store_id";
-    return;
-  }
-
-  // TODO(dmurph): Fix this to be a preemptive task and handle the error
-  // correctly.
-  // Note: This doesn't schedule a task on the transaction because the
-  // SetIndexKeys call path isn't asynchronous.
-  leveldb::Status status = connection->database()->CreateObjectStoreOperation(
-      object_store_id, name, key_path, auto_increment, transaction_.get());
-  if (!status.ok()) {
-    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
-        origin_, status, "Internal error creating object store.");
-  }
+  transaction_->ScheduleTask(
+      blink::mojom::IDBTaskType::Preemptive,
+      BindWeakOperation(&IndexedDBDatabase::CreateObjectStoreOperation,
+                        connection->database()->AsWeakPtr(), object_store_id,
+                        name, key_path, auto_increment));
 }
 
 void TransactionImpl::DeleteObjectStore(int64_t object_store_id) {
@@ -252,9 +241,6 @@ void TransactionImpl::Put(
               blink::mojom::IDBTransaction::PutCallback,
               blink::mojom::IDBTransactionPutResultPtr>(
               std::move(callback), transaction_->AsWeakPtr());
-
-      if (!connection->database()->IsObjectStoreIdInMetadata(object_store_id))
-        return;
 
       std::unique_ptr<IndexedDBDatabase::PutOperationParams> params(
           std::make_unique<IndexedDBDatabase::PutOperationParams>());

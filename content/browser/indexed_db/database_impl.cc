@@ -87,16 +87,11 @@ void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
     return;
   }
 
-  // TODO(dmurph): Fix this to be a preemptive task and handle the error
-  // correctly.
-  // Note: This doesn't schedule a task on the transaction because version
-  // change transactions pre-start in the OpenRequest inside IndexedDBDatabase.
-  leveldb::Status status = connection_->database()->RenameObjectStoreOperation(
-      object_store_id, new_name, transaction);
-  if (!status.ok()) {
-    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
-        origin_, status, "Internal error renaming object store.");
-  }
+  transaction->ScheduleTask(
+      blink::mojom::IDBTaskType::Preemptive,
+      BindWeakOperation(&IndexedDBDatabase::RenameObjectStoreOperation,
+                        connection_->database()->AsWeakPtr(), object_store_id,
+                        new_name));
 }
 
 void DatabaseImpl::CreateTransaction(
@@ -208,15 +203,6 @@ void DatabaseImpl::Get(int64_t transaction_id,
     return;
   }
 
-  if (!connection_->database()->IsObjectStoreIdAndMaybeIndexIdInMetadata(
-          object_store_id, index_id)) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Bad request");
-    std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
-        blink::mojom::IDBError::New(error.code(), error.message())));
-    return;
-  }
-
   blink::mojom::IDBDatabase::GetCallback aborting_callback =
       CreateCallbackAbortOnDestruct<blink::mojom::IDBDatabase::GetCallback,
                                     blink::mojom::IDBDatabaseGetResultPtr>(
@@ -300,15 +286,12 @@ void DatabaseImpl::SetIndexKeys(
     return;
   }
 
-  // TODO(dmurph): Fix this to be a preemptive task and handle the error
-  // correctly.
-  leveldb::Status status = connection_->database()->SetIndexKeysOperation(
-      object_store_id, std::make_unique<IndexedDBKey>(primary_key), index_keys,
-      transaction);
-  if (!status.ok()) {
-    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
-        origin_, status, "Internal error setting index keys.");
-  }
+  transaction->ScheduleTask(
+      blink::mojom::IDBTaskType::Preemptive,
+      BindWeakOperation(&IndexedDBDatabase::SetIndexKeysOperation,
+                        connection_->database()->AsWeakPtr(), object_store_id,
+                        std::make_unique<IndexedDBKey>(primary_key),
+                        index_keys));
 }
 
 void DatabaseImpl::SetIndexesReady(int64_t transaction_id,
@@ -377,11 +360,6 @@ void DatabaseImpl::OpenCursor(
     mojo::ReportBadMessage(
         "OpenCursor with |Preemptive| task type must be called from a version "
         "change transaction.");
-    return;
-  }
-
-  if (!connection_->database()->IsObjectStoreIdAndMaybeIndexIdInMetadata(
-          object_store_id, index_id)) {
     return;
   }
 
@@ -528,17 +506,11 @@ void DatabaseImpl::CreateIndex(int64_t transaction_id,
     return;
   }
 
-  // TODO(dmurph): Fix this to be a preemptive task and handle the error
-  // correctly.
-  // Note: This doesn't schedule a task on the transaction because the
-  // SetIndexKeys call path isn't asynchronous.
-  leveldb::Status status = connection_->database()->CreateIndexOperation(
-      object_store_id, index_id, name, key_path, unique, multi_entry,
-      transaction);
-  if (!status.ok()) {
-    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
-        origin_, status, "Internal error creating an index.");
-  }
+  transaction->ScheduleTask(
+      blink::mojom::IDBTaskType::Preemptive,
+      BindWeakOperation(&IndexedDBDatabase::CreateIndexOperation,
+                        connection_->database()->AsWeakPtr(), object_store_id,
+                        index_id, name, key_path, unique, multi_entry));
 }
 
 void DatabaseImpl::DeleteIndex(int64_t transaction_id,

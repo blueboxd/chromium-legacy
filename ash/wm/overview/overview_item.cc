@@ -639,6 +639,17 @@ void OverviewItem::ScaleUpSelectedItem(OverviewAnimationType animation_type) {
   gfx::RectF scaled_bounds = target_bounds();
   scaled_bounds.Inset(-scaled_bounds.width() * kDragWindowScale,
                       -scaled_bounds.height() * kDragWindowScale);
+  if (unclipped_size_) {
+    // If a clipped item is scaled up, we need to recalculate the unclipped
+    // size.
+    const int height = scaled_bounds.height();
+    const int width =
+        overview_grid_->CalculateWidthAndMaybeSetUnclippedBounds(this, height);
+    DCHECK(unclipped_size_);
+    const gfx::SizeF new_size(width, height);
+    scaled_bounds.set_size(new_size);
+    scaled_bounds.ClampToCenteredSize(new_size);
+  }
   SetBounds(scaled_bounds, animation_type);
 }
 

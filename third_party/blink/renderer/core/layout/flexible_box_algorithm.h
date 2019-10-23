@@ -171,6 +171,13 @@ class FlexItem {
 
   inline const FlexLine* Line() const;
 
+  static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
+                                    ItemPosition position,
+                                    LayoutUnit ascent,
+                                    LayoutUnit max_ascent,
+                                    bool is_wrap_reverse,
+                                    bool is_deprecated_webkit_box);
+
   FlexLayoutAlgorithm* algorithm;
   wtf_size_t line_number;
   LayoutBox* box;
@@ -188,6 +195,11 @@ class FlexItem {
   LayoutPoint desired_location;
 
   bool frozen;
+
+  // Legacy partially relies on FlexLayoutAlgorithm::AlignChildren to determine
+  // if the child is eligible for stretching (specifically, checking for auto
+  // margins). FlexLayoutAlgorithm uses this flag to report back to legacy.
+  bool needs_relayout_for_stretch;
 
   NGBlockNode ng_input_node;
   scoped_refptr<const NGLayoutResult> layout_result;
@@ -377,6 +389,13 @@ class FlexLayoutAlgorithm {
   // FlexItem::desired_position. When lines stretch, also modifies
   // FlexLine::cross_axis_extent.
   void AlignFlexLines(LayoutUnit cross_axis_content_extent);
+
+  // Positions flex items by modifying FlexItem::desired_location.
+  // When lines stretch, also modifies FlexItem::cross_axis_size.
+  void AlignChildren();
+
+  void FlipForWrapReverse(LayoutUnit cross_axis_start_edge,
+                          LayoutUnit cross_axis_content_size);
 
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
 

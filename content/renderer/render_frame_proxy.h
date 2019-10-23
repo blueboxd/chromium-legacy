@@ -18,7 +18,9 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -35,6 +37,7 @@ struct WebScrollIntoViewParams;
 
 namespace content {
 
+class BlinkInterfaceRegistryImpl;
 class ChildFrameCompositingHelper;
 class RenderFrameImpl;
 class RenderViewImpl;
@@ -122,6 +125,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // Propagate VisualProperties updates from a local root RenderWidget to the
   // child RenderWidget represented by this proxy, which is hosted in another
@@ -322,6 +328,10 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // The layer used to embed the out-of-process content.
   scoped_refptr<cc::Layer> embedded_layer_;
+
+  service_manager::BinderRegistry binder_registry_;
+  blink::AssociatedInterfaceRegistry associated_interfaces_;
+  std::unique_ptr<BlinkInterfaceRegistryImpl> blink_interface_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxy);
 };

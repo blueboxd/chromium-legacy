@@ -18,6 +18,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -3596,6 +3597,7 @@ TEST_P(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
+  wm::ActivateWindow(window1.get());
   gfx::Rect tablet_mode_bounds = window1->bounds();
   EXPECT_NE(bounds, tablet_mode_bounds);
 

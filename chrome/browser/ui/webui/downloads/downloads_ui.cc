@@ -44,7 +44,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/resources/grit/webui_resources.h"
 
 using content::BrowserContext;
 using content::DownloadManager;
@@ -159,9 +158,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
     source->AddResourcePath(kDownloadsResources[i].name,
                             kDownloadsResources[i].value);
   }
-  // Add the subpage loader, to load subpages in non-optimized builds.
-  source->AddResourcePath("subpage_loader.html", IDR_WEBUI_HTML_SUBPAGE_LOADER);
-  source->AddResourcePath("subpage_loader.js", IDR_WEBUI_JS_SUBPAGE_LOADER);
   source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
 #endif
 

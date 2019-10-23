@@ -756,6 +756,7 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
       const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
+      const net::NetworkIsolationKey& network_isolation_key,
       const HttpRequestHeaders& additional_headers,
       URLRequestContext* url_request_context,
       const NetLogWithSource& net_log,
@@ -763,6 +764,7 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
     this->socket_url = socket_url;
     this->origin = origin;
     this->site_for_cookies = site_for_cookies;
+    this->network_isolation_key = network_isolation_key;
     this->url_request_context = url_request_context;
     this->connect_delegate = std::move(connect_delegate);
     return std::make_unique<MockWebSocketStreamRequest>();
@@ -771,6 +773,7 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
   GURL socket_url;
   url::Origin origin;
   GURL site_for_cookies;
+  net::NetworkIsolationKey network_isolation_key;
   URLRequestContext* url_request_context;
   std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate;
 };
@@ -808,7 +811,7 @@ class WebSocketChannelTest : public TestWithTaskEnvironment {
     channel_->SendAddChannelRequestForTesting(
         connect_data_.socket_url, connect_data_.requested_subprotocols,
         connect_data_.origin, connect_data_.site_for_cookies,
-        HttpRequestHeaders(),
+        connect_data_.network_isolation_key, HttpRequestHeaders(),
         base::Bind(&WebSocketStreamCreationCallbackArgumentSaver::Create,
                    base::Unretained(&connect_data_.argument_saver)));
   }
@@ -843,7 +846,11 @@ class WebSocketChannelTest : public TestWithTaskEnvironment {
     ConnectData()
         : socket_url("ws://ws/"),
           origin(url::Origin::Create(GURL("http://ws"))),
-          site_for_cookies("http://ws/") {}
+          site_for_cookies("http://ws/") {
+      url::Origin top_frame_origin = url::Origin::Create(GURL("http://ws-1"));
+      this->network_isolation_key =
+          net::NetworkIsolationKey(top_frame_origin, origin);
+    }
 
     // URLRequestContext object.
     URLRequestContext url_request_context;
@@ -856,6 +863,8 @@ class WebSocketChannelTest : public TestWithTaskEnvironment {
     url::Origin origin;
     // First party for cookies for the request.
     GURL site_for_cookies;
+    // NetworkIsolationKey created from the origin of the top level frame.
+    net::NetworkIsolationKey network_isolation_key;
 
     WebSocketStreamCreationCallbackArgumentSaver argument_saver;
   };
@@ -979,6 +988,10 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   connect_data_.socket_url = GURL("ws://example.com/test");
   connect_data_.origin = url::Origin::Create(GURL("http://example.com"));
   connect_data_.site_for_cookies = GURL("http://example.com/");
+  url::Origin top_frame_origin =
+      url::Origin::Create(GURL("http://example-1.com"));
+  connect_data_.network_isolation_key =
+      net::NetworkIsolationKey(top_frame_origin, connect_data_.origin);
   connect_data_.requested_subprotocols.push_back("Sinbad");
 
   CreateChannelAndConnect();
@@ -991,6 +1004,7 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   EXPECT_EQ(connect_data_.socket_url, actual.socket_url);
   EXPECT_EQ(connect_data_.origin.Serialize(), actual.origin.Serialize());
   EXPECT_EQ(connect_data_.site_for_cookies, actual.site_for_cookies);
+  EXPECT_EQ(connect_data_.network_isolation_key, actual.network_isolation_key);
 }
 
 TEST_F(WebSocketChannelEventInterfaceTest, ConnectSuccessReported) {

@@ -28,16 +28,14 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLDivElement::HTMLDivElement(Document& document)
-    : HTMLElement(kDivTag, document) {}
+    : HTMLElement(html_names::kDivTag, document) {}
 
 void HTMLDivElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kAlignAttr) {
+  if (name == html_names::kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle") ||
         DeprecatedEqualIgnoringCase(value, "center")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,

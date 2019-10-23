@@ -542,11 +542,6 @@ bool InterstitialPageImpl::ShouldOverrideUserAgentInNewTabs() {
   return false;
 }
 
-bool InterstitialPageImpl::ShowingInterstitialPage() {
-  // An interstitial page never shows a second interstitial.
-  return false;
-}
-
 blink::mojom::RendererPreferences InterstitialPageImpl::GetRendererPrefs(
     BrowserContext* browser_context) const {
   delegate_->OverrideRendererPrefs(&renderer_preferences_);

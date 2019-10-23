@@ -4,7 +4,6 @@
 
 #include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"

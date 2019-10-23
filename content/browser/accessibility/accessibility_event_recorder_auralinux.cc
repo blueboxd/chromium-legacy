@@ -192,7 +192,7 @@ bool AccessibilityEventRecorderAuraLinux::IncludeState(
 std::string AccessibilityEventRecorderAuraLinux::AtkObjectToString(
     AtkObject* obj,
     bool include_name) {
-  std::string role = atk_role_get_name(atk_object_get_role(obj));
+  std::string role = AtkRoleToString(atk_object_get_role(obj));
   base::ReplaceChars(role, " ", "_", &role);
   std::string str =
       base::StringPrintf("role=ROLE_%s", base::ToUpperASCII(role).c_str());

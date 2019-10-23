@@ -69,6 +69,9 @@ void AnsibleManagementService::InstallAnsibleInDefaultContainer(
     base::OnceCallback<void(bool success)> callback) {
   DCHECK(ansible_installation_finished_callback_.is_null());
   ansible_installation_finished_callback_ = std::move(callback);
+  for (auto& observer : observers_) {
+    observer.OnAnsibleSoftwareConfigurationStarted();
+  }
 
   // TODO(chrisgunadi): Show Ansible software config dialog.
 
@@ -86,7 +89,7 @@ void AnsibleManagementService::OnInstallAnsibleInDefaultContainer(
     LOG(ERROR) << "Ansible installation failed";
     std::move(ansible_installation_finished_callback_).Run(/*success=*/false);
     for (auto& observer : observers_) {
-      observer.OnError();
+      observer.OnAnsibleSoftwareConfigurationFinished(false);
     }
     return;
   }
@@ -112,7 +115,7 @@ void AnsibleManagementService::OnInstallLinuxPackageProgress(
     case InstallLinuxPackageProgressStatus::FAILED:
       std::move(ansible_installation_finished_callback_).Run(/*success=*/false);
       for (auto& observer : observers_) {
-        observer.OnError();
+        observer.OnAnsibleSoftwareConfigurationFinished(false);
       }
       return;
     // TODO(okalitova): Report Ansible downloading/installation progress.
@@ -144,7 +147,7 @@ void AnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer(
         << "Attempted to apply playbook when progress signal not connected.";
     std::move(callback).Run(/*success=*/false);
     for (auto& observer : observers_) {
-      observer.OnError();
+      observer.OnAnsibleSoftwareConfigurationFinished(false);
     }
     return;
   }
@@ -157,10 +160,6 @@ void AnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer(
   request.set_vm_name(std::move(kCrostiniDefaultVmName));
   request.set_container_name(std::move(kCrostiniDefaultContainerName));
   request.set_playbook(std::move(playbook));
-
-  for (auto& observer : observers_) {
-    observer.OnApplicationStarted();
-  }
 
   GetCiceroneClient()->ApplyAnsiblePlaybook(
       std::move(request),
@@ -175,7 +174,7 @@ void AnsibleManagementService::OnApplyAnsiblePlaybook(
     std::move(ansible_playbook_application_finished_callback_)
         .Run(/*success=*/false);
     for (auto& observer : observers_) {
-      observer.OnError();
+      observer.OnAnsibleSoftwareConfigurationFinished(false);
     }
     return;
   }
@@ -187,7 +186,7 @@ void AnsibleManagementService::OnApplyAnsiblePlaybook(
     std::move(ansible_playbook_application_finished_callback_)
         .Run(/*success=*/false);
     for (auto& observer : observers_) {
-      observer.OnError();
+      observer.OnAnsibleSoftwareConfigurationFinished(false);
     }
     return;
   }
@@ -203,14 +202,14 @@ void AnsibleManagementService::OnApplyAnsiblePlaybookProgress(
       std::move(ansible_playbook_application_finished_callback_)
           .Run(/*success=*/true);
       for (auto& observer : observers_) {
-        observer.OnApplicationFinished();
+        observer.OnAnsibleSoftwareConfigurationFinished(true);
       }
       break;
     case vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::FAILED:
       std::move(ansible_playbook_application_finished_callback_)
           .Run(/*success=*/false);
       for (auto& observer : observers_) {
-        observer.OnError();
+        observer.OnAnsibleSoftwareConfigurationFinished(false);
       }
       break;
     case vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::IN_PROGRESS:

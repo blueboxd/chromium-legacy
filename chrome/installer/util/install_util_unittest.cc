@@ -32,6 +32,7 @@
 
 using base::win::RegKey;
 using ::testing::_;
+using ::testing::Not;
 using ::testing::Return;
 using ::testing::StrEq;
 
@@ -378,6 +379,12 @@ TEST_F(InstallUtilTest, ValueEquals) {
   EXPECT_TRUE(pred.Evaluate(L"howdy"));
 }
 
+// A matcher that returns true if its argument (a string) matches a given
+// base::FilePath.
+MATCHER_P(EqPathIgnoreCase, value, "") {
+  return base::FilePath::CompareEqualIgnoreCase(arg, value.value());
+}
+
 TEST_F(InstallUtilTest, ProgramCompare) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
@@ -421,8 +428,7 @@ TEST_F(InstallUtilTest, ProgramCompare) {
   ASSERT_NE(static_cast<DWORD>(0), short_len);
   ASSERT_GT(static_cast<DWORD>(MAX_PATH), short_len);
   short_expect.resize(short_len);
-  ASSERT_FALSE(base::FilePath::CompareEqualIgnoreCase(expect.value(),
-                                                      short_expect));
+  ASSERT_THAT(short_expect, Not(EqPathIgnoreCase(expect)));
   EXPECT_TRUE(InstallUtil::ProgramCompare(expect).Evaluate(
       L"\"" + short_expect + L"\""));
 }

@@ -5075,7 +5075,7 @@ Unknown properties are collapsed to zero. -->
   <int value="117" label="BDH_INVALID_REFCOUNT_OPERATION"/>
   <int value="118" label="BDH_INVALID_URL_OPERATION"/>
   <int value="119" label="OBSOLETE_IDBDH_INVALID_ORIGIN"/>
-  <int value="120" label="RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE"/>
+  <int value="120" label="OBSOLETE_RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE"/>
   <int value="121" label="OBSOLETE_RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR"/>
   <int value="122" label="NI_IN_PAGE_NAVIGATION"/>
   <int value="123" label="RPH_MOJO_PROCESS_ERROR"/>
@@ -36542,6 +36542,7 @@ from previous Chrome versions.
   <int value="-496119023" label="WebXR:enabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
   <int value="-494722408" label="ContentSuggestionsLargeThumbnail:enabled"/>
+  <int value="-493716471" label="WebRtcEnableMultiChannelApm:enabled"/>
   <int value="-493551777" label="StaleWhileRevalidate2:disabled"/>
   <int value="-492864618" label="NTPForeignSessionsSuggestions:disabled"/>
   <int value="-491131428" label="OmniboxNewAnswerLayout:disabled"/>
@@ -37337,12 +37338,14 @@ from previous Chrome versions.
   <int value="584541349" label="ContextualSearchSingleActions:disabled"/>
   <int value="586021329" label="VibrateRequiresUserGesture:enabled"/>
   <int value="588333474" label="OfflineIndicator:disabled"/>
+  <int value="589924262" label="CryptAuthV2DeviceActivityStatus:enabled"/>
   <int value="592050831" label="disable-slimming-paint"/>
   <int value="593707592" label="disable-network-portal-notification"/>
   <int value="594756372" label="MyFilesVolume:disabled"/>
   <int value="595168244" label="NotificationExpansionAnimation:enabled"/>
   <int value="595371145" label="OmniboxRichEntitySuggestions:disabled"/>
   <int value="596106994" label="CustomFeedbackUi:enabled"/>
+  <int value="596108787" label="WebRtcEnableMultiChannelApm:disabled"/>
   <int value="598827460" label="enable-roboto-font-ui"/>
   <int value="598926697" label="VrLaunchIntent:disabled"/>
   <int value="600037637" label="AndroidSigninPromos:enabled"/>
@@ -38157,6 +38160,7 @@ from previous Chrome versions.
   <int value="1670161209" label="ClickToOpenPDFPlaceholder:enabled"/>
   <int value="1670799163" label="ChromeHomeShowGoogleGWhenUrlCleared:enabled"/>
   <int value="1671021713" label="AutofillImportDynamicForms:disabled"/>
+  <int value="1673199712" label="enable-use-hdr-transfer-function"/>
   <int value="1673427566" label="ChromeHomeExpandButton:disabled"/>
   <int value="1677167062" label="AutomaticPasswordGeneration:enabled"/>
   <int value="1677258310" label="DragAppsInTabletMode:disabled"/>
@@ -38518,6 +38522,7 @@ from previous Chrome versions.
   <int value="2129184006" label="NTPOfflinePageDownloadSuggestions:enabled"/>
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2132595171" label="OmniboxSearchEngineLogo:enabled"/>
+  <int value="2133594095" label="CryptAuthV2DeviceActivityStatus:disabled"/>
   <int value="2134480727" label="MediaSessionAccelerators:disabled"/>
   <int value="2135408204" label="OverscrollHistoryNavigation:disabled"/>
   <int value="2137113620"
@@ -46138,6 +46143,11 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="3" label="Model for target not available on client">
     The model for the optimization target not available on the client.
+  </int>
+  <int value="4" label="In model prediction holdback">
+    The page load is part of a model prediction holdback where all decisions
+    will return false in an attempt to not taint the data in order to understand
+    the production recall of the model.
   </int>
 </enum>
 
@@ -56014,6 +56024,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Other"/>
   <int value="1" label="From TWA clear data dialog"/>
   <int value="2" label="From TWA manage space activity"/>
+</enum>
+
+<enum name="SettingsPageInteractions">
+  <int value="0" label="PRIVACY_SYNC_AND_GOOGLE_SERVICES"/>
+  <int value="1" label="PRIVACY_CHROME_SIGN_IN"/>
+  <int value="2" label="PRIVACY_DO_NOT_TRACK"/>
+  <int value="3" label="PRIVACY_PAYMENT_METHOD"/>
+  <int value="4" label="PRIVACY_NETWORK_PREDICTION"/>
+  <int value="5" label="PRIVACY_MANAGE_CERTIFICATES"/>
+  <int value="6" label="PRIVACY_SECURITY_KEYS"/>
+  <int value="7" label="PRIVACY_SITE_SETTINGS"/>
+  <int value="8" label="PRIVACY_CLEAR_BROWSING_DATA"/>
 </enum>
 
 <enum name="SettingsResetPromptConfigError">

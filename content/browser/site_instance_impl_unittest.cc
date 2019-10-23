@@ -750,9 +750,9 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   DrainMessageLoop();
 }
 
-// Test to ensure that HasWrongProcessForURL behaves properly for different
-// types of URLs.
-TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
+// Test to ensure that IsSuitableForURL behaves properly for different types of
+// URLs.
+TEST_F(SiteInstanceTest, IsSuitableForURL) {
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   std::unique_ptr<RenderProcessHost> host;
   scoped_refptr<SiteInstanceImpl> instance(
@@ -763,7 +763,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
 
   // Check prior to assigning a site or process to the instance, which is
   // expected to return false to allow the SiteInstance to be used for anything.
-  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://google.com")));
+  EXPECT_TRUE(instance->IsSuitableForURL(GURL("http://google.com")));
 
   instance->SetSite(GURL("http://evernote.com/"));
   EXPECT_TRUE(instance->HasSite());
@@ -774,11 +774,11 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
   EXPECT_TRUE(host.get() != nullptr);
   EXPECT_TRUE(instance->HasProcess());
 
-  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://evernote.com")));
-  EXPECT_FALSE(instance->HasWrongProcessForURL(
+  EXPECT_TRUE(instance->IsSuitableForURL(GURL("http://evernote.com")));
+  EXPECT_TRUE(instance->IsSuitableForURL(
       GURL("javascript:alert(document.location.href);")));
 
-  EXPECT_TRUE(instance->HasWrongProcessForURL(GetWebUIURL(kChromeUIGpuHost)));
+  EXPECT_FALSE(instance->IsSuitableForURL(GetWebUIURL(kChromeUIGpuHost)));
 
   // Test that WebUI SiteInstances reject normal web URLs.
   const GURL webui_url(GetWebUIURL(kChromeUIGpuHost));
@@ -792,26 +792,25 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
       webui_host->GetID(), BINDINGS_POLICY_WEB_UI);
 
   EXPECT_TRUE(webui_instance->HasProcess());
-  EXPECT_FALSE(webui_instance->HasWrongProcessForURL(webui_url));
-  EXPECT_TRUE(webui_instance->HasWrongProcessForURL(GURL("http://google.com")));
-  EXPECT_TRUE(webui_instance->HasWrongProcessForURL(GURL("http://gpu")));
+  EXPECT_TRUE(webui_instance->IsSuitableForURL(webui_url));
+  EXPECT_FALSE(webui_instance->IsSuitableForURL(GURL("http://google.com")));
+  EXPECT_FALSE(webui_instance->IsSuitableForURL(GURL("http://gpu")));
 
   // WebUI uses process-per-site, so another instance will use the same process
-  // even if we haven't called GetProcess yet.  Make sure HasWrongProcessForURL
+  // even if we haven't called GetProcess yet.  Make sure IsSuitableForURL
   // doesn't crash (http://crbug.com/137070).
   scoped_refptr<SiteInstanceImpl> webui_instance2(
       SiteInstanceImpl::Create(browser_context.get()));
   webui_instance2->SetSite(webui_url);
-  EXPECT_FALSE(webui_instance2->HasWrongProcessForURL(webui_url));
-  EXPECT_TRUE(
-      webui_instance2->HasWrongProcessForURL(GURL("http://google.com")));
+  EXPECT_TRUE(webui_instance2->IsSuitableForURL(webui_url));
+  EXPECT_FALSE(webui_instance2->IsSuitableForURL(GURL("http://google.com")));
 
   DrainMessageLoop();
 }
 
-// Test to ensure that HasWrongProcessForURL behaves properly even when
+// Test to ensure that IsSuitableForURL behaves properly even when
 // --site-per-process is used (http://crbug.com/160671).
-TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
+TEST_F(SiteInstanceTest, IsSuitableForURLInSitePerProcess) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
 
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
@@ -821,7 +820,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
 
   // Check prior to assigning a site or process to the instance, which is
   // expected to return false to allow the SiteInstance to be used for anything.
-  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://google.com")));
+  EXPECT_TRUE(instance->IsSuitableForURL(GURL("http://google.com")));
 
   instance->SetSite(GURL("http://evernote.com/"));
   EXPECT_TRUE(instance->HasSite());
@@ -832,11 +831,11 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
   EXPECT_TRUE(host.get() != nullptr);
   EXPECT_TRUE(instance->HasProcess());
 
-  EXPECT_FALSE(instance->HasWrongProcessForURL(GURL("http://evernote.com")));
-  EXPECT_FALSE(instance->HasWrongProcessForURL(
+  EXPECT_TRUE(instance->IsSuitableForURL(GURL("http://evernote.com")));
+  EXPECT_TRUE(instance->IsSuitableForURL(
       GURL("javascript:alert(document.location.href);")));
 
-  EXPECT_TRUE(instance->HasWrongProcessForURL(GetWebUIURL(kChromeUIGpuHost)));
+  EXPECT_FALSE(instance->IsSuitableForURL(GetWebUIURL(kChromeUIGpuHost)));
 
   DrainMessageLoop();
 }
@@ -865,7 +864,7 @@ TEST_F(SiteInstanceTest, ProcessPerSiteWithWrongBindings) {
   EXPECT_TRUE(instance->HasProcess());
 
   // Without bindings, this should look like the wrong process.
-  EXPECT_TRUE(instance->HasWrongProcessForURL(webui_url));
+  EXPECT_FALSE(instance->IsSuitableForURL(webui_url));
 
   // WebUI uses process-per-site, so another instance would normally use the
   // same process.  Make sure it doesn't use the same process if the bindings

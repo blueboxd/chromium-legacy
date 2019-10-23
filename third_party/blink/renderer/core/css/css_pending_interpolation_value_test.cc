@@ -11,11 +11,10 @@
 namespace blink {
 namespace {
 
-using namespace cssvalue;
-using Type = CSSPendingInterpolationValue::Type;
+using Type = cssvalue::CSSPendingInterpolationValue::Type;
 
-CSSPendingInterpolationValue* Create(Type type) {
-  return CSSPendingInterpolationValue::Create(type);
+cssvalue::CSSPendingInterpolationValue* Create(Type type) {
+  return cssvalue::CSSPendingInterpolationValue::Create(type);
 }
 
 TEST(CSSPendingInterpolationValueTest, Create) {

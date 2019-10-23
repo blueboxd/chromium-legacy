@@ -153,8 +153,14 @@ void RendererInterfaceBinders::CreateWebSocketConnector(
     const url::Origin& origin) {
   // TODO(jam): is it ok to not send extraHeaders for sockets created from
   // shared and service workers?
+  //
+  // Shared Workers and service workers are not directly associated with a
+  // frame, so the concept of "top-level frame" does not exist. Can use
+  // (origin, origin) for the NetworkIsolationKey for requests because these
+  // workers can only be created when the site has cookie access.
   mojo::MakeSelfOwnedReceiver(std::make_unique<WebSocketConnectorImpl>(
-                                  host->GetID(), MSG_ROUTING_NONE, origin),
+                                  host->GetID(), MSG_ROUTING_NONE, origin,
+                                  net::NetworkIsolationKey(origin, origin)),
                               std::move(receiver));
 }
 

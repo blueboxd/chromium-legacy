@@ -19,7 +19,7 @@ PeerConnectionTrackerHost::PeerConnectionTrackerHost(RenderProcessHost* rph)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PowerMonitor::AddObserver(this);
 
-  mojo::PendingRemote<mojom::PeerConnectionManager> pending_tracker;
+  mojo::PendingRemote<blink::mojom::PeerConnectionManager> pending_tracker;
   content::BindInterface(rph, &pending_tracker);
   tracker_.Bind(std::move(pending_tracker));
 }
@@ -30,7 +30,7 @@ PeerConnectionTrackerHost::~PeerConnectionTrackerHost() {
 }
 
 void PeerConnectionTrackerHost::AddPeerConnection(
-    mojom::PeerConnectionInfoPtr info) {
+    blink::mojom::PeerConnectionInfoPtr info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
@@ -174,7 +174,8 @@ void PeerConnectionTrackerHost::GetLegacyStats() {
 }
 
 void PeerConnectionTrackerHost::BindReceiver(
-    mojo::PendingReceiver<mojom::PeerConnectionTrackerHost> pending_receiver) {
+    mojo::PendingReceiver<blink::mojom::PeerConnectionTrackerHost>
+        pending_receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   receiver_.reset();
   receiver_.Bind(std::move(pending_receiver));

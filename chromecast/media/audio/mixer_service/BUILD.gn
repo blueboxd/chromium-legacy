@@ -60,12 +60,9 @@ cast_source_set("output_stream_connection") {
   deps = [
     ":common",
     ":connection",
+    ":proto",
     "//base",
     "//net",
-  ]
-
-  public_deps = [
-    ":proto",
   ]
 }
 

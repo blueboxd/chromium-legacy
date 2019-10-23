@@ -245,6 +245,8 @@ if (enable_vr) {
         "openxr/openxr_input_helper.h",
         "openxr/openxr_render_loop.cc",
         "openxr/openxr_render_loop.h",
+        "openxr/openxr_statics.cc",
+        "openxr/openxr_statics.h",
         "openxr/openxr_util.cc",
         "openxr/openxr_util.h",
       ]

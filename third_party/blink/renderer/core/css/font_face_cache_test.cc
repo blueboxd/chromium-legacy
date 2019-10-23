@@ -20,8 +20,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 class FontFaceCacheTest : public PageTestBase {
   USING_FAST_MALLOC(FontFaceCacheTest);
 
@@ -459,7 +457,7 @@ TEST_F(FontFaceCacheTest, ObliqueRangeMatching) {
       CSSNumericLiteralValue::Create(35, CSSPrimitiveValue::UnitType::kNumber);
   oblique_range->Append(*oblique_from);
   oblique_range->Append(*oblique_to);
-  auto* oblique_value = MakeGarbageCollected<CSSFontStyleRangeValue>(
+  auto* oblique_value = MakeGarbageCollected<cssvalue::CSSFontStyleRangeValue>(
       *oblique_keyword_value, *oblique_range);
 
   AppendTestFaceForCapabilities(*stretch_value, *oblique_value, *weight_value);
@@ -471,8 +469,9 @@ TEST_F(FontFaceCacheTest, ObliqueRangeMatching) {
       CSSNumericLiteralValue::Create(10, CSSPrimitiveValue::UnitType::kNumber);
   oblique_range_second->Append(*oblique_from_second);
   oblique_range_second->Append(*oblique_to_second);
-  auto* oblique_value_second = MakeGarbageCollected<CSSFontStyleRangeValue>(
-      *oblique_keyword_value, *oblique_range_second);
+  auto* oblique_value_second =
+      MakeGarbageCollected<cssvalue::CSSFontStyleRangeValue>(
+          *oblique_keyword_value, *oblique_range_second);
 
   AppendTestFaceForCapabilities(*stretch_value, *oblique_value_second,
                                 *weight_value);

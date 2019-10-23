@@ -2250,6 +2250,12 @@ const char kWebrtcHwEncodingName[] = "WebRTC hardware video encoding";
 const char kWebrtcHwEncodingDescription[] =
     "Support in WebRTC for encoding video streams using platform hardware.";
 
+const char kWebrtcMultiChannelApmName[] =
+    "WebRTC multi-channel audio processing.";
+const char kWebrtcMultiChannelApmDescription[] =
+    "Support in WebRTC for processing playout and capture audio in multi "
+    "channel without downmixing.";
+
 const char kWebrtcNewEncodeCpuLoadEstimatorName[] =
     "WebRTC new encode cpu load estimator";
 const char kWebrtcNewEncodeCpuLoadEstimatorDescription[] =
@@ -3298,6 +3304,11 @@ const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
 const char kCrostiniWebUIInstallerDescription[] =
     "Enable the new WebUI Crostini Installer.";
 
+const char kCryptAuthV2DeviceActivityStatusName[] =
+    "CryptAuth Device Activity Status";
+const char kCryptAuthV2DeviceActivityStatusDescription[] =
+    "Use the CryptAuth GetDevicesActivityStatus API to sort devices.";
+
 const char kCryptAuthV2DeviceSyncName[] = "CryptAuth v2 DeviceSync";
 const char kCryptAuthV2DeviceSyncDescription[] =
     "Use the CryptAuth v2 DeviceSync protocol.";
@@ -3319,6 +3330,12 @@ const char kDisableExplicitDmaFencesName[] = "Disable explicit dma-fences";
 const char kDisableExplicitDmaFencesDescription[] =
     "Always rely on implicit syncrhonization between GPU and display "
     "controller instead of using dma-fences explcitily when available.";
+
+const char kEnableUseHDRTransferFunctionName[] =
+    "Enable using HDR transfer function";
+const char kEnableUseHDRTransferFunctionDescription[] =
+    "Allows using an HDR transfer functions if any connected monitor supports "
+    "it";
 
 const char kDisableOfficeEditingComponentAppName[] =
     "Disable Office Editing for Docs, Sheets & Slides";

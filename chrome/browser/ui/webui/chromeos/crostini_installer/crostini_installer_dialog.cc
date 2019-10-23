@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/base/ui_base_types.h"
 
@@ -55,20 +56,30 @@ bool CrostiniInstallerDialog::ShouldShowCloseButton() const {
   return false;
 }
 
-bool CrostiniInstallerDialog::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
-    // Prevent the dialog from being closed. The web page should control closing
-    // logic.
-    return true;
-  }
-
-  return SystemWebDialogDelegate::AcceleratorPressed(accelerator);
-}
-
 void CrostiniInstallerDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
   params->z_order = ui::ZOrderLevel::kNormal;
+}
+
+bool CrostiniInstallerDialog::CanCloseDialog() const {
+  // TODO(929571): If other WebUI Dialogs also need to let the WebUI control
+  // closing logic, we should find a more general solution.
+
+  // Disallow closing without WebUI consent.
+  return installer_ui_ == nullptr || installer_ui_->can_close();
+}
+
+void CrostiniInstallerDialog::OnDialogShown(
+    content::WebUI* webui,
+    content::RenderViewHost* render_view_host) {
+  installer_ui_ = static_cast<CrostiniInstallerUI*>(webui->GetController());
+  return SystemWebDialogDelegate::OnDialogShown(webui, render_view_host);
+}
+
+void CrostiniInstallerDialog::OnCloseContents(content::WebContents* source,
+                                              bool* out_close_dialog) {
+  installer_ui_ = nullptr;
+  return SystemWebDialogDelegate::OnCloseContents(source, out_close_dialog);
 }
 
 }  // namespace chromeos

@@ -12,6 +12,8 @@
 #include "content/public/test/browser_task_environment.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -70,14 +72,14 @@ class MockRendererAudioInputStreamFactoryClient
   MOCK_METHOD0(OnStreamCreated, void());
 
   void StreamCreated(
-      media::mojom::AudioInputStreamPtr input_stream,
+      mojo::PendingRemote<media::mojom::AudioInputStream> input_stream,
       media::mojom::AudioInputStreamClientRequest client_request,
       media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
       const base::Optional<base::UnguessableToken>& stream_id) override {
     // Loopback streams have no stream ids.
     EXPECT_FALSE(stream_id.has_value());
-    input_stream_ = std::move(input_stream);
+    input_stream_.Bind(std::move(input_stream));
     client_request_ = std::move(client_request);
     OnStreamCreated();
   }
@@ -86,7 +88,7 @@ class MockRendererAudioInputStreamFactoryClient
 
  private:
   mojo::Receiver<mojom::RendererAudioInputStreamFactoryClient> receiver_{this};
-  media::mojom::AudioInputStreamPtr input_stream_;
+  mojo::Remote<media::mojom::AudioInputStream> input_stream_;
   media::mojom::AudioInputStreamClientRequest client_request_;
 };
 
@@ -104,7 +106,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
         : params(params), group_id(group_id) {}
 
     bool requested = false;
-    media::mojom::AudioInputStreamRequest stream_request;
+    mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver;
     media::mojom::AudioInputStreamClientPtr client;
     media::mojom::AudioInputStreamObserverPtr observer;
     const media::AudioParameters params;
@@ -135,7 +137,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
     EXPECT_EQ(stream_request_data_->group_id, group_id);
     EXPECT_TRUE(stream_request_data_->params.Equals(params));
     stream_request_data_->requested = true;
-    stream_request_data_->stream_request = std::move(receiver);
+    stream_request_data_->stream_receiver = std::move(receiver);
     stream_request_data_->client.Bind(std::move(client));
     stream_request_data_->observer.Bind(std::move(observer));
     stream_request_data_->shared_memory_count = shared_memory_count;

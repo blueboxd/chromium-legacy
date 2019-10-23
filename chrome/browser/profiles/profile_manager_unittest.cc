@@ -1507,11 +1507,7 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
   const base::string16 profile_name2 = storage.ChooseNameForNewProfile(1u);
   Profile* profile2 = AddProfileToStorage(profile_manager,
                                           "path_2", profile_name2);
-  base::string16 expected_profile_name(gaia_given_name);
-  expected_profile_name.append(ASCIIToUTF16(" ("));
-  expected_profile_name.append(profile_name1);
-  expected_profile_name.append(ASCIIToUTF16(")"));
-  EXPECT_EQ(expected_profile_name,
+  EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
   EXPECT_EQ(profile_name2,
             profiles::GetAvatarNameForProfile(profile2->GetPath()));

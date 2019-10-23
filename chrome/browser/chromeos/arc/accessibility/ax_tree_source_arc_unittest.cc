@@ -230,11 +230,11 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
   event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
-  root_window->root_node_id = 0;
+  root_window->root_node_id = 10;
 
   event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 0;
+  root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({1, 2}));
 
@@ -360,11 +360,12 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
 
   // Sanity check tree output.
   ExpectTree(
-      "id=0 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
+      "id=100 window (0, 0)-(0, 0) child_ids=10\n"
+      "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
       "modal=true child_ids=1,2\n"
-      "  id=1 button FOCUSABLE (100, 100)-(100, 100) restriction=disabled "
+      "    id=1 button FOCUSABLE (100, 100)-(100, 100) restriction=disabled "
       "class_name=android.widget.Button\n"
-      "  id=2 button FOCUSABLE (100, 100)-(10, 100) restriction=disabled "
+      "    id=2 button FOCUSABLE (100, 100)-(10, 100) restriction=disabled "
       "class_name=android.widget.Button\n");
 }
 
@@ -375,7 +376,13 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationTextField) {
   event->event_type = AXEventType::VIEW_FOCUSED;
   event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 0;
+  root->id = 10;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
 
   std::unique_ptr<ui::AXNodeData> data;
   SetProperty(root, AXStringProperty::CLASS_NAME, "");
@@ -455,9 +462,16 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   event->source_id = 0;
   event->task_id = 1;
   event->event_type = AXEventType::VIEW_FOCUSED;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
   event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 0;
+  root->id = 10;
   SetProperty(root, AXStringProperty::CLASS_NAME, "");
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({1, 2}));
@@ -574,13 +588,13 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
 
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindow) {
   auto event = AXEventData::New();
-  event->source_id = 0;
+  event->source_id = 1;
   event->task_id = 1;
   event->event_type = AXEventType::VIEW_FOCUSED;
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
   event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root = event->window_data->back().get();
-  root->window_id = 0;
+  root->window_id = 1;
 
   CallNotifyAccessibilityEvent(event.get());
 
@@ -611,7 +625,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
   event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root = event->window_data->back().get();
-  root->window_id = 0;
+  root->window_id = 100;
   root->root_node_id = 3;
   SetProperty(root, AXWindowIntListProperty::CHILD_WINDOW_IDS, {2, 5});
   SetProperty(root, AXWindowStringProperty::TITLE, "window title");
@@ -677,71 +691,6 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
   EXPECT_NE(ax::mojom::Role::kRootWebArea, data->role);
 
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-}
-
-// TODO(katie): Maybe remove this test when adding AccessibilityWindowInfoData
-// support per go/a11y-arc++-window-mapping if it is no longer needed. This
-// depends on if we can assume that each tree has exactly one root.
-TEST_F(AXTreeSourceArcTest, MultipleNodeSubtrees) {
-  // Run several times to try source_id from root, middle, or leaf of the tree.
-  int tree_size = 4;
-  for (int i = 0; i < 4; i++) {
-    auto event = AXEventData::New();
-    event->source_id = i + tree_size;
-    event->task_id = 1;
-    event->event_type = AXEventType::VIEW_FOCUSED;
-
-    // Make three non-overlapping trees. The middle tree in the list has the
-    // source_id of interest. Each tree has a root with one child, and that
-    // child has two leaf children.
-    int num_trees = 3;
-    for (int j = 0; j < num_trees; j++) {
-      event->node_data.push_back(AXNodeInfoData::New());
-      AXNodeInfoData* root = event->node_data.back().get();
-      root->id = j * tree_size;
-      SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
-                  std::vector<int>({j * tree_size + 1}));
-
-      event->node_data.push_back(AXNodeInfoData::New());
-      AXNodeInfoData* child1 = event->node_data.back().get();
-      child1->id = j * tree_size + 1;
-      SetProperty(child1, AXIntListProperty::CHILD_NODE_IDS,
-                  std::vector<int>({j * tree_size + 2, j * tree_size + 3}));
-
-      event->node_data.push_back(AXNodeInfoData::New());
-      AXNodeInfoData* child2 = event->node_data.back().get();
-      child2->id = j * tree_size + 2;
-
-      event->node_data.push_back(AXNodeInfoData::New());
-      AXNodeInfoData* child3 = event->node_data.back().get();
-      child3->id = j * tree_size + 3;
-    }
-
-    CallNotifyAccessibilityEvent(event.get());
-
-    // Check that only the middle tree was added, and that it is correct.
-    std::vector<AccessibilityInfoDataWrapper*> children;
-    CallGetChildren(event->node_data.at(tree_size).get(), &children);
-    ASSERT_EQ(1U, children.size());
-    EXPECT_EQ(5, children[0]->GetId());
-    children.clear();
-    CallGetChildren(event->node_data.at(tree_size + 1).get(), &children);
-    ASSERT_EQ(2U, children.size());
-    EXPECT_EQ(6, children[0]->GetId());
-    EXPECT_EQ(7, children[1]->GetId());
-
-    // The first and third roots are not part of the tree.
-    EXPECT_EQ(nullptr, CallGetFromId(0));
-    EXPECT_EQ(nullptr, CallGetFromId(1));
-    EXPECT_EQ(nullptr, CallGetFromId(2));
-    EXPECT_EQ(nullptr, CallGetFromId(3));
-    EXPECT_EQ(nullptr, CallGetFromId(8));
-    EXPECT_EQ(nullptr, CallGetFromId(9));
-    EXPECT_EQ(nullptr, CallGetFromId(10));
-    EXPECT_EQ(nullptr, CallGetFromId(11));
-  }
-
-  EXPECT_EQ(4, GetDispatchedEventCount(ax::mojom::Event::kFocus));
 }
 
 TEST_F(AXTreeSourceArcTest, ComplexTreeStructure) {
@@ -856,11 +805,11 @@ TEST_F(AXTreeSourceArcTest, EventTypeForViewSelected) {
   event->window_data->emplace_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
-  root_window->root_node_id = 0;
+  root_window->root_node_id = 10;
 
   event->node_data.emplace_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 0;
+  root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({1, 2}));
 

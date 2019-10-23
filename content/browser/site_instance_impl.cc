@@ -384,12 +384,12 @@ size_t SiteInstanceImpl::GetRelatedActiveContentsCount() {
   return browsing_instance_->active_contents_count();
 }
 
-bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
+bool SiteInstanceImpl::IsSuitableForURL(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the URL to navigate to can be associated with any site instance,
   // we want to keep it in the same process.
   if (IsRendererDebugURL(url))
-    return false;
+    return true;
 
   // Any process can host an about:blank URL, except the one used for error
   // pages, which should not commit successful navigations.  This check avoids a
@@ -400,7 +400,7 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
   // elsewhere and leave them in the source SiteInstance, along with
   // about:srcdoc and data:.
   if (url.IsAboutBlank() && site_ != GURL(kUnreachableWebDataURL))
-    return false;
+    return true;
 
   // If the site URL is an extension (e.g., for hosted apps or WebUI) but the
   // process is not (or vice versa), make sure we notice and fix it.
@@ -425,7 +425,7 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
   // SiteInstance associated with that frame is initially a SiteInstance with
   // no site URL set.
   if (IsDefaultSiteInstance() && site_url != GetSiteURL())
-    return true;
+    return false;
 
   // Note that HasProcess() may return true if process_ is null, in
   // process-per-site cases where there's an existing process available.
@@ -435,29 +435,29 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
     // If there is no process or site, then this is a new SiteInstance that can
     // be used for anything.
     if (!HasSite())
-      return false;
+      return true;
 
     // If there is no process but there is a site, then the process must have
     // been discarded after we navigated away.  If the site URLs match, then it
     // is safe to use this SiteInstance.
     if (GetSiteURL() == site_url)
-      return false;
+      return true;
 
     // If the site URLs do not match, but neither this SiteInstance nor the
     // destination site_url require dedicated processes, then it is safe to use
     // this SiteInstance.
     if (!RequiresDedicatedProcess() &&
         !DoesSiteURLRequireDedicatedProcess(GetIsolationContext(), site_url)) {
-      return false;
+      return true;
     }
 
     // Otherwise, there's no process, the site URLs don't match, and at least
     // one of them requires a dedicated process, so it is not safe to use this
     // SiteInstance.
-    return true;
+    return false;
   }
 
-  return !RenderProcessHostImpl::IsSuitableHost(
+  return RenderProcessHostImpl::IsSuitableHost(
       GetProcess(), browsing_instance_->GetBrowserContext(),
       GetIsolationContext(), site_url, origin_lock);
 }

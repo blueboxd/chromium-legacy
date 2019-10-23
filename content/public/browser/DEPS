@@ -5,6 +5,7 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+device/fido",
+  "+services/data_decoder/public",
   "+services/device/public",
   "+services/media_session/public",
   "+services/metrics/public/cpp",

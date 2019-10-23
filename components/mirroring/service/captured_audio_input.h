@@ -13,7 +13,9 @@
 #include "media/audio/audio_input_ipc.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace mirroring {
 
@@ -43,7 +45,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) CapturedAudioInput final
   void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
   // mojom::AudioStreamCreatorClient implementation
-  void StreamCreated(media::mojom::AudioInputStreamPtr stream,
+  void StreamCreated(mojo::PendingRemote<media::mojom::AudioInputStream> stream,
                      media::mojom::AudioInputStreamClientRequest client_request,
                      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
                      bool initially_muted) override;
@@ -59,7 +61,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) CapturedAudioInput final
   mojo::Receiver<mojom::AudioStreamCreatorClient>
       stream_creator_client_receiver_{this};
   media::AudioInputIPCDelegate* delegate_ = nullptr;
-  media::mojom::AudioInputStreamPtr stream_;
+  mojo::Remote<media::mojom::AudioInputStream> stream_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturedAudioInput);
 };

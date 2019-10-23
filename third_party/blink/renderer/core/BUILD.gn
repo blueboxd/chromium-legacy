@@ -1587,7 +1587,6 @@ jumbo_source_set("unit_tests") {
     "workers/dedicated_worker_test.cc",
     "workers/main_thread_worklet_test.cc",
     "workers/threaded_worklet_test.cc",
-    "workers/worker_fetch_test_helper.h",
     "workers/worker_thread_test.cc",
     "workers/worker_thread_test_helper.h",
     "workers/worklet_module_responses_map_test.cc",

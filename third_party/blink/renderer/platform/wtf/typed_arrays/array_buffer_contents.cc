@@ -80,6 +80,10 @@ void ArrayBufferContents::Detach() {
   holder_ = nullptr;
 }
 
+void ArrayBufferContents::Reset() {
+  holder_ = base::MakeRefCounted<DataHolder>();
+}
+
 void ArrayBufferContents::Transfer(ArrayBufferContents& other) {
   DCHECK(!IsShared());
   DCHECK(!other.holder_->Data());

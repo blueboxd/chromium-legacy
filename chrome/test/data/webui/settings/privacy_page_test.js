@@ -91,6 +91,78 @@ cr.define('settings_privacy_page', function() {
     };
   }
 
+  function registerUMALoggingTests() {
+    suite('PrivacyPageUMACheck', function() {
+      /** @type {settings.TestPrivacyPageBrowserProxy} */
+      let testBrowserProxy;
+
+      /** @type {SettingsPrivacyPageElement} */
+      let page;
+
+      setup(function() {
+        testBrowserProxy = new TestPrivacyPageBrowserProxy();
+        settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+        PolymerTest.clearBody();
+        page = document.createElement('settings-privacy-page');
+        document.body.appendChild(page);
+      });
+
+      teardown(function() {
+        page.remove();
+      });
+
+      test('LogMangeCerfificatesClick', function() {
+        page.$$('#manageCertificates').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES,
+                  result);
+            });
+      });
+
+      test('LogClearBrowsingClick', function() {
+        page.$$('#clearBrowsingData').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA,
+                  result);
+            });
+      });
+
+      test('LogDoNotTrackClick', function() {
+        page.$$('#doNotTrack').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK,
+                  result);
+            });
+      });
+
+      test('LogCanMakePaymentToggleClick', function() {
+        page.$$('#canMakePaymentToggle').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD,
+                  result);
+            });
+      });
+
+      test('LogSiteSettingsSubpageClick', function() {
+        page.$$('#site-settings-subpage-trigger').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS,
+                  result);
+            });
+      });
+    });
+  }
+
   function registerNativeCertificateManagerTests() {
     suite('NativeCertificateManager', function() {
       /** @type {settings.TestPrivacyPageBrowserProxy} */
@@ -748,4 +820,5 @@ cr.define('settings_privacy_page', function() {
   registerClearBrowsingDataTests();
   registerPrivacyPageTests();
   registerPrivacyPageSoundTests();
+  registerUMALoggingTests();
 });

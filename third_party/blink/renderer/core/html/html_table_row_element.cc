@@ -38,19 +38,17 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLTableRowElement::HTMLTableRowElement(Document& document)
-    : HTMLTablePartElement(kTrTag, document) {}
+    : HTMLTablePartElement(html_names::kTrTag, document) {}
 
 bool HTMLTableRowElement::HasLegalLinkAttribute(
     const QualifiedName& name) const {
-  return name == kBackgroundAttr ||
+  return name == html_names::kBackgroundAttr ||
          HTMLTablePartElement::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& HTMLTableRowElement::SubResourceAttributeName() const {
-  return kBackgroundAttr;
+  return html_names::kBackgroundAttr;
 }
 
 static int FindIndexInRowCollection(const HTMLCollection& rows,
@@ -101,8 +99,8 @@ HTMLElement* HTMLTableRowElement::insertCell(int index,
     return nullptr;
   }
 
-  auto* cell =
-      MakeGarbageCollected<HTMLTableCellElement>(kTdTag, GetDocument());
+  auto* cell = MakeGarbageCollected<HTMLTableCellElement>(html_names::kTdTag,
+                                                          GetDocument());
   if (num_cells == index || index == -1)
     AppendChild(cell, exception_state);
   else

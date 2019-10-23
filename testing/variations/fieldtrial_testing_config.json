@@ -1607,69 +1607,6 @@
             ]
         }
     ],
-    "ClickToCall": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ClickToCallUI"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ClickToCallV2Receiver": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ClickToCallOpenDialerDirectly"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ClickToCallV2Sender": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ClickToCallContextMenuForSelectedText"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ClickToCallContextMenuForSelectedText",
-                        "ClickToCallUI"
-                    ]
-                }
-            ]
-        }
-    ],
     "ClipboardContentBehavior": [
         {
             "platforms": [

@@ -7,7 +7,6 @@
 #include <wrl/implements.h>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"

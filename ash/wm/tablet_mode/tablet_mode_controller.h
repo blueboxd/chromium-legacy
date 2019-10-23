@@ -165,6 +165,10 @@ class ASH_EXPORT TabletModeController
     ++tab_drag_in_splitview_count_;
   }
 
+  bool is_in_tablet_physical_state() const {
+    return is_in_tablet_physical_state_;
+  }
+
   // Enable/disable the tablet mode for development. Please see cc file
   // for more details.
   void SetEnabledForDev(bool enabled);

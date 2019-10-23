@@ -78,11 +78,13 @@ ChromeosVideoDecoderFactory::GetSupportedConfigs() {
 std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter) {
+    std::unique_ptr<VideoFrameConverter> frame_converter,
+    gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory) {
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   return VideoDecoderPipeline::Create(
       std::move(client_task_runner), std::move(frame_pool),
-      std::move(frame_converter), base::BindRepeating(&GetCreateVDFunctions));
+      std::move(frame_converter), gpu_memory_buffer_factory,
+      base::BindRepeating(&GetCreateVDFunctions));
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
   return nullptr;

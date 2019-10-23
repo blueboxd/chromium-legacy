@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 StylePropertySerializer::CSSPropertyValueSetForSerializer::
     CSSPropertyValueSetForSerializer(const CSSPropertyValueSet& properties)
     : property_set_(&properties),
@@ -387,7 +385,7 @@ String StylePropertySerializer::CommonShorthandChecks(
     }
     if (success) {
       if (const auto* substitution_value =
-              DynamicTo<CSSPendingSubstitutionValue>(longhands[0])) {
+              DynamicTo<cssvalue::CSSPendingSubstitutionValue>(longhands[0])) {
         if (substitution_value->ShorthandPropertyId() != shorthand.id())
           return g_empty_string;
         return substitution_value->ShorthandValue()->CssText();

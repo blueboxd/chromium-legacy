@@ -502,12 +502,12 @@ CORE_EXPORT void ToFlexibleArrayBufferView(v8::Isolate*,
                                            void* storage = nullptr);
 
 CORE_EXPORT bool IsValidEnum(const String& value,
-                             const char** valid_values,
+                             const char* const* valid_values,
                              size_t length,
                              const String& enum_name,
                              ExceptionState&);
 CORE_EXPORT bool IsValidEnum(const Vector<String>& values,
-                             const char** valid_values,
+                             const char* const* valid_values,
                              size_t length,
                              const String& enum_name,
                              ExceptionState&);

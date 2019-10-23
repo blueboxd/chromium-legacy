@@ -5,7 +5,6 @@
 #include "net/url_request/url_request_filter.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/stl_util.h"
 #include "net/url_request/url_request.h"

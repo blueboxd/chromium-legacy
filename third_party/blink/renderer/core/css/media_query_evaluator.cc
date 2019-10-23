@@ -59,8 +59,6 @@
 
 namespace blink {
 
-using namespace media_feature_names;
-
 enum MediaFeaturePrefix { kMinPrefix, kMaxPrefix, kNoPrefix };
 
 using EvalFunc = bool (*)(const MediaQueryExpValue&,

@@ -517,26 +517,6 @@ interface FrameHost {
       int32 line_number,
       mojo_base.mojom.String16 source_id);
 
-  // Sent when the renderer fails a provisional load with an error.
-  //
-  // |url| is the URL that the error is reported for.
-  //
-  // |error_code| is a net::Error code as reported in the
-  // DidFailProvisionalLoad callback.
-  //
-  // |error_description| is an error message generated from the error_code.
-  // This can be an empty string if we were unable to find a meaningful
-  // description.
-  //
-  // |showing_repost_interstitial| is true if the failure is the result of
-  // navigating to a POST again and we're going to show the POST interstitial.
-  // TODO(https://crbug.com/963806): Delete this method.
-  DidFailProvisionalLoadWithError(
-      url.mojom.Url url,
-      int32 error_code,
-      mojo_base.mojom.String16 error_description,
-      bool showing_repost_interstitial);
-
   // Sent when the renderer fails to load with an error.
   DidFailLoadWithError(
       url.mojom.Url url,

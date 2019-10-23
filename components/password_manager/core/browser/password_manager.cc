@@ -409,8 +409,7 @@ void PasswordManager::ShowManualFallbackForSaving(
   if (!client_->GetProfilePasswordStore()->IsAbleToSavePasswords() ||
       !client_->IsSavingAndFillingEnabled(password_form.origin) ||
       ShouldBlockPasswordForSameOriginButDifferentScheme(
-          password_form.origin) ||
-      !client_->GetStoreResultFilter()->ShouldSave(password_form)) {
+          password_form.origin)) {
     return;
   }
 
@@ -422,6 +421,11 @@ void PasswordManager::ShowManualFallbackForSaving(
     client_->GetMetricsRecorder()->RecordFormManagerAvailable(availability);
   if (!manager)
     return;
+
+  if (!client_->GetStoreResultFilter()->ShouldSave(
+          *manager->GetSubmittedForm())) {
+    return;
+  }
 
   // Show the fallback if a prompt or a confirmation bubble should be available.
   bool has_generated_password = manager->HasGeneratedPassword();

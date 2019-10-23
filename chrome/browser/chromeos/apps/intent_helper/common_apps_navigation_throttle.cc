@@ -42,7 +42,7 @@ void CommonAppsNavigationThrottle::ShowIntentPickerBubble(
   apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
       web_contents, std::move(apps_for_picker),
       /*show_stay_in_chrome=*/false,
-      /*show_remember_selection=*/false,
+      /*show_remember_selection=*/true,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -67,6 +67,9 @@ void CommonAppsNavigationThrottle::OnIntentPickerClosed(
 
   if (!proxy)
     return;
+
+  if (should_persist)
+    proxy->AddPreferredApp(launch_name, url);
 
   if (should_launch_app) {
     // TODO(crbug.com/853604): Distinguish the source from link and omnibox.
@@ -110,9 +113,12 @@ CommonAppsNavigationThrottle::FindAllAppsForUrl(
   std::vector<std::string> app_ids = proxy->GetAppIdsForUrl(url);
   auto* menu_manager =
       extensions::MenuManager::Get(web_contents->GetBrowserContext());
+  auto preferred_app_id = proxy->PreferredApps().FindPreferredAppForUrl(url);
+
   for (const std::string app_id : app_ids) {
     proxy->AppRegistryCache().ForOneApp(
-        app_id, [&apps, menu_manager](const apps::AppUpdate& update) {
+        app_id, [&apps, menu_manager,
+                 &preferred_app_id](const apps::AppUpdate& update) {
           PickerEntryType type = PickerEntryType::kUnknown;
           switch (update.AppType()) {
             case apps::mojom::AppType::kUnknown:
@@ -129,10 +135,16 @@ CommonAppsNavigationThrottle::FindAllAppsForUrl(
             default:
               NOTREACHED();
           }
+          // TODO(crbug.com/853604): Automatically launch the app. At the moment
+          // just mark the app as preferred to minimize the change to
+          // AppsNavigationThrottle.
+          std::string display_name = update.Name();
+          if (update.AppId() == preferred_app_id)
+            display_name = update.Name() + " (preferred)";
           // TODO(crbug.com/853604): Get icon from App Service.
           apps.emplace(apps.begin(), type,
                        menu_manager->GetIconForExtension(update.AppId()),
-                       update.AppId(), update.Name());
+                       update.AppId(), display_name);
         });
   }
 

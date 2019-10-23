@@ -41,10 +41,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLMetaElement::HTMLMetaElement(Document& document)
-    : HTMLElement(kMetaTag, document) {}
+    : HTMLElement(html_names::kMetaTag, document) {}
 
 static bool IsInvalidSeparator(UChar c) {
   return c == ';';
@@ -476,7 +474,8 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
 }
 
 void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
-  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+  const AtomicString& content_value =
+      FastGetAttribute(html_names::kContentAttr);
   if (content_value.IsNull())
     return;
   if (EqualIgnoringASCIICase(name_value, "theme-color") &&
@@ -489,14 +488,14 @@ void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
 
 void HTMLMetaElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kNameAttr) {
+  if (params.name == html_names::kNameAttr) {
     if (IsInDocumentTree())
       NameRemoved(params.old_value);
     ProcessContent();
-  } else if (params.name == kContentAttr) {
+  } else if (params.name == html_names::kContentAttr) {
     ProcessContent();
     ProcessHttpEquiv();
-  } else if (params.name == kHttpEquivAttr) {
+  } else if (params.name == html_names::kHttpEquivAttr) {
     ProcessHttpEquiv();
   } else {
     HTMLElement::ParseAttribute(params);
@@ -518,7 +517,7 @@ void HTMLMetaElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
   if (!insertion_point.IsInDocumentTree())
     return;
-  const AtomicString& name_value = FastGetAttribute(kNameAttr);
+  const AtomicString& name_value = FastGetAttribute(html_names::kNameAttr);
   if (!name_value.IsEmpty())
     NameRemoved(name_value);
 }
@@ -533,10 +532,12 @@ static bool InDocumentHead(HTMLMetaElement* element) {
 void HTMLMetaElement::ProcessHttpEquiv() {
   if (!IsInDocumentTree())
     return;
-  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+  const AtomicString& content_value =
+      FastGetAttribute(html_names::kContentAttr);
   if (content_value.IsNull())
     return;
-  const AtomicString& http_equiv_value = FastGetAttribute(kHttpEquivAttr);
+  const AtomicString& http_equiv_value =
+      FastGetAttribute(html_names::kHttpEquivAttr);
   if (http_equiv_value.IsEmpty())
     return;
   HttpEquiv::Process(GetDocument(), http_equiv_value, content_value,
@@ -547,11 +548,12 @@ void HTMLMetaElement::ProcessContent() {
   if (!IsInDocumentTree())
     return;
 
-  const AtomicString& name_value = FastGetAttribute(kNameAttr);
+  const AtomicString& name_value = FastGetAttribute(html_names::kNameAttr);
   if (name_value.IsEmpty())
     return;
 
-  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+  const AtomicString& content_value =
+      FastGetAttribute(html_names::kContentAttr);
 
   if (EqualIgnoringASCIICase(name_value, "theme-color") &&
       GetDocument().GetFrame()) {
@@ -593,11 +595,11 @@ WTF::TextEncoding HTMLMetaElement::ComputeEncoding() const {
 }
 
 const AtomicString& HTMLMetaElement::Content() const {
-  return getAttribute(kContentAttr);
+  return getAttribute(html_names::kContentAttr);
 }
 
 const AtomicString& HTMLMetaElement::HttpEquiv() const {
-  return getAttribute(kHttpEquivAttr);
+  return getAttribute(html_names::kHttpEquivAttr);
 }
 
 const AtomicString& HTMLMetaElement::GetName() const {

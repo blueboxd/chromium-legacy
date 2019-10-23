@@ -156,7 +156,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
-      const base::Optional<url::Origin>& origin,
+      const url::Origin& origin,
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,

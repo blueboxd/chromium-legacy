@@ -35,10 +35,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLWBRElement::HTMLWBRElement(Document& document)
-    : HTMLElement(kWbrTag, document) {}
+    : HTMLElement(html_names::kWbrTag, document) {}
 
 LayoutObject* HTMLWBRElement::CreateLayoutObject(const ComputedStyle& style,
                                                  LegacyLayout) {

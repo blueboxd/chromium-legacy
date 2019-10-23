@@ -31,10 +31,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLFrameElement::HTMLFrameElement(Document& document)
-    : HTMLFrameElementBase(kFrameTag, document),
+    : HTMLFrameElementBase(html_names::kFrameTag, document),
       frame_border_(true),
       frame_border_set_(false) {}
 
@@ -49,7 +47,7 @@ LayoutObject* HTMLFrameElement::CreateLayoutObject(const ComputedStyle&,
 }
 
 bool HTMLFrameElement::NoResize() const {
-  return hasAttribute(kNoresizeAttr);
+  return hasAttribute(html_names::kNoresizeAttr);
 }
 
 void HTMLFrameElement::AttachLayoutTree(AttachContext& context) {
@@ -64,11 +62,11 @@ void HTMLFrameElement::AttachLayoutTree(AttachContext& context) {
 
 void HTMLFrameElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kFrameborderAttr) {
+  if (params.name == html_names::kFrameborderAttr) {
     frame_border_ = params.new_value.ToInt();
     frame_border_set_ = !params.new_value.IsNull();
     // FIXME: If we are already attached, this has no effect.
-  } else if (params.name == kNoresizeAttr) {
+  } else if (params.name == html_names::kNoresizeAttr) {
     if (GetLayoutObject())
       GetLayoutObject()->UpdateFromElement();
   } else {

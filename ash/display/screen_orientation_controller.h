@@ -102,8 +102,6 @@ class ASH_EXPORT ScreenOrientationController
   // Unlock all and set the rotation back to the user specified rotation.
   void UnlockAll();
 
-  bool ScreenOrientationProviderSupported() const;
-
   // Returns true if the user has locked the orientation to portrait, false if
   // the user has locked the orientation to landscape or not locked the
   // orientation.
@@ -152,8 +150,8 @@ class ASH_EXPORT ScreenOrientationController
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
-  void OnTabletModeEnding() override;
   void OnTabletModeEnded() override;
+  void OnTabletPhysicalStateChanged() override;
 
   // SplitViewObserver:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,

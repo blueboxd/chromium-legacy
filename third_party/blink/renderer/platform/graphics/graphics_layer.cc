@@ -729,13 +729,6 @@ void GraphicsLayer::SetNeedsDisplay() {
                           PaintInvalidationReason::kFullLayer);
 }
 
-void GraphicsLayer::SetNeedsDisplayRecursively() {
-  for (auto* child : children_) {
-    child->SetNeedsDisplayRecursively();
-  }
-  SetNeedsDisplay();
-}
-
 void GraphicsLayer::SetNeedsDisplayInRect(const IntRect& rect) {
   DCHECK(PaintsContentOrHitTest());
   CcLayer()->SetNeedsDisplayRect(rect);

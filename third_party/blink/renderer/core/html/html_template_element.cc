@@ -38,10 +38,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLTemplateElement::HTMLTemplateElement(Document& document)
-    : HTMLElement(kTemplateTag, document) {
+    : HTMLElement(html_names::kTemplateTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLTemplateElement);
 }
 

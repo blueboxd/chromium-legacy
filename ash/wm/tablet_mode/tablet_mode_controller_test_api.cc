@@ -4,13 +4,24 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/time/default_tick_clock.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 
 namespace ash {
+
+namespace {
+
+bool IsTabletModeControllerInitialized() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableTabletMode);
+}
+
+}  // namespace
 
 TabletModeControllerTestApi::TabletModeControllerTestApi()
     : tablet_mode_controller_(Shell::Get()->tablet_mode_controller()) {}
@@ -26,11 +37,30 @@ void TabletModeControllerTestApi::LeaveTabletMode() {
 }
 
 void TabletModeControllerTestApi::AttachExternalMouse() {
+  // Calling RunUntilIdle() here is necessary before setting the mouse devices
+  // to prevent the callback from evdev thread to overwrite whatever we set
+  // here below. See `InputDeviceFactoryEvdevProxy::OnStartupScanComplete()`.
+  base::RunLoop().RunUntilIdle();
   ui::DeviceDataManagerTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  if (!IsTabletModeControllerInitialized()) {
+    // The controller is not observing the DeviceDataManager, hence we need to
+    // notify it ourselves.
+    tablet_mode_controller_->OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kMouse);
+  }
+}
+
+void TabletModeControllerTestApi::DettachAllMouseDevices() {
+  // See comment in AttachExternalMouse() for why we need RunUntilIdle().
   base::RunLoop().RunUntilIdle();
-  tablet_mode_controller_->OnInputDeviceConfigurationChanged(
-      ui::InputDeviceEventObserver::kMouse);
+  ui::DeviceDataManagerTestApi().SetMouseDevices({});
+  if (!IsTabletModeControllerInitialized()) {
+    // The controller is not observing the DeviceDataManager, hence we need to
+    // notify it ourselves.
+    tablet_mode_controller_->OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kMouse);
+  }
 }
 
 void TabletModeControllerTestApi::TriggerLidUpdate(const gfx::Vector3dF& lid) {

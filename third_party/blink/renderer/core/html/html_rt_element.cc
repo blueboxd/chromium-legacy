@@ -9,10 +9,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLRTElement::HTMLRTElement(Document& document)
-    : HTMLElement(kRtTag, document) {}
+    : HTMLElement(html_names::kRtTag, document) {}
 
 LayoutObject* HTMLRTElement::CreateLayoutObject(const ComputedStyle& style,
                                                 LegacyLayout legacy) {

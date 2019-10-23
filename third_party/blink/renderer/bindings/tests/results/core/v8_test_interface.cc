@@ -268,7 +268,7 @@ static void TestEnumAttributeAttributeSetter(
   // Returns undefined without setting the value if the value is invalid.
   DummyExceptionStateForTesting dummy_exception_state;
   {
-    const char* kValidValues[] = {
+    const char* const kValidValues[] = {
       "",
       "EnumValue1",
       "EnumValue2",
@@ -316,7 +316,7 @@ static void TestEnumOrNullAttributeAttributeSetter(
   // Returns undefined without setting the value if the value is invalid.
   DummyExceptionStateForTesting dummy_exception_state;
   {
-    const char* kValidValues[] = {
+    const char* const kValidValues[] = {
       nullptr,
       "",
       "EnumValue1",
@@ -1204,7 +1204,7 @@ static void PartialPartialEnumTypeAttributeAttributeSetter(
   // Returns undefined without setting the value if the value is invalid.
   DummyExceptionStateForTesting dummy_exception_state;
   {
-    const char* kValidValues[] = {
+    const char* const kValidValues[] = {
       "foo",
       "bar",
   };
@@ -1622,7 +1622,7 @@ static void VoidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
   test_enum_arg = info[0];
   if (!test_enum_arg.Prepare())
     return;
-  const char* kValidTestEnumArgValues[] = {
+  const char* const kValidTestEnumArgValues[] = {
       "",
       "EnumValue1",
       "EnumValue2",

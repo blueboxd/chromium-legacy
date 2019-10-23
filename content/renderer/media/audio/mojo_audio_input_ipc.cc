@@ -109,7 +109,7 @@ void MojoAudioInputIPC::StopEchoCancellationDump() {
 }
 
 void MojoAudioInputIPC::StreamCreated(
-    media::mojom::AudioInputStreamPtr stream,
+    mojo::PendingRemote<media::mojom::AudioInputStream> stream,
     media::mojom::AudioInputStreamClientRequest stream_client_request,
     media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
     bool initially_muted,
@@ -122,7 +122,7 @@ void MojoAudioInputIPC::StreamCreated(
   UMA_HISTOGRAM_TIMES("Media.Audio.Render.InputDeviceStreamCreationTime",
                       base::TimeTicks::Now() - stream_creation_start_time_);
 
-  stream_ = std::move(stream);
+  stream_.Bind(std::move(stream));
   stream_client_binding_.Bind(std::move(stream_client_request));
 
   // Keep the stream_id, if we get one. Regular input stream have stream ids,

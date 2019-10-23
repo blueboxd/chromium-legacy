@@ -327,11 +327,6 @@ group("gn_all") {
       "//content/public/android:content_junit_tests",
       "//content/shell/android:content_shell_apk",
       "//device:device_junit_tests",
-      "//weblayer/shell/android:weblayer_demo_apk",
-      "//weblayer/shell/android:weblayer_shell_apk",
-
-      # TODO(https://crbug.com/879065): remove once tests have been migrated to
-      # the video_decode_accelerator_tests target.
       "//media/gpu:video_decode_accelerator_unittest",
       "//net/android:net_junit_tests",
       "//services:service_junit_tests",
@@ -347,6 +342,8 @@ group("gn_all") {
       "//tools/android/errorprone_plugin:errorprone_plugin_java",
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
       "//ui/android:ui_junit_tests",
+      "//weblayer/shell/android:weblayer_demo_apk",
+      "//weblayer/shell/android:weblayer_shell_apk",
     ]
     deps -= [
       "//net:net_perftests",
@@ -918,10 +915,6 @@ if (is_chromeos) {
         "//components/chromeos_camera:jpeg_encode_accelerator_unittest",
         "//media/gpu:video_decode_accelerator_perf_tests",
         "//media/gpu:video_decode_accelerator_tests",
-
-        # TODO(https://crbug.com/879065): remove once tests have been migrated
-        # to the above target.
-        "//media/gpu:video_decode_accelerator_unittest",
         "//media/gpu:video_encode_accelerator_unittest",
       ]
     }

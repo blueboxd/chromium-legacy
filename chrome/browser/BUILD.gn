@@ -3563,6 +3563,7 @@ jumbo_static_library("browser") {
       "//chrome/services/app_service/public/cpp:app_update",
       "//chrome/services/app_service/public/cpp:icon_loader",
       "//chrome/services/app_service/public/cpp:intents",
+      "//chrome/services/app_service/public/cpp:preferred_apps",
       "//components/feedback",
       "//components/image_fetcher/core",
       "//components/keep_alive_registry",

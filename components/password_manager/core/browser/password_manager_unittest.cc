@@ -92,6 +92,10 @@ MATCHER_P(FormIgnoreDate, expected, "") {
   return arg == expected_with_date;
 }
 
+MATCHER_P(HasUsernameValue, expected_username, "") {
+  return arg.username_value == expected_username;
+}
+
 class MockLeakDetectionCheck : public LeakDetectionCheck {
  public:
   MOCK_METHOD3(Start, void(const GURL&, base::string16, base::string16));
@@ -180,6 +184,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   void FilterAllResultsForSaving() {
     EXPECT_CALL(filter_, ShouldSave(_)).WillRepeatedly(Return(false));
   }
+
+  testing::NiceMock<MockStoreResultFilter>* filter() { return &filter_; }
 
  private:
   testing::NiceMock<MockStoreResultFilter> filter_;
@@ -3373,6 +3379,27 @@ TEST_F(PasswordManagerTest, FormSubmittedOnIFrameMainFrameLoaded) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_));
   manager()->OnPasswordFormsRendered(&driver_, {} /* observed */,
                                      true /* did stop loading */);
+}
+
+TEST_F(PasswordManagerTest, ShowManualFallbackParsedFormIsUsed) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  // Create a PasswordForm, with only form_data set.
+  PasswordForm form;
+  form.form_data = MakeSimpleForm().form_data;
+
+  manager()->OnPasswordFormsParsed(&driver_, {form} /*observed*/);
+
+  // Check that the parsed form from |form.form_data| rather than |form| is used
+  // for checking whether the form should be saved.
+  EXPECT_CALL(*client_.filter(),
+              ShouldSave(HasUsernameValue(ASCIIToUTF16("googleuser"))))
+      .WillOnce(Return(true));
+
+  manager()->ShowManualFallbackForSaving(&driver_, form);
 }
 
 }  // namespace password_manager

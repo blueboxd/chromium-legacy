@@ -348,13 +348,6 @@ void RawResource::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
     c->DidDownloadToBlob(this, blob);
 }
 
-void RawResource::ReportResourceTimingToClients(
-    const ResourceTimingInfo& info) {
-  ResourceClientWalker<RawResourceClient> w(Clients());
-  while (RawResourceClient* c = w.Next())
-    c->DidReceiveResourceTiming(this, info);
-}
-
 bool RawResource::MatchPreload(const FetchParameters& params,
                                base::SingleThreadTaskRunner* task_runner) {
   if (!Resource::MatchPreload(params, task_runner))

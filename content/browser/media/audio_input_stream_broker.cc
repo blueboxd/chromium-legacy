@@ -206,8 +206,7 @@ void AudioInputStreamBroker::StreamCreated(
   DCHECK(stream_id.has_value());
   DCHECK(renderer_factory_client_);
   renderer_factory_client_->StreamCreated(
-      media::mojom::AudioInputStreamPtr(media::mojom::AudioInputStreamPtrInfo(
-          stream.PassPipe(), stream.version())),
+      std::move(stream),
       media::mojom::AudioInputStreamClientRequest(
           pending_client_receiver_.PassPipe()),
       std::move(data_pipe), initially_muted, stream_id);

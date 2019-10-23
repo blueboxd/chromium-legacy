@@ -21,11 +21,13 @@
 #include "base/time/time.h"
 #include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/resource_coordinator/session_restore_policy.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
@@ -42,6 +44,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -226,6 +229,20 @@ class SessionRestoreTest : public InProcessBrowserTest {
       content::WaitForLoadStop(contents);
     }
   }
+
+#if !defined(OS_CHROMEOS)
+  Profile* CreateSecondaryProfile(int profile_num) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    base::FilePath profile_path = profile_manager->user_data_dir();
+    profile_path = profile_path.AppendASCII(
+        base::StringPrintf("New Profile %d", profile_num));
+    Profile* profile = profile_manager->GetProfile(profile_path);
+    SessionStartupPref pref(SessionStartupPref::LAST);
+    SessionStartupPref::SetStartupPref(profile, pref);
+    return profile;
+  }
+#endif  // !defined(OS_CHROMEOS)
 
   GURL url1_;
   GURL url2_;
@@ -1737,6 +1754,131 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabWithDownloadDoesNotGetRestored) {
     EXPECT_EQ(expected_urls, download_urls);
   }
 }
+
+#if !defined(OS_CHROMEOS)
+namespace {
+
+class MultiBrowserObserver : public BrowserListObserver {
+ public:
+  enum class Event {
+    kAdded,
+    kRemoved,
+  };
+  MultiBrowserObserver(size_t num_expected, Event event)
+      : num_expected_(num_expected), event_(event) {
+    BrowserList::AddObserver(this);
+  }
+  ~MultiBrowserObserver() override { BrowserList::RemoveObserver(this); }
+
+  // Note that the returned pointers might no longer be valid (because the
+  // Browser objects were closed).
+  std::vector<Browser*> Wait() {
+    run_loop_.Run();
+    return browsers_;
+  }
+
+  // BrowserListObserver implementation.
+  void OnBrowserAdded(Browser* browser) override {
+    if (event_ == Event::kAdded) {
+      browsers_.push_back(browser);
+      if (--num_expected_ == 0)
+        run_loop_.Quit();
+    }
+  }
+  void OnBrowserRemoved(Browser* browser) override {
+    if (event_ == Event::kRemoved) {
+      browsers_.push_back(browser);
+      if (--num_expected_ == 0)
+        run_loop_.Quit();
+    }
+  }
+
+ private:
+  size_t num_expected_;
+  Event event_;
+  std::vector<Browser*> browsers_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultiBrowserObserver);
+};
+
+}  // namespace
+
+// Test that when closing a profile with multiple browsers, all browsers are
+// restored when the profile is reopened.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAllBrowsers) {
+  // Create two profiles with two browsers each.
+  Browser* first_profile_browser_one = browser();
+  chrome::NewWindow(first_profile_browser_one);
+  Browser* first_profile_browser_two =
+      BrowserList::GetInstance()->GetLastActive();
+  EXPECT_NE(first_profile_browser_one, first_profile_browser_two);
+
+  Profile* second_profile = CreateSecondaryProfile(1);
+  profiles::FindOrCreateNewWindowForProfile(
+      second_profile, chrome::startup::IS_NOT_PROCESS_STARTUP,
+      chrome::startup::IS_NOT_FIRST_RUN, false);
+  Browser* second_profile_browser_one = ui_test_utils::WaitForBrowserToOpen();
+  chrome::NewWindow(second_profile_browser_one);
+  Browser* second_profile_browser_two =
+      BrowserList::GetInstance()->GetLastActive();
+  EXPECT_NE(second_profile_browser_one, second_profile_browser_two);
+
+  // Navigate the tab in each browser to a unique URL we can later reidentify.
+  ui_test_utils::NavigateToURL(first_profile_browser_one,
+                               GURL("data:,profile 1 browser 1"));
+  ui_test_utils::NavigateToURL(first_profile_browser_two,
+                               GURL("data:,profile 1 browser 2"));
+  ui_test_utils::NavigateToURL(second_profile_browser_one,
+                               GURL("data:,profile 2 browser 1"));
+  ui_test_utils::NavigateToURL(second_profile_browser_two,
+                               GURL("data:,profile 2 browser 2"));
+
+  // Double-check preconditions.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_EQ(profile_manager->GetNumberOfProfiles(), 2u);
+  ASSERT_EQ(chrome::GetTotalBrowserCount(), 4u);
+
+  // Close all profiles associated with the second profile.
+  MultiBrowserObserver removed_observer(2,
+                                        MultiBrowserObserver::Event::kRemoved);
+  BrowserList::GetInstance()->CloseAllBrowsersWithProfile(
+      second_profile, BrowserList::CloseCallback(),
+      BrowserList::CloseCallback(), false);
+  removed_observer.Wait();
+
+  // The second profile should have no browsers anymore at this point.
+  ASSERT_EQ(chrome::FindBrowserWithProfile(second_profile), nullptr);
+  ASSERT_EQ(chrome::GetTotalBrowserCount(), 2u);
+
+  // Clean up now stale pointers.
+  second_profile_browser_one = nullptr;
+  second_profile_browser_two = nullptr;
+
+  // Reopen the second profile and trigger session restore.
+  MultiBrowserObserver added_observer(2, MultiBrowserObserver::Event::kAdded);
+  chrome::NewEmptyWindow(second_profile);
+  std::vector<Browser*> browsers = added_observer.Wait();
+
+  // Verify that the correct URLs where restored.
+  std::set<GURL> expected_urls;
+  expected_urls.insert(GURL("data:,profile 2 browser 1"));
+  expected_urls.insert(GURL("data:,profile 2 browser 2"));
+  for (Browser* browser : browsers) {
+    WaitForTabsToLoad(browser);
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    EXPECT_EQ(tab_strip_model->count(), 1);
+    EXPECT_EQ(tab_strip_model->active_index(), 0);
+    EXPECT_EQ(
+        expected_urls.erase(tab_strip_model->GetActiveWebContents()->GetURL()),
+        1u)
+        << "Browser with unexpected URL "
+        << tab_strip_model->GetActiveWebContents()
+               ->GetURL()
+               .possibly_invalid_spec();
+  }
+}
+#endif  // !defined(OS_CHROMEOS)
 
 // PRE_CorrectLoadingOrder is flaky on ChromeOS MSAN and Mac.
 // See http://crbug.com/493167.

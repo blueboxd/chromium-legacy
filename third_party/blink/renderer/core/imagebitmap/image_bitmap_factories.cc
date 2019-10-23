@@ -297,13 +297,13 @@ void ImageBitmapFactories::ImageBitmapLoader::ContextDestroyed(
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::DidFinishLoading() {
-  auto data_handle = loader_->TakeDataHandle();
+  auto contents = loader_->TakeContents();
   loader_.reset();
-  if (!data_handle) {
+  if (!contents.IsValid()) {
     RejectPromise(kAllocationFailureImageBitmapRejectionReason);
     return;
   }
-  ScheduleAsyncImageBitmapDecoding(std::move(data_handle));
+  ScheduleAsyncImageBitmapDecoding(std::move(contents));
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::DidFail(FileErrorCode) {
@@ -313,14 +313,14 @@ void ImageBitmapFactories::ImageBitmapLoader::DidFail(FileErrorCode) {
 namespace {
 void DecodeImageOnDecoderThread(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    WTF::ArrayBufferContents::DataHandle data_handle,
+    WTF::ArrayBufferContents contents,
     ImageDecoder::AlphaOption alpha_option,
     ColorBehavior color_behavior,
     WTF::CrossThreadOnceFunction<void(sk_sp<SkImage>)> result_callback) {
   const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(
-          data_handle.Data(), data_handle.DataLength())),
+      SegmentReader::CreateFromSkData(
+          SkData::MakeWithoutCopy(contents.Data(), contents.DataLength())),
       data_complete, alpha_option, ImageDecoder::kDefaultBitDepth,
       color_behavior);
   sk_sp<SkImage> frame;
@@ -334,7 +334,7 @@ void DecodeImageOnDecoderThread(
 }  // namespace
 
 void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
-    WTF::ArrayBufferContents::DataHandle data_handle) {
+    WTF::ArrayBufferContents contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Thread::Current()->GetTaskRunner();
@@ -349,7 +349,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
       FROM_HERE,
       CrossThreadBindOnce(
           DecodeImageOnDecoderThread, std::move(task_runner),
-          std::move(data_handle), alpha_option, color_behavior,
+          std::move(contents), alpha_option, color_behavior,
           CrossThreadBindOnce(&ImageBitmapFactories::ImageBitmapLoader::
                                   ResolvePromiseOnOriginalThread,
                               WrapCrossThreadWeakPersistent(this))));

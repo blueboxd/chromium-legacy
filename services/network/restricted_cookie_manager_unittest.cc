@@ -216,15 +216,16 @@ class RestrictedCookieManagerTest
 
   // Simplified helper for SetCanonicalCookie.
   //
-  // Creates a CanonicalCookie that is not secure, not http-only,
+  // Creates a CanonicalCookie that is secure (unless overriden), not http-only,
   // and has SameSite=None. Crashes if the creation fails.
   void SetSessionCookie(const char* name,
                         const char* value,
                         const char* domain,
-                        const char* path) {
+                        const char* path,
+                        bool secure = true) {
     CHECK(SetCanonicalCookie(
         net::CanonicalCookie(name, value, domain, path, base::Time(),
-                             base::Time(), base::Time(), /* secure = */ false,
+                             base::Time(), base::Time(), /* secure = */ secure,
                              /* httponly = */ false,
                              net::CookieSameSite::NO_RESTRICTION,
                              net::COOKIE_PRIORITY_DEFAULT),
@@ -238,7 +239,7 @@ class RestrictedCookieManagerTest
                                 const char* path) {
     CHECK(SetCanonicalCookie(
         net::CanonicalCookie(name, value, domain, path, base::Time(),
-                             base::Time(), base::Time(), /* secure = */ false,
+                             base::Time(), base::Time(), /* secure = */ true,
                              /* httponly = */ true,
                              net::CookieSameSite::NO_RESTRICTION,
                              net::COOKIE_PRIORITY_DEFAULT),
@@ -452,9 +453,9 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
   EXPECT_THAT(recorded_activity()[0].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
   EXPECT_TRUE(recorded_activity()[0].status.IsInclude());
-  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-                WARN_SAMESITE_NONE_INSECURE,
-            recorded_activity()[0].status.warning());
+  EXPECT_EQ(
+      net::CanonicalCookie::CookieInclusionStatus::WarningReason::DO_NOT_WARN,
+      recorded_activity()[0].status.warning());
 
   // Disabing getting third-party cookies works correctly.
   cookie_settings_.set_block_third_party_cookies(true);
@@ -483,7 +484,19 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
 
 TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
   service_->OverrideSiteForCookiesForTesting(GURL("https://notexample.com"));
-  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+  {
+    // Disable kCookiesWithoutSameSiteMustBeSecure to inject such a cookie.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {} /* enabled_features */,
+        {net::features::kSameSiteByDefaultCookies,
+         net::features::
+             kCookiesWithoutSameSiteMustBeSecure} /* disabled_features */);
+    SetSessionCookie("cookie-name", "cookie-value", "example.com", "/",
+                     /* secure = */ false);
+  }
+
+  // Now test get with the feature on.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {net::features::kSameSiteByDefaultCookies,
@@ -519,7 +532,7 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookie) {
   EXPECT_TRUE(sync_service_->SetCanonicalCookie(
       net::CanonicalCookie(
           "new-name", "new-value", "example.com", "/", base::Time(),
-          base::Time(), base::Time(), /* secure = */ false,
+          base::Time(), base::Time(), /* secure = */ true,
           /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_DEFAULT),
       GURL("https://example.com/test/"), GURL("https://example.com"),
@@ -543,7 +556,7 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieHttpOnly) {
             sync_service_->SetCanonicalCookie(
                 net::CanonicalCookie(
                     "new-name", "new-value", "example.com", "/", base::Time(),
-                    base::Time(), base::Time(), /* secure = */ false,
+                    base::Time(), base::Time(), /* secure = */ true,
                     /* httponly = */ true, net::CookieSameSite::NO_RESTRICTION,
                     net::COOKIE_PRIORITY_DEFAULT),
                 GURL("https://example.com/test/"), GURL("https://example.com"),
@@ -611,7 +624,7 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieFromWrongOrigin) {
   EXPECT_FALSE(sync_service_->SetCanonicalCookie(
       net::CanonicalCookie(
           "new-name", "new-value", "not-example.com", "/", base::Time(),
-          base::Time(), base::Time(), /* secure = */ false,
+          base::Time(), base::Time(), /* secure = */ true,
           /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_DEFAULT),
       GURL("https://not-example.com/test/"), GURL("https://example.com"),
@@ -632,9 +645,9 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   service_->OverrideSiteForCookiesForTesting(GURL("https://notexample.com"));
   {
     // With default settings object, setting a third-party cookie is OK.
-    auto cookie = net::CanonicalCookie::Create(GURL("https://example.com"),
-                                               "A=B", base::Time::Now(),
-                                               base::nullopt /* server_time */);
+    auto cookie = net::CanonicalCookie::Create(
+        GURL("https://example.com"), "A=B; SameSite=none; Secure",
+        base::Time::Now(), base::nullopt /* server_time */);
     EXPECT_TRUE(sync_service_->SetCanonicalCookie(
         *cookie, GURL("https://example.com"), GURL("https://notexample.com"),
         url::Origin::Create(GURL("https://example.com"))));
@@ -646,17 +659,17 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "https://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
   EXPECT_TRUE(recorded_activity()[0].status.IsInclude());
-  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-            recorded_activity()[0].status.warning());
+  EXPECT_EQ(
+      net::CanonicalCookie::CookieInclusionStatus::WarningReason::DO_NOT_WARN,
+      recorded_activity()[0].status.warning());
 
   service_->OverrideSiteForCookiesForTesting(GURL("https://otherexample.com"));
   {
     // Not if third-party cookies are disabled, though.
     cookie_settings_.set_block_third_party_cookies(true);
-    auto cookie = net::CanonicalCookie::Create(GURL("https://example.com"),
-                                               "A2=B2", base::Time::Now(),
-                                               base::nullopt /* server_time */);
+    auto cookie = net::CanonicalCookie::Create(
+        GURL("https://example.com"), "A2=B2; SameSite=none; Secure",
+        base::Time::Now(), base::nullopt /* server_time */);
     EXPECT_FALSE(sync_service_->SetCanonicalCookie(
         *cookie, GURL("https://example.com"), GURL("https://otherexample.com"),
         url::Origin::Create(GURL("https://example.com"))));

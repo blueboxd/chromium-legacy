@@ -639,7 +639,7 @@ PeerConnectionTracker::PeerConnectionTracker(
 }
 
 PeerConnectionTracker::PeerConnectionTracker(
-    mojo::Remote<mojom::PeerConnectionTrackerHost> host,
+    mojo::Remote<blink::mojom::PeerConnectionTrackerHost> host,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : next_local_id_(1),
       peer_connection_tracker_host_(std::move(host)),
@@ -649,7 +649,7 @@ PeerConnectionTracker::~PeerConnectionTracker() {
 }
 
 void PeerConnectionTracker::Bind(
-    mojo::PendingReceiver<mojom::PeerConnectionManager> receiver) {
+    mojo::PendingReceiver<blink::mojom::PeerConnectionManager> receiver) {
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(std::move(receiver));
 }
@@ -720,7 +720,7 @@ void PeerConnectionTracker::RegisterPeerConnection(
   DCHECK(pc_handler);
   DCHECK_EQ(GetLocalIDForHandler(pc_handler), -1);
   DVLOG(1) << "PeerConnectionTracker::RegisterPeerConnection()";
-  auto info = mojom::PeerConnectionInfo::New();
+  auto info = blink::mojom::PeerConnectionInfo::New();
 
   info->lid = GetNextLocalID();
   info->rtc_configuration = SerializeConfiguration(config);

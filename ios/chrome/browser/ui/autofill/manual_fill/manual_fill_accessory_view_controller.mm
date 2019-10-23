@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 
 #include "base/metrics/user_metrics.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"

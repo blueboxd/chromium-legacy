@@ -210,7 +210,7 @@ void AppManagementPageHandler::Uninstall(const std::string& app_id) {
   if (!proxy)
     return;
 
-  proxy->Uninstall(app_id);
+  proxy->Uninstall(app_id, nullptr /* parent_window */);
 }
 
 void AppManagementPageHandler::OpenNativeSettings(const std::string& app_id) {

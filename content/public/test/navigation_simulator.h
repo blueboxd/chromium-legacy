@@ -196,6 +196,11 @@ class NavigationSimulator {
   // Simulates the commit of a navigation or an error page aborting.
   virtual void AbortCommit() = 0;
 
+  // Simulates aborting the navigation from the renderer, e.g. window.stop(),
+  // before it was committed in the renderer.
+  // Note: this is only valid for renderer-initiated navigations.
+  virtual void AbortFromRenderer() = 0;
+
   // Simulates the navigation failing with the error code |error_code| and
   // response headers |response_headers|.
   virtual void FailWithResponseHeaders(

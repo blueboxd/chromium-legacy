@@ -117,13 +117,15 @@
         <settings-toggle-button id="canMakePaymentToggle"
             aria-label="$i18n{canMakePaymentToggleLabel}"
             label="$i18n{canMakePaymentToggleLabel}"
-            pref="{{prefs.payments.can_make_payment_enabled}}">
+            pref="{{prefs.payments.can_make_payment_enabled}}"
+            on-settings-boolean-control-change="onCanMakePaymentChange_">
         </settings-toggle-button>
         <settings-toggle-button hidden="[[!pageVisibility.networkPrediction]]"
             pref="{{prefs.net.network_prediction_options}}"
             label="$i18n{networkPredictionEnabled}"
             sub-label="$i18n{networkPredictionEnabledDesc}"
-            numeric-unchecked-value="[[networkPredictionUncheckedValue_]]">
+            numeric-unchecked-value="[[networkPredictionUncheckedValue_]]"
+            on-settings-boolean-control-change="onNetworkPredictionChange_">
         </settings-toggle-button>
 <if expr="chromeos">
         <settings-toggle-button

@@ -28,6 +28,7 @@ void WebSocketFactory::CreateWebSocket(
     const GURL& url,
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
+    const net::NetworkIsolationKey& network_isolation_key,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
     int32_t render_frame_id,
@@ -49,7 +50,7 @@ void WebSocketFactory::CreateWebSocket(
       context_->network_service()->HasRawHeadersAccess(
           process_id, net::ChangeWebSocketSchemeToHttpScheme(url)));
   connections_.insert(std::make_unique<WebSocket>(
-      this, url, requested_protocols, site_for_cookies,
+      this, url, requested_protocols, site_for_cookies, network_isolation_key,
       std::move(additional_headers), process_id, render_frame_id, origin,
       options, has_raw_headers_access, std::move(handshake_client),
       std::move(auth_handler), std::move(header_client),

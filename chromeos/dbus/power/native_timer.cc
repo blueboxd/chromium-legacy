@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/rand_util.h"
 #include "base/task_runner_util.h"

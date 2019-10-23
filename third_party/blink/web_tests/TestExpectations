@@ -2647,6 +2647,9 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-disabled.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries_resized.html [ Failure ]
@@ -4451,8 +4454,6 @@ crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pa
 crbug.com/772411 virtual/audio-service/http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
 crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 
-crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Pass Failure ]
-
 # Sheriff failures 2017-10-24
 crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failure Pass ]
 
@@ -5378,6 +5379,7 @@ crbug.com/971319 [ Mac ] virtual/audio-service/media/audio-garbage-collect.html 
 
 # Sheriff 2019-06-06
 crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
+crbug.com/971612 virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]

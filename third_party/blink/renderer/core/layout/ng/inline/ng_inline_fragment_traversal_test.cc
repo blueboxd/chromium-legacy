@@ -24,15 +24,6 @@ class NGInlineFragmentTraversalTest : public NGLayoutTest {
     DCHECK(To<LayoutBlockFlow>(layout_object)->CurrentFragment()) << element;
     return *To<LayoutBlockFlow>(layout_object)->CurrentFragment();
   }
-
-  const NGPhysicalFragment& GetFragmentOfNode(
-      const NGPhysicalContainerFragment& container,
-      const Node* node) const {
-    const LayoutObject* layout_object = node->GetLayoutObject();
-    auto fragments =
-        NGInlineFragmentTraversal::SelfFragmentsOf(container, layout_object);
-    return *fragments.front().fragment;
-  }
 };
 
 #define EXPECT_NEXT_BOX(iter, id)                                           \

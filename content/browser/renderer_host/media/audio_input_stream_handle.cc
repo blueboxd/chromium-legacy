@@ -32,9 +32,8 @@ AudioInputStreamHandle::AudioInputStreamHandle(
     : stream_id_(base::UnguessableToken::Create()),
       deleter_callback_(std::move(deleter_callback)),
       client_remote_(std::move(client_pending_remote)),
-      stream_ptr_(),
       stream_client_request_(),
-      stream_(mojo::MakeRequest(&stream_ptr_),
+      stream_(pending_stream_.InitWithNewPipeAndPassReceiver(),
               CreatePtrAndStoreRequest(&stream_client_request_),
               std::move(create_delegate_callback),
               base::BindOnce(&AudioInputStreamHandle::OnCreated,
@@ -66,7 +65,7 @@ void AudioInputStreamHandle::OnCreated(
   DCHECK(deleter_callback_)
       << "|deleter_callback_| was called, but |this| hasn't been destructed!";
   client_remote_->StreamCreated(
-      std::move(stream_ptr_), std::move(stream_client_request_),
+      std::move(pending_stream_), std::move(stream_client_request_),
       std::move(data_pipe), initially_muted, stream_id_);
 }
 

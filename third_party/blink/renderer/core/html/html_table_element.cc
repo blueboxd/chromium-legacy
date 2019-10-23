@@ -52,10 +52,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLTableElement::HTMLTableElement(Document& document)
-    : HTMLElement(kTableTag, document),
+    : HTMLElement(html_names::kTableTag, document),
       border_attr_(false),
       border_color_attr_(false),
       frame_attr_(false),
@@ -81,13 +79,13 @@ void HTMLTableElement::setCaption(HTMLTableCaptionElement* new_caption,
 }
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const {
-  return ToHTMLTableSectionElement(
-      Traversal<HTMLElement>::FirstChild(*this, HasHTMLTagName(kTheadTag)));
+  return ToHTMLTableSectionElement(Traversal<HTMLElement>::FirstChild(
+      *this, HasHTMLTagName(html_names::kTheadTag)));
 }
 
 void HTMLTableElement::setTHead(HTMLTableSectionElement* new_head,
                                 ExceptionState& exception_state) {
-  if (new_head && !new_head->HasTagName(kTheadTag)) {
+  if (new_head && !new_head->HasTagName(html_names::kTheadTag)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kHierarchyRequestError,
                                       "Not a thead element.");
     return;
@@ -100,7 +98,8 @@ void HTMLTableElement::setTHead(HTMLTableSectionElement* new_head,
   HTMLElement* child;
   for (child = Traversal<HTMLElement>::FirstChild(*this); child;
        child = Traversal<HTMLElement>::NextSibling(*child)) {
-    if (!child->HasTagName(kCaptionTag) && !child->HasTagName(kColgroupTag))
+    if (!child->HasTagName(html_names::kCaptionTag) &&
+        !child->HasTagName(html_names::kColgroupTag))
       break;
   }
 
@@ -108,13 +107,13 @@ void HTMLTableElement::setTHead(HTMLTableSectionElement* new_head,
 }
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const {
-  return ToHTMLTableSectionElement(
-      Traversal<HTMLElement>::FirstChild(*this, HasHTMLTagName(kTfootTag)));
+  return ToHTMLTableSectionElement(Traversal<HTMLElement>::FirstChild(
+      *this, HasHTMLTagName(html_names::kTfootTag)));
 }
 
 void HTMLTableElement::setTFoot(HTMLTableSectionElement* new_foot,
                                 ExceptionState& exception_state) {
-  if (new_foot && !new_foot->HasTagName(kTfootTag)) {
+  if (new_foot && !new_foot->HasTagName(html_names::kTfootTag)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kHierarchyRequestError,
                                       "Not a tfoot element.");
     return;
@@ -129,8 +128,8 @@ void HTMLTableElement::setTFoot(HTMLTableSectionElement* new_foot,
 HTMLTableSectionElement* HTMLTableElement::createTHead() {
   if (HTMLTableSectionElement* existing_head = tHead())
     return existing_head;
-  auto* head =
-      MakeGarbageCollected<HTMLTableSectionElement>(kTheadTag, GetDocument());
+  auto* head = MakeGarbageCollected<HTMLTableSectionElement>(
+      html_names::kTheadTag, GetDocument());
   setTHead(head, IGNORE_EXCEPTION_FOR_TESTING);
   return head;
 }
@@ -142,8 +141,8 @@ void HTMLTableElement::deleteTHead() {
 HTMLTableSectionElement* HTMLTableElement::createTFoot() {
   if (HTMLTableSectionElement* existing_foot = tFoot())
     return existing_foot;
-  auto* foot =
-      MakeGarbageCollected<HTMLTableSectionElement>(kTfootTag, GetDocument());
+  auto* foot = MakeGarbageCollected<HTMLTableSectionElement>(
+      html_names::kTfootTag, GetDocument());
   setTFoot(foot, IGNORE_EXCEPTION_FOR_TESTING);
   return foot;
 }
@@ -153,8 +152,8 @@ void HTMLTableElement::deleteTFoot() {
 }
 
 HTMLTableSectionElement* HTMLTableElement::createTBody() {
-  auto* body =
-      MakeGarbageCollected<HTMLTableSectionElement>(kTbodyTag, GetDocument());
+  auto* body = MakeGarbageCollected<HTMLTableSectionElement>(
+      html_names::kTbodyTag, GetDocument());
   Node* reference_element = LastBody() ? LastBody()->nextSibling() : nullptr;
 
   InsertBefore(body, reference_element);
@@ -174,8 +173,8 @@ void HTMLTableElement::deleteCaption() {
 }
 
 HTMLTableSectionElement* HTMLTableElement::LastBody() const {
-  return ToHTMLTableSectionElement(
-      Traversal<HTMLElement>::LastChild(*this, HasHTMLTagName(kTbodyTag)));
+  return ToHTMLTableSectionElement(Traversal<HTMLElement>::LastChild(
+      *this, HasHTMLTagName(html_names::kTbodyTag)));
 }
 
 HTMLTableRowElement* HTMLTableElement::insertRow(
@@ -217,7 +216,7 @@ HTMLTableRowElement* HTMLTableElement::insertRow(
     parent = LastBody();
     if (!parent) {
       auto* new_body = MakeGarbageCollected<HTMLTableSectionElement>(
-          kTbodyTag, GetDocument());
+          html_names::kTbodyTag, GetDocument());
       auto* new_row = MakeGarbageCollected<HTMLTableRowElement>(GetDocument());
       new_body->AppendChild(new_row, exception_state);
       AppendChild(new_body, exception_state);
@@ -267,7 +266,7 @@ void HTMLTableElement::SetNeedsTableStyleRecalc() const {
   while (element) {
     element->SetNeedsStyleRecalc(
         kLocalStyleChange,
-        StyleChangeReasonForTracing::FromAttribute(kRulesAttr));
+        StyleChangeReasonForTracing::FromAttribute(html_names::kRulesAttr));
     if (IsHTMLTableCellElement(*element))
       element = ElementTraversal::NextSkippingChildren(*element, this);
     else
@@ -309,20 +308,20 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kWidthAttr) {
+  if (name == html_names::kWidthAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
-  } else if (name == kHeightAttr) {
+  } else if (name == html_names::kHeightAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
-  } else if (name == kBorderAttr) {
+  } else if (name == html_names::kBorderAttr) {
     AddPropertyToPresentationAttributeStyle(
         style, CSSPropertyID::kBorderWidth, ParseBorderWidthAttribute(value),
         CSSPrimitiveValue::UnitType::kPixels);
-  } else if (name == kBordercolorAttr) {
+  } else if (name == html_names::kBordercolorAttr) {
     if (!value.IsEmpty())
       AddHTMLColorToStyle(style, CSSPropertyID::kBorderColor, value);
-  } else if (name == kBgcolorAttr) {
+  } else if (name == html_names::kBgcolorAttr) {
     AddHTMLColorToStyle(style, CSSPropertyID::kBackgroundColor, value);
-  } else if (name == kBackgroundAttr) {
+  } else if (name == html_names::kBackgroundAttr) {
     String url = StripLeadingAndTrailingHTMLSpaces(value);
     if (!url.IsEmpty()) {
       UseCounter::Count(
@@ -336,17 +335,17 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }
-  } else if (name == kValignAttr) {
+  } else if (name == html_names::kValignAttr) {
     if (!value.IsEmpty()) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kVerticalAlign, value);
     }
-  } else if (name == kCellspacingAttr) {
+  } else if (name == html_names::kCellspacingAttr) {
     if (!value.IsEmpty()) {
       AddHTMLLengthToStyle(style, CSSPropertyID::kBorderSpacing, value,
                            kDontAllowPercentageValues);
     }
-  } else if (name == kAlignAttr) {
+  } else if (name == html_names::kAlignAttr) {
     if (!value.IsEmpty()) {
       if (DeprecatedEqualIgnoringCase(value, "center")) {
         AddPropertyToPresentationAttributeStyle(
@@ -358,14 +357,14 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
                                                 value);
       }
     }
-  } else if (name == kRulesAttr) {
+  } else if (name == html_names::kRulesAttr) {
     // The presence of a valid rules attribute causes border collapsing to be
     // enabled.
     if (rules_attr_ != kUnsetRules) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kBorderCollapse, CSSValueID::kCollapse);
     }
-  } else if (name == kFrameAttr) {
+  } else if (name == html_names::kFrameAttr) {
     bool border_top;
     bool border_right;
     bool border_bottom;
@@ -394,11 +393,13 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
 
 bool HTMLTableElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == kWidthAttr || name == kHeightAttr || name == kBgcolorAttr ||
-      name == kBackgroundAttr || name == kValignAttr || name == kVspaceAttr ||
-      name == kHspaceAttr || name == kAlignAttr || name == kCellspacingAttr ||
-      name == kBorderAttr || name == kBordercolorAttr || name == kFrameAttr ||
-      name == kRulesAttr)
+  if (name == html_names::kWidthAttr || name == html_names::kHeightAttr ||
+      name == html_names::kBgcolorAttr || name == html_names::kBackgroundAttr ||
+      name == html_names::kValignAttr || name == html_names::kVspaceAttr ||
+      name == html_names::kHspaceAttr || name == html_names::kAlignAttr ||
+      name == html_names::kCellspacingAttr || name == html_names::kBorderAttr ||
+      name == html_names::kBordercolorAttr || name == html_names::kFrameAttr ||
+      name == html_names::kRulesAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -409,12 +410,12 @@ void HTMLTableElement::ParseAttribute(
   CellBorders borders_before = GetCellBorders();
   uint16_t old_padding = padding_;
 
-  if (name == kBorderAttr) {
+  if (name == html_names::kBorderAttr) {
     // FIXME: This attribute is a mess.
     border_attr_ = ParseBorderWidthAttribute(params.new_value);
-  } else if (name == kBordercolorAttr) {
+  } else if (name == html_names::kBordercolorAttr) {
     border_color_attr_ = !params.new_value.IsEmpty();
-  } else if (name == kFrameAttr) {
+  } else if (name == html_names::kFrameAttr) {
     // FIXME: This attribute is a mess.
     bool border_top;
     bool border_right;
@@ -422,7 +423,7 @@ void HTMLTableElement::ParseAttribute(
     bool border_left;
     frame_attr_ = GetBordersFromFrameAttributeValue(
         params.new_value, border_top, border_right, border_bottom, border_left);
-  } else if (name == kRulesAttr) {
+  } else if (name == html_names::kRulesAttr) {
     rules_attr_ = kUnsetRules;
     if (DeprecatedEqualIgnoringCase(params.new_value, "none"))
       rules_attr_ = kNoneRules;
@@ -434,7 +435,7 @@ void HTMLTableElement::ParseAttribute(
       rules_attr_ = kColsRules;
     else if (DeprecatedEqualIgnoringCase(params.new_value, "all"))
       rules_attr_ = kAllRules;
-  } else if (params.name == kCellpaddingAttr) {
+  } else if (params.name == html_names::kCellpaddingAttr) {
     if (!params.new_value.IsEmpty()) {
       padding_ =
           std::max(0, std::min((int32_t)std::numeric_limits<uint16_t>::max(),
@@ -442,7 +443,7 @@ void HTMLTableElement::ParseAttribute(
     } else {
       padding_ = 1;
     }
-  } else if (params.name == kColsAttr) {
+  } else if (params.name == html_names::kColsAttr) {
     // ###
   } else {
     HTMLElement::ParseAttribute(params);
@@ -603,16 +604,17 @@ const CSSPropertyValueSet* HTMLTableElement::AdditionalGroupStyle(bool rows) {
 }
 
 bool HTMLTableElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == kBackgroundAttr ||
+  return attribute.GetName() == html_names::kBackgroundAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
 bool HTMLTableElement::HasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == kBackgroundAttr || HTMLElement::HasLegalLinkAttribute(name);
+  return name == html_names::kBackgroundAttr ||
+         HTMLElement::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& HTMLTableElement::SubResourceAttributeName() const {
-  return kBackgroundAttr;
+  return html_names::kBackgroundAttr;
 }
 
 HTMLTableRowsCollection* HTMLTableElement::rows() {
@@ -624,11 +626,11 @@ HTMLCollection* HTMLTableElement::tBodies() {
 }
 
 const AtomicString& HTMLTableElement::Rules() const {
-  return getAttribute(kRulesAttr);
+  return getAttribute(html_names::kRulesAttr);
 }
 
 const AtomicString& HTMLTableElement::Summary() const {
-  return getAttribute(kSummaryAttr);
+  return getAttribute(html_names::kSummaryAttr);
 }
 
 void HTMLTableElement::Trace(Visitor* visitor) {

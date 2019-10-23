@@ -39,6 +39,7 @@
 
 #if defined(OS_WIN)
 #include "content/public/common/font_cache_win.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #endif
 
 namespace IPC {
@@ -216,7 +217,7 @@ class CONTENT_EXPORT ChildThreadImpl
           receiver) override;
 
 #if defined(OS_WIN)
-  mojom::FontCacheWin* GetFontCacheWin();
+  const mojo::Remote<mojom::FontCacheWin>& GetFontCacheWin();
 #endif
 
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
@@ -228,7 +229,7 @@ class CONTENT_EXPORT ChildThreadImpl
       associated_interface_provider_receivers_;
   mojo::AssociatedRemote<mojom::RouteProvider> remote_route_provider_;
 #if defined(OS_WIN)
-  mojom::FontCacheWinPtr font_cache_win_ptr_;
+  mutable mojo::Remote<mojom::FontCacheWin> font_cache_win_;
 #endif
 
   std::unique_ptr<IPC::SyncChannel> channel_;

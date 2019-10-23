@@ -201,8 +201,11 @@
   "chromeos/chromeos_strings.grd": {
     "messages": [14530],
   },
-  "chromeos/resources/chromeos_resources.grd": {
+  "chromeos/components/help_app_ui/resources/help_app_resources.grd": {
     "includes": [14580],
+  },
+  "chromeos/resources/chromeos_resources.grd": {
+    "includes": [14680],
   },
   # END chromeos/ section.
 

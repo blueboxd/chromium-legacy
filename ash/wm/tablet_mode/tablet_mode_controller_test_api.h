@@ -35,6 +35,9 @@ class TabletModeControllerTestApi {
   // tablet mode will be ended because of this.
   void AttachExternalMouse();
 
+  // Called in association with the above to remove all attached mouse devices.
+  void DettachAllMouseDevices();
+
   void TriggerLidUpdate(const gfx::Vector3dF& lid);
   void TriggerBaseAndLidUpdate(const gfx::Vector3dF& base,
                                const gfx::Vector3dF& lid);
@@ -85,6 +88,10 @@ class TabletModeControllerTestApi {
 
   bool IsScreenshotShown() const {
     return !!tablet_mode_controller_->screenshot_layer_;
+  }
+
+  bool IsInPhysicalTabletState() const {
+    return tablet_mode_controller_->is_in_tablet_physical_state();
   }
 
  private:

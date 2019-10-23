@@ -22,6 +22,7 @@
 #include "ash/window_factory.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -120,6 +121,8 @@ class ScreenOrientationControllerTest : public AshTestBase {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kUseFirstDisplayAsInternal);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshEnableTabletMode);
     AshTestBase::SetUp();
   }
 
@@ -757,6 +760,82 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
   activation_client->ActivateWindow(focus_window1.get());
   // Switching back to any will rotate to user rotation.
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+}
+
+TEST_F(ScreenOrientationControllerTest, ClamshellPhysicalTabletState) {
+  // Auto-rotation is disabled while the device is not physically used as a
+  // tablet.
+  TabletModeControllerTestApi tablet_mode_controller_test_api;
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+
+  // Once the device goes into tablet mode, it becomes possible to auto-rotate.
+  tablet_mode_controller_test_api.OpenLidToAngle(270);
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+
+  // Hooking an external pointing device will exits tablet UI mode, but the
+  // device is still in a physical tablet state, which means auto-rotation is
+  // still possible.
+  tablet_mode_controller_test_api.AttachExternalMouse();
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+}
+
+TEST_F(ScreenOrientationControllerTest,
+       ApplyAppsRequestedLocksOnlyInUITabletMode) {
+  std::unique_ptr<aura::Window> window(CreateAppWindowInShellWithId(0));
+  TabletModeControllerTestApi tablet_mode_controller_test_api;
+  // To prevent flakes, detach all external mouse devices first.
+  tablet_mode_controller_test_api.DettachAllMouseDevices();
+  tablet_mode_controller_test_api.OpenLidToAngle(270);
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+
+  ScreenOrientationController* orientation_controller =
+      Shell::Get()->screen_orientation_controller();
+  orientation_controller->ToggleUserRotationLock();
+  EXPECT_TRUE(orientation_controller->user_rotation_locked());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary, UserLockedOrientation());
+
+  // Apps' requested orientation locks are only applied in UI tablet mode.
+  Lock(window.get(), OrientationLockType::kPortrait);
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+
+  // Exiting to clamshell mode while the device is still physically a tablet
+  // should restore the user rotation lock, and ignore the app-requested one.
+  tablet_mode_controller_test_api.AttachExternalMouse();
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_TRUE(orientation_controller->user_rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary, UserLockedOrientation());
+
+  // Further requested orientation locks by apps will remain ignored.
+  Lock(window.get(), OrientationLockType::kPortraitSecondary);
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary, UserLockedOrientation());
+
+  // When UI tablet mode triggers again, the most recent app requested
+  // orientation lock for the active window will be applied.
+  tablet_mode_controller_test_api.DettachAllMouseDevices();
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+
+  // Orientation should be restored once the device exits the physical tablet
+  // state.
+  tablet_mode_controller_test_api.OpenLidToAngle(90);
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
 }  // namespace ash

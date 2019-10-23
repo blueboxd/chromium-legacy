@@ -98,13 +98,15 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
     const std::vector<std::string>& sub_protocols,
     const url::Origin& origin,
     const GURL& site_for_cookies,
+    const net::NetworkIsolationKey& network_isolation_key,
     const HttpRequestHeaders& additional_headers,
     std::unique_ptr<base::OneShotTimer> timer) {
   auto connect_delegate = std::make_unique<TestConnectDelegate>(
       this, connect_run_loop_.QuitClosure());
   auto api_delegate = std::make_unique<TestWebSocketStreamRequestAPI>();
   stream_request_ = WebSocketStream::CreateAndConnectStreamForTesting(
-      socket_url, sub_protocols, origin, site_for_cookies, additional_headers,
+      socket_url, sub_protocols, origin, site_for_cookies,
+      network_isolation_key, additional_headers,
       url_request_context_host_.GetURLRequestContext(), NetLogWithSource(),
       std::move(connect_delegate),
       timer ? std::move(timer) : std::make_unique<base::OneShotTimer>(),

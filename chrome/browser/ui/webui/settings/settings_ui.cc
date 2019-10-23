@@ -50,6 +50,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/settings_resources.h"
 #include "chrome/grit/settings_resources_map.h"
 #include "components/favicon_base/favicon_url_parser.h"
@@ -94,6 +95,7 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
@@ -303,6 +305,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   if (web_app::SystemWebAppManager::IsEnabled()) {
     html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
     html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
+    web_app::SetManifestRequestFilter(html_source, IDR_SETTINGS_MANIFEST,
+                                      IDS_SETTINGS_SETTINGS);
   }
 #endif  // defined (OS_CHROMEOS)
 
@@ -313,9 +317,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("lazy_load.html",
                                IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
-#if defined(OS_CHROMEOS)
-  html_source->AddResourcePath("manifest.json", IDR_SETTINGS_MANIFEST);
-#endif  // defined (OS_CHROMEOS)
 #else
   // Add all settings resources.
   for (size_t i = 0; i < kSettingsResourcesSize; ++i) {

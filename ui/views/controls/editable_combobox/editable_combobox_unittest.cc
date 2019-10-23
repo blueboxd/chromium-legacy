@@ -249,9 +249,9 @@ bool EditableComboboxTest::IsMenuOpen() {
 void EditableComboboxTest::PerformMouseEvent(Widget* widget,
                                              const gfx::Point& point,
                                              const ui::EventType type) {
-  ui::MouseEvent event =
-      ui::MouseEvent(type, point, point, ui::EventTimeForNow(),
-                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent event = ui::MouseEvent(
+      type, point, point, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_NUM_LOCK_ON, ui::EF_LEFT_MOUSE_BUTTON);
   widget->OnMouseEvent(&event);
 }
 

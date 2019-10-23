@@ -36,10 +36,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
-    : HTMLElement(kSummaryTag, document) {
+    : HTMLElement(html_names::kSummaryTag, document) {
   SetHasCustomStyleCallbacks();
   EnsureUserAgentShadowRoot();
 }

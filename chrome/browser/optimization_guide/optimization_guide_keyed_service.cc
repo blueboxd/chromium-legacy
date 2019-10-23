@@ -99,20 +99,21 @@ optimization_guide::OptimizationGuideDecision ResolveOptimizationGuideDecision(
     optimization_guide::OptimizationTypeDecision optimization_type_decision) {
   switch (optimization_target_decision) {
     case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
+    case optimization_guide::OptimizationTargetDecision::
+        kModelNotAvailableOnClient:
+    case optimization_guide::OptimizationTargetDecision::
+        kModelPredictionHoldback:
       return optimization_guide::OptimizationGuideDecision::kFalse;
     case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
       return GetOptimizationGuideDecisionFromOptimizationTypeDecision(
           optimization_type_decision);
-    case optimization_guide::OptimizationTargetDecision::
-        kModelNotAvailableOnClient:
-      return optimization_guide::OptimizationGuideDecision::kFalse;
     default:
       return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
   static_assert(
       optimization_guide::OptimizationTargetDecision::kMaxValue ==
           optimization_guide::OptimizationTargetDecision::
-              kModelNotAvailableOnClient,
+              kModelPredictionHoldback,
       "This function should be updated when a new OptimizationTargetDecision "
       "is added");
 }
@@ -190,8 +191,12 @@ OptimizationGuideKeyedService::CanApplyOptimization(
   if (prediction_manager_) {
     optimization_target_decision = prediction_manager_->ShouldTargetNavigation(
         navigation_handle, optimization_target);
-    // TODO(crbug/1001194): Add feature param for propagating decision that
-    // allows for us to collect metrics without tainting the data.
+    if (optimization_guide::features::
+            ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
+                optimization_target)) {
+      optimization_target_decision = optimization_guide::
+          OptimizationTargetDecision::kModelPredictionHoldback;
+    }
   }
 
   LogDecisions(navigation_handle, optimization_target,

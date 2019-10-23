@@ -124,10 +124,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // embedder and |nullptr| is returned.
   virtual std::unique_ptr<NavigationUIData> GetNavigationUIData(
       NavigationHandle* navigation_handle);
-
-  // Whether the delegate is displaying an interstitial page over the current
-  // page.
-  virtual bool ShowingInterstitialPage() = 0;
 };
 
 }  // namespace content

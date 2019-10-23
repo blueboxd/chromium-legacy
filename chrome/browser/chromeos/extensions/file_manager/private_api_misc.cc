@@ -308,11 +308,6 @@ FileManagerPrivateInternalZipSelectionFunction::Run() {
   if (params->dest_name.empty())
     return RespondNow(Error("Empty output file name."));
 
-  // Check if the dir path is under Drive mount point.
-  // TODO(hshi): support create zip file on Drive (crbug.com/158690).
-  if (drive::util::IsUnderDriveMountPoint(src_dir))
-    return RespondNow(Error("Unable to zip Drive files."));
-
   base::FilePath dest_file = src_dir.Append(params->dest_name);
   std::vector<base::FilePath> src_relative_paths;
   for (size_t i = 0; i != files.size(); ++i) {

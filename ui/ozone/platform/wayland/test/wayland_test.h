@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/buildflags.h"

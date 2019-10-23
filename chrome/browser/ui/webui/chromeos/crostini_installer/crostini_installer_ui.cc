@@ -133,6 +133,10 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
 
 CrostiniInstallerUI::~CrostiniInstallerUI() = default;
 
+bool CrostiniInstallerUI::can_close() {
+  return can_close_;
+}
+
 void CrostiniInstallerUI::BindPageHandlerFactory(
     mojo::PendingReceiver<
         chromeos::crostini_installer::mojom::PageHandlerFactory>
@@ -155,11 +159,15 @@ void CrostiniInstallerUI::CreatePageHandler(
       std::move(pending_page_handler), std::move(pending_page),
       // Using Unretained(this) because |page_handler_| will not out-live
       // |this|.
-      //
-      // CloseDialog() is a no-op if we are not in a dialog (e.g. user
-      // access the page using the URL directly, which is not supported).
-      base::BindOnce(&CrostiniInstallerUI::CloseDialog, base::Unretained(this),
-                     nullptr));
+      base::BindOnce(&CrostiniInstallerUI::OnWebUICloseDialog,
+                     base::Unretained(this)));
+}
+
+void CrostiniInstallerUI::OnWebUICloseDialog() {
+  can_close_ = true;
+  // CloseDialog() is a no-op if we are not in a dialog (e.g. user
+  // access the page using the URL directly, which is not supported).
+  ui::MojoWebDialogUI::CloseDialog(nullptr);
 }
 
 }  // namespace chromeos

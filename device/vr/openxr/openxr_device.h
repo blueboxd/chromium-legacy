@@ -27,9 +27,6 @@ class DEVICE_VR_EXPORT OpenXrDevice
   OpenXrDevice();
   ~OpenXrDevice() override;
 
-  static bool IsHardwareAvailable();
-  static bool IsApiAvailable();
-
   // VRDeviceBase
   void RequestSession(
       mojom::XRRuntimeSessionOptionsPtr options,

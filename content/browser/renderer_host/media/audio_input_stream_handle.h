@@ -49,7 +49,7 @@ class CONTENT_EXPORT AudioInputStreamHandle {
   const base::UnguessableToken stream_id_;
   DeleterCallback deleter_callback_;
   mojo::Remote<mojom::RendererAudioInputStreamFactoryClient> client_remote_;
-  media::mojom::AudioInputStreamPtr stream_ptr_;
+  mojo::PendingRemote<media::mojom::AudioInputStream> pending_stream_;
   media::mojom::AudioInputStreamClientRequest stream_client_request_;
   media::MojoAudioInputStream stream_;
 

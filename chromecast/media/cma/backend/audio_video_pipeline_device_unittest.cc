@@ -614,7 +614,8 @@ std::unique_ptr<BufferFeeder> BufferFeeder::LoadVideo(
 }  // namespace
 
 AudioVideoPipelineDeviceTest::AudioVideoPipelineDeviceTest()
-    : sync_type_(MediaPipelineDeviceParams::kModeSyncPts),
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
+      sync_type_(MediaPipelineDeviceParams::kModeSyncPts),
       audio_type_(MediaPipelineDeviceParams::kAudioStreamNormal),
       stopped_(false),
       ran_playing_playback_checks_(false),

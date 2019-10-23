@@ -79,7 +79,7 @@ void BrowsingDataRemover::ClearBrowsingData(ClearBrowsingDataMask types,
   }
 
   if (![data_types_to_remove count]) {
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(block_closure)));
+    std::move(block_closure).Run();
     return;
   }
 

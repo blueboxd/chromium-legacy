@@ -46,8 +46,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static Node* EnclosingListChild(Node* node, Node* list_node) {
   Node* list_child = EnclosingListChild(node);
   while (list_child && EnclosingList(list_child) != list_node)
@@ -178,7 +176,8 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
       return;
   }
 
-  const HTMLQualifiedName& list_tag = (type_ == kOrderedList) ? kOlTag : kUlTag;
+  const HTMLQualifiedName& list_tag =
+      (type_ == kOrderedList) ? html_names::kOlTag : html_names::kUlTag;
   if (EndingSelection().IsRange()) {
     bool force_list_creation = false;
     VisibleSelection selection =

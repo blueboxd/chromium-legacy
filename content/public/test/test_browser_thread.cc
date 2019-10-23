@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"

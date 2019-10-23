@@ -27,9 +27,7 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLHeadElement::HTMLHeadElement(Document& document)
-    : HTMLElement(kHeadTag, document) {}
+    : HTMLElement(html_names::kHeadTag, document) {}
 
 }  // namespace blink

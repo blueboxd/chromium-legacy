@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -127,7 +128,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   if (web_app::SystemWebAppManager::IsEnabled()) {
     html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
     html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
-    html_source->AddResourcePath("manifest.json", IDR_OS_SETTINGS_MANIFEST);
+    web_app::SetManifestRequestFilter(html_source, IDR_OS_SETTINGS_MANIFEST,
+                                      IDS_SETTINGS_SETTINGS);
   }
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)

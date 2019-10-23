@@ -143,6 +143,16 @@ int CountBrowsersFor(Profile* profile) {
   return browser_count;
 }
 
+SkColor GetSyncErrorBackgroundColor(bool sync_paused) {
+  constexpr int kAlpha = 16;
+  ui::NativeTheme::ColorId base_color_id =
+      sync_paused ? ui::NativeTheme::kColorId_ProminentButtonColor
+                  : ui::NativeTheme::kColorId_AlertSeverityHigh;
+  SkColor base_color =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(base_color_id);
+  return SkColorSetA(base_color, kAlpha);
+}
+
 }  // namespace
 
 // ProfileMenuView ---------------------------------------------------------
@@ -526,16 +536,17 @@ void ProfileMenuView::BuildSyncInfo() {
           base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
                               base::Unretained(this)));
     } else {
+      bool sync_paused = (error == sync_ui_util::AUTH_ERROR);
       // Overwrite error description with short version for the menu.
-      description_string_id = (error == sync_ui_util::AUTH_ERROR)
-                                  ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
-                                  : IDS_SYNC_ERROR_USER_MENU_TITLE;
+      description_string_id = sync_paused ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
+                                          : IDS_SYNC_ERROR_USER_MENU_TITLE;
 
       SetSyncInfo(
           GetSyncIcon(), l10n_util::GetStringUTF16(description_string_id),
           l10n_util::GetStringUTF16(button_string_id),
           base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
                               base::Unretained(this), error));
+      SetSyncInfoBackgroundColor(GetSyncErrorBackgroundColor(sync_paused));
     }
     return;
   }
@@ -561,6 +572,10 @@ void ProfileMenuView::BuildSyncInfo() {
                 base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
                                     base::Unretained(this)));
   }
+
+  SetSyncInfoBackgroundColor(
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor));
 }
 
 void ProfileMenuView::BuildFeatureButtons() {

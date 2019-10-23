@@ -3745,16 +3745,6 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
     // For renderer initiated navigations, we send out a
     // DidFailProvisionalLoad() notification.
     NotifyObserversOfFailedProvisionalLoad();
-
-    // |browser_side_navigation_pending_| can be false if we are committing
-    // failed navigation in a different process than it was started, e.g.
-    // an error page which is isolated.
-    if (browser_side_navigation_pending_) {
-      // TODO(dgozman): why do we need to notify browser in response
-      // to it's own request?
-      SendFailedProvisionalLoad(navigation_params->http_method.Ascii(), error,
-                                frame_);
-    }
   }
 
   if (fallback_result != blink::WebNavigationControl::NoFallbackContent) {
@@ -7010,19 +7000,6 @@ void RenderFrameImpl::SendUpdateState() {
 
   Send(new FrameHostMsg_UpdateState(
       routing_id_, SingleHistoryItemToPageState(current_history_item_)));
-}
-
-void RenderFrameImpl::SendFailedProvisionalLoad(const std::string& http_method,
-                                                const WebURLError& error,
-                                                blink::WebLocalFrame* frame) {
-  bool show_repost_interstitial =
-      error.reason() == net::ERR_CACHE_MISS && http_method == "POST";
-
-  base::string16 error_description;
-  GetContentClient()->renderer()->GetErrorDescription(error, http_method,
-                                                      &error_description);
-  GetFrameHost()->DidFailProvisionalLoadWithError(
-      error.url(), error.reason(), error_description, show_repost_interstitial);
 }
 
 bool RenderFrameImpl::ShouldDisplayErrorPageForFailedLoad(

@@ -2078,8 +2078,8 @@ ax::mojom::Role AXObject::DetermineAriaRoleAttribute() const {
     case ax::mojom::Role::kAnnotationRevision:
     case ax::mojom::Role::kAnnotationSuggestion:
       UseCounter::Count(GetDocument(), WebFeature::kARIAAnnotationRoles);
-      if (!RuntimeEnabledFeatures::
-              AccessibilityExposeARIAAnnotationsEnabled()) {
+      if (!RuntimeEnabledFeatures::AccessibilityExposeARIAAnnotationsEnabled(
+              GetDocument())) {
         role = ax::mojom::Role::kGenericContainer;
       }
       break;

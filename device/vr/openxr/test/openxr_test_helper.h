@@ -27,7 +27,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
  public:
   OpenXrTestHelper();
   ~OpenXrTestHelper();
-
+  void Reset();
   void TestFailure();
 
   // TestHookRegistration
@@ -43,6 +43,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
 
   XrSystemId GetSystemId();
   XrSwapchain GetSwapchain();
+  XrInstance CreateInstance();
   XrResult GetActionStateFloat(XrAction action, XrActionStateFloat* data) const;
   XrResult GetActionStateBoolean(XrAction action,
                                  XrActionStateBoolean* data) const;
@@ -122,6 +123,8 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   base::Optional<gfx::Transform> GetPose();
   device::ControllerFrameData GetControllerDataFromPath(
       std::string path_string) const;
+
+  bool create_fake_instance_;
 
   // Properties of the mock OpenXR runtime that doesn't change throughout the
   // lifetime of the instance. However, these aren't static because they are

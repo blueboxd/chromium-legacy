@@ -179,7 +179,7 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAssistantPrivacyInfoShownInLauncher, 0);
   registry->RegisterBooleanPref(
       prefs::kAssistantPrivacyInfoDismissedInLauncher, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
 void AppListControllerImpl::SetClient(AppListClient* client) {

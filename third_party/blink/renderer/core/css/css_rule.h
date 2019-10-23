@@ -56,11 +56,9 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
     kNamespaceRule = 10,
     kSupportsRule = 12,
     kViewportRule = 15,
+    kPropertyRule = 18,
     // Experimental features below. Such features must be greater than 1000:
     // the 0-1000 range is reserved by the CSS Working Group.
-    //
-    // TODO(https://crbug.com/978781): Spec a proper number.
-    kPropertyRule = 1001,
   };
 
   virtual Type type() const = 0;

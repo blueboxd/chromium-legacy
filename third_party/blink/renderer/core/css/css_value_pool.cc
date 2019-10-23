@@ -30,8 +30,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 CSSValuePool& CssValuePool() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Persistent<CSSValuePool>>,
                                   thread_specific_pool, ());
@@ -49,12 +47,14 @@ CSSValuePool::CSSValuePool()
       unset_value_(MakeGarbageCollected<CSSUnsetValue>(PassKey())),
       invalid_variable_value_(MakeGarbageCollected<CSSInvalidVariableValue>()),
       color_transparent_(
-          MakeGarbageCollected<CSSColorValue>(Color::kTransparent)),
-      color_white_(MakeGarbageCollected<CSSColorValue>(Color::kWhite)),
-      color_black_(MakeGarbageCollected<CSSColorValue>(Color::kBlack)) {
+          MakeGarbageCollected<cssvalue::CSSColorValue>(Color::kTransparent)),
+      color_white_(
+          MakeGarbageCollected<cssvalue::CSSColorValue>(Color::kWhite)),
+      color_black_(
+          MakeGarbageCollected<cssvalue::CSSColorValue>(Color::kBlack)) {
   {
-    using Value = CSSPendingInterpolationValue;
-    using Type = CSSPendingInterpolationValue::Type;
+    using Value = cssvalue::CSSPendingInterpolationValue;
+    using Type = cssvalue::CSSPendingInterpolationValue::Type;
     pending_interpolation_values_[0] =
         MakeGarbageCollected<Value>(Type::kCSSProperty);
     pending_interpolation_values_[1] =

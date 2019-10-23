@@ -76,14 +76,6 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
 
 }  // namespace
 
-bool OpenXrDevice::IsHardwareAvailable() {
-  return OpenXrApiWrapper::IsHardwareAvailable();
-}
-
-bool OpenXrDevice::IsApiAvailable() {
-  return OpenXrApiWrapper::IsApiAvailable();
-}
-
 OpenXrDevice::OpenXrDevice()
     : VRDeviceBase(device::mojom::XRDeviceId::OPENXR_DEVICE_ID),
       weak_ptr_factory_(this) {

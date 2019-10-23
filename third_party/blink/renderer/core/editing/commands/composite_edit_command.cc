@@ -85,8 +85,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 CompositeEditCommand::CompositeEditCommand(Document& document)
     : EditCommand(document) {
   const VisibleSelection& visible_selection =
@@ -366,9 +364,9 @@ void CompositeEditCommand::AppendNode(Node* node,
   // |cloneParagraphUnderNewElement()| attempt to clone non-well-formed HTML,
   // produced by JavaScript.
   auto* parent_element = DynamicTo<Element>(parent);
-  ABORT_EDITING_COMMAND_IF(
-      !CanHaveChildrenForEditing(parent) &&
-      !(parent_element && parent_element->TagQName() == kObjectTag));
+  ABORT_EDITING_COMMAND_IF(!CanHaveChildrenForEditing(parent) &&
+                           !(parent_element && parent_element->TagQName() ==
+                                                   html_names::kObjectTag));
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*parent) &&
                            parent->InActiveDocument());
   ApplyCommandToComposite(MakeGarbageCollected<AppendNodeCommand>(parent, node),

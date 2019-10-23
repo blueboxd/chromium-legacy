@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/data_decoder/bundled_exchanges_parser_factory.h"
 #include "services/data_decoder/image_decoder_impl.h"
@@ -30,51 +31,46 @@ constexpr auto kMaxServiceIdleTime = base::TimeDelta::FromSeconds(5);
 }  // namespace
 
 DataDecoderService::DataDecoderService()
-    : keepalive_(&binding_, kMaxServiceIdleTime) {
-  registry_.AddInterface(base::BindRepeating(
-      &DataDecoderService::BindImageDecoder, base::Unretained(this)));
-  registry_.AddInterface(base::BindRepeating(
-      &DataDecoderService::BindJsonParser, base::Unretained(this)));
-  registry_.AddInterface(base::BindRepeating(&DataDecoderService::BindXmlParser,
-                                             base::Unretained(this)));
-  registry_.AddInterface(base::BindRepeating(
-      &DataDecoderService::BindBundledExchangesParserFactory,
-      base::Unretained(this)));
+    : keepalive_(&binding_, kMaxServiceIdleTime) {}
 
-#ifdef OS_CHROMEOS
-  registry_.AddInterface(base::BindRepeating(
-      &DataDecoderService::BindBleScanParser, base::Unretained(this)));
-#endif  // OS_CHROMEOS
+DataDecoderService::DataDecoderService(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : DataDecoderService() {
+  binding_.Bind(std::move(receiver));
 }
 
 DataDecoderService::DataDecoderService(
-    service_manager::mojom::ServiceRequest request)
+    mojo::PendingReceiver<mojom::DataDecoderService> receiver)
     : DataDecoderService() {
-  BindRequest(std::move(request));
+  receiver_.Bind(std::move(receiver));
 }
 
 DataDecoderService::~DataDecoderService() = default;
 
-void DataDecoderService::BindRequest(
-    service_manager::mojom::ServiceRequest request) {
-  binding_.Bind(std::move(request));
+void DataDecoderService::BindReceiver(
+    mojo::PendingReceiver<mojom::DataDecoderService> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void DataDecoderService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
+  mojo::GenericPendingReceiver receiver(interface_name,
+                                        std::move(interface_pipe));
+  if (auto r = receiver.As<mojom::ImageDecoder>())
+    BindImageDecoder(std::move(r));
+  else if (auto r = receiver.As<mojom::JsonParser>())
+    BindJsonParser(std::move(r));
+  else if (auto r = receiver.As<mojom::XmlParser>())
+    BindXmlParser(std::move(r));
+  else if (auto r = receiver.As<mojom::BundledExchangesParserFactory>())
+    BindBundledExchangesParserFactory(std::move(r));
+#if defined(OS_CHROMEOS)
+  else if (auto r = receiver.As<mojom::BleScanParser>())
+    BindBleScanParser(std::move(r));
+#endif
 }
-
-#ifdef OS_CHROMEOS
-void DataDecoderService::BindBleScanParser(
-    mojo::PendingReceiver<mojom::BleScanParser> receiver) {
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<BleScanParserImpl>(keepalive_.CreateRef()),
-      std::move(receiver));
-}
-#endif  // OS_CHROMEOS
 
 void DataDecoderService::BindImageDecoder(
     mojo::PendingReceiver<mojom::ImageDecoder> receiver) {
@@ -102,5 +98,14 @@ void DataDecoderService::BindBundledExchangesParserFactory(
       std::make_unique<BundledExchangesParserFactory>(keepalive_.CreateRef()),
       std::move(receiver));
 }
+
+#ifdef OS_CHROMEOS
+void DataDecoderService::BindBleScanParser(
+    mojo::PendingReceiver<mojom::BleScanParser> receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<BleScanParserImpl>(keepalive_.CreateRef()),
+      std::move(receiver));
+}
+#endif  // OS_CHROMEOS
 
 }  // namespace data_decoder

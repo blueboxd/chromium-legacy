@@ -130,48 +130,6 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
   return overflow;
 }
 
-const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
-  if (Children().empty())
-    return nullptr;
-  // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
-  // should compute and store it during layout.
-  const TextDirection direction = Style().Direction();
-  const NGPhysicalFragment* runner = this;
-  while (const auto* runner_as_container =
-             DynamicTo<NGPhysicalContainerFragment>(runner)) {
-    if (runner->IsBlockFormattingContextRoot())
-      break;
-    if (runner_as_container->Children().empty())
-      break;
-    runner = direction == TextDirection::kLtr
-                 ? runner_as_container->Children().front().get()
-                 : runner_as_container->Children().back().get();
-  }
-  DCHECK_NE(runner, this);
-  return runner;
-}
-
-const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
-  if (Children().empty())
-    return nullptr;
-  // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
-  // should compute and store it during layout.
-  const TextDirection direction = Style().Direction();
-  const NGPhysicalFragment* runner = this;
-  while (const auto* runner_as_container =
-             DynamicTo<NGPhysicalContainerFragment>(runner)) {
-    if (runner->IsBlockFormattingContextRoot())
-      break;
-    if (runner_as_container->Children().empty())
-      break;
-    runner = direction == TextDirection::kLtr
-                 ? runner_as_container->Children().back().get()
-                 : runner_as_container->Children().front().get();
-  }
-  DCHECK_NE(runner, this);
-  return runner;
-}
-
 bool NGPhysicalLineBoxFragment::HasSoftWrapToNextLine() const {
   const auto& break_token = To<NGInlineBreakToken>(*BreakToken());
   return !break_token.IsFinished() && !break_token.IsForcedBreak();

@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/macros.h"
+#include "chrome/services/app_service/public/cpp/preferred_apps.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -64,9 +65,18 @@ class AppServiceImpl : public apps::mojom::AppService {
                  bool report_abuse) override;
   void OpenNativeSettings(apps::mojom::AppType app_type,
                           const std::string& app_id) override;
+  void AddPreferredApp(apps::mojom::AppType app_type,
+                       const std::string& app_id,
+                       apps::mojom::IntentFilterPtr intent_filter) override;
+
+  // Retern the preferred_apps_ for testing.
+  PreferredApps& GetPreferredAppsForTesting();
 
  private:
   void OnPublisherDisconnected(apps::mojom::AppType app_type);
+
+  // Initialize the preferred apps from disk.
+  void InitializePreferredApps();
 
   // publishers_ is a std::map, not a mojo::RemoteSet, since we want to
   // be able to find *the* publisher for a given apps::mojom::AppType.
@@ -77,6 +87,8 @@ class AppServiceImpl : public apps::mojom::AppService {
   // Must come after the publisher and subscriber maps to ensure it is
   // destroyed first, closing the connection to avoid dangling callbacks.
   mojo::ReceiverSet<apps::mojom::AppService> receivers_;
+
+  PreferredApps preferred_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceImpl);
 };

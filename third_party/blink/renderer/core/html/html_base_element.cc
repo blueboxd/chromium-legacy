@@ -30,14 +30,13 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLBaseElement::HTMLBaseElement(Document& document)
-    : HTMLElement(kBaseTag, document) {}
+    : HTMLElement(html_names::kBaseTag, document) {}
 
 void HTMLBaseElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kHrefAttr || params.name == kTargetAttr)
+  if (params.name == html_names::kHrefAttr ||
+      params.name == html_names::kTargetAttr)
     GetDocument().ProcessBaseElement();
   else
     HTMLElement::ParseAttribute(params);
@@ -58,7 +57,7 @@ void HTMLBaseElement::RemovedFrom(ContainerNode& insertion_point) {
 }
 
 bool HTMLBaseElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName().LocalName() == kHrefAttr ||
+  return attribute.GetName().LocalName() == html_names::kHrefAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
@@ -69,7 +68,7 @@ KURL HTMLBaseElement::href() const {
   // document's fallback base URL and ignore the base URL.
   // https://html.spec.whatwg.org/C/#dom-base-href
 
-  const AtomicString& attribute_value = FastGetAttribute(kHrefAttr);
+  const AtomicString& attribute_value = FastGetAttribute(html_names::kHrefAttr);
   if (attribute_value.IsNull())
     return GetDocument().Url();
 
@@ -87,7 +86,7 @@ KURL HTMLBaseElement::href() const {
 }
 
 void HTMLBaseElement::setHref(const AtomicString& url_string) {
-  setAttribute(kHrefAttr, url_string);
+  setAttribute(html_names::kHrefAttr, url_string);
 }
 
 }  // namespace blink

@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "net/nqe/effective_connection_type.h"
 #include "url/gurl.h"
 
@@ -89,6 +90,12 @@ base::TimeDelta GetHintsFetchRefreshDuration();
 
 // Returns true if optimization target prediction is enabled.
 bool IsOptimizationTargetPredictionEnabled();
+
+// Returns true if the optimization target decision for |optimization_target|
+// should not be propagated to the caller in an effort to fully understand the
+// statistics for the served model and not taint the resulting data.
+bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
+    proto::OptimizationTarget optimization_target);
 
 }  // namespace features
 }  // namespace optimization_guide

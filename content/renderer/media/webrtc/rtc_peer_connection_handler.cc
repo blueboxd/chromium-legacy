@@ -1270,7 +1270,10 @@ void RTCPeerConnectionHandler::SetLocalDescription(
       FROM_HERE,
       base::BindOnce(
           &RunClosureWithTrace,
-          base::Bind(&webrtc::PeerConnectionInterface::SetLocalDescription,
+          base::Bind(static_cast<void (webrtc::PeerConnectionInterface::*)(
+                         webrtc::SetSessionDescriptionObserver*,
+                         webrtc::SessionDescriptionInterface*)>(
+                         &webrtc::PeerConnectionInterface::SetLocalDescription),
                      native_peer_connection_,
                      base::RetainedRef(webrtc_observer),
                      base::Unretained(native_desc)),

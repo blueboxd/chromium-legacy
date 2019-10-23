@@ -51,8 +51,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 constexpr size_t kLCSTableSizeLimit = 16;
 }
@@ -60,19 +58,19 @@ constexpr size_t kLCSTableSizeLimit = 16;
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentDefaultSlot(
     Document& document) {
   HTMLSlotElement* slot = MakeGarbageCollected<HTMLSlotElement>(document);
-  slot->setAttribute(kNameAttr, UserAgentDefaultSlotName());
+  slot->setAttribute(html_names::kNameAttr, UserAgentDefaultSlotName());
   return slot;
 }
 
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentCustomAssignSlot(
     Document& document) {
   HTMLSlotElement* slot = MakeGarbageCollected<HTMLSlotElement>(document);
-  slot->setAttribute(kNameAttr, UserAgentCustomAssignSlotName());
+  slot->setAttribute(html_names::kNameAttr, UserAgentCustomAssignSlotName());
   return slot;
 }
 
 HTMLSlotElement::HTMLSlotElement(Document& document)
-    : HTMLElement(kSlotTag, document) {
+    : HTMLElement(html_names::kSlotTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLSlotElement);
   if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
     SetHasCustomStyleCallbacks();
@@ -248,7 +246,7 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
 }
 
 AtomicString HTMLSlotElement::GetName() const {
-  return NormalizeSlotName(FastGetAttribute(kNameAttr));
+  return NormalizeSlotName(FastGetAttribute(html_names::kNameAttr));
 }
 
 void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
@@ -295,7 +293,7 @@ void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees(
 
 void HTMLSlotElement::AttributeChanged(
     const AttributeModificationParams& params) {
-  if (params.name == kNameAttr) {
+  if (params.name == html_names::kNameAttr) {
     if (ShadowRoot* root = ContainingShadowRoot()) {
       if (root->IsV1() && params.old_value != params.new_value) {
         root->GetSlotAssignment().DidRenameSlot(

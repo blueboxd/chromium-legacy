@@ -35,6 +35,13 @@ class ASH_PUBLIC_EXPORT TabletModeObserver {
   // with observers being destroyed after controllers.
   virtual void OnTabletControllerDestroyed() {}
 
+  // Called when the tablet physical state of the device changes (e.g. due to
+  // lid angle changes, device attached/detached from base, ... etc.). It's
+  // called before any notifications of UI changes (such as OnTabletModeStarted,
+  // OnTabletModeEnded, ... etc.) that are results of this physical state
+  // change.
+  virtual void OnTabletPhysicalStateChanged() {}
+
  protected:
   virtual ~TabletModeObserver() = default;
 };

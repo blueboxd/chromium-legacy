@@ -98,7 +98,6 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   WebContents* OpenURL(const OpenURLParams& params) override;
   const std::string& GetUserAgentOverride() override;
   bool ShouldOverrideUserAgentInNewTabs() override;
-  bool ShowingInterstitialPage() override;
 
   // RenderViewHostDelegate implementation:
   FrameTree* GetFrameTree() override;

@@ -308,7 +308,8 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
   Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
 }
 
-GraphicsLayer* PaintLayerCompositor::OverlayFullscreenVideoGraphicsLayer() {
+GraphicsLayer* PaintLayerCompositor::OverlayFullscreenVideoGraphicsLayer()
+    const {
   LayoutVideo* video =
       FindFullscreenVideoLayoutObject(layout_view_.GetDocument());
   if (!video || !video->Layer()->HasCompositedLayerMapping() ||
@@ -317,28 +318,6 @@ GraphicsLayer* PaintLayerCompositor::OverlayFullscreenVideoGraphicsLayer() {
   }
 
   return video->Layer()->GetCompositedLayerMapping()->MainGraphicsLayer();
-}
-
-void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
-  GraphicsLayer* content_parent = ParentForContentLayers();
-  if (!content_parent)
-    return;
-
-  bool is_local_root = layout_view_.GetFrame()->IsLocalRoot();
-  GraphicsLayer* video_layer = OverlayFullscreenVideoGraphicsLayer();
-  AdjustOverlayFullscreenVideoPosition(video_layer);
-
-  // Only steal fullscreen video layer and clear all other layers if we are the
-  // main frame.
-  if (!is_local_root || !video_layer)
-    return;
-
-  // Recursively invalidate the paint controllers and related state on the
-  // children being removed. This avoid stale references from display items back
-  // to the layout tree.
-  content_parent->SetNeedsDisplayRecursively();
-  content_parent->RemoveAllChildren();
-  content_parent->AddChild(video_layer);
 }
 
 void PaintLayerCompositor::AdjustOverlayFullscreenVideoPosition(
@@ -530,10 +509,8 @@ void PaintLayerCompositor::UpdateIfNeeded(
         content_parent->SetChildren(child_list);
       }
     }
-    ApplyOverlayFullscreenVideoAdjustmentIfNeeded();
-  } else {
-    AdjustOverlayFullscreenVideoPosition(OverlayFullscreenVideoGraphicsLayer());
   }
+  AdjustOverlayFullscreenVideoPosition(OverlayFullscreenVideoGraphicsLayer());
 
   for (unsigned i = 0; i < layers_needing_paint_invalidation.size(); i++) {
     ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
@@ -730,16 +707,9 @@ GraphicsLayer* PaintLayerCompositor::GetXrImmersiveDomOverlayLayer() const {
   // the AR camera image instead of a video element as a background that's
   // separately composited in the browser. The fullscreened DOM content is shown
   // on top of that, same as HTML video controls.
-  //
-  // The normal fullscreen mode assumes an opaque background, and this doesn't
-  // work for this use case since this mode uses a transparent background, so
-  // the non-fullscreened content would remain visible. Fix this by ensuring
-  // that the fullscreened element has its own layer and using that layer as the
-  // paint root. (This is different from the fullscreen video overlay which
-  // detaches layers other than the video layer. The overall effect is the same,
-  // but it seems safer since it avoids unattached leftover layers.)
   DCHECK(IsMainFrame());
-  DCHECK(layout_view_.GetDocument().IsImmersiveArOverlay());
+  if (!layout_view_.GetDocument().IsImmersiveArOverlay())
+    return nullptr;
 
   Element* fullscreen_element =
       Fullscreen::FullscreenElementFrom(layout_view_.GetDocument());
@@ -763,19 +733,21 @@ GraphicsLayer* PaintLayerCompositor::GetXrImmersiveDomOverlayLayer() const {
 }
 
 GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
-  if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
+  if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup() ||
+      !IsMainFrame())
     return RootGraphicsLayer();
 
-  if (IsMainFrame() && layout_view_.GetDocument().IsImmersiveArOverlay()) {
-    GraphicsLayer* overlay_layer = GetXrImmersiveDomOverlayLayer();
-    if (overlay_layer)
-      return overlay_layer;
-  }
+  // Start from the full screen overlay layer if exists. Other layers will be
+  // skipped during painting.
+  if (auto* layer = GetXrImmersiveDomOverlayLayer())
+    return layer;
+  if (auto* layer = OverlayFullscreenVideoGraphicsLayer())
+    return layer;
 
-  // Start painting at the root graphics layer of the inner viewport which is an
-  // ancestor of both the main contents layers and the scrollbar layers.
-  if (IsMainFrame() && GetVisualViewport().RootGraphicsLayer())
-    return GetVisualViewport().RootGraphicsLayer();
+  // Start painting at the root graphics layer of the inner viewport which is
+  // an ancestor of both the main contents layers and the scrollbar layers.
+  if (auto* layer = GetVisualViewport().RootGraphicsLayer())
+    return layer;
 
   return RootGraphicsLayer();
 }

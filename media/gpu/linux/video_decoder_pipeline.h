@@ -20,6 +20,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace gpu {
+class GpuMemoryBufferFactory;
+}  // namespace gpu
+
 namespace media {
 
 class DmabufVideoFramePool;
@@ -95,6 +99,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter,
+      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
       GetCreateVDFunctionsCB get_create_vd_functions_cb);
 
   ~VideoDecoderPipeline() override;
@@ -124,6 +129,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter,
+      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
       GetCreateVDFunctionsCB get_create_vd_functions_cb);
   void Destroy() override;
   void DestroyTask();
@@ -163,8 +169,16 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
   const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 
-  // The frame pool passed from the client. Destroyed on |decoder_task_runner_|.
-  std::unique_ptr<DmabufVideoFramePool> frame_pool_;
+  // The frame pool passed from the client. While internally other additional
+  // frame pools might be used for intermediate results, all frames passed to
+  // the client should be created using this pool.
+  // Used on |decoder_task_runner_|.
+  std::unique_ptr<DmabufVideoFramePool> main_frame_pool_;
+  // Used to generate additional frame pools for intermediate results if
+  // required. The instance is indirectly owned by GpuChildThread, therefore
+  // alive as long as the GPU process is.
+  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+
   // The frame converter passed from the client. Destroyed on
   // |client_task_runner_|.
   std::unique_ptr<VideoFrameConverter> frame_converter_;

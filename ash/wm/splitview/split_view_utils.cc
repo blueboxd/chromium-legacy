@@ -331,21 +331,17 @@ bool CanSnapInSplitview(aura::Window* window) {
   if (!WindowState::Get(window)->CanSnap())
     return false;
 
-  if (window->delegate()) {
-    // If the window's minimum size is larger than half of the display's work
-    // area size, the window can't be snapped in this case.
-    const gfx::Size min_size = window->delegate()->GetMinimumSize();
-    const gfx::Rect display_area =
-        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-            window);
-    const bool is_landscape = (display_area.width() > display_area.height());
-    if ((is_landscape && min_size.width() > display_area.width() / 2) ||
-        (!is_landscape && min_size.height() > display_area.height() / 2)) {
-      return false;
-    }
-  }
-
-  return true;
+  // Return true if |window|'s minimum size, if any, fits into half the work
+  // area lengthwise.
+  if (!window->delegate())
+    return true;
+  const gfx::Size min_size = window->delegate()->GetMinimumSize();
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window);
+  return IsCurrentScreenOrientationLandscape()
+             ? min_size.width() <= work_area.width() / 2
+             : min_size.height() <= work_area.height() / 2;
 }
 
 void ShowAppCannotSnapToast() {

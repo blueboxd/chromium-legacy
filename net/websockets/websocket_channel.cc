@@ -265,10 +265,12 @@ void WebSocketChannel::SendAddChannelRequest(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const GURL& site_for_cookies,
+    const net::NetworkIsolationKey& network_isolation_key,
     const HttpRequestHeaders& additional_headers) {
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
-      additional_headers, base::Bind(&WebSocketStream::CreateAndConnectStream));
+      network_isolation_key, additional_headers,
+      base::Bind(&WebSocketStream::CreateAndConnectStream));
 }
 
 void WebSocketChannel::SetState(State new_state) {
@@ -407,11 +409,12 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const GURL& site_for_cookies,
+    const net::NetworkIsolationKey& network_isolation_key,
     const HttpRequestHeaders& additional_headers,
     const WebSocketStreamRequestCreationCallback& callback) {
-  SendAddChannelRequestWithSuppliedCallback(socket_url, requested_subprotocols,
-                                            origin, site_for_cookies,
-                                            additional_headers, callback);
+  SendAddChannelRequestWithSuppliedCallback(
+      socket_url, requested_subprotocols, origin, site_for_cookies,
+      network_isolation_key, additional_headers, callback);
 }
 
 void WebSocketChannel::SetClosingHandshakeTimeoutForTesting(
@@ -429,6 +432,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const GURL& site_for_cookies,
+    const net::NetworkIsolationKey& network_isolation_key,
     const HttpRequestHeaders& additional_headers,
     const WebSocketStreamRequestCreationCallback& callback) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
@@ -441,10 +445,10 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
   }
   socket_url_ = socket_url;
   auto connect_delegate = std::make_unique<ConnectDelegate>(this);
-  stream_request_ =
-      callback.Run(socket_url_, requested_subprotocols, origin,
-                   site_for_cookies, additional_headers, url_request_context_,
-                   NetLogWithSource(), std::move(connect_delegate));
+  stream_request_ = callback.Run(
+      socket_url_, requested_subprotocols, origin, site_for_cookies,
+      network_isolation_key, additional_headers, url_request_context_,
+      NetLogWithSource(), std::move(connect_delegate));
   SetState(CONNECTING);
 }
 

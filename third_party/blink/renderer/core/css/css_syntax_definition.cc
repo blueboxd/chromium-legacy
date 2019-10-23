@@ -43,8 +43,6 @@ bool CouldConsumeReservedKeyword(CSSParserTokenRange range) {
 const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
                                   CSSParserTokenRange& range,
                                   const CSSParserContext* context) {
-  using namespace css_property_parser_helpers;
-
   switch (syntax.GetType()) {
     case CSSSyntaxType::kIdent:
       if (range.Peek().GetType() == kIdentToken &&
@@ -55,39 +53,45 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
       }
       return nullptr;
     case CSSSyntaxType::kLength:
-      return ConsumeLength(range, kHTMLStandardMode,
-                           ValueRange::kValueRangeAll);
+      return css_property_parser_helpers::ConsumeLength(
+          range, kHTMLStandardMode, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kNumber:
-      return ConsumeNumber(range, ValueRange::kValueRangeAll);
+      return css_property_parser_helpers::ConsumeNumber(
+          range, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kPercentage:
-      return ConsumePercent(range, ValueRange::kValueRangeAll);
+      return css_property_parser_helpers::ConsumePercent(
+          range, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kLengthPercentage:
-      return ConsumeLengthOrPercent(range, kHTMLStandardMode,
-                                    ValueRange::kValueRangeAll);
+      return css_property_parser_helpers::ConsumeLengthOrPercent(
+          range, kHTMLStandardMode, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kColor:
-      return ConsumeColor(range, kHTMLStandardMode);
+      return css_property_parser_helpers::ConsumeColor(range,
+                                                       kHTMLStandardMode);
     case CSSSyntaxType::kImage:
-      return ConsumeImage(range, context);
+      return css_property_parser_helpers::ConsumeImage(range, context);
     case CSSSyntaxType::kUrl:
-      return ConsumeUrl(range, context);
+      return css_property_parser_helpers::ConsumeUrl(range, context);
     case CSSSyntaxType::kInteger:
-      return ConsumeIntegerOrNumberCalc(range);
+      return css_property_parser_helpers::ConsumeIntegerOrNumberCalc(range);
     case CSSSyntaxType::kAngle:
-      return ConsumeAngle(range, context, base::Optional<WebFeature>());
+      return css_property_parser_helpers::ConsumeAngle(
+          range, context, base::Optional<WebFeature>());
     case CSSSyntaxType::kTime:
-      return ConsumeTime(range, ValueRange::kValueRangeAll);
+      return css_property_parser_helpers::ConsumeTime(
+          range, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kResolution:
-      return ConsumeResolution(range);
+      return css_property_parser_helpers::ConsumeResolution(range);
     case CSSSyntaxType::kTransformFunction:
-      return ConsumeTransformValue(range, *context);
+      return css_property_parser_helpers::ConsumeTransformValue(range,
+                                                                *context);
     case CSSSyntaxType::kTransformList:
-      return ConsumeTransformList(range, *context);
+      return css_property_parser_helpers::ConsumeTransformList(range, *context);
     case CSSSyntaxType::kCustomIdent:
       // TODO(crbug.com/579788): Implement 'revert'.
       // TODO(crbug.com/882285): Make 'default' invalid as <custom-ident>.
       if (IsReservedIdentToken(range.Peek()))
         return nullptr;
-      return ConsumeCustomIdent(range, *context);
+      return css_property_parser_helpers::ConsumeCustomIdent(range, *context);
     default:
       NOTREACHED();
       return nullptr;

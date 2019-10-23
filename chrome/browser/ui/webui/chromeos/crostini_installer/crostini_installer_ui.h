@@ -26,6 +26,8 @@ class CrostiniInstallerUI
   explicit CrostiniInstallerUI(content::WebUI* web_ui);
   ~CrostiniInstallerUI() override;
 
+  bool can_close();
+
  private:
   void BindPageHandlerFactory(
       mojo::PendingReceiver<
@@ -39,9 +41,12 @@ class CrostiniInstallerUI
       mojo::PendingReceiver<chromeos::crostini_installer::mojom::PageHandler>
           pending_page_handler) override;
 
+  void OnWebUICloseDialog();
+
   std::unique_ptr<CrostiniInstallerPageHandler> page_handler_;
   mojo::Receiver<chromeos::crostini_installer::mojom::PageHandlerFactory>
       page_factory_receiver_{this};
+  bool can_close_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniInstallerUI);
 };

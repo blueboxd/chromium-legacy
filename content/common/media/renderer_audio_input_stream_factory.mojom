@@ -44,7 +44,7 @@ interface RendererAudioInputStreamFactoryClient {
   // process hosting it crashing, this function should be called again with a
   // fresh stream.
   StreamCreated(
-      media.mojom.AudioInputStream stream,
+      pending_remote<media.mojom.AudioInputStream> stream,
       media.mojom.AudioInputStreamClient& client_request,
       media.mojom.ReadOnlyAudioDataPipe data_pipe,
       bool initially_muted,

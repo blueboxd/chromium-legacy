@@ -34,10 +34,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLMapElement::HTMLMapElement(Document& document)
-    : HTMLElement(kMapTag, document) {
+    : HTMLElement(html_names::kMapTag, document) {
   UseCounter::Count(document, WebFeature::kMapElement);
 }
 
@@ -64,8 +62,9 @@ HTMLImageElement* HTMLMapElement::ImageElement() {
     // The HTMLImageElement's useMap() value includes the '#' symbol at the
     // beginning, which has to be stripped off.
     HTMLImageElement& image_element = ToHTMLImageElement(*curr);
-    String use_map_name =
-        image_element.getAttribute(kUsemapAttr).GetString().Substring(1);
+    String use_map_name = image_element.getAttribute(html_names::kUsemapAttr)
+                              .GetString()
+                              .Substring(1);
     if (use_map_name == name_)
       return &image_element;
   }
@@ -78,8 +77,9 @@ void HTMLMapElement::ParseAttribute(const AttributeModificationParams& params) {
   // Either the id or name will be used depending on the order the attributes
   // are parsed.
 
-  if (params.name == kIdAttr || params.name == kNameAttr) {
-    if (params.name == kIdAttr) {
+  if (params.name == html_names::kIdAttr ||
+      params.name == html_names::kNameAttr) {
+    if (params.name == html_names::kIdAttr) {
       // Call base class so that hasID bit gets set.
       HTMLElement::ParseAttribute(params);
       if (GetDocument().IsHTMLDocument())

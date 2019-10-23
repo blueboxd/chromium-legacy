@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "media/gpu/linux/video_decoder_pipeline.h"
+#include <memory>
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
+#include "media/gpu/linux/platform_video_frame_pool.h"
 #include "media/gpu/macros.h"
 
 namespace media {
@@ -18,6 +20,7 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
+    gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
     GetCreateVDFunctionsCB get_create_vd_functions_cb) {
   if (!client_task_runner || !frame_pool || !frame_converter) {
     VLOGF(1) << "One of arguments is nullptr.";
@@ -31,32 +34,36 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
 
   return base::WrapUnique<VideoDecoder>(new VideoDecoderPipeline(
       std::move(client_task_runner), std::move(frame_pool),
-      std::move(frame_converter), std::move(get_create_vd_functions_cb)));
+      std::move(frame_converter), gpu_memory_buffer_factory,
+      std::move(get_create_vd_functions_cb)));
 }
 
 VideoDecoderPipeline::VideoDecoderPipeline(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
+    gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
     GetCreateVDFunctionsCB get_create_vd_functions_cb)
     : client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(base::CreateSingleThreadTaskRunner(
           {base::ThreadPool(), base::WithBaseSyncPrimitives(),
            base::TaskPriority::USER_VISIBLE},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
-      frame_pool_(std::move(frame_pool)),
+      main_frame_pool_(std::move(frame_pool)),
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       frame_converter_(std::move(frame_converter)),
       get_create_vd_functions_cb_(std::move(get_create_vd_functions_cb)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(frame_pool_);
+  DCHECK(main_frame_pool_);
   DCHECK(frame_converter_);
   DCHECK(client_task_runner_);
   DVLOGF(2);
 
   client_weak_this_ = client_weak_this_factory_.GetWeakPtr();
   decoder_weak_this_ = decoder_weak_this_factory_.GetWeakPtr();
-  frame_pool_->set_parent_task_runner(decoder_task_runner_);
+
+  main_frame_pool_->set_parent_task_runner(decoder_task_runner_);
   frame_converter_->Initialize(
       decoder_task_runner_,
       base::BindRepeating(&VideoDecoderPipeline::OnFrameConverted,
@@ -64,7 +71,7 @@ VideoDecoderPipeline::VideoDecoderPipeline(
 }
 
 VideoDecoderPipeline::~VideoDecoderPipeline() {
-  // We have to destroy |frame_pool_| on |decoder_task_runner_|, so the
+  // We have to destroy |main_frame_pool_| on |decoder_task_runner_|, so the
   // destructor is also called on |decoder_task_runner_|.
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
@@ -87,10 +94,8 @@ void VideoDecoderPipeline::DestroyTask() {
 
   decoder_weak_this_factory_.InvalidateWeakPtrs();
 
-  // |frame_pool_| and |frame_converter_| should be destroyed on
-  // |decoder_task_runner_|, which is set by
-  // frame_pool_->set_parent_task_runner() and frame_converter_->Initialize().
-  frame_pool_.reset();
+  // The frame pool and converter should be destroyed on |decoder_task_runner_|.
+  main_frame_pool_.reset();
   frame_converter_.reset();
 
   decoder_.reset();
@@ -126,7 +131,7 @@ bool VideoDecoderPipeline::NeedsBitstreamConversion() const {
 bool VideoDecoderPipeline::CanReadWithoutStalling() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
-  return frame_pool_ && !frame_pool_->IsExhausted();
+  return main_frame_pool_ && !main_frame_pool_->IsExhausted();
 }
 
 void VideoDecoderPipeline::Initialize(const VideoDecoderConfig& config,
@@ -378,7 +383,7 @@ void VideoDecoderPipeline::CallFlushCbIfNeeded(DecodeStatus status) {
 }
 
 DmabufVideoFramePool* VideoDecoderPipeline::GetVideoFramePool() const {
-  return frame_pool_.get();
+  return main_frame_pool_.get();
 }
 
 }  // namespace media

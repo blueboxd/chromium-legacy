@@ -60,8 +60,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 class ImageEventListener : public NativeEventListener {
  public:
   ImageEventListener(ImageDocument* document) : doc_(document) {}
@@ -227,20 +225,22 @@ void ImageDocument::CreateDocumentStructure() {
 
   auto* head = MakeGarbageCollected<HTMLHeadElement>(*this);
   auto* meta = MakeGarbageCollected<HTMLMetaElement>(*this);
-  meta->setAttribute(kNameAttr, "viewport");
-  meta->setAttribute(kContentAttr, "width=device-width, minimum-scale=0.1");
+  meta->setAttribute(html_names::kNameAttr, "viewport");
+  meta->setAttribute(html_names::kContentAttr,
+                     "width=device-width, minimum-scale=0.1");
   head->AppendChild(meta);
 
   auto* body = MakeGarbageCollected<HTMLBodyElement>(*this);
 
   if (ShouldShrinkToFit()) {
     // Display the image prominently centered in the frame.
-    body->setAttribute(kStyleAttr, "margin: 0px; background: #0e0e0e;");
+    body->setAttribute(html_names::kStyleAttr,
+                       "margin: 0px; background: #0e0e0e;");
 
     // See w3c example on how to center an element:
     // https://www.w3.org/Style/Examples/007/center.en.html
     div_element_ = MakeGarbageCollected<HTMLDivElement>(*this);
-    div_element_->setAttribute(kStyleAttr,
+    div_element_->setAttribute(html_names::kStyleAttr,
                                "display: flex;"
                                "flex-direction: column;"
                                "align-items: flex-start;"
@@ -257,7 +257,7 @@ void ImageDocument::CreateDocumentStructure() {
     ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
     shadow_root.AppendChild(div_element_);
   } else {
-    body->setAttribute(kStyleAttr, "margin: 0px;");
+    body->setAttribute(html_names::kStyleAttr, "margin: 0px;");
   }
 
   WillInsertBody();
@@ -265,7 +265,8 @@ void ImageDocument::CreateDocumentStructure() {
   image_element_ = MakeGarbageCollected<HTMLImageElement>(*this);
   UpdateImageStyle();
   image_element_->SetLoadingImageDocument();
-  image_element_->setAttribute(kSrcAttr, AtomicString(Url().GetString()));
+  image_element_->setAttribute(html_names::kSrcAttr,
+                               AtomicString(Url().GetString()));
   body->AppendChild(image_element_.Get());
   if (Loader() && image_element_->CachedImageResourceForImageDocument()) {
     image_element_->CachedImageResourceForImageDocument()->ResponseReceived(
@@ -412,7 +413,8 @@ void ImageDocument::UpdateImageStyle() {
     }
   }
 
-  image_element_->setAttribute(kStyleAttr, image_style.ToAtomicString());
+  image_element_->setAttribute(html_names::kStyleAttr,
+                               image_style.ToAtomicString());
 }
 
 void ImageDocument::ImageUpdated() {

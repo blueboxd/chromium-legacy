@@ -42,6 +42,10 @@ namespace device {
 // orientation is {0, 0, 0, 1}.
 XrPosef PoseIdentity();
 
+XrResult GetSystem(XrInstance instance, XrSystemId* system);
+
+XrResult CreateInstance(XrInstance* instance);
+
 }  // namespace device
 
 #endif  // DEVICE_VR_OPENXR_OPENXR_UTIL_H_

@@ -122,6 +122,11 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
   }
 
   void SimulateRendererCreated() {
+#if defined(OS_ANDROID)
+    content::RenderProcessHostCreationObserver* creation_observer =
+        crash_reporter::ChildExitObserver::GetInstance();
+    creation_observer->OnRenderProcessHostCreated(process());
+#endif
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_CREATED,
         content::Source<content::RenderProcessHost>(process()),

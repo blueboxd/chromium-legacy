@@ -374,7 +374,7 @@ BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh) {
         BackForwardCacheMetrics::NotRestoredReason::kWasGrantedMediaAccess);
   }
 
-  if (rfh->is_back_forward_cache_disallowed()) {
+  if (rfh->is_back_forward_cache_disabled()) {
     return CanStoreDocumentResult::No(
         BackForwardCacheMetrics::NotRestoredReason::
             kDisableForRenderFrameHostCalled);
@@ -516,7 +516,7 @@ void BackForwardCache::DisableForRenderFrameHost(GlobalFrameRoutingId id,
     g_bfcache_disabled_test_observer->OnDisabledForFrameWithReason(id, reason);
 
   if (auto* rfh = RenderFrameHostImpl::FromID(id)) {
-    rfh->DisallowBackForwardCache();
+    rfh->DisableBackForwardCache();
 
     RenderFrameHostImpl* frame = rfh;
     while (frame->GetParent())

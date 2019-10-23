@@ -26,9 +26,7 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLDListElement::HTMLDListElement(Document& document)
-    : HTMLElement(kDlTag, document) {}
+    : HTMLElement(html_names::kDlTag, document) {}
 
 }  // namespace blink

@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/test/task_environment.h"
 #include "base/win/windows_version.h"

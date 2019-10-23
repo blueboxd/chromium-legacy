@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_ansible_software_config_view.h"
 
+#include "base/logging.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -53,10 +54,6 @@ base::string16 CrostiniAnsibleSoftwareConfigView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_LABEL);
 }
 
-bool CrostiniAnsibleSoftwareConfigView::ShouldShowCloseButton() const {
-  return false;
-}
-
 gfx::Size CrostiniAnsibleSoftwareConfigView::CalculatePreferredSize() const {
   const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH) -
@@ -64,37 +61,34 @@ gfx::Size CrostiniAnsibleSoftwareConfigView::CalculatePreferredSize() const {
   return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
 }
 
-void CrostiniAnsibleSoftwareConfigView::OnApplicationStarted() {
-  DCHECK_EQ(state_, State::INSTALLING);
-
-  state_ = State::APPLYING;
+void CrostiniAnsibleSoftwareConfigView::
+    OnAnsibleSoftwareConfigurationStarted() {
+  NOTIMPLEMENTED();
 }
 
-void CrostiniAnsibleSoftwareConfigView::OnApplicationFinished() {
-  DCHECK_EQ(state_, State::APPLYING);
-
+void CrostiniAnsibleSoftwareConfigView::OnAnsibleSoftwareConfigurationFinished(
+    bool success) {
+  DCHECK_EQ(state_, State::CONFIGURING);
   ansible_management_service_->RemoveObserver(this);
+
+  if (!success) {
+    state_ = State::ERROR;
+
+    // Bring dialog to front.
+    GetWidget()->Show();
+
+    GetWidget()->UpdateWindowTitle();
+    subtext_label_->SetText(l10n_util::GetStringUTF16(
+        IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_SUBTEXT));
+
+    progress_bar_->SetVisible(false);
+
+    DialogModelChanged();
+    return;
+  }
   // TODO(crbug.com/1005774): We should preferably add another ClosedReason
   // instead of passing kUnspecified.
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
-}
-
-void CrostiniAnsibleSoftwareConfigView::OnError() {
-  DCHECK(state_ == State::APPLYING || state_ == State::INSTALLING);
-  state_ = State::ERROR;
-
-  ansible_management_service_->RemoveObserver(this);
-
-  // Bring dialog to front.
-  GetWidget()->Show();
-
-  GetWidget()->UpdateWindowTitle();
-  subtext_label_->SetText(l10n_util::GetStringUTF16(
-      IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_SUBTEXT));
-
-  progress_bar_->SetVisible(false);
-
-  DialogModelChanged();
 }
 
 base::string16

@@ -77,8 +77,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 struct CommandNameEntry {
@@ -318,8 +316,9 @@ static EditingTriState SelectionListState(const FrameSelection& selection,
       // If the selected list has the different type of list as child, return
       // |FalseTriState|.
       // See http://crbug.com/385374
-      if (HasChildTags(*start_element,
-                       tag_name.Matches(kUlTag) ? kOlTag : kUlTag))
+      if (HasChildTags(*start_element, tag_name.Matches(html_names::kUlTag)
+                                           ? html_names::kOlTag
+                                           : html_names::kUlTag))
         return EditingTriState::kFalse;
       return EditingTriState::kTrue;
     }
@@ -615,7 +614,8 @@ static bool ExecuteFormatBlock(LocalFrame& frame,
   if (!Document::ParseQualifiedName(AtomicString(tag_name), prefix, local_name,
                                     IGNORE_EXCEPTION_FOR_TESTING))
     return false;
-  QualifiedName qualified_tag_name(prefix, local_name, xhtmlNamespaceURI);
+  QualifiedName qualified_tag_name(prefix, local_name,
+                                   html_names::xhtmlNamespaceURI);
 
   DCHECK(frame.GetDocument());
   auto* command = MakeGarbageCollected<FormatBlockCommand>(*frame.GetDocument(),
@@ -1223,11 +1223,11 @@ static EditingTriState StateNone(LocalFrame&, Event*) {
 }
 
 EditingTriState StateOrderedList(LocalFrame& frame, Event*) {
-  return SelectionListState(frame.Selection(), kOlTag);
+  return SelectionListState(frame.Selection(), html_names::kOlTag);
 }
 
 static EditingTriState StateUnorderedList(LocalFrame& frame, Event*) {
-  return SelectionListState(frame.Selection(), kUlTag);
+  return SelectionListState(frame.Selection(), html_names::kUlTag);
 }
 
 static EditingTriState StateJustifyCenter(LocalFrame& frame, Event*) {
@@ -1270,9 +1270,9 @@ static String ValueDefaultParagraphSeparator(const EditorInternalCommand&,
                                              Event*) {
   switch (frame.GetEditor().DefaultParagraphSeparator()) {
     case EditorParagraphSeparator::kIsDiv:
-      return kDivTag.LocalName();
+      return html_names::kDivTag.LocalName();
     case EditorParagraphSeparator::kIsP:
-      return kPTag.LocalName();
+      return html_names::kPTag.LocalName();
   }
 
   NOTREACHED();

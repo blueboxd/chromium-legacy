@@ -79,8 +79,6 @@ bool HandleSelectionBoundary<EditingInFlatTreeStrategy>(const Node& node) {
 
 }  // namespace
 
-using namespace html_names;
-
 template <typename Strategy>
 class StyledMarkupTraverser {
   STACK_ALLOCATED();
@@ -233,7 +231,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
         *start_.ComputeContainerNode(), *end_.ComputeContainerNode());
     DCHECK(common_ancestor);
     auto* body = To<HTMLBodyElement>(EnclosingElementWithTag(
-        Position::FirstPositionInNode(*common_ancestor), kBodyTag));
+        Position::FirstPositionInNode(*common_ancestor), html_names::kBodyTag));
     HTMLBodyElement* fully_selected_root = nullptr;
     // FIXME: Do this for all fully selected blocks, not just the body.
     if (body && AreSameRanges(body, start_, end_))
@@ -255,10 +253,12 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
              !fully_selected_root_style->Style() ||
              !fully_selected_root_style->Style()->GetPropertyCSSValue(
                  CSSPropertyID::kBackgroundImage)) &&
-            fully_selected_root->hasAttribute(kBackgroundAttr)) {
+            fully_selected_root->hasAttribute(html_names::kBackgroundAttr)) {
           fully_selected_root_style->Style()->SetProperty(
               CSSPropertyID::kBackgroundImage,
-              "url('" + fully_selected_root->getAttribute(kBackgroundAttr) +
+              "url('" +
+                  fully_selected_root->getAttribute(
+                      html_names::kBackgroundAttr) +
                   "')",
               /* important */ false,
               fully_selected_root->GetDocument().GetSecureContextMode());
@@ -370,7 +370,7 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
       if (n->GetLayoutObject() ||
           (element && element->HasDisplayContentsStyle()) ||
           EnclosingElementWithTag(FirstPositionInOrBeforeNode(*n),
-                                  kSelectTag)) {
+                                  html_names::kSelectTag)) {
         // Add the node to the markup if we're not skipping the descendants
         AppendStartMarkup(*n);
 

@@ -576,6 +576,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "cryptauth-v2-device-activity-status",
+    "owners": [ "khorimoto", "nohle", "themaxli" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "cryptauth-v2-devicesync",
     "owners": [ "khorimoto", "nohle" ],
     "expiry_milestone": 85
@@ -1889,6 +1894,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-use-hdr-transfer-function",
+    "owners": [ "mcasas" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "enable-use-zoom-for-dsf",
     "owners": [ "ccameron" ],
     "expiry_milestone": 80
@@ -2024,6 +2034,11 @@
     "name": "enable-webrtc-hybrid-agc",
     "owners": [ "aleloi" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "enable-webrtc-multi-channel-audio-processing",
+    "owners": [ "saza" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-webrtc-new-encode-cpu-load-estimator",

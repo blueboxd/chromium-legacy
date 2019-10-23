@@ -772,10 +772,10 @@ void ChildThreadImpl::ReleaseCachedFonts() {
   GetFontCacheWin()->ReleaseCachedFonts();
 }
 
-mojom::FontCacheWin* ChildThreadImpl::GetFontCacheWin() {
-  if (!font_cache_win_ptr_)
-    BindHostReceiver(mojo::MakeRequest(&font_cache_win_ptr_));
-  return font_cache_win_ptr_.get();
+const mojo::Remote<mojom::FontCacheWin>& ChildThreadImpl::GetFontCacheWin() {
+  if (!font_cache_win_)
+    BindHostReceiver(font_cache_win_.BindNewPipeAndPassReceiver());
+  return font_cache_win_;
 }
 #endif
 

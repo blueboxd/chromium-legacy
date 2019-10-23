@@ -77,8 +77,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
   EXPECT_TRUE(HasView());
   EXPECT_TRUE(IsDefaultDialog());
 
-  ActiveView()->OnApplicationStarted();
-  ActiveView()->OnApplicationFinished();
+  ActiveView()->OnAnsibleSoftwareConfigurationFinished(true);
 
   EXPECT_TRUE(HasNoView());
 }
@@ -91,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
   EXPECT_TRUE(HasView());
   EXPECT_TRUE(IsDefaultDialog());
 
-  ActiveView()->OnError();
+  ActiveView()->OnAnsibleSoftwareConfigurationFinished(false);
 
   EXPECT_NE(nullptr, ActiveView());
   EXPECT_TRUE(IsErrorDialog());

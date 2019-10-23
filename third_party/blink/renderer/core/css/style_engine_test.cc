@@ -44,8 +44,6 @@
 
 namespace blink {
 
-using namespace css_test_helpers;
-
 class StyleEngineTest : public testing::Test {
  protected:
   void SetUp() override;
@@ -1947,7 +1945,8 @@ TEST_F(StyleEngineTest, InitialDataCreation) {
   EXPECT_FALSE(GetStyleEngine().MaybeCreateAndGetInitialData());
 
   // After registering, there should be initial data.
-  RegisterProperty(GetDocument(), "--x", "<length>", "10px", false);
+  css_test_helpers::RegisterProperty(GetDocument(), "--x", "<length>", "10px",
+                                     false);
   auto data1 = GetStyleEngine().MaybeCreateAndGetInitialData();
   EXPECT_TRUE(data1);
 
@@ -1963,7 +1962,8 @@ TEST_F(StyleEngineTest, InitialDataCreation) {
 
   // After registering a new property, initial data should be invalidated,
   // such that the new initial data is different.
-  RegisterProperty(GetDocument(), "--y", "<color>", "black", false);
+  css_test_helpers::RegisterProperty(GetDocument(), "--y", "<color>", "black",
+                                     false);
   EXPECT_NE(data1, GetStyleEngine().MaybeCreateAndGetInitialData());
 }
 

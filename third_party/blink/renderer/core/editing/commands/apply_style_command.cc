@@ -62,8 +62,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static bool HasNoAttributeOrOnlyStyleAttribute(
     const HTMLElement* element,
     ShouldStyleAttributeBeEmpty should_style_attribute_be_empty) {
@@ -72,7 +70,7 @@ static bool HasNoAttributeOrOnlyStyleAttribute(
     return true;
 
   unsigned matched_attributes = 0;
-  if (element->hasAttribute(kStyleAttr) &&
+  if (element->hasAttribute(html_names::kStyleAttr) &&
       (should_style_attribute_be_empty == kAllowNonEmptyStyleAttribute ||
        !element->InlineStyle() || element->InlineStyle()->IsEmpty()))
     matched_attributes++;
@@ -514,11 +512,11 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
           *CSSNumericLiteralValue::Create(desired_font_size,
                                           CSSPrimitiveValue::UnitType::kPixels),
           false);
-      SetNodeAttribute(element, kStyleAttr,
+      SetNodeAttribute(element, html_names::kStyleAttr,
                        AtomicString(inline_style->AsText()));
     }
     if (inline_style->IsEmpty()) {
-      RemoveElementAttribute(element, kStyleAttr);
+      RemoveElementAttribute(element, html_names::kStyleAttr);
       if (IsSpanWithoutAttributesOrUnstyledStyleSpan(element))
         unstyled_spans.push_back(element);
     }
@@ -656,17 +654,17 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
     // it assumes that if the 'dir' attribute is present, then removing it will
     // suffice, and otherwise it sets the property in the inline style
     // declaration.
-    if (element->hasAttribute(kDirAttr)) {
+    if (element->hasAttribute(html_names::kDirAttr)) {
       // FIXME: If this is a BDO element, we should probably just remove it if
       // it has no other attributes, like we (should) do with B and I elements.
-      RemoveElementAttribute(element, kDirAttr);
+      RemoveElementAttribute(element, html_names::kDirAttr);
     } else {
       MutableCSSPropertyValueSet* inline_style =
           CopyStyleOrCreateEmpty(element->InlineStyle());
       inline_style->SetProperty(CSSPropertyID::kUnicodeBidi,
                                 CSSValueID::kNormal);
       inline_style->RemoveProperty(CSSPropertyID::kDirection);
-      SetNodeAttribute(element, kStyleAttr,
+      SetNodeAttribute(element, html_names::kStyleAttr,
                        AtomicString(inline_style->AsText()));
       if (IsSpanWithoutAttributesOrUnstyledStyleSpan(element)) {
         RemoveNodePreservingChildren(element, editing_state);
@@ -1011,7 +1009,7 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
       MutableCSSPropertyValueSet* inline_style =
           CopyStyleOrCreateEmpty(element->InlineStyle());
       inline_style->MergeAndOverrideOnConflict(style->Style());
-      SetNodeAttribute(element, kStyleAttr,
+      SetNodeAttribute(element, html_names::kStyleAttr,
                        AtomicString(inline_style->AsText()));
       continue;
     }
@@ -1341,7 +1339,7 @@ void ApplyStyleCommand::ApplyInlineStyleToPushDown(
   // FIXME: applyInlineStyleToRange should be used here instead.
   if ((node->GetLayoutObject()->IsLayoutBlockFlow() || node->hasChildren()) &&
       html_element) {
-    SetNodeAttribute(html_element, kStyleAttr,
+    SetNodeAttribute(html_element, html_names::kStyleAttr,
                      AtomicString(new_inline_style->Style()->AsText()));
     return;
   }
@@ -1403,7 +1401,7 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
       if (!child->contains(target_node) && elements_to_push_down.size()) {
         for (const auto& element : elements_to_push_down) {
           Element& wrapper = element->CloneWithoutChildren();
-          wrapper.removeAttribute(kStyleAttr);
+          wrapper.removeAttribute(html_names::kStyleAttr);
           // Delete id attribute from the second element because the same id
           // cannot be used for more than one element
           element->removeAttribute(html_names::kIdAttr);
@@ -1842,7 +1840,7 @@ void ApplyStyleCommand::AddBlockStyle(const StyleChange& style_change,
       css_text.Append(' ');
     css_text.Append(decl->AsText());
   }
-  SetNodeAttribute(block, kStyleAttr, css_text.ToAtomicString());
+  SetNodeAttribute(block, html_names::kStyleAttr, css_text.ToAtomicString());
 }
 
 void ApplyStyleCommand::AddInlineStyleIfNeeded(EditingStyle* style,
@@ -1926,24 +1924,24 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
       style_change.ApplyFontSize()) {
     if (font_container) {
       if (style_change.ApplyFontColor())
-        SetNodeAttribute(font_container, kColorAttr,
+        SetNodeAttribute(font_container, html_names::kColorAttr,
                          AtomicString(style_change.FontColor()));
       if (style_change.ApplyFontFace())
-        SetNodeAttribute(font_container, kFaceAttr,
+        SetNodeAttribute(font_container, html_names::kFaceAttr,
                          AtomicString(style_change.FontFace()));
       if (style_change.ApplyFontSize())
-        SetNodeAttribute(font_container, kSizeAttr,
+        SetNodeAttribute(font_container, html_names::kSizeAttr,
                          AtomicString(style_change.FontSize()));
     } else {
       auto* font_element = MakeGarbageCollected<HTMLFontElement>(GetDocument());
       if (style_change.ApplyFontColor())
-        font_element->setAttribute(kColorAttr,
+        font_element->setAttribute(html_names::kColorAttr,
                                    AtomicString(style_change.FontColor()));
       if (style_change.ApplyFontFace())
-        font_element->setAttribute(kFaceAttr,
+        font_element->setAttribute(html_names::kFaceAttr,
                                    AtomicString(style_change.FontFace()));
       if (style_change.ApplyFontSize())
-        font_element->setAttribute(kSizeAttr,
+        font_element->setAttribute(html_names::kSizeAttr,
                                    AtomicString(style_change.FontSize()));
       SurroundNodeRangeWithElement(start_node, end_node, font_element,
                                    editing_state);
@@ -1962,16 +1960,16 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
         if (!existing_text.IsEmpty())
           css_text.Append(' ');
         css_text.Append(style_change.CssStyle());
-        SetNodeAttribute(style_container, kStyleAttr,
+        SetNodeAttribute(style_container, html_names::kStyleAttr,
                          css_text.ToAtomicString());
       } else {
-        SetNodeAttribute(style_container, kStyleAttr,
+        SetNodeAttribute(style_container, html_names::kStyleAttr,
                          AtomicString(style_change.CssStyle()));
       }
     } else {
       auto* style_element =
           MakeGarbageCollected<HTMLSpanElement>(GetDocument());
-      style_element->setAttribute(kStyleAttr,
+      style_element->setAttribute(html_names::kStyleAttr,
                                   AtomicString(style_change.CssStyle()));
       SurroundNodeRangeWithElement(start_node, end_node, style_element,
                                    editing_state);
@@ -1983,7 +1981,8 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
   if (style_change.ApplyBold()) {
     SurroundNodeRangeWithElement(
         start_node, end_node,
-        MakeGarbageCollected<HTMLElement>(kBTag, GetDocument()), editing_state);
+        MakeGarbageCollected<HTMLElement>(html_names::kBTag, GetDocument()),
+        editing_state);
     if (editing_state->IsAborted())
       return;
   }
@@ -1991,7 +1990,8 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
   if (style_change.ApplyItalic()) {
     SurroundNodeRangeWithElement(
         start_node, end_node,
-        MakeGarbageCollected<HTMLElement>(kITag, GetDocument()), editing_state);
+        MakeGarbageCollected<HTMLElement>(html_names::kITag, GetDocument()),
+        editing_state);
     if (editing_state->IsAborted())
       return;
   }
@@ -1999,16 +1999,17 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
   if (style_change.ApplyUnderline()) {
     SurroundNodeRangeWithElement(
         start_node, end_node,
-        MakeGarbageCollected<HTMLElement>(kUTag, GetDocument()), editing_state);
+        MakeGarbageCollected<HTMLElement>(html_names::kUTag, GetDocument()),
+        editing_state);
     if (editing_state->IsAborted())
       return;
   }
 
   if (style_change.ApplyLineThrough()) {
-    SurroundNodeRangeWithElement(
-        start_node, end_node,
-        MakeGarbageCollected<HTMLElement>(kStrikeTag, GetDocument()),
-        editing_state);
+    SurroundNodeRangeWithElement(start_node, end_node,
+                                 MakeGarbageCollected<HTMLElement>(
+                                     html_names::kStrikeTag, GetDocument()),
+                                 editing_state);
     if (editing_state->IsAborted())
       return;
   }
@@ -2016,14 +2017,14 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
   if (style_change.ApplySubscript()) {
     SurroundNodeRangeWithElement(
         start_node, end_node,
-        MakeGarbageCollected<HTMLElement>(kSubTag, GetDocument()),
+        MakeGarbageCollected<HTMLElement>(html_names::kSubTag, GetDocument()),
         editing_state);
     if (editing_state->IsAborted())
       return;
   } else if (style_change.ApplySuperscript()) {
     SurroundNodeRangeWithElement(
         start_node, end_node,
-        MakeGarbageCollected<HTMLElement>(kSupTag, GetDocument()),
+        MakeGarbageCollected<HTMLElement>(html_names::kSupTag, GetDocument()),
         editing_state);
     if (editing_state->IsAborted())
       return;

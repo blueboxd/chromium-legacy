@@ -22,6 +22,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/testing/earl_grey/disabled_test_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -263,6 +264,11 @@ id<GREYMatcher> BottomToolbar() {
 // Checks that the toolbar appears in edit mode once a card is selected and
 // disappears when a card is deselected.
 - (void)testToolbarInEditMode {
+  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+    // The toolbar is always displayed when the AddPayment feature is enabled.
+    EARL_GREY_TEST_SKIPPED(
+        @"This test makes sense only when there is no Add Payment button.");
+  }
   autofill::CreditCard creditCard = [self addCreditCard];
   [self openCreditCardListInEditMode];
 
@@ -285,6 +291,12 @@ id<GREYMatcher> BottomToolbar() {
 // is selected. There should be no 'Add payment method' button if the
 // kSettingsAddPaymentMethod flag is not enabled.
 - (void)testToolbarButtonsInEditMode {
+  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+    // The toolbar is always displayed when the AddPayment feature is enabled.
+    EARL_GREY_TEST_SKIPPED(
+        @"This test makes sense only when there is no Add Payment button.");
+  }
+
   autofill::CreditCard creditCard = [self addCreditCard];
   [self openCreditCardListInEditMode];
 

@@ -38,9 +38,6 @@ class OpenXrApiWrapper {
 
   static std::unique_ptr<OpenXrApiWrapper> Create();
 
-  static bool IsHardwareAvailable();
-  static bool IsApiAvailable();
-
   static VRTestHook* GetTestHook();
 
   bool session_ended() const { return session_ended_; }

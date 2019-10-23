@@ -10,10 +10,10 @@
 #include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/process/process_handle.h"
-#include "content/common/media/peer_connection_tracker.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
 
 namespace base {
 class Value;
@@ -27,8 +27,9 @@ class RenderProcessHost;
 // managed by RenderProcessHostImpl. It receives PeerConnection events from
 // PeerConnectionTracker as IPC messages that it forwards to WebRTCInternals.
 // It also forwards browser process events to PeerConnectionTracker via IPC.
-class PeerConnectionTrackerHost : public base::PowerObserver,
-                                  public mojom::PeerConnectionTrackerHost {
+class PeerConnectionTrackerHost
+    : public base::PowerObserver,
+      public blink::mojom::PeerConnectionTrackerHost {
  public:
   explicit PeerConnectionTrackerHost(RenderProcessHost* rph);
   ~PeerConnectionTrackerHost() override;
@@ -36,18 +37,20 @@ class PeerConnectionTrackerHost : public base::PowerObserver,
   // base::PowerObserver override.
   void OnSuspend() override;
 
-  // These methods call out to mojom::PeerConnectionManager on renderer side.
+  // These methods call out to blink::mojom::PeerConnectionManager on renderer
+  // side.
   void StartEventLog(int peer_connection_local_id, int output_period_ms);
   void StopEventLog(int lid);
   void GetStandardStats();
   void GetLegacyStats();
 
   void BindReceiver(
-      mojo::PendingReceiver<mojom::PeerConnectionTrackerHost> pending_receiver);
+      mojo::PendingReceiver<blink::mojom::PeerConnectionTrackerHost>
+          pending_receiver);
 
  private:
-  // mojom::PeerConnectionTrackerHost implementation.
-  void AddPeerConnection(mojom::PeerConnectionInfoPtr info) override;
+  // blink::mojom::PeerConnectionTrackerHost implementation.
+  void AddPeerConnection(blink::mojom::PeerConnectionInfoPtr info) override;
   void RemovePeerConnection(int lid) override;
   void UpdatePeerConnection(int lid,
                             const std::string& type,
@@ -65,8 +68,8 @@ class PeerConnectionTrackerHost : public base::PowerObserver,
 
   int render_process_id_;
   base::ProcessId peer_pid_;
-  mojo::Receiver<mojom::PeerConnectionTrackerHost> receiver_{this};
-  mojo::Remote<mojom::PeerConnectionManager> tracker_;
+  mojo::Receiver<blink::mojom::PeerConnectionTrackerHost> receiver_{this};
+  mojo::Remote<blink::mojom::PeerConnectionManager> tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionTrackerHost);
 };

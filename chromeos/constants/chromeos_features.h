@@ -39,6 +39,8 @@ extern const base::Feature kCrostiniUsbAllowUnsupported;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniWebUIInstaller;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kCryptAuthV2DeviceActivityStatus;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCryptAuthV2DeviceSync;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCryptAuthV2Enrollment;

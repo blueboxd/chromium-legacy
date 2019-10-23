@@ -174,6 +174,18 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       autofill::PersonalDataManagerFactory::GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState());
   _personalDataManager->SetSyncingForTest(true);
+
+  for (autofill::CreditCard* card :
+       _personalDataManager->GetLocalCreditCards()) {
+    _personalDataManager->RemoveByGUID(card->guid());
+  }
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kPDMMaxDelaySeconds,
+                 ^bool() {
+                   return _personalDataManager->GetLocalCreditCards().size() ==
+                          0;
+                 }),
+             @"Failed to remove local credit cards.");
 }
 
 - (void)tearDown {
@@ -524,7 +536,8 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the credit card View Controller is dismissed when tapping the
 // keyboard.
-- (void)testTappingKeyboardDismissCreditCardControllerPopOver {
+// TODO(crbug.com/1017095): Re-enable this test.
+- (void)DISABLED_testTappingKeyboardDismissCreditCardControllerPopOver {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }

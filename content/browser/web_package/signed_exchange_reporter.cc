@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -118,8 +117,8 @@ bool ShouldDowngradeReport(const char* result_string,
   return false;
 }
 
-void ReportResultOnUI(int frame_tree_node_id,
-                      network::mojom::SignedExchangeReportPtr report) {
+void ReportResult(int frame_tree_node_id,
+                  network::mojom::SignedExchangeReportPtr report) {
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   if (!frame_tree_node)
@@ -212,9 +211,7 @@ void SignedExchangeReporter::ReportResultAndFinish(
     report_->elapsed_time = base::TimeTicks::Now() - request_start_;
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&ReportResultOnUI, frame_tree_node_id_,
-                                std::move(report_)));
+  ReportResult(frame_tree_node_id_, std::move(report_));
 }
 
 }  // namespace content

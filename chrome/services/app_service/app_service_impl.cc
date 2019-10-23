@@ -23,7 +23,9 @@ void Connect(apps::mojom::Publisher* publisher,
 
 namespace apps {
 
-AppServiceImpl::AppServiceImpl() = default;
+AppServiceImpl::AppServiceImpl() {
+  InitializePreferredApps();
+}
 
 AppServiceImpl::~AppServiceImpl() = default;
 
@@ -68,6 +70,9 @@ void AppServiceImpl::RegisterSubscriber(
   }
 
   // TODO: store the opts somewhere.
+
+  // Initialise the Preferred Apps in the Subscribers on register.
+  subscriber->InitializePreferredApps(preferred_apps_.GetValue());
 
   // Add the new subscriber to the set.
   subscribers_.Add(std::move(subscriber));
@@ -155,8 +160,28 @@ void AppServiceImpl::OpenNativeSettings(apps::mojom::AppType app_type,
   iter->second->OpenNativeSettings(app_id);
 }
 
+void AppServiceImpl::AddPreferredApp(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter) {
+  preferred_apps_.AddPreferredApp(app_id, intent_filter);
+  for (auto& subscriber : subscribers_) {
+    subscriber->OnPreferredAppSet(app_id, intent_filter->Clone());
+  }
+  // TODO(crbug.com/853604): Update to the corresponding publisher.
+}
+
 void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
   publishers_.erase(app_type);
+}
+
+PreferredApps& AppServiceImpl::GetPreferredAppsForTesting() {
+  return preferred_apps_;
+}
+
+void AppServiceImpl::InitializePreferredApps() {
+  // TODO(crbug.com/853604): Initialise from disk.
+  preferred_apps_.Init(nullptr);
 }
 
 }  // namespace apps

@@ -69,8 +69,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 class HTMLImageElement::ViewportChangeListener final
     : public MediaQueryListListener {
  public:
@@ -96,7 +94,7 @@ HTMLImageElement::HTMLImageElement(Document& document,
     : HTMLImageElement(document, flags.IsCreatedByParser()) {}
 
 HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
-    : HTMLElement(kImgTag, document),
+    : HTMLElement(html_names::kImgTag, document),
       image_loader_(MakeGarbageCollected<HTMLImageLoader>(this)),
       image_device_pixel_ratio_(1.0f),
       source_(nullptr),
@@ -158,9 +156,10 @@ HTMLImageElement* HTMLImageElement::CreateForJSConstructor(Document& document,
 
 bool HTMLImageElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == kWidthAttr || name == kHeightAttr || name == kBorderAttr ||
-      name == kVspaceAttr || name == kHspaceAttr || name == kAlignAttr ||
-      name == kValignAttr)
+  if (name == html_names::kWidthAttr || name == html_names::kHeightAttr ||
+      name == html_names::kBorderAttr || name == html_names::kVspaceAttr ||
+      name == html_names::kHspaceAttr || name == html_names::kAlignAttr ||
+      name == html_names::kValignAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -169,21 +168,21 @@ void HTMLImageElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kWidthAttr) {
+  if (name == html_names::kWidthAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
-  } else if (name == kHeightAttr) {
+  } else if (name == html_names::kHeightAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
-  } else if (name == kBorderAttr) {
+  } else if (name == html_names::kBorderAttr) {
     ApplyBorderAttributeToStyle(value, style);
-  } else if (name == kVspaceAttr) {
+  } else if (name == html_names::kVspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
-  } else if (name == kHspaceAttr) {
+  } else if (name == html_names::kHspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
-  } else if (name == kAlignAttr) {
+  } else if (name == html_names::kAlignAttr) {
     ApplyAlignmentAttributeToStyle(value, style);
-  } else if (name == kValignAttr) {
+  } else if (name == html_names::kValignAttr) {
     AddPropertyToPresentationAttributeStyle(
         style, CSSPropertyID::kVerticalAlign, value);
   } else {
@@ -192,7 +191,7 @@ void HTMLImageElement::CollectStyleForPresentationAttribute(
 }
 
 const AtomicString HTMLImageElement::ImageSourceURL() const {
-  return best_fit_image_url_.IsNull() ? FastGetAttribute(kSrcAttr)
+  return best_fit_image_url_.IsNull() ? FastGetAttribute(html_names::kSrcAttr)
                                       : best_fit_image_url_;
 }
 
@@ -258,18 +257,19 @@ void HTMLImageElement::SetBestFitURLAndDPRFromImageCandidate(
 void HTMLImageElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
-  if (name == kAltAttr || name == kTitleAttr) {
+  if (name == html_names::kAltAttr || name == html_names::kTitleAttr) {
     if (UserAgentShadowRoot()) {
       Element* text = UserAgentShadowRoot()->getElementById("alttext");
       String alt_text_content = AltText();
       if (text && text->textContent() != alt_text_content)
         text->setTextContent(alt_text_content);
     }
-  } else if (name == kSrcAttr || name == kSrcsetAttr || name == kSizesAttr) {
+  } else if (name == html_names::kSrcAttr || name == html_names::kSrcsetAttr ||
+             name == html_names::kSizesAttr) {
     SelectSourceURL(ImageLoader::kUpdateIgnorePreviousError);
-  } else if (name == kUsemapAttr) {
+  } else if (name == html_names::kUsemapAttr) {
     SetIsLink(!params.new_value.IsNull());
-  } else if (name == kReferrerpolicyAttr) {
+  } else if (name == html_names::kReferrerpolicyAttr) {
     referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
     if (!params.new_value.IsNull()) {
       SecurityPolicy::ReferrerPolicyFromString(
@@ -278,14 +278,14 @@ void HTMLImageElement::ParseAttribute(
       UseCounter::Count(GetDocument(),
                         WebFeature::kHTMLImageElementReferrerPolicyAttribute);
     }
-  } else if (name == kDecodingAttr) {
+  } else if (name == html_names::kDecodingAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
-  } else if (name == kLoadingAttr &&
+  } else if (name == html_names::kLoadingAttr &&
              EqualIgnoringASCIICase(params.new_value, "eager") &&
              !GetDocument().IsLazyLoadPolicyEnforced()) {
     GetImageLoader().LoadDeferredImage(referrer_policy_);
-  } else if (name == kImportanceAttr &&
+  } else if (name == html_names::kImportanceAttr &&
              RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
     // We only need to keep track of usage here, as the communication of the
     // |importance| attribute to the loading pipeline takes place in
@@ -300,11 +300,11 @@ String HTMLImageElement::AltText() const {
   // lets figure out the alt text.. magic stuff
   // http://www.w3.org/TR/1998/REC-html40-19980424/appendix/notes.html#altgen
   // also heavily discussed by Hixie on bugzilla
-  const AtomicString& alt = FastGetAttribute(kAltAttr);
+  const AtomicString& alt = FastGetAttribute(html_names::kAltAttr);
   if (!alt.IsNull())
     return alt;
   // fall back to title attribute
-  return FastGetAttribute(kTitleAttr);
+  return FastGetAttribute(html_names::kTitleAttr);
 }
 
 static bool SupportedImageType(const String& type) {
@@ -331,14 +331,14 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
       continue;
 
     HTMLSourceElement* source = ToHTMLSourceElement(child);
-    if (!source->FastGetAttribute(kSrcAttr).IsNull()) {
+    if (!source->FastGetAttribute(html_names::kSrcAttr).IsNull()) {
       Deprecation::CountDeprecation(GetDocument(),
                                     WebFeature::kPictureSourceSrc);
     }
-    String srcset = source->FastGetAttribute(kSrcsetAttr);
+    String srcset = source->FastGetAttribute(html_names::kSrcsetAttr);
     if (srcset.IsEmpty())
       continue;
-    String type = source->FastGetAttribute(kTypeAttr);
+    String type = source->FastGetAttribute(html_names::kTypeAttr);
     if (!type.IsEmpty() && !SupportedImageType(type))
       continue;
 
@@ -347,7 +347,7 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
 
     ImageCandidate candidate = BestFitSourceForSrcsetAttribute(
         GetDocument().DevicePixelRatio(), SourceSize(*source),
-        source->FastGetAttribute(kSrcsetAttr), &GetDocument());
+        source->FastGetAttribute(html_names::kSrcsetAttr), &GetDocument());
     if (candidate.IsEmpty())
       continue;
     source_ = source;
@@ -452,7 +452,8 @@ unsigned HTMLImageElement::width() {
     // check the attribute first for an explicit pixel value
     // TODO(cbiesinger): The attribute could be a float or percentage value...
     unsigned width = 0;
-    if (ParseHTMLNonNegativeInteger(getAttribute(kWidthAttr), width))
+    if (ParseHTMLNonNegativeInteger(getAttribute(html_names::kWidthAttr),
+                                    width))
       return width;
 
     // if the image is available, use its width
@@ -474,7 +475,8 @@ unsigned HTMLImageElement::height() {
     // check the attribute first for an explicit pixel value
     // TODO(cbiesinger): The attribute could be a float or percentage value...
     unsigned height = 0;
-    if (ParseHTMLNonNegativeInteger(getAttribute(kHeightAttr), height))
+    if (ParseHTMLNonNegativeInteger(getAttribute(html_names::kHeightAttr),
+                                    height))
       return height;
 
     // if the image is available, use its height
@@ -552,28 +554,31 @@ const String& HTMLImageElement::currentSrc() const {
 }
 
 bool HTMLImageElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == kSrcAttr ||
-         attribute.GetName() == kLowsrcAttr ||
-         attribute.GetName() == kLongdescAttr ||
-         (attribute.GetName() == kUsemapAttr && attribute.Value()[0] != '#') ||
+  return attribute.GetName() == html_names::kSrcAttr ||
+         attribute.GetName() == html_names::kLowsrcAttr ||
+         attribute.GetName() == html_names::kLongdescAttr ||
+         (attribute.GetName() == html_names::kUsemapAttr &&
+          attribute.Value()[0] != '#') ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
 bool HTMLImageElement::HasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == kSrcAttr || HTMLElement::HasLegalLinkAttribute(name);
+  return name == html_names::kSrcAttr ||
+         HTMLElement::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& HTMLImageElement::SubResourceAttributeName() const {
-  return kSrcAttr;
+  return html_names::kSrcAttr;
 }
 
 bool HTMLImageElement::draggable() const {
   // Image elements are draggable by default.
-  return !DeprecatedEqualIgnoringCase(getAttribute(kDraggableAttr), "false");
+  return !DeprecatedEqualIgnoringCase(getAttribute(html_names::kDraggableAttr),
+                                      "false");
 }
 
 void HTMLImageElement::setHeight(unsigned value) {
-  SetUnsignedIntegralAttribute(kHeightAttr, value);
+  SetUnsignedIntegralAttribute(html_names::kHeightAttr, value);
 }
 
 IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
@@ -581,7 +586,7 @@ IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
 }
 
 void HTMLImageElement::setWidth(unsigned value) {
-  SetUnsignedIntegralAttribute(kWidthAttr, value);
+  SetUnsignedIntegralAttribute(html_names::kWidthAttr, value);
 }
 
 int HTMLImageElement::x() const {
@@ -624,10 +629,10 @@ void HTMLImageElement::DidMoveToNewDocument(Document& old_document) {
 }
 
 bool HTMLImageElement::IsServerMap() const {
-  if (!FastHasAttribute(kIsmapAttr))
+  if (!FastHasAttribute(html_names::kIsmapAttr))
     return false;
 
-  const AtomicString& usemap = FastGetAttribute(kUsemapAttr);
+  const AtomicString& usemap = FastGetAttribute(html_names::kUsemapAttr);
 
   // If the usemap attribute starts with '#', it refers to a map element in
   // the document.
@@ -647,7 +652,7 @@ Image* HTMLImageElement::ImageContents() {
 }
 
 bool HTMLImageElement::IsInteractiveContent() const {
-  return FastHasAttribute(kUsemapAttr);
+  return FastHasAttribute(html_names::kUsemapAttr);
 }
 
 FloatSize HTMLImageElement::DefaultDestinationSize(
@@ -671,7 +676,7 @@ FloatSize HTMLImageElement::DefaultDestinationSize(
 static bool SourceSizeValue(const Element* element,
                             Document& current_document,
                             float& source_size) {
-  String sizes = element->FastGetAttribute(kSizesAttr);
+  String sizes = element->FastGetAttribute(html_names::kSizesAttr);
   bool exists = !sizes.IsNull();
   if (exists)
     UseCounter::Count(current_document, WebFeature::kSizes);
@@ -711,8 +716,8 @@ void HTMLImageElement::SelectSourceURL(
   if (candidate.IsEmpty()) {
     candidate = BestFitSourceForImageAttributes(
         GetDocument().DevicePixelRatio(), SourceSize(*this),
-        FastGetAttribute(kSrcAttr), FastGetAttribute(kSrcsetAttr),
-        &GetDocument());
+        FastGetAttribute(html_names::kSrcAttr),
+        FastGetAttribute(html_names::kSrcsetAttr), &GetDocument());
   }
   AtomicString old_url = best_fit_image_url_;
   SetBestFitURLAndDPRFromImageCandidate(candidate);

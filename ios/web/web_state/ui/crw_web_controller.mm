@@ -15,7 +15,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/browsing_data/browsing_data_remover.h"
-#import "ios/web/browsing_data/browsing_data_remover_observer.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/url_util.h"
@@ -90,8 +89,7 @@ NSString* const kScriptMessageName = @"crwebinvoke";
 
 }  // namespace
 
-@interface CRWWebController () <BrowsingDataRemoverObserver,
-                                CRWWKNavigationHandlerDelegate,
+@interface CRWWebController () <CRWWKNavigationHandlerDelegate,
                                 CRWContextMenuDelegate,
                                 CRWJSInjectorDelegate,
                                 CRWLegacyNativeContentControllerDelegate,
@@ -308,7 +306,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     web::BrowserState* browserState = _webStateImpl->GetBrowserState();
     _certVerificationController = [[CRWCertVerificationController alloc]
         initWithBrowserState:browserState];
-    web::BrowsingDataRemover::FromBrowserState(browserState)->AddObserver(self);
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
     _faviconManager = std::make_unique<web::FaviconManager>(_webStateImpl);
     _jsWindowErrorManager =
@@ -1038,16 +1035,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     action();
   }
   [_pendingLoadCompleteActions removeAllObjects];
-}
-
-#pragma mark - BrowsingDataRemoverObserver
-
-- (void)willRemoveBrowsingData:(web::BrowsingDataRemover*)dataRemover {
-  self.webUsageEnabled = NO;
-}
-
-- (void)didRemoveBrowsingData:(web::BrowsingDataRemover*)dataRemover {
-  self.webUsageEnabled = YES;
 }
 
 #pragma mark - JavaScript history manipulation

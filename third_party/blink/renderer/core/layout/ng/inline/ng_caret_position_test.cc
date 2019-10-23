@@ -51,10 +51,10 @@ class NGCaretPositionTest : public NGLayoutTest {
   }
 
   const NGPhysicalFragment* FragmentOf(const Node* node) const {
-    auto fragments = NGInlineFragmentTraversal::SelfFragmentsOf(
-        *root_fragment_, node->GetLayoutObject());
-    DCHECK_EQ(1u, fragments.size());
-    return fragments.front().fragment.get();
+    const NGPaintFragment* const paint_fragment =
+        node->GetLayoutObject()->FirstInlineFragment();
+    DCHECK(!paint_fragment->NextForSameLayoutObject());
+    return &paint_fragment->PhysicalFragment();
   }
 
   Persistent<Element> container_;
@@ -96,36 +96,38 @@ TEST_F(NGCaretPositionTest, CaretPositionInOneLineOfText) {
 
 TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrap) {
   SetInlineFormattingContext("t", "foobar", 3);
-  const Node* text = container_->firstChild();
-  const auto text_fragments = NGInlineFragmentTraversal::SelfFragmentsOf(
-      *root_fragment_, text->GetLayoutObject());
-  const NGPhysicalFragment* foo_fragment = text_fragments[0].fragment.get();
-  const NGPhysicalFragment* bar_fragment = text_fragments[1].fragment.get();
+  const LayoutText& text =
+      *To<Text>(container_->firstChild())->GetLayoutObject();
+  const NGPhysicalFragment& foo_fragment =
+      text.FirstInlineFragment()->PhysicalFragment();
+  const NGPhysicalFragment& bar_fragment =
+      text.FirstInlineFragment()->NextForSameLayoutObject()->PhysicalFragment();
 
-  TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kDownstream), bar_fragment,
-             kAtTextOffset, base::Optional<unsigned>(3));
-  TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kUpstream), foo_fragment,
+  TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kDownstream),
+             &bar_fragment, kAtTextOffset, base::Optional<unsigned>(3));
+  TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kUpstream), &foo_fragment,
              kAtTextOffset, base::Optional<unsigned>(3));
 }
 
 TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapWithSpace) {
   SetInlineFormattingContext("t", "foo bar", 3);
-  const Node* text = container_->firstChild();
-  const auto text_fragments = NGInlineFragmentTraversal::SelfFragmentsOf(
-      *root_fragment_, text->GetLayoutObject());
-  const NGPhysicalFragment* foo_fragment = text_fragments[0].fragment.get();
-  const NGPhysicalFragment* bar_fragment = text_fragments[1].fragment.get();
+  const LayoutText& text =
+      *To<Text>(container_->firstChild())->GetLayoutObject();
+  const NGPhysicalFragment& foo_fragment =
+      text.FirstInlineFragment()->PhysicalFragment();
+  const NGPhysicalFragment& bar_fragment =
+      text.FirstInlineFragment()->NextForSameLayoutObject()->PhysicalFragment();
 
   // Before the space
-  TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kDownstream), foo_fragment,
-             kAtTextOffset, base::Optional<unsigned>(3));
-  TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kUpstream), foo_fragment,
+  TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kDownstream),
+             &foo_fragment, kAtTextOffset, base::Optional<unsigned>(3));
+  TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kUpstream), &foo_fragment,
              kAtTextOffset, base::Optional<unsigned>(3));
 
   // After the space
-  TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kDownstream), bar_fragment,
-             kAtTextOffset, base::Optional<unsigned>(4));
-  TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kUpstream), bar_fragment,
+  TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kDownstream),
+             &bar_fragment, kAtTextOffset, base::Optional<unsigned>(4));
+  TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kUpstream), &bar_fragment,
              kAtTextOffset, base::Optional<unsigned>(4));
 }
 

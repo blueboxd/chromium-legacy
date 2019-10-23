@@ -15,10 +15,12 @@
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
+#include "chrome/services/app_service/public/cpp/preferred_apps.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -50,6 +52,7 @@ class AppServiceProxy : public KeyedService,
 
   mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
+  apps::PreferredApps& PreferredApps();
 
   // apps::IconLoader overrides.
   apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
@@ -77,7 +80,7 @@ class AppServiceProxy : public KeyedService,
                         int64_t display_id);
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission);
-  void Uninstall(const std::string& app_id);
+  void Uninstall(const std::string& app_id, gfx::NativeWindow parent_window);
   void OnUninstallDialogClosed(apps::mojom::AppType app_type,
                                const std::string& app_id,
                                bool uninstall,
@@ -93,6 +96,11 @@ class AppServiceProxy : public KeyedService,
   std::vector<std::string> GetAppIdsForUrl(const GURL& url);
   std::vector<std::string> GetAppIdsForIntent(apps::mojom::IntentPtr intent);
   void SetArcIsRegistered();
+  // Add a preferred app for |url|.
+  void AddPreferredApp(const std::string& app_id, const GURL& url);
+  // Add a preferred app for |intent|.
+  void AddPreferredApp(const std::string& app_id,
+                       const apps::mojom::IntentPtr& intent);
 
  private:
   // An adapter, presenting an IconLoader interface based on the underlying
@@ -167,6 +175,9 @@ class AppServiceProxy : public KeyedService,
   // apps::mojom::Subscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
   void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
+  void OnPreferredAppSet(const std::string& app_id,
+                         apps::mojom::IntentFilterPtr intent_filter) override;
+  void InitializePreferredApps(base::Value preferred_apps) override;
 
   // This proxy privately owns its instance of the App Service. This should not
   // be exposed except through the Mojo interface connected to |app_service_|.
@@ -185,6 +196,8 @@ class AppServiceProxy : public KeyedService,
   InnerIconLoader inner_icon_loader_;
   IconCoalescer icon_coalescer_;
   IconCache outer_icon_loader_;
+
+  apps::PreferredApps preferred_apps_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<BuiltInChromeOsApps> built_in_chrome_os_apps_;

@@ -451,7 +451,7 @@ void ProfileImpl::RegisterProfilePrefs(
 #if defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(
       prefs::kOobeMarketingOptInScreenFinished, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 #endif  // defined(OS_CHROMEOS)
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kShowCastIconInToolbar, false);

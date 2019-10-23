@@ -44,10 +44,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLDetailsElement::HTMLDetailsElement(Document& document)
-    : HTMLElement(kDetailsTag, document), is_open_(false) {
+    : HTMLElement(html_names::kDetailsTag, document), is_open_(false) {
   UseCounter::Count(document, WebFeature::kDetailsElement);
   EnsureUserAgentShadowRoot();
 }
@@ -114,7 +112,7 @@ Element* HTMLDetailsElement::FindMainSummary() const {
 
 void HTMLDetailsElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kOpenAttr) {
+  if (params.name == html_names::kOpenAttr) {
     bool old_value = is_open_;
     is_open_ = !params.new_value.IsNull();
     if (is_open_ == old_value)
@@ -151,7 +149,7 @@ void HTMLDetailsElement::ParseAttribute(
 }
 
 void HTMLDetailsElement::ToggleOpen() {
-  setAttribute(kOpenAttr, is_open_ ? g_null_atom : g_empty_atom);
+  setAttribute(html_names::kOpenAttr, is_open_ ? g_null_atom : g_empty_atom);
 }
 
 bool HTMLDetailsElement::IsInteractiveContent() const {

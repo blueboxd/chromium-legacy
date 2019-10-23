@@ -29,8 +29,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static bool StyleSheetTypeIsSupported(const String& type) {
   String trimmed_type = ContentType(type).GetType();
   return trimmed_type.IsEmpty() ||
@@ -70,7 +68,7 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   // See the comment in pending_script.cc about why this check is necessary
   // here, instead of in the resource fetcher. https://crbug.com/500701.
   if ((!cached_style_sheet->ErrorOccurred() &&
-       !owner_->FastGetAttribute(kIntegrityAttr).IsEmpty() &&
+       !owner_->FastGetAttribute(html_names::kIntegrityAttr).IsEmpty() &&
        !cached_style_sheet->IntegrityMetadata().IsEmpty()) ||
       resource->IsLinkPreload()) {
     ResourceIntegrityDisposition disposition =
@@ -301,14 +299,15 @@ void LinkStyle::Process() {
   DCHECK(owner_->ShouldProcessStyle());
   const LinkLoadParameters params(
       owner_->RelAttribute(),
-      GetCrossOriginAttributeValue(owner_->FastGetAttribute(kCrossoriginAttr)),
+      GetCrossOriginAttributeValue(
+          owner_->FastGetAttribute(html_names::kCrossoriginAttr)),
       owner_->TypeValue().DeprecatedLower(),
       owner_->AsValue().DeprecatedLower(), owner_->Media().DeprecatedLower(),
       owner_->nonce(), owner_->IntegrityValue(),
       owner_->ImportanceValue().LowerASCII(), owner_->GetReferrerPolicy(),
-      owner_->GetNonEmptyURLAttribute(kHrefAttr),
-      owner_->FastGetAttribute(kImagesrcsetAttr),
-      owner_->FastGetAttribute(kImagesizesAttr));
+      owner_->GetNonEmptyURLAttribute(html_names::kHrefAttr),
+      owner_->FastGetAttribute(html_names::kImagesrcsetAttr),
+      owner_->FastGetAttribute(html_names::kImagesizesAttr));
 
   WTF::TextEncoding charset = GetCharset();
 
@@ -348,7 +347,7 @@ void LinkStyle::SetSheetTitle(const String& title) {
   if (title.IsEmpty() || !IsUnset() || owner_->IsAlternate())
     return;
 
-  const KURL& href = owner_->GetNonEmptyURLAttribute(kHrefAttr);
+  const KURL& href = owner_->GetNonEmptyURLAttribute(html_names::kHrefAttr);
   if (href.IsValid() && !href.IsEmpty())
     GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(title);
 }

@@ -40,12 +40,14 @@ class WebSocketStreamCreateTestBase : public WithTaskEnvironment {
 
   // A wrapper for CreateAndConnectStreamForTesting that knows about our default
   // parameters.
-  void CreateAndConnectStream(const GURL& socket_url,
-                              const std::vector<std::string>& sub_protocols,
-                              const url::Origin& origin,
-                              const GURL& site_for_cookies,
-                              const HttpRequestHeaders& additional_headers,
-                              std::unique_ptr<base::OneShotTimer> timer);
+  void CreateAndConnectStream(
+      const GURL& socket_url,
+      const std::vector<std::string>& sub_protocols,
+      const url::Origin& origin,
+      const GURL& site_for_cookies,
+      const net::NetworkIsolationKey& network_isolation_key,
+      const HttpRequestHeaders& additional_headers,
+      std::unique_ptr<base::OneShotTimer> timer);
 
   static std::vector<HeaderKeyValuePair> RequestHeadersToVector(
       const HttpRequestHeaders& headers);

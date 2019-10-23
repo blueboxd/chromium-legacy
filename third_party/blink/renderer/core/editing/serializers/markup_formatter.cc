@@ -47,8 +47,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 struct EntityDescription {
   UChar entity;
   const std::string& reference;
@@ -388,11 +386,15 @@ EntityMask MarkupFormatter::EntityMaskForText(const Text& text) const {
     parent_name = &(text.parentElement())->TagQName();
 
   if (parent_name &&
-      (*parent_name == kScriptTag || *parent_name == kStyleTag ||
-       *parent_name == kXmpTag || *parent_name == kIFrameTag ||
-       *parent_name == kPlaintextTag || *parent_name == kNoembedTag ||
-       *parent_name == kNoframesTag ||
-       (*parent_name == kNoscriptTag && text.GetDocument().GetFrame() &&
+      (*parent_name == html_names::kScriptTag ||
+       *parent_name == html_names::kStyleTag ||
+       *parent_name == html_names::kXmpTag ||
+       *parent_name == html_names::kIFrameTag ||
+       *parent_name == html_names::kPlaintextTag ||
+       *parent_name == html_names::kNoembedTag ||
+       *parent_name == html_names::kNoframesTag ||
+       (*parent_name == html_names::kNoscriptTag &&
+        text.GetDocument().GetFrame() &&
         text.GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))))
     return kEntityMaskInCDATA;
   return kEntityMaskInHTMLPCDATA;

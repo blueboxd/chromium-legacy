@@ -783,7 +783,7 @@ ScriptState* ToScriptStateForMainWorld(LocalFrame* frame) {
 }
 
 bool IsValidEnum(const String& value,
-                 const char** valid_values,
+                 const char* const* valid_values,
                  size_t length,
                  const String& enum_name,
                  ExceptionState& exception_state) {
@@ -799,7 +799,7 @@ bool IsValidEnum(const String& value,
 }
 
 bool IsValidEnum(const Vector<String>& values,
-                 const char** valid_values,
+                 const char* const* valid_values,
                  size_t length,
                  const String& enum_name,
                  ExceptionState& exception_state) {

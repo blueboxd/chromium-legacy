@@ -220,6 +220,14 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   event1->node_data[0]->string_properties.value().insert(
       std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
                      "com.android.vending"));
+  event1->window_data =
+      std::vector<arc::mojom::AccessibilityWindowInfoDataPtr>();
+  event1->window_data->push_back(
+      arc::mojom::AccessibilityWindowInfoData::New());
+  arc::mojom::AccessibilityWindowInfoData* root_window1 =
+      event1->window_data->back().get();
+  root_window1->window_id = 100;
+  root_window1->root_node_id = 1;
 
   // There's no active window.
   helper_bridge->OnAccessibilityEvent(event1.Clone());
@@ -242,6 +250,14 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   event2->node_data[0]->string_properties.value().insert(
       std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
                      "com.android.vending"));
+  event2->window_data =
+      std::vector<arc::mojom::AccessibilityWindowInfoDataPtr>();
+  event2->window_data->push_back(
+      arc::mojom::AccessibilityWindowInfoData::New());
+  arc::mojom::AccessibilityWindowInfoData* root_window2 =
+      event2->window_data->back().get();
+  root_window2->window_id = 200;
+  root_window2->root_node_id = 2;
 
   // Active window is still task 1.
   helper_bridge->OnAccessibilityEvent(event2.Clone());
@@ -262,6 +278,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   event2->node_data[0]->string_properties.value().insert(
       std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
                      "com.google.music"));
+  root_window2->root_node_id = 3;
 
   // No new tasks tree mappings should have occurred.
   helper_bridge->OnAccessibilityEvent(event2.Clone());
@@ -274,7 +291,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   ASSERT_EQ(0U, task_id_to_tree.size());
 }
 
-TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnoucement) {
+TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnouncement) {
   TestArcAccessibilityHelperBridge* helper_bridge =
       accessibility_helper_bridge();
   helper_bridge->set_filter_type_all_for_test();
@@ -472,6 +489,9 @@ TEST_F(ArcAccessibilityHelperBridgeTest,
       arc::mojom::AccessibilityEventType::VIEW_TEXT_SELECTION_CHANGED;
   event->notification_key = base::make_optional<std::string>(kNotificationKey);
   event->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event->window_data =
+      std::vector<arc::mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(arc::mojom::AccessibilityWindowInfoData::New());
   accessibility_helper_bridge()->OnAccessibilityEvent(event.Clone());
 
   // Widget is activated.
@@ -534,6 +554,9 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TextSelectionChangedFocusContentView) {
       arc::mojom::AccessibilityEventType::VIEW_TEXT_SELECTION_CHANGED;
   event->notification_key = base::make_optional<std::string>(kNotificationKey);
   event->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event->window_data =
+      std::vector<arc::mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(arc::mojom::AccessibilityWindowInfoData::New());
   accessibility_helper_bridge()->OnAccessibilityEvent(event.Clone());
 
   // Focus moves to contents view with text selection change.

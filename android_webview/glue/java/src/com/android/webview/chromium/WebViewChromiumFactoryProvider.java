@@ -264,7 +264,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             }
 
             // WebView needs to make sure to always use the wrapped application context.
-            ContextUtils.initApplicationContext(ClassLoaderContextWrapperFactory.get(ctx));
+            ctx = ClassLoaderContextWrapperFactory.get(ctx);
+            ContextUtils.initApplicationContext(ctx);
 
             // Find the package ID for the package that WebView's resources come from.
             // This will be the donor package if there is one, not our main package.
@@ -273,11 +274,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 resourcePackage = packageInfo.applicationInfo.metaData.getString(
                         "com.android.webview.WebViewDonorPackage", resourcePackage);
             }
-            int packageId = webViewDelegate.getPackageId(
-                    ContextUtils.getApplicationContext().getResources(), resourcePackage);
+            int packageId = webViewDelegate.getPackageId(ctx.getResources(), resourcePackage);
 
-            mAwInit.setUpResourcesOnBackgroundThread(
-                    packageId, ContextUtils.getApplicationContext());
+            mAwInit.setUpResourcesOnBackgroundThread(packageId, ctx);
 
             try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                          "WebViewChromiumFactoryProvider.initCommandLine")) {
@@ -291,8 +290,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 multiProcess = webViewDelegate.isMultiProcessEnabled();
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 // Check the multiprocess developer setting directly on N.
-                multiProcess = Settings.Global.getInt(
-                                       ContextUtils.getApplicationContext().getContentResolver(),
+                multiProcess = Settings.Global.getInt(ctx.getContentResolver(),
                                        Settings.Global.WEBVIEW_MULTIPROCESS, 0)
                         == 1;
             }
@@ -301,7 +299,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 cl.appendSwitch(AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
             }
 
-            int applicationFlags = ContextUtils.getApplicationContext().getApplicationInfo().flags;
+            int applicationFlags = ctx.getApplicationInfo().flags;
             boolean isAppDebuggable = (applicationFlags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
             boolean isOsDebuggable = BuildInfo.isDebugAndroid();
             // Enable logging JS console messages in system logs only if the app is debuggable or
@@ -336,8 +334,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
             mAwInit.startVariationsInit();
 
-            mShouldDisableThreadChecking =
-                    shouldDisableThreadChecking(ContextUtils.getApplicationContext());
+            mShouldDisableThreadChecking = shouldDisableThreadChecking(ctx);
 
             setSingleton(this);
         }

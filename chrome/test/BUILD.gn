@@ -1454,7 +1454,10 @@ if (!is_android) {
         "//chrome/test/data/webui:browser_tests_js_webui",
       ]
       if (is_chromeos) {
-        deps += [ "//chromeos/components/media_app_ui:browser_tests_js" ]
+        deps += [
+          "//chromeos/components/help_app_ui:browser_tests_js",
+          "//chromeos/components/media_app_ui:browser_tests_js",
+        ]
       }
     }
 
@@ -2331,6 +2334,7 @@ if (!is_android) {
         "../browser/ui/views/frame/top_controls_slide_controller_chromeos_browsertest.cc",
         "../browser/ui/views/plugin_vm/plugin_vm_launcher_view_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_ash_interactive_ui_test.cc",
+        "../browser/ui/web_applications/web_app_guest_session_browsertest_chromeos.cc",
         "../browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder_browsertest.cc",
         "../browser/ui/webui/chromeos/add_supervision/add_supervision_ui_browsertest.cc",
         "../browser/ui/webui/chromeos/login/discover/discover_browser_test.cc",

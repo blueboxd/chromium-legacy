@@ -205,10 +205,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // avoid dedicating an unused SiteInstance to it (e.g., in a new tab).
   bool HasRelatedSiteInstance(const GURL& url);
 
-  // Returns whether this SiteInstance has a process that is the wrong type for
-  // the given URL.  If so, the browser should force a process swap when
-  // navigating to the URL.
-  bool HasWrongProcessForURL(const GURL& url);
+  // Returns whether this SiteInstance is compatible with and can host the given
+  // |url|. If not, the browser should force a SiteInstance swap when
+  // navigating to |url|.
+  bool IsSuitableForURL(const GURL& url);
 
   // Increase the number of active frames in this SiteInstance. This is
   // increased when a frame is created.

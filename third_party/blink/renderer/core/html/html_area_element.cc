@@ -42,10 +42,8 @@ float ClampCoordinate(double value) {
 }
 }
 
-using namespace html_names;
-
 HTMLAreaElement::HTMLAreaElement(Document& document)
-    : HTMLAnchorElement(kAreaTag, document), shape_(kRect) {}
+    : HTMLAnchorElement(html_names::kAreaTag, document), shape_(kRect) {}
 
 // An explicit empty destructor should be in html_area_element.cc, because
 // if an implicit destructor is used or an empty destructor is defined in
@@ -57,7 +55,7 @@ HTMLAreaElement::~HTMLAreaElement() = default;
 void HTMLAreaElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const AtomicString& value = params.new_value;
-  if (params.name == kShapeAttr) {
+  if (params.name == html_names::kShapeAttr) {
     if (EqualIgnoringASCIICase(value, "default")) {
       shape_ = kDefault;
     } else if (EqualIgnoringASCIICase(value, "circle") ||
@@ -72,10 +70,11 @@ void HTMLAreaElement::ParseAttribute(
       shape_ = kRect;
     }
     InvalidateCachedPath();
-  } else if (params.name == kCoordsAttr) {
+  } else if (params.name == html_names::kCoordsAttr) {
     coords_ = ParseHTMLListOfFloatingPointNumbers(value.GetString());
     InvalidateCachedPath();
-  } else if (params.name == kAltAttr || params.name == kAccesskeyAttr) {
+  } else if (params.name == html_names::kAltAttr ||
+             params.name == html_names::kAccesskeyAttr) {
     // Do nothing.
   } else {
     HTMLAnchorElement::ParseAttribute(params);

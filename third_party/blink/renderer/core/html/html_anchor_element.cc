@@ -95,10 +95,8 @@ bool ShouldInterveneDownloadByFramePolicy(LocalFrame* frame) {
 
 }  // namespace
 
-using namespace html_names;
-
 HTMLAnchorElement::HTMLAnchorElement(Document& document)
-    : HTMLAnchorElement(kATag, document) {}
+    : HTMLAnchorElement(html_names::kATag, document) {}
 
 HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tag_name,
                                      Document& document)
@@ -216,7 +214,7 @@ void HTMLAnchorElement::AttributeChanged(
   HTMLElement::AttributeChanged(params);
   if (params.reason != AttributeModificationReason::kDirectly)
     return;
-  if (params.name != kHrefAttr)
+  if (params.name != html_names::kHrefAttr)
     return;
   if (!IsLink() && AdjustedFocusedElementInTreeScope() == this)
     blur();
@@ -224,7 +222,7 @@ void HTMLAnchorElement::AttributeChanged(
 
 void HTMLAnchorElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kHrefAttr) {
+  if (params.name == html_names::kHrefAttr) {
     bool was_link = IsLink();
     SetIsLink(!params.new_value.IsNull());
     if (was_link || IsLink()) {
@@ -249,9 +247,10 @@ void HTMLAnchorElement::ParseAttribute(
     }
     InvalidateCachedVisitedLinkHash();
     LogUpdateAttributeIfIsolatedWorldAndInDocument("a", params);
-  } else if (params.name == kNameAttr || params.name == kTitleAttr) {
+  } else if (params.name == html_names::kNameAttr ||
+             params.name == html_names::kTitleAttr) {
     // Do nothing.
-  } else if (params.name == kRelAttr) {
+  } else if (params.name == html_names::kRelAttr) {
     SetRel(params.new_value);
     rel_list_->DidUpdateAttributeValue(params.old_value, params.new_value);
   } else {
@@ -265,12 +264,13 @@ void HTMLAnchorElement::AccessKeyAction(bool send_mouse_events) {
 }
 
 bool HTMLAnchorElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName().LocalName() == kHrefAttr ||
+  return attribute.GetName().LocalName() == html_names::kHrefAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
 bool HTMLAnchorElement::HasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == kHrefAttr || HTMLElement::HasLegalLinkAttribute(name);
+  return name == html_names::kHrefAttr ||
+         HTMLElement::HasLegalLinkAttribute(name);
 }
 
 bool HTMLAnchorElement::CanStartSelection() const {
@@ -281,21 +281,21 @@ bool HTMLAnchorElement::CanStartSelection() const {
 
 bool HTMLAnchorElement::draggable() const {
   // Should be draggable if we have an href attribute.
-  const AtomicString& value = getAttribute(kDraggableAttr);
+  const AtomicString& value = getAttribute(html_names::kDraggableAttr);
   if (DeprecatedEqualIgnoringCase(value, "true"))
     return true;
   if (DeprecatedEqualIgnoringCase(value, "false"))
     return false;
-  return hasAttribute(kHrefAttr);
+  return hasAttribute(html_names::kHrefAttr);
 }
 
 KURL HTMLAnchorElement::Href() const {
   return GetDocument().CompleteURL(
-      StripLeadingAndTrailingHTMLSpaces(getAttribute(kHrefAttr)));
+      StripLeadingAndTrailingHTMLSpaces(getAttribute(html_names::kHrefAttr)));
 }
 
 void HTMLAnchorElement::SetHref(const AtomicString& value) {
-  setAttribute(kHrefAttr, value);
+  setAttribute(html_names::kHrefAttr, value);
 }
 
 KURL HTMLAnchorElement::Url() const {
@@ -307,7 +307,7 @@ void HTMLAnchorElement::SetURL(const KURL& url) {
 }
 
 String HTMLAnchorElement::Input() const {
-  return getAttribute(kHrefAttr);
+  return getAttribute(html_names::kHrefAttr);
 }
 
 void HTMLAnchorElement::SetInput(const String& value) {
@@ -342,7 +342,7 @@ bool HTMLAnchorElement::IsLiveLink() const {
 }
 
 void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
-  const AtomicString& ping_value = getAttribute(kPingAttr);
+  const AtomicString& ping_value = getAttribute(html_names::kPingAttr);
   if (ping_value.IsNull() || !GetDocument().GetSettings() ||
       !GetDocument().GetSettings()->GetHyperlinkAuditingEnabled()) {
     return;
@@ -385,7 +385,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(this);
 
   StringBuilder url;
-  url.Append(StripLeadingAndTrailingHTMLSpaces(FastGetAttribute(kHrefAttr)));
+  url.Append(StripLeadingAndTrailingHTMLSpaces(
+      FastGetAttribute(html_names::kHrefAttr)));
   AppendServerMapMousePosition(url, &event);
   KURL completed_url = GetDocument().CompleteURL(url.ToString());
 
@@ -396,9 +397,9 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   ResourceRequest request(completed_url);
 
   network::mojom::ReferrerPolicy policy;
-  if (hasAttribute(kReferrerpolicyAttr) &&
+  if (hasAttribute(html_names::kReferrerpolicyAttr) &&
       SecurityPolicy::ReferrerPolicyFromString(
-          FastGetAttribute(kReferrerpolicyAttr),
+          FastGetAttribute(html_names::kReferrerpolicyAttr),
           kSupportReferrerPolicyLegacyKeywords, &policy) &&
       !HasRel(kRelationNoReferrer)) {
     UseCounter::Count(GetDocument(),
@@ -408,13 +409,13 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   // Ignore the download attribute if we either can't read the content, or
   // the event is an alt-click or similar.
-  if (hasAttribute(kDownloadAttr) &&
+  if (hasAttribute(html_names::kDownloadAttr) &&
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
       GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
     if (ShouldInterveneDownloadByFramePolicy(frame))
       return;
     request.SetSuggestedFilename(
-        static_cast<String>(FastGetAttribute(kDownloadAttr)));
+        static_cast<String>(FastGetAttribute(html_names::kDownloadAttr)));
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
     request.SetRequestorOrigin(GetDocument().GetSecurityOrigin());
     frame->Client()->DownloadURL(request,
@@ -424,7 +425,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   request.SetHasUserGesture(LocalFrame::HasTransientUserActivation(frame));
-  const AtomicString& target = getAttribute(kTargetAttr);
+  const AtomicString& target = getAttribute(html_names::kTargetAttr);
   FrameLoadRequest frame_request(&GetDocument(), request);
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
   if (HasRel(kRelationNoReferrer)) {
@@ -434,8 +435,9 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   if (HasRel(kRelationNoOpener))
     frame_request.SetNoOpener();
   if (RuntimeEnabledFeatures::HrefTranslateEnabled(&GetDocument()) &&
-      hasAttribute(kHreftranslateAttr)) {
-    frame_request.SetHrefTranslate(FastGetAttribute(kHreftranslateAttr));
+      hasAttribute(html_names::kHreftranslateAttr)) {
+    frame_request.SetHrefTranslate(
+        FastGetAttribute(html_names::kHreftranslateAttr));
     UseCounter::Count(GetDocument(),
                       WebFeature::kHTMLAnchorElementHrefTranslateAttribute);
   }
@@ -487,7 +489,7 @@ Node::InsertionNotificationRequest HTMLAnchorElement::InsertedInto(
     ContainerNode& insertion_point) {
   InsertionNotificationRequest request =
       HTMLElement::InsertedInto(insertion_point);
-  LogAddElementIfIsolatedWorldAndInDocument("a", kHrefAttr);
+  LogAddElementIfIsolatedWorldAndInDocument("a", html_names::kHrefAttr);
 
   Document& top_document = GetDocument().TopDocument();
   if (AnchorElementMetricsSender::HasAnchorElementMetricsSender(top_document))

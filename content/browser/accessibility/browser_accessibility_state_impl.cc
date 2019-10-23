@@ -163,10 +163,6 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
     std::move(callback).Run();
   ui_thread_histogram_callbacks_.clear();
 
-  // TODO(dmazzoni): remove this in M59 since Accessibility.ModeFlag
-  // supercedes it.  http://crbug.com/672205
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.State", IsAccessibleBrowser());
-
   UMA_HISTOGRAM_BOOLEAN("Accessibility.InvertedColors",
                         color_utils::IsInvertedColorScheme());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",

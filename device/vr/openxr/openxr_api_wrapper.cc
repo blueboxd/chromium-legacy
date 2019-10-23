@@ -29,61 +29,7 @@ constexpr XrViewConfigurationType kSupportedViewConfiguration =
     XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 constexpr uint32_t kNumViews = 2;
 
-XrResult CreateInstance(XrInstance* instance) {
-  XrInstanceCreateInfo instance_create_info = {XR_TYPE_INSTANCE_CREATE_INFO};
-  strcpy_s(instance_create_info.applicationInfo.applicationName, "Chromium");
-  instance_create_info.applicationInfo.apiVersion = XR_CURRENT_API_VERSION;
-
-  // xrCreateInstance validates the list of extensions and returns
-  // XR_ERROR_EXTENSION_NOT_PRESENT if an extension is not supported,
-  // so we don't need to call xrEnumerateInstanceExtensionProperties
-  // to validate these extensions.
-  const char* extensions[] = {
-      XR_KHR_D3D11_ENABLE_EXTENSION_NAME,
-  };
-
-  instance_create_info.enabledExtensionCount =
-      sizeof(extensions) / sizeof(extensions[0]);
-  instance_create_info.enabledExtensionNames = extensions;
-
-  return xrCreateInstance(&instance_create_info, instance);
-}
-
-XrResult GetSystem(XrInstance instance, XrSystemId* system) {
-  XrSystemGetInfo system_info = {XR_TYPE_SYSTEM_GET_INFO};
-  system_info.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
-  return xrGetSystem(instance, &system_info, system);
-}
-
 }  // namespace
-
-bool OpenXrApiWrapper::IsHardwareAvailable() {
-  bool is_available = false;
-  XrInstance instance = XR_NULL_HANDLE;
-  XrSystemId system;
-
-  if (XR_SUCCEEDED(CreateInstance(&instance)) &&
-      XR_SUCCEEDED(GetSystem(instance, &system))) {
-    is_available = true;
-  }
-
-  if (instance != XR_NULL_HANDLE)
-    xrDestroyInstance(instance);
-
-  // System is not allocated so does not need to be destroyed
-
-  return is_available;
-}
-
-bool OpenXrApiWrapper::IsApiAvailable() {
-  XrInstance instance;
-  if (XR_SUCCEEDED(CreateInstance(&instance))) {
-    xrDestroyInstance(instance);
-    return true;
-  }
-
-  return false;
-}
 
 std::unique_ptr<OpenXrApiWrapper> OpenXrApiWrapper::Create() {
   std::unique_ptr<OpenXrApiWrapper> openxr =

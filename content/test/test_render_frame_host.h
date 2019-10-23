@@ -69,11 +69,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   bool IsTestRenderFrameHost() const override;
 
   // Public overrides to expose RenderFrameHostImpl's mojo methods to tests.
-  void DidFailProvisionalLoadWithError(
-      const GURL& url,
-      int error_code,
-      const base::string16& error_description,
-      bool showing_repost_interstitial) override;
   void DidFailLoadWithError(const GURL& url,
                             int error_code,
                             const base::string16& error_description) override;

@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "media/gpu/test/rendering_helper.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_context.h"
@@ -79,7 +78,7 @@ GLuint CreateTexture(GLenum texture_target, const gfx::Size& size) {
   glBindTexture(texture_target, texture_id);
   if (texture_target == GL_TEXTURE_2D) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+                 GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   }
 
   glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -90,6 +89,64 @@ GLuint CreateTexture(GLenum texture_target, const gfx::Size& size) {
 
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
   return texture_id;
+}
+
+void DeleteTexture(uint32_t texture_id) {
+  glDeleteTextures(1, &texture_id);
+  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
+}
+
+void RenderTexture(uint32_t texture_target, uint32_t texture_id) {
+  // The ExternalOES sampler is bound to GL_TEXTURE1 and the Texture2D sampler
+  // is bound to GL_TEXTURE0.
+  if (texture_target == GL_TEXTURE_2D) {
+    glActiveTexture(GL_TEXTURE0 + 0);
+  } else if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
+    glActiveTexture(GL_TEXTURE0 + 1);
+  }
+  glBindTexture(texture_target, texture_id);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindTexture(texture_target, 0);
+
+  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
+}
+
+void CreateShader(GLuint program, GLenum type, const char* source, int size) {
+  GLuint shader = glCreateShader(type);
+  glShaderSource(shader, 1, &source, &size);
+  glCompileShader(shader);
+  int result = GL_FALSE;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+  if (!result) {
+    char log[4096];
+    glGetShaderInfoLog(shader, base::size(log), nullptr, log);
+    LOG(FATAL) << log;
+  }
+  glAttachShader(program, shader);
+  glDeleteShader(shader);
+  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
+}
+
+void GLSetViewPort(const gfx::Rect& area) {
+  glViewport(area.x(), area.y(), area.width(), area.height());
+  glScissor(area.x(), area.y(), area.width(), area.height());
+}
+
+// Helper function to convert from RGBA to RGB. Returns false if any alpha
+// channel is not 0xff, otherwise true.
+bool ConvertRGBAToRGB(const std::vector<unsigned char>& rgba,
+                      std::vector<unsigned char>* rgb) {
+  size_t num_pixels = rgba.size() / 4;
+  rgb->resize(num_pixels * 3);
+  // Drop the alpha channel, but check as we go that it is all 0xff.
+  bool solid = true;
+  for (size_t i = 0; i < num_pixels; i++) {
+    (*rgb)[3 * i] = rgba[4 * i];
+    (*rgb)[3 * i + 1] = rgba[4 * i + 1];
+    (*rgb)[3 * i + 2] = rgba[4 * i + 2];
+    solid = solid && (rgba[4 * i + 3] == 0xff);
+  }
+  return solid;
 }
 
 }  // namespace
@@ -123,18 +180,6 @@ std::unique_ptr<FrameRendererThumbnail> FrameRendererThumbnail::Create(
       new FrameRendererThumbnail(thumbnail_checksums, output_folder));
   frame_renderer->Initialize();
   return frame_renderer;
-}
-
-// static
-std::unique_ptr<FrameRendererThumbnail> FrameRendererThumbnail::Create(
-    const base::FilePath& video_file_path,
-    const base::FilePath& output_folder) {
-  // Read thumbnail checksums from file.
-  std::vector<std::string> thumbnail_checksums =
-      media::test::ReadGoldenThumbnailMD5s(
-          video_file_path.AddExtension(FILE_PATH_LITERAL(".md5")));
-
-  return FrameRendererThumbnail::Create(thumbnail_checksums, output_folder);
 }
 
 bool FrameRendererThumbnail::AcquireGLContext() {
@@ -273,10 +318,6 @@ void FrameRendererThumbnail::DestroyTask(base::WaitableEvent* done) {
   done->Signal();
 }
 
-// TODO(dstaessens@) This code is mostly duplicated from
-// RenderingHelper::Initialize(), as that code is unfortunately too inflexible
-// to reuse here. But most of the code in rendering helper can be removed soon
-// when the video_decoder_accelerator_unittests get deprecated.
 void FrameRendererThumbnail::InitializeThumbnailImageTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(renderer_sequence_checker_);
 
@@ -293,7 +334,7 @@ void FrameRendererThumbnail::InitializeThumbnailImageTask() {
   glBindTexture(GL_TEXTURE_2D, thumbnails_texture_id_);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, thumbnails_fbo_size_.width(),
                thumbnails_fbo_size_.height(), 0, GL_RGB,
-               GL_UNSIGNED_SHORT_5_6_5, NULL);
+               GL_UNSIGNED_SHORT_5_6_5, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -334,17 +375,17 @@ void FrameRendererThumbnail::InitializeThumbnailImageTask() {
   glBufferData(GL_ARRAY_BUFFER, sizeof(kVertices), kVertices, GL_STATIC_DRAW);
 
   program_ = glCreateProgram();
-  RenderingHelper::CreateShader(program_, GL_VERTEX_SHADER, kVertexShader,
-                                base::size(kVertexShader));
-  RenderingHelper::CreateShader(program_, GL_FRAGMENT_SHADER, kFragmentShader,
-                                base::size(kFragmentShader));
+  CreateShader(program_, GL_VERTEX_SHADER, kVertexShader,
+               base::size(kVertexShader));
+  CreateShader(program_, GL_FRAGMENT_SHADER, kFragmentShader,
+               base::size(kFragmentShader));
   glLinkProgram(program_);
   GLint result = GL_FALSE;
   glGetProgramiv(program_, GL_LINK_STATUS, &result);
   if (!result) {
     constexpr GLsizei kLogBufferSize = 4096;
     char log[kLogBufferSize];
-    glGetShaderInfoLog(program_, kLogBufferSize, NULL, log);
+    glGetShaderInfoLog(program_, kLogBufferSize, nullptr, log);
     LOG(FATAL) << log;
   }
   glUseProgram(program_);
@@ -395,8 +436,8 @@ void FrameRendererThumbnail::RenderThumbnailTask(uint32_t texture_target,
 
   glUniform1i(glGetUniformLocation(program_, "tex_flip"), 0);
   glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
-  RenderingHelper::GLSetViewPort(area);
-  RenderingHelper::RenderTexture(texture_target, texture_id);
+  GLSetViewPort(area);
+  RenderTexture(texture_target, texture_id);
   glBindFramebufferEXT(GL_FRAMEBUFFER,
                        gl_surface_->GetBackingFramebufferObject());
   // We need to flush the GL commands before returning the thumbnail texture to
@@ -433,7 +474,7 @@ void FrameRendererThumbnail::ValidateThumbnailTask(bool* success,
 
   // Convert the thumbnail from RGBA to RGB.
   std::vector<uint8_t> rgb;
-  EXPECT_EQ(media::test::ConvertRGBAToRGB(rgba, &rgb), true)
+  EXPECT_EQ(ConvertRGBAToRGB(rgba, &rgb), true)
       << "RGBA frame has incorrect alpha";
 
   // Calculate the thumbnail's checksum and compare it to golden values.
@@ -457,7 +498,7 @@ void FrameRendererThumbnail::DeleteTextureTask(const gpu::Mailbox& mailbox,
   uint32_t texture_id = it->second;
   mailbox_texture_map_.erase(mailbox);
 
-  RenderingHelper::DeleteTexture(texture_id);
+  DeleteTexture(texture_id);
 }
 
 }  // namespace test

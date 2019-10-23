@@ -5,6 +5,7 @@
 module apps.mojom;
 
 import "chrome/services/app_service/public/mojom/types.mojom";
+import "mojo/public/mojom/base/values.mojom";
 
 // An intermediary between M app consumers (e.g. app launcher UI, intent
 // pickers) and N app providers (also known as app platforms, e.g. Android
@@ -73,6 +74,12 @@ interface AppService {
   OpenNativeSettings(
       AppType app_type,
       string app_id);
+
+  // Set app identified by |app_id| as preferred app for |intent_fitler|.
+  AddPreferredApp(
+      AppType app_type,
+      string app_id,
+      IntentFilter intent_filter);
 };
 
 interface Publisher {
@@ -133,6 +140,14 @@ interface Subscriber {
   //
   // See https://groups.google.com/a/chromium.org/d/msg/chromium-mojo/nFhBzGsb5Pg/V7t_8kNRAgAJ
   Clone(pending_receiver<Subscriber> receiver);
+
+  // Indicates that the app identified by |app_id| has been set as a preferred
+  // app for |intent_fitler|. This method is used by the App Service to sync
+  // the change from one subscriber to the others.
+  OnPreferredAppSet(string app_id,
+                    IntentFilter intent_filter);
+
+  InitializePreferredApps(mojo_base.mojom.Value preferred_apps);
 };
 
 struct ConnectOptions {

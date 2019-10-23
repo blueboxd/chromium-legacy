@@ -355,7 +355,7 @@ const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kClickToCallOpenDialerDirectly{
-    "ClickToCallOpenDialerDirectly", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ClickToCallOpenDialerDirectly", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

@@ -577,6 +577,9 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
+  apm_config.pipeline.experimental_multi_channel =
+      base::FeatureList::IsEnabled(features::kWebRtcEnableMultiChannelApm);
+
   base::Optional<double> gain_control_compression_gain_db;
   blink::PopulateApmConfig(&apm_config, properties,
                            audio_processing_platform_config_json,

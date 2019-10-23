@@ -3072,14 +3072,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
 
     EXPECT_TRUE(NavigateToURL(shell(), url));
 
-    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_EQ("Found 0 devices", content::EvalJs(current_frame_host(), R"(
         new Promise(async resolve => {
           let devices = await navigator.usb.getDevices();
           resolve("Found " + devices.length + " devices");
         });
     )"));
-    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
         current_frame_host()->GetProcess()->GetID(),
         current_frame_host()->GetRoutingID(), "WebUSB"));
@@ -3094,16 +3094,16 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
     RenderFrameHostImpl* rfh_c = current_frame_host();
     RenderFrameHostImpl* rfh_d = rfh_c->child_at(0)->current_frame_host();
 
-    EXPECT_FALSE(rfh_c->is_back_forward_cache_disallowed());
-    EXPECT_FALSE(rfh_d->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(rfh_c->is_back_forward_cache_disabled());
+    EXPECT_FALSE(rfh_d->is_back_forward_cache_disabled());
     EXPECT_EQ("Found 0 devices", content::EvalJs(rfh_c, R"(
         new Promise(async resolve => {
           let devices = await navigator.usb.getDevices();
           resolve("Found " + devices.length + " devices");
         });
     )"));
-    EXPECT_TRUE(rfh_c->is_back_forward_cache_disallowed());
-    EXPECT_FALSE(rfh_d->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(rfh_c->is_back_forward_cache_disabled());
+    EXPECT_FALSE(rfh_d->is_back_forward_cache_disabled());
     EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
         rfh_c->GetProcess()->GetID(), rfh_c->GetRoutingID(), "WebUSB"));
   }
@@ -3113,7 +3113,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
     content::BackForwardCacheDisabledTester tester;
     GURL url(https_server.GetURL("e.com", "/title1.html"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
-    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_EQ("Found 0 devices", content::EvalJs(current_frame_host(), R"(
         new Promise(async resolve => {
           const worker = new Worker("/back_forward_cache/webusb/worker.js");
@@ -3121,7 +3121,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
           worker.postMessage("Run");
         });
     )"));
-    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
         current_frame_host()->GetProcess()->GetID(),
         current_frame_host()->GetRoutingID(), "WebUSB"));
@@ -3132,7 +3132,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
     content::BackForwardCacheDisabledTester tester;
     GURL url(https_server.GetURL("f.com", "/title1.html"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
-    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_EQ("Found 0 devices", content::EvalJs(current_frame_host(), R"(
         new Promise(async resolve => {
           const worker = new Worker(
@@ -3141,7 +3141,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
           worker.postMessage("Run");
         });
     )"));
-    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
         current_frame_host()->GetProcess()->GetID(),
         current_frame_host()->GetRoutingID(), "WebUSB"));
@@ -3164,14 +3164,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
 
     EXPECT_TRUE(NavigateToURL(shell(), url));
 
-    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_EQ("Found 0 ports", content::EvalJs(current_frame_host(), R"(
         new Promise(async resolve => {
           let ports = await navigator.serial.getPorts();
           resolve("Found " + ports.length + " ports");
         });
     )"));
-    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
         current_frame_host()->GetProcess()->GetID(),
         current_frame_host()->GetRoutingID(), "Serial"));
@@ -3186,16 +3186,16 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
     RenderFrameHostImpl* rfh_c = current_frame_host();
     RenderFrameHostImpl* rfh_d = rfh_c->child_at(0)->current_frame_host();
 
-    EXPECT_FALSE(rfh_c->is_back_forward_cache_disallowed());
-    EXPECT_FALSE(rfh_d->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(rfh_c->is_back_forward_cache_disabled());
+    EXPECT_FALSE(rfh_d->is_back_forward_cache_disabled());
     EXPECT_EQ("Found 0 ports", content::EvalJs(rfh_c, R"(
         new Promise(async resolve => {
           let ports = await navigator.serial.getPorts();
           resolve("Found " + ports.length + " ports");
         });
     )"));
-    EXPECT_TRUE(rfh_c->is_back_forward_cache_disallowed());
-    EXPECT_FALSE(rfh_d->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(rfh_c->is_back_forward_cache_disabled());
+    EXPECT_FALSE(rfh_d->is_back_forward_cache_disabled());
     EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
         rfh_c->GetProcess()->GetID(), rfh_c->GetRoutingID(), "Serial"));
   }
@@ -3205,7 +3205,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
     content::BackForwardCacheDisabledTester tester;
     GURL url(https_server.GetURL("e.com", "/title1.html"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
-    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_EQ("Found 0 ports", content::EvalJs(current_frame_host(), R"(
         new Promise(async resolve => {
           const worker = new Worker("/back_forward_cache/serial/worker.js");
@@ -3213,7 +3213,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
           worker.postMessage("Run");
         });
     )"));
-    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
         current_frame_host()->GetProcess()->GetID(),
         current_frame_host()->GetRoutingID(), "Serial"));
@@ -3224,7 +3224,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
     content::BackForwardCacheDisabledTester tester;
     GURL url(https_server.GetURL("f.com", "/title1.html"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
-    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_FALSE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_EQ("Found 0 ports", content::EvalJs(current_frame_host(), R"(
         new Promise(async resolve => {
           const worker = new Worker(
@@ -3233,7 +3233,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
           worker.postMessage("Run");
         });
     )"));
-    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disallowed());
+    EXPECT_TRUE(current_frame_host()->is_back_forward_cache_disabled());
     EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
         current_frame_host()->GetProcess()->GetID(),
         current_frame_host()->GetRoutingID(), "Serial"));

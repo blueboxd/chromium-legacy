@@ -52,16 +52,35 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   is_input_method_window_ = event_data->is_input_method_window;
 
   // The following loops perform caching to prepare for AXTreeSerializer.
-  // First, we need to cache parent links, which are implied by a node's child
-  // ids.
-  // Next, we cache the nodes by id. During this process, we can detect the root
-  // node based upon the parent links we cached above.
+  // First, we cache the windows.
+  // Next, we cache the nodes. To compute IsClickableLeaf, we want a mapping
+  // from node id to an index in event_data->node_data is needed to avoid O(N^2)
+  // computation, iterate it twice.
   // Finally, we cache each node's computed bounds, based on its descendants.
-  std::map<int32_t, int32_t> all_parent_map;
-  std::map<int32_t, std::vector<int32_t>> all_children_map;
-  // Mapping nodeId to index in event_data->node_data.
-  std::map<int32_t, int32_t> node_data_index_map;
+  CHECK(event_data->window_data);
+  root_id_ = event_data->window_data->at(0)->window_id;
+  for (size_t i = 0; i < event_data->window_data->size(); ++i) {
+    int32_t window_id = event_data->window_data->at(i)->window_id;
+    int32_t root_node_id = event_data->window_data->at(i)->root_node_id;
+    AXWindowInfoData* window = event_data->window_data->at(i).get();
+    if (root_node_id)
+      parent_map_[root_node_id] = window_id;
 
+    tree_map_[window_id] =
+        std::make_unique<AccessibilityWindowInfoDataWrapper>(this, window);
+
+    std::vector<int32_t> children;
+    if (GetIntListProperty(window, AXWindowIntListProperty::CHILD_WINDOW_IDS,
+                           &children)) {
+      for (const int32_t child : children) {
+        DCHECK(child != root_id_);
+        parent_map_[child] = window_id;
+      }
+    }
+  }
+
+  // Mapping from node id to index in event_data->node_data.
+  std::map<int32_t, int32_t> node_data_index_map;
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
     int32_t node_id = event_data->node_data[i]->id;
     node_data_index_map[node_id] = i;
@@ -69,62 +88,11 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     if (GetIntListProperty(event_data->node_data[i].get(),
                            AXIntListProperty::CHILD_NODE_IDS, &children)) {
       for (const int32_t child : children)
-        all_parent_map[child] = node_id;
-      all_children_map.emplace(node_id, children);
+        parent_map_[child] = node_id;
     }
   }
-
-  if (event_data->window_data) {
-    for (size_t i = 0; i < event_data->window_data->size(); ++i) {
-      int32_t window_id = event_data->window_data->at(i)->window_id;
-      int32_t root_node_id = event_data->window_data->at(i)->root_node_id;
-      if (root_node_id) {
-        all_parent_map[root_node_id] = window_id;
-        all_children_map[window_id] = {root_node_id};
-      }
-      std::vector<int32_t> children;
-      if (GetIntListProperty(event_data->window_data->at(i).get(),
-                             AXWindowIntListProperty::CHILD_WINDOW_IDS,
-                             &children)) {
-        for (const int32_t child : children)
-          all_parent_map[child] = window_id;
-        all_children_map[window_id].insert(all_children_map[window_id].begin(),
-                                           children.begin(), children.end());
-      }
-    }
-  }
-
-  // Now copy just the relevant subtree containing the source_id into the
-  // |parent_map_|.
-  // TODO(katie): This step can probably be removed and all items added
-  // directly to the parent map after window mapping is completed, because
-  // we can again assume that there is only one subtree with one root.
-  int32_t source_root = event_data->source_id;
-  // Walk up to the root from the source_id.
-  while (all_parent_map.find(source_root) != all_parent_map.end()) {
-    int32_t parent = all_parent_map[source_root];
-    source_root = parent;
-  }
-  root_id_ = source_root;
-  // Walk back down through children map to populate parent_map_.
-  std::stack<int32_t> stack;
-  stack.push(*root_id_);
-  while (!stack.empty()) {
-    int32_t parent = stack.top();
-    stack.pop();
-    const std::vector<int32_t>& children = all_children_map[parent];
-    for (const int32_t child : children) {
-      parent_map_[child] = parent;
-      stack.push(child);
-    }
-  }
-
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
     int32_t id = event_data->node_data[i]->id;
-    // Only map nodes in the parent_map and the root.
-    // This avoids adding other subtrees that are not interesting.
-    if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
-      continue;
     AXNodeInfoData* node = event_data->node_data[i].get();
     bool is_clickable_leaf =
         ComputeIsClickableLeaf(i, event_data->node_data, node_data_index_map);
@@ -134,35 +102,17 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     if (tree_map_[id]->IsFocused())
       focused_id_ = id;
   }
-  if (event_data->window_data) {
-    for (size_t i = 0; i < event_data->window_data->size(); ++i) {
-      int32_t id = event_data->window_data->at(i)->window_id;
-      // Only map nodes in the parent_map and the root.
-      // This avoids adding other subtrees that are not interesting.
-      if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
-        continue;
-      AXWindowInfoData* window = event_data->window_data->at(i).get();
-      tree_map_[id] =
-          std::make_unique<AccessibilityWindowInfoDataWrapper>(this, window);
-    }
-  }
 
   // Assuming |nodeData| is in pre-order, compute cached bounds in post-order to
   // avoid an O(n^2) amount of work as the computed bounds uses descendant
   // bounds.
   for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
     int32_t id = event_data->node_data[i]->id;
-    if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
-      continue;
     cached_computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
   }
-  if (event_data->window_data) {
-    for (int i = event_data->window_data->size() - 1; i >= 0; --i) {
-      int32_t id = event_data->window_data->at(i)->window_id;
-      if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
-        continue;
-      cached_computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
-    }
+  for (int i = event_data->window_data->size() - 1; i >= 0; --i) {
+    int32_t id = event_data->window_data->at(i)->window_id;
+    cached_computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
   }
 
   // Calculate the focused ID.
@@ -341,6 +291,7 @@ AXTreeSourceArc::GetAutomationEventRouter() const {
 
 gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(
     AccessibilityInfoDataWrapper* info_data) const {
+  DCHECK(info_data);
   gfx::Rect computed_bounds;
   // Exit early if the node or window is invisible.
   if (!info_data->IsVisibleToUser())

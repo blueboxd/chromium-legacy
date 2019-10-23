@@ -190,7 +190,7 @@ class HotseatEventHandler : public ui::EventHandler,
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override {
-    if (!should_forward_event_ || event->type() != ui::ET_GESTURE_TAP)
+    if (!should_forward_event_)
       return;
     shelf_layout_manager_->ProcessGestureEventOfInAppHotseat(
         event, static_cast<aura::Window*>(event->target()));
@@ -530,10 +530,8 @@ void ShelfLayoutManager::ProcessGestureEventOfInAppHotseat(
     return;
   DCHECK_EQ(state_.hotseat_state, HotseatState::kExtended);
 
-  if (IsShelfWindow(target) || drag_status_ != DragStatus::kDragNone ||
-      event->type() != ui::ET_GESTURE_TAP) {
+  if (IsShelfWindow(target) || drag_status_ != DragStatus::kDragNone)
     return;
-  }
 
   base::AutoReset<bool> hide_hotseat(&should_hide_hotseat_, true);
   UpdateVisibilityState();

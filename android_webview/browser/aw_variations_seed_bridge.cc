@@ -38,7 +38,7 @@ std::unique_ptr<variations::SeedResponse> GetAndClearJavaSeed() {
   base::android::JavaByteArrayToString(env, j_data, &java_seed->data);
   java_seed->signature = base::android::ConvertJavaStringToUTF8(j_signature);
   java_seed->country = base::android::ConvertJavaStringToUTF8(j_country);
-  java_seed->date = static_cast<long>(j_date);
+  java_seed->date = j_date;
   java_seed->is_gzip_compressed = static_cast<bool>(j_is_gzip_compressed);
   return java_seed;
 }

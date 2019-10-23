@@ -33,17 +33,11 @@
 namespace {
 
 void UninstallApp(Profile* profile, const std::string& app_id) {
-  if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile);
-    DCHECK(proxy);
-    proxy->Uninstall(app_id);
-    return;
-  }
-
-  // ExtensionUninstall deletes itself when done or aborted.
-  ExtensionUninstaller* uninstaller = new ExtensionUninstaller(profile, app_id);
-  uninstaller->Run();
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->Uninstall(app_id, nullptr /* parent_window */);
+  return;
 }
 
 }  // namespace

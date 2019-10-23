@@ -34,11 +34,9 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLStyleElement::HTMLStyleElement(Document& document,
                                    const CreateElementFlags flags)
-    : HTMLElement(kStyleTag, document),
+    : HTMLElement(html_names::kStyleTag, document),
       StyleElement(&document, flags.IsCreatedByParser()),
       fired_load_(false),
       loaded_sheet_(false) {}
@@ -47,13 +45,13 @@ HTMLStyleElement::~HTMLStyleElement() = default;
 
 void HTMLStyleElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kTitleAttr && sheet_ && IsInDocumentTree()) {
+  if (params.name == html_names::kTitleAttr && sheet_ && IsInDocumentTree()) {
     sheet_->SetTitle(params.new_value);
-  } else if (params.name == kMediaAttr && isConnected() &&
+  } else if (params.name == html_names::kMediaAttr && isConnected() &&
              GetDocument().IsActive() && sheet_) {
     sheet_->SetMediaQueries(MediaQuerySet::Create(params.new_value));
     GetDocument().GetStyleEngine().MediaQueriesChangedInScope(GetTreeScope());
-  } else if (params.name == kTypeAttr) {
+  } else if (params.name == html_names::kTypeAttr) {
     HTMLElement::ParseAttribute(params);
     StyleElement::ChildrenChanged(*this);
   } else {
@@ -97,11 +95,11 @@ void HTMLStyleElement::ChildrenChanged(const ChildrenChange& change) {
 }
 
 const AtomicString& HTMLStyleElement::media() const {
-  return getAttribute(kMediaAttr);
+  return getAttribute(html_names::kMediaAttr);
 }
 
 const AtomicString& HTMLStyleElement::type() const {
-  return getAttribute(kTypeAttr);
+  return getAttribute(html_names::kTypeAttr);
 }
 
 void HTMLStyleElement::DispatchPendingEvent(

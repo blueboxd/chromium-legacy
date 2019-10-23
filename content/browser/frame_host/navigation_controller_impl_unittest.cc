@@ -383,44 +383,6 @@ TEST_F(NavigationControllerTest, GoToOffset) {
   }
 }
 
-// Tests that receiving a DidFailProvisionalLoad from the renderer that is
-// trying to commit an error page won't reset the pending entry of a navigation
-// that just started.
-TEST_F(NavigationControllerTestWithBrowserSideNavigation,
-       DontDiscardWrongPendingEntry) {
-  NavigationControllerImpl& controller = controller_impl();
-  GURL initial_url("http://www.google.com");
-  GURL url_1("http://google.com/foo");
-  GURL url_2("http://foo2.com");
-
-  // Navigate inititally. This is the url that could erroneously be the visible
-  // entry when url_1 fails.
-  NavigateAndCommit(initial_url);
-
-  // Set the pending entry as url_1 and create the NavigationHandle.
-  auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(url_1, contents());
-  navigation->Start();
-  EXPECT_EQ(url_1, controller.GetVisibleEntry()->GetURL());
-
-  // The navigation fails and needs to show an error page. This resets the
-  // pending entry.
-  navigation->Fail(net::ERR_TIMED_OUT);
-  EXPECT_EQ(initial_url, controller.GetVisibleEntry()->GetURL());
-
-  // A navigation to url_2 starts, creating a pending navigation entry.
-  controller.LoadURL(url_2, Referrer(), ui::PAGE_TRANSITION_TYPED,
-                     std::string());
-  EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
-
-  // The DidFailProvsionalLoad mojo call is received from the current RFH that
-  // is committing an error page. This should not reset the pending entry for
-  // the new ongoing navigation.
-  main_test_rfh()->DidFailProvisionalLoadWithError(url_1, net::ERR_TIMED_OUT,
-                                                   base::string16(), false);
-  EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
-}
-
 TEST_F(NavigationControllerTest, LoadURL) {
   NavigationControllerImpl& controller = controller_impl();
 
@@ -1093,33 +1055,35 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
 
   // Start with a pending new navigation.
   const GURL kNewURL("http://eh");
-  controller.LoadURL(kNewURL, Referrer(), ui::PAGE_TRANSITION_TYPED,
-                     std::string());
-  main_test_rfh()->PrepareForCommit();
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kNewURL, contents());
+  navigation->Start();
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(kNewURL, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(1, delegate->navigation_state_change_count());
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
-  main_test_rfh()->DidFailProvisionalLoadWithError(kNewURL, net::ERR_ABORTED,
-                                                   base::string16(), false);
+  navigation->AbortCommit();
 
-  // This should not clear the pending entry or notify of a navigation state
-  // change, so that we keep displaying kNewURL (until the user clears it).
+  // This should not clear the pending entry, so that we keep displaying
+  // kNewURL (until the user clears it).
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(kNewURL, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(1, delegate->navigation_state_change_count());
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
   NavigationEntry* pending_entry = controller.GetPendingEntry();
 
   // Ensure that a reload keeps the same pending entry.
   controller.Reload(ReloadType::NORMAL, true);
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(kNewURL, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(pending_entry, controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
 
@@ -3109,12 +3073,7 @@ TEST_F(NavigationControllerTest, ShowRendererURLAfterFailUntilModified) {
   // we show the pending entry's URL as long as the about:blank page is not
   // modified.
   auto navigation =
-      NavigationSimulatorImpl::CreateBrowserInitiated(url, contents());
-  NavigationController::LoadURLParams load_url_params(url);
-  load_url_params.initiator_origin = url::Origin();
-  load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
-  load_url_params.is_renderer_initiated = true;
-  navigation->SetLoadURLParams(&load_url_params);
+      NavigationSimulator::CreateRendererInitiated(url, main_test_rfh());
   navigation->Start();
 
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
@@ -3128,8 +3087,7 @@ TEST_F(NavigationControllerTest, ShowRendererURLAfterFailUntilModified) {
 
   // Suppose it aborts before committing, if it's a 204 or download or due to a
   // stop or a new navigation from the user.  The URL should remain visible.
-  main_test_rfh()->DidFailProvisionalLoadWithError(url, net::ERR_ABORTED,
-                                                   base::string16(), false);
+  navigation->Fail(net::ERR_FAILED);
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
 
   // If something else later modifies the contents of the about:blank page, then
@@ -3138,6 +3096,46 @@ TEST_F(NavigationControllerTest, ShowRendererURLAfterFailUntilModified) {
   EXPECT_TRUE(contents()->HasAccessedInitialDocument());
   EXPECT_FALSE(controller.GetVisibleEntry());
   EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
+}
+
+// Tests that the URLs for renderer-initiated navigations in new tabs are
+// displayed to the user after they got canceled, as long as the initial
+// about:blank page has not been modified. If so, we must revert to showing
+// about:blank. See http://crbug.com/355537.
+TEST_F(NavigationControllerTest, ShowRendererURLAfterCancelUntilModified) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  const GURL url("http://foo");
+
+  // For renderer-initiated navigations in new tabs (with no committed entries),
+  // we show the pending entry's URL as long as the about:blank page is not
+  // modified.
+  auto navigation =
+      NavigationSimulator::CreateRendererInitiated(url, main_test_rfh());
+  navigation->Start();
+
+  EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
+  EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
+  EXPECT_TRUE(controller.GetPendingEntry()->is_renderer_initiated());
+  EXPECT_TRUE(controller.IsInitialNavigation());
+  EXPECT_FALSE(contents()->HasAccessedInitialDocument());
+
+  // There should be no title yet.
+  EXPECT_TRUE(contents()->GetTitle().empty());
+
+  // Suppose it aborts before committing, e.g. due to a new renderer-initiated
+  // navigation. The URL should remain visible.
+  navigation->AbortFromRenderer();
+  EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
+
+  // If something else later modifies the contents of the about:blank page, then
+  // we must revert to showing about:blank to avoid a URL spoof.
+  // Pending entry should also be discarded, because renderer doesn't want to
+  // show this page anymore.
+  main_test_rfh()->OnMessageReceived(FrameHostMsg_DidAccessInitialDocument(0));
+  EXPECT_TRUE(contents()->HasAccessedInitialDocument());
+  EXPECT_FALSE(controller.GetVisibleEntry());
+  EXPECT_FALSE(controller.GetPendingEntry());
 }
 
 TEST_F(NavigationControllerTest, DontShowRendererURLInNewTabAfterCommit) {

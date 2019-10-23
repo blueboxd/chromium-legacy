@@ -2768,6 +2768,10 @@ void NavigationRequest::UpdateCommitNavigationParamsHistory() {
       navigation_controller->GetEntryCount();
 }
 
+void NavigationRequest::RendererAbortedNavigationForTesting() {
+  OnRendererAbortedNavigation();
+}
+
 void NavigationRequest::OnRendererAbortedNavigation() {
   if (IsWaitingToCommit()) {
     render_frame_host_->NavigationRequestCancelled(this);
@@ -3791,10 +3795,6 @@ NavigationRequest* NavigationRequest::From(NavigationHandle* handle) {
 
 bool NavigationRequest::IsNavigationStarted() const {
   return handle_state_ >= INITIAL;
-}
-
-void NavigationRequest::DropPendingEntryRef() {
-  pending_entry_ref_.reset();
 }
 
 }  // namespace content

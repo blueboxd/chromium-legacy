@@ -59,7 +59,7 @@ class CONTENT_EXPORT AudioLoopbackStreamBroker final
   void OnSourceGone() final;
 
  private:
-  void StreamCreated(media::mojom::AudioInputStreamPtr stream,
+  void StreamCreated(mojo::PendingRemote<media::mojom::AudioInputStream> stream,
                      media::mojom::ReadOnlyAudioDataPipePtr data_pipe);
   void Cleanup();
 

@@ -253,7 +253,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                 command_buffer_id->channel_token,
                                 command_buffer_id->route_id));
         video_decoder = ChromeosVideoDecoderFactory::Create(
-            task_runner, std::move(frame_pool), std::move(frame_converter));
+            task_runner, std::move(frame_pool), std::move(frame_converter),
+            gpu_memory_buffer_factory_);
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
       } else {
         video_decoder = VdaVideoDecoder::Create(

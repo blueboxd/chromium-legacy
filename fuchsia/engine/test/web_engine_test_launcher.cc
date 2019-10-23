@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_suite.h"
 #include "content/public/common/content_switches.h"

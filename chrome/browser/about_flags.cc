@@ -1467,6 +1467,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webrtc-hybrid-agc", flag_descriptions::kWebrtcHybridAgcName,
      flag_descriptions::kWebrtcHybridAgcDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebRtcHybridAgc)},
+    {"enable-webrtc-multi-channel-audio-processing",
+     flag_descriptions::kWebrtcMultiChannelApmName,
+     flag_descriptions::kWebrtcMultiChannelApmDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebRtcEnableMultiChannelApm)},
     {"enable-webrtc-new-encode-cpu-load-estimator",
      flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorName,
      flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorDescription, kOsAll,
@@ -1690,6 +1694,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableExplicitDmaFencesName,
      flag_descriptions::kDisableExplicitDmaFencesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kDisableExplicitDmaFences)},
+    // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
+    //  supported on ChromeOS.
+    {"enable-use-hdr-transfer-function",
+     flag_descriptions::kEnableUseHDRTransferFunctionName,
+     flag_descriptions::kEnableUseHDRTransferFunctionDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableUseHDRTransferFunction)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
     {"ash-enable-unified-desktop",
@@ -1702,6 +1712,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kBluetoothAggressiveAppearanceFilter)},
+    {"cryptauth-v2-device-activity-status",
+     flag_descriptions::kCryptAuthV2DeviceActivityStatusName,
+     flag_descriptions::kCryptAuthV2DeviceActivityStatusDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCryptAuthV2DeviceActivityStatus)},
     {"cryptauth-v2-devicesync", flag_descriptions::kCryptAuthV2DeviceSyncName,
      flag_descriptions::kCryptAuthV2DeviceSyncDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCryptAuthV2DeviceSync)},
@@ -4198,7 +4212,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDoNotMigrateUnsupportedLocalCards)},
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
-     flag_descriptions::kUnsafeWebGPUDescription, kOsMac | kOsWin,
+     flag_descriptions::kUnsafeWebGPUDescription, kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},
 
 #if defined(OS_ANDROID)

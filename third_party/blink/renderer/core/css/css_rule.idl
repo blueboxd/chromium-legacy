@@ -51,6 +51,6 @@
     [RuntimeEnabled=CSSViewport] const unsigned short VIEWPORT_RULE = 15;
 
     // CSS Properties and Values Level 1
-    // TODO(https://crbug.com/978781): Spec a proper number.
-    [RuntimeEnabled=CSSVariables2AtProperty] const unsigned short PROPERTY_RULE = 1001;
+    // https://drafts.css-houdini.org/css-properties-values-api/#extensions-to-css-rule-interface
+    [RuntimeEnabled=CSSVariables2AtProperty] const unsigned short PROPERTY_RULE = 18;
 };

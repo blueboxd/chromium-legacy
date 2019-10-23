@@ -3432,6 +3432,35 @@ TEST_P(HotseatShelfLayoutManagerTest, TappingActiveWindowHidesHotseat) {
     EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
 }
 
+// Tests that gesture dragging an active window hides the hotseat.
+TEST_P(HotseatShelfLayoutManagerTest, GestureDraggingActiveWindowHidesHotseat) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  // Swipe up on the shelf to show the hotseat.
+  SwipeUpOnShelf();
+
+  if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+    EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
+
+  // Gesture drag on the active window, the hotseat should hide.
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  gfx::Point start = display_bounds.bottom_center();
+  start.Offset(0, -200);
+  gfx::Point end = start;
+  end.Offset(0, -200);
+  GetEventGenerator()->GestureScrollSequence(
+      start, end, base::TimeDelta::FromMilliseconds(10), 4);
+
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+  if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+    EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
+}
+
 // Tests that releasing the hotseat gesture below the threshold results in a
 // kHidden hotseat when the shelf is shown.
 TEST_F(HotseatShelfLayoutManagerTest, ReleasingSlowDragBelowThreshold) {

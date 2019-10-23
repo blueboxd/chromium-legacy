@@ -30,7 +30,8 @@ class WebSocketConnectorImpl final : public blink::mojom::WebSocketConnector {
   //   MSG_ROUTING_NONE because they do not have a frame.
   WebSocketConnectorImpl(int process_id,
                          int frame_id,
-                         const url::Origin& origin);
+                         const url::Origin& origin,
+                         const net::NetworkIsolationKey& network_isolation_key);
   ~WebSocketConnectorImpl() override;
 
   // WebSocketConnector implementation
@@ -45,6 +46,7 @@ class WebSocketConnectorImpl final : public blink::mojom::WebSocketConnector {
   static void ConnectCalledByContentBrowserClient(
       const std::vector<std::string>& requested_protocols,
       const GURL& site_for_cookies,
+      const net::NetworkIsolationKey& network_isolation_key,
       int process_id,
       int frame_id,
       const url::Origin& origin,
@@ -60,6 +62,7 @@ class WebSocketConnectorImpl final : public blink::mojom::WebSocketConnector {
   const int process_id_;
   const int frame_id_;
   const url::Origin origin_;
+  const net::NetworkIsolationKey network_isolation_key_;
 };
 
 }  // namespace content

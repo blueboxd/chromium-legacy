@@ -126,11 +126,11 @@ InputMethodSyncer::~InputMethodSyncer() {
 void InputMethodSyncer::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(
-      prefs::kLanguagePreloadEnginesSyncable,
-      "",
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kLanguageEnabledImesSyncable, "",
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      prefs::kLanguagePreloadEnginesSyncable, "",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterStringPref(
+      prefs::kLanguageEnabledImesSyncable, "",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(prefs::kLanguageShouldMergeInputMethods, false);
 }
 

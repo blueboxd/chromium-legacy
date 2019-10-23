@@ -43,10 +43,17 @@ bool LaunchServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 
 content::BrowserContext* LaunchServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
+  Profile* const profile = Profile::FromBrowserContext(context);
+
+  if (profile->IsGuestSession()) {
+    // In guest mode, only off-the-record browsers may be opened.
+    return profile->GetOffTheRecordProfile();
+  }
+
   // Do not create secondary instance for incognito WebContents with
-  // off-the-record profiles. Always redirect to the instance from the original
-  // profile part.
-  return Profile::FromBrowserContext(context)->GetOriginalProfile();
+  // off-the-record profiles for non-guest sessions. Redirect to the instance
+  // from the original profile part.
+  return profile->GetOriginalProfile();
 }
 
 }  // namespace apps

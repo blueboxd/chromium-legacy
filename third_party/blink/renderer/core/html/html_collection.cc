@@ -42,8 +42,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static bool ShouldTypeOnlyIncludeDirectChildren(CollectionType type) {
   switch (type) {
     case kClassCollectionType:
@@ -215,22 +213,23 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
                                          const HTMLElement& element) {
   switch (html_collection.GetType()) {
     case kDocImages:
-      return element.HasTagName(kImgTag);
+      return element.HasTagName(html_names::kImgTag);
     case kDocScripts:
-      return element.HasTagName(kScriptTag);
+      return element.HasTagName(html_names::kScriptTag);
     case kDocForms:
-      return element.HasTagName(kFormTag);
+      return element.HasTagName(html_names::kFormTag);
     case kDocumentNamedItems:
       return ToDocumentNameCollection(html_collection).ElementMatches(element);
     case kDocumentAllNamedItems:
       return ToDocumentAllNameCollection(html_collection)
           .ElementMatches(element);
     case kTableTBodies:
-      return element.HasTagName(kTbodyTag);
+      return element.HasTagName(html_names::kTbodyTag);
     case kTRCells:
-      return element.HasTagName(kTdTag) || element.HasTagName(kThTag);
+      return element.HasTagName(html_names::kTdTag) ||
+             element.HasTagName(html_names::kThTag);
     case kTSectionRows:
-      return element.HasTagName(kTrTag);
+      return element.HasTagName(html_names::kTrTag);
     case kSelectOptions:
       return ToHTMLOptionsCollection(html_collection).ElementMatches(element);
     case kSelectedOptions: {
@@ -241,17 +240,19 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
       return ToHTMLDataListOptionsCollection(html_collection)
           .ElementMatches(element);
     case kMapAreas:
-      return element.HasTagName(kAreaTag);
+      return element.HasTagName(html_names::kAreaTag);
     case kDocApplets:
       return IsHTMLObjectElement(element) &&
              ToHTMLObjectElement(element).ContainsJavaApplet();
     case kDocEmbeds:
-      return element.HasTagName(kEmbedTag);
+      return element.HasTagName(html_names::kEmbedTag);
     case kDocLinks:
-      return (element.HasTagName(kATag) || element.HasTagName(kAreaTag)) &&
-             element.FastHasAttribute(kHrefAttr);
+      return (element.HasTagName(html_names::kATag) ||
+              element.HasTagName(html_names::kAreaTag)) &&
+             element.FastHasAttribute(html_names::kHrefAttr);
     case kDocAnchors:
-      return element.HasTagName(kATag) && element.FastHasAttribute(kNameAttr);
+      return element.HasTagName(html_names::kATag) &&
+             element.FastHasAttribute(html_names::kNameAttr);
     case kFormControls:
       DCHECK(IsA<HTMLFieldSetElement>(html_collection.ownerNode()));
       return IsHTMLObjectElement(element) ||
@@ -336,13 +337,20 @@ Element* HTMLCollection::VirtualItemAfter(Element*) const {
 // although it returns any type of element by id.
 static inline bool NameShouldBeVisibleInDocumentAll(
     const HTMLElement& element) {
-  return element.HasTagName(kATag) || element.HasTagName(kButtonTag) ||
-         element.HasTagName(kEmbedTag) || element.HasTagName(kFormTag) ||
-         element.HasTagName(kFrameTag) || element.HasTagName(kFramesetTag) ||
-         element.HasTagName(kIFrameTag) || element.HasTagName(kImgTag) ||
-         element.HasTagName(kInputTag) || element.HasTagName(kMapTag) ||
-         element.HasTagName(kMetaTag) || element.HasTagName(kObjectTag) ||
-         element.HasTagName(kSelectTag) || element.HasTagName(kTextareaTag);
+  return element.HasTagName(html_names::kATag) ||
+         element.HasTagName(html_names::kButtonTag) ||
+         element.HasTagName(html_names::kEmbedTag) ||
+         element.HasTagName(html_names::kFormTag) ||
+         element.HasTagName(html_names::kFrameTag) ||
+         element.HasTagName(html_names::kFramesetTag) ||
+         element.HasTagName(html_names::kIFrameTag) ||
+         element.HasTagName(html_names::kImgTag) ||
+         element.HasTagName(html_names::kInputTag) ||
+         element.HasTagName(html_names::kMapTag) ||
+         element.HasTagName(html_names::kMetaTag) ||
+         element.HasTagName(html_names::kObjectTag) ||
+         element.HasTagName(html_names::kSelectTag) ||
+         element.HasTagName(html_names::kTextareaTag);
 }
 
 Element* HTMLCollection::TraverseToFirst() const {

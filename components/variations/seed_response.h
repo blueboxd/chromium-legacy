@@ -19,7 +19,7 @@ struct SeedResponse {
   std::string data;  // "data" is binary, for which protobuf uses strings.
   std::string signature;
   std::string country;
-  long date;
+  int64_t date;
   bool is_gzip_compressed = false;
 };
 

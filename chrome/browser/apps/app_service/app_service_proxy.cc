@@ -15,10 +15,31 @@
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/app_service_impl.h"
+#include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/url_data_source.h"
+#include "url/url_constants.h"
+
+namespace {
+
+apps::mojom::IntentFilterPtr FindBestMatchingFilter(
+    const apps::mojom::IntentPtr& intent) {
+  // TODO(crbug.com/853604): Update the matching util method to return how well
+  // the match is instead of just bool. And return the best match here. At the
+  // moment just return the url filter itself.
+  apps::mojom::IntentFilterPtr intent_filter;
+  if (intent->scheme.has_value() && intent->host.has_value() &&
+      intent->path.has_value()) {
+    intent_filter = apps_util::CreateIntentFilterForUrlScope(
+        GURL(intent->scheme.value() + url::kStandardSchemeSeparator +
+             intent->host.value() + intent->path.value()));
+  }
+  return intent_filter;
+}
+
+}  // namespace
 
 namespace apps {
 
@@ -142,6 +163,10 @@ apps::AppRegistryCache& AppServiceProxy::AppRegistryCache() {
   return cache_;
 }
 
+apps::PreferredApps& AppServiceProxy::PreferredApps() {
+  return preferred_apps_;
+}
+
 apps::mojom::IconKeyPtr AppServiceProxy::GetIconKey(const std::string& app_id) {
   return outer_icon_loader_.GetIconKey(app_id);
 }
@@ -209,11 +234,19 @@ void AppServiceProxy::SetPermission(const std::string& app_id,
   }
 }
 
-void AppServiceProxy::Uninstall(const std::string& app_id) {
+void AppServiceProxy::Uninstall(const std::string& app_id,
+                                gfx::NativeWindow parent_window) {
   if (app_service_.is_connected()) {
-    cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
-      app_service_->PromptUninstall(update.AppType(), update.AppId());
-    });
+    cache_.ForOneApp(
+        app_id, [this, parent_window](const apps::AppUpdate& update) {
+          apps::mojom::IconKeyPtr icon_key = update.IconKey();
+          uninstall_dialogs_.emplace(std::make_unique<UninstallDialog>(
+              profile_, update.AppType(), update.AppId(), update.Name(),
+              std::move(icon_key), this, parent_window,
+              base::BindOnce(&AppServiceProxy::OnUninstallDialogClosed,
+                             weak_ptr_factory_.GetWeakPtr(), update.AppType(),
+                             update.AppId())));
+        });
   }
 }
 
@@ -299,6 +332,26 @@ void AppServiceProxy::SetArcIsRegistered() {
 #endif
 }
 
+void AppServiceProxy::AddPreferredApp(const std::string& app_id,
+                                      const GURL& url) {
+  AddPreferredApp(app_id, apps_util::CreateIntentFromUrl(url));
+}
+
+void AppServiceProxy::AddPreferredApp(const std::string& app_id,
+                                      const apps::mojom::IntentPtr& intent) {
+  auto intent_filter = FindBestMatchingFilter(intent);
+  if (intent_filter) {
+    preferred_apps_.AddPreferredApp(app_id, intent_filter);
+    if (app_service_.is_connected()) {
+      cache_.ForOneApp(
+          app_id, [this, &intent_filter](const apps::AppUpdate& update) {
+            app_service_->AddPreferredApp(update.AppType(), update.AppId(),
+                                          std::move(intent_filter));
+          });
+    }
+  }
+}
+
 void AppServiceProxy::AddAppIconSource(Profile* profile) {
   // Make the chrome://app-icon/ resource available.
   content::URLDataSource::Add(profile,
@@ -323,6 +376,17 @@ void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
 void AppServiceProxy::Clone(
     mojo::PendingReceiver<apps::mojom::Subscriber> receiver) {
   receivers_.Add(this, std::move(receiver));
+}
+
+void AppServiceProxy::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter) {
+  preferred_apps_.AddPreferredApp(app_id, intent_filter);
+}
+
+void AppServiceProxy::InitializePreferredApps(base::Value preferred_apps) {
+  preferred_apps_.Init(
+      std::make_unique<base::Value>(std::move(preferred_apps)));
 }
 
 }  // namespace apps

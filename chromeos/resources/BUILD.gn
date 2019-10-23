@@ -40,3 +40,17 @@ grit("resources") {
     "//chromeos/services/network_config/public/mojom:mojom_js",
   ]
 }
+
+grit("help_app_resources") {
+  source = "../components/help_app_ui/resources/help_app_resources.grd"
+
+  source_is_generated = true
+
+  outputs = [
+    "grit/chromeos_help_app_resources.h",
+    "grit/chromeos_help_app_resources_map.cc",
+    "grit/chromeos_help_app_resources_map.h",
+    "chromeos_help_app_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chromeos"
+}

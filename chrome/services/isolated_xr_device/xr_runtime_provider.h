@@ -18,6 +18,7 @@ class OpenVRDevice;
 class MixedRealityDevice;
 class MixedRealityDeviceStatics;
 class OpenXrDevice;
+class OpenXrStatics;
 }  // namespace device
 
 class IsolatedXRRuntimeProvider
@@ -63,6 +64,7 @@ class IsolatedXRRuntimeProvider
   void SetOpenXrRuntimeStatus(RuntimeStatus status);
   bool should_check_openxr_ = false;
   std::unique_ptr<device::OpenXrDevice> openxr_device_;
+  std::unique_ptr<device::OpenXrStatics> openxr_statics_;
 #endif
 
   mojo::Remote<device::mojom::IsolatedXRRuntimeProviderClient> client_;

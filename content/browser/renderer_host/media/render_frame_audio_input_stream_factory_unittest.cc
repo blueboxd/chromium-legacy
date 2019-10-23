@@ -144,7 +144,7 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
       : public mojom::RendererAudioInputStreamFactoryClient {
    public:
     void StreamCreated(
-        media::mojom::AudioInputStreamPtr stream,
+        mojo::PendingRemote<media::mojom::AudioInputStream> stream,
         media::mojom::AudioInputStreamClientRequest client_request,
         media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
         bool initially_muted,

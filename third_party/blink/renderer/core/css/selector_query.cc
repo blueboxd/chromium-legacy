@@ -47,8 +47,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 #if DCHECK_IS_ON() || defined(RELEASE_QUERY_STATS)
 static SelectorQuery::QueryStats& CurrentQueryStats() {
   DEFINE_STATIC_LOCAL(SelectorQuery::QueryStats, stats, ());
@@ -505,7 +503,7 @@ SelectorQuery::SelectorQuery(CSSSelectorList selector_list)
       // We only use the fast path when in standards mode where #id selectors
       // are case sensitive, so we need the same behavior for [id=value].
       if (current->Match() == CSSSelector::kAttributeExact &&
-          current->Attribute() == kIdAttr &&
+          current->Attribute() == html_names::kIdAttr &&
           current->AttributeMatch() == CSSSelector::kCaseSensitive) {
         selector_id_ = current->Value();
         break;

@@ -28,8 +28,7 @@ class ASH_EXPORT RotationLockFeaturePodController
   SystemTrayItemUmaType GetUmaType() const override;
 
   // TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  void OnTabletPhysicalStateChanged() override;
 
   // ScreenOrientationController::Observer:
   void OnUserRotationLockChanged() override;

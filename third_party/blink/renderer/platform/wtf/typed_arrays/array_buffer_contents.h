@@ -128,6 +128,9 @@ class WTF_EXPORT ArrayBufferContents {
 
   void Detach();
 
+  // Resets the internal memory so that the ArrayBufferContents is empty.
+  void Reset();
+
   void* Data() const {
     DCHECK(!IsShared());
     return DataMaybeShared();
@@ -139,6 +142,7 @@ class WTF_EXPORT ArrayBufferContents {
   void* DataMaybeShared() const { return holder_ ? holder_->Data() : nullptr; }
   size_t DataLength() const { return holder_ ? holder_->DataLength() : 0; }
   bool IsShared() const { return holder_ ? holder_->IsShared() : false; }
+  bool IsValid() const { return holder_->Data(); }
 
   void Transfer(ArrayBufferContents& other);
   void ShareWith(ArrayBufferContents& other);
@@ -185,9 +189,9 @@ class WTF_EXPORT ArrayBufferContents {
 };
 
 template <>
-struct CrossThreadCopier<ArrayBufferContents::DataHandle> {
+struct CrossThreadCopier<ArrayBufferContents> {
   STATIC_ONLY(CrossThreadCopier);
-  using Type = ArrayBufferContents::DataHandle;
+  using Type = ArrayBufferContents;
   static Type Copy(Type handle) {
     return handle;  // This is in fact a move.
   }

@@ -75,9 +75,9 @@ void AudioLoopbackStreamBroker::CreateStream(
   media::mojom::AudioInputStreamClientPtr client;
   client_request_ = mojo::MakeRequest(&client);
 
-  media::mojom::AudioInputStreamPtr stream;
-  media::mojom::AudioInputStreamRequest stream_request =
-      mojo::MakeRequest(&stream);
+  mojo::PendingRemote<media::mojom::AudioInputStream> stream;
+  mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver =
+      stream.InitWithNewPipeAndPassReceiver();
 
   media::mojom::AudioInputStreamObserverPtr observer_ptr;
   observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
@@ -87,7 +87,7 @@ void AudioLoopbackStreamBroker::CreateStream(
       &AudioLoopbackStreamBroker::Cleanup, base::Unretained(this)));
 
   factory->CreateLoopbackStream(
-      std::move(stream_request), client.PassInterface(),
+      std::move(stream_receiver), client.PassInterface(),
       observer_ptr.PassInterface(), params_, shared_memory_count_,
       source_->GetGroupID(),
       base::BindOnce(&AudioLoopbackStreamBroker::StreamCreated,
@@ -106,7 +106,7 @@ void AudioLoopbackStreamBroker::DidStartRecording() {
 }
 
 void AudioLoopbackStreamBroker::StreamCreated(
-    media::mojom::AudioInputStreamPtr stream,
+    mojo::PendingRemote<media::mojom::AudioInputStream> stream,
     media::mojom::ReadOnlyAudioDataPipePtr data_pipe) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

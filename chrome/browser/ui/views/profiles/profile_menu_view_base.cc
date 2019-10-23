@@ -383,6 +383,12 @@ void ProfileMenuViewBase::SetSyncInfo(const gfx::ImageSkia& icon,
   RegisterClickAction(button, std::move(action));
 }
 
+void ProfileMenuViewBase::SetSyncInfoBackgroundColor(SkColor bg_color) {
+  sync_info_container_->SetBackground(views::CreateRoundedRectBackground(
+      bg_color, views::LayoutProvider::Get()->GetCornerRadiusMetric(
+                    views::EMPHASIS_HIGH)));
+}
+
 void ProfileMenuViewBase::AddShortcutFeatureButton(
     const gfx::ImageSkia& icon,
     const base::string16& text,

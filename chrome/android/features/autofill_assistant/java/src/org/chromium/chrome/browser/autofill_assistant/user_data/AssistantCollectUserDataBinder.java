@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionContainer;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.ContactEditor;
 import org.chromium.chrome.browser.payments.PaymentInstrument;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -184,6 +186,13 @@ class AssistantCollectUserDataBinder
 
                         @Override
                         public void onLinkClicked(int link) {
+                            // TODO(b/143128544) refactor to do this the right way.
+                            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+                                view.mTermsSection.setTermsStatus(
+                                        AssistantTermsAndConditionsState.NOT_SELECTED);
+                                view.mTermsAsCheckboxSection.setTermsStatus(
+                                        AssistantTermsAndConditionsState.NOT_SELECTED);
+                            });
                             collectUserDataDelegate.onTermsAndConditionsLinkClicked(link);
                         }
                     };

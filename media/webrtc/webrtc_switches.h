@@ -20,6 +20,10 @@ namespace features {
 
 COMPONENT_EXPORT(MEDIA_WEBRTC)
 extern const base::Feature kWebRtcApmInAudioService;
+
+COMPONENT_EXPORT(MEDIA_WEBRTC)
+extern const base::Feature kWebRtcEnableMultiChannelApm;
+
 COMPONENT_EXPORT(MEDIA_WEBRTC)
 extern const base::Feature kWebRtcHybridAgc;
 

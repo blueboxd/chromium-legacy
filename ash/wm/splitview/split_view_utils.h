@@ -96,8 +96,7 @@ ASH_EXPORT bool AreMultiDisplayOverviewAndSplitViewEnabled();
 // Returns true if split view mode is supported.
 ASH_EXPORT bool ShouldAllowSplitView();
 
-// Returns true if |window| can be activated and snapped in split screen in
-// tablet mode.
+// Returns true if |window| can be activated and snapped in split view.
 ASH_EXPORT bool CanSnapInSplitview(aura::Window* window);
 
 // Displays a toast notifying users the application selected for split view is

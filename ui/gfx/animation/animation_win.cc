@@ -6,7 +6,6 @@
 
 #include <windows.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/win/win_util.h"
 
 namespace gfx {

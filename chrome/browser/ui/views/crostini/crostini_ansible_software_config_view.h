@@ -22,13 +22,11 @@ class CrostiniAnsibleSoftwareConfigView
   // views::DialogDelegateView:
   int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   gfx::Size CalculatePreferredSize() const override;
 
   // crostini::AnsibleManagementService::Observer:
-  void OnApplicationStarted() override;
-  void OnApplicationFinished() override;
-  void OnError() override;
+  void OnAnsibleSoftwareConfigurationStarted() override;
+  void OnAnsibleSoftwareConfigurationFinished(bool success) override;
 
   base::string16 GetSubtextLabelStringForTesting();
 
@@ -38,12 +36,11 @@ class CrostiniAnsibleSoftwareConfigView
 
  private:
   enum class State {
-    INSTALLING,
-    APPLYING,
+    CONFIGURING,
     ERROR,
   };
 
-  State state_ = State::INSTALLING;
+  State state_ = State::CONFIGURING;
   crostini::AnsibleManagementService* ansible_management_service_ = nullptr;
 
   views::Label* subtext_label_ = nullptr;

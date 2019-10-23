@@ -464,7 +464,7 @@ void NGInlineCursor::MoveToFirstLogicalLeaf() {
   // TODO(yosin): This isn't correct for mixed Bidi. Fix it. Besides, we
   // should compute and store it during layout.
   // TODO(yosin): We should check direction of each container instead of line
-  // box. See also |NGPhysicalLineBoxFragment::LastLogicalLeaf()|.
+  // box.
   if (IsLtr(CurrentStyle().Direction())) {
     while (TryToMoveToFirstChild())
       continue;
@@ -485,7 +485,7 @@ void NGInlineCursor::MoveToLastLogicalLeaf() {
   // TODO(yosin): This isn't correct for mixed Bidi. Fix it. Besides, we
   // should compute and store it during layout.
   // TODO(yosin): We should check direction of each container instead of line
-  // box. See also |NGPhysicalLineBoxFragment::LastLogicalLeaf()|.
+  // box.
   if (IsLtr(CurrentStyle().Direction())) {
     while (TryToMoveToLastChild())
       continue;

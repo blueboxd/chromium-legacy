@@ -277,7 +277,7 @@ class EditableCombobox::EditableComboboxPreTargetHandler
   // ui::EventHandler overrides.
   void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_PRESSED &&
-        event->flags() == event->changed_button_flags())
+        event->button_flags() == event->changed_button_flags())
       HandlePressEvent(event->root_location());
   }
 

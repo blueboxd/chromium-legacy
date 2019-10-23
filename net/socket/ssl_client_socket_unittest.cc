@@ -5364,7 +5364,13 @@ TEST_F(SSLClientSocketTest, Tag) {
 }
 
 // Test downgrade enforcement behaves as expected.
-TEST_F(SSLClientSocketTest, TLS13DowngradeEnforced) {
+// Failed on macOS. See https://crbug.com/1017036
+#if defined(OS_MACOSX)
+#define MAYBE_TLS13DowngradeEnforced DISABLED_TLS13DowngradeEnforced
+#else
+#define MAYBE_TLS13DowngradeEnforced TLS13DowngradeEnforced
+#endif
+TEST_F(SSLClientSocketTest, MAYBE_TLS13DowngradeEnforced) {
   for (auto tls_max_version :
        {SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0,
         SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1,

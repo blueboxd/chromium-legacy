@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "chromecast/media/audio/mixer_service/conversions.h"
+#include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "net/socket/stream_socket.h"
 
 namespace chromecast {
@@ -34,16 +35,16 @@ int GetFillSizeFrames(const OutputStreamParams& params) {
 OutputStreamConnection::OutputStreamConnection(Delegate* delegate,
                                                const OutputStreamParams& params)
     : delegate_(delegate),
-      params_(params),
+      params_(std::make_unique<OutputStreamParams>(params)),
       frame_size_(GetFrameSize(params)),
       fill_size_frames_(GetFillSizeFrames(params)),
       audio_buffer_(base::MakeRefCounted<net::IOBuffer>(
           MixerSocket::kAudioMessageHeaderSize +
           fill_size_frames_ * frame_size_)) {
   DCHECK(delegate_);
-  DCHECK_GT(params_.sample_rate(), 0);
-  DCHECK_GT(params_.num_channels(), 0);
-  params_.set_fill_size_frames(fill_size_frames_);
+  DCHECK_GT(params_->sample_rate(), 0);
+  DCHECK_GT(params_->num_channels(), 0);
+  params_->set_fill_size_frames(fill_size_frames_);
 }
 
 OutputStreamConnection::~OutputStreamConnection() = default;
@@ -130,7 +131,7 @@ void OutputStreamConnection::OnConnected(std::unique_ptr<MixerSocket> socket) {
   socket_->SetDelegate(this);
 
   Generic message;
-  *(message.mutable_output_stream_params()) = params_;
+  *(message.mutable_output_stream_params()) = *params_;
   if (start_timestamp_ != INT64_MIN) {
     message.mutable_set_start_timestamp()->set_start_timestamp(
         start_timestamp_);
@@ -166,6 +167,15 @@ bool OutputStreamConnection::HandleMetadata(const Generic& message) {
     delegate_->FillNextBuffer(
         audio_buffer_->data() + MixerSocket::kAudioMessageHeaderSize,
         fill_size_frames_, message.push_result().next_playback_timestamp());
+  }
+
+  if (message.has_ready_for_playback()) {
+    delegate_->OnAudioReadyForPlayback(
+        message.ready_for_playback().delay_microseconds());
+  }
+
+  if (message.has_error()) {
+    delegate_->OnMixerError();
   }
   return true;
 }

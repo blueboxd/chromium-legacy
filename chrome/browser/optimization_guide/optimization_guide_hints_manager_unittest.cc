@@ -1592,21 +1592,22 @@ TEST_F(OptimizationGuideHintsManagerTest,
       optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN,
       optimization_guide::proto::NOSCRIPT, &optimization_target_decision,
       &optimization_type_decision, &optimization_metadata);
-  // Make sure metadata is cleared.
-  EXPECT_EQ(0, optimization_metadata.previews_metadata.inflation_percent());
+  // Make sure metadata is populated.
+  EXPECT_EQ(1234, optimization_metadata.previews_metadata.inflation_percent());
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::kUnknown,
+  EXPECT_EQ(optimization_guide::OptimizationTargetDecision::
+                kModelNotAvailableOnClient,
             optimization_target_decision);
-  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kUnknown,
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
       GetOptimizationGuideNavigationData(navigation_handle.get());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
-  EXPECT_EQ(base::nullopt, navigation_data->has_hint_after_commit());
-  EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
-  EXPECT_FALSE(navigation_data->has_page_hint_value());
+  EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
+  EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
+  EXPECT_TRUE(navigation_data->has_page_hint_value());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,

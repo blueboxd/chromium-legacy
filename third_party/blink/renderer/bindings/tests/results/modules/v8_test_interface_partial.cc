@@ -306,7 +306,7 @@ static void PartialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
   arg = info[0];
   if (!arg.Prepare())
     return;
-  const char* kValidArgValues[] = {
+  const char* const kValidArgValues[] = {
       "EnumModulesValue1",
       "EnumModulesValue2",
   };

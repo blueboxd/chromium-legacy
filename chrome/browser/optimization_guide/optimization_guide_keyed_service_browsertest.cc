@@ -730,3 +730,44 @@ IN_PROC_BROWSER_TEST_F(
                            kModelNotAvailableOnClient),
       1);
 }
+
+class OptimizationGuideKeyedServiceModelPredictionHoldbackBrowserTest
+    : public OptimizationGuideKeyedServiceBrowserTest {
+ public:
+  OptimizationGuideKeyedServiceModelPredictionHoldbackBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        optimization_guide::features::kOptimizationTargetPrediction,
+        {{"painful_page_load_metrics_only", "true"}});
+  }
+  ~OptimizationGuideKeyedServiceModelPredictionHoldbackBrowserTest() override =
+      default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    OptimizationGuideKeyedServiceModelPredictionHoldbackBrowserTest,
+    ModelPredictionHoldbackOverridesActualTargetDecision) {
+  PushHintsComponentAndWaitForCompletion();
+  RegisterWithKeyedService();
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
+  EXPECT_EQ(RetryForHistogramUntilCountReached(
+                histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
+            1);
+  // There should be a hint that matches this URL.
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                      true, 1);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_consumer_decision());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.TargetDecision.PainfulPageLoad",
+      static_cast<int>(optimization_guide::OptimizationTargetDecision::
+                           kModelPredictionHoldback),
+      1);
+}

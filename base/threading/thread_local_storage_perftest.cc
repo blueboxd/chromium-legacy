@@ -62,7 +62,6 @@ class TLSThread : public SimpleThread {
 };
 
 class ThreadLocalStoragePerfTest : public testing::Test {
- public:
  protected:
   ThreadLocalStoragePerfTest() = default;
   ~ThreadLocalStoragePerfTest() override = default;
@@ -124,11 +123,13 @@ class ThreadLocalStoragePerfTest : public testing::Test {
     for (auto& thread : threads)
       thread->Join();
 
-    perf_test::PrintResult(
-        measurment, "", trace,
-        num_operation /
-            static_cast<double>(operation_duration.InMilliseconds()),
-        "operations/ms", true);
+    perf_test::PrintResult(measurment, "", trace,
+                           num_operation / operation_duration.InMillisecondsF(),
+                           "operations/ms", true);
+    size_t nanos_per_operation =
+        operation_duration.InNanoseconds() / num_operation;
+    perf_test::PrintResult(measurment, "", trace, nanos_per_operation,
+                           "ns/operation", true);
   }
 
  private:
@@ -195,6 +196,18 @@ TEST_F(ThreadLocalStoragePerfTest, PlatformTls) {
 }
 
 #endif
+
+TEST_F(ThreadLocalStoragePerfTest, Cpp11Tls) {
+  thread_local intptr_t thread_local_variable;
+
+  auto read = [&]() { return thread_local_variable; };
+  auto write = [&](intptr_t value) {
+    reinterpret_cast<volatile intptr_t*>(&thread_local_variable)[0] = value;
+  };
+
+  Benchmark("C++ thread_local TLS", read, write, 10000000, 1);
+  Benchmark("C++ thread_local TLS 4 threads", read, write, 10000000, 4);
+}
 
 }  // namespace internal
 }  // namespace base

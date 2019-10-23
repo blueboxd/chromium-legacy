@@ -357,6 +357,7 @@ WebSocket::WebSocket(
     const GURL& url,
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
+    const net::NetworkIsolationKey& network_isolation_key,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t child_id,
     int32_t frame_id,
@@ -402,11 +403,11 @@ WebSocket::WebSocket(
         FROM_HERE,
         base::BindOnce(&WebSocket::AddChannel, weak_ptr_factory_.GetWeakPtr(),
                        url, requested_protocols, site_for_cookies,
-                       std::move(additional_headers)),
+                       network_isolation_key, std::move(additional_headers)),
         delay_);
     return;
   }
-  AddChannel(url, requested_protocols, site_for_cookies,
+  AddChannel(url, requested_protocols, site_for_cookies, network_isolation_key,
              std::move(additional_headers));
 }
 
@@ -524,6 +525,7 @@ void WebSocket::AddChannel(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
+    const net::NetworkIsolationKey& network_isolation_key,
     std::vector<mojom::HttpHeaderPtr> additional_headers) {
   DVLOG(3) << "WebSocket::AddChannel @" << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
@@ -551,7 +553,8 @@ void WebSocket::AddChannel(
     }
   }
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
-                                  site_for_cookies, headers_to_pass);
+                                  site_for_cookies, network_isolation_key,
+                                  headers_to_pass);
 }
 
 void WebSocket::OnWritable(MojoResult result,

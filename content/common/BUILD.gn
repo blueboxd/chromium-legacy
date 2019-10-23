@@ -474,7 +474,6 @@ mojom("mojo_bindings") {
     "input/input_handler.mojom",
     "input/input_injector.mojom",
     "input/synchronous_compositor.mojom",
-    "media/peer_connection_tracker.mojom",
     "media/renderer_audio_input_stream_factory.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
     "native_types.mojom",

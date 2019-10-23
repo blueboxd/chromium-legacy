@@ -322,6 +322,7 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
 
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsEphemeral);
 
+  EXPECT_CALL(observer(), OnProfileNameChanged(path, _)).Times(2);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultName);
   VerifyAndResetCallExpectations();
 

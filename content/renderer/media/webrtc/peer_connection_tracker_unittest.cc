@@ -5,10 +5,10 @@
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 
 #include "base/test/task_environment.h"
-#include "content/common/media/peer_connection_tracker.mojom.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_offer_options.h"
@@ -51,12 +51,13 @@ const char* kDefaultReceiverString =
     "  streams:['receiverStreamId'],\n"
     "}";
 
-class MockPeerConnectionTrackerHost : public mojom::PeerConnectionTrackerHost {
+class MockPeerConnectionTrackerHost
+    : public blink::mojom::PeerConnectionTrackerHost {
  public:
   MockPeerConnectionTrackerHost() {}
   MOCK_METHOD3(UpdatePeerConnection,
                void(int, const std::string&, const std::string&));
-  MOCK_METHOD1(AddPeerConnection, void(mojom::PeerConnectionInfoPtr));
+  MOCK_METHOD1(AddPeerConnection, void(blink::mojom::PeerConnectionInfoPtr));
   MOCK_METHOD1(RemovePeerConnection, void(int));
   MOCK_METHOD2(OnPeerConnectionSessionIdSet, void(int, const std::string&));
   MOCK_METHOD5(GetUserMedia,
@@ -69,14 +70,15 @@ class MockPeerConnectionTrackerHost : public mojom::PeerConnectionTrackerHost {
   MOCK_METHOD2(AddStandardStats, void(int, base::Value));
   MOCK_METHOD2(AddLegacyStats, void(int, base::Value));
 
-  mojo::Remote<mojom::PeerConnectionTrackerHost> CreatePendingRemoteAndBind() {
+  mojo::Remote<blink::mojom::PeerConnectionTrackerHost>
+  CreatePendingRemoteAndBind() {
     receiver_.reset();
-    return mojo::Remote<mojom::PeerConnectionTrackerHost>(
+    return mojo::Remote<blink::mojom::PeerConnectionTrackerHost>(
         receiver_.BindNewPipeAndPassRemote(
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   }
 
-  mojo::Receiver<mojom::PeerConnectionTrackerHost> receiver_{this};
+  mojo::Receiver<blink::mojom::PeerConnectionTrackerHost> receiver_{this};
 };
 
 // Creates a transceiver that is expected to be logged as

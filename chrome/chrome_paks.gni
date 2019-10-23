@@ -158,6 +158,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/cellular_setup_resources.pak",
         "$root_gen_dir/chrome/multidevice_setup_resources.pak",
         "$root_gen_dir/chrome/os_settings_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_help_app_resources.pak",
         "$root_gen_dir/chromeos/chromeos_resources.pak",
         "$root_gen_dir/third_party/ink/ink_resources.pak",
         "$root_gen_dir/ui/file_manager/file_manager_resources.pak",
@@ -169,6 +170,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/chromeos:cellular_setup_resources",
         "//chrome/browser/resources/chromeos:multidevice_setup_resources",
         "//chromeos/resources",
+        "//chromeos/resources:help_app_resources",
         "//third_party/ink:ink_resources",
         "//ui/file_manager:resources",
       ]

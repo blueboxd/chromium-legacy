@@ -28,9 +28,8 @@ class AnsibleManagementService : public KeyedService,
   class Observer : public base::CheckedObserver {
    public:
     ~Observer() override = default;
-    virtual void OnApplicationStarted() = 0;
-    virtual void OnApplicationFinished() = 0;
-    virtual void OnError() = 0;
+    virtual void OnAnsibleSoftwareConfigurationStarted() = 0;
+    virtual void OnAnsibleSoftwareConfigurationFinished(bool success) = 0;
   };
 
   static AnsibleManagementService* GetForProfile(Profile* profile);

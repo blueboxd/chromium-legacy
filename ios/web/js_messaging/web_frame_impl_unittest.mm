@@ -7,7 +7,6 @@
 #import "base/base64.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #import "base/strings/sys_string_conversions.h"

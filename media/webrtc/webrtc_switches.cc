@@ -26,6 +26,11 @@ namespace features {
 const base::Feature kWebRtcApmInAudioService{"WebRtcApmInAudioService",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables multi channel playout and capture audio to be processed without
+// downmixing in the WebRTC audio processing module.
+const base::Feature kWebRtcEnableMultiChannelApm{
+    "WebRtcEnableMultiChannelApm", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the WebRTC Agc2 digital adaptation with WebRTC Agc1 analog
 // adaptation. Feature for http://crbug.com/873650. Is sent to WebRTC.
 const base::Feature kWebRtcHybridAgc{"WebRtcHybridAgc",

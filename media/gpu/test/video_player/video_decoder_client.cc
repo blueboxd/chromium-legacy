@@ -185,7 +185,7 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
       decoder_ = ChromeosVideoDecoderFactory::Create(
           base::ThreadTaskRunnerHandle::Get(),
           std::make_unique<PlatformVideoFramePool>(gpu_memory_buffer_factory_),
-          std::make_unique<VideoFrameConverter>());
+          std::make_unique<VideoFrameConverter>(), gpu_memory_buffer_factory_);
     } else {
       LOG(ERROR) << "VD-based video decoders only support import mode";
     }

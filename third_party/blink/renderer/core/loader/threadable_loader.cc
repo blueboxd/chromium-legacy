@@ -729,15 +729,6 @@ void ThreadableLoader::DataDownloaded(Resource* resource,
   client_->DidDownloadData(data_length);
 }
 
-void ThreadableLoader::DidReceiveResourceTiming(
-    Resource* resource,
-    const ResourceTimingInfo& info) {
-  DCHECK(client_);
-  DCHECK_EQ(resource, GetResource());
-
-  client_->DidReceiveResourceTiming(info);
-}
-
 void ThreadableLoader::DidDownloadToBlob(Resource* resource,
                                          scoped_refptr<BlobDataHandle> blob) {
   DCHECK(client_);

@@ -660,6 +660,23 @@ void NavigationSimulatorImpl::AbortCommit() {
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
+void NavigationSimulatorImpl::AbortFromRenderer() {
+  CHECK(!browser_initiated_)
+      << "NavigationSimulatorImpl::AbortFromRenderer cannot be called for "
+         "browser-initiated navigation.";
+  CHECK_LE(state_, FAILED)
+      << "NavigationSimulatorImpl::AbortFromRenderer cannot be called after "
+         "NavigationSimulatorImpl::Commit or  "
+         "NavigationSimulatorImpl::CommitErrorPage.";
+
+  was_aborted_ = true;
+  DCHECK(IsPerNavigationMojoInterfaceEnabled());
+  request_->RendererAbortedNavigationForTesting();
+  state_ = FINISHED;
+
+  CHECK_EQ(1, num_did_finish_navigation_called_);
+}
+
 void NavigationSimulatorImpl::FailWithResponseHeaders(
     int error_code,
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
@@ -1019,6 +1036,8 @@ void NavigationSimulatorImpl::DidFinishNavigation(
   if (request == request_) {
     num_did_finish_navigation_called_++;
     request_ = nullptr;
+    if (was_aborted_)
+      CHECK_EQ(net::ERR_ABORTED, request->GetNetErrorCode());
   }
 }
 
@@ -1124,24 +1143,13 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
       InitiatorCSPInfo(should_check_main_world_csp_,
                        std::vector<ContentSecurityPolicy>(), base::nullopt);
 
-  if (IsPerNavigationMojoInterfaceEnabled()) {
-    mojo::PendingAssociatedRemote<mojom::NavigationClient>
-        navigation_client_remote;
-    navigation_client_receiver_ =
-        navigation_client_remote.InitWithNewEndpointAndPassReceiver();
-    render_frame_host_->frame_host_receiver_for_testing()
-        .impl()
-        ->BeginNavigation(std::move(common_params), std::move(begin_params),
-                          mojo::NullRemote(),
-                          std::move(navigation_client_remote),
-                          mojo::NullRemote());
-  } else {
-    render_frame_host_->frame_host_receiver_for_testing()
-        .impl()
-        ->BeginNavigation(std::move(common_params), std::move(begin_params),
-                          mojo::NullRemote(), mojo::NullAssociatedRemote(),
-                          mojo::NullRemote());
-  }
+  mojo::PendingAssociatedRemote<mojom::NavigationClient>
+      navigation_client_remote;
+  navigation_client_receiver_ =
+      navigation_client_remote.InitWithNewEndpointAndPassReceiver();
+  render_frame_host_->frame_host_receiver_for_testing().impl()->BeginNavigation(
+      std::move(common_params), std::move(begin_params), mojo::NullRemote(),
+      std::move(navigation_client_remote), mojo::NullRemote());
 
   NavigationRequest* request =
       render_frame_host_->frame_tree_node()->navigation_request();

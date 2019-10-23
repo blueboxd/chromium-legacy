@@ -55,8 +55,12 @@ enum class OptimizationTargetDecision {
   // The model needed to make the target decision was not available on the
   // client.
   kModelNotAvailableOnClient,
+  // The page load is part of a model prediction holdback where all decisions
+  // will return |OptimizationGuideDecision::kFalse| in an attempt to not taint
+  // the data for understanding the production recall of the model.
+  kModelPredictionHoldback,
   // Add new values above this line.
-  kMaxValue = kModelNotAvailableOnClient,
+  kMaxValue = kModelPredictionHoldback,
 };
 
 }  // namespace optimization_guide

@@ -28,7 +28,9 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace media {
+class AudioBufferMemoryPool;
 class AudioBus;
+class AudioRendererAlgorithm;
 }  // namespace media
 
 namespace net {
@@ -112,6 +114,9 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
                       float* const* channels)
       EXCLUSIVE_LOCKS_REQUIRED(lock_) override;
 
+  int FillAudio(int num_frames, float* const* channels)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
   void WritePcm(scoped_refptr<net::IOBuffer> data);
   RenderingDelay QueueData(scoped_refptr<net::IOBuffer> data)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -175,6 +180,13 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   // to us.
   int64_t playback_start_pts_ GUARDED_BY(lock_) = INT64_MIN;
   int remaining_silence_frames_ GUARDED_BY(lock_) = 0;
+  std::unique_ptr<::media::AudioRendererAlgorithm> rate_shifter_
+      GUARDED_BY(lock_);
+  std::unique_ptr<::media::AudioBus> rate_shifter_output_ GUARDED_BY(lock_);
+  int64_t rate_shifter_input_frames_ GUARDED_BY(lock_) = 0;
+  int64_t rate_shifter_output_frames_ GUARDED_BY(lock_) = 0;
+  bool skip_next_fill_for_rate_change_ GUARDED_BY(lock_) = false;
+  scoped_refptr<::media::AudioBufferMemoryPool> audio_buffer_pool_;
 
   base::RepeatingClosure pcm_completion_task_;
   base::RepeatingClosure eos_task_;

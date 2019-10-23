@@ -25,6 +25,7 @@
 
 #if BUILDFLAG(ENABLE_OPENXR)
 #include "device/vr/openxr/openxr_device.h"
+#include "device/vr/openxr/openxr_statics.h"
 #endif
 
 enum class IsolatedXRRuntimeProvider::RuntimeStatus {
@@ -158,7 +159,8 @@ void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
 
 #if BUILDFLAG(ENABLE_OPENXR)
   if (base::FeatureList::IsEnabled(features::kOpenXR)) {
-    should_check_openxr_ = device::OpenXrDevice::IsApiAvailable();
+    openxr_statics_ = std::make_unique<device::OpenXrStatics>();
+    should_check_openxr_ = openxr_statics_->IsApiAvailable();
     any_runtimes_available |= should_check_openxr_;
   }
 #endif
@@ -214,7 +216,7 @@ void IsolatedXRRuntimeProvider::SetWMRRuntimeStatus(RuntimeStatus status) {
 
 #if BUILDFLAG(ENABLE_OPENXR)
 bool IsolatedXRRuntimeProvider::IsOpenXrHardwareAvailable() {
-  return should_check_openxr_ && device::OpenXrDevice::IsHardwareAvailable();
+  return should_check_openxr_ && openxr_statics_->IsHardwareAvailable();
 }
 
 void IsolatedXRRuntimeProvider::SetOpenXrRuntimeStatus(RuntimeStatus status) {

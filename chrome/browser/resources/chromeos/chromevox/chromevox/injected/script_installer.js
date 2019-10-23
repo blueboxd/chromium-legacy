@@ -90,10 +90,6 @@ cvox.ScriptInstaller.installScriptHelper_ = function(
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       var scriptText = xhr.responseText;
-      // Add a magic comment to the bottom of the file so that
-      // Chrome knows the name of the script in the JavaScript debugger.
-      scriptText += '\n//# sourceURL=' + scriptSrc + '\n';
-
       var apiScript = document.createElement('script');
       apiScript.type = 'text/javascript';
       apiScript.setAttribute(uid, '1');

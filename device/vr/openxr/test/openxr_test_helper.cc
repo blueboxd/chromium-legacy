@@ -48,7 +48,11 @@ uint32_t OpenXrTestHelper::NumViews() {
 }
 
 OpenXrTestHelper::OpenXrTestHelper()
-    : system_id_(0),
+    // since openxr_statics is created first, so the first instance returned
+    // should be a fake one since openxr_statics does not need to use
+    // test_hook_;
+    : create_fake_instance_(true),
+      system_id_(0),
       session_(XR_NULL_HANDLE),
       session_state_(XR_SESSION_STATE_UNKNOWN),
       swapchain_(XR_NULL_HANDLE),
@@ -57,6 +61,39 @@ OpenXrTestHelper::OpenXrTestHelper()
       next_predicted_display_time_(0) {}
 
 OpenXrTestHelper::~OpenXrTestHelper() = default;
+
+void OpenXrTestHelper::Reset() {
+  session_ = XR_NULL_HANDLE;
+  session_state_ = XR_SESSION_STATE_UNKNOWN;
+  swapchain_ = XR_NULL_HANDLE;
+
+  create_fake_instance_ = true;
+  system_id_ = 0;
+  d3d_device_ = nullptr;
+  acquired_swapchain_texture_ = 0;
+  next_action_space_ = 0;
+  next_predicted_display_time_ = 0;
+
+  // vectors
+  textures_arr_.clear();
+  paths_.clear();
+
+  // unordered_maps
+  actions_.clear();
+  action_spaces_.clear();
+  reference_spaces_.clear();
+  action_sets_.clear();
+  float_action_states_.clear();
+  boolean_action_states_.clear();
+  v2f_action_states_.clear();
+  pose_action_state_.clear();
+
+  // unordered_sets
+  action_names_.clear();
+  action_localized_names_.clear();
+  action_set_names_.clear();
+  action_set_localized_names_.clear();
+}
 
 void OpenXrTestHelper::TestFailure() {
   NOTREACHED();
@@ -123,6 +160,20 @@ XrResult OpenXrTestHelper::GetSession(XrSession* session) {
 XrSwapchain OpenXrTestHelper::GetSwapchain() {
   swapchain_ = TreatIntegerAsHandle<XrSwapchain>(3);
   return swapchain_;
+}
+
+XrInstance OpenXrTestHelper::CreateInstance() {
+  // Return the test helper object back to the OpenXrAPIWrapper so it can use
+  // it as the TestHookRegistration.However we have to return different instance
+  // for openxr_statics since openxr loader records instance created and
+  // detroyed. The first instance is used by openxr_statics which does not need
+  // to use test_hook_, So we can give it an arbitrary instance as long as
+  // ValidateInstance method remember it's an valid option.
+  if (create_fake_instance_) {
+    create_fake_instance_ = false;
+    return reinterpret_cast<XrInstance>(this + 1);
+  }
+  return reinterpret_cast<XrInstance>(this);
 }
 
 XrResult OpenXrTestHelper::GetActionStateFloat(XrAction action,
@@ -627,7 +678,9 @@ XrResult OpenXrTestHelper::ValidateActionSpaceCreateInfo(
 XrResult OpenXrTestHelper::ValidateInstance(XrInstance instance) const {
   // The Fake OpenXr Runtime returns this global OpenXrTestHelper object as the
   // instance value on xrCreateInstance.
-  RETURN_IF(reinterpret_cast<OpenXrTestHelper*>(instance) != this,
+
+  RETURN_IF(reinterpret_cast<OpenXrTestHelper*>(instance) != this &&
+                reinterpret_cast<OpenXrTestHelper*>(instance) != (this + 1),
             XR_ERROR_VALIDATION_FAILURE, "XrInstance invalid");
 
   return XR_SUCCESS;

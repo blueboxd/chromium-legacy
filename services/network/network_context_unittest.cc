@@ -2107,10 +2107,10 @@ bool SetCookieHelper(NetworkContext* network_context,
   bool result = false;
   cookie_manager->SetCanonicalCookie(
       net::CanonicalCookie(key, value, url.host(), "/", base::Time(),
-                           base::Time(), base::Time(), false, false,
+                           base::Time(), base::Time(), true, false,
                            net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_LOW),
-      url.scheme(), net::CookieOptions(),
+      url.scheme(), net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SetCookieCallback, &run_loop, &result));
   run_loop.Run();
   return result;
@@ -2127,14 +2127,12 @@ TEST_F(NetworkContextTest, CookieManager) {
   // Set a cookie through the cookie interface.
   base::RunLoop run_loop1;
   bool result = false;
-  net::CookieOptions options;
-  options.set_include_httponly();
   cookie_manager_remote->SetCanonicalCookie(
       net::CanonicalCookie("TestCookie", "1", "www.test.com", "/", base::Time(),
                            base::Time(), base::Time(), false, false,
-                           net::CookieSameSite::NO_RESTRICTION,
+                           net::CookieSameSite::LAX_MODE,
                            net::COOKIE_PRIORITY_LOW),
-      "https", options,
+      "https", net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SetCookieCallback, &run_loop1, &result));
   run_loop1.Run();
   EXPECT_TRUE(result);
@@ -2146,7 +2144,8 @@ TEST_F(NetworkContextTest, CookieManager) {
   network_context->url_request_context()
       ->cookie_store()
       ->GetCookieListWithOptionsAsync(
-          GURL("http://www.test.com/whatever"), net::CookieOptions(),
+          GURL("http://www.test.com/whatever"),
+          net::CookieOptions::MakeAllInclusive(),
           base::Bind(&GetCookieListCallback, &run_loop2, &cookies));
   run_loop2.Run();
   ASSERT_EQ(1u, cookies.size());
@@ -3317,7 +3316,7 @@ TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
       kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
                               base::Time(), base::Time(), base::Time(), false,
-                              false, net::CookieSameSite::NO_RESTRICTION,
+                              false, net::CookieSameSite::LAX_MODE,
                               net::COOKIE_PRIORITY_LOW);
 
   EXPECT_TRUE(
@@ -3337,7 +3336,7 @@ TEST_F(NetworkContextTest, CanSetCookieTrueIfCookiesAllowed) {
       kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
                               base::Time(), base::Time(), base::Time(), false,
-                              false, net::CookieSameSite::NO_RESTRICTION,
+                              false, net::CookieSameSite::LAX_MODE,
                               net::COOKIE_PRIORITY_LOW);
 
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
@@ -5584,7 +5583,8 @@ TEST_F(NetworkContextTest, MaximumCount) {
 }
 
 TEST_F(NetworkContextTest, AllowAllCookies) {
-  net::test_server::EmbeddedTestServer test_server;
+  net::test_server::EmbeddedTestServer test_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
   test_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("services/test/data")));
   ASSERT_TRUE(test_server.Start());
@@ -5628,7 +5628,8 @@ TEST_F(NetworkContextTest, AllowAllCookies) {
 }
 
 TEST_F(NetworkContextTest, BlockThirdPartyCookies) {
-  net::test_server::EmbeddedTestServer test_server;
+  net::test_server::EmbeddedTestServer test_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
   test_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("services/test/data")));
   ASSERT_TRUE(test_server.Start());
@@ -5672,7 +5673,8 @@ TEST_F(NetworkContextTest, BlockThirdPartyCookies) {
 }
 
 TEST_F(NetworkContextTest, BlockAllCookies) {
-  net::test_server::EmbeddedTestServer test_server;
+  net::test_server::EmbeddedTestServer test_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
   test_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("services/test/data")));
   ASSERT_TRUE(test_server.Start());

@@ -1278,12 +1278,6 @@ class CONTENT_EXPORT RenderFrameImpl
                      std::string* data,
                      GURL* base_url);
 
-  // Sends a proper DidFailProvisionalLoadWithError mojo IPC for
-  // the failed provisional load.
-  void SendFailedProvisionalLoad(const std::string& http_method,
-                                 const blink::WebURLError& error,
-                                 blink::WebLocalFrame* frame);
-
   bool ShouldDisplayErrorPageForFailedLoad(int error_code,
                                            const GURL& unreachable_url);
 

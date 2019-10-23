@@ -37,24 +37,6 @@ source_set("helpers") {
   }
 }
 
-source_set("render_helpers") {
-  testonly = true
-  sources = [
-    "rendering_helper.cc",
-    "rendering_helper.h",
-    "texture_ref.cc",
-    "texture_ref.h",
-  ]
-  deps = [
-    ":helpers",
-    "//media/gpu",
-    "//ui/gl/init:init",
-  ]
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
-}
-
 source_set("frame_validator") {
   testonly = true
   sources = [
@@ -76,7 +58,6 @@ source_set("frame_file_writer") {
   ]
   deps = [
     ":helpers",
-    ":render_helpers",
     "//media/gpu",
     "//ui/gfx/codec:codec",
   ]
@@ -90,7 +71,6 @@ source_set("decode_helpers") {
   ]
   public_deps = [
     ":helpers",
-    ":render_helpers",
   ]
   deps = [
     "//media/gpu",
@@ -166,7 +146,6 @@ if (use_vaapi || use_v4l2_codec) {
     ]
     deps = [
       ":helpers",
-      ":render_helpers",
       "//media:test_support",
       "//media/gpu",
       "//media/gpu/chromeos:fourcc",

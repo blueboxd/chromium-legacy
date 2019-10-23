@@ -39,12 +39,11 @@
 
 namespace blink {
 
-using namespace html_names;
-
 bool HTMLTablePartElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == kBgcolorAttr || name == kBackgroundAttr || name == kValignAttr ||
-      name == kAlignAttr || name == kHeightAttr)
+  if (name == html_names::kBgcolorAttr || name == html_names::kBackgroundAttr ||
+      name == html_names::kValignAttr || name == html_names::kAlignAttr ||
+      name == html_names::kHeightAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -53,9 +52,9 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kBgcolorAttr) {
+  if (name == html_names::kBgcolorAttr) {
     AddHTMLColorToStyle(style, CSSPropertyID::kBackgroundColor, value);
-  } else if (name == kBackgroundAttr) {
+  } else if (name == html_names::kBackgroundAttr) {
     String url = StripLeadingAndTrailingHTMLSpaces(value);
     if (!url.IsEmpty()) {
       UseCounter::Count(
@@ -69,7 +68,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }
-  } else if (name == kValignAttr) {
+  } else if (name == html_names::kValignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "top")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kVerticalAlign, CSSValueID::kTop);
@@ -86,7 +85,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kVerticalAlign, value);
     }
-  } else if (name == kAlignAttr) {
+  } else if (name == html_names::kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle") ||
         DeprecatedEqualIgnoringCase(value, "center")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
@@ -104,7 +103,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               value);
     }
-  } else if (name == kHeightAttr) {
+  } else if (name == html_names::kHeightAttr) {
     if (!value.IsEmpty())
       AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   } else {

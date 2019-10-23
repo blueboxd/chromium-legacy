@@ -43,8 +43,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 ApplyBlockElementCommand::ApplyBlockElementCommand(
     Document& document,
     const QualifiedName& tag_name,
@@ -416,7 +414,7 @@ ApplyBlockElementCommand::EndOfNextParagrahSplittingTextNodesIfNeeded(
 HTMLElement* ApplyBlockElementCommand::CreateBlockElement() const {
   HTMLElement* element = CreateHTMLElement(GetDocument(), tag_name_);
   if (inline_style_.length())
-    element->setAttribute(kStyleAttr, inline_style_);
+    element->setAttribute(html_names::kStyleAttr, inline_style_);
   return element;
 }
 

@@ -24,9 +24,10 @@ LaunchService* LaunchService::Get(Profile* profile) {
 
 LaunchService::LaunchService(Profile* profile) : profile_(profile) {
   DCHECK(profile_);
-  // LaunchService must have only one instance in original profile.
-  // Exclude secondary off-the-record profiles.
-  DCHECK(!profile_->IsOffTheRecord());
+
+  // LaunchService must have only one instance in original profile,
+  // apart from guest mode where the off-the-record profile is used.
+  DCHECK_EQ(profile_->IsGuestSession(), profile_->IsOffTheRecord());
 
   extension_app_launch_manager_ =
       std::make_unique<ExtensionAppLaunchManager>(profile);

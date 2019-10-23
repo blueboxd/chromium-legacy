@@ -1042,6 +1042,8 @@ interface NetworkContext {
   // "sec-websocket-protocol" is constructed from  |requested_protocols| in
   // this message). |site_for_cookies| represents the first-party origin for
   // the request. |options| may be a combination of the kWebSocketOption* flags.
+  // |network_isolation_key| is a (top_frame, current_frame) origin combination
+  // used to isolate shared network stack resources based on the context.
   //
   // If |header_client| is set, requests with the kURLLoadOptionUseHeaderClient
   // option will callback to the |header_client|, allowing the Cookie/Referrer
@@ -1059,6 +1061,7 @@ interface NetworkContext {
         url.mojom.Url url,
         array<string> requested_protocols,
         url.mojom.Url site_for_cookies,
+        NetworkIsolationKey network_isolation_key,
         array<HttpHeader> additional_headers,
         int32 process_id,
         int32 render_frame_id,

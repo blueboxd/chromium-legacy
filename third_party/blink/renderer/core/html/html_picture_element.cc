@@ -15,10 +15,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLPictureElement::HTMLPictureElement(Document& document)
-    : HTMLElement(kPictureTag, document) {}
+    : HTMLElement(html_names::kPictureTag, document) {}
 
 void HTMLPictureElement::SourceOrMediaChanged() {
   for (HTMLImageElement* image_element =

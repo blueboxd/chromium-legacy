@@ -32,13 +32,11 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLLIElement::HTMLLIElement(Document& document)
-    : HTMLElement(kLiTag, document) {}
+    : HTMLElement(html_names::kLiTag, document) {}
 
 bool HTMLLIElement::IsPresentationAttribute(const QualifiedName& name) const {
-  if (name == kTypeAttr)
+  if (name == html_names::kTypeAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -69,7 +67,7 @@ void HTMLLIElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kTypeAttr) {
+  if (name == html_names::kTypeAttr) {
     CSSValueID type_value = ListTypeToCSSValueID(value);
     if (IsValidCSSValueID(type_value)) {
       AddPropertyToPresentationAttributeStyle(
@@ -81,7 +79,7 @@ void HTMLLIElement::CollectStyleForPresentationAttribute(
 }
 
 void HTMLLIElement::ParseAttribute(const AttributeModificationParams& params) {
-  if (params.name == kValueAttr) {
+  if (params.name == html_names::kValueAttr) {
     if (ListItemOrdinal* ordinal = ListItemOrdinal::Get(*this))
       ParseValue(params.new_value, ordinal);
   } else {
@@ -112,7 +110,7 @@ void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
     if (!list_node)
       ordinal->SetNotInList(true, *this);
 
-    ParseValue(FastGetAttribute(kValueAttr), ordinal);
+    ParseValue(FastGetAttribute(html_names::kValueAttr), ordinal);
   }
 }
 

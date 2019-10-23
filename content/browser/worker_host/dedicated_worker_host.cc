@@ -381,10 +381,10 @@ void DedicatedWorkerHost::CreateWebSocketConnector(
                              "The parent frame has already been gone.");
     return;
   }
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<WebSocketConnectorImpl>(
-          worker_process_id_, ancestor_render_frame_id_, origin_),
-      std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<WebSocketConnectorImpl>(
+                                  worker_process_id_, ancestor_render_frame_id_,
+                                  origin_, network_isolation_key_),
+                              std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateNestedDedicatedWorker(

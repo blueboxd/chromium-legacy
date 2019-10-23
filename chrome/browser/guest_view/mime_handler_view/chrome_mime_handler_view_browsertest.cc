@@ -13,11 +13,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pdf_util.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
@@ -40,6 +42,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/guest_view/mime_handler_view_uma_types.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -54,8 +57,11 @@
 #include "ui/aura/window.h"
 #endif
 
+using extensions::Extension;
 using extensions::ExtensionsAPIClient;
+using extensions::ExtensionTabUtil;
 using extensions::MimeHandlerViewGuest;
+using extensions::OptionsPageInfo;
 using extensions::TestMimeHandlerViewGuest;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
@@ -660,7 +666,7 @@ class StubDevToolsAgentHostClient : public content::DevToolsAgentHostClient {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
-                       GuestDevToolsReloadsEmbedder) {
+                       GuestDevToolsReloadsEmbedderForPDFFiles) {
   GURL data_url("data:application/pdf,foo");
   ui_test_utils::NavigateToURL(browser(), data_url);
   auto* embedder_web_contents =
@@ -682,6 +688,51 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
 
   // Reload via guest's DevTools, embedder should reload.
   content::TestNavigationObserver reload_observer(embedder_web_contents);
+  devtools_agent_host->DispatchProtocolMessage(
+      &devtools_agent_host_client, R"({"id":1,"method": "Page.reload"})");
+  reload_observer.Wait();
+  devtools_agent_host->DetachClient(&devtools_agent_host_client);
+}
+
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       GuestDevToolsReloadsEmbedder) {
+  // Load an extension with an options view
+  const Extension* options_in_view =
+      LoadExtension(test_data_dir_.AppendASCII("../options_page_in_view"));
+
+  ASSERT_TRUE(options_in_view);
+  ASSERT_TRUE(OptionsPageInfo::HasOptionsPage(options_in_view));
+
+  GURL options_url = GURL(std::string(chrome::kChromeUIExtensionsURL) +
+                          "?options=" + options_in_view->id());
+  EXPECT_TRUE(ExtensionTabUtil::OpenOptionsPage(options_in_view, browser()));
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_EQ(options_url, browser()
+                             ->tab_strip_model()
+                             ->GetActiveWebContents()
+                             ->GetLastCommittedURL());
+
+  auto* embedder_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  EXPECT_NE(embedder_web_contents, guest_web_contents);
+
+  while (guest_web_contents->IsLoading()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  // Load DevTools.
+  scoped_refptr<content::DevToolsAgentHost> devtools_agent_host =
+      content::DevToolsAgentHost::GetOrCreateFor(guest_web_contents);
+  StubDevToolsAgentHostClient devtools_agent_host_client;
+  devtools_agent_host->AttachClient(&devtools_agent_host_client);
+
+  // Reload via guest's DevTools, embedder should reload.
+  content::TestNavigationObserver reload_observer(guest_web_contents);
   devtools_agent_host->DispatchProtocolMessage(
       &devtools_agent_host_client, R"({"id":1,"method": "Page.reload"})");
   reload_observer.Wait();

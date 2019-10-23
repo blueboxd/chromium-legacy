@@ -72,8 +72,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 class AttributeChange {
   DISALLOW_NEW();
 
@@ -131,7 +129,7 @@ static HTMLElement* AncestorToRetainStructureAndAppearanceForBlock(
   if (!common_ancestor_block)
     return nullptr;
 
-  if (common_ancestor_block->HasTagName(kTbodyTag) ||
+  if (common_ancestor_block->HasTagName(html_names::kTbodyTag) ||
       IsHTMLTableRowElement(*common_ancestor_block))
     return Traversal<HTMLTableElement>::FirstAncestor(*common_ancestor_block);
 
@@ -251,7 +249,7 @@ static HTMLElement* HighestAncestorToWrapMarkup(
           Position::FirstPositionInNode(special_common_ancestor
                                             ? *special_common_ancestor
                                             : *common_ancestor),
-          kATag)))
+          html_names::kATag)))
     special_common_ancestor = enclosing_anchor;
 
   return special_common_ancestor;
@@ -562,7 +560,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
     fragment->AppendChild(document.createTextNode(string));
     if (string.EndsWith('\n')) {
       auto* element = MakeGarbageCollected<HTMLBRElement>(document);
-      element->setAttribute(kClassAttr, AppleInterchangeNewline);
+      element->setAttribute(html_names::kClassAttr, AppleInterchangeNewline);
       fragment->AppendChild(element);
     }
     return fragment;
@@ -592,7 +590,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
     if (s.IsEmpty() && i + 1 == num_lines) {
       // For last line, use the "magic BR" rather than a P.
       element = MakeGarbageCollected<HTMLBRElement>(document);
-      element->setAttribute(kClassAttr, AppleInterchangeNewline);
+      element->setAttribute(html_names::kClassAttr, AppleInterchangeNewline);
     } else {
       if (use_clones_of_enclosing_block)
         element = &block->CloneWithoutChildren();

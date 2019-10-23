@@ -1101,6 +1101,9 @@ void TabletModeController::SetIsInTabletPhysicalState(bool new_state) {
 
   is_in_tablet_physical_state_ = new_state;
 
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletPhysicalStateChanged();
+
   // InputDeviceBlocker must always be updated, but don't update it here if the
   // UI state has changed because it's already done.
   if (UpdateUiTabletState())

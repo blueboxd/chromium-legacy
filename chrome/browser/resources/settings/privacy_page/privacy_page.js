@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('settings');
+
 /**
  * @typedef {{
  *   enabled: boolean,
@@ -26,6 +28,29 @@ const NetworkPredictionOptions = {
   WIFI_ONLY: 1,
   NEVER: 2,
   DEFAULT: 1,
+};
+
+/**
+ * These values are persisted to logs. Entries should not be renumbered and
+ * numeric values should never be reused.
+ *
+ * Must be kept in sync with enum of the same name in
+ * histograms/enums.xml
+ *
+ * Interactions across all settings pages should be added here.
+ */
+settings.SettingsPageInteractions = {
+  PRIVACY_SYNC_AND_GOOGLE_SERVICES: 0,
+  PRIVACY_CHROME_SIGN_IN: 1,
+  PRIVACY_DO_NOT_TRACK: 2,
+  PRIVACY_PAYMENT_METHOD: 3,
+  PRIVACY_NETWORK_PREDICTION: 4,
+  PRIVACY_MANAGE_CERTIFICATES: 5,
+  PRIVACY_SECURITY_KEYS: 6,
+  PRIVACY_SITE_SETTINGS: 7,
+  PRIVACY_CLEAR_BROWSING_DATA: 8,
+  // Leave this at the end.
+  SETTINGS_MAX_VALUE: 8,
 };
 
 Polymer({
@@ -276,12 +301,25 @@ Polymer({
   },
 
   /**
+   * Records changes made to the "can a website check if you have saved payment
+   * methods" setting for logging, the logic of actually changing the setting
+   * is taken care of by the webUI pref.
+   * @private
+   */
+  onCanMakePaymentChange_: function() {
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD);
+  },
+
+  /**
    * Handles the change event for the do-not-track toggle. Shows a
    * confirmation dialog when enabling the setting.
    * @param {!Event} event
    * @private
    */
   onDoNotTrackChange_: function(event) {
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK);
     const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
     if (!target.checked) {
       // Always allow disabling the pref.
@@ -342,6 +380,18 @@ Polymer({
     // <if expr="is_win or is_macosx">
     this.browserProxy_.showManageSSLCertificates();
     // </if>
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES);
+  },
+
+  /**
+   * Records changes made to the network prediction setting for logging, the
+   * logic of actually changing the setting is taken care of by the webUI pref.
+   * @private
+   */
+  onNetworkPredictionChange_: function() {
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_NETWORK_PREDICTION);
   },
 
   /** @private */
@@ -349,6 +399,8 @@ Polymer({
     // Navigate to sync page, and remove (privacy related) search text to
     // avoid the sync page from being hidden.
     settings.navigateTo(settings.routes.SYNC, null, true);
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_SYNC_AND_GOOGLE_SERVICES);
   },
 
   /**
@@ -371,11 +423,15 @@ Polymer({
   /** @private */
   onSiteSettingsTap_: function() {
     settings.navigateTo(settings.routes.SITE_SETTINGS);
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS);
   },
 
   /** @private */
   onClearBrowsingDataTap_: function() {
     settings.navigateTo(settings.routes.CLEAR_BROWSER_DATA);
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA);
   },
 
   /** @private */
@@ -387,6 +443,8 @@ Polymer({
   /** @private */
   onSecurityKeysTap_: function() {
     settings.navigateTo(settings.routes.SECURITY_KEYS);
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_SECURITY_KEYS);
   },
 
   /** @private */
@@ -412,6 +470,8 @@ Polymer({
           .sendPrefChange();
       this.showRestart_ = true;
     }
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_CHROME_SIGN_IN);
   },
 
   /** @private */

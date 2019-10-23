@@ -76,7 +76,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
 
  private:
   void StreamCreated(
-      media::mojom::AudioInputStreamPtr stream,
+      mojo::PendingRemote<media::mojom::AudioInputStream> stream,
       media::mojom::AudioInputStreamClientRequest stream_client_request,
       media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
@@ -91,7 +91,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
   StreamCreatorCB stream_creator_;
   StreamAssociatorCB stream_associator_;
 
-  media::mojom::AudioInputStreamPtr stream_;
+  mojo::Remote<media::mojom::AudioInputStream> stream_;
   mojo::Remote<audio::mojom::AudioProcessorControls> processor_controls_;
   // Initialized on StreamCreated.
   base::Optional<base::UnguessableToken> stream_id_;

@@ -86,7 +86,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(bindings::V8ValueOrScriptW
   // Enum values provided by Blink must be valid, otherwise typo.
 #if DCHECK_IS_ON()
   {
-    const char* kValidArgValues[] = {
+    const char* const kValidArgValues[] = {
         "",
         "EnumValue1",
         "EnumValue2",

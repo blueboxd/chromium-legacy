@@ -293,11 +293,13 @@ class WebSocketEndToEndTest : public TestWithTaskEnvironment {
     }
     url::Origin origin = url::Origin::Create(GURL("http://localhost"));
     GURL site_for_cookies("http://localhost/");
+    net::NetworkIsolationKey network_isolation_key(origin, origin);
     event_interface_ = new ConnectTestingEventInterface();
     channel_ = std::make_unique<WebSocketChannel>(
         base::WrapUnique(event_interface_), &context_);
     channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin,
-                                    site_for_cookies, HttpRequestHeaders());
+                                    site_for_cookies, network_isolation_key,
+                                    HttpRequestHeaders());
     event_interface_->WaitForResponse();
     return !event_interface_->failed();
   }

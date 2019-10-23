@@ -10,9 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/media/peer_connection_tracker.mojom.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
@@ -39,7 +40,7 @@ class RTCPeerConnectionHandler;
 // sends it to the browser process, and handles messages
 // from the browser process.
 class CONTENT_EXPORT PeerConnectionTracker
-    : public mojom::PeerConnectionManager,
+    : public blink::mojom::PeerConnectionManager,
       public base::SupportsWeakPtr<PeerConnectionTracker> {
  public:
   static PeerConnectionTracker* GetInstance();
@@ -49,7 +50,7 @@ class CONTENT_EXPORT PeerConnectionTracker
   explicit PeerConnectionTracker(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   PeerConnectionTracker(
-      mojo::Remote<mojom::PeerConnectionTrackerHost> host,
+      mojo::Remote<blink::mojom::PeerConnectionTrackerHost> host,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~PeerConnectionTracker() override;
 
@@ -75,7 +76,8 @@ class CONTENT_EXPORT PeerConnectionTracker
     kSetRemoteDescription,
   };
 
-  void Bind(mojo::PendingReceiver<mojom::PeerConnectionManager> receiver);
+  void Bind(
+      mojo::PendingReceiver<blink::mojom::PeerConnectionManager> receiver);
 
   // The following methods send an update to the browser process when a
   // PeerConnection update happens. The caller should call the Track* methods
@@ -269,8 +271,9 @@ class CONTENT_EXPORT PeerConnectionTracker
   // This keeps track of the next available local ID.
   int next_local_id_;
   THREAD_CHECKER(main_thread_);
-  mojo::Remote<mojom::PeerConnectionTrackerHost> peer_connection_tracker_host_;
-  mojo::Receiver<mojom::PeerConnectionManager> receiver_{this};
+  mojo::Remote<blink::mojom::PeerConnectionTrackerHost>
+      peer_connection_tracker_host_;
+  mojo::Receiver<blink::mojom::PeerConnectionManager> receiver_{this};
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

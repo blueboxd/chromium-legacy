@@ -37,8 +37,9 @@ void LanguagePrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(language::prefs::kPreferredLanguages,
                                kFallbackInputMethodLocale);
 
-  registry->RegisterStringPref(language::prefs::kPreferredLanguagesSyncable, "",
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(
+      language::prefs::kPreferredLanguagesSyncable, "",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 #endif
   registry->RegisterListPref(language::prefs::kFluentLanguages,
                              LanguagePrefs::GetDefaultFluentLanguages(),

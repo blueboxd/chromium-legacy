@@ -29,9 +29,7 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLSpanElement::HTMLSpanElement(Document& document)
-    : HTMLElement(kSpanTag, document) {}
+    : HTMLElement(html_names::kSpanTag, document) {}
 
 }  // namespace blink

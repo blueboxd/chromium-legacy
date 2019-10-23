@@ -13,7 +13,6 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"

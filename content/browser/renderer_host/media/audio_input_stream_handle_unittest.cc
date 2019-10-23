@@ -16,6 +16,7 @@
 #include "media/audio/audio_input_delegate.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,19 +49,19 @@ class MockRendererAudioInputStreamFactoryClient
   MOCK_METHOD0(Created, void());
 
   void StreamCreated(
-      media::mojom::AudioInputStreamPtr input_stream,
+      mojo::PendingRemote<media::mojom::AudioInputStream> input_stream,
       media::mojom::AudioInputStreamClientRequest client_request,
       media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
       const base::Optional<base::UnguessableToken>& stream_id) override {
     EXPECT_TRUE(stream_id.has_value());
-    input_stream_ = std::move(input_stream);
+    input_stream_.Bind(std::move(input_stream));
     client_request_ = std::move(client_request);
     Created();
   }
 
  private:
-  media::mojom::AudioInputStreamPtr input_stream_;
+  mojo::Remote<media::mojom::AudioInputStream> input_stream_;
   media::mojom::AudioInputStreamClientRequest client_request_;
 };
 

@@ -16,7 +16,9 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
+#include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/permission_context_base.h"
+#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager_test_api.h"
 #include "chrome/browser/permissions/permission_util.h"
@@ -687,6 +689,133 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_TRUE(back_forward_cache_tester.IsDisabledForFrameWithReason(
       main_frame_process_id, main_frame_routing_id,
       "PermissionRequestManager"));
+}
+
+// For browser tests feature overrides need to be enabled during SetUp.
+// Have a separate fixture based on which UI flavor needs to be enabled.
+class PermissionRequestManagerBrowserTest_StaticIcon
+    : public PermissionRequestManagerBrowserTest {
+ public:
+  void SetUp() override {
+    base::FieldTrialParams params;
+    params[kQuietNotificationPromptsUIFlavourParameterName] =
+        kQuietNotificationPromptsStaticIcon;
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        features::kQuietNotificationPrompts, params);
+
+    PermissionRequestManagerBrowserTest::SetUp();
+  }
+};
+
+class PermissionRequestManagerBrowserTest_AnimatedIcon
+    : public PermissionRequestManagerBrowserTest {
+ public:
+  void SetUp() override {
+    base::FieldTrialParams params;
+    params[kQuietNotificationPromptsUIFlavourParameterName] =
+        kQuietNotificationPromptsAnimatedIcon;
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        features::kQuietNotificationPrompts, params);
+
+    PermissionRequestManagerBrowserTest::SetUp();
+  }
+};
+
+// Quiet permission requests are cancelled when a new request is made.
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_StaticIcon,
+                       QuietPendingRequestsKilledOnNewRequest) {
+  // First add a quiet permission request. Ensure that this request is decided
+  // by the end of this test.
+  MockPermissionRequest request_quiet(
+      "quiet", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      PermissionRequestGestureType::UNKNOWN);
+  GetPermissionRequestManager()->AddRequest(&request_quiet);
+  base::RunLoop().RunUntilIdle();
+
+  // Add a second permission request. This ones should cause the initial
+  // request to be cancelled.
+  MockPermissionRequest request_loud(
+      "loud", PermissionRequestType::PERMISSION_GEOLOCATION,
+      PermissionRequestGestureType::UNKNOWN);
+  GetPermissionRequestManager()->AddRequest(&request_loud);
+  base::RunLoop().RunUntilIdle();
+
+  // The first dialog should now have been decided.
+  EXPECT_TRUE(request_quiet.finished());
+  EXPECT_EQ(1u, GetPermissionRequestManager()->Requests().size());
+
+  // Cleanup remaining request. And check that this was the last request.
+  GetPermissionRequestManager()->Closing();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, GetPermissionRequestManager()->Requests().size());
+}
+
+// Quiet permission requests are cancelled when a new request is made.
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
+                       QuietPendingRequestsKilledOnNewRequest) {
+  // First add a quiet permission request. Ensure that this request is decided
+  // by the end of this test.
+  MockPermissionRequest request_quiet(
+      "quiet", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      PermissionRequestGestureType::UNKNOWN);
+  GetPermissionRequestManager()->AddRequest(&request_quiet);
+  base::RunLoop().RunUntilIdle();
+
+  // Add a second permission request. This ones should cause the initial
+  // request to be cancelled.
+  MockPermissionRequest request_loud(
+      "loud", PermissionRequestType::PERMISSION_GEOLOCATION,
+      PermissionRequestGestureType::UNKNOWN);
+  GetPermissionRequestManager()->AddRequest(&request_loud);
+  base::RunLoop().RunUntilIdle();
+
+  // The first dialog should now have been decided.
+  EXPECT_TRUE(request_quiet.finished());
+  EXPECT_EQ(1u, GetPermissionRequestManager()->Requests().size());
+
+  // Cleanup remaining request. And check that this was the last request.
+  GetPermissionRequestManager()->Closing();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, GetPermissionRequestManager()->Requests().size());
+}
+
+// Two loud requests are simply queued one after another.
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
+                       LoudPendingRequestsQueued) {
+  MockPermissionRequest request1(
+      "request1", PermissionRequestType::PERMISSION_CLIPBOARD_READ,
+      PermissionRequestGestureType::UNKNOWN);
+  GetPermissionRequestManager()->AddRequest(&request1);
+  base::RunLoop().RunUntilIdle();
+
+  MockPermissionRequest request2("request2",
+                                 PermissionRequestType::PERMISSION_GEOLOCATION,
+                                 PermissionRequestGestureType::UNKNOWN);
+  GetPermissionRequestManager()->AddRequest(&request2);
+  base::RunLoop().RunUntilIdle();
+
+  // Both requests are still pending (though only one is active).
+  EXPECT_FALSE(request1.finished());
+  EXPECT_FALSE(request2.finished());
+  EXPECT_EQ(1u, GetPermissionRequestManager()->Requests().size());
+
+  // Close first request.
+  GetPermissionRequestManager()->Closing();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(request1.finished());
+  EXPECT_FALSE(request2.finished());
+  EXPECT_EQ(1u, GetPermissionRequestManager()->Requests().size());
+
+  // Close second request. No more requests pending
+  GetPermissionRequestManager()->Closing();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(request1.finished());
+  EXPECT_TRUE(request2.finished());
+  EXPECT_EQ(0u, GetPermissionRequestManager()->Requests().size());
 }
 
 // Test bubbles showing when tabs move between windows. Simulates a situation

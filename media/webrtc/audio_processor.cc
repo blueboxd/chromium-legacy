@@ -244,6 +244,10 @@ void AudioProcessor::InitializeAPM() {
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
 
+  // APM audio pipeline setup.
+  apm_config.pipeline.experimental_multi_channel =
+      base::FeatureList::IsEnabled(features::kWebRtcEnableMultiChannelApm);
+
   // Typing detection setup.
   if (settings_.typing_detection) {
     typing_detector_ = std::make_unique<webrtc::TypingDetection>();

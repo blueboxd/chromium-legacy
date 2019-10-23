@@ -80,7 +80,7 @@ class MockRendererAudioInputStreamFactoryClient
   MOCK_METHOD0(Created, void());
 
   void StreamCreated(
-      media::mojom::AudioInputStreamPtr input_stream,
+      mojo::PendingRemote<media::mojom::AudioInputStream> input_stream,
       media::mojom::AudioInputStreamClientRequest client_request,
       media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
@@ -150,7 +150,6 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
   MediaStreamManager media_stream_manager_;
 
   mojo::Remote<mojom::RendererAudioInputStreamFactory> factory_remote_;
-  media::mojom::AudioInputStreamPtr stream_ptr_;
   MockRendererAudioInputStreamFactoryClient client_;
   mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
       client_pending_remote_;

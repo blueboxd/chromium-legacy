@@ -13,8 +13,6 @@
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/autofill/form_suggestion_constants.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"

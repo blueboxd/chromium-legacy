@@ -169,5 +169,14 @@ bool IsOptimizationTargetPredictionEnabled() {
   return base::FeatureList::IsEnabled(kOptimizationTargetPrediction);
 }
 
+bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
+    proto::OptimizationTarget optimization_target) {
+  if (optimization_target != proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD)
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kOptimizationTargetPrediction, "painful_page_load_metrics_only", false);
+}
+
 }  // namespace features
 }  // namespace optimization_guide

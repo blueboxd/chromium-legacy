@@ -34,10 +34,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLMeterElement::HTMLMeterElement(Document& document)
-    : HTMLElement(kMeterTag, document) {
+    : HTMLElement(html_names::kMeterTag, document) {
   UseCounter::Count(document, WebFeature::kMeterElement);
   EnsureUserAgentShadowRoot();
 }
@@ -64,64 +62,67 @@ LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style,
 void HTMLMeterElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
-  if (name == kValueAttr || name == kMinAttr || name == kMaxAttr ||
-      name == kLowAttr || name == kHighAttr || name == kOptimumAttr)
+  if (name == html_names::kValueAttr || name == html_names::kMinAttr ||
+      name == html_names::kMaxAttr || name == html_names::kLowAttr ||
+      name == html_names::kHighAttr || name == html_names::kOptimumAttr)
     DidElementStateChange();
   else
     HTMLElement::ParseAttribute(params);
 }
 
 double HTMLMeterElement::value() const {
-  double value = GetFloatingPointAttribute(kValueAttr, 0);
+  double value = GetFloatingPointAttribute(html_names::kValueAttr, 0);
   return std::min(std::max(value, min()), max());
 }
 
 void HTMLMeterElement::setValue(double value) {
-  SetFloatingPointAttribute(kValueAttr, value);
+  SetFloatingPointAttribute(html_names::kValueAttr, value);
 }
 
 double HTMLMeterElement::min() const {
-  return GetFloatingPointAttribute(kMinAttr, 0);
+  return GetFloatingPointAttribute(html_names::kMinAttr, 0);
 }
 
 void HTMLMeterElement::setMin(double min) {
-  SetFloatingPointAttribute(kMinAttr, min);
+  SetFloatingPointAttribute(html_names::kMinAttr, min);
 }
 
 double HTMLMeterElement::max() const {
-  return std::max(GetFloatingPointAttribute(kMaxAttr, std::max(1.0, min())),
-                  min());
+  return std::max(
+      GetFloatingPointAttribute(html_names::kMaxAttr, std::max(1.0, min())),
+      min());
 }
 
 void HTMLMeterElement::setMax(double max) {
-  SetFloatingPointAttribute(kMaxAttr, max);
+  SetFloatingPointAttribute(html_names::kMaxAttr, max);
 }
 
 double HTMLMeterElement::low() const {
-  double low = GetFloatingPointAttribute(kLowAttr, min());
+  double low = GetFloatingPointAttribute(html_names::kLowAttr, min());
   return std::min(std::max(low, min()), max());
 }
 
 void HTMLMeterElement::setLow(double low) {
-  SetFloatingPointAttribute(kLowAttr, low);
+  SetFloatingPointAttribute(html_names::kLowAttr, low);
 }
 
 double HTMLMeterElement::high() const {
-  double high = GetFloatingPointAttribute(kHighAttr, max());
+  double high = GetFloatingPointAttribute(html_names::kHighAttr, max());
   return std::min(std::max(high, low()), max());
 }
 
 void HTMLMeterElement::setHigh(double high) {
-  SetFloatingPointAttribute(kHighAttr, high);
+  SetFloatingPointAttribute(html_names::kHighAttr, high);
 }
 
 double HTMLMeterElement::optimum() const {
-  double optimum = GetFloatingPointAttribute(kOptimumAttr, (max() + min()) / 2);
+  double optimum =
+      GetFloatingPointAttribute(html_names::kOptimumAttr, (max() + min()) / 2);
   return std::min(std::max(optimum, min()), max());
 }
 
 void HTMLMeterElement::setOptimum(double optimum) {
-  SetFloatingPointAttribute(kOptimumAttr, optimum);
+  SetFloatingPointAttribute(html_names::kOptimumAttr, optimum);
 }
 
 HTMLMeterElement::GaugeRegion HTMLMeterElement::GetGaugeRegion() const {

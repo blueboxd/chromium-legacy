@@ -175,21 +175,21 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnWindowDragEnded(aura::Window* dragged_window,
                          SnapPosition desired_snap_position,
                          const gfx::Point& last_location_in_screen);
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
-  void OnResizeLoopStarted(aura::Window* window) override;
-  void OnResizeLoopEnded(aura::Window* window) override;
 
   void AddObserver(SplitViewObserver* observer);
   void RemoveObserver(SplitViewObserver* observer);
 
   // aura::WindowObserver:
-  void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
+  void OnWindowDestroyed(aura::Window* window) override;
+  void OnResizeLoopStarted(aura::Window* window) override;
+  void OnResizeLoopEnded(aura::Window* window) override;
 
   // WindowStateObserver:
   void OnPostWindowStateTypeChange(ash::WindowState* window_state,

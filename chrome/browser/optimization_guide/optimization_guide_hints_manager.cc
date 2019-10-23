@@ -744,20 +744,22 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
   *optimization_type_decision =
       optimization_guide::OptimizationTypeDecision::kUnknown;
 
-  // We only support the optimization target
-  // |OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD|, so just return that we don't know
-  // if the target doesn't match that.
+  bool should_update_optimization_target_decision = true;
   if (optimization_target !=
       optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) {
-    return;
+    *optimization_target_decision = optimization_guide::
+        OptimizationTargetDecision::kModelNotAvailableOnClient;
+    should_update_optimization_target_decision = false;
   }
 
   const auto& url = navigation_handle->GetURL();
   // If the URL doesn't have a host, we cannot query the hint for it, so just
   // return early.
   if (!url.has_host()) {
-    *optimization_target_decision =
-        optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
+    if (should_update_optimization_target_decision) {
+      *optimization_target_decision =
+          optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
+    }
     *optimization_type_decision =
         optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
     return;
@@ -794,16 +796,18 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
         matched_page_hint->max_ect_trigger());
   }
 
-  if (current_effective_connection_type_ ==
-          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
-      current_effective_connection_type_ > max_ect_trigger) {
-    // The current network is not slow enough, so this navigation is likely not
-    // going to be painful.
-    *optimization_target_decision =
-        optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
-  } else {
-    *optimization_target_decision =
-        optimization_guide::OptimizationTargetDecision::kPageLoadMatches;
+  if (should_update_optimization_target_decision) {
+    if (current_effective_connection_type_ ==
+            net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
+        current_effective_connection_type_ > max_ect_trigger) {
+      // The current network is not slow enough, so this navigation is likely
+      // not going to be painful.
+      *optimization_target_decision =
+          optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
+    } else {
+      *optimization_target_decision =
+          optimization_guide::OptimizationTargetDecision::kPageLoadMatches;
+    }
   }
 
   // Check if the URL should be filtered out if we have an optimization filter

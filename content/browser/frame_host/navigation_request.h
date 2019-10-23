@@ -388,6 +388,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // deferring NavigationThrottle do the resuming.
   void CallResumeForTesting();
 
+  // Simulates renderer aborting navigation.
+  void RendererAbortedNavigationForTesting();
+
   typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
 
@@ -499,11 +502,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // BeginNavigation(), or if the request was created at commit time by calling
   // CreateForCommit().
   bool IsNavigationStarted() const;
-
-  // Stop referencing the pending NavigationEntry.
-  //
-  // Note: To be removed after removing DidFailProvisionalLoadWithError().
-  void DropPendingEntryRef();
 
  private:
   friend class NavigationRequestTest;

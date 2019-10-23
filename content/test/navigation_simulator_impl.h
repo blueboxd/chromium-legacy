@@ -70,6 +70,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void ReadyToCommit() override;
   void Commit() override;
   void AbortCommit() override;
+  void AbortFromRenderer() override;
   void FailWithResponseHeaders(
       int error_code,
       scoped_refptr<net::HttpResponseHeaders> response_headers) override;
@@ -311,6 +312,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool should_replace_current_entry_ = false;
   base::Optional<bool> did_create_new_entry_;
   base::Optional<bool> intended_as_new_entry_;
+  bool was_aborted_ = false;
 
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.

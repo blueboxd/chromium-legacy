@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/thread_annotations.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 namespace {
@@ -137,9 +137,10 @@ FontCacheDispatcher::~FontCacheDispatcher() {
 }
 
 // static
-void FontCacheDispatcher::Create(mojom::FontCacheWinRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<FontCacheDispatcher>(),
-                          std::move(request));
+void FontCacheDispatcher::Create(
+    mojo::PendingReceiver<mojom::FontCacheWin> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FontCacheDispatcher>(),
+                              std::move(receiver));
 }
 
 void FontCacheDispatcher::PreCacheFont(const LOGFONT& log_font,

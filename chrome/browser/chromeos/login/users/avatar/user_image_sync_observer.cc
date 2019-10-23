@@ -65,7 +65,8 @@ UserImageSyncObserver::~UserImageSyncObserver() {
 void UserImageSyncObserver::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry_) {
   registry_->RegisterDictionaryPref(
-      kUserImageInfo, user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+      kUserImageInfo,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
 }
 
 void UserImageSyncObserver::OnProfileGained(Profile* profile) {

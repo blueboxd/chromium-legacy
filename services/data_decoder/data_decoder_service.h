@@ -9,11 +9,12 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
+#include "services/data_decoder/public/mojom/data_decoder_service.mojom.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
@@ -25,35 +26,45 @@
 
 namespace data_decoder {
 
-class DataDecoderService : public service_manager::Service {
+class DataDecoderService : public service_manager::Service,
+                           public mojom::DataDecoderService {
  public:
   DataDecoderService();
-  explicit DataDecoderService(service_manager::mojom::ServiceRequest request);
+  explicit DataDecoderService(
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
+  explicit DataDecoderService(
+      mojo::PendingReceiver<mojom::DataDecoderService> receiver);
   ~DataDecoderService() override;
 
-  // May be used to establish a latent Service binding for this instance. May
-  // only be called once, and only if this instance was default-constructed.
-  void BindRequest(service_manager::mojom::ServiceRequest request);
+  // May be used to establish a latent DataDecoderService binding for this
+  // instance. May only be called once, and only if this instance was default-
+  // constructed.
+  void BindReceiver(mojo::PendingReceiver<mojom::DataDecoderService> receiver);
 
-  // service_manager::Service:
+  // service_manager::Service implementation:
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
+  // mojom::DataDecoderService implementation:
+  void BindImageDecoder(
+      mojo::PendingReceiver<mojom::ImageDecoder> receiver) override;
+  void BindJsonParser(
+      mojo::PendingReceiver<mojom::JsonParser> receiver) override;
+  void BindXmlParser(mojo::PendingReceiver<mojom::XmlParser> receiver) override;
   void BindBundledExchangesParserFactory(
-      mojo::PendingReceiver<mojom::BundledExchangesParserFactory> receiver);
-  void BindImageDecoder(mojo::PendingReceiver<mojom::ImageDecoder> receiver);
-  void BindJsonParser(mojo::PendingReceiver<mojom::JsonParser> receiver);
-  void BindXmlParser(mojo::PendingReceiver<mojom::XmlParser> receiver);
+      mojo::PendingReceiver<mojom::BundledExchangesParserFactory> receiver)
+      override;
 
 #ifdef OS_CHROMEOS
-  void BindBleScanParser(mojo::PendingReceiver<mojom::BleScanParser> receiver);
+  void BindBleScanParser(
+      mojo::PendingReceiver<mojom::BleScanParser> receiver) override;
 #endif  // OS_CHROMEOS
 
   service_manager::ServiceBinding binding_{this};
   service_manager::ServiceKeepalive keepalive_;
-  service_manager::BinderRegistry registry_;
+  mojo::Receiver<mojom::DataDecoderService> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataDecoderService);
 };

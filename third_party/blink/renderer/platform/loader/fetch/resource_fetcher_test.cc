@@ -476,9 +476,6 @@ class ServeRequestsOnCompleteClient final
     return true;
   }
   void DataDownloaded(Resource*, uint64_t) override { ASSERT_TRUE(false); }
-  void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override {
-    ASSERT_TRUE(false);
-  }
 
   void Trace(blink::Visitor* visitor) override {
     RawResourceClient::Trace(visitor);

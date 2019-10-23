@@ -263,3 +263,9 @@ The common ways to represent names in comments are as follows:
 // FooImpl implements the FooBase class.
 // FooFunction() modifies |foo_member_|.
 ```
+
+## Named namespaces
+
+Named namespaces are discouraged in top-level embedders (e.g., `chrome/`). See
+[this thread](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/8ROncnL1t4k/J7uJMCQ8BwAJ)
+for background and discussion.

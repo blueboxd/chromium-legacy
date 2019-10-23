@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "components/ui_devtools/buildflags.h"
 #include "components/viz/service/main/viz_compositor_thread_runner.h"

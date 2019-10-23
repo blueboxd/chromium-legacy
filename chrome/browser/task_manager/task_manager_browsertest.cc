@@ -462,7 +462,14 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTab) {
   ASSERT_TRUE(model()->GetTabId(app_tab).is_valid());
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
+#if defined(OS_LINUX)
+// Flaky on Linux https://crbug.com/1017110
+#define MAYBE_NoticeHostedAppTabChanges DISABLED_NoticeHostedAppTabChanges
+#else
+#define MAYBE_NoticeHostedAppTabChanges NoticeHostedAppTabChanges
+#endif
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
+                       MAYBE_NoticeHostedAppTabChanges) {
   ShowTaskManager();
 
   // The app under test acts on URLs whose host is "localhost",

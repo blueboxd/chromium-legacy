@@ -395,20 +395,25 @@ if (use_v4l2_codec || use_vaapi) {
 }
 
 # TODO(watk): Run this on bots. http://crbug.com/461437
-if (is_win || is_android || use_v4l2_codec || use_vaapi) {
+if (is_android) {
   test("video_decode_accelerator_unittest") {
     data = [
       "//media/test/data/",
     ]
 
     deps = [
+      ":android_video_decode_accelerator_unittests",
       ":common",
       ":gpu",
       "//base",
       "//base/test:test_support",
+      "//gpu/command_buffer/service:android_texture_owner_unittests",
       "//media:test_support",
+      "//media/base/android:media_java",
+      "//media/test:run_all_unittests",
       "//mojo/core/embedder",
       "//testing/gtest",
+      "//ui/android:ui_java",
       "//ui/base",
       "//ui/display/manager",
       "//ui/gfx",
@@ -420,51 +425,6 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
     ]
 
     configs += [ "//third_party/khronos:khronos_headers" ]
-
-    if (is_win || is_chromeos || use_v4l2_codec) {
-      sources = [
-        "test/fake_video_decode_accelerator.cc",
-        "test/fake_video_decode_accelerator.h",
-        "video_decode_accelerator_unittest.cc",
-      ]
-      deps += [
-        "test:decode_helpers",
-        "test:frame_file_writer",
-        "test:frame_validator",
-        "//mojo/core/embedder",
-        "//ui/display",
-        "//ui/display/types",
-        "//ui/platform_window",
-      ]
-    }
-
-    if (is_android) {
-      deps += [
-        ":android_video_decode_accelerator_unittests",
-        "//gpu/command_buffer/service:android_texture_owner_unittests",
-        "//media/base/android:media_java",
-        "//media/test:run_all_unittests",
-        "//ui/android:ui_java",
-      ]
-    }
-
-    if (is_win) {
-      # TODO(https://crbug.com/167187): Fix size_t to int truncations.
-      configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-      deps += [
-        "//third_party/angle:libEGL",
-        "//third_party/angle:libGLESv2",
-      ]
-    }
-
-    if (use_x11) {
-      configs += [ "//build/config/linux:x11" ]
-      deps += [ "//ui/gfx/x" ]
-    }
-
-    if (use_ozone) {
-      deps += [ "//ui/ozone" ]
-    }
   }
 }
 
@@ -658,7 +618,6 @@ if (use_v4l2_codec || use_vaapi) {
       "test:frame_validator",
       "test:helpers",
       "test:image_processor",
-      "test:render_helpers",
       "//base/test:test_support",
       "//media:test_support",
       "//media/gpu/chromeos:fourcc",

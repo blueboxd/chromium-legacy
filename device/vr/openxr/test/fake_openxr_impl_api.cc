@@ -146,9 +146,7 @@ XrResult xrCreateInstance(const XrInstanceCreateInfo* create_info,
                     "enabledExtensionNames contains invalid extensions");
   }
 
-  // Return the test helper object back to the OpenXrAPIWrapper so it can use
-  // it as the TestHookRegistration.
-  *instance = reinterpret_cast<XrInstance>(&g_test_helper);
+  *instance = g_test_helper.CreateInstance();
 
   return XR_SUCCESS;
 }
@@ -250,7 +248,7 @@ XrResult xrDestroyInstance(XrInstance instance) {
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
-
+  g_test_helper.Reset();
   return XR_SUCCESS;
 }
 

@@ -34,6 +34,7 @@
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/viz/public/mojom/gpu.mojom.h"
@@ -294,7 +295,7 @@ void CastMirroringServiceHost::CreateAudioStream(
       source_web_contents, params, total_segments,
       base::BindRepeating(
           [](mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
-             media::mojom::AudioInputStreamPtr stream,
+             mojo::PendingRemote<media::mojom::AudioInputStream> stream,
              media::mojom::AudioInputStreamClientRequest client_request,
              media::mojom::ReadOnlyAudioDataPipePtr data_pipe) {
             // TODO(crbug.com/1015488): Remove |initially_muted| argument from

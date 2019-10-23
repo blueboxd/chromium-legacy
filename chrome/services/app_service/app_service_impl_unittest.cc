@@ -9,9 +9,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chrome/services/app_service/app_service_impl.h"
+#include "chrome/services/app_service/public/cpp/intent_filter_util.h"
+#include "chrome/services/app_service/public/cpp/preferred_apps.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -117,6 +120,8 @@ class FakeSubscriber : public apps::mojom::Subscriber {
     return ss.str();
   }
 
+  PreferredApps& PreferredApps() { return preferred_apps_; }
+
  private:
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override {
     for (const auto& delta : deltas) {
@@ -128,8 +133,19 @@ class FakeSubscriber : public apps::mojom::Subscriber {
     receivers_.Add(this, std::move(receiver));
   }
 
+  void OnPreferredAppSet(const std::string& app_id,
+                         apps::mojom::IntentFilterPtr intent_filter) override {
+    preferred_apps_.AddPreferredApp(app_id, intent_filter);
+  }
+
+  void InitializePreferredApps(base::Value preferred_apps) override {
+    preferred_apps_.Init(
+        std::make_unique<base::Value>(std::move(preferred_apps)));
+  }
+
   mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
   std::set<std::string> app_ids_seen_;
+  apps::PreferredApps preferred_apps_;
 };
 
 class AppServiceImplTest : public testing::Test {
@@ -227,6 +243,50 @@ TEST_F(AppServiceImplTest, PubSub) {
     EXPECT_EQ(i == 0 ? "o" : "-", pub1.load_icon_app_id);
     EXPECT_EQ("-", pub2.load_icon_app_id);
   }
+}
+
+TEST_F(AppServiceImplTest, PreferredApps) {
+  // Test Initialize.
+  AppServiceImpl impl;
+
+  // TODO(crbug.com/853604): Update this test after reading from disk done.
+  EXPECT_TRUE(impl.GetPreferredAppsForTesting().GetValue().DictEmpty());
+
+  const char kAppId1[] = "abcdefg";
+  GURL filter_url = GURL("https://www.google.com/abc");
+  auto intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
+
+  impl.GetPreferredAppsForTesting().AddPreferredApp(kAppId1, intent_filter);
+
+  // Add one subscriber.
+  FakeSubscriber sub0(&impl);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(sub0.PreferredApps().GetValue(),
+            impl.GetPreferredAppsForTesting().GetValue());
+
+  // Add another subscriber.
+  FakeSubscriber sub1(&impl);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(sub1.PreferredApps().GetValue(),
+            impl.GetPreferredAppsForTesting().GetValue());
+
+  // Test sync preferred app to all subscribers.
+  const char kAppId2[] = "aaaaaaa";
+  filter_url = GURL("https://www.abc.com/");
+  intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(base::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
+  EXPECT_EQ(base::nullopt,
+            sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
+
+  impl.AddPreferredApp(apps::mojom::AppType::kUnknown, kAppId2,
+                       std::move(intent_filter));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
+  EXPECT_EQ(kAppId2, sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
 }
 
 }  // namespace apps

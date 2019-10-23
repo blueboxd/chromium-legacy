@@ -897,6 +897,7 @@ test("content_browsertests") {
     "../browser/content_index/content_index_browsertest.cc",
     "../browser/content_service_browsertest.cc",
     "../browser/cross_site_transfer_browsertest.cc",
+    "../browser/data_decoder/data_decoder_service_browsertest.cc",
     "../browser/database_browsertest.cc",
     "../browser/device_sensors/device_sensor_browsertest.cc",
     "../browser/devtools/devtools_video_consumer_browsertest.cc",

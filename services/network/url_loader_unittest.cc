@@ -43,6 +43,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
 #include "net/cert/test_root_certs.h"
+#include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_info.h"
 #include "net/ssl/client_cert_identity_test_util.h"
@@ -3811,8 +3812,8 @@ TEST_F(URLLoaderTest, RawRequestCookies) {
     auto cookie = net::CanonicalCookie::Create(
         cookie_url, "a=b", base::Time::Now(), base::nullopt /* server_time */);
     context()->cookie_store()->SetCanonicalCookieAsync(
-        std::move(cookie), cookie_url.scheme(), net::CookieOptions(),
-        base::DoNothing());
+        std::move(cookie), cookie_url.scheme(),
+        net::CookieOptions::MakeAllInclusive(), base::DoNothing());
 
     base::RunLoop delete_run_loop;
     mojom::URLLoaderPtr loader;
@@ -3860,8 +3861,8 @@ TEST_F(URLLoaderTest, RawRequestCookiesFlagged) {
         cookie_url, "a=b;Path=/something-else", base::Time::Now(),
         base::nullopt /* server_time */);
     context()->cookie_store()->SetCanonicalCookieAsync(
-        std::move(cookie), cookie_url.scheme(), net::CookieOptions(),
-        base::DoNothing());
+        std::move(cookie), cookie_url.scheme(),
+        net::CookieOptions::MakeAllInclusive(), base::DoNothing());
 
     base::RunLoop delete_run_loop;
     mojom::URLLoaderPtr loader;
@@ -4203,12 +4204,18 @@ TEST_F(URLLoaderTest, RawResponseQUIC) {
 TEST_F(URLLoaderTest, CookieReportingCategories) {
   MockNetworkServiceClient network_service_client;
 
+  net::test_server::EmbeddedTestServer https_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
   // Upcoming deprecation warning.
   {
     MockNetworkContextClient network_context_client;
     TestURLLoaderClient loader_client;
-    ResourceRequest request =
-        CreateResourceRequest("GET", test_server()->GetURL("/set-cookie?a=b"));
+    ResourceRequest request = CreateResourceRequest(
+        "GET", https_server.GetURL("/set-cookie?a=b;Secure"));
     // Make this a third-party request.
     request.site_for_cookies = GURL("http://www.example.com");
 
@@ -4237,8 +4244,17 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     EXPECT_EQ(
         "b",
         network_context_client.reported_response_cookies()[0].cookie.Value());
-    EXPECT_TRUE(network_context_client.reported_response_cookies()[0]
-                    .status.IsInclude());
+    // This is either included or rejected as implicitly-cross-site, depending
+    // on flags.
+    if (net::cookie_util::IsSameSiteByDefaultCookiesEnabled()) {
+      EXPECT_TRUE(network_context_client.reported_response_cookies()[0]
+                      .status.HasExactlyExclusionReasonsForTesting(
+                          {net::CanonicalCookie::CookieInclusionStatus::
+                               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+    } else {
+      EXPECT_TRUE(network_context_client.reported_response_cookies()[0]
+                      .status.IsInclude());
+    }
     EXPECT_EQ(
         net::CanonicalCookie::CookieInclusionStatus::WarningReason::
             WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
@@ -4251,8 +4267,8 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     TestURLLoaderClient loader_client;
     test_network_delegate()->set_cookie_options(
         net::TestNetworkDelegate::NO_SET_COOKIE);
-    ResourceRequest request =
-        CreateResourceRequest("GET", test_server()->GetURL("/set-cookie?a=b"));
+    ResourceRequest request = CreateResourceRequest(
+        "GET", https_server.GetURL("/set-cookie?a=b;Secure"));
     // Make this a third-party request.
     request.site_for_cookies = GURL("http://www.example.com");
 
@@ -4289,7 +4305,9 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     test_network_delegate()->set_cookie_options(0);
   }
 
-  // Not permitted by cookie rules, but not the sort of thing that's reported.
+  // Not permitted by cookie rules, but not the sort of thing that's reported
+  // to NetworkContextClient. Note: this uses HTTP, not HTTPS, unlike others;
+  // and is in 1st-party context.
   {
     MockNetworkContextClient network_context_client;
     TestURLLoaderClient loader_client;

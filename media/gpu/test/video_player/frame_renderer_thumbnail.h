@@ -44,13 +44,6 @@ class FrameRendererThumbnail : public FrameRenderer {
       const std::vector<std::string> thumbnail_checksums,
       const base::FilePath& output_folder);
 
-  // Create an instance of the thumbnail frame renderer. The |video_file_path|
-  // should point to a file containing all golden thumbnail hashes for the video
-  // being rendered.
-  static std::unique_ptr<FrameRendererThumbnail> Create(
-      const base::FilePath& video_file_path,
-      const base::FilePath& output_folder);
-
   // FrameRenderer implementation
   // Acquire the GL context on the |renderer_task_runner_|. This needs to be
   // called before executing any GL-related functions. The context will remain

@@ -5,7 +5,6 @@
 #include "chrome/browser/android/vr/arcore_device/arcore_gl_thread.h"
 
 #include <utility>
-#include "base/message_loop/message_loop.h"
 #include "base/version.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl.h"

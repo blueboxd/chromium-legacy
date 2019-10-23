@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/net/retryable_url_fetcher.h"
 
-#include "base/message_loop/message_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "ios/web/public/test/test_web_thread.h"

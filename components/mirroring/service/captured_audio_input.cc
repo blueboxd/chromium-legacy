@@ -59,7 +59,7 @@ void CapturedAudioInput::SetOutputDeviceForAec(
 }
 
 void CapturedAudioInput::StreamCreated(
-    media::mojom::AudioInputStreamPtr stream,
+    mojo::PendingRemote<media::mojom::AudioInputStream> stream,
     media::mojom::AudioInputStreamClientRequest client_request,
     media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
     bool initially_muted) {
@@ -68,7 +68,7 @@ void CapturedAudioInput::StreamCreated(
   DCHECK(!stream_);
   DCHECK(!stream_client_binding_.is_bound());
 
-  stream_ = std::move(stream);
+  stream_.Bind(std::move(stream));
   stream_client_binding_.Bind(std::move(client_request));
 
   base::PlatformFile socket_handle;

@@ -36,11 +36,8 @@
 
 namespace blink {
 
-using namespace cssvalue;
-using namespace html_names;
-
 HTMLFontElement::HTMLFontElement(Document& document)
-    : HTMLElement(kFontTag, document) {}
+    : HTMLElement(html_names::kFontTag, document) {}
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/rendering.html#fonts-and-colors
 template <typename CharacterType>
@@ -169,7 +166,8 @@ bool HTMLFontElement::CssValueFromFontSizeNumber(const String& s,
 }
 
 bool HTMLFontElement::IsPresentationAttribute(const QualifiedName& name) const {
-  if (name == kSizeAttr || name == kColorAttr || name == kFaceAttr)
+  if (name == html_names::kSizeAttr || name == html_names::kColorAttr ||
+      name == html_names::kFaceAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -178,15 +176,15 @@ void HTMLFontElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kSizeAttr) {
+  if (name == html_names::kSizeAttr) {
     CSSValueID size = CSSValueID::kInvalid;
     if (CssValueFromFontSizeNumber(value, size)) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kFontSize,
                                               size);
     }
-  } else if (name == kColorAttr) {
+  } else if (name == html_names::kColorAttr) {
     AddHTMLColorToStyle(style, CSSPropertyID::kColor, value);
-  } else if (name == kFaceAttr && !value.IsEmpty()) {
+  } else if (name == html_names::kFaceAttr && !value.IsEmpty()) {
     if (const CSSValueList* font_face_value = CreateFontFaceValueWithPool(
             value, GetDocument().GetSecureContextMode())) {
       style->SetProperty(

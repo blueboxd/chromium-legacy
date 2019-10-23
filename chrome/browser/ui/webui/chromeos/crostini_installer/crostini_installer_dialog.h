@@ -11,6 +11,8 @@ class Profile;
 
 namespace chromeos {
 
+class CrostiniInstallerUI;
+
 class CrostiniInstallerDialog : public SystemWebDialogDelegate {
  public:
   static void Show(Profile* profile);
@@ -22,10 +24,15 @@ class CrostiniInstallerDialog : public SystemWebDialogDelegate {
   // SystemWebDialogDelegate:
   void GetDialogSize(gfx::Size* size) const override;
   bool ShouldShowCloseButton() const override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
+  bool CanCloseDialog() const override;
+  void OnDialogShown(content::WebUI* webui,
+                     content::RenderViewHost* render_view_host) override;
+  void OnCloseContents(content::WebContents* source,
+                       bool* out_close_dialog) override;
 
   Profile* profile_;
+  CrostiniInstallerUI* installer_ui_ = nullptr;
 };
 
 }  // namespace chromeos

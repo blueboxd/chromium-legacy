@@ -132,8 +132,8 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
     return;
   }
 
-  entry->SetGAIAName(full_name);
   entry->SetGAIAGivenName(given_name);
+  entry->SetGAIAName(full_name);
 
   if (picture_status == ProfileDownloader::PICTURE_SUCCESS) {
     profile_->GetPrefs()->SetString(prefs::kProfileGAIAInfoPictureURL,

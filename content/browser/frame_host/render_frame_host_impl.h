@@ -972,14 +972,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool is_in_back_forward_cache() { return is_in_back_forward_cache_; }
 
-  bool is_back_forward_cache_disallowed() const {
-    return is_back_forward_cache_disallowed_;
+  bool is_back_forward_cache_disabled() const {
+    return is_back_forward_cache_disabled_;
   }
 
   // Prevents this frame (along with its parents/children) from being added to
   // the BackForwardCache. If the frame is already in the cache an eviction is
   // triggered.
-  void DisallowBackForwardCache();
+  void DisableBackForwardCache();
 
   bool is_evicted_from_back_forward_cache() {
     return is_evicted_from_back_forward_cache_;
@@ -1520,11 +1520,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
-  void DidFailProvisionalLoadWithError(
-      const GURL& url,
-      int error_code,
-      const base::string16& error_description,
-      bool showing_repost_interstitial) override;
   void DidFailLoadWithError(const GURL& url,
                             int error_code,
                             const base::string16& error_description) override;
@@ -1594,7 +1589,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // should not be initialized with a NetworkIsolationKey, and will be trusted
   // so it can consume requests with a TrustedParams::network_isolation_key.
   bool CreateNetworkServiceDefaultFactoryAndObserve(
-      const base::Optional<url::Origin>& origin,
+      const url::Origin& origin,
       base::Optional<net::NetworkIsolationKey> network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
@@ -1606,7 +1601,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // For |network_isolation_key|, see the comment for |network_isolation_key|
   // above CreateNetworkServiceDefaultFactoryAndObserve().
   bool CreateNetworkServiceDefaultFactoryInternal(
-      const base::Optional<url::Origin>& origin,
+      const url::Origin& origin,
       base::Optional<net::NetworkIsolationKey> network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
@@ -2462,7 +2457,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
   bool is_evicted_from_back_forward_cache_ = false;
-  bool is_back_forward_cache_disallowed_ = false;
+  bool is_back_forward_cache_disabled_ = false;
   base::OneShotTimer back_forward_cache_eviction_timer_;
 
   // This used to re-commit when restoring from the BackForwardCache, with the

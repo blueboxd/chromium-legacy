@@ -32,15 +32,13 @@ void OnShortcutInfoRetrievedCreateShortcuts(
 
 AppShortcutManager::AppShortcutManager(Profile* profile) : profile_(profile) {}
 
-AppShortcutManager::~AppShortcutManager() = default;
+AppShortcutManager::~AppShortcutManager() {
+  for (auto& observer : observers_)
+    observer.OnShortcutManagerDestroyed();
+}
 
 void AppShortcutManager::SetSubsystems(AppRegistrar* registrar) {
   registrar_ = registrar;
-}
-
-void AppShortcutManager::Shutdown() {
-  for (auto& observer : observers_)
-    observer.OnShortcutManagerDestroyed();
 }
 
 void AppShortcutManager::AddObserver(AppShortcutObserver* observer) {

@@ -71,7 +71,7 @@ void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       apps::AppServiceProxy* proxy =
           apps::AppServiceProxyFactory::GetForProfile(controller()->profile());
       DCHECK(proxy);
-      proxy->Uninstall(item().id.app_id);
+      proxy->Uninstall(item().id.app_id, nullptr /* parent_window */);
       return;
     }
 

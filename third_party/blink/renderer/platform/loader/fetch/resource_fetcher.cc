@@ -1813,7 +1813,6 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
 
       if (resource->Options().request_initiator_context == kDocumentContext)
         Context().AddResourceTiming(*info);
-      resource->ReportResourceTimingToClients(*info);
     }
   }
 

@@ -47,7 +47,7 @@ void ProximityAuthProfilePrefManager::RegisterPrefs(
   registry->RegisterDictionaryPref(prefs::kProximityAuthRemoteBleDevices);
   registry->RegisterBooleanPref(
       prefs::kProximityAuthIsChromeOSLoginEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
 void ProximityAuthProfilePrefManager::StartSyncingToLocalState(

@@ -38,14 +38,13 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tag_name,
                                            Document& document)
     : HTMLTablePartElement(tag_name, document) {}
 
 unsigned HTMLTableCellElement::colSpan() const {
-  const AtomicString& col_span_value = FastGetAttribute(kColspanAttr);
+  const AtomicString& col_span_value =
+      FastGetAttribute(html_names::kColspanAttr);
   unsigned value = 0;
   if (!ParseHTMLClampedNonNegativeInteger(col_span_value, kMinColSpan,
                                           kMaxColSpan, value))
@@ -63,7 +62,8 @@ unsigned HTMLTableCellElement::colSpan() const {
 }
 
 unsigned HTMLTableCellElement::rowSpan() const {
-  const AtomicString& row_span_value = FastGetAttribute(kRowspanAttr);
+  const AtomicString& row_span_value =
+      FastGetAttribute(html_names::kRowspanAttr);
   unsigned value = 0;
   if (!ParseHTMLClampedNonNegativeInteger(row_span_value, kMinRowSpan,
                                           kMaxRowSpan, value))
@@ -87,7 +87,8 @@ int HTMLTableCellElement::cellIndex() const {
 
 bool HTMLTableCellElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == kNowrapAttr || name == kWidthAttr || name == kHeightAttr)
+  if (name == html_names::kNowrapAttr || name == html_names::kWidthAttr ||
+      name == html_names::kHeightAttr)
     return true;
   return HTMLTablePartElement::IsPresentationAttribute(name);
 }
@@ -96,16 +97,16 @@ void HTMLTableCellElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kNowrapAttr) {
+  if (name == html_names::kNowrapAttr) {
     AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
                                             CSSValueID::kWebkitNowrap);
-  } else if (name == kWidthAttr) {
+  } else if (name == html_names::kWidthAttr) {
     if (!value.IsEmpty()) {
       int width_int = value.ToInt();
       if (width_int > 0)  // width="0" is ignored for compatibility with WinIE.
         AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
     }
-  } else if (name == kHeightAttr) {
+  } else if (name == html_names::kHeightAttr) {
     if (!value.IsEmpty()) {
       int height_int = value.ToInt();
       if (height_int >
@@ -120,7 +121,8 @@ void HTMLTableCellElement::CollectStyleForPresentationAttribute(
 
 void HTMLTableCellElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kRowspanAttr || params.name == kColspanAttr) {
+  if (params.name == html_names::kRowspanAttr ||
+      params.name == html_names::kColspanAttr) {
     if (GetLayoutObject() && GetLayoutObject()->IsTableCell()) {
       ToInterface<LayoutNGTableCellInterface>(GetLayoutObject())
           ->ColSpanOrRowSpanChanged();
@@ -138,39 +140,41 @@ HTMLTableCellElement::AdditionalPresentationAttributeStyle() {
 }
 
 bool HTMLTableCellElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == kBackgroundAttr ||
+  return attribute.GetName() == html_names::kBackgroundAttr ||
          HTMLTablePartElement::IsURLAttribute(attribute);
 }
 
 bool HTMLTableCellElement::HasLegalLinkAttribute(
     const QualifiedName& name) const {
-  return (HasTagName(kTdTag) && name == kBackgroundAttr) ||
+  return (HasTagName(html_names::kTdTag) &&
+          name == html_names::kBackgroundAttr) ||
          HTMLTablePartElement::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& HTMLTableCellElement::SubResourceAttributeName() const {
-  return HasTagName(kTdTag) ? kBackgroundAttr
-                            : HTMLTablePartElement::SubResourceAttributeName();
+  return HasTagName(html_names::kTdTag)
+             ? html_names::kBackgroundAttr
+             : HTMLTablePartElement::SubResourceAttributeName();
 }
 
 const AtomicString& HTMLTableCellElement::Abbr() const {
-  return FastGetAttribute(kAbbrAttr);
+  return FastGetAttribute(html_names::kAbbrAttr);
 }
 
 const AtomicString& HTMLTableCellElement::Axis() const {
-  return FastGetAttribute(kAxisAttr);
+  return FastGetAttribute(html_names::kAxisAttr);
 }
 
 void HTMLTableCellElement::setColSpan(unsigned n) {
-  SetUnsignedIntegralAttribute(kColspanAttr, n, kDefaultColSpan);
+  SetUnsignedIntegralAttribute(html_names::kColspanAttr, n, kDefaultColSpan);
 }
 
 const AtomicString& HTMLTableCellElement::Headers() const {
-  return FastGetAttribute(kHeadersAttr);
+  return FastGetAttribute(html_names::kHeadersAttr);
 }
 
 void HTMLTableCellElement::setRowSpan(unsigned n) {
-  SetUnsignedIntegralAttribute(kRowspanAttr, n, kDefaultRowSpan);
+  SetUnsignedIntegralAttribute(html_names::kRowspanAttr, n, kDefaultRowSpan);
 }
 
 }  // namespace blink

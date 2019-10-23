@@ -43,11 +43,9 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLScriptElement::HTMLScriptElement(Document& document,
                                      const CreateElementFlags flags)
-    : HTMLElement(kScriptTag, document),
+    : HTMLElement(html_names::kScriptTag, document),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
 
@@ -59,16 +57,17 @@ const AttrNameToTrustedType& HTMLScriptElement::GetCheckedAttributeTypes()
 }
 
 bool HTMLScriptElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == kSrcAttr ||
+  return attribute.GetName() == html_names::kSrcAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
 bool HTMLScriptElement::HasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == kSrcAttr || HTMLElement::HasLegalLinkAttribute(name);
+  return name == html_names::kSrcAttr ||
+         HTMLElement::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& HTMLScriptElement::SubResourceAttributeName() const {
-  return kSrcAttr;
+  return html_names::kSrcAttr;
 }
 
 void HTMLScriptElement::ChildrenChanged(const ChildrenChange& change) {
@@ -84,12 +83,12 @@ void HTMLScriptElement::DidMoveToNewDocument(Document& old_document) {
 
 void HTMLScriptElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kSrcAttr) {
+  if (params.name == html_names::kSrcAttr) {
     loader_->HandleSourceAttribute(params.new_value);
     LogUpdateAttributeIfIsolatedWorldAndInDocument("script", params);
-  } else if (params.name == kAsyncAttr) {
+  } else if (params.name == html_names::kAsyncAttr) {
     loader_->HandleAsyncAttribute();
-  } else if (params.name == kImportanceAttr &&
+  } else if (params.name == html_names::kImportanceAttr &&
              RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
     // The only thing we need to do for the the importance attribute/Priority
     // Hints is count usage upon parsing. Processing the value happens when the
@@ -110,7 +109,7 @@ Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
                       WebFeature::kScriptElementWithInvalidTypeHasSrc);
   }
   HTMLElement::InsertedInto(insertion_point);
-  LogAddElementIfIsolatedWorldAndInDocument("script", kSrcAttr);
+  LogAddElementIfIsolatedWorldAndInDocument("script", html_names::kSrcAttr);
 
   return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
@@ -150,56 +149,56 @@ void HTMLScriptElement::setTextContent(
 }
 
 void HTMLScriptElement::setAsync(bool async) {
-  SetBooleanAttribute(kAsyncAttr, async);
+  SetBooleanAttribute(html_names::kAsyncAttr, async);
   loader_->HandleAsyncAttribute();
 }
 
 bool HTMLScriptElement::async() const {
-  return FastHasAttribute(kAsyncAttr) || loader_->IsNonBlocking();
+  return FastHasAttribute(html_names::kAsyncAttr) || loader_->IsNonBlocking();
 }
 
 String HTMLScriptElement::SourceAttributeValue() const {
-  return getAttribute(kSrcAttr).GetString();
+  return getAttribute(html_names::kSrcAttr).GetString();
 }
 
 String HTMLScriptElement::CharsetAttributeValue() const {
-  return getAttribute(kCharsetAttr).GetString();
+  return getAttribute(html_names::kCharsetAttr).GetString();
 }
 
 String HTMLScriptElement::TypeAttributeValue() const {
-  return getAttribute(kTypeAttr).GetString();
+  return getAttribute(html_names::kTypeAttr).GetString();
 }
 
 String HTMLScriptElement::LanguageAttributeValue() const {
-  return getAttribute(kLanguageAttr).GetString();
+  return getAttribute(html_names::kLanguageAttr).GetString();
 }
 
 bool HTMLScriptElement::NomoduleAttributeValue() const {
-  return FastHasAttribute(kNomoduleAttr);
+  return FastHasAttribute(html_names::kNomoduleAttr);
 }
 
 String HTMLScriptElement::ForAttributeValue() const {
-  return getAttribute(kForAttr).GetString();
+  return getAttribute(html_names::kForAttr).GetString();
 }
 
 String HTMLScriptElement::EventAttributeValue() const {
-  return getAttribute(kEventAttr).GetString();
+  return getAttribute(html_names::kEventAttr).GetString();
 }
 
 String HTMLScriptElement::CrossOriginAttributeValue() const {
-  return getAttribute(kCrossoriginAttr);
+  return getAttribute(html_names::kCrossoriginAttr);
 }
 
 String HTMLScriptElement::IntegrityAttributeValue() const {
-  return getAttribute(kIntegrityAttr);
+  return getAttribute(html_names::kIntegrityAttr);
 }
 
 String HTMLScriptElement::ReferrerPolicyAttributeValue() const {
-  return getAttribute(kReferrerpolicyAttr);
+  return getAttribute(html_names::kReferrerpolicyAttr);
 }
 
 String HTMLScriptElement::ImportanceAttributeValue() const {
-  return getAttribute(kImportanceAttr);
+  return getAttribute(html_names::kImportanceAttr);
 }
 
 String HTMLScriptElement::TextFromChildren() {
@@ -207,15 +206,15 @@ String HTMLScriptElement::TextFromChildren() {
 }
 
 bool HTMLScriptElement::AsyncAttributeValue() const {
-  return FastHasAttribute(kAsyncAttr);
+  return FastHasAttribute(html_names::kAsyncAttr);
 }
 
 bool HTMLScriptElement::DeferAttributeValue() const {
-  return FastHasAttribute(kDeferAttr);
+  return FastHasAttribute(html_names::kDeferAttr);
 }
 
 bool HTMLScriptElement::HasSourceAttribute() const {
-  return FastHasAttribute(kSrcAttr);
+  return FastHasAttribute(html_names::kSrcAttr);
 }
 
 bool HTMLScriptElement::IsConnected() const {

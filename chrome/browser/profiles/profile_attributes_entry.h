@@ -45,6 +45,9 @@ class ProfileAttributesEntry {
   // Gets the name of the profile to be displayed in the User Menu. The name can
   // be the GAIA name, local profile name or a combination of them.
   base::string16 GetName() const;
+  // Returns true if the profile name has changed.
+  bool HasProfileNameChanged();
+
   // Gets the local profile name.
   base::string16 GetLocalProfileName() const;
 
@@ -160,9 +163,24 @@ class ProfileAttributesEntry {
                   const base::FilePath& path,
                   PrefService* prefs);
 
-  // Gets the name of the profile as the concatenation of the Gaia name and the
-  // profile name, which is the one displayed in the User Menu.
+  // Gets the name of the profile which is the one displayed in the User Menu,
+  // which could be:
+  // - Profile name (The profile is not signed in).
+  // - Gaia name if the profile name is empty or |ShouldShowProfileLocalName()|
+  //   return false.
+  // - Otherwise the concatenation of GAIA name and local profile name.
   base::string16 GetNameToDisplay() const;
+  base::string16 GetGAIANameToDisplay() const;
+  base::string16 GetLastNameToDisplay() const;
+
+  // Returns true if:
+  // - The user has chosen a local profile name on purpose. One exception where
+  //   we don't show the local profile name, is when it is equal to the
+  //   GAIA name.
+  // - If two profiles have the same GAIA name and we need to show the local
+  //   profile name to clear ambiguity.
+  bool ShouldShowProfileLocalName(
+      const base::string16& gaia_name_to_display) const;
 
   // Loads or uses an already loaded high resolution image of the generic
   // profile avatar.
@@ -210,6 +228,7 @@ class ProfileAttributesEntry {
   PrefService* prefs_;
   base::FilePath profile_path_;
   std::string storage_key_;
+  base::string16 last_name_to_display_;
 
   // A separate boolean flag indicates whether the signin is required when force
   // signin is enabled. So that the profile locked status will be stored in

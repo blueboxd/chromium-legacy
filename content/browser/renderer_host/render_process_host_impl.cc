@@ -2468,15 +2468,16 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
   //
   // We may not be able to allow powerful APIs such as memory measurement APIs
   // (see https://crbug.com/887967) without removing this call.
-  CreateURLLoaderFactory(request_initiator_site_lock,
-                         network::mojom::CrossOriginEmbedderPolicy::kNone,
-                         nullptr /* preferences */, net::NetworkIsolationKey(),
-                         mojo::NullRemote() /* header_client */,
-                         std::move(receiver));
+  CreateURLLoaderFactoryInternal(
+      request_initiator_site_lock,
+      network::mojom::CrossOriginEmbedderPolicy::kNone,
+      nullptr /* preferences */, net::NetworkIsolationKey(),
+      mojo::NullRemote() /* header_client */, std::move(receiver),
+      false /* is_trusted */);
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
-    const base::Optional<url::Origin>& origin,
+    const url::Origin& origin,
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     const net::NetworkIsolationKey& network_isolation_key,
@@ -2489,7 +2490,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
 }
 
 void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
-    const base::Optional<url::Origin>& origin,
+    const url::Origin& origin,
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
@@ -4713,7 +4714,7 @@ void RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost(
 }
 
 void RenderProcessHostImpl::BindPeerConnectionTrackerHost(
-    mojo::PendingReceiver<mojom::PeerConnectionTrackerHost> receiver) {
+    mojo::PendingReceiver<blink::mojom::PeerConnectionTrackerHost> receiver) {
   GetPeerConnectionTrackerHost()->BindReceiver(std::move(receiver));
 }
 

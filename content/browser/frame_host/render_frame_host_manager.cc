@@ -1396,7 +1396,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // Similarly, don't reuse |dest_instance| if it's not an error page
     // SiteInstance but the navigation will fail and actually need an error page
     // SiteInstance.
-    // Note: The later call to HasWrongProcessForURL does not have context about
+    // Note: The later call to IsSuitableForURL does not have context about
     // error page navigaions, so we cannot rely on it to return correct value
     // when error pages are involved.
     if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(
@@ -1404,14 +1404,14 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
         ((dest_instance->GetSiteURL() == GURL(kUnreachableWebDataURL)) ==
          is_failure)) {
       // TODO(nasko,creis): The check whether data: or about: URLs are allowed
-      // to commit in the current process should be in HasWrongProcessForURL.
+      // to commit in the current process should be in IsSuitableForURL.
       // However, making this change has further implications and needs more
       // investigation of what behavior changes. For now, use a conservative
-      // approach and explicitly check before calling HasWrongProcessForURL.
+      // approach and explicitly check before calling IsSuitableForURL.
       SiteInstanceImpl* dest_instance_impl =
           static_cast<SiteInstanceImpl*>(dest_instance);
       if (IsDataOrAbout(dest_url) ||
-          !dest_instance_impl->HasWrongProcessForURL(dest_url)) {
+          dest_instance_impl->IsSuitableForURL(dest_url)) {
         // If we are forcing a swap, this should be in a different
         // BrowsingInstance.
         if (force_browsing_instance_swap) {
@@ -1485,7 +1485,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // not want to use the |current_instance_impl| if it has no site, since it
     // will have a non-privileged RenderProcessHost. Create a new SiteInstance
     // for this URL instead (with the correct process type).
-    if (current_instance_impl->HasWrongProcessForURL(dest_url)) {
+    if (!current_instance_impl->IsSuitableForURL(dest_url)) {
       return SiteInstanceDescriptor(browser_context, dest_url,
                                     SiteInstanceRelation::RELATED);
     }
@@ -1694,7 +1694,7 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   // could share that process when over process limit and lock it to a
   // different site before this SiteInstance sets its site.  See
   // https://crbug.com/773809.
-  if (rfh->GetSiteInstance()->HasWrongProcessForURL(dest_url))
+  if (!rfh->GetSiteInstance()->IsSuitableForURL(dest_url))
     return true;
 
   // A transfer is not needed if the current SiteInstance doesn't yet have a
@@ -1815,9 +1815,9 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   bool dest_has_effective_url =
       SiteInstanceImpl::HasEffectiveURL(browser_context, dest_url);
 
-  // If the process type is incorrect, reject the candidate even if |dest_url|
-  // is same-site.  (The URL may have been installed as an app since
-  // the last time we visited it.)
+  // If IsSuitableForURL finds a process type mismatch, reject the candidate
+  // even if |dest_url| is same-site.  (The URL may have been installed as an
+  // app since the last time we visited it.)
   //
   // This check must be skipped to keep same-site subframe navigations from a
   // hosted app to non-hosted app, and vice versa, in the same process.
@@ -1827,7 +1827,7 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
       should_compare_effective_urls ||
       (!src_has_effective_url && !dest_has_effective_url);
   if (should_check_for_wrong_process &&
-      candidate->GetSiteInstance()->HasWrongProcessForURL(dest_url)) {
+      !candidate->GetSiteInstance()->IsSuitableForURL(dest_url)) {
     return false;
   }
 

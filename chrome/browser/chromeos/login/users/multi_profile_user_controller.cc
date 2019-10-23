@@ -76,10 +76,10 @@ void MultiProfileUserController::RegisterProfilePrefs(
                                kBehaviorUnrestricted);
   registry->RegisterBooleanPref(
       prefs::kMultiProfileNeverShowIntro, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kMultiProfileWarningShowDismissed, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
 // static

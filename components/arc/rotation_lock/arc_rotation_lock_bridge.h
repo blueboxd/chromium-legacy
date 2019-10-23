@@ -45,8 +45,7 @@ class ArcRotationLockBridge
   void OnUserRotationLockChanged() override;
 
   // ash::TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  void OnTabletPhysicalStateChanged() override;
 
  private:
   void SendRotationLockState();

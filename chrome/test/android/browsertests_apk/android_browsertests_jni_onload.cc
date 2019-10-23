@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/library_loader/library_loader_hooks.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/app/android/chrome_jni_onload.h"
 #include "content/public/test/nested_message_pump_android.h"
 

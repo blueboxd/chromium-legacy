@@ -419,7 +419,7 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
 }
 
 void MockRenderProcessHost::CreateURLLoaderFactory(
-    const base::Optional<url::Origin>& origin,
+    const url::Origin& origin,
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     const net::NetworkIsolationKey& network_isolation_key,

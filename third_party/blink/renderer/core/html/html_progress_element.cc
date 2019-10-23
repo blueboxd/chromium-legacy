@@ -33,13 +33,11 @@
 
 namespace blink {
 
-using namespace html_names;
-
 const double HTMLProgressElement::kIndeterminatePosition = -1;
 const double HTMLProgressElement::kInvalidPosition = -2;
 
 HTMLProgressElement::HTMLProgressElement(Document& document)
-    : HTMLElement(kProgressTag, document), value_(nullptr) {
+    : HTMLElement(html_names::kProgressTag, document), value_(nullptr) {
   UseCounter::Count(document, WebFeature::kProgressElement);
   EnsureUserAgentShadowRoot();
 }
@@ -67,11 +65,11 @@ LayoutProgress* HTMLProgressElement::GetLayoutProgress() const {
 
 void HTMLProgressElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kValueAttr) {
+  if (params.name == html_names::kValueAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull())
       PseudoStateChanged(CSSSelector::kPseudoIndeterminate);
     DidElementStateChange();
-  } else if (params.name == kMaxAttr) {
+  } else if (params.name == html_names::kMaxAttr) {
     DidElementStateChange();
   } else {
     HTMLElement::ParseAttribute(params);
@@ -85,7 +83,7 @@ void HTMLProgressElement::AttachLayoutTree(AttachContext& context) {
 }
 
 double HTMLProgressElement::value() const {
-  double value = GetFloatingPointAttribute(kValueAttr);
+  double value = GetFloatingPointAttribute(html_names::kValueAttr);
   // Otherwise, if the parsed value was greater than or equal to the maximum
   // value, then the current value of the progress bar is the maximum value
   // of the progress bar. Otherwise, if parsing the value attribute's value
@@ -95,11 +93,11 @@ double HTMLProgressElement::value() const {
 }
 
 void HTMLProgressElement::setValue(double value) {
-  SetFloatingPointAttribute(kValueAttr, std::max(value, 0.));
+  SetFloatingPointAttribute(html_names::kValueAttr, std::max(value, 0.));
 }
 
 double HTMLProgressElement::max() const {
-  double max = GetFloatingPointAttribute(kMaxAttr);
+  double max = GetFloatingPointAttribute(html_names::kMaxAttr);
   // Otherwise, if the element has no max attribute, or if it has one but
   // parsing it resulted in an error, or if the parsed value was less than or
   // equal to zero, then the maximum value of the progress bar is 1.0.
@@ -109,7 +107,7 @@ double HTMLProgressElement::max() const {
 void HTMLProgressElement::setMax(double max) {
   // FIXME: The specification says we should ignore the input value if it is
   // inferior or equal to 0.
-  SetFloatingPointAttribute(kMaxAttr, max > 0 ? max : 1);
+  SetFloatingPointAttribute(html_names::kMaxAttr, max > 0 ? max : 1);
 }
 
 double HTMLProgressElement::position() const {
@@ -119,7 +117,7 @@ double HTMLProgressElement::position() const {
 }
 
 bool HTMLProgressElement::IsDeterminate() const {
-  return FastHasAttribute(kValueAttr);
+  return FastHasAttribute(html_names::kValueAttr);
 }
 
 void HTMLProgressElement::DidElementStateChange() {

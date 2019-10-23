@@ -211,12 +211,6 @@ class MockFrameHost : public mojom::FrameHost {
     }
   }
 
-  void DidFailProvisionalLoadWithError(
-      const GURL& url,
-      int error_code,
-      const base::string16& error_description,
-      bool showing_repost_interstitial) override {}
-
   void DidFailLoadWithError(const GURL& url,
                             int error_code,
                             const base::string16& error_description) override {}
@@ -278,17 +272,6 @@ void TestRenderFrame::SetHTMLOverrideForNextNavigation(
 void TestRenderFrame::Navigate(network::mojom::URLResponseHeadPtr head,
                                mojom::CommonNavigationParamsPtr common_params,
                                mojom::CommitNavigationParamsPtr commit_params) {
-  if (!IsPerNavigationMojoInterfaceEnabled()) {
-    CommitNavigation(std::move(common_params), std::move(commit_params),
-                     std::move(head), mojo::ScopedDataPipeConsumerHandle(),
-                     network::mojom::URLLoaderClientEndpointsPtr(),
-                     std::make_unique<blink::URLLoaderFactoryBundleInfo>(),
-                     base::nullopt,
-                     blink::mojom::ControllerServiceWorkerInfoPtr(),
-                     blink::mojom::ServiceWorkerProviderInfoForClientPtr(),
-                     mojo::NullRemote() /* prefetch_loader_factory */,
-                     base::UnguessableToken::Create(), base::DoNothing());
-  } else {
     mock_navigation_client_.reset();
     BindNavigationClient(
         mock_navigation_client_
@@ -304,7 +287,6 @@ void TestRenderFrame::Navigate(network::mojom::URLResponseHeadPtr head,
         base::UnguessableToken::Create(),
         base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
                        base::Unretained(mock_frame_host_.get())));
-  }
 }
 
 void TestRenderFrame::Navigate(mojom::CommonNavigationParamsPtr common_params,
@@ -318,22 +300,16 @@ void TestRenderFrame::NavigateWithError(
     mojom::CommitNavigationParamsPtr commit_params,
     int error_code,
     const base::Optional<std::string>& error_page_content) {
-  if (!IsPerNavigationMojoInterfaceEnabled()) {
-    CommitFailedNavigation(std::move(common_params), std::move(commit_params),
-                           false /* has_stale_copy_in_cache */, error_code,
-                           error_page_content, nullptr, base::DoNothing());
-  } else {
-    mock_navigation_client_.reset();
-    BindNavigationClient(
-        mock_navigation_client_
-            .BindNewEndpointAndPassDedicatedReceiverForTesting());
-    mock_navigation_client_->CommitFailedNavigation(
-        std::move(common_params), std::move(commit_params),
-        false /* has_stale_copy_in_cache */, error_code, error_page_content,
-        nullptr,
-        base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
-                       base::Unretained(mock_frame_host_.get())));
-  }
+  mock_navigation_client_.reset();
+  BindNavigationClient(
+      mock_navigation_client_
+          .BindNewEndpointAndPassDedicatedReceiverForTesting());
+  mock_navigation_client_->CommitFailedNavigation(
+      std::move(common_params), std::move(commit_params),
+      false /* has_stale_copy_in_cache */, error_code, error_page_content,
+      nullptr,
+      base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
+                     base::Unretained(mock_frame_host_.get())));
 }
 
 void TestRenderFrame::SwapOut(

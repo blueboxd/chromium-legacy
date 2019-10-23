@@ -593,7 +593,7 @@ void CupsPrintersManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kUserNativePrintersAllowed, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(prefs::kPrintingSendUsernameAndFilenameEnabled,
                                 false);
   PrintServersProvider::RegisterProfilePrefs(registry);

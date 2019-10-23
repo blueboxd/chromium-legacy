@@ -467,7 +467,7 @@ public class Tab {
      *
      * @param isShowingErrorPage Whether the tab shows an error page.
      */
-    void setIsShowingErrorPage(boolean isShowingErrorPage) {
+    public void setIsShowingErrorPage(boolean isShowingErrorPage) {
         mIsShowingErrorPage = isShowingErrorPage;
     }
 

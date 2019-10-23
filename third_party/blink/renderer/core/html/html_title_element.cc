@@ -32,10 +32,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLTitleElement::HTMLTitleElement(Document& document)
-    : HTMLElement(kTitleTag, document),
+    : HTMLElement(html_names::kTitleTag, document),
       ignore_title_updates_when_children_change_(false) {}
 
 Node::InsertionNotificationRequest HTMLTitleElement::InsertedInto(

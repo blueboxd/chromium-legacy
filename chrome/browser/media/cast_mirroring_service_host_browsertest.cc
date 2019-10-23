@@ -219,7 +219,7 @@ class CastMirroringServiceHostBrowserTest
 
   // mojom::AudioStreamCreatorClient mocks.
   MOCK_METHOD0(OnAudioStreamCreated, void());
-  void StreamCreated(media::mojom::AudioInputStreamPtr stream,
+  void StreamCreated(mojo::PendingRemote<media::mojom::AudioInputStream> stream,
                      media::mojom::AudioInputStreamClientRequest client_request,
                      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
                      bool initially_muted) override {

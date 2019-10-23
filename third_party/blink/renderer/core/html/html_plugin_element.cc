@@ -62,8 +62,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 String GetMIMETypeFromURL(const KURL& url) {
@@ -399,8 +397,9 @@ WebPluginContainerImpl* HTMLPlugInElement::OwnedPlugin() const {
 
 bool HTMLPlugInElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == kWidthAttr || name == kHeightAttr || name == kVspaceAttr ||
-      name == kHspaceAttr || name == kAlignAttr)
+  if (name == html_names::kWidthAttr || name == html_names::kHeightAttr ||
+      name == html_names::kVspaceAttr || name == html_names::kHspaceAttr ||
+      name == html_names::kAlignAttr)
     return true;
   return HTMLFrameOwnerElement::IsPresentationAttribute(name);
 }
@@ -409,17 +408,17 @@ void HTMLPlugInElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == kWidthAttr) {
+  if (name == html_names::kWidthAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
-  } else if (name == kHeightAttr) {
+  } else if (name == html_names::kHeightAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
-  } else if (name == kVspaceAttr) {
+  } else if (name == html_names::kVspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
-  } else if (name == kHspaceAttr) {
+  } else if (name == html_names::kHspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
     AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
-  } else if (name == kAlignAttr) {
+  } else if (name == html_names::kAlignAttr) {
     ApplyAlignmentAttributeToStyle(value, style);
   } else {
     HTMLFrameOwnerElement::CollectStyleForPresentationAttribute(name, value,

@@ -8382,16 +8382,6 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
             SK_AlphaTRANSPARENT);
 
-  // Check that the sibling div layer is invalidated. It should have its own
-  // graphics layer since it has a transform.
-  GraphicsLayer* div_layer =
-      ToLayoutBoxModelObject(
-          frame->GetDocument()->getElementById("other")->GetLayoutObject())
-          ->Layer()
-          ->GetCompositedLayerMapping()
-          ->MainGraphicsLayer();
-  EXPECT_TRUE(div_layer->GetPaintController().CacheIsAllInvalid());
-
   // Verify that the video layer is present in the painted graphics layer tree
   // and that the non-video graphics layers (if any) don't paint anything. The
   // goal is that the body text and sibling div content should not be visible.

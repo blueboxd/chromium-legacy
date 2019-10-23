@@ -173,6 +173,8 @@
 #include "chrome/browser/ui/webui/chromeos/terminal/terminal_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chromeos/components/help_app_ui/help_app_ui.h"
+#include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/media_app_guest_ui.h"
 #include "chromeos/components/media_app_ui/media_app_ui.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
@@ -507,6 +509,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::DriveInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIFirstRunHost)
     return &NewWebUI<chromeos::FirstRunUI>;
+  if (base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2)) {
+    if (url.host_piece() == chromeos::kChromeUIHelpAppHost)
+      return &NewWebUI<chromeos::HelpAppUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIMachineLearningInternalsHost)
     return &NewWebUI<chromeos::machine_learning::MachineLearningInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)

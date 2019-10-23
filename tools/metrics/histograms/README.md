@@ -38,7 +38,7 @@ not the other.)
 ### Use Fixed Strings When Using Histogram Macros
 
 When using histogram macros (calls such as `UMA_HISTOGRAM_ENUMERATION`), you're
-not allow to construct your string dynamically so that it can vary at a
+not allowed to construct your string dynamically so that it can vary at a
 callsite.  At a given callsite (preferably you have only one), the string
 should be the same every time the macro is called.  If you need to use dynamic
 names, use the functions in histogram_functions.h instead of the macros.

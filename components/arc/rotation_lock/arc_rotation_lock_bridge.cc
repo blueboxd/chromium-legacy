@@ -72,11 +72,7 @@ void ArcRotationLockBridge::OnUserRotationLockChanged() {
   SendRotationLockState();
 }
 
-void ArcRotationLockBridge::OnTabletModeStarted() {
-  SendRotationLockState();
-}
-
-void ArcRotationLockBridge::OnTabletModeEnded() {
+void ArcRotationLockBridge::OnTabletPhysicalStateChanged() {
   SendRotationLockState();
 }
 
@@ -98,13 +94,10 @@ void ArcRotationLockBridge::SendRotationLockState() {
     DCHECK(found);
   }
 
-  bool in_tablet_mode =
-      ash::Shell::Get()->tablet_mode_controller()->InTabletMode();
-  bool accelerometer_active = in_tablet_mode
-                                  ? !ash::Shell::Get()
-                                         ->screen_orientation_controller()
-                                         ->rotation_locked()
-                                  : false;
+  auto* shell = ash::Shell::Get();
+  const bool accelerometer_active =
+      shell->tablet_mode_controller()->is_in_tablet_physical_state() &&
+      !shell->screen_orientation_controller()->rotation_locked();
 
   rotation_lock_instance->OnRotationLockStateChanged(
       accelerometer_active,

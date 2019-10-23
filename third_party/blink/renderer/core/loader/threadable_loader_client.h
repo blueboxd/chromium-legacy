@@ -44,7 +44,6 @@ class BytesConsumer;
 class KURL;
 class ResourceError;
 class ResourceResponse;
-class ResourceTimingInfo;
 
 class CORE_EXPORT ThreadableLoaderClient : public GarbageCollectedMixin {
  public:
@@ -64,7 +63,6 @@ class CORE_EXPORT ThreadableLoaderClient : public GarbageCollectedMixin {
   virtual void DidFinishLoading(uint64_t /*identifier*/) {}
   virtual void DidFail(const ResourceError&) {}
   virtual void DidFailRedirectCheck() {}
-  virtual void DidReceiveResourceTiming(const ResourceTimingInfo&) {}
 
   virtual void DidDownloadData(uint64_t /*dataLength*/) {}
   // Called for requests that had DownloadToBlob set to true. Can be called with

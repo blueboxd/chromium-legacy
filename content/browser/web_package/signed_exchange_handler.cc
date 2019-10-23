@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -518,12 +517,10 @@ void SignedExchangeHandler::OnCertReceived(
   //   property, or
   const std::string& stapled_ocsp_response = unverified_cert_chain_->ocsp();
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&VerifyCert, certificate, url, stapled_ocsp_response,
-                     sct_list_from_cert_cbor, frame_tree_node_id_,
-                     base::BindOnce(&SignedExchangeHandler::OnVerifyCert,
-                                    weak_factory_.GetWeakPtr())));
+  VerifyCert(certificate, url, stapled_ocsp_response, sct_list_from_cert_cbor,
+             frame_tree_node_id_,
+             base::BindOnce(&SignedExchangeHandler::OnVerifyCert,
+                            weak_factory_.GetWeakPtr()));
 }
 
 // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-cert-req

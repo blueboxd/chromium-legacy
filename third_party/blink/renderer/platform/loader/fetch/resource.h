@@ -68,7 +68,6 @@ class FetchParameters;
 class ResourceClient;
 class ResourceFetcher;
 class ResourceFinishObserver;
-class ResourceTimingInfo;
 class ResourceLoader;
 class ResponseBodyLoaderDrainableInterface;
 class SecurityOrigin;
@@ -274,8 +273,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
       scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) {}
   void SetResponse(const ResourceResponse&);
   const ResourceResponse& GetResponse() const { return response_; }
-
-  virtual void ReportResourceTimingToClients(const ResourceTimingInfo&) {}
 
   // Sets the serialized metadata retrieved from the platform's cache.
   // Subclasses of Resource that support cached metadata should override this

@@ -53,6 +53,21 @@ source_set("intents") {
     "//base",
     "//chrome/services/app_service/public/mojom",
     "//components/services/app_service/public/cpp:intent_util",
+    "//url",
+  ]
+}
+
+source_set("preferred_apps") {
+  sources = [
+    "preferred_apps.cc",
+    "preferred_apps.h",
+  ]
+
+  deps = [
+    ":intents",
+    "//base",
+    "//chrome/services/app_service/public/mojom",
+    "//url",
   ]
 }
 
@@ -65,6 +80,7 @@ source_set("unit_tests") {
     "icon_cache_unittest.cc",
     "icon_coalescer_unittest.cc",
     "intent_util_unittest.cc",
+    "preferred_apps_unittest.cc",
   ]
 
   deps = [

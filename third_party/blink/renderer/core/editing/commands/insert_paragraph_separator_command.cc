@@ -47,8 +47,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 // When inserting a new line, we want to avoid nesting empty divs if we can.
 // Otherwise, when pasting, it's easy to have each new line be a div deeper than
 // the previous. E.g., in the case below, we want to insert at ^ instead of |.
@@ -112,11 +110,11 @@ void InsertParagraphSeparatorCommand::ApplyStyleAfterInsertion(
     EditingState* editing_state) {
   // Not only do we break out of header tags, but we also do not preserve the
   // typing style, in order to match other browsers.
-  if (original_enclosing_block->HasTagName(kH1Tag) ||
-      original_enclosing_block->HasTagName(kH2Tag) ||
-      original_enclosing_block->HasTagName(kH3Tag) ||
-      original_enclosing_block->HasTagName(kH4Tag) ||
-      original_enclosing_block->HasTagName(kH5Tag)) {
+  if (original_enclosing_block->HasTagName(html_names::kH1Tag) ||
+      original_enclosing_block->HasTagName(html_names::kH2Tag) ||
+      original_enclosing_block->HasTagName(html_names::kH3Tag) ||
+      original_enclosing_block->HasTagName(html_names::kH4Tag) ||
+      original_enclosing_block->HasTagName(html_names::kH5Tag)) {
     return;
   }
 
@@ -139,11 +137,11 @@ bool InsertParagraphSeparatorCommand::ShouldUseDefaultParagraphElement(
   if (!IsEndOfBlock(EndingVisibleSelection().VisibleStart()))
     return false;
 
-  return enclosing_block->HasTagName(kH1Tag) ||
-         enclosing_block->HasTagName(kH2Tag) ||
-         enclosing_block->HasTagName(kH3Tag) ||
-         enclosing_block->HasTagName(kH4Tag) ||
-         enclosing_block->HasTagName(kH5Tag);
+  return enclosing_block->HasTagName(html_names::kH1Tag) ||
+         enclosing_block->HasTagName(html_names::kH2Tag) ||
+         enclosing_block->HasTagName(html_names::kH3Tag) ||
+         enclosing_block->HasTagName(html_names::kH4Tag) ||
+         enclosing_block->HasTagName(html_names::kH5Tag);
 }
 
 void InsertParagraphSeparatorCommand::GetAncestorsInsideBlock(
@@ -171,7 +169,7 @@ Element* InsertParagraphSeparatorCommand::CloneHierarchyUnderNewBlock(
     Element& child = ancestors[i - 1]->CloneWithoutChildren();
     // It should always be okay to remove id from the cloned elements, since the
     // originals are not deleted.
-    child.removeAttribute(kIdAttr);
+    child.removeAttribute(html_names::kIdAttr);
     AppendNode(&child, parent, editing_state);
     if (editing_state->IsAborted())
       return nullptr;

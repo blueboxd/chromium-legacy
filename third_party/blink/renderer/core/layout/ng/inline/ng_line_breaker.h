@@ -99,8 +99,6 @@ class CORE_EXPORT NGLineBreaker {
                               unsigned end_offset,
                               NGLineInfo*);
   NGInlineItemResult* AddItem(const NGInlineItem&, NGLineInfo*);
-  LayoutUnit SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>,
-                                NGLineInfo*);
 
   void BreakLine(LayoutUnit percentage_resolution_block_size_for_min_max,
                  NGLineInfo*);

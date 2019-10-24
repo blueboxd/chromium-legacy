@@ -24,7 +24,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 

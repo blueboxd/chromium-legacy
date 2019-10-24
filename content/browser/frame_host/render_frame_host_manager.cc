@@ -343,7 +343,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     // below.
     CommitPending(std::move(speculative_render_frame_host_),
                   std::move(bfcache_entry_to_restore_));
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    frame_tree_node_->ResetNavigationRequest(false);
     return;
   }
 
@@ -364,7 +364,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
   // See https://crbug.com/825677 and https://crbug.com/75195 for examples.
   if (speculative_render_frame_host_ && !is_same_document_navigation &&
       was_caused_by_user_gesture) {
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    frame_tree_node_->ResetNavigationRequest(false);
     CleanUpNavigation();
   }
 
@@ -548,8 +548,15 @@ void RenderFrameHostManager::SwapOutOldFrame(
       // TODO(hajimehoshi): For code readability, BackForwardCacheMetrics should
       // take CanStoreDocumentResult directly and rename
       // MarkNotRestoredWithReason to DidNotStoreDocument.
-      old_page_back_forward_cache_metrics->MarkNotRestoredWithReason(
-          can_store.reason.value());
+      for (int i = 0;
+           i <= static_cast<int>(
+                    BackForwardCacheMetrics::NotRestoredReason::kMaxValue);
+           i++) {
+        if (can_store.not_stored_reasons.test(static_cast<size_t>(i))) {
+          old_page_back_forward_cache_metrics->MarkNotRestoredWithReason(
+              static_cast<BackForwardCacheMetrics::NotRestoredReason>(i));
+        }
+      }
     }
   }
 
@@ -1024,7 +1031,7 @@ void RenderFrameHostManager::CancelPendingIfNecessary(
     // without canceling the request.  See https://crbug.com/636119.
     if (frame_tree_node_->navigation_request())
       frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    frame_tree_node_->ResetNavigationRequest(false);
   }
 }
 
@@ -2973,8 +2980,7 @@ void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
   current_frame_host()->ResetLoadingState();
   // Remove any speculative frames first and ongoing navigation state. This
   // should reset the loading state for good.
-  frame_tree_node_->ResetNavigationRequest(false /* keep_state */,
-                                           false /* inform_renderer */);
+  frame_tree_node_->ResetNavigationRequest(false /* keep_state */);
   if (speculative_render_frame_host_) {
     // The FrameTreeNode::ResetNavigationRequest call above may not have cleaned
     // up the speculative RenderFrameHost if the NavigationRequest had already

@@ -35,9 +35,11 @@ class FakeNavigationManagerDelegate : public NavigationManagerDelegate {
 
   // Setters for tests to inject dependencies.
   void SetWebViewNavigationProxy(id test_web_view);
+  void SetWebState(WebState*);
 
  private:
   id test_web_view_;
+  WebState* web_state_ = nullptr;
 };
 
 }  // namespace web

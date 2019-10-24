@@ -14,7 +14,6 @@
 namespace blink {
 namespace {
 
-// TODO(gilmanmh): Add expectations for image inversion to each test.
 TEST(DarkModeFilterTest, DoNotApplyFilterWhenDarkModeIsOff) {
   DarkModeFilter filter;
 
@@ -32,6 +31,8 @@ TEST(DarkModeFilterTest, DoNotApplyFilterWhenDarkModeIsOff) {
   EXPECT_EQ(base::nullopt,
             filter.ApplyToFlagsIfNeeded(
                 cc::PaintFlags(), DarkModeFilter::ElementRole::kBackground));
+
+  EXPECT_EQ(nullptr, filter.GetImageFilterForTesting());
 }
 
 TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlags) {
@@ -54,6 +55,8 @@ TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlags) {
       flags, DarkModeFilter::ElementRole::kBackground);
   ASSERT_NE(flags_or_nullopt, base::nullopt);
   EXPECT_EQ(SK_ColorBLACK, flags_or_nullopt.value().getColor());
+
+  EXPECT_NE(nullptr, filter.GetImageFilterForTesting());
 }
 
 }  // namespace

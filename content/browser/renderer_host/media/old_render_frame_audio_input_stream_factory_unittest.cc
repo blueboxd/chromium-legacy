@@ -95,7 +95,7 @@ class MockRendererAudioInputStreamFactoryClient
 std::unique_ptr<media::AudioInputDelegate> CreateFakeDelegate(
     media::AudioInputDelegate::EventHandler** event_handler_out,
     AudioInputDeviceManager* audio_input_device_manager,
-    media::mojom::AudioLogPtr audio_log,
+    mojo::PendingRemote<media::mojom::AudioLog> audio_log,
     AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration,
     uint32_t shared_memory_count,
     int stream_id,

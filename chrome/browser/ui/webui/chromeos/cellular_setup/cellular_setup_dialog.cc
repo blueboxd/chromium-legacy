@@ -39,7 +39,7 @@ class CellularSetupServiceHolder : public base::SupportsUserData::Data {
   ~CellularSetupServiceHolder() override = default;
 
   void BindReceiver(mojo::PendingReceiver<mojom::CellularSetup> receiver) {
-    service_.BindRequest(std::move(receiver));
+    service_.BindReceiver(std::move(receiver));
   }
 
  private:
@@ -132,9 +132,9 @@ CellularSetupDialogUI::CellularSetupDialogUI(content::WebUI* web_ui)
 CellularSetupDialogUI::~CellularSetupDialogUI() = default;
 
 void CellularSetupDialogUI::BindCellularSetup(
-    mojom::CellularSetupRequest request) {
+    mojo::PendingReceiver<mojom::CellularSetup> receiver) {
   GetOrCreateServiceHolder(web_ui()->GetWebContents()->GetBrowserContext())
-      ->BindReceiver(std::move(request));
+      ->BindReceiver(std::move(receiver));
 }
 
 }  // namespace cellular_setup

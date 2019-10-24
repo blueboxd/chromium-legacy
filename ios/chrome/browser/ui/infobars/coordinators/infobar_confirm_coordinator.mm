@@ -89,6 +89,10 @@
   return YES;
 }
 
+- (BOOL)isInfobarAccepted {
+  return NO;
+}
+
 - (void)infobarBannerWasPresented {
   // NO-OP.
 }

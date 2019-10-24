@@ -50,7 +50,6 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "signin_interaction_controller_egtest.mm",
-    "signin_interaction_controller_unity_egtest.mm",
   ]
   deps = [
     ":eg_test_support",

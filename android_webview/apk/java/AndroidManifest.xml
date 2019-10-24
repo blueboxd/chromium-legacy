@@ -39,7 +39,7 @@
                            android:value="true" />
             </activity>
             <!--suppress HardcodedText -->
-            <activity android:name="org.chromium.android_webview.ui.CrashesListActivity"
+            <activity android:name="org.chromium.android_webview.devui.CrashesListActivity"
                       android:label="WebView Crashes"
                       android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
             </activity>

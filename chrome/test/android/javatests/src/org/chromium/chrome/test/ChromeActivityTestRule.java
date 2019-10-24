@@ -400,7 +400,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      * Starts the Main activity and open a blank page.
      * This is faster and less flakyness-prone than starting on the NTP.
      */
-    public void startMainActivityOnBlankPage() throws InterruptedException {
+    public void startMainActivityOnBlankPage() {
         startMainActivityWithURL("about:blank");
     }
 

@@ -10,13 +10,13 @@ namespace blink {
 
 // static
 GPUCommandBuffer* GPUCommandBuffer::Create(GPUDevice* device,
-                                           DawnCommandBuffer command_buffer) {
+                                           WGPUCommandBuffer command_buffer) {
   return MakeGarbageCollected<GPUCommandBuffer>(device, command_buffer);
 }
 
 GPUCommandBuffer::GPUCommandBuffer(GPUDevice* device,
-                                   DawnCommandBuffer command_buffer)
-    : DawnObject<DawnCommandBuffer>(device, command_buffer) {}
+                                   WGPUCommandBuffer command_buffer)
+    : DawnObject<WGPUCommandBuffer>(device, command_buffer) {}
 
 GPUCommandBuffer::~GPUCommandBuffer() {
   if (IsDawnControlClientDestroyed()) {

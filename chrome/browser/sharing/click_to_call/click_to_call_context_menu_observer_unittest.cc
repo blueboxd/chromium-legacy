@@ -145,7 +145,7 @@ TEST_F(ClickToCallContextMenuObserverTest, SingleDevice_ShowMenu) {
   EXPECT_EQ(item_id, static_cast<int>(menu_.GetMenuSize()));
 
   // Emulate click on the device.
-  EXPECT_CALL(*service(), SendMessageToDevice(Eq(guid), Eq(kSharingMessageTTL),
+  EXPECT_CALL(*service(), SendMessageToDevice(Eq(guid), Eq(kSendMessageTimeout),
                                               ProtoEquals(sharing_message), _))
       .Times(1);
   menu_.ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
@@ -189,7 +189,7 @@ TEST_F(ClickToCallContextMenuObserverTest, MultipleDevices_ShowMenu) {
   for (int i = 0; i < kMaxDevicesShown; i++) {
     if (i < device_count) {
       EXPECT_CALL(*service(),
-                  SendMessageToDevice(Eq(guids[i]), Eq(kSharingMessageTTL),
+                  SendMessageToDevice(Eq(guids[i]), Eq(kSendMessageTimeout),
                                       ProtoEquals(sharing_message), _))
           .Times(1);
     } else {
@@ -238,7 +238,7 @@ TEST_F(ClickToCallContextMenuObserverTest,
   for (int i = 0; i < device_count; i++) {
     if (i < kMaxDevicesShown) {
       EXPECT_CALL(*service(),
-                  SendMessageToDevice(Eq(guids[i]), Eq(kSharingMessageTTL),
+                  SendMessageToDevice(Eq(guids[i]), Eq(kSendMessageTimeout),
                                       ProtoEquals(sharing_message), _))
           .Times(1);
     } else {

@@ -18,7 +18,7 @@ contains the mojom interfaces for these APIs.
 
 There are two kinds of file system types supported by the file system
 implementation: Internal types and public types.
-[`//storage/common/fileapi/file_system_types.h`](../../common/fileapi/file_system_types.h)
+[`//storage/common/file_system/file_system_types.h`](../../common/file_system/file_system_types.h)
 has an `enum` of all the various types that exist. Many of these are Chrome OS specific or
 only make sense in the context of extensions.
 

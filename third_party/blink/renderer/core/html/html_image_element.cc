@@ -327,10 +327,10 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
     if (child == this)
       return ImageCandidate();
 
-    if (!IsHTMLSourceElement(*child))
+    auto* source = DynamicTo<HTMLSourceElement>(child);
+    if (!source)
       continue;
 
-    HTMLSourceElement* source = ToHTMLSourceElement(child);
     if (!source->FastGetAttribute(html_names::kSrcAttr).IsNull()) {
       Deprecation::CountDeprecation(GetDocument(),
                                     WebFeature::kPictureSourceSrc);

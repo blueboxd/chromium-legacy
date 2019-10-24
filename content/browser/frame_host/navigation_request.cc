@@ -1398,7 +1398,7 @@ void NavigationRequest::OnRequestRedirected(
         GURL(redirect_info.new_referrer),
         base::BindOnce(&NavigationRequest::OnRedirectChecksComplete,
                        base::Unretained(this)));
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    frame_tree_node_->ResetNavigationRequest(false);
     return;
   }
 #endif
@@ -1680,7 +1680,7 @@ void NavigationRequest::OnResponseStarted(
     if (!frame_tree_node_->navigator()->GetDelegate()->ShouldTransferNavigation(
             frame_tree_node_->IsMainFrame())) {
       net_error_ = net::ERR_ABORTED;
-      frame_tree_node_->ResetNavigationRequest(false, true);
+      frame_tree_node_->ResetNavigationRequest(false);
       return;
     }
   }
@@ -1880,7 +1880,7 @@ void NavigationRequest::OnRequestFailedInternal(
 
   // If the request was canceled by the user do not show an error page.
   if (status.error_code == net::ERR_ABORTED) {
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    frame_tree_node_->ResetNavigationRequest(false);
     return;
   }
 
@@ -2221,7 +2221,7 @@ void NavigationRequest::OnFailureChecksComplete(
 
   // TODO(crbug.com/774663): We may want to take result.action() into account.
   if (net::ERR_ABORTED == result.net_error_code()) {
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    frame_tree_node_->ResetNavigationRequest(false);
     return;
   }
 
@@ -2776,7 +2776,7 @@ void NavigationRequest::OnRendererAbortedNavigation() {
   if (IsWaitingToCommit()) {
     render_frame_host_->NavigationRequestCancelled(this);
   } else {
-    frame_tree_node_->navigator()->CancelNavigation(frame_tree_node_, false);
+    frame_tree_node_->navigator()->CancelNavigation(frame_tree_node_);
   }
 
   // Do not add code after this, NavigationRequest has been destroyed.

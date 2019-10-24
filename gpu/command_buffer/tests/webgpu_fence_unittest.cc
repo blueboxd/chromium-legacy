@@ -11,11 +11,11 @@ namespace {
 
 class MockFenceOnCompletionCallback {
  public:
-  MOCK_METHOD2(Call, void(DawnFenceCompletionStatus status, void* userdata));
+  MOCK_METHOD2(Call, void(WGPUFenceCompletionStatus status, void* userdata));
 };
 
 std::unique_ptr<MockFenceOnCompletionCallback> mockFenceOnCompletionCallback;
-void ToMockFenceOnCompletionCallback(DawnFenceCompletionStatus status,
+void ToMockFenceOnCompletionCallback(WGPUFenceCompletionStatus status,
                                      void* userdata) {
   mockFenceOnCompletionCallback->Call(status, userdata);
 }
@@ -38,7 +38,7 @@ class WebGPUFenceTest : public WebGPUTest {
     WebGPUTest::TearDown();
   }
 
-  void WaitForFence(dawn::Device device, dawn::Fence fence, uint64_t value) {
+  void WaitForFence(wgpu::Device device, wgpu::Fence fence, uint64_t value) {
     while (fence.GetCompletedValue() < value) {
       device.Tick();
       webgpu()->FlushCommands();
@@ -53,16 +53,16 @@ TEST_F(WebGPUFenceTest, InitialValue) {
     LOG(ERROR) << "Test skipped";
     return;
   }
-  dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
-  dawn::Queue queue = device.CreateQueue();
+  wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
+  wgpu::Queue queue = device.CreateQueue();
   {
-    dawn::FenceDescriptor fence_desc{nullptr, nullptr, 0};
-    dawn::Fence fence = queue.CreateFence(&fence_desc);
+    wgpu::FenceDescriptor fence_desc{nullptr, nullptr, 0};
+    wgpu::Fence fence = queue.CreateFence(&fence_desc);
     EXPECT_EQ(fence.GetCompletedValue(), 0u);
   }
   {
-    dawn::FenceDescriptor fence_desc{nullptr, nullptr, 2};
-    dawn::Fence fence = queue.CreateFence(&fence_desc);
+    wgpu::FenceDescriptor fence_desc{nullptr, nullptr, 2};
+    wgpu::Fence fence = queue.CreateFence(&fence_desc);
     EXPECT_EQ(fence.GetCompletedValue(), 2u);
   }
 }
@@ -73,10 +73,10 @@ TEST_F(WebGPUFenceTest, GetCompletedValue) {
     LOG(ERROR) << "Test skipped";
     return;
   }
-  dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
-  dawn::Queue queue = device.CreateQueue();
-  dawn::FenceDescriptor fence_desc{nullptr, nullptr, 0};
-  dawn::Fence fence = queue.CreateFence(&fence_desc);
+  wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
+  wgpu::Queue queue = device.CreateQueue();
+  wgpu::FenceDescriptor fence_desc{nullptr, nullptr, 0};
+  wgpu::Fence fence = queue.CreateFence(&fence_desc);
   queue.Signal(fence, 2u);
   WaitForFence(device, fence, 2u);
   EXPECT_EQ(fence.GetCompletedValue(), 2u);
@@ -89,14 +89,14 @@ TEST_F(WebGPUFenceTest, OnCompletion) {
     LOG(ERROR) << "Test skipped";
     return;
   }
-  dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
-  dawn::Queue queue = device.CreateQueue();
-  dawn::FenceDescriptor fence_desc{nullptr, nullptr, 0};
-  dawn::Fence fence = queue.CreateFence(&fence_desc);
+  wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
+  wgpu::Queue queue = device.CreateQueue();
+  wgpu::FenceDescriptor fence_desc{nullptr, nullptr, 0};
+  wgpu::Fence fence = queue.CreateFence(&fence_desc);
   queue.Signal(fence, 2u);
 
   EXPECT_CALL(*mockFenceOnCompletionCallback,
-              Call(DAWN_FENCE_COMPLETION_STATUS_SUCCESS, this))
+              Call(WGPUFenceCompletionStatus_Success, this))
       .Times(1);
   fence.OnCompletion(2u, ToMockFenceOnCompletionCallback, this);
   WaitForFence(device, fence, 2u);
@@ -108,10 +108,10 @@ TEST_F(WebGPUFenceTest, SignalManyTimes) {
     LOG(ERROR) << "Test skipped";
     return;
   }
-  dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
-  dawn::Queue queue = device.CreateQueue();
-  dawn::FenceDescriptor fence_desc{nullptr, nullptr, 0};
-  dawn::Fence fence = queue.CreateFence(&fence_desc);
+  wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
+  wgpu::Queue queue = device.CreateQueue();
+  wgpu::FenceDescriptor fence_desc{nullptr, nullptr, 0};
+  wgpu::Fence fence = queue.CreateFence(&fence_desc);
 
   uint64_t max_value = 1000000u;
   for (uint64_t i = 1; i <= max_value; ++i) {

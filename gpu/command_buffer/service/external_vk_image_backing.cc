@@ -169,18 +169,18 @@ class ScopedPixelStore {
   DISALLOW_COPY_AND_ASSIGN(ScopedPixelStore);
 };
 
-base::Optional<DawnTextureFormat> GetDawnFormat(viz::ResourceFormat format) {
+base::Optional<WGPUTextureFormat> GetWGPUFormat(viz::ResourceFormat format) {
   switch (format) {
     case viz::RED_8:
     case viz::ALPHA_8:
     case viz::LUMINANCE_8:
-      return DAWN_TEXTURE_FORMAT_R8_UNORM;
+      return WGPUTextureFormat_R8Unorm;
     case viz::RG_88:
-      return DAWN_TEXTURE_FORMAT_RG8_UNORM;
+      return WGPUTextureFormat_RG8Unorm;
     case viz::RGBA_8888:
-      return DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
+      return WGPUTextureFormat_RGBA8Unorm;
     case viz::BGRA_8888:
-      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
+      return WGPUTextureFormat_BGRA8Unorm;
     default:
       return {};
   }
@@ -265,7 +265,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
   auto backing = base::WrapUnique(new ExternalVkImageBacking(
       mailbox, format, size, color_space, usage, context_state, image, memory,
       requirements.size, vk_format, command_pool, GrVkYcbcrConversionInfo(),
-      GetDawnFormat(format), mem_alloc_info.memoryTypeIndex));
+      GetWGPUFormat(format), mem_alloc_info.memoryTypeIndex));
 
   if (!pixel_data.empty()) {
     backing->WritePixels(
@@ -330,7 +330,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     return base::WrapUnique(new ExternalVkImageBacking(
         mailbox, resource_format, size, color_space, usage, context_state,
         vk_image, vk_device_memory, memory_size, vk_image_info.format,
-        command_pool, gr_ycbcr_info, GetDawnFormat(resource_format), {}));
+        command_pool, gr_ycbcr_info, GetWGPUFormat(resource_format), {}));
   }
 
   if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
@@ -431,7 +431,7 @@ ExternalVkImageBacking::ExternalVkImageBacking(
     VkFormat vk_format,
     VulkanCommandPool* command_pool,
     const GrVkYcbcrConversionInfo& ycbcr_info,
-    base::Optional<DawnTextureFormat> dawn_format,
+    base::Optional<WGPUTextureFormat> wgpu_format,
     base::Optional<uint32_t> memory_type_index)
     : SharedImageBacking(mailbox,
                          format,
@@ -450,7 +450,7 @@ ExternalVkImageBacking::ExternalVkImageBacking(
                                            usage & SHARED_IMAGE_USAGE_PROTECTED,
                                            ycbcr_info)),
       command_pool_(command_pool),
-      dawn_format_(dawn_format),
+      wgpu_format_(wgpu_format),
       memory_type_index_(memory_type_index) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {
@@ -526,9 +526,9 @@ bool ExternalVkImageBacking::ProduceLegacyMailbox(
 std::unique_ptr<SharedImageRepresentationDawn>
 ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
                                     MemoryTypeTracker* tracker,
-                                    DawnDevice dawnDevice) {
+                                    WGPUDevice wgpuDevice) {
 #if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
-  if (!dawn_format_) {
+  if (!wgpu_format_) {
     DLOG(ERROR) << "Format not supported for Dawn";
     return nullptr;
   }
@@ -548,7 +548,7 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
   }
 
   return std::make_unique<ExternalVkImageDawnRepresentation>(
-      manager, this, tracker, dawnDevice, dawn_format_.value(), memory_fd,
+      manager, this, tracker, wgpuDevice, wgpu_format_.value(), memory_fd,
       image_info.fAlloc.fSize, memory_type_index_.value());
 #else  // !defined(OS_LINUX) || !BUILDFLAG(USE_DAWN)
   NOTIMPLEMENTED_LOG_ONCE();

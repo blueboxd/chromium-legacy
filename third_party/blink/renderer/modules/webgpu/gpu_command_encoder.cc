@@ -51,11 +51,11 @@ bool ValidateTextureCopyView(GPUTextureCopyView* texture_copy_view,
   return true;
 }
 
-DawnRenderPassColorAttachmentDescriptor AsDawnType(
+WGPURenderPassColorAttachmentDescriptor AsDawnType(
     const GPURenderPassColorAttachmentDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnRenderPassColorAttachmentDescriptor dawn_desc = {};
+  WGPURenderPassColorAttachmentDescriptor dawn_desc = {};
   dawn_desc.attachment = webgpu_desc->attachment()->GetHandle();
   dawn_desc.resolveTarget = webgpu_desc->resolveTarget()
                                 ? webgpu_desc->resolveTarget()->GetHandle()
@@ -63,61 +63,61 @@ DawnRenderPassColorAttachmentDescriptor AsDawnType(
 
   if (webgpu_desc->loadValue().IsGPULoadOp()) {
     const WTF::String& gpuLoadOp = webgpu_desc->loadValue().GetAsGPULoadOp();
-    dawn_desc.loadOp = AsDawnEnum<DawnLoadOp>(gpuLoadOp);
+    dawn_desc.loadOp = AsDawnEnum<WGPULoadOp>(gpuLoadOp);
 
   } else if (webgpu_desc->loadValue().IsDoubleSequence()) {
     const Vector<double>& gpuColor =
         webgpu_desc->loadValue().GetAsDoubleSequence();
-    dawn_desc.loadOp = DAWN_LOAD_OP_CLEAR;
+    dawn_desc.loadOp = WGPULoadOp_Clear;
     dawn_desc.clearColor = AsDawnColor(gpuColor);
 
   } else if (webgpu_desc->loadValue().IsGPUColorDict()) {
     const GPUColorDict* gpuColor = webgpu_desc->loadValue().GetAsGPUColorDict();
-    dawn_desc.loadOp = DAWN_LOAD_OP_CLEAR;
+    dawn_desc.loadOp = WGPULoadOp_Clear;
     dawn_desc.clearColor = AsDawnType(gpuColor);
 
   } else {
     NOTREACHED();
   }
 
-  dawn_desc.storeOp = AsDawnEnum<DawnStoreOp>(webgpu_desc->storeOp());
+  dawn_desc.storeOp = AsDawnEnum<WGPUStoreOp>(webgpu_desc->storeOp());
 
   return dawn_desc;
 }
 
 namespace {
 
-DawnRenderPassDepthStencilAttachmentDescriptor AsDawnType(
+WGPURenderPassDepthStencilAttachmentDescriptor AsDawnType(
     const GPURenderPassDepthStencilAttachmentDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnRenderPassDepthStencilAttachmentDescriptor dawn_desc = {};
+  WGPURenderPassDepthStencilAttachmentDescriptor dawn_desc = {};
   dawn_desc.attachment = webgpu_desc->attachment()->GetHandle();
 
   if (webgpu_desc->depthLoadValue().IsGPULoadOp()) {
     const WTF::String& gpuLoadOp =
         webgpu_desc->depthLoadValue().GetAsGPULoadOp();
-    dawn_desc.depthLoadOp = AsDawnEnum<DawnLoadOp>(gpuLoadOp);
+    dawn_desc.depthLoadOp = AsDawnEnum<WGPULoadOp>(gpuLoadOp);
     dawn_desc.clearDepth = 1.0f;
 
   } else if (webgpu_desc->depthLoadValue().IsFloat()) {
-    dawn_desc.depthLoadOp = DAWN_LOAD_OP_CLEAR;
+    dawn_desc.depthLoadOp = WGPULoadOp_Clear;
     dawn_desc.clearDepth = webgpu_desc->depthLoadValue().GetAsFloat();
 
   } else {
     NOTREACHED();
   }
 
-  dawn_desc.depthStoreOp = AsDawnEnum<DawnStoreOp>(webgpu_desc->depthStoreOp());
+  dawn_desc.depthStoreOp = AsDawnEnum<WGPUStoreOp>(webgpu_desc->depthStoreOp());
 
   if (webgpu_desc->stencilLoadValue().IsGPULoadOp()) {
     const WTF::String& gpuLoadOp =
         webgpu_desc->stencilLoadValue().GetAsGPULoadOp();
-    dawn_desc.stencilLoadOp = AsDawnEnum<DawnLoadOp>(gpuLoadOp);
+    dawn_desc.stencilLoadOp = AsDawnEnum<WGPULoadOp>(gpuLoadOp);
     dawn_desc.clearStencil = 0;
 
   } else if (webgpu_desc->stencilLoadValue().IsUnsignedLong()) {
-    dawn_desc.stencilLoadOp = DAWN_LOAD_OP_CLEAR;
+    dawn_desc.stencilLoadOp = WGPULoadOp_Clear;
     dawn_desc.clearStencil =
         webgpu_desc->stencilLoadValue().GetAsUnsignedLong();
 
@@ -126,16 +126,16 @@ DawnRenderPassDepthStencilAttachmentDescriptor AsDawnType(
   }
 
   dawn_desc.stencilStoreOp =
-      AsDawnEnum<DawnStoreOp>(webgpu_desc->stencilStoreOp());
+      AsDawnEnum<WGPUStoreOp>(webgpu_desc->stencilStoreOp());
 
   return dawn_desc;
 }
 
-DawnBufferCopyView AsDawnType(const GPUBufferCopyView* webgpu_view) {
+WGPUBufferCopyView AsDawnType(const GPUBufferCopyView* webgpu_view) {
   DCHECK(webgpu_view);
   DCHECK(webgpu_view->buffer());
 
-  DawnBufferCopyView dawn_view;
+  WGPUBufferCopyView dawn_view;
   dawn_view.nextInChain = nullptr;
   dawn_view.buffer = webgpu_view->buffer()->GetHandle();
   dawn_view.offset = webgpu_view->offset();
@@ -145,11 +145,11 @@ DawnBufferCopyView AsDawnType(const GPUBufferCopyView* webgpu_view) {
   return dawn_view;
 }
 
-DawnTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view) {
+WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view) {
   DCHECK(webgpu_view);
   DCHECK(webgpu_view->texture());
 
-  DawnTextureCopyView dawn_view;
+  WGPUTextureCopyView dawn_view;
   dawn_view.nextInChain = nullptr;
   dawn_view.texture = webgpu_view->texture()->GetHandle();
   dawn_view.mipLevel = webgpu_view->mipLevel();
@@ -159,11 +159,11 @@ DawnTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view) {
   return dawn_view;
 }
 
-DawnCommandEncoderDescriptor AsDawnType(
+WGPUCommandEncoderDescriptor AsDawnType(
     const GPUCommandEncoderDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnCommandEncoderDescriptor dawn_desc = {};
+  WGPUCommandEncoderDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   if (webgpu_desc->hasLabel()) {
     dawn_desc.label = webgpu_desc->label().Utf8().data();
@@ -182,8 +182,8 @@ GPUCommandEncoder* GPUCommandEncoder::Create(
   DCHECK(webgpu_desc);
   ALLOW_UNUSED_LOCAL(webgpu_desc);
 
-  DawnCommandEncoderDescriptor dawn_desc = {};
-  const DawnCommandEncoderDescriptor* dawn_desc_ptr = nullptr;
+  WGPUCommandEncoderDescriptor dawn_desc = {};
+  const WGPUCommandEncoderDescriptor* dawn_desc_ptr = nullptr;
   if (webgpu_desc) {
     dawn_desc = AsDawnType(webgpu_desc);
     dawn_desc_ptr = &dawn_desc;
@@ -195,8 +195,8 @@ GPUCommandEncoder* GPUCommandEncoder::Create(
 }
 
 GPUCommandEncoder::GPUCommandEncoder(GPUDevice* device,
-                                     DawnCommandEncoder command_encoder)
-    : DawnObject<DawnCommandEncoder>(device, command_encoder) {}
+                                     WGPUCommandEncoder command_encoder)
+    : DawnObject<WGPUCommandEncoder>(device, command_encoder) {}
 
 GPUCommandEncoder::~GPUCommandEncoder() {
   if (IsDawnControlClientDestroyed()) {
@@ -227,21 +227,21 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
     }
   }
 
-  DawnRenderPassDescriptor dawn_desc = {};
+  WGPURenderPassDescriptor dawn_desc = {};
   dawn_desc.colorAttachmentCount = color_attachment_count;
   dawn_desc.colorAttachments = nullptr;
   if (descriptor->hasLabel()) {
     dawn_desc.label = descriptor->label().Utf8().data();
   }
 
-  std::unique_ptr<DawnRenderPassColorAttachmentDescriptor[]> color_attachments;
+  std::unique_ptr<WGPURenderPassColorAttachmentDescriptor[]> color_attachments;
 
   if (color_attachment_count > 0) {
     color_attachments = AsDawnType(descriptor->colorAttachments());
     dawn_desc.colorAttachments = color_attachments.get();
   }
 
-  DawnRenderPassDepthStencilAttachmentDescriptor depthStencilAttachment = {};
+  WGPURenderPassDepthStencilAttachmentDescriptor depthStencilAttachment = {};
   if (descriptor->hasDepthStencilAttachment()) {
     depthStencilAttachment = AsDawnType(descriptor->depthStencilAttachment());
     dawn_desc.depthStencilAttachment = &depthStencilAttachment;
@@ -256,7 +256,7 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
 
 GPUComputePassEncoder* GPUCommandEncoder::beginComputePass(
     const GPUComputePassDescriptor* descriptor) {
-  DawnComputePassDescriptor dawn_desc = {};
+  WGPUComputePassDescriptor dawn_desc = {};
   if (descriptor->hasLabel()) {
     dawn_desc.label = descriptor->label().Utf8().data();
   }
@@ -288,9 +288,9 @@ void GPUCommandEncoder::copyBufferToTexture(
     return;
   }
 
-  DawnBufferCopyView dawn_source = AsDawnType(source);
-  DawnTextureCopyView dawn_destination = AsDawnType(destination);
-  DawnExtent3D dawn_copy_size = AsDawnType(&copy_size);
+  WGPUBufferCopyView dawn_source = AsDawnType(source);
+  WGPUTextureCopyView dawn_destination = AsDawnType(destination);
+  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size);
 
   GetProcs().commandEncoderCopyBufferToTexture(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
@@ -306,9 +306,9 @@ void GPUCommandEncoder::copyTextureToBuffer(
     return;
   }
 
-  DawnTextureCopyView dawn_source = AsDawnType(source);
-  DawnBufferCopyView dawn_destination = AsDawnType(destination);
-  DawnExtent3D dawn_copy_size = AsDawnType(&copy_size);
+  WGPUTextureCopyView dawn_source = AsDawnType(source);
+  WGPUBufferCopyView dawn_destination = AsDawnType(destination);
+  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size);
 
   GetProcs().commandEncoderCopyTextureToBuffer(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
@@ -325,9 +325,9 @@ void GPUCommandEncoder::copyTextureToTexture(
     return;
   }
 
-  DawnTextureCopyView dawn_source = AsDawnType(source);
-  DawnTextureCopyView dawn_destination = AsDawnType(destination);
-  DawnExtent3D dawn_copy_size = AsDawnType(&copy_size);
+  WGPUTextureCopyView dawn_source = AsDawnType(source);
+  WGPUTextureCopyView dawn_destination = AsDawnType(destination);
+  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size);
 
   GetProcs().commandEncoderCopyTextureToTexture(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
@@ -349,7 +349,7 @@ void GPUCommandEncoder::insertDebugMarker(String markerLabel) {
 
 GPUCommandBuffer* GPUCommandEncoder::finish(
     const GPUCommandBufferDescriptor* descriptor) {
-  DawnCommandBufferDescriptor dawn_desc = {};
+  WGPUCommandBufferDescriptor dawn_desc = {};
   if (descriptor->hasLabel()) {
     dawn_desc.label = descriptor->label().Utf8().data();
   }

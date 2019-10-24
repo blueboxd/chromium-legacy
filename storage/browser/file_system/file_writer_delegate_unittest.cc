@@ -36,7 +36,7 @@
 #include "storage/browser/file_system/sandbox_file_stream_writer.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
-#include "storage/common/fileapi/file_system_mount_option.h"
+#include "storage/common/file_system/file_system_mount_option.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 

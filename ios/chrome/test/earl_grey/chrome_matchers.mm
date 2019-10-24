@@ -73,6 +73,10 @@ id<GREYMatcher> CancelButton() {
   return [ChromeMatchersAppInterface cancelButton];
 }
 
+id<GREYMatcher> NavigationBarCancelButton() {
+  return [ChromeMatchersAppInterface navigationBarCancelButton];
+}
+
 id<GREYMatcher> CloseButton() {
   return [ChromeMatchersAppInterface closeButton];
 }
@@ -453,6 +457,83 @@ id<GREYMatcher> TabGridOtherDevicesPanelButton() {
 
 id<GREYMatcher> TabGridCloseButtonForCellAtIndex(unsigned int index) {
   return [ChromeMatchersAppInterface tabGridCloseButtonForCellAtIndex:index];
+}
+
+id<GREYMatcher> SettingsPasswordMatcher() {
+  return [ChromeMatchersAppInterface settingsPasswordMatcher];
+}
+
+id<GREYMatcher> SettingsPasswordSearchMatcher() {
+  return [ChromeMatchersAppInterface settingsPasswordSearchMatcher];
+}
+
+id<GREYMatcher> SettingsProfileMatcher() {
+  return [ChromeMatchersAppInterface settingsProfileMatcher];
+}
+
+id<GREYMatcher> AutofillSuggestionViewMatcher() {
+  return [ChromeMatchersAppInterface autofillSuggestionViewMatcher];
+}
+
+#pragma mark - Manual Fallback
+
+id<GREYMatcher> ManualFallbackFormSuggestionViewMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackFormSuggestionViewMatcher];
+}
+
+id<GREYMatcher> ManualFallbackKeyboardIconMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackKeyboardIconMatcher];
+}
+
+id<GREYMatcher> ManualFallbackPasswordIconMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackPasswordIconMatcher];
+}
+
+id<GREYMatcher> ManualFallbackPasswordTableViewMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackPasswordTableViewMatcher];
+}
+
+id<GREYMatcher> ManualFallbackPasswordSearchBarMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackPasswordSearchBarMatcher];
+}
+
+id<GREYMatcher> ManualFallbackManagePasswordsMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackManagePasswordsMatcher];
+}
+
+id<GREYMatcher> ManualFallbackOtherPasswordsMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackOtherPasswordsMatcher];
+}
+
+id<GREYMatcher> ManualFallbackOtherPasswordsDismissMatcher() {
+  return
+      [ChromeMatchersAppInterface manualFallbackOtherPasswordsDismissMatcher];
+}
+
+id<GREYMatcher> ManualFallbackPasswordButtonMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackPasswordButtonMatcher];
+}
+
+id<GREYMatcher> ManualFallbackPasswordTableViewWindowMatcher() {
+  return
+      [ChromeMatchersAppInterface manualFallbackPasswordTableViewWindowMatcher];
+}
+
+id<GREYMatcher> ManualFallbackProfilesIconMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackProfilesIconMatcher];
+}
+
+id<GREYMatcher> ManualFallbackProfilesTableViewMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackProfilesTableViewMatcher];
+}
+
+id<GREYMatcher> ManualFallbackManageProfilesMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackManageProfilesMatcher];
+}
+
+id<GREYMatcher> ManualFallbackProfileTableViewWindowMatcher() {
+  return
+      [ChromeMatchersAppInterface manualFallbackProfileTableViewWindowMatcher];
 }
 
 }  // namespace chrome_test_util

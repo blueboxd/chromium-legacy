@@ -3888,7 +3888,6 @@ jumbo_static_library("browser") {
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
       "//chrome/browser/ui/cocoa/notifications:common",
-      "//components/metal_util",
       "//services/video_capture/public/mojom:constants",
       "//third_party/crashpad/crashpad/client:client",
       "//third_party/google_toolbox_for_mac",

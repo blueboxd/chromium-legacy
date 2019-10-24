@@ -16,6 +16,6 @@ proto_library("proto") {
     "click_to_call_message.proto",
     "shared_clipboard_message.proto",
     "sharing_message.proto",
-    "sms_fetch_request.proto",
+    "sms_fetch_message.proto",
   ]
 }

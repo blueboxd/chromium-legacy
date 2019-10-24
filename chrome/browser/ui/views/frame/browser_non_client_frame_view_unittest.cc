@@ -74,7 +74,14 @@ class BrowserNonClientFrameViewTabbedTest
       : BrowserNonClientFrameViewTest(Browser::TYPE_NORMAL) {}
 };
 
-TEST_F(BrowserNonClientFrameViewTabbedTest, HitTestTabstrip) {
+// TODO(crbug.com/1015949): Flaky on ChromeOS and Linux TSAN.
+#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(THREAD_SANITIZER))
+#define MAYBE_HitTestTabstrip DISABLED_HitTestTabstrip
+#else
+#define MAYBE_HitTestTabstrip HitTestTabstrip
+#endif
+
+TEST_F(BrowserNonClientFrameViewTabbedTest, MAYBE_HitTestTabstrip) {
   gfx::Rect tabstrip_bounds =
       frame_view_->browser_view()->tabstrip()->GetLocalBounds();
   EXPECT_FALSE(tabstrip_bounds.IsEmpty());

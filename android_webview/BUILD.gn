@@ -209,11 +209,6 @@ android_assets("stub_assets") {
   ]
 }
 
-android_resources("system_webview_resources") {
-  resource_dirs = [ "apk/java/res" ]
-  custom_package = system_webview_package_name
-}
-
 android_resources("resources") {
   resource_dirs = [ "java/res" ]
   custom_package = "org.chromium.android_webview"
@@ -590,12 +585,6 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
-    "java/src/org/chromium/android_webview/ui/CrashesListActivity.java",
-    "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java",
-    "java/src/org/chromium/android_webview/ui/util/UnuploadedFilesStateLoader.java",
-    "java/src/org/chromium/android_webview/ui/util/UploadedCrashesInfoLoader.java",
-    "java/src/org/chromium/android_webview/ui/util/WebViewCrashInfoCollector.java",
-    "java/src/org/chromium/android_webview/ui/util/WebViewCrashLogParser.java",
   ]
   deps = [
     ":common_aidl_java",
@@ -609,7 +598,6 @@ android_library("browser_java") {
     ":common_platform_services_java",
     ":common_variations_utils_java",
     ":resources",
-    ":strings_grd",
     ":system_webview_manifest",
     "//base:base_java",
     "//base:jni_java",

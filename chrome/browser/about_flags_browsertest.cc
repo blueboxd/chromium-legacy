@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
@@ -22,7 +23,10 @@
 namespace {
 
 const char kSwitchName[] = "flag-system-test-switch";
-const char kFlagName[] = "flag-system-test-flag";
+const char kFlagName[] = "flag-system-test-flag-1";
+
+const char kExpiredFlagName[] = "flag-system-test-flag-2";
+const char kExpiredFlagSwitchName[] = "flag-system-test-expired-switch";
 
 // Command line switch containing an invalid origin.
 const char kUnsanitizedCommandLine[] =
@@ -101,6 +105,17 @@ bool IsDropdownEnabled(content::WebContents* contents,
   return result;
 }
 
+bool IsFlagPresent(content::WebContents* contents, const char* experiment_id) {
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
+      base::StringPrintf("var k = document.getElementById('%s');"
+                         "window.domAutomationController.send(k != null);",
+                         experiment_id),
+      &result));
+  return result;
+}
+
 void WaitForExperimentalFeatures(content::WebContents* contents) {
   bool unused;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -120,8 +135,14 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
  public:
   AboutFlagsBrowserTest() {
     about_flags::testing::SetFeatureEntries(
-        {{"flag-system-test-flag", "name", "description", -1,
-          ORIGIN_LIST_VALUE_TYPE(kSwitchName, "")}});
+        {{kFlagName, "name-1", "description-1", -1,
+          ORIGIN_LIST_VALUE_TYPE(kSwitchName, "")},
+         {kExpiredFlagName, "name-2", "description-2", -1,
+          SINGLE_VALUE_TYPE(kExpiredFlagSwitchName)}});
+    flags::testing::SetFlagExpiredPredicate(
+        base::BindLambdaForTesting([&](const std::string& name) -> bool {
+          return expiration_enabled_ && name == kExpiredFlagName;
+        }));
     feature_list_.InitWithFeatures({flags::kUnexpireFlagsM76}, {});
   }
 
@@ -130,6 +151,8 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
+  void set_expiration_enabled(bool enabled) { expiration_enabled_ = enabled; }
+
   bool has_initial_command_line() const { return GetParam(); }
 
   std::string GetInitialCommandLine() const {
@@ -150,6 +173,8 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
     WaitForExperimentalFeatures(
         browser()->tab_strip_model()->GetActiveWebContents());
   }
+
+  bool expiration_enabled_ = true;
 
   base::test::ScopedFeatureList feature_list_;
 };
@@ -273,6 +298,21 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_OriginFlagEnabled) {
   EXPECT_EQ(
       GetSanitizedInputAndCommandLine(),
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
+}
+
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, ExpiryHidesFlag) {
+  NavigateToFlagsPage();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsFlagPresent(contents, kFlagName));
+  EXPECT_FALSE(IsFlagPresent(contents, kExpiredFlagName));
+
+  set_expiration_enabled(false);
+
+  NavigateToFlagsPage();
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsFlagPresent(contents, kFlagName));
+  EXPECT_TRUE(IsFlagPresent(contents, kExpiredFlagName));
 }
 
 }  // namespace

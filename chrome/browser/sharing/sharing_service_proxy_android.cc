@@ -56,7 +56,9 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
       guid, kSendMessageTimeout, std::move(sharing_message),
       base::BindOnce(
           [](base::OnceCallback<void(int)> callback,
-             SharingSendMessageResult result) {
+             SharingSendMessageResult result,
+             std::unique_ptr<chrome_browser_sharing::ResponseMessage>
+                 response) {
             std::move(callback).Run(static_cast<int>(result));
           },
           std::move(callback)));

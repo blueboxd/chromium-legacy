@@ -15,7 +15,6 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "components/unified_consent/unified_consent_service.h"
 
@@ -84,11 +83,6 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
       ProfileSyncServiceFactory::GetForProfile(profile);
   if (!sync_service)
     return nullptr;
-
-  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    UnifiedConsentService::RollbackIfNeeded(pref_service, sync_service);
-    return nullptr;
-  }
 
   return new UnifiedConsentService(
       pref_service, IdentityManagerFactory::GetForProfile(profile),

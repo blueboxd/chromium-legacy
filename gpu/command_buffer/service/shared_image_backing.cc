@@ -67,7 +67,7 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageBacking::ProduceSkia(
 std::unique_ptr<SharedImageRepresentationDawn> SharedImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
-    DawnDevice device) {
+    WGPUDevice device) {
   return nullptr;
 }
 

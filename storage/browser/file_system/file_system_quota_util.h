@@ -13,7 +13,7 @@
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/memory/scoped_refptr.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_types.h"
 #include "url/gurl.h"
 
 namespace storage {

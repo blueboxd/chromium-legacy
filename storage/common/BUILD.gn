@@ -11,12 +11,12 @@ component("common") {
     "database/database_connections.h",
     "database/database_identifier.cc",
     "database/database_identifier.h",
-    "fileapi/file_system_info.cc",
-    "fileapi/file_system_info.h",
-    "fileapi/file_system_mount_option.h",
-    "fileapi/file_system_types.h",
-    "fileapi/file_system_util.cc",
-    "fileapi/file_system_util.h",
+    "file_system/file_system_info.cc",
+    "file_system/file_system_info.h",
+    "file_system/file_system_mount_option.h",
+    "file_system/file_system_types.h",
+    "file_system/file_system_util.cc",
+    "file_system/file_system_util.h",
     "storage_histograms.cc",
     "storage_histograms.h",
   ]
@@ -49,7 +49,7 @@ source_set("unittests") {
   sources = [
     "database/database_connections_unittest.cc",
     "database/database_identifier_unittest.cc",
-    "fileapi/file_system_util_unittest.cc",
+    "file_system/file_system_util_unittest.cc",
     "run_all_unittests.cc",
   ]
 

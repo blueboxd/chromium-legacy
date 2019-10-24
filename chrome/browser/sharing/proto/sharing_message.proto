@@ -6,7 +6,7 @@ syntax = "proto3";
 
 import "click_to_call_message.proto";
 import "shared_clipboard_message.proto";
-import "sms_fetch_request.proto";
+import "sms_fetch_message.proto";
 
 package chrome_browser_sharing;
 
@@ -60,6 +60,15 @@ message AckMessage {
 
   // The type of message that this is acknowledging. optional.
   MessageType original_message_type = 2;
+
+  // Response of the message, optional.
+  ResponseMessage response_message = 3;
+}
+
+// Message for responding to a SharingMessage.
+message ResponseMessage {
+  // Payload of the response, contains one of the messages below. required.
+  oneof payload { SmsFetchResponse sms_fetch_response = 1; }
 }
 
 // Message for data necessary to send an AckMessage to the sender.

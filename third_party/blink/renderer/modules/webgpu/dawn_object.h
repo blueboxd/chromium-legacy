@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_OBJECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_OBJECT_H_
 
-#include <dawn/dawn.h>
 #include <dawn/dawn_proc_table.h>
+#include <dawn/webgpu.h>
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -67,16 +67,16 @@ class DawnObject : public DawnObjectImpl {
 };
 
 template <>
-class DawnObject<DawnDevice> : public DawnObjectBase {
+class DawnObject<WGPUDevice> : public DawnObjectBase {
  public:
   DawnObject(scoped_refptr<DawnControlClientHolder> dawn_control_client,
-             DawnDevice handle)
+             WGPUDevice handle)
       : DawnObjectBase(std::move(dawn_control_client)), handle_(handle) {}
 
-  DawnDevice GetHandle() const { return handle_; }
+  WGPUDevice GetHandle() const { return handle_; }
 
  private:
-  DawnDevice const handle_;
+  WGPUDevice const handle_;
 };
 
 }  // namespace blink

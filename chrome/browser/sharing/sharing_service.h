@@ -55,11 +55,11 @@ enum class SharingDeviceRegistrationResult;
 // sharing messages to other devices.
 class SharingService : public KeyedService,
                        syncer::SyncServiceObserver,
-                       AckMessageHandler::AckMessageObserver,
                        syncer::DeviceInfoTracker::Observer {
  public:
-  using SendMessageCallback =
-      base::OnceCallback<void(SharingSendMessageResult)>;
+  using SendMessageCallback = base::OnceCallback<void(
+      SharingSendMessageResult,
+      std::unique_ptr<chrome_browser_sharing::ResponseMessage>)>;
   using SharingDeviceList = std::vector<std::unique_ptr<syncer::DeviceInfo>>;
 
   enum class State {
@@ -99,12 +99,16 @@ class SharingService : public KeyedService,
   // GetDeviceCandidates are ready.
   void AddDeviceCandidatesInitializedObserver(base::OnceClosure callback);
 
-  // Sends a message to the device specified by GUID.
-  // |callback| will be invoked with message_id if synchronous operation
-  // succeeded, or base::nullopt if operation failed.
+  // Sends a Sharing message to remote device.
+  // |device_guid|: Sync GUID of receiver device.
+  // |response_timeout|: Maximum amount of time waiting for a response before
+  // invoking |callback| with kAckTimeout.
+  // |message|: Message to be sent.
+  // |callback| will be invoked once a response has received from remote device,
+  // or if operation has failed or timed out.
   virtual void SendMessageToDevice(
       const std::string& device_guid,
-      base::TimeDelta time_to_live,
+      base::TimeDelta response_timeout,
       chrome_browser_sharing::SharingMessage message,
       SendMessageCallback callback);
 
@@ -128,9 +132,10 @@ class SharingService : public KeyedService,
   void OnStateChanged(syncer::SyncService* sync) override;
   void OnSyncCycleCompleted(syncer::SyncService* sync) override;
 
-  // AckMessageHandler::AckMessageObserver override.
-  void OnAckReceived(chrome_browser_sharing::MessageType message_type,
-                     const std::string& message_id) override;
+  void OnAckReceived(
+      chrome_browser_sharing::MessageType message_type,
+      std::string message_id,
+      std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
   // syncer::DeviceInfoTracker::Observer.
   void OnDeviceInfoChange() override;
@@ -150,7 +155,8 @@ class SharingService : public KeyedService,
   void InvokeSendMessageCallback(
       const std::string& message_guid,
       chrome_browser_sharing::MessageType message_type,
-      SharingSendMessageResult result);
+      SharingSendMessageResult result,
+      std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
   // Returns true if required sync feature is enabled.
   bool IsSyncEnabled() const;
@@ -207,7 +213,7 @@ class SharingService : public KeyedService,
 #endif  // defined(OS_ANDROID)
 
   PingMessageHandler ping_message_handler_;
-  AckMessageHandler ack_message_handler_;
+  std::unique_ptr<AckMessageHandler> ack_message_handler_;
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;
   std::unique_ptr<SmsFetchRequestHandler> sms_fetch_request_handler_;

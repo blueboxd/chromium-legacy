@@ -66,10 +66,58 @@ TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
   EXPECT_EQ(1, count);
   EXPECT_FALSE(handle.IsActive());
 
+  count = 0;
+  handle = PostNonNestableCancellableTask(
+      *task_runner, FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)));
+  EXPECT_EQ(0, count);
+  EXPECT_TRUE(handle.IsActive());
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(1, count);
+  EXPECT_FALSE(handle.IsActive());
+
+  count = 0;
+  handle = PostNonNestableDelayedCancellableTask(
+      *task_runner, FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)),
+      base::TimeDelta::FromMilliseconds(1));
+  EXPECT_EQ(0, count);
+  EXPECT_TRUE(handle.IsActive());
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(1, count);
+  EXPECT_FALSE(handle.IsActive());
+
   // Cancel a task.
   count = 0;
   handle = PostCancellableTask(*task_runner, FROM_HERE,
                                WTF::Bind(&Increment, WTF::Unretained(&count)));
+  handle.Cancel();
+  EXPECT_EQ(0, count);
+  EXPECT_FALSE(handle.IsActive());
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(0, count);
+
+  count = 0;
+  handle = PostDelayedCancellableTask(
+      *task_runner, FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)),
+      base::TimeDelta::FromMilliseconds(1));
+  handle.Cancel();
+  EXPECT_EQ(0, count);
+  EXPECT_FALSE(handle.IsActive());
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(0, count);
+
+  count = 0;
+  handle = PostNonNestableCancellableTask(
+      *task_runner, FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)));
+  handle.Cancel();
+  EXPECT_EQ(0, count);
+  EXPECT_FALSE(handle.IsActive());
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(0, count);
+
+  count = 0;
+  handle = PostNonNestableDelayedCancellableTask(
+      *task_runner, FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)),
+      base::TimeDelta::FromMilliseconds(1));
   handle.Cancel();
   EXPECT_EQ(0, count);
   EXPECT_FALSE(handle.IsActive());

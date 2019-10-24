@@ -58,7 +58,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
 
     base::WeakPtr<ClientFrameSinkVideoCapturer> client_capturer_;
     const int32_t stacking_index_;
-    mojom::FrameSinkVideoCaptureOverlayPtr overlay_;
+    mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_;
 
     SkBitmap image_;
     gfx::RectF bounds_;

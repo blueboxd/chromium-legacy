@@ -42,7 +42,7 @@ const char kFcmToken[] = "fcm_token";
 const char kDeviceName[] = "other_name";
 const char kMessageId[] = "message_id";
 const char kAuthorizedEntity[] = "authorized_entity";
-constexpr base::TimeDelta kTtl = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(15);
 const char kSenderFcmToken[] = "sender_fcm_token";
 const char kSenderP256dh[] = "sender_p256dh";
 const char kSenderAuthSecret[] = "sender_auth_secret";
@@ -194,12 +194,19 @@ class SharingServiceTest : public testing::Test {
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
-  void OnMessageSent(SharingSendMessageResult result) {
+  void OnMessageSent(
+      SharingSendMessageResult result,
+      std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
     send_message_result_ = base::make_optional(result);
+    send_message_response_ = std::move(response);
   }
 
-  base::Optional<SharingSendMessageResult> send_message_result() {
+  const base::Optional<SharingSendMessageResult>& send_message_result() {
     return send_message_result_;
+  }
+
+  const chrome_browser_sharing::ResponseMessage* send_message_response() {
+    return send_message_response_.get();
   }
 
   void OnDeviceCandidatesInitialized() {
@@ -268,8 +275,17 @@ class SharingServiceTest : public testing::Test {
  private:
   std::unique_ptr<SharingService> sharing_service_ = nullptr;
   base::Optional<SharingSendMessageResult> send_message_result_;
+  std::unique_ptr<chrome_browser_sharing::ResponseMessage>
+      send_message_response_;
 };
 
+bool ProtoEquals(const google::protobuf::MessageLite& expected,
+                 const google::protobuf::MessageLite& actual) {
+  std::string expected_serialized, actual_serialized;
+  expected.SerializeToString(&expected_serialized);
+  actual.SerializeToString(&actual_serialized);
+  return expected_serialized == actual_serialized;
+}
 }  // namespace
 
 TEST_F(SharingServiceTest, SharedClipboard_IsAdded) {
@@ -400,7 +416,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
       kAuthorizedEntity, base::Time::Now()));
 
   GetSharingService()->SendMessageToDevice(
-      id, kTtl, chrome_browser_sharing::SharingMessage(),
+      id, kTimeout, chrome_browser_sharing::SharingMessage(),
       base::BindOnce(&SharingServiceTest::OnMessageSent,
                      base::Unretained(this)));
 
@@ -422,9 +438,13 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
 
   chrome_browser_sharing::SharingMessage ack_message;
   ack_message.mutable_ack_message()->set_original_message_id(kMessageId);
-  ack_message_handler->OnMessage(ack_message);
+  ack_message.mutable_ack_message()->mutable_response_message();
+  ack_message_handler->OnMessage(ack_message, base::DoNothing());
 
   EXPECT_EQ(SharingSendMessageResult::kSuccessful, send_message_result());
+  ASSERT_TRUE(send_message_response());
+  EXPECT_TRUE(ProtoEquals(ack_message.ack_message().response_message(),
+                          *send_message_response()));
 }
 
 TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
@@ -442,7 +462,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
   fake_gcm_driver_.set_should_respond(false);
 
   GetSharingService()->SendMessageToDevice(
-      id, kTtl, chrome_browser_sharing::SharingMessage(),
+      id, kTimeout, chrome_browser_sharing::SharingMessage(),
       base::BindOnce(&SharingServiceTest::OnMessageSent,
                      base::Unretained(this)));
 
@@ -451,7 +471,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
   EXPECT_EQ(kFcmToken, fake_gcm_driver_.fcm_token());
 
   // Advance time so send message will expire.
-  task_environment_.FastForwardBy(kSendMessageTimeout);
+  task_environment_.FastForwardBy(kTimeout);
   EXPECT_EQ(SharingSendMessageResult::kAckTimeout, send_message_result());
 
   // Simulate ack message received by AckMessageHandler, which will be
@@ -462,7 +482,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
 
   chrome_browser_sharing::SharingMessage ack_message;
   ack_message.mutable_ack_message()->set_original_message_id(kMessageId);
-  ack_message_handler->OnMessage(ack_message);
+  ack_message_handler->OnMessage(ack_message, base::DoNothing());
 
   EXPECT_EQ(SharingSendMessageResult::kAckTimeout, send_message_result());
 }
@@ -479,7 +499,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
       kAuthorizedEntity, base::Time::Now()));
 
   GetSharingService()->SendMessageToDevice(
-      id, kTtl, chrome_browser_sharing::SharingMessage(),
+      id, kTimeout, chrome_browser_sharing::SharingMessage(),
       base::BindOnce(&SharingServiceTest::OnMessageSent,
                      base::Unretained(this)));
 
@@ -499,7 +519,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
 
   chrome_browser_sharing::SharingMessage ack_message;
   ack_message.mutable_ack_message()->set_original_message_id(kMessageId);
-  ack_message_handler->OnMessage(ack_message);
+  ack_message_handler->OnMessage(ack_message, base::DoNothing());
 
   EXPECT_EQ(SharingSendMessageResult::kAckTimeout, send_message_result());
 }

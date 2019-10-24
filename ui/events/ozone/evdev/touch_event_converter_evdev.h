@@ -37,7 +37,7 @@ class DeviceEventDispatcherEvdev;
 class FalseTouchFinder;
 struct InProgressTouchEvdev;
 
-extern const EVENTS_OZONE_EVDEV_EXPORT base::Feature kEnableSingleCancelTouch;
+EVENTS_OZONE_EVDEV_EXPORT extern const base::Feature kEnableSingleCancelTouch;
 
 class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev {
@@ -102,9 +102,11 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   void UpdateTrackingId(int slot, int tracking_id);
   void ReleaseTouches();
+
   // Returns true if all touches were marked cancelled. Otherwise false.
   bool MaybeCancelAllTouches();
   bool IsPalm(const InProgressTouchEvdev& touch);
+
   // Normalize pressure value to [0, 1].
   float ScalePressure(int32_t value) const;
 
@@ -186,6 +188,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Callback to enable/disable palm suppression.
   base::RepeatingCallback<void(bool)> enable_palm_suppression_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };
 

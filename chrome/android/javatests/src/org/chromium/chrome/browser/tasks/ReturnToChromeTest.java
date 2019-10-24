@@ -55,7 +55,7 @@ public class ReturnToChromeTest {
     public void setUp() {
         FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
 
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
 
         setupTabs();

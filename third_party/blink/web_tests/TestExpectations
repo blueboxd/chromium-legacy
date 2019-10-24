@@ -2251,13 +2251,6 @@ crbug.com/796619 [ Win10 ] external/wpt/css/css-fonts/matching/style-ranges-over
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 
-# These need a rebaseline due crbug.com/1003497 when the relevant change lands in devtools-frontend.
-crbug.com/1003497 http/tests/devtools/sources/inline-styles-scripts-locations.js [ Pass Failure ]
-crbug.com/1003497 http/tests/devtools/startup/sources/debugger/linkifier.js [ Pass Failure ]
-crbug.com/1003497 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-1.js [ Pass Failure ]
-crbug.com/1003497 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-4.js [ Pass Failure ]
-crbug.com/1003497 http/tests/devtools/startup/sources/debugger/script-formatter-console.js [ Pass Failure ]
-
 # Disabled briefly until test runner support lands.
 crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
@@ -2604,6 +2597,8 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09E
 crbug.com/893490 [ Win ] external/wpt/css/css-text/white-space/control-chars-09E.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09F.html [ Failure ]
 
+crbug.com/1015331 external/wpt/css/css-text/white-space/eol-spaces-bidi-001.html [ Failure ]
+
 # needs implementation of test_driver_internal.action_sequence
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.html [ Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
@@ -2638,13 +2633,18 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-disabled.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries_resized.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/eol-spaces-bidi-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
@@ -3065,9 +3065,6 @@ crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/626703 external/wpt/html/webappapis/user-prompts/newline-normalization-manual.html [ Skip ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/testdriver/actions/pause.html [ Pass Timeout ]
 crbug.com/626703 external/wpt/infrastructure/testdriver/actions/eventOrder.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-segment-break-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-line-break-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-line-break-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-text-transform-001.html [ Failure ]
 crbug.com/903383 external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
 crbug.com/903383 external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
@@ -5690,6 +5687,11 @@ crbug.com/1013523 [ Release ] virtual/cross-origin-embedder-policy/external/wpt/
 crbug.com/1013523 [ Release Linux Mac ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1010472 [ Linux Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Timeout Pass ]
 crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass ]
+crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass ]
+crbug.com/1013779 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass ]
+crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/pointerevents/pointerevent_touch-adjustment_click_target.html [ Failure Pass ]
+crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure Pass ]
+crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
 crbug.com/990900 external/wpt/cookie-store/idlharness.tentative.https.any.serviceworker.html [ Pass Timeout ]
 crbug.com/990900 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.html [ Pass Timeout ]
 
@@ -5718,3 +5720,6 @@ crbug.com/1016762 external/wpt/html/cross-origin-opener-policy/popup-redirect-ca
 
 # cci-trooper 2019-10-22
 crbug.com/1016804 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Pass Failure ]
+
+# Sheriff 2019-10-24
+crbug.com/1017626 [ Linux ] external/wpt/compat/idlharness.window.html [ Pass Timeout ]

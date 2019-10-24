@@ -14,17 +14,17 @@ namespace blink {
 
 namespace {
 
-DawnTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc) {
+WGPUTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnTextureDescriptor dawn_desc = {};
+  WGPUTextureDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
-  dawn_desc.usage = static_cast<DawnTextureUsage>(webgpu_desc->usage());
+  dawn_desc.usage = static_cast<WGPUTextureUsage>(webgpu_desc->usage());
   dawn_desc.dimension =
-      AsDawnEnum<DawnTextureDimension>(webgpu_desc->dimension());
+      AsDawnEnum<WGPUTextureDimension>(webgpu_desc->dimension());
   dawn_desc.size = AsDawnType(&webgpu_desc->size());
   dawn_desc.arrayLayerCount = webgpu_desc->arrayLayerCount();
-  dawn_desc.format = AsDawnEnum<DawnTextureFormat>(webgpu_desc->format());
+  dawn_desc.format = AsDawnEnum<WGPUTextureFormat>(webgpu_desc->format());
   dawn_desc.mipLevelCount = webgpu_desc->mipLevelCount();
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
   if (webgpu_desc->hasLabel()) {
@@ -34,20 +34,20 @@ DawnTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc) {
   return dawn_desc;
 }
 
-DawnTextureViewDescriptor AsDawnType(
+WGPUTextureViewDescriptor AsDawnType(
     const GPUTextureViewDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnTextureViewDescriptor dawn_desc = {};
+  WGPUTextureViewDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
-  dawn_desc.format = AsDawnEnum<DawnTextureFormat>(webgpu_desc->format());
+  dawn_desc.format = AsDawnEnum<WGPUTextureFormat>(webgpu_desc->format());
   dawn_desc.dimension =
-      AsDawnEnum<DawnTextureViewDimension>(webgpu_desc->dimension());
+      AsDawnEnum<WGPUTextureViewDimension>(webgpu_desc->dimension());
   dawn_desc.baseMipLevel = webgpu_desc->baseMipLevel();
   dawn_desc.mipLevelCount = webgpu_desc->mipLevelCount();
   dawn_desc.baseArrayLayer = webgpu_desc->baseArrayLayer();
   dawn_desc.arrayLayerCount = webgpu_desc->arrayLayerCount();
-  dawn_desc.aspect = AsDawnEnum<DawnTextureAspect>(webgpu_desc->aspect());
+  dawn_desc.aspect = AsDawnEnum<WGPUTextureAspect>(webgpu_desc->aspect());
   if (webgpu_desc->hasLabel()) {
     dawn_desc.label = webgpu_desc->label().Utf8().data();
   }
@@ -72,15 +72,15 @@ GPUTexture* GPUTexture::Create(GPUDevice* device,
     return nullptr;
   }
 
-  DawnTextureDescriptor dawn_desc = AsDawnType(webgpu_desc);
+  WGPUTextureDescriptor dawn_desc = AsDawnType(webgpu_desc);
 
   return MakeGarbageCollected<GPUTexture>(
       device,
       device->GetProcs().deviceCreateTexture(device->GetHandle(), &dawn_desc));
 }
 
-GPUTexture::GPUTexture(GPUDevice* device, DawnTexture texture)
-    : DawnObject<DawnTexture>(device, texture) {}
+GPUTexture::GPUTexture(GPUDevice* device, WGPUTexture texture)
+    : DawnObject<WGPUTexture>(device, texture) {}
 
 GPUTexture::~GPUTexture() {
   if (IsDawnControlClientDestroyed()) {
@@ -93,7 +93,7 @@ GPUTextureView* GPUTexture::createView(
     const GPUTextureViewDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnTextureViewDescriptor dawn_desc = AsDawnType(webgpu_desc);
+  WGPUTextureViewDescriptor dawn_desc = AsDawnType(webgpu_desc);
   return GPUTextureView::Create(
       device_, GetProcs().textureCreateView(GetHandle(), &dawn_desc));
 }

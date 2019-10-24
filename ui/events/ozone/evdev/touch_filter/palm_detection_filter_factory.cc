@@ -14,6 +14,7 @@
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 
 namespace ui {
+
 const base::Feature kEnableHeuristicPalmDetectionFilter{
     "EnableHeuristicPalmDetectionFilter", base::FEATURE_DISABLED_BY_DEFAULT};
 

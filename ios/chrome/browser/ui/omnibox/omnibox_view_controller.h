@@ -16,6 +16,7 @@
 @protocol LoadQueryCommands;
 @protocol OmniboxFocuser;
 @class OmniboxViewController;
+class OmniboxTextChangeDelegate;
 
 @protocol OmniboxViewControllerDelegate
 
@@ -54,6 +55,8 @@
 
 // Designated initializer.
 - (instancetype)initWithIncognito:(BOOL)isIncognito;
+
+- (void)setTextChangeDelegate:(OmniboxTextChangeDelegate*)textChangeDelegate;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_CONTROLLER_H_

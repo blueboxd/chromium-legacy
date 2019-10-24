@@ -459,21 +459,43 @@ cca.device.PhotoResolPreferrer = class extends cca.device.ConstraintsPreferrer {
                 (captureR, r) => (r[0] > captureR[0] ? r : captureR), [0, -1]);
           }
 
-          const filterByScreenSize = ([w, h], index, arr) =>
-              index == arr.length - 1 ||
-              (w <= window.screen.width && h <= window.screen.height);
+          /**
+           * @param {!ResolList} rs
+           * @return {!ResolList}
+           */
+          const sortPreview = (rs) => {
+            if (rs.length == 0) {
+              return [];
+            }
+            rs = [...rs].sort(([w, h], [w2, h2]) => w2 - w);
 
-          const candidates = [...previewRs]
-                                 .sort(([w, h], [w2, h2]) => w2 - w)
-                                 .filter(filterByScreenSize)
-                                 .map(([width, height]) => ({
-                                        audio: false,
-                                        video: {
-                                          deviceId: {exact: deviceId},
-                                          width,
-                                          height,
-                                        },
-                                      }));
+            // Promote resolution slightly larget than screen size to the first.
+            const screenW =
+                Math.floor(window.screen.width * window.devicePixelRatio);
+            const screenH =
+                Math.floor(window.screen.height * window.devicePixelRatio);
+            let minIdx = null;
+            rs.forEach(([w, h], idx) => {
+              if (w >= screenW && h >= screenH) {
+                minIdx = idx;
+              }
+            });
+            if (minIdx !== null) {
+              rs.unshift(...rs.splice(minIdx, 1));
+            }
+
+            return rs;
+          };
+
+          const candidates =
+              sortPreview(previewRs).map(([width, height]) => ({
+                                           audio: false,
+                                           video: {
+                                             deviceId: {exact: deviceId},
+                                             width,
+                                             height,
+                                           },
+                                         }));
           // Format of map result:
           // [
           //   [[CaptureW 1, CaptureH 1], [CaptureW 2, CaptureH 2], ...],

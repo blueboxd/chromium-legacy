@@ -46,7 +46,12 @@
 }
 
 - (NSString*)displayDescription {
-  return [_formSuggestion.displayDescription copy];
+  if ([self isPasswordSuggestion]) {
+    // An opaque password string used to hide the true length of the password.
+    return @"••••••••";
+  } else {
+    return [_formSuggestion.displayDescription copy];
+  }
 }
 
 - (UIImage* __nullable)icon {

@@ -812,7 +812,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
               ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK),
           type == web::NavigationInitiationType::RENDERER_INITIATED);
   context->SetIsSameDocument(true);
-  self.webStateImpl->SetIsLoading(true);
+  if (!web::features::UseWKWebViewLoading()) {
+    self.webStateImpl->SetIsLoading(true);
+  }
   self.webStateImpl->OnNavigationStarted(context.get());
   [self updateHTML5HistoryState];
   [self setDocumentURL:URL context:context.get()];
@@ -855,7 +857,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     // navigations.
     context->SetIsSameDocument(true);
   } else {
-    self.webStateImpl->SetIsLoading(true);
+    if (!web::features::UseWKWebViewLoading()) {
+      self.webStateImpl->SetIsLoading(true);
+    }
     self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
   }
 

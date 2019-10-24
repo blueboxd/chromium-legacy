@@ -117,6 +117,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // True if the user is a device local account user.
   virtual bool IsDeviceLocalAccount() const;
 
+  // True if the user is a kiosk.
+  bool IsKioskType() const;
+
   // The displayed user name.
   base::string16 display_name() const { return display_name_; }
 

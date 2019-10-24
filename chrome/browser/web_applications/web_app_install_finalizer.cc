@@ -123,7 +123,10 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetDescription(base::UTF16ToUTF8(web_app_info.description));
   web_app->SetLaunchUrl(web_app_info.app_url);
   web_app->SetScope(web_app_info.scope);
-  web_app->SetThemeColor(web_app_info.theme_color);
+  if (web_app_info.theme_color) {
+    web_app->SetThemeColor(
+        SkColorSetA(*web_app_info.theme_color, SK_AlphaOPAQUE));
+  }
   web_app->SetDisplayMode(web_app_info.open_as_window
                               ? blink::mojom::DisplayMode::kStandalone
                               : blink::mojom::DisplayMode::kBrowser);

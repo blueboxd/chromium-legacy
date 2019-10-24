@@ -780,6 +780,12 @@ TEST_F(DeviceSettingsProviderTest, DeviceRebootAfterUserSignout) {
     base::Value expected_value(PolicyProto::ALWAYS);
     VerifyPolicyValue(kDeviceRebootOnUserSignout, &expected_value);
   }
+
+  {
+    SetDeviceRebootOnUserSignout(PolicyProto::VM_STARTED_OR_ARC_SESSION);
+    base::Value expected_value(PolicyProto::VM_STARTED_OR_ARC_SESSION);
+    VerifyPolicyValue(kDeviceRebootOnUserSignout, &expected_value);
+  }
 }
 
 TEST_F(DeviceSettingsProviderTest, DeviceWilcoDtcAllowedSetting) {

@@ -31,6 +31,8 @@ source_set("earl_grey_support") {
     "earl_grey_app.mm",
     "earl_grey_test.h",
     "earl_grey_test.mm",
+    "keyboard_app_interface.h",
+    "keyboard_app_interface.mm",
     "matchers.h",
     "matchers.mm",
   ]
@@ -43,6 +45,7 @@ source_set("eg_app_support+eg2") {
 
   deps = [
     "//base/test:test_support",
+    "//build/config/ios:xctest",
     "//ios/third_party/earl_grey2:app_framework+link",
     "//testing/gtest:gtest",
   ]
@@ -54,6 +57,8 @@ source_set("eg_app_support+eg2") {
     "coverage_utils.mm",
     "earl_grey_app.h",
     "earl_grey_app.mm",
+    "keyboard_app_interface.h",
+    "keyboard_app_interface.mm",
   ]
 }
 
@@ -78,6 +83,7 @@ source_set("eg_test_support+eg2") {
     "disabled_test_macros.h",
     "earl_grey_test.h",
     "earl_grey_test.mm",
+    "keyboard_app_interface.h",
     "matchers.h",
     "matchers.mm",
   ]

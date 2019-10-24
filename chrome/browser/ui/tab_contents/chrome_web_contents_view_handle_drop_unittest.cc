@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -165,10 +166,10 @@ TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, FileContents) {
 // Make sure DropData::filenames is handled correctly.
 TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, Files) {
   content::DropData data;
-  data.filenames.emplace_back(base::FilePath(FILE_PATH_LITERAL("C:\\Foo")),
-                              base::FilePath(FILE_PATH_LITERAL("Foo")));
-  data.filenames.emplace_back(base::FilePath(FILE_PATH_LITERAL("C:\\Bar")),
-                              base::FilePath(FILE_PATH_LITERAL("Bar")));
+  data.filenames.emplace_back(base::FilePath(FILE_PATH_LITERAL("C:\\Foo.doc")),
+                              base::FilePath(FILE_PATH_LITERAL("Foo.doc")));
+  data.filenames.emplace_back(base::FilePath(FILE_PATH_LITERAL("C:\\Bar.doc")),
+                              base::FilePath(FILE_PATH_LITERAL("Bar.doc")));
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);

@@ -26,8 +26,8 @@
 #include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/file_system/sandbox_quota_observer.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_types.h"
+#include "storage/common/file_system/file_system_util.h"
 #include "url/gurl.h"
 
 using storage::QuotaManagerProxy;

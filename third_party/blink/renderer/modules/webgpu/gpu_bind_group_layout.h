@@ -11,7 +11,7 @@ namespace blink {
 
 class GPUBindGroupLayoutDescriptor;
 
-class GPUBindGroupLayout : public DawnObject<DawnBindGroupLayout> {
+class GPUBindGroupLayout : public DawnObject<WGPUBindGroupLayout> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -19,7 +19,7 @@ class GPUBindGroupLayout : public DawnObject<DawnBindGroupLayout> {
       GPUDevice* device,
       const GPUBindGroupLayoutDescriptor* webgpu_desc);
   explicit GPUBindGroupLayout(GPUDevice* device,
-                              DawnBindGroupLayout bind_group_layout);
+                              WGPUBindGroupLayout bind_group_layout);
   ~GPUBindGroupLayout() override;
 
  private:

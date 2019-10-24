@@ -17,6 +17,11 @@
 // successfully. If it returns NO no Modal should be presented.
 - (BOOL)configureModalViewController;
 
+// Returns YES if the Infobar action was completed successfully. Useful for
+// Infobar actions that finish asynchronously to delay marking the Infobar as
+// accepted.
+- (BOOL)isInfobarAccepted;
+
 // Performs any actions related to an Infobar Banner presentation.
 - (void)infobarBannerWasPresented;
 

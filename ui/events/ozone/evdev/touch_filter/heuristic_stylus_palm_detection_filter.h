@@ -12,6 +12,7 @@
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
+
 namespace ui {
 
 // A heuristic implementation of PalmDetectionFilter.
@@ -40,12 +41,13 @@ class EVENTS_OZONE_EVDEV_EXPORT HeuristicStylusPalmDetectionFilter
       base::TimeDelta hold,
       base::TimeDelta cancel);
   ~HeuristicStylusPalmDetectionFilter() override;
+
   void Filter(const std::vector<InProgressTouchEvdev>& touches,
               base::TimeTicks time,
               std::bitset<kNumTouchEvdevSlots>* slots_to_hold,
               std::bitset<kNumTouchEvdevSlots>* slots_to_suppress) override;
 
-  const static char kFilterName[];
+  static const char kFilterName[];
   std::string FilterNameForTesting() const override;
 
   base::TimeDelta HoldTime() const;
@@ -57,10 +59,13 @@ class EVENTS_OZONE_EVDEV_EXPORT HeuristicStylusPalmDetectionFilter
   const base::TimeDelta time_after_stylus_to_cancel_;
 
   std::vector<base::TimeTicks> touch_started_time_;
+
   // How many items have we seen in this stroke so far?
   std::vector<int> stroke_length_;
+
   DISALLOW_COPY_AND_ASSIGN(HeuristicStylusPalmDetectionFilter);
 };
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_HEURISTIC_STYLUS_PALM_DETECTION_FILTER_H_

@@ -30,7 +30,7 @@ GURL redirect_url = GURL("http://example.com");
 class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
                              public network::mojom::URLLoader {
  public:
-  TestURLLoaderFactory() : url_loader_binding_(this) {
+  TestURLLoaderFactory() {
     receiver_.Bind(factory_remote_.BindNewPipeAndPassReceiver());
     shared_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -43,8 +43,8 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
     return factory_remote_;
   }
   network::mojom::URLLoaderClientPtr& client_ptr() { return client_ptr_; }
-  mojo::Binding<network::mojom::URLLoader>& url_loader_binding() {
-    return url_loader_binding_;
+  mojo::Receiver<network::mojom::URLLoader>& url_loader_receiver() {
+    return url_loader_receiver_;
   }
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory() {
     return shared_factory_;
@@ -108,10 +108,9 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
                                 traffic_annotation) override {
     create_loader_and_start_called_++;
 
-    if (url_loader_binding_.is_bound())
-      url_loader_binding_.Unbind();
+    url_loader_receiver_.reset();
 
-    url_loader_binding_.Bind(std::move(request));
+    url_loader_receiver_.Bind(std::move(request));
     client_ptr_ = std::move(client);
 
     if (on_create_loader_and_start_callback_)
@@ -149,7 +148,7 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   size_t resume_reading_body_from_net_called_ = 0;
 
   mojo::Receiver<network::mojom::URLLoaderFactory> receiver_{this};
-  mojo::Binding<network::mojom::URLLoader> url_loader_binding_;
+  mojo::Receiver<network::mojom::URLLoader> url_loader_receiver_{this};
   mojo::Remote<network::mojom::URLLoaderFactory> factory_remote_;
   network::mojom::URLLoaderClientPtr client_ptr_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory> shared_factory_;
@@ -1146,7 +1145,7 @@ TEST_F(ThrottlingURLLoaderTest, PauseResumeReadingBodyFromNet) {
 
   // Make sure all URLLoader calls before this point are delivered to the impl
   // side.
-  factory_.url_loader_binding().FlushForTesting();
+  factory_.url_loader_receiver().FlushForTesting();
 
   // Although there were two calls to delegate->PauseReadingBodyFromNet(), only
   // one URLLoader::PauseReadingBodyFromNet() Mojo call was made.
@@ -1156,18 +1155,18 @@ TEST_F(ThrottlingURLLoaderTest, PauseResumeReadingBodyFromNet) {
   // Reading body from network is still paused by |throttle2|. Calling
   // ResumeReadingBodyFromNet() on |throttle_| shouldn't have any effect.
   throttle_->delegate()->ResumeReadingBodyFromNet();
-  factory_.url_loader_binding().FlushForTesting();
+  factory_.url_loader_receiver().FlushForTesting();
   EXPECT_EQ(1u, factory_.pause_reading_body_from_net_called());
   EXPECT_EQ(0u, factory_.resume_reading_body_from_net_called());
 
   // Even if we call ResumeReadingBodyFromNet() on |throttle_| one more time.
   throttle_->delegate()->ResumeReadingBodyFromNet();
-  factory_.url_loader_binding().FlushForTesting();
+  factory_.url_loader_receiver().FlushForTesting();
   EXPECT_EQ(1u, factory_.pause_reading_body_from_net_called());
   EXPECT_EQ(0u, factory_.resume_reading_body_from_net_called());
 
   throttle2->delegate()->ResumeReadingBodyFromNet();
-  factory_.url_loader_binding().FlushForTesting();
+  factory_.url_loader_receiver().FlushForTesting();
   EXPECT_EQ(1u, factory_.pause_reading_body_from_net_called());
   EXPECT_EQ(1u, factory_.resume_reading_body_from_net_called());
 }

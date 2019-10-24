@@ -113,8 +113,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         setSheetState(mStartingBottomSheetState, /* animate = */ false);
     }
 
-    public void startMainActivityOnBottomSheet(@BottomSheet.SheetState int startingSheetState)
-            throws InterruptedException {
+    public void startMainActivityOnBottomSheet(@BottomSheet.SheetState int startingSheetState) {
         mStartingBottomSheetState = startingSheetState;
         startMainActivityOnBlankPage();
     }
@@ -124,7 +123,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     // ActivityTestRule interface. To work round this override the methods that start activities.
     // See https://crbug.com/726444.
     @Override
-    public void startMainActivityOnBlankPage() throws InterruptedException {
+    public void startMainActivityOnBlankPage() {
         super.startMainActivityOnBlankPage();
         afterStartingActivity();
     }

@@ -8,6 +8,7 @@
 
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_callback.h"
 #include "chrome/browser/notifications/stub_notification_display_service.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/proto/shared_clipboard_message.pb.h"
@@ -94,7 +95,10 @@ TEST_F(SharedClipboardMessageHandlerTest, NotificationWithoutDeviceName) {
             [](const std::string& guid) -> std::unique_ptr<syncer::DeviceInfo> {
               return nullptr;
             });
-    message_handler_->OnMessage(CreateMessage(guid, kEmptyDeviceName));
+    base::MockCallback<SharingMessageHandler::DoneCallback> done_callback;
+    EXPECT_CALL(done_callback, Run(testing::Eq(nullptr))).Times(1);
+    message_handler_->OnMessage(CreateMessage(guid, kEmptyDeviceName),
+                                done_callback.Get());
   }
   EXPECT_EQ(GetClipboardText(), kText);
 
@@ -122,7 +126,10 @@ TEST_F(SharedClipboardMessageHandlerTest,
                   /*send_tab_to_self_receiving_enabled=*/false,
                   /*sharing_info=*/base::nullopt);
             });
-    message_handler_->OnMessage(CreateMessage(guid, kEmptyDeviceName));
+    base::MockCallback<SharingMessageHandler::DoneCallback> done_callback;
+    EXPECT_CALL(done_callback, Run(testing::Eq(nullptr))).Times(1);
+    message_handler_->OnMessage(CreateMessage(guid, kEmptyDeviceName),
+                                done_callback.Get());
   }
   message_center::Notification notification = GetNotification();
   EXPECT_EQ(l10n_util::GetStringFUTF16(
@@ -140,7 +147,10 @@ TEST_F(SharedClipboardMessageHandlerTest,
             [](const std::string& guid) -> std::unique_ptr<syncer::DeviceInfo> {
               return nullptr;
             });
-    message_handler_->OnMessage(CreateMessage(guid, kDeviceNameInMessage));
+    base::MockCallback<SharingMessageHandler::DoneCallback> done_callback;
+    EXPECT_CALL(done_callback, Run(testing::Eq(nullptr))).Times(1);
+    message_handler_->OnMessage(CreateMessage(guid, kDeviceNameInMessage),
+                                done_callback.Get());
   }
   EXPECT_EQ(GetClipboardText(), kText);
 

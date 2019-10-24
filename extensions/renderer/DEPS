@@ -23,7 +23,7 @@ include_rules = [
   "-v8",
   "+v8/include",
 
-  "+storage/common/fileapi",
+  "+storage/common/file_system",
 
   "+services/network/public",
   "+services/service_manager/public/cpp",

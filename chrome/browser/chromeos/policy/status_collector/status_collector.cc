@@ -126,7 +126,7 @@ StatusCollector::GetAutoLaunchedKioskSessionInfo() {
 
   bool web_app_auto_launched_with_zero_delay =
       chromeos::WebKioskAppManager::Get()
-          ->current_app_was_launched_with_zero_delay();
+          ->current_app_was_auto_launched_with_zero_delay();
 
   return regular_app_auto_launched_with_zero_delay ||
                  arc_app_auto_launched_with_zero_delay ||

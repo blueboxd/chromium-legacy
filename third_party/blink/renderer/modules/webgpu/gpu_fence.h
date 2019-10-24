@@ -13,12 +13,12 @@ namespace blink {
 class ScriptPromiseResolver;
 class ScriptState;
 
-class GPUFence : public DawnObject<DawnFence> {
+class GPUFence : public DawnObject<WGPUFence> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUFence* Create(GPUDevice* device, DawnFence fence);
-  explicit GPUFence(GPUDevice* device, DawnFence fence);
+  static GPUFence* Create(GPUDevice* device, WGPUFence fence);
+  explicit GPUFence(GPUDevice* device, WGPUFence fence);
   ~GPUFence() override;
 
   // gpu_fence.idl
@@ -27,7 +27,7 @@ class GPUFence : public DawnObject<DawnFence> {
 
  private:
   void OnCompletionCallback(ScriptPromiseResolver* resolver,
-                            DawnFenceCompletionStatus status);
+                            WGPUFenceCompletionStatus status);
 
   DISALLOW_COPY_AND_ASSIGN(GPUFence);
 };

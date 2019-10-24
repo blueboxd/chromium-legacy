@@ -12,8 +12,9 @@ CellularSetupBase::CellularSetupBase() = default;
 
 CellularSetupBase::~CellularSetupBase() = default;
 
-void CellularSetupBase::BindRequest(mojom::CellularSetupRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void CellularSetupBase::BindReceiver(
+    mojo::PendingReceiver<mojom::CellularSetup> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 }  // namespace cellular_setup

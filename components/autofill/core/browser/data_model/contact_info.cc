@@ -139,12 +139,6 @@ base::string16 NameInfo::MiddleInitial() const {
 
 void NameInfo::SetFullName(const base::string16& full) {
   full_ = full;
-
-  // If |full| is empty, leave the other name parts alone. This might occur
-  // due to a migrated database with an empty |full_name| value.
-  if (full.empty())
-    return;
-
   data_util::NameParts parts = data_util::SplitName(full);
   given_ = parts.given;
   middle_ = parts.middle;

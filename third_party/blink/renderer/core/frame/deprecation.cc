@@ -346,11 +346,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "https://www.chromestatus.com/features/4964279606312960 for more "
               "details."};
 
-    case WebFeature::kVREyeParametersOffset:
-      return {"VREyeParametersOffset", kUnknown,
-              ReplacedBy("VREyeParameters.offset",
-                         "view matrices provided by VRFrameData")};
-
     case WebFeature::kCSSSelectorInternalMediaControlsOverlayCastButton:
       return {
           "CSSSelectorInternalMediaControlsOverlayCastButton", kM61,
@@ -516,14 +511,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
       return {"V8AtomicsWake", kM76,
               ReplacedWillBeRemoved("Atomics.wake", "Atomics.notify", kM76,
                                     "6228189936353280")};
-
-    case WebFeature::kVRGetDisplays:
-      return {"WebVR", kM79,
-              String::Format("WebVR is deprecated and will be removed as soon "
-                             "as %s. Please use WebXR instead.  See "
-                             "https://www.chromestatus.com/feature/"
-                             "4532810371039232 for details.",
-                             MilestoneString(kM79))};
 
     case WebFeature::kCSSValueAppearanceCheckboxForOthersRendered:
       return {"CSSValueAppearanceCheckboxForOthersRendered", kM79,

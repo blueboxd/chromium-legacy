@@ -14,7 +14,6 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync/engine/sync_engine.h"
-#include "components/unified_consent/feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -135,13 +134,7 @@ SetUpDistinctCase(syncer::TestSyncService* service,
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
       service->SetPassphraseRequired(false);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      // This case gets different treatment depending on whether UnifiedConsent
-      // is enabled, see crbug.com/943983 and crbug.com/977980.
-      sync_ui_util::MessageType expected_message_type =
-          unified_consent::IsUnifiedConsentFeatureEnabled()
-              ? sync_ui_util::SYNC_ERROR
-              : sync_ui_util::PRE_SYNCED;
-      return std::make_pair(expected_message_type, sync_ui_util::NO_ACTION);
+      return std::make_pair(sync_ui_util::SYNC_ERROR, sync_ui_util::NO_ACTION);
     }
     case NUMBER_OF_STATUS_CASES:
       NOTREACHED();

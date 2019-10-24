@@ -14,7 +14,7 @@
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/quota/open_file_handle.h"
 #include "storage/browser/file_system/quota/quota_reservation.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 namespace content {
 

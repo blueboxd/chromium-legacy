@@ -141,7 +141,7 @@ TEST_F(SharedClipboardContextMenuObserverTest, SingleDevice_ShowMenu) {
             item.command_id);
 
   // Emulate click on the device.
-  EXPECT_CALL(*service(), SendMessageToDevice(Eq(guid), Eq(kSharingMessageTTL),
+  EXPECT_CALL(*service(), SendMessageToDevice(Eq(guid), Eq(kSendMessageTimeout),
                                               ProtoEquals(sharing_message), _))
       .Times(1);
   menu_.ExecuteCommand(
@@ -181,7 +181,7 @@ TEST_F(SharedClipboardContextMenuObserverTest, MultipleDevices_ShowMenu) {
   for (int i = 0; i < kMaxDevicesShown; i++) {
     if (i < device_count) {
       EXPECT_CALL(*service(),
-                  SendMessageToDevice(Eq(guids[i]), Eq(kSharingMessageTTL),
+                  SendMessageToDevice(Eq(guids[i]), Eq(kSendMessageTimeout),
                                       ProtoEquals(sharing_message), _))
           .Times(1);
     } else {
@@ -226,7 +226,7 @@ TEST_F(SharedClipboardContextMenuObserverTest,
   for (int i = 0; i < device_count; i++) {
     if (i < kMaxDevicesShown) {
       EXPECT_CALL(*service(),
-                  SendMessageToDevice(Eq(guids[i]), Eq(kSharingMessageTTL),
+                  SendMessageToDevice(Eq(guids[i]), Eq(kSendMessageTimeout),
                                       ProtoEquals(sharing_message), _))
           .Times(1);
     } else {

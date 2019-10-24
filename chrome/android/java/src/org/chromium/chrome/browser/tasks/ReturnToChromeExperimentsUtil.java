@@ -37,13 +37,13 @@ public final class ReturnToChromeExperimentsUtil {
      * @return true if past threshold, false if not past threshold or experiment cannot be loaded.
      */
     public static boolean shouldShowTabSwitcher(final long lastBackgroundedTimeMillis) {
-        if (lastBackgroundedTimeMillis == -1) {
-            // No last background timestamp set, use control behavior.
-            return false;
-        }
-
         int tabSwitcherAfterMillis = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.TAB_SWITCHER_ON_RETURN, TAB_SWITCHER_ON_RETURN_MS, -1);
+
+        if (lastBackgroundedTimeMillis == -1) {
+            // No last background timestamp set, use control behavior unless "immediate" was set.
+            return tabSwitcherAfterMillis == 0;
+        }
 
         if (tabSwitcherAfterMillis < 0) {
             // If no value for experiment, use control behavior.

@@ -389,6 +389,7 @@ void ToolbarView::ShowIntentPickerBubble(
     bool show_stay_in_chrome,
     bool show_remember_selection,
     PageActionIconType icon_type,
+    const base::Optional<url::Origin>& initiating_origin,
     IntentPickerResponse callback) {
   PageActionIconView* const intent_picker_view =
       GetPageActionIconView(icon_type);
@@ -398,7 +399,7 @@ void ToolbarView::ShowIntentPickerBubble(
   IntentPickerBubbleView::ShowBubble(
       location_bar(), intent_picker_view, icon_type, GetWebContents(),
       std::move(app_info), show_stay_in_chrome, show_remember_selection,
-      std::move(callback));
+      initiating_origin, std::move(callback));
   // TODO(knollr): find a way that the icon updates implicitly.
   intent_picker_view->Update();
 }

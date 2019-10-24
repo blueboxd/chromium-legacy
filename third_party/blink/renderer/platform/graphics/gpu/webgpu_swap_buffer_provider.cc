@@ -14,11 +14,11 @@
 namespace blink {
 
 namespace {
-viz::ResourceFormat DawnFormatToViz(DawnTextureFormat format) {
-  if (format == DAWN_TEXTURE_FORMAT_BGRA8_UNORM) {
+viz::ResourceFormat WGPUFormatToViz(WGPUTextureFormat format) {
+  if (format == WGPUTextureFormat_BGRA8Unorm) {
     return viz::BGRA_8888;
   }
-  if (format == DAWN_TEXTURE_FORMAT_RGBA8_UNORM) {
+  if (format == WGPUTextureFormat_RGBA8Unorm) {
     return viz::RGBA_8888;
   }
   NOTREACHED();
@@ -29,12 +29,12 @@ viz::ResourceFormat DawnFormatToViz(DawnTextureFormat format) {
 WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
     Client* client,
     scoped_refptr<DawnControlClientHolder> dawn_control_client,
-    DawnTextureUsage usage,
-    DawnTextureFormat format)
+    WGPUTextureUsage usage,
+    WGPUTextureFormat format)
     : dawn_control_client_(dawn_control_client),
       client_(client),
       usage_(usage),
-      format_(DawnFormatToViz(format)) {
+      format_(WGPUFormatToViz(format)) {
   // Create a layer that will be used by the canvas and will ask for a
   // SharedImage each frame.
   layer_ = cc::TextureLayer::CreateForMailbox(this);
@@ -85,7 +85,7 @@ void WebGPUSwapBufferProvider::Neuter() {
   neutered_ = true;
 }
 
-DawnTexture WebGPUSwapBufferProvider::GetNewTexture(DawnDevice device,
+WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(WGPUDevice device,
                                                     const IntSize& size) {
   DCHECK(!current_swap_buffer_ && !dawn_control_client_->IsDestroyed());
 

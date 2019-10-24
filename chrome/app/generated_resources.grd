@@ -5432,6 +5432,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME" desc="Message contained in a button to continue the navigation within Chrome.">
           Stay in Chrome
         </message>
+        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_INITIATING_ORIGIN" desc="The label for the initiating origin of the intent picker.">
+          From <ph name="ORIGIN">$1<ex>https://google.com</ex></ph>
+        </message>
       </if>
 
       <!--Accessible name/action strings-->
@@ -6398,6 +6401,11 @@ the Bookmarks menu.">
           (empty)
         </message>
       </if>
+
+      <!-- Mac First-run dialog -->
+      <message name="IDS_FR_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
+        Automatically send usage statistics and crash reports to Google
+      </message>
 
       <!-- Mac First-run dialog messages -->
       <if expr="is_macosx">

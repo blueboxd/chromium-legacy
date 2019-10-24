@@ -60,17 +60,21 @@ HeuristicStylusPalmDetectionFilter::HeuristicStylusPalmDetectionFilter(
   DCHECK(hold >= cancel) << "Expected hold time to be longer than cancel time.";
 }
 
+HeuristicStylusPalmDetectionFilter::~HeuristicStylusPalmDetectionFilter() {}
+
 const char HeuristicStylusPalmDetectionFilter::kFilterName[] =
     "HeuristicStylusPalmDetectionFilter";
+
 std::string HeuristicStylusPalmDetectionFilter::FilterNameForTesting() const {
   return kFilterName;
 }
-HeuristicStylusPalmDetectionFilter::~HeuristicStylusPalmDetectionFilter() {}
 
 base::TimeDelta HeuristicStylusPalmDetectionFilter::HoldTime() const {
   return time_after_stylus_to_hold_;
 }
+
 base::TimeDelta HeuristicStylusPalmDetectionFilter::CancelTime() const {
   return time_after_stylus_to_cancel_;
 }
+
 }  // namespace ui

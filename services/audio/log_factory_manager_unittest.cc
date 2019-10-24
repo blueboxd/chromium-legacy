@@ -12,9 +12,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/task_environment.h"
 #include "media/mojo/mojom/audio_logging.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/audio/traced_service_ref.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -56,13 +57,14 @@ class MockAudioLogFactory : public media::mojom::AudioLogFactory {
   MOCK_METHOD2(MockCreateAudioLog,
                void(media::mojom::AudioLogComponent, int32_t));
 
-  void CreateAudioLog(
-      media::mojom::AudioLogComponent component,
-      int32_t component_id,
-      media::mojom::AudioLogRequest audio_log_request) override {
+  void CreateAudioLog(media::mojom::AudioLogComponent component,
+                      int32_t component_id,
+                      mojo::PendingReceiver<media::mojom::AudioLog>
+                          audio_log_receiver) override {
     MockCreateAudioLog(component, component_id);
-    mojo::MakeStrongBinding(base::WrapUnique(mock_logs_[current_mock_log_++]),
-                            std::move(audio_log_request));
+    mojo::MakeSelfOwnedReceiver(
+        base::WrapUnique(mock_logs_[current_mock_log_++]),
+        std::move(audio_log_receiver));
   }
 
   MockAudioLog* GetMockLog(size_t index) { return mock_logs_[index]; }

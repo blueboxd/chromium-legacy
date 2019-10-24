@@ -60,7 +60,6 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/unified_consent/feature.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
@@ -1912,8 +1911,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 }
 
 void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
-  bool is_unified_consent_enabled =
-      unified_consent::IsUnifiedConsentFeatureEnabled();
   LocalizedString localized_strings[] = {
     {"peoplePageTitle", IDS_SETTINGS_PEOPLE},
     {"manageOtherPeople", IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE},
@@ -2115,9 +2112,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"editPerson", IDS_SETTINGS_EDIT_PERSON},
     {"profileNameAndPicture", IDS_SETTINGS_PROFILE_NAME_AND_PICTURE},
     {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
-    {"syncWillStart", is_unified_consent_enabled
-                          ? IDS_SETTINGS_SYNC_WILL_START_UNITY
-                          : IDS_SETTINGS_SYNC_WILL_START},
+    {"syncWillStart", IDS_SETTINGS_SYNC_WILL_START},
     {"syncSettingsSavedToast", IDS_SETTINGS_SYNC_SETTINGS_SAVED_TOAST_LABEL},
     {"cancelSync", IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC},
     {"syncSetupCancelDialogTitle", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_TITLE},
@@ -2164,9 +2159,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL},
     {"syncAndNonPersonalizedServices",
      IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
-    {"syncPageTitle", is_unified_consent_enabled
-                          ? IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES
-                          : IDS_SETTINGS_SYNC_PAGE_TITLE},
+    {"syncPageTitle", IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
     {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
     {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
     {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
@@ -2186,9 +2179,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"driveSuggestPref", IDS_DRIVE_SUGGEST_PREF},
     {"driveSuggestPrefDesc", IDS_DRIVE_SUGGEST_PREF_DESC},
     {"manageSyncedDataTitle",
-     unified_consent::IsUnifiedConsentFeatureEnabled()
-         ? IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT
-         : IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE},
+     IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
     {"encryptionOptionsTitle", IDS_SETTINGS_ENCRYPTION_OPTIONS},
     {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
     {"encryptWithGoogleCredentialsLabel",
@@ -2274,9 +2265,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     LocalizedString sync_disconnect_strings[] = {
         {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
         {"syncDisconnectTitle",
-         is_unified_consent_enabled
-             ? IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE_UNIFIED_CONSENT
-             : IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
+         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
         {"syncDisconnectDeleteProfile",
          IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
         {"syncDisconnectConfirm",
@@ -2285,17 +2274,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     AddLocalizedStringsBulk(html_source, sync_disconnect_strings,
                             base::size(sync_disconnect_strings));
 
-    if (is_unified_consent_enabled) {
-      html_source->AddLocalizedString(
-          "syncDisconnectExplanation",
-          IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION_UNIFIED_CONSENT);
-    } else {
-      html_source->AddString(
-          "syncDisconnectExplanation",
-          l10n_util::GetStringFUTF8(
-              IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION,
-              base::ASCIIToUTF16(sync_dashboard_url)));
-    }
+    html_source->AddLocalizedString(
+        "syncDisconnectExplanation",
+        IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION);
   }
 #endif
 
@@ -2532,64 +2513,25 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
-  // Select strings depending on unified-consent enabledness.
-  bool is_unified_consent_enabled =
-      unified_consent::IsUnifiedConsentFeatureEnabled();
-  if (is_unified_consent_enabled) {
-    static constexpr LocalizedString kConditionalLocalizedStrings[] = {
-        {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF_UNIFIED_CONSENT},
-        {"searchSuggestPrefDesc",
-         IDS_SETTINGS_SUGGEST_PREF_DESC_UNIFIED_CONSENT},
-        {"networkPredictionEnabled",
-         IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL_UNIFIED_CONSENT},
-        {"networkPredictionEnabledDesc",
-         IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC_UNIFIED_CONSENT},
-        {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF_UNIFIED_CONSENT},
-        {"linkDoctorPrefDesc",
-         IDS_SETTINGS_LINKDOCTOR_PREF_DESC_UNIFIED_CONSENT},
-        {"spellingPref", IDS_SETTINGS_SPELLING_PREF_UNIFIED_CONSENT},
-        {"spellingDescription",
-         IDS_SETTINGS_SPELLING_DESCRIPTION_UNIFIED_CONSENT},
-        {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_UNIFIED_CONSENT},
-        {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_DESC_UNIFIED_CONSENT},
-    };
-    AddLocalizedStringsBulk(html_source, kConditionalLocalizedStrings,
-                            base::size(kConditionalLocalizedStrings));
-  } else {
-    static constexpr LocalizedString kConditionalLocalizedStrings[] = {
+  static constexpr LocalizedString kConditionalLocalizedStrings[] = {
       {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
-      {"searchSuggestPrefDesc", IDS_SETTINGS_EMPTY_STRING},
+      {"searchSuggestPrefDesc", IDS_SETTINGS_SUGGEST_PREF_DESC},
       {"networkPredictionEnabled",
        IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL},
-      {"networkPredictionEnabledDesc", IDS_SETTINGS_EMPTY_STRING},
+      {"networkPredictionEnabledDesc",
+       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC},
       {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
-      {"linkDoctorPrefDesc", IDS_SETTINGS_EMPTY_STRING},
+      {"linkDoctorPrefDesc", IDS_SETTINGS_LINKDOCTOR_PREF_DESC},
       {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
-      {"spellingDescription", IDS_SETTINGS_SPELLING_DESCRIPTION},
-#if defined(OS_CHROMEOS)
-      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_DIAGNOSTIC_AND_USAGE_DATA},
-#else
-      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING},
-#endif
-      {"enableLoggingDesc", IDS_SETTINGS_EMPTY_STRING},
-    };
-    AddLocalizedStringsBulk(html_source, kConditionalLocalizedStrings,
-                            base::size(kConditionalLocalizedStrings));
-  }
+      {"spellingDescription", IDS_SETTINGS_SPELLING_PREF_DESC},
+      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_PREF},
+      {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_PREF_DESC},
+  };
+  AddLocalizedStringsBulk(html_source, kConditionalLocalizedStrings,
+                          base::size(kConditionalLocalizedStrings));
 
   html_source->AddString("syncAndGoogleServicesLearnMoreURL",
-                         is_unified_consent_enabled
-                             ? chrome::kSyncAndGoogleServicesLearnMoreURL
-                             : "");
-  html_source->AddString(
-      "improveBrowsingExperience",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_IMPROVE_BROWSING_EXPERIENCE,
-#if defined(OS_CHROMEOS)
-          GetHelpUrlWithBoard(chrome::kPrivacyLearnMoreURL)));
-#else
-          base::ASCIIToUTF16(chrome::kPrivacyLearnMoreURL)));
-#endif
+                         chrome::kSyncAndGoogleServicesLearnMoreURL);
   html_source->AddString(
       "doNotTrackDialogMessage",
       l10n_util::GetStringFUTF16(

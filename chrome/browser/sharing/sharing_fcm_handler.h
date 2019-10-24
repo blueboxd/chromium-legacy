@@ -73,11 +73,14 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
       const SharingMessage& original_message);
 
   // Ack message sent back to the original sender of message.
-  void SendAckMessage(const SharingMessage& original_message,
-                      const std::string& original_message_id);
+  void SendAckMessage(
+      std::string original_message_id,
+      chrome_browser_sharing::MessageType original_message_type,
+      base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info,
+      std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
   void OnAckMessageSent(
-      const std::string& original_message_id,
+      std::string original_message_id,
       chrome_browser_sharing::MessageType original_message_type,
       SharingSendMessageResult result,
       base::Optional<std::string> message_id);

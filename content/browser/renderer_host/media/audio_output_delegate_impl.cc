@@ -97,7 +97,7 @@ void AudioOutputDelegateImpl::ControllerEventHandler::OnLog(
 std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
     EventHandler* handler,
     media::AudioManager* audio_manager,
-    media::mojom::AudioLogPtr audio_log,
+    mojo::PendingRemote<media::mojom::AudioLog> audio_log,
     MediaObserver* media_observer,
     int stream_id,
     int render_frame_id,
@@ -124,7 +124,7 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
     std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
     EventHandler* handler,
     media::AudioManager* audio_manager,
-    media::mojom::AudioLogPtr audio_log,
+    mojo::PendingRemote<media::mojom::AudioLog> audio_log,
     MediaObserver* media_observer,
     int stream_id,
     int render_frame_id,

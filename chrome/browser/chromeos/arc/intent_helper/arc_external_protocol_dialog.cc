@@ -98,6 +98,7 @@ std::vector<apps::IntentPickerAppInfo> AddDevices(
 // is at least one app or device to choose from.
 bool MaybeAddDevicesAndShowPicker(
     const GURL& url,
+    const base::Optional<url::Origin>& initiating_origin,
     WebContents* web_contents,
     std::vector<apps::IntentPickerAppInfo> app_info,
     bool stay_in_chrome,
@@ -132,6 +133,7 @@ bool MaybeAddDevicesAndShowPicker(
       web_contents, icon_type == PageActionIconType::kIntentPicker);
   browser->window()->ShowIntentPickerBubble(
       std::move(app_info), stay_in_chrome, show_remember_selection, icon_type,
+      initiating_origin,
       base::BindOnce(std::move(callback), std::move(devices)));
 
   if (controller)
@@ -601,6 +603,7 @@ void OnAppIconsReceived(
     int render_process_host_id,
     int routing_id,
     const GURL& url,
+    const base::Optional<url::Origin>& initiating_origin,
     bool safe_to_bypass_ui,
     std::vector<mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<ArcIntentHelperBridge::ActivityToIconsMap> icons) {
@@ -629,18 +632,21 @@ void OnAppIconsReceived(
 
   const bool stay_in_chrome = IsChromeAnAppCandidate(handlers);
   MaybeAddDevicesAndShowPicker(
-      url, web_contents, std::move(app_info), stay_in_chrome,
+      url, initiating_origin, web_contents, std::move(app_info), stay_in_chrome,
       /*show_remember_selection=*/true,
       base::BindOnce(OnIntentPickerClosed, render_process_host_id, routing_id,
                      url, safe_to_bypass_ui, std::move(handlers)));
 }
 
-void ShowExternalProtocolDialogWithoutApps(int render_process_host_id,
-                                           int routing_id,
-                                           const GURL& url) {
+void ShowExternalProtocolDialogWithoutApps(
+    int render_process_host_id,
+    int routing_id,
+    const GURL& url,
+    const base::Optional<url::Origin>& initiating_origin) {
   // Try to show the device picker and fallback to the default dialog otherwise.
   if (MaybeAddDevicesAndShowPicker(
-          url, tab_util::GetWebContentsByID(render_process_host_id, routing_id),
+          url, initiating_origin,
+          tab_util::GetWebContentsByID(render_process_host_id, routing_id),
           /*app_info=*/{}, /*stay_in_chrome=*/false,
           /*show_remember_selection=*/false,
           base::BindOnce(OnIntentPickerClosed, render_process_host_id,
@@ -656,6 +662,7 @@ void ShowExternalProtocolDialogWithoutApps(int render_process_host_id,
 void OnUrlHandlerList(int render_process_host_id,
                       int routing_id,
                       const GURL& url,
+                      const base::Optional<url::Origin>& initiating_origin,
                       bool safe_to_bypass_ui,
                       std::vector<mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -664,7 +671,7 @@ void OnUrlHandlerList(int render_process_host_id,
   if (!arc_service_manager) {
     // ARC is not running anymore. Show the Chrome OS dialog.
     ShowExternalProtocolDialogWithoutApps(render_process_host_id, routing_id,
-                                          url);
+                                          url, initiating_origin);
     return;
   }
 
@@ -684,7 +691,7 @@ void OnUrlHandlerList(int render_process_host_id,
   if (!instance || !intent_helper_bridge ||
       IsChromeOnlyAppCandidate(handlers)) {
     ShowExternalProtocolDialogWithoutApps(render_process_host_id, routing_id,
-                                          url);
+                                          url, initiating_origin);
     return;
   }
 
@@ -710,18 +717,20 @@ void OnUrlHandlerList(int render_process_host_id,
     activities.emplace_back(handler->package_name, handler->activity_name);
   }
   intent_helper_bridge->GetActivityIcons(
-      activities,
-      base::BindOnce(OnAppIconsReceived, render_process_host_id, routing_id,
-                     url, safe_to_bypass_ui, std::move(handlers)));
+      activities, base::BindOnce(OnAppIconsReceived, render_process_host_id,
+                                 routing_id, url, initiating_origin,
+                                 safe_to_bypass_ui, std::move(handlers)));
 }
 
 }  // namespace
 
-bool RunArcExternalProtocolDialog(const GURL& url,
-                                  int render_process_host_id,
-                                  int routing_id,
-                                  ui::PageTransition page_transition,
-                                  bool has_user_gesture) {
+bool RunArcExternalProtocolDialog(
+    const GURL& url,
+    const base::Optional<url::Origin>& initiating_origin,
+    int render_process_host_id,
+    int routing_id,
+    ui::PageTransition page_transition,
+    bool has_user_gesture) {
   // This function is for external protocols that Chrome cannot handle.
   DCHECK(!url.SchemeIsHTTPOrHTTPS()) << url;
 
@@ -741,7 +750,7 @@ bool RunArcExternalProtocolDialog(const GURL& url,
   if (!arc_service_manager) {
     // ARC is either not supported or not yet ready.
     ShowExternalProtocolDialogWithoutApps(render_process_host_id, routing_id,
-                                          url);
+                                          url, initiating_origin);
     return true;
   }
 
@@ -751,7 +760,7 @@ bool RunArcExternalProtocolDialog(const GURL& url,
   if (!instance) {
     // ARC is either not supported or not yet ready.
     ShowExternalProtocolDialogWithoutApps(render_process_host_id, routing_id,
-                                          url);
+                                          url, initiating_origin);
     return true;
   }
 
@@ -768,8 +777,9 @@ bool RunArcExternalProtocolDialog(const GURL& url,
   // Show ARC version of the dialog, which is IntentPickerBubbleView. To show
   // the bubble view, we need to ask ARC for a handler list first.
   instance->RequestUrlHandlerList(
-      url.spec(), base::BindOnce(OnUrlHandlerList, render_process_host_id,
-                                 routing_id, url, safe_to_bypass_ui));
+      url.spec(),
+      base::BindOnce(OnUrlHandlerList, render_process_host_id, routing_id, url,
+                     initiating_origin, safe_to_bypass_ui));
   return true;
 }
 

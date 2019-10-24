@@ -13,6 +13,8 @@
 #if defined(CHROME_EARL_GREY_1)
 
 #import <EarlGrey/EarlGrey.h>
+#import <EarlGrey/GREYAppleInternals.h>
+#import <EarlGrey/GREYKeyboard.h>
 
 typedef DescribeToBlock GREYDescribeToBlock;
 typedef MatchesBlock GREYMatchesBlock;
@@ -30,6 +32,7 @@ void grey_dispatch_sync_on_main_thread(void (^block)(void));
 #import <AppFramework/Matcher/GREYMatchersShorthand.h>
 #import <AppFramework/Synchronization/GREYSyncAPI.h>
 #import <CommonLib/Error/GREYErrorConstants.h>
+#import <CommonLib/GREYAppleInternals.h>
 
 #else
 #error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.

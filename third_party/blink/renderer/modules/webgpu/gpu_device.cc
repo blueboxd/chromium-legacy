@@ -71,10 +71,10 @@ GPUDevice::~GPUDevice() {
 }
 
 void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,
-                                  DawnErrorType errorType,
+                                  WGPUErrorType errorType,
                                   const char* message) {
   if (execution_context) {
-    DCHECK_NE(errorType, DAWN_ERROR_TYPE_NO_ERROR);
+    DCHECK_NE(errorType, WGPUErrorType_NoError);
     LOG(ERROR) << "GPUDevice: " << message;
     ConsoleMessage* console_message =
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
@@ -83,18 +83,18 @@ void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,
   }
 
   // TODO: Use device lost callback instead of uncaptured error callback.
-  if (errorType == DAWN_ERROR_TYPE_DEVICE_LOST &&
+  if (errorType == WGPUErrorType_DeviceLost &&
       lost_property_->GetState() == ScriptPromisePropertyBase::kPending) {
     GPUDeviceLostInfo* device_lost_info = GPUDeviceLostInfo::Create(message);
     lost_property_->Resolve(device_lost_info);
   }
 
   GPUUncapturedErrorEventInit* init = GPUUncapturedErrorEventInit::Create();
-  if (errorType == DAWN_ERROR_TYPE_VALIDATION) {
+  if (errorType == WGPUErrorType_Validation) {
     GPUValidationError* error = GPUValidationError::Create(message);
     init->setError(
         GPUOutOfMemoryErrorOrGPUValidationError::FromGPUValidationError(error));
-  } else if (errorType == DAWN_ERROR_TYPE_OUT_OF_MEMORY) {
+  } else if (errorType == WGPUErrorType_OutOfMemory) {
     GPUOutOfMemoryError* error = GPUOutOfMemoryError::Create();
     init->setError(
         GPUOutOfMemoryErrorOrGPUValidationError::FromGPUOutOfMemoryError(
@@ -229,7 +229,7 @@ GPUQueue* GPUDevice::getQueue() {
 
 void GPUDevice::pushErrorScope(const WTF::String& filter) {
   GetProcs().devicePushErrorScope(GetHandle(),
-                                  AsDawnEnum<DawnErrorFilter>(filter));
+                                  AsDawnEnum<WGPUErrorFilter>(filter));
 }
 
 ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state) {
@@ -258,21 +258,21 @@ ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state) {
 }
 
 void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
-                                        DawnErrorType type,
+                                        WGPUErrorType type,
                                         const char* message) {
   v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
   switch (type) {
-    case DAWN_ERROR_TYPE_NO_ERROR:
+    case WGPUErrorType_NoError:
       resolver->Resolve(v8::Null(isolate));
       break;
-    case DAWN_ERROR_TYPE_OUT_OF_MEMORY:
+    case WGPUErrorType_OutOfMemory:
       resolver->Resolve(GPUOutOfMemoryError::Create());
       break;
-    case DAWN_ERROR_TYPE_VALIDATION:
+    case WGPUErrorType_Validation:
       resolver->Resolve(GPUValidationError::Create(message));
       break;
-    case DAWN_ERROR_TYPE_UNKNOWN:
-    case DAWN_ERROR_TYPE_DEVICE_LOST:
+    case WGPUErrorType_Unknown:
+    case WGPUErrorType_DeviceLost:
       resolver->Reject(
           MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
       break;

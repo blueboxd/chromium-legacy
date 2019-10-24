@@ -143,33 +143,12 @@ def _GetAffectedClasses(jar_file, source_files):
   return affected_classes, unaffected_members
 
 
-def _InstrumentWholeJar(instrument_cmd, input_path, output_path, temp_dir):
-  """Instruments input jar to output_path.
-
-  Args:
-    instrument_cmd: JaCoCo instrument command.
-    input_path: The input path to non-instrumented jar.
-    output_path: The output path to instrumented jar.
-    temp_dir: The temporary directory.
-  """
-  instrument_cmd.extend([input_path, '--dest', temp_dir])
-
-  build_utils.CheckOutput(instrument_cmd)
-
-  jars = os.listdir(temp_dir)
-  if len(jars) != 1:
-    raise Exception('Error: multiple output files: %s' % jars)
-
-  # Delete output_path first to avoid modifying input_path in the case where
-  # input_path is a hardlink to output_path. http://crbug.com/571642
-  if os.path.exists(output_path):
-    os.unlink(output_path)
-  shutil.move(os.path.join(temp_dir, jars[0]), output_path)
-
-
-def _InstrumentClassFiles(instrument_cmd, input_path, output_path, temp_dir,
-                          affected_source_files):
-  """Instruments affected class files from input jar.
+def _InstrumentClassFiles(instrument_cmd,
+                          input_path,
+                          output_path,
+                          temp_dir,
+                          affected_source_files=None):
+  """Instruments class files from input jar.
 
   Args:
     instrument_cmd: JaCoCo instrument command.
@@ -177,9 +156,13 @@ def _InstrumentClassFiles(instrument_cmd, input_path, output_path, temp_dir,
     output_path: The output path to instrumented jar.
     temp_dir: The temporary directory.
     affected_source_files: The affected source file paths to input jar.
+      Default is None, which means instrumenting all class files in jar.
   """
-  affected_classes, unaffected_members = _GetAffectedClasses(
-      input_path, affected_source_files)
+  affected_classes = None
+  unaffected_members = None
+  if affected_source_files:
+    affected_classes, unaffected_members = _GetAffectedClasses(
+        input_path, affected_source_files)
 
   # Extract affected class files.
   with zipfile.ZipFile(input_path) as f:
@@ -191,9 +174,10 @@ def _InstrumentClassFiles(instrument_cmd, input_path, output_path, temp_dir,
   instrument_cmd.extend([temp_dir, '--dest', instrumented_dir])
   build_utils.CheckOutput(instrument_cmd)
 
-  # Extract unaffected members to instrumented_dir.
-  with zipfile.ZipFile(input_path) as f:
-    f.extractall(instrumented_dir, unaffected_members)
+  if affected_source_files and unaffected_members:
+    # Extract unaffected members to instrumented_dir.
+    with zipfile.ZipFile(input_path) as f:
+      f.extractall(instrumented_dir, unaffected_members)
 
   # Zip all files to output_path
   build_utils.ZipDir(output_path, instrumented_dir)
@@ -220,8 +204,8 @@ def _RunInstrumentCommand(parser):
     ]
 
     if not args.files_to_instrument:
-      _InstrumentWholeJar(instrument_cmd, args.input_path, args.output_path,
-                          temp_dir)
+      _InstrumentClassFiles(instrument_cmd, args.input_path, args.output_path,
+                            temp_dir)
     else:
       affected_files = build_utils.ReadSourcesList(args.files_to_instrument)
       source_set = set(source_files)

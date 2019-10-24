@@ -30,7 +30,6 @@
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -138,11 +137,11 @@ class DummyMojoAudioLogImpl : public media::mojom::AudioLog {
   void OnLogMessage(const std::string& message) override {}
 };
 
-media::mojom::AudioLogPtr CreateDummyMojoAudioLog() {
-  media::mojom::AudioLogPtr audio_log_ptr;
-  mojo::MakeStrongBinding(std::make_unique<DummyMojoAudioLogImpl>(),
-                          mojo::MakeRequest(&audio_log_ptr));
-  return audio_log_ptr;
+mojo::PendingRemote<media::mojom::AudioLog> CreateDummyMojoAudioLog() {
+  mojo::PendingRemote<media::mojom::AudioLog> audio_log;
+  mojo::MakeSelfOwnedReceiver(std::make_unique<DummyMojoAudioLogImpl>(),
+                              audio_log.InitWithNewPipeAndPassReceiver());
+  return audio_log;
 }
 
 }  // namespace

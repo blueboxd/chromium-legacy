@@ -16922,7 +16922,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 1, 2, 3 ],
+        'enum': [ 1, 2, 3, 4 ],
       },
       'items': [
         {
@@ -16940,6 +16940,11 @@
           'value': 3,
           'caption': '''Always reboot on user sign out.''',
         },
+        {
+          'name': 'ArcSessionOrVMStart',
+          'value': 4,
+          'caption': '''Reboot on user sign out if Android or a VM has started.''',
+        },
       ],
       'device_only': True,
       'example_value': 2,
@@ -16952,6 +16957,7 @@
       'tags': ['system-security'],
       'desc': '''
       This policy, when set to ArcSession, forces the device to reboot when a user sign out if Android has started.
+      This policy, when set to ArcSessionOrVMStart, forces the device to reboot when a user sign out if Android or a VM has started.
       When set to Always, it forces the device to reboot on every user sign out.
       If left unset, it has no effect and no reboot is forced on user sign out. The same applies if set to Never.
       This policy has effect only for unaffiliated users.

@@ -26,6 +26,7 @@
 #include "ios/web/public/navigation/referrer.h"
 #include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_client.h"
+#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -159,13 +160,17 @@ initiationType:(web::NavigationInitiationType)initiationType;
   if (self.transientItem)
     return self.transientItem;
   // Only return the |pendingItem| for new (non-history), browser-initiated
-  // navigations in order to prevent URL spoof attacks.
+  // navigations and when WebState is loading in order to prevent URL spoof
+  // attacks.
   web::NavigationItemImpl* pendingItem = self.pendingItem;
   if (pendingItem) {
     bool isBrowserInitiated = pendingItem->NavigationInitiationType() ==
                               web::NavigationInitiationType::BROWSER_INITIATED;
     bool safeToShowPending = isBrowserInitiated && _pendingItemIndex == -1;
-
+    if (web::features::UseWKWebViewLoading()) {
+      safeToShowPending =
+          safeToShowPending && _navigationManager->GetWebState()->IsLoading();
+    }
     if (safeToShowPending)
       return pendingItem;
   }

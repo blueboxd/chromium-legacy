@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_encoder.h"
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
@@ -13,15 +14,15 @@ namespace blink {
 // static
 GPUComputePassEncoder* GPUComputePassEncoder::Create(
     GPUDevice* device,
-    DawnComputePassEncoder compute_pass_encoder) {
+    WGPUComputePassEncoder compute_pass_encoder) {
   return MakeGarbageCollected<GPUComputePassEncoder>(device,
                                                      compute_pass_encoder);
 }
 
 GPUComputePassEncoder::GPUComputePassEncoder(
     GPUDevice* device,
-    DawnComputePassEncoder compute_pass_encoder)
-    : DawnObject<DawnComputePassEncoder>(device, compute_pass_encoder) {}
+    WGPUComputePassEncoder compute_pass_encoder)
+    : DawnObject<WGPUComputePassEncoder>(device, compute_pass_encoder) {}
 
 GPUComputePassEncoder::~GPUComputePassEncoder() {
   if (IsDawnControlClientDestroyed()) {

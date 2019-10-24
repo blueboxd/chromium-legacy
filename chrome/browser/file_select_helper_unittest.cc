@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -271,8 +273,8 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_OneOKFile) {
   std::vector<blink::mojom::FileChooserFileInfoPtr> orig_files;
   safe_browsing::DeepScanningDialogDelegate::Data data;
   safe_browsing::DeepScanningDialogDelegate::Result result;
-  PrepareDeepScanCompletionCallbackArgs({data_dir_.AppendASCII("foo")}, {true},
-                                        &orig_files, &data, &result);
+  PrepareDeepScanCompletionCallbackArgs({data_dir_.AppendASCII("foo.doc")},
+                                        {true}, &orig_files, &data, &result);
 
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
   file_select_helper->DeepScanCompletionCallback(std::move(orig_files), data,
@@ -296,7 +298,7 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_TwoOKFiles) {
   safe_browsing::DeepScanningDialogDelegate::Data data;
   safe_browsing::DeepScanningDialogDelegate::Result result;
   PrepareDeepScanCompletionCallbackArgs(
-      {data_dir_.AppendASCII("foo"), data_dir_.AppendASCII("bar")},
+      {data_dir_.AppendASCII("foo.doc"), data_dir_.AppendASCII("bar.doc")},
       {true, true}, &orig_files, &data, &result);
 
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
@@ -321,7 +323,7 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_TwoBadFiles) {
   safe_browsing::DeepScanningDialogDelegate::Data data;
   safe_browsing::DeepScanningDialogDelegate::Result result;
   PrepareDeepScanCompletionCallbackArgs(
-      {data_dir_.AppendASCII("foo"), data_dir_.AppendASCII("bar")},
+      {data_dir_.AppendASCII("foo.doc"), data_dir_.AppendASCII("bar.doc")},
       {false, false}, &orig_files, &data, &result);
 
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
@@ -346,7 +348,7 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_OKBadFiles) {
   safe_browsing::DeepScanningDialogDelegate::Data data;
   safe_browsing::DeepScanningDialogDelegate::Result result;
   PrepareDeepScanCompletionCallbackArgs(
-      {data_dir_.AppendASCII("foo"), data_dir_.AppendASCII("bar")},
+      {data_dir_.AppendASCII("foo.doc"), data_dir_.AppendASCII("bar.doc")},
       {false, true}, &orig_files, &data, &result);
 
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
@@ -354,7 +356,7 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_OKBadFiles) {
                                                  result);
 
   ASSERT_EQ(1u, files.size());
-  EXPECT_EQ(data_dir_.AppendASCII("bar"),
+  EXPECT_EQ(data_dir_.AppendASCII("bar.doc"),
             files[0]->get_native_file()->file_path);
 }
 

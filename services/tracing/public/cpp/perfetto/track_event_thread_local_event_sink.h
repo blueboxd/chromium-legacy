@@ -69,12 +69,17 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
 
   // TODO(eseckler): Make it possible to register new indexes for use from
   // TRACE_EVENT macros.
-  InterningIndex<const char*> interned_event_categories_;
-  InterningIndex<const char*, std::string> interned_event_names_;
-  InterningIndex<const char*, std::string> interned_annotation_names_;
-  InterningIndex<std::tuple<const char*, const char*, int>>
+  InterningIndex<TypeList<const char*>, SizeList<128>>
+      interned_event_categories_;
+  InterningIndex<TypeList<const char*, std::string>, SizeList<512, 64>>
+      interned_event_names_;
+  InterningIndex<TypeList<const char*, std::string>, SizeList<512, 64>>
+      interned_annotation_names_;
+  InterningIndex<TypeList<std::tuple<const char*, const char*, int>>,
+                 SizeList<512>>
       interned_source_locations_;
-  InterningIndex<std::string> interned_log_message_bodies_;
+  InterningIndex<TypeList<std::string>, SizeList<128>>
+      interned_log_message_bodies_;
 
   static std::atomic<uint32_t> incremental_state_reset_id_;
 

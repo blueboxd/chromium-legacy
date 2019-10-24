@@ -42,7 +42,7 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 
 // Tests for access to external file systems (as defined in
-// storage/common/fileapi/file_system_types.h) from extensions with
+// storage/common/file_system/file_system_types.h) from extensions with
 // fileManagerPrivate and fileBrowserHandler extension permissions.
 // The tests cover following external file system types:
 // - local (kFileSystemTypeLocalNative): a local file system on which files are

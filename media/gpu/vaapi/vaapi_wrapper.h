@@ -387,7 +387,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   void DestroySurface(VASurfaceID va_surface_id);
 
  protected:
-  VaapiWrapper();
+  VaapiWrapper(CodecMode mode);
   virtual ~VaapiWrapper();
 
  private:
@@ -423,6 +423,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   // Check low-power encode support for the given profile
   bool IsLowPowerEncSupported(VAProfile va_profile) const;
+
+  const CodecMode mode_;
 
   // Pointer to VADisplayState's member |va_lock_|. Guaranteed to be valid for
   // the lifetime of VaapiWrapper.

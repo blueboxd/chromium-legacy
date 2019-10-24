@@ -29,6 +29,7 @@ def get_files_to_compare(build_dir, recursive=False):
   allowed = frozenset((
     '.aab',
     '.apk',
+    '.apks',
     '.app',
     '.bin',  # V8 snapshot file snapshot_blob.bin
     '.dll',

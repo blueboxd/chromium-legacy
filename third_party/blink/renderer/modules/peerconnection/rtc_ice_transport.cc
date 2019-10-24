@@ -92,14 +92,12 @@ class DefaultIceTransportAdapterCrossThreadFactory
 
     auto* rtc_dependency_factory =
         blink::PeerConnectionDependencyFactory::GetInstance();
-    rtc_dependency_factory->EnsureInitialized();
     port_allocator_ = rtc_dependency_factory->CreatePortAllocator(
         frame.Client()->GetWebFrame());
-
     async_resolver_factory_ =
-        Platform::Current()->CreateWebRtcAsyncResolverFactory();
-    worker_thread_rtc_thread_ = PeerConnectionDependencyFactory::GetInstance()
-                                    ->GetWebRtcWorkerThreadRtcThread();
+        rtc_dependency_factory->CreateAsyncResolverFactory();
+    worker_thread_rtc_thread_ =
+        rtc_dependency_factory->GetWebRtcWorkerThreadRtcThread();
   }
 
   std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(

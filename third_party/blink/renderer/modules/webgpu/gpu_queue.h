@@ -13,12 +13,12 @@ class GPUCommandBuffer;
 class GPUFence;
 class GPUFenceDescriptor;
 
-class GPUQueue : public DawnObject<DawnQueue> {
+class GPUQueue : public DawnObject<WGPUQueue> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUQueue* Create(GPUDevice* device, DawnQueue queue);
-  explicit GPUQueue(GPUDevice* device, DawnQueue queue);
+  static GPUQueue* Create(GPUDevice* device, WGPUQueue queue);
+  explicit GPUQueue(GPUDevice* device, WGPUQueue queue);
   ~GPUQueue() override;
 
   // gpu_queue.idl

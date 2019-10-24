@@ -477,7 +477,7 @@ SharedImageRepresentationFactory::ProduceSkia(
 
 std::unique_ptr<SharedImageRepresentationDawn>
 SharedImageRepresentationFactory::ProduceDawn(const Mailbox& mailbox,
-                                              DawnDevice device) {
+                                              WGPUDevice device) {
   return manager_->ProduceDawn(mailbox, tracker_.get(), device);
 }
 

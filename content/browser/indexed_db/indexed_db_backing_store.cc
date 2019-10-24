@@ -54,7 +54,7 @@
 #include "storage/browser/file_system/file_writer_delegate.h"
 #include "storage/browser/file_system/local_file_stream_writer.h"
 #include "storage/common/database/database_identifier.h"
-#include "storage/common/fileapi/file_system_mount_option.h"
+#include "storage/common/file_system/file_system_mount_option.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/leveldatabase/env_chromium.h"

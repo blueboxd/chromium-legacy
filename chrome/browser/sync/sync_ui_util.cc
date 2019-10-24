@@ -14,7 +14,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/unified_consent/feature.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -152,11 +151,8 @@ MessageType GetStatusLabelsImpl(
       *status_label = l10n_util::GetStringUTF16(
           IDS_SIGNED_IN_WITH_SYNC_STOPPED_VIA_DASHBOARD);
     }
-    // Note: The pre-UnifiedConsent UI handles this case differently and does
-    // *not* treat it as an error. If we wanted to treat it as an error, we'd
-    // also have to set |link_label| and |action_type|, see crbug.com/977980.
-    return unified_consent::IsUnifiedConsentFeatureEnabled() ? SYNC_ERROR
-                                                             : PRE_SYNCED;
+
+    return SYNC_ERROR;
   }
 
   if (service->GetUserSettings()->IsFirstSetupComplete()) {

@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_H_
 #define GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_H_
 
-#include <dawn/dawn.h>
+#include <dawn/webgpu.h>
 #include <dawn_wire/WireClient.h>
 
 #include <memory>
@@ -117,8 +117,8 @@ class WEBGPU_EXPORT WebGPUImplementation final
   // WebGPUInterface implementation
   const DawnProcTable& GetProcs() const override;
   void FlushCommands() override;
-  DawnDevice GetDefaultDevice() override;
-  ReservedTexture ReserveTexture(DawnDevice device) override;
+  WGPUDevice GetDefaultDevice() override;
+  ReservedTexture ReserveTexture(WGPUDevice device) override;
 
  private:
   const char* GetLogPrefix() const { return "webgpu"; }

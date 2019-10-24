@@ -9,18 +9,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
-#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 
 namespace chromeos {
 
 // Observer class to update the Kiosk app menu when Kiosk app data is changed.
-class KioskAppMenuController
-    : public KioskAppManagerObserver,
-      public ArcKioskAppManager::ArcKioskAppManagerObserver,
-      public WebKioskAppManager::WebKioskAppManagerObserver {
+class KioskAppMenuController : public KioskAppManagerObserver {
  public:
   KioskAppMenuController();
   ~KioskAppMenuController() override;
@@ -33,22 +28,11 @@ class KioskAppMenuController
   void OnKioskAppDataLoadFailure(const std::string& app_id) override;
   void OnKioskAppsSettingsChanged() override;
 
-  // ArcKioskAppManagerObserver:
-  void OnArcKioskAppsChanged() override;
-
-  // WebKioskAppManagerObserver:
-  void OnWebKioskAppsChanged() override;
-
  private:
   void LaunchApp(const ash::KioskAppMenuEntry& app);
 
-  ScopedObserver<KioskAppManager, KioskAppManagerObserver> kiosk_observer_{
+  ScopedObserver<KioskAppManagerBase, KioskAppManagerObserver> kiosk_observer_{
       this};
-  ScopedObserver<ArcKioskAppManager,
-                 ArcKioskAppManager::ArcKioskAppManagerObserver>
-      arc_kiosk_observer_{this};
-  ScopedObserver<WebKioskAppManager, KioskAppMenuController>
-      web_kiosk_observer_{this};
 
   base::WeakPtrFactory<KioskAppMenuController> weak_factory_{this};
 

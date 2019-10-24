@@ -280,15 +280,18 @@ void ExtractBaseAddressAndLength(char** base_address,
     if (stillImageOutput_)
       [captureSession_ removeOutput:stillImageOutput_];
     if (captureDeviceInput_) {
+      DCHECK(captureDevice_);
+      [captureSession_ stopRunning];
       [captureSession_ removeInput:captureDeviceInput_];
-      // No need to release |captureDeviceInput_|, is owned by the session.
-      captureDeviceInput_ = nil;
+      captureDeviceInput_.reset();
+      captureDevice_.reset();
     }
     return YES;
   }
 
   // Look for input device with requested name.
-  captureDevice_ = [AVCaptureDevice deviceWithUniqueID:deviceId];
+  captureDevice_.reset([AVCaptureDevice deviceWithUniqueID:deviceId],
+                       base::scoped_policy::RETAIN);
   if (!captureDevice_) {
     *outMessage =
         [NSString stringWithUTF8String:"Could not open video capture device."];
@@ -297,10 +300,11 @@ void ExtractBaseAddressAndLength(char** base_address,
 
   // Create the capture input associated with the device. Easy peasy.
   NSError* error = nil;
-  captureDeviceInput_ =
-      [AVCaptureDeviceInput deviceInputWithDevice:captureDevice_ error:&error];
+  captureDeviceInput_.reset(
+      [AVCaptureDeviceInput deviceInputWithDevice:captureDevice_ error:&error],
+      base::scoped_policy::RETAIN);
   if (!captureDeviceInput_) {
-    captureDevice_ = nil;
+    captureDevice_.reset();
     *outMessage = [NSString
         stringWithFormat:@"Could not create video capture input (%@): %@",
                          [error localizedDescription],
@@ -347,7 +351,7 @@ void ExtractBaseAddressAndLength(char** base_address,
   FourCharCode best_fourcc = kCMPixelFormat_422YpCbCr8_yuvs;
   const bool prefer_mjpeg =
       width > kMjpegWidthThreshold || height > kMjpegHeightThreshold;
-  for (AVCaptureDeviceFormat* format in captureDevice_.formats) {
+  for (AVCaptureDeviceFormat* format in [captureDevice_ formats]) {
     const FourCharCode fourcc =
         CMFormatDescriptionGetMediaSubType([format formatDescription]);
     if (prefer_mjpeg && fourcc == kCMVideoCodecType_JPEG_OpenDML) {

@@ -21,7 +21,7 @@
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/local_file_util.h"
 #include "storage/browser/file_system/native_file_util.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 namespace drive {
 namespace internal {

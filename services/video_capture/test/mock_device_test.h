@@ -17,7 +17,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-class MessageLoop;
+namespace test {
+class SingleThreadTaskEnvironment;
+}
 }
 
 namespace video_capture {
@@ -46,7 +48,7 @@ class MockDeviceTest : public ::testing::Test {
   media::VideoCaptureParams requested_settings_;
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
 };
 
 }  // namespace video_capture

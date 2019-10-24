@@ -23,6 +23,7 @@
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/webrtc/helpers.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
@@ -34,6 +35,7 @@
 #include "third_party/webrtc/api/audio/echo_canceller3_config.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config_json.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
+#include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing_statistics.h"
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 #include "third_party/webrtc_overrides/task_queue_factory.h"
@@ -60,33 +62,6 @@ using webrtc::AudioProcessing;
 
 constexpr int kAudioProcessingNumberOfChannels = 1;
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
-
-AudioProcessing::ChannelLayout MapLayout(media::ChannelLayout media_layout) {
-  switch (media_layout) {
-    case media::CHANNEL_LAYOUT_MONO:
-      return AudioProcessing::kMono;
-    case media::CHANNEL_LAYOUT_STEREO:
-      return AudioProcessing::kStereo;
-    case media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC:
-      return AudioProcessing::kStereoAndKeyboard;
-    default:
-      NOTREACHED() << "Layout not supported: " << media_layout;
-      return AudioProcessing::kMono;
-  }
-}
-
-// This is only used for playout data where only max two channels is supported.
-AudioProcessing::ChannelLayout ChannelsToLayout(int num_channels) {
-  switch (num_channels) {
-    case 1:
-      return AudioProcessing::kMono;
-    case 2:
-      return AudioProcessing::kStereo;
-    default:
-      NOTREACHED() << "Channels not supported: " << num_channels;
-      return AudioProcessing::kMono;
-  }
-}
 
 }  // namespace
 
@@ -467,8 +442,7 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
   // TODO(ajm): Should AnalyzeReverseStream() account for the
   // |audio_delay_milliseconds|?
   const int apm_error = audio_processing_->AnalyzeReverseStream(
-      channel_ptrs.data(), audio_bus->frames(), sample_rate,
-      ChannelsToLayout(channels));
+      channel_ptrs.data(), webrtc::StreamConfig(sample_rate, channels));
   if (apm_error != webrtc::AudioProcessing::kNoError &&
       apm_playout_error_code_log_count_ < 10) {
     LOG(ERROR) << "MSAP::OnPlayoutData: AnalyzeReverseStream error="
@@ -725,10 +699,8 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
   ap->set_stream_analog_level(volume);
   ap->set_stream_key_pressed(key_pressed);
 
-  int err = ap->ProcessStream(
-      process_ptrs, process_frames, input_format_.sample_rate(),
-      MapLayout(input_format_.channel_layout()), output_format_.sample_rate(),
-      MapLayout(output_format_.channel_layout()), output_ptrs);
+  int err = ap->ProcessStream(process_ptrs, CreateStreamConfig(input_format_),
+                              CreateStreamConfig(output_format_), output_ptrs);
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 
   if (typing_detector_) {

@@ -5,8 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 
-#include <dawn/dawn.h>
 #include <dawn/dawn_proc_table.h>
+#include <dawn/webgpu.h>
 
 #include "base/callback_helpers.h"
 #include "build/build_config.h"
@@ -305,7 +305,7 @@ class SharedImageRepresentationDawn : public SharedImageRepresentation {
   // TODO(penghuang): Add ScopedAccess helper class.
   // This can return null in case of a Dawn validation error, for example if
   // usage is invalid.
-  virtual DawnTexture BeginAccess(DawnTextureUsage usage) = 0;
+  virtual WGPUTexture BeginAccess(WGPUTextureUsage usage) = 0;
   virtual void EndAccess() = 0;
 };
 

@@ -177,7 +177,7 @@ void SharingUiController::SendMessageToDevice(
   UpdateIcon();
 
   sharing_service_->SendMessageToDevice(
-      device.guid(), kSharingMessageTTL, std::move(sharing_message),
+      device.guid(), kSendMessageTimeout, std::move(sharing_message),
       base::Bind(&SharingUiController::OnMessageSentToDevice,
                  weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }
@@ -223,7 +223,8 @@ base::string16 SharingUiController::GetTargetDeviceName() const {
 
 void SharingUiController::OnMessageSentToDevice(
     int dialog_id,
-    SharingSendMessageResult result) {
+    SharingSendMessageResult result,
+    std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
   if (dialog_id != last_dialog_id_)
     return;
 

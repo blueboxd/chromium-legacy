@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//android_webview/system_webview_apk_tmpl.gni")
+import("//android_webview/variables.gni")
 import("//build/config/android/rules.gni")
 
 generate_jni("apk_jni_headers") {
@@ -23,6 +25,7 @@ android_library("apk_java") {
     "java/src/com/android/webview/chromium/WebViewApkApplication.java",
   ]
   deps = [
+    ":devui_java",
     "//android_webview:android_webview_locale_config_java",
     "//android_webview:common_commandline_java",
     "//base:base_java",
@@ -32,6 +35,26 @@ android_library("apk_java") {
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+android_library("devui_java") {
+  java_files = [
+    "java/src/org/chromium/android_webview/devui/CrashesListActivity.java",
+    "java/src/org/chromium/android_webview/devui/util/CrashInfoLoader.java",
+    "java/src/org/chromium/android_webview/devui/util/UnuploadedFilesStateLoader.java",
+    "java/src/org/chromium/android_webview/devui/util/UploadedCrashesInfoLoader.java",
+    "java/src/org/chromium/android_webview/devui/util/WebViewCrashInfoCollector.java",
+    "java/src/org/chromium/android_webview/devui/util/WebViewCrashLogParser.java",
+  ]
+  deps = [
+    ":devui_resources",
+    "//android_webview:common_crash_java",
+    "//android_webview:system_webview_manifest",
+    "//base:base_java",
+    "//components/minidump_uploader:minidump_uploader_java",
+  ]
+  android_manifest_for_lint = system_webview_android_manifest
+  min_sdk_version = 21
 }
 
 source_set("apk") {
@@ -46,4 +69,15 @@ source_set("apk") {
     # Called via JNI by LicenseContentProvider in :apk_java.
     "//components/about_ui:about_ui_android",
   ]
+}
+
+# WebView icon used by upstream SystemWebView and Trichrome.
+android_resources("icon_resources") {
+  resource_dirs = [ "java/res_icon" ]
+  custom_package = "org.chromium.android_webview.icon"
+}
+
+android_resources("devui_resources") {
+  resource_dirs = [ "java/res_devui" ]
+  custom_package = "org.chromium.android_webview.devui"
 }

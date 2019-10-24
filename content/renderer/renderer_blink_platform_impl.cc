@@ -562,23 +562,6 @@ RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
   return rtc_dependency_factory->GetWebRtcWorkerThread();
 }
 
-std::unique_ptr<cricket::PortAllocator>
-RendererBlinkPlatformImpl::CreateWebRtcPortAllocator(
-    blink::WebLocalFrame* frame) {
-  auto* rtc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  rtc_dependency_factory->EnsureInitialized();
-  return rtc_dependency_factory->CreatePortAllocator(frame);
-}
-
-std::unique_ptr<webrtc::AsyncResolverFactory>
-RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
-  auto* rtc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  rtc_dependency_factory->EnsureInitialized();
-  return rtc_dependency_factory->CreateAsyncResolverFactory();
-}
-
 //------------------------------------------------------------------------------
 
 base::Optional<double>

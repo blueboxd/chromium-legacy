@@ -39,8 +39,6 @@ class IntTestWebStateObserver : public WebStateObserver {
   void PageLoaded(
       web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override {
-    ASSERT_EQ(load_completion_status == web::PageLoadCompletionStatus::SUCCESS,
-              expected_url_.is_valid());
     page_loaded_ = true;
   }
 

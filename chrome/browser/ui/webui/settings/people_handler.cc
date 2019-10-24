@@ -46,7 +46,6 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -532,10 +531,6 @@ base::Value PeopleHandler::GetStoredAccountsList() {
   const bool dice_enabled =
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_);
 
-  // Dice and unified consent both disabled: do not show the list of accounts.
-  if (!dice_enabled && !unified_consent::IsUnifiedConsentFeatureEnabled())
-    return accounts;
-
   base::Value::ListStorage& accounts_list = accounts.GetList();
   if (dice_enabled) {
     // If dice is enabled, show all the accounts.
@@ -667,98 +662,26 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
 
   syncer::SyncService* service = GetSyncService();
 
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    if (service && !sync_blocker_)
-      sync_blocker_ = service->GetSetupInProgressHandle();
-
-    // Mark Sync as requested by the user. It might already be requested, but
-    // it's not if this is either the first time the user is setting up Sync, or
-    // Sync was set up but then was reset via the dashboard. This also pokes the
-    // SyncService to start up immediately, i.e. bypass deferred startup.
-    if (service)
-      service->GetUserSettings()->SetSyncRequested(true);
-
-    GetLoginUIService()->SetLoginUI(this);
-
-    // Observe the web contents for a before unload event.
-    Observe(web_ui()->GetWebContents());
-
-    PushSyncPrefs();
-
-    // Focus the web contents in case the location bar was focused before. This
-    // makes sure that page elements for resolving sync errors can be focused.
-    web_ui()->GetWebContents()->Focus();
-
-    // Always let the page open when unified consent is enabled.
-    return;
-  }
-
-  if (!service) {
-    CloseUI();
-    return;
-  }
-
-  // This if-statement is not using IsProfileAuthNeededOrHasErrors(), because
-  // in some error cases (e.g. "confirmSyncSettings") the UI still needs to
-  // show.
-  if (!IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount()) {
-    // For web-based signin, the signin page is not displayed in an overlay
-    // on the settings page. So if we get here, it must be due to the user
-    // cancelling signin (by reloading the sync settings page during initial
-    // signin) or by directly navigating to settings/syncSetup
-    // (http://crbug.com/229836). So just exit and go back to the settings page.
-    DLOG(WARNING) << "Cannot display sync setup UI when not signed in";
-    CloseUI();
-    return;
-  }
-
-  // Notify services that login UI is now active.
-  GetLoginUIService()->SetLoginUI(this);
-
-  if (!sync_blocker_)
+  if (service && !sync_blocker_)
     sync_blocker_ = service->GetSetupInProgressHandle();
 
-  // Early exit if there is already a preferences push pending sync startup.
-  if (sync_startup_tracker_)
-    return;
-
-  if (!service->IsEngineInitialized() ||
-      !service->GetUserSettings()->IsSyncRequested()) {
-    // SetSyncRequested(true) does two things:
-    // 1) As the name says, it marks Sync as requested by the user (it might not
-    //    be requested yet because either this is the first time they're setting
-    //    it up, or Sync was reset via the dashboard).
-    // 2) Pokes the sync service to start *immediately*, i.e. bypass deferred
-    //    startup.
-    // It's possible that both of these are already the case, i.e. the engine is
-    // already in the process of initializing, in which case
-    // SetSyncRequested(true) will effectively do nothing. It's also possible
-    // that the sync service is already running in standalone transport mode and
-    // so the engine is already initialized. In that case, this will trigger the
-    // service to switch to full Sync-the-feature mode.
+  // Mark Sync as requested by the user. It might already be requested, but
+  // it's not if this is either the first time the user is setting up Sync, or
+  // Sync was set up but then was reset via the dashboard. This also pokes the
+  // SyncService to start up immediately, i.e. bypass deferred startup.
+  if (service)
     service->GetUserSettings()->SetSyncRequested(true);
 
-    // See if it's even possible to bring up the sync engine - if not
-    // (unrecoverable error?), don't bother displaying a spinner that will be
-    // immediately closed because this leads to some ugly infinite UI loop (see
-    // http://crbug.com/244769).
-    if (SyncStartupTracker::GetSyncServiceState(service) !=
-        SyncStartupTracker::SYNC_STARTUP_ERROR) {
-      DisplaySpinner();
-    }
+  GetLoginUIService()->SetLoginUI(this);
 
-    // Finally, wait for the Sync engine to get initialized. Note that if it is
-    // already initialized (probably because Sync-the-transport was already
-    // running), then this will call us back immediately.
-    sync_startup_tracker_ = std::make_unique<SyncStartupTracker>(service, this);
+  // Observe the web contents for a before unload event.
+  Observe(web_ui()->GetWebContents());
 
-    return;
-  }
-
-  // User is already logged in. They must have brought up the config wizard
-  // via the "Advanced..." button or through One-Click signin (cases 4-6), or
-  // they are re-enabling sync after having disabled it (case 7).
   PushSyncPrefs();
+
+  // Focus the web contents in case the location bar was focused before. This
+  // makes sure that page elements for resolving sync errors can be focused.
+  web_ui()->GetWebContents()->Focus();
 }
 
 #if defined(OS_CHROMEOS)

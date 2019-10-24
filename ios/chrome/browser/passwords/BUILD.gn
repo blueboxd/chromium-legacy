@@ -207,6 +207,7 @@ source_set("unit_tests") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -214,18 +215,10 @@ source_set("eg_tests") {
   ]
 
   deps = [
-    ":passwords",
+    ":feature_flags",
+    ":test_support",
     "//base",
     "//base/test:test_support",
-    "//components/autofill/core/common",
-    "//components/autofill/ios/browser",
-    "//components/keyed_service/core",
-    "//components/password_manager/core/browser",
-    "//components/password_manager/core/browser:test_support",
-    "//components/password_manager/core/common",
-    "//components/password_manager/ios",
-    "//components/prefs",
-    "//components/prefs:test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
@@ -234,5 +227,86 @@ source_set("eg_tests") {
   libs = [
     "UIKit.framework",
     "XCTest.framework",
+  ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "credential_manager_egtest.mm",
+  ]
+  deps = [
+    ":eg_test_support+eg2",
+    ":feature_flags",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test/http_server",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "password_manager_app_interface.h",
+    "password_manager_app_interface.mm",
+  ]
+  deps = [
+    ":passwords",
+    "//base",
+    "//components/autofill/core/common",
+    "//components/keyed_service/core",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/common",
+    "//ios/chrome/test/app:test_support",
+    "//ios/testing:nserror_support",
+    "//ios/web/public",
+  ]
+}
+
+source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "password_manager_app_interface.h",
+    "password_manager_app_interface.mm",
+  ]
+  deps = [
+    ":passwords",
+    "//base",
+    "//components/autofill/core/common",
+    "//components/keyed_service/core",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/common",
+    "//ios/chrome/test/app:test_support",
+    "//ios/testing:nserror_support",
+    "//ios/web/public",
+  ]
+}
+
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+
+  sources = [
+    "password_manager_app_interface.h",
   ]
 }

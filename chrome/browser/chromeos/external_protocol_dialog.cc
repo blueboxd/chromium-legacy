@@ -47,7 +47,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   int render_process_host_id =
       web_contents->GetRenderViewHost()->GetProcess()->GetID();
   int routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  if (arc::RunArcExternalProtocolDialog(url, render_process_host_id, routing_id,
+  if (arc::RunArcExternalProtocolDialog(url, initiating_origin,
+                                        render_process_host_id, routing_id,
                                         page_transition, has_user_gesture)) {
     return;
   }

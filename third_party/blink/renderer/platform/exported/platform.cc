@@ -63,7 +63,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/webrtc/api/async_resolver_factory.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
 #include "third_party/webrtc/p2p/base/port_allocator.h"
 
@@ -339,16 +338,6 @@ std::unique_ptr<WebRTCPeerConnectionHandler>
 Platform::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*,
     scoped_refptr<base::SingleThreadTaskRunner>) {
-  return nullptr;
-}
-
-std::unique_ptr<cricket::PortAllocator> Platform::CreateWebRtcPortAllocator(
-    WebLocalFrame* frame) {
-  return nullptr;
-}
-
-std::unique_ptr<webrtc::AsyncResolverFactory>
-Platform::CreateWebRtcAsyncResolverFactory() {
   return nullptr;
 }
 

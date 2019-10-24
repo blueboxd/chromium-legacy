@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "media/webrtc/helpers.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/modules/audio_processing/aec_dump/aec_dump_factory.h"
@@ -28,25 +29,6 @@ namespace media {
 namespace {
 
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
-
-webrtc::AudioProcessing::ChannelLayout MediaLayoutToWebRtcLayout(
-    ChannelLayout media_layout) {
-  switch (media_layout) {
-    case CHANNEL_LAYOUT_MONO:
-      return webrtc::AudioProcessing::kMono;
-    case CHANNEL_LAYOUT_STEREO:
-    case CHANNEL_LAYOUT_DISCRETE:
-      // TODO(https://crbug.com/868026): currently mapping all discrete channel
-      // layouts to two channels assuming that any required channel remix takes
-      // place in the native audio layer.
-      return webrtc::AudioProcessing::kStereo;
-    case CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC:
-      return webrtc::AudioProcessing::kStereoAndKeyboard;
-    default:
-      NOTREACHED() << "Layout not supported: " << media_layout;
-      return webrtc::AudioProcessing::kMono;
-  }
-}
 
 }  // namespace
 
@@ -131,8 +113,7 @@ void AudioProcessor::AnalyzePlayout(const AudioBus& audio,
   }
 
   const int apm_error = audio_processing_->AnalyzeReverseStream(
-      channel_ptrs, parameters.frames_per_buffer(), parameters.sample_rate(),
-      webrtc_layout);
+      channel_ptrs, CreateStreamConfig(parameters));
 
   DCHECK_EQ(apm_error, webrtc::AudioProcessing::kNoError);
 }
@@ -204,7 +185,6 @@ void AudioProcessor::InitializeAPM() {
   webrtc::AudioProcessingBuilder ap_builder;
 
   // AEC setup part 1.
-
 
   // Echo cancellation is configured both before and after AudioProcessing
   // construction, but before Initialize.
@@ -333,13 +313,9 @@ void AudioProcessor::FeedDataToAPM(const AudioBus& source) {
     input_ptrs[i] = source.channel(i);
   }
 
-  const auto layout =
-      MediaLayoutToWebRtcLayout(audio_parameters_.channel_layout());
-
-  const int sample_rate = audio_parameters_.sample_rate();
-  int err = audio_processing_->ProcessStream(
-      input_ptrs.data(), audio_parameters_.frames_per_buffer(), sample_rate,
-      layout, sample_rate, layout, output_ptrs_.data());
+  const webrtc::StreamConfig config = CreateStreamConfig(audio_parameters_);
+  int err = audio_processing_->ProcessStream(input_ptrs.data(), config, config,
+                                             output_ptrs_.data());
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 }
 

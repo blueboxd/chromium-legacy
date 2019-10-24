@@ -27,7 +27,7 @@
 #include "storage/browser/file_system/quota/quota_reservation.h"
 #include "storage/browser/file_system/sandbox_file_stream_writer.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 using storage::FileSystemContext;
 using storage::FileSystemOperation;

@@ -8,6 +8,10 @@
             "host": "ios_chrome_eg2tests"
         },
         {
+            "app": "ios_chrome_settings_eg2tests_module",
+            "host": "ios_chrome_eg2tests"
+        },
+        {
             "app": "ios_chrome_ui_eg2tests_module",
             "host": "ios_chrome_eg2tests"
         },

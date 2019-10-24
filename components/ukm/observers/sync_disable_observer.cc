@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/unified_consent/feature.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -114,19 +113,15 @@ SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
 void SyncDisableObserver::ObserveServiceForSyncDisables(
     syncer::SyncService* sync_service,
     PrefService* prefs) {
-  std::unique_ptr<UrlKeyedDataCollectionConsentHelper> consent_helper;
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    consent_helper = UrlKeyedDataCollectionConsentHelper::
-        NewAnonymizedDataCollectionConsentHelper(prefs, sync_service);
-  }
+  std::unique_ptr<UrlKeyedDataCollectionConsentHelper> consent_helper =
+      UrlKeyedDataCollectionConsentHelper::
+          NewAnonymizedDataCollectionConsentHelper(prefs, sync_service);
 
   SyncState state = GetSyncState(sync_service, consent_helper.get());
   previous_states_[sync_service] = state;
 
-  if (consent_helper) {
-    consent_helper->AddObserver(this);
-    consent_helpers_[sync_service] = std::move(consent_helper);
-  }
+  consent_helper->AddObserver(this);
+  consent_helpers_[sync_service] = std::move(consent_helper);
   sync_observer_.Add(sync_service);
   UpdateAllProfileEnabled(false);
 }

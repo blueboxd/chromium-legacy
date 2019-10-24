@@ -4,15 +4,19 @@
 
 const callbackPass = chrome.test.callbackPass;
 const listeningUrlPattern = '*://cors.example.com/*';
+const params = (new URL(location.href)).searchParams;
 const BASE = 'extensions/api_test/webrequest/cors/';
 
 function getCorsMode() {
-  const query = location.search;
-  const prefix = '?cors_mode=';
-  chrome.test.assertTrue(query.startsWith(prefix));
-  const mode = query.substr(prefix.length);
+  const name = 'cors_mode';
+  chrome.test.assertTrue(params.has(name));
+  const mode = params.get(name);
   chrome.test.assertTrue(mode == 'blink' || mode == 'network_service');
   return mode;
+}
+
+function isExtraHeadersForced() {
+  return params.has('with_force_extra_headers');
 }
 
 function setExpectationsForNonObservablePreflight() {
@@ -243,7 +247,7 @@ function registerRequestHeaderInjectionListeners(extraInfoSpec) {
   // Otherwises, modified headers are not observed by CORS implementations, and
   // do not trigger the CORS preflight.
   const triggerPreflight = !extraInfoSpec.includes('extraHeaders') &&
-      getCorsMode() == 'network_service';
+      !isExtraHeadersForced() && getCorsMode() == 'network_service';
 
   const event = triggerPreflight ? chrome.webRequest.onErrorOccurred :
                                    chrome.webRequest.onCompleted;
@@ -269,8 +273,8 @@ function registerResponseHeaderInjectionListeners(extraInfoSpec) {
   // If the 'extraHeaders' is not specified and OOR-CORS is enabled, Chrome
   // detects CORS failures before |headerReceivedListener| is called and injects
   // fake headers to deceive the CORS checks.
-  const canInjectFakeCorsResponse =
-      extraInfoSpec.includes('extraHeaders') || getCorsMode() == 'blink';
+  const canInjectFakeCorsResponse = extraInfoSpec.includes('extraHeaders') ||
+      isExtraHeadersForced() || getCorsMode() == 'blink';
 
   const event = canInjectFakeCorsResponse ? chrome.webRequest.onCompleted :
                                             chrome.webRequest.onErrorOccurred;
@@ -578,7 +582,7 @@ runTests([
     // without it.
     // If OOR-CORS is enabled, the Origin header is invisible if the
     // extraHeaders is not specified.
-    if (getCorsMode() == 'network_service')
+    if (getCorsMode() == 'network_service' && !isExtraHeadersForced())
       registerOriginListeners([], ['origin'], ['requestHeaders']);
     else
       registerOriginListeners(['origin'], [], ['requestHeaders']);
@@ -620,7 +624,7 @@ runTests([
         'extensions/api_test/webrequest/cors/fetch.html?path=reject'));
   },
   function testCorsPreflightWithoutExtraHeaders() {
-    if (getCorsMode() == 'network_service') {
+    if (getCorsMode() == 'network_service' && !isExtraHeadersForced()) {
       setExpectationsForNonObservablePreflight();
     } else {
       setExpectationsForObservablePreflight([]);

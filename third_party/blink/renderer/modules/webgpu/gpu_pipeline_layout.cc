@@ -21,11 +21,11 @@ GPUPipelineLayout* GPUPipelineLayout::Create(
   uint32_t bind_group_layout_count =
       static_cast<uint32_t>(webgpu_desc->bindGroupLayouts().size());
 
-  std::unique_ptr<DawnBindGroupLayout[]> bind_group_layouts =
+  std::unique_ptr<WGPUBindGroupLayout[]> bind_group_layouts =
       bind_group_layout_count != 0 ? AsDawnType(webgpu_desc->bindGroupLayouts())
                                    : nullptr;
 
-  DawnPipelineLayoutDescriptor dawn_desc = {};
+  WGPUPipelineLayoutDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.bindGroupLayoutCount = bind_group_layout_count;
   dawn_desc.bindGroupLayouts = bind_group_layouts.get();
@@ -39,8 +39,8 @@ GPUPipelineLayout* GPUPipelineLayout::Create(
 }
 
 GPUPipelineLayout::GPUPipelineLayout(GPUDevice* device,
-                                     DawnPipelineLayout pipeline_layout)
-    : DawnObject<DawnPipelineLayout>(device, pipeline_layout) {}
+                                     WGPUPipelineLayout pipeline_layout)
+    : DawnObject<WGPUPipelineLayout>(device, pipeline_layout) {}
 
 GPUPipelineLayout::~GPUPipelineLayout() {
   if (IsDawnControlClientDestroyed()) {

@@ -20,7 +20,7 @@ GPUComputePipeline* GPUComputePipeline::Create(
   DCHECK(device);
   DCHECK(webgpu_desc);
 
-  DawnComputePipelineDescriptor dawn_desc = {};
+  WGPUComputePipelineDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
   if (webgpu_desc->hasLabel()) {
@@ -36,8 +36,8 @@ GPUComputePipeline* GPUComputePipeline::Create(
 }
 
 GPUComputePipeline::GPUComputePipeline(GPUDevice* device,
-                                       DawnComputePipeline compute_pipeline)
-    : DawnObject<DawnComputePipeline>(device, compute_pipeline) {}
+                                       WGPUComputePipeline compute_pipeline)
+    : DawnObject<WGPUComputePipeline>(device, compute_pipeline) {}
 
 GPUComputePipeline::~GPUComputePipeline() {
   if (IsDawnControlClientDestroyed()) {

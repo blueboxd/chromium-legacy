@@ -370,6 +370,11 @@ const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
 
+const char kUseWKWebViewLoadingName[] =
+    "Use WKWebView.loading for WebState::IsLoading";
+const char kUseWKWebViewLoadingDescription[] =
+    "Enables using WKWebView.loading for WebState::IsLoading";
+
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
     "Uses the sandbox service for Google Payments API calls.";

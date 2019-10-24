@@ -168,11 +168,27 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
 
 void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
                               base::TimeDelta time) {
-  base::UmaHistogramMediumTimes("Sharing.MessageAckTime", time);
-  base::UmaHistogramMediumTimes(
-      base::StrCat({"Sharing.MessageAckTime.",
-                    MessageTypeToMessageSuffix(message_type)}),
-      time);
+  std::string suffixed_name = base::StrCat(
+      {"Sharing.MessageAckTime.", MessageTypeToMessageSuffix(message_type)});
+  switch (message_type) {
+    case chrome_browser_sharing::MessageType::UNKNOWN_MESSAGE:
+    case chrome_browser_sharing::MessageType::PING_MESSAGE:
+    case chrome_browser_sharing::MessageType::CLICK_TO_CALL_MESSAGE:
+    case chrome_browser_sharing::MessageType::SHARED_CLIPBOARD_MESSAGE:
+      base::UmaHistogramMediumTimes(suffixed_name, time);
+      break;
+    case chrome_browser_sharing::MessageType::SMS_FETCH_REQUEST:
+      base::UmaHistogramCustomTimes(
+          suffixed_name, time, /*min=*/base::TimeDelta::FromMilliseconds(1),
+          /*max=*/base::TimeDelta::FromMinutes(10), /*buckets=*/50);
+      break;
+    case chrome_browser_sharing::MessageType::ACK_MESSAGE:
+    default:
+      // For proto3 enums unrecognized enum values are kept, so message_type may
+      // not fall into any switch case. However, as an ack message, original
+      // message type should always be known.
+      NOTREACHED();
+  }
 }
 
 void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {

@@ -12,7 +12,6 @@
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/ukm/ukm_service.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
@@ -333,7 +332,6 @@ void SignOut() {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
   [ChromeEarlGreyUI openSettingsMenu];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // Open Sync and Google services settings
     [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
     // Toggle "Make searches and browsing better" switch off.
@@ -347,45 +345,13 @@ void SignOut() {
                                  kGoogleServicesSettingsViewIdentifier)]
         performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
 
-  } else {
-    // Open accounts settings, then sync settings.
-    [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
-        performAction:grey_tap()];
-    [[EarlGrey selectElementWithMatcher:AccountsSyncButton()]
-        performAction:grey_tap()];
-    // Toggle "Sync Everything" then "History" switches off.
-    [[EarlGrey selectElementWithMatcher:SyncSwitchCell(
-                                            l10n_util::GetNSString(
-                                                IDS_IOS_SYNC_EVERYTHING_TITLE),
-                                            YES)]
-        performAction:TurnSyncSwitchOn(NO)];
-    [[EarlGrey selectElementWithMatcher:SyncSwitchCell(
-                                            l10n_util::GetNSString(
-                                                IDS_SYNC_DATATYPE_TYPED_URLS),
-                                            YES)]
-        performAction:TurnSyncSwitchOn(NO)];
-  }
   AssertUKMEnabled(false);
 
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // Toggle "Make searches and browsing better" switch on.
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
                                      @"betterSearchAndBrowsingItem_switch", NO)]
         performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
-  } else {
-    // Toggle "History" then "Sync Everything" switches on.
-    [[EarlGrey selectElementWithMatcher:SyncSwitchCell(
-                                            l10n_util::GetNSString(
-                                                IDS_SYNC_DATATYPE_TYPED_URLS),
-                                            NO)]
-        performAction:TurnSyncSwitchOn(YES)];
-    [[EarlGrey selectElementWithMatcher:SyncSwitchCell(
-                                            l10n_util::GetNSString(
-                                                IDS_IOS_SYNC_EVERYTHING_TITLE),
-                                            NO)]
-        performAction:TurnSyncSwitchOn(YES)];
-  }
 
   AssertUKMEnabled(true);
   // Client ID should have been reset.
@@ -397,55 +363,6 @@ void SignOut() {
 }
 
 // testMultiDisableSync not needed, since there can't be multiple profiles.
-
-// Make sure that UKM is disabled when a secondary passphrase is used.
-- (void)testSecondaryPassphrase {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    EARL_GREY_TEST_DISABLED(
-        @"When Unified Consent feature is enabled, setting a custom passphrase "
-         "does not disable UKM anymore, so this test is not needed");
-  }
-
-  uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
-
-  [ChromeEarlGreyUI openSettingsMenu];
-  // Open accounts settings, then sync settings.
-  [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:AccountsSyncButton()]
-      performAction:grey_tap()];
-  // Open sync encryption menu.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"kSettingsSyncId")]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-
-                                          IDS_IOS_SYNC_ENCRYPTION_TITLE)]
-      performAction:grey_tap()];
-  // Select passphrase encryption.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_SYNC_FULL_ENCRYPTION_DATA)]
-      performAction:grey_tap()];
-  // Type and confirm passphrase, then submit.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityValue(@"Passphrase")]
-      performAction:grey_replaceText(@"mypassphrase")];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityValue(@"Confirm passphrase")]
-      performAction:grey_replaceText(@"mypassphrase")];
-
-  AssertUKMEnabled(false);
-  // Client ID should have been reset.
-  GREYAssert(original_client_id != metrics::UkmEGTestHelper::client_id(),
-             @"Client ID was not reset.");
-
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-
-  // Reset sync back to original state.
-  SignOut();
-  [ChromeEarlGrey clearSyncServerData];
-  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-  AssertUKMEnabled(true);
-}
 
 // Make sure that UKM is disabled when sync is not enabled.
 - (void)testSingleSyncSignout {

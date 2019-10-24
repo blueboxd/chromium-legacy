@@ -31,7 +31,7 @@
 #include "components/drive/service/drive_service_interface.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "net/base/mime_util.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 namespace sync_file_system {
 namespace drive_backend {

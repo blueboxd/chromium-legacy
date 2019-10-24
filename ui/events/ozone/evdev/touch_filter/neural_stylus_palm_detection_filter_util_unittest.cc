@@ -1,6 +1,7 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util.h"
 
 #include <algorithm>
@@ -13,10 +14,13 @@
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
+
 namespace ui {
+
 class NeuralStylusPalmDetectionFilterUtilTest : public testing::Test {
  public:
   NeuralStylusPalmDetectionFilterUtilTest() = default;
+
   void SetUp() override {
     EXPECT_TRUE(
         CapabilitiesToDeviceInfo(kNocturneTouchScreen, &nocturne_touchscreen_));
@@ -31,12 +35,13 @@ class NeuralStylusPalmDetectionFilterUtilTest : public testing::Test {
  protected:
   InProgressTouchEvdev touch_;
   EventDeviceInfo nocturne_touchscreen_;
+
   DISALLOW_COPY_AND_ASSIGN(NeuralStylusPalmDetectionFilterUtilTest);
 };
 
 TEST_F(NeuralStylusPalmDetectionFilterUtilTest, DistilledNocturneTest) {
-  const DistilledDevInfo nocturne_distilled =
-      DistilledDevInfo::Create(nocturne_touchscreen_);
+  const PalmFilterDeviceInfo nocturne_distilled =
+      CreatePalmFilterDeviceInfo(nocturne_touchscreen_);
   EXPECT_FLOAT_EQ(nocturne_distilled.max_x,
                   nocturne_touchscreen_.GetAbsMaximum(ABS_MT_POSITION_X));
   EXPECT_FLOAT_EQ(nocturne_distilled.max_y,
@@ -58,8 +63,8 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, NoMinorResTest) {
   auto abs_info = nocturne_touchscreen_.GetAbsInfoByCode(ABS_MT_TOUCH_MINOR);
   abs_info.resolution = 0;
   nocturne_touchscreen_.SetAbsInfo(ABS_MT_TOUCH_MINOR, abs_info);
-  const DistilledDevInfo nocturne_distilled =
-      DistilledDevInfo::Create(nocturne_touchscreen_);
+  const PalmFilterDeviceInfo nocturne_distilled =
+      CreatePalmFilterDeviceInfo(nocturne_touchscreen_);
   EXPECT_EQ(1, nocturne_distilled.minor_radius_res);
   EXPECT_EQ(1, nocturne_distilled.major_radius_res);
 }
@@ -68,8 +73,8 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, DistillerKohakuTest) {
   EventDeviceInfo kohaku_touchscreen;
   ASSERT_TRUE(
       CapabilitiesToDeviceInfo(kKohakuTouchscreen, &kohaku_touchscreen));
-  const DistilledDevInfo kohaku_distilled =
-      DistilledDevInfo::Create(kohaku_touchscreen);
+  const PalmFilterDeviceInfo kohaku_distilled =
+      CreatePalmFilterDeviceInfo(kohaku_touchscreen);
   EXPECT_FALSE(kohaku_distilled.minor_radius_supported);
   EXPECT_EQ(1, kohaku_distilled.x_res);
   EXPECT_EQ(1, kohaku_distilled.y_res);
@@ -78,57 +83,57 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, DistillerKohakuTest) {
 TEST_F(NeuralStylusPalmDetectionFilterUtilTest, DistilledLinkTest) {
   EventDeviceInfo link_touchscreen;
   ASSERT_TRUE(CapabilitiesToDeviceInfo(kLinkTouchscreen, &link_touchscreen));
-  const DistilledDevInfo link_distilled =
-      DistilledDevInfo::Create(link_touchscreen);
+  const PalmFilterDeviceInfo link_distilled =
+      CreatePalmFilterDeviceInfo(link_touchscreen);
   EXPECT_FALSE(link_distilled.minor_radius_supported);
   EXPECT_FLOAT_EQ(1.f, link_distilled.major_radius_res);
   EXPECT_FLOAT_EQ(link_distilled.major_radius_res,
                   link_distilled.minor_radius_res);
 }
 
-TEST_F(NeuralStylusPalmDetectionFilterUtilTest, SampleTest) {
-  base::TimeTicks t =
-      base::TimeTicks::UnixEpoch() + base::TimeDelta::FromSeconds(30);
-  const DistilledDevInfo nocturne_distilled =
-      DistilledDevInfo::Create(nocturne_touchscreen_);
-  const Sample s(touch_, t, nocturne_distilled);
-  EXPECT_EQ(t, s.time);
-  EXPECT_EQ(25, s.major_radius);
-  EXPECT_EQ(24, s.minor_radius);
-  EXPECT_EQ(23, s.pressure);
-  EXPECT_EQ(22, s.tracking_id);
-  EXPECT_EQ(gfx::PointF(21 / 40.f, 20 / 40.f), s.point);
-  EXPECT_EQ(0.5, s.edge);
+TEST_F(NeuralStylusPalmDetectionFilterUtilTest, PalmFilterSampleTest) {
+  base::TimeTicks time = base::TimeTicks() + base::TimeDelta::FromSeconds(30);
+  const PalmFilterDeviceInfo nocturne_distilled =
+      CreatePalmFilterDeviceInfo(nocturne_touchscreen_);
+  const PalmFilterSample sample =
+      CreatePalmFilterSample(touch_, time, nocturne_distilled);
+  EXPECT_EQ(time, sample.time);
+  EXPECT_EQ(25, sample.major_radius);
+  EXPECT_EQ(24, sample.minor_radius);
+  EXPECT_EQ(23, sample.pressure);
+  EXPECT_EQ(22, sample.tracking_id);
+  EXPECT_EQ(gfx::PointF(21 / 40.f, 20 / 40.f), sample.point);
+  EXPECT_EQ(0.5, sample.edge);
 }
 
 TEST_F(NeuralStylusPalmDetectionFilterUtilTest, LinkTouchscreenSampleTest) {
   EventDeviceInfo link_touchscreen;
-  base::TimeTicks t =
-      base::TimeTicks::UnixEpoch() + base::TimeDelta::FromSeconds(30);
+  base::TimeTicks time = base::TimeTicks() + base::TimeDelta::FromSeconds(30);
   ASSERT_TRUE(CapabilitiesToDeviceInfo(kLinkTouchscreen, &link_touchscreen));
-  const DistilledDevInfo link_distilled =
-      DistilledDevInfo::Create(link_touchscreen);
+  const PalmFilterDeviceInfo link_distilled =
+      CreatePalmFilterDeviceInfo(link_touchscreen);
   touch_.minor = 0;  // no minor from link.
-  const Sample s(touch_, t, link_distilled);
-  EXPECT_FLOAT_EQ(12.5, s.major_radius);
-  EXPECT_FLOAT_EQ(12.5, s.minor_radius);
+  const PalmFilterSample sample =
+      CreatePalmFilterSample(touch_, time, link_distilled);
+  EXPECT_FLOAT_EQ(12.5, sample.major_radius);
+  EXPECT_FLOAT_EQ(12.5, sample.minor_radius);
 }
 
-TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeTest) {
-  Stroke stroke(3);  // maxsize: 3.
+TEST_F(NeuralStylusPalmDetectionFilterUtilTest, PalmFilterStrokeTest) {
+  PalmFilterStroke stroke(3);  // maxsize: 3.
   EXPECT_EQ(0, stroke.tracking_id());
   // With no points, center is 0.
   EXPECT_EQ(gfx::PointF(0., 0.), stroke.GetCentroid());
 
-  base::TimeTicks t =
-      base::TimeTicks::UnixEpoch() + base::TimeDelta::FromSeconds(30);
-  const DistilledDevInfo nocturne_distilled =
-      DistilledDevInfo::Create(nocturne_touchscreen_);
+  base::TimeTicks time = base::TimeTicks() + base::TimeDelta::FromSeconds(30);
+  const PalmFilterDeviceInfo nocturne_distilled =
+      CreatePalmFilterDeviceInfo(nocturne_touchscreen_);
   // Deliberately long test to ensure floating point continued accuracy.
   for (int i = 0; i < 500000; ++i) {
     touch_.x = 15 + i;
-    Sample s(touch_, t, nocturne_distilled);
-    stroke.AddSample(std::move(s));
+    PalmFilterSample sample =
+        CreatePalmFilterSample(touch_, time, nocturne_distilled);
+    stroke.AddSample(std::move(sample));
     EXPECT_EQ(touch_.tracking_id, stroke.tracking_id());
     if (i < 3) {
       if (i == 0) {
@@ -152,44 +157,48 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeTest) {
   EXPECT_EQ(55, stroke.tracking_id());
 }
 
-TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeBiggestSizeTest) {
-  Stroke stroke(3), no_minor_stroke(3);  // maxsize: 3.
+TEST_F(NeuralStylusPalmDetectionFilterUtilTest,
+       PalmFilterStrokeBiggestSizeTest) {
+  PalmFilterStroke stroke(3);
+  PalmFilterStroke no_minor_stroke(3);  // maxsize: 3.
   EXPECT_EQ(0, stroke.BiggestSize());
 
-  base::TimeTicks t =
-      base::TimeTicks::UnixEpoch() + base::TimeDelta::FromSeconds(30);
-  const DistilledDevInfo nocturne_distilled =
-      DistilledDevInfo::Create(nocturne_touchscreen_);
+  base::TimeTicks time = base::TimeTicks() + base::TimeDelta::FromSeconds(30);
+  const PalmFilterDeviceInfo nocturne_distilled =
+      CreatePalmFilterDeviceInfo(nocturne_touchscreen_);
   for (int i = 0; i < 500; ++i) {
     touch_.major = 2 + i;
     touch_.minor = 1 + i;
-    Sample s(touch_, t, nocturne_distilled);
+    PalmFilterSample sample =
+        CreatePalmFilterSample(touch_, time, nocturne_distilled);
     EXPECT_EQ(static_cast<uint64_t>(i), stroke.samples_seen());
-    stroke.AddSample(std::move(s));
+    stroke.AddSample(sample);
     EXPECT_FLOAT_EQ((1 + i) * (2 + i), stroke.BiggestSize());
 
-    Sample second_s(touch_, t, nocturne_distilled);
-    second_s.minor_radius = 0;
-    no_minor_stroke.AddSample(std::move(second_s));
+    PalmFilterSample second_sample =
+        CreatePalmFilterSample(touch_, time, nocturne_distilled);
+    second_sample.minor_radius = 0;
+    no_minor_stroke.AddSample(std::move(second_sample));
     EXPECT_FLOAT_EQ((2 + i) * (2 + i), no_minor_stroke.BiggestSize());
     EXPECT_EQ(std::min(3ul, 1ul + i), stroke.samples().size());
   }
 }
 
 TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeGetMaxMajorTest) {
-  Stroke stroke(3);
+  PalmFilterStroke stroke(3);
   EXPECT_FLOAT_EQ(0, stroke.MaxMajorRadius());
-  base::TimeTicks t =
+  base::TimeTicks time =
       base::TimeTicks::UnixEpoch() + base::TimeDelta::FromSeconds(30);
-  const DistilledDevInfo nocturne_distilled =
-      DistilledDevInfo::Create(nocturne_touchscreen_);
+  const PalmFilterDeviceInfo nocturne_distilled =
+      CreatePalmFilterDeviceInfo(nocturne_touchscreen_);
   for (int i = 1; i < 50; ++i) {
     touch_.major = i;
     touch_.minor = i - 1;
-    Sample s(touch_, t, nocturne_distilled);
-    t += base::TimeDelta::FromMilliseconds(8);
+    PalmFilterSample sample =
+        CreatePalmFilterSample(touch_, time, nocturne_distilled);
+    time += base::TimeDelta::FromMilliseconds(8);
     EXPECT_EQ(static_cast<uint64_t>(i - 1), stroke.samples_seen());
-    stroke.AddSample(s);
+    stroke.AddSample(sample);
     EXPECT_FLOAT_EQ(i, stroke.MaxMajorRadius());
   }
 }

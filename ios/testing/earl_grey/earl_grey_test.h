@@ -11,6 +11,8 @@
 #if defined(CHROME_EARL_GREY_1)
 
 #import <EarlGrey/EarlGrey.h>
+#import <EarlGrey/GREYAppleInternals.h>
+#import <EarlGrey/GREYKeyboard.h>
 
 typedef DescribeToBlock GREYDescribeToBlock;
 typedef MatchesBlock GREYMatchesBlock;

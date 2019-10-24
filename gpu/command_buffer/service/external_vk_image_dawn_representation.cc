@@ -23,14 +23,14 @@ ExternalVkImageDawnRepresentation::ExternalVkImageDawnRepresentation(
     SharedImageManager* manager,
     SharedImageBacking* backing,
     MemoryTypeTracker* tracker,
-    DawnDevice device,
-    DawnTextureFormat dawn_format,
+    WGPUDevice device,
+    WGPUTextureFormat wgpu_format,
     int memory_fd,
     VkDeviceSize allocation_size,
     uint32_t memory_type_index)
     : SharedImageRepresentationDawn(manager, backing, tracker),
       device_(device),
-      dawn_format_(dawn_format),
+      wgpu_format_(wgpu_format),
       memory_fd_(memory_fd),
       allocation_size_(allocation_size),
       memory_type_index_(memory_type_index),
@@ -48,18 +48,18 @@ ExternalVkImageDawnRepresentation::~ExternalVkImageDawnRepresentation() {
 }
 
 DawnTexture ExternalVkImageDawnRepresentation::BeginAccess(
-    DawnTextureUsage usage) {
+    WGPUTextureUsage usage) {
   std::vector<SemaphoreHandle> handles;
 
   if (!backing_impl()->BeginAccess(false, &handles, false /* is_gl */)) {
     return nullptr;
   }
 
-  DawnTextureDescriptor texture_descriptor = {};
+  WGPUTextureDescriptor texture_descriptor = {};
   texture_descriptor.nextInChain = nullptr;
-  texture_descriptor.format = dawn_format_;
+  texture_descriptor.format = wgpu_format_;
   texture_descriptor.usage = usage;
-  texture_descriptor.dimension = DAWN_TEXTURE_DIMENSION_2D;
+  texture_descriptor.dimension = WGPUTextureDimension_2D;
   texture_descriptor.size = {size().width(), size().height(), 1};
   texture_descriptor.arrayLayerCount = 1;
   texture_descriptor.mipLevelCount = 1;

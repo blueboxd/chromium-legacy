@@ -22,10 +22,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/font_list.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/styled_label.h"
@@ -40,6 +38,8 @@
 
 namespace {
 
+constexpr int kSharingDialogSpacing = 8;
+
 SkColor GetColorFromTheme() {
   const ui::NativeTheme* native_theme =
       ui::NativeTheme::GetInstanceForNativeUi();
@@ -50,8 +50,6 @@ SkColor GetColorFromTheme() {
 std::unique_ptr<views::ImageView> CreateIconView(const gfx::ImageSkia& icon) {
   auto icon_view = std::make_unique<views::ImageView>();
   icon_view->SetImage(icon);
-  constexpr auto kPrimaryIconBorder = gfx::Insets(8);
-  icon_view->SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
   return icon_view;
 }
 
@@ -98,42 +96,19 @@ std::unique_ptr<views::StyledLabel> CreateHelpText(
   return label;
 }
 
-std::unique_ptr<views::View> MaybeCreateOriginView(
-    const SharingDialogData& data) {
-  if (!data.initiating_origin || !data.origin_text_id)
-    return nullptr;
-
+std::unique_ptr<views::View> CreateOriginView(const SharingDialogData& data) {
+  DCHECK(data.initiating_origin);
+  DCHECK_NE(0, data.origin_text_id);
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringFUTF16(data.origin_text_id,
                                  url_formatter::FormatOriginForSecurityDisplay(
                                      *data.initiating_origin)),
-      views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
+      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      views::style::STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetElideBehavior(gfx::ELIDE_HEAD);
   label->SetMultiLine(false);
-  label->SetFontList(label->font_list().DeriveWithSizeDelta(-2));
-
-  auto background_color =
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_BubbleFooterBackground);
-  label->SetBackgroundColor(background_color);
-  label->SetBackground(
-      views::CreateRoundedRectBackground(background_color, /*radius=*/8));
-
-  gfx::Insets insets =
-      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
-                                                                 views::TEXT);
-  gfx::Insets border_insets(4, insets.width() / 4, 4, insets.width() / 4);
-  gfx::Insets container_insets(insets.top(),
-                               insets.left() - border_insets.left(), 0,
-                               insets.right() - border_insets.right());
-  label->SetBorder(views::CreateEmptyBorder(border_insets));
-
-  auto container = std::make_unique<views::View>();
-  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, container_insets));
-  container->AddChildView(std::move(label));
-  return container;
+  return label;
 }
 
 std::unique_ptr<views::View> MaybeCreateImageView(int image_id) {
@@ -211,11 +186,7 @@ void SharingDialogView::Init() {
     case SharingDialogType::kDialogWithoutDevicesWithApp:
     case SharingDialogType::kDialogWithDevicesMaybeApps:
       // Spread buttons across the whole dialog width.
-      int top_margin = provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL);
-      int bottom_margin = provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL);
-      insets = gfx::Insets(top_margin, 0, bottom_margin, 0);
+      insets = gfx::Insets(kSharingDialogSpacing, 0, kSharingDialogSpacing, 0);
       InitListView();
       break;
   }
@@ -260,22 +231,7 @@ void SharingDialogView::MaybeShowHeaderImage() {
                      ? data_.header_image_dark
                      : data_.header_image_light;
 
-  std::unique_ptr<views::View> image_view = MaybeCreateImageView(image_id);
-  std::unique_ptr<views::View> origin_view = MaybeCreateOriginView(data_);
-  std::unique_ptr<views::View> header_view = std::make_unique<views::View>();
-  header_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-
-  if (image_view)
-    header_view->AddChildView(std::move(image_view));
-  if (origin_view)
-    header_view->AddChildView(std::move(origin_view));
-
-  // Clear header if it has no content.
-  if (header_view->children().empty())
-    header_view = nullptr;
-
-  frame_view->SetHeaderView(std::move(header_view));
+  frame_view->SetHeaderView(MaybeCreateImageView(image_id));
 }
 
 void SharingDialogView::AddedToWidget() {
@@ -305,6 +261,11 @@ void SharingDialogView::OnThemeChanged() {
 
 void SharingDialogView::InitListView() {
   int tag = 0;
+  const gfx::Insets device_border =
+      gfx::Insets(kSharingDialogSpacing, kSharingDialogSpacing * 2,
+                  kSharingDialogSpacing, 0);
+  // Apps need more padding at the top and bottom as they only have one line.
+  const gfx::Insets app_border = device_border + gfx::Insets(2, 0, 2, 0);
 
   // Devices:
   LogSharingDevicesToShow(data_.prefix, kSharingUiDialog, data_.devices.size());
@@ -316,6 +277,7 @@ void SharingDialogView::InitListView() {
         GetLastUpdatedTimeInDays(device->last_updated_timestamp()));
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
+    dialog_button->SetBorder(views::CreateEmptyBorder(device_border));
     dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));
   }
 
@@ -329,7 +291,23 @@ void SharingDialogView::InitListView() {
                                       /* subtitle= */ base::string16());
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
+    dialog_button->SetBorder(views::CreateEmptyBorder(app_border));
     dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));
+  }
+
+  // Origin:
+  if (data_.initiating_origin &&
+      !data_.initiating_origin->IsSameOriginWith(
+          web_contents()->GetMainFrame()->GetLastCommittedOrigin())) {
+    auto* provider = ChromeLayoutProvider::Get();
+    const gfx::Insets dialog_insets =
+        provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
+    const gfx::Insets origin_border = gfx::Insets(
+        kSharingDialogSpacing, dialog_insets.left(), 0, dialog_insets.right());
+
+    std::unique_ptr<views::View> origin_view = CreateOriginView(data_);
+    origin_view->SetBorder(views::CreateEmptyBorder(origin_border));
+    AddChildView(std::move(origin_view));
   }
 }
 

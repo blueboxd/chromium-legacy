@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <numeric>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
@@ -14,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
@@ -151,6 +153,29 @@ bool DlpTriggeredRulesOK(
   return true;
 }
 
+// File types supported for DLP scanning.
+// Keep sorted for efficient access.
+constexpr const std::array<const base::FilePath::CharType*, 36>
+    kSupportedDLPFileTypes = {
+        FILE_PATH_LITERAL(".bzip"),    FILE_PATH_LITERAL(".cab"),
+        FILE_PATH_LITERAL(".doc"),     FILE_PATH_LITERAL(".docx"),
+        FILE_PATH_LITERAL(".eps"),     FILE_PATH_LITERAL(".gzip"),
+        FILE_PATH_LITERAL(".hwp"),     FILE_PATH_LITERAL(".img_for_ocr"),
+        FILE_PATH_LITERAL(".kml"),     FILE_PATH_LITERAL(".kmz"),
+        FILE_PATH_LITERAL(".odp"),     FILE_PATH_LITERAL(".ods"),
+        FILE_PATH_LITERAL(".odt"),     FILE_PATH_LITERAL(".pdf"),
+        FILE_PATH_LITERAL(".ppt"),     FILE_PATH_LITERAL(".pptx"),
+        FILE_PATH_LITERAL(".ps"),      FILE_PATH_LITERAL(".rar"),
+        FILE_PATH_LITERAL(".rtf"),     FILE_PATH_LITERAL(".sdc"),
+        FILE_PATH_LITERAL(".sdd"),     FILE_PATH_LITERAL(".sdw"),
+        FILE_PATH_LITERAL(".seven_z"), FILE_PATH_LITERAL(".sxc"),
+        FILE_PATH_LITERAL(".sxi"),     FILE_PATH_LITERAL(".sxw"),
+        FILE_PATH_LITERAL(".tar"),     FILE_PATH_LITERAL(".ttf"),
+        FILE_PATH_LITERAL(".txt"),     FILE_PATH_LITERAL(".wml"),
+        FILE_PATH_LITERAL(".wpd"),     FILE_PATH_LITERAL(".xls"),
+        FILE_PATH_LITERAL(".xlsx"),    FILE_PATH_LITERAL(".xml"),
+        FILE_PATH_LITERAL(".xps"),     FILE_PATH_LITERAL(".zip")};
+
 }  // namespace
 
 // A BinaryUploadService::Request implementation that gets the data to scan
@@ -237,6 +262,29 @@ void DeepScanningDialogDelegate::OnCanceled() {
   // Make sure to reject everything.
   FillAllResultsWith(false);
   RunCallback();
+}
+
+// static
+bool DeepScanningDialogDelegate::FileTypeSupported(const bool for_malware_scan,
+                                                   const bool for_dlp_scan,
+                                                   const base::FilePath& path) {
+  // At least one of the booleans needs to be true.
+  DCHECK(for_malware_scan || for_dlp_scan);
+
+  // Accept any file type for malware scans.
+  if (for_malware_scan)
+    return true;
+
+  // Accept any file type in the supported list for DLP scans.
+  if (for_dlp_scan) {
+    base::FilePath::StringType extension(path.FinalExtension());
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+                   tolower);
+    return std::binary_search(kSupportedDLPFileTypes.begin(),
+                              kSupportedDLPFileTypes.end(), extension);
+  }
+
+  return false;
 }
 
 // static
@@ -467,14 +515,20 @@ bool DeepScanningDialogDelegate::UploadData() {
   }
 
   // Create a file request for each file.
-  for (const auto& path : data_.paths) {
-    auto request = std::make_unique<FileSourceRequest>(
-        weak_ptr_factory_.GetWeakPtr(), path,
-        base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
-                       weak_ptr_factory_.GetWeakPtr(), path));
+  for (size_t i = 0; i < data_.paths.size(); ++i) {
+    if (FileTypeSupported(data_.do_malware_scan, data_.do_dlp_scan,
+                          data_.paths[i])) {
+      auto request = std::make_unique<FileSourceRequest>(
+          weak_ptr_factory_.GetWeakPtr(), data_.paths[i],
+          base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
+                         weak_ptr_factory_.GetWeakPtr(), data_.paths[i]));
 
-    PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request.get());
-    UploadFileForDeepScanning(path, std::move(request));
+      PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request.get());
+      UploadFileForDeepScanning(data_.paths[i], std::move(request));
+    } else {
+      ++file_result_count_;
+      result_.paths_results[i] = true;
+    }
   }
 
   return !text_request_complete_ || file_result_count_ != data_.paths.size();

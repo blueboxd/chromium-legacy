@@ -85,6 +85,8 @@
       self.textField, self.editController, self.mediator, self.browserState,
       focuser);
 
+  self.viewController.textChangeDelegate = _editView.get();
+
   // Configure the textfield.
   self.textField.suggestionCommandsEndpoint =
       static_cast<id<OmniboxSuggestionCommands>>(self.dispatcher);

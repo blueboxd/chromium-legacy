@@ -22,7 +22,8 @@ SharedClipboardMessageHandler::SharedClipboardMessageHandler(
 SharedClipboardMessageHandler::~SharedClipboardMessageHandler() = default;
 
 void SharedClipboardMessageHandler::OnMessage(
-    const chrome_browser_sharing::SharingMessage& message) {
+    chrome_browser_sharing::SharingMessage message,
+    SharingMessageHandler::DoneCallback done_callback) {
   DCHECK(message.has_shared_clipboard_message());
 
   ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
@@ -33,4 +34,6 @@ void SharedClipboardMessageHandler::OnMessage(
   const std::string& device_name =
       device ? device->client_name() : message.sender_device_name();
   ShowNotification(device_name);
+
+  std::move(done_callback).Run(/*response=*/nullptr);
 }

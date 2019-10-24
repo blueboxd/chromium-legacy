@@ -57,6 +57,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "components/google/core/common/google_switches.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -617,16 +620,93 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+enum class ExtraHeadersRequirementMode {
+  kEnabled,
+  kDisabled,
+  kEnabledWithCorsLegacyModeEnabledPolicy,
+  kEnabledWithCorsMitigationListPolicy,
+};
+
+class ExtensionWebRequestApiPolicyTest
+    : public ExtensionWebRequestApiTest,
+      public ::testing::WithParamInterface<ExtraHeadersRequirementMode> {
+ public:
+  const std::string& test_name() { return test_name_; }
+
+ private:
+  void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+
+    switch (GetParam()) {
+      case ExtraHeadersRequirementMode::kEnabled:
+        feature_list_.InitAndEnableFeature(network::features::kOutOfBlinkCors);
+        test_name_ += "?cors_mode=network_service";
+        break;
+      case ExtraHeadersRequirementMode::kDisabled:
+        feature_list_.InitAndDisableFeature(network::features::kOutOfBlinkCors);
+        test_name_ += "?cors_mode=blink";
+        break;
+      case ExtraHeadersRequirementMode::kEnabledWithCorsLegacyModeEnabledPolicy:
+        feature_list_.InitAndEnableFeature(network::features::kOutOfBlinkCors);
+        UpdatePolicy(policy::key::kCorsLegacyModeEnabled,
+                     std::make_unique<base::Value>(true));
+        test_name_ += "?cors_mode=blink";
+        break;
+      case ExtraHeadersRequirementMode::kEnabledWithCorsMitigationListPolicy:
+        feature_list_.InitAndEnableFeature(network::features::kOutOfBlinkCors);
+        UpdatePolicy(policy::key::kCorsMitigationList,
+                     std::make_unique<base::ListValue>());
+        test_name_ += "?cors_mode=network_service&with_force_extra_headers";
+        break;
+    }
+
+    ExtensionWebRequestApiTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void UpdatePolicy(const std::string& policy,
+                    std::unique_ptr<base::Value> value) {
+    policy::PolicyMap policy_map;
+    policy_map.Set(policy, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   std::move(value), nullptr);
+    provider_.UpdateChromePolicy(policy_map);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  policy::MockConfigurationPolicyProvider provider_;
+  std::string test_name_ = "test_cors.html";
+};
+
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiPolicyTest,
                        WebRequestCORSWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  std::string test = "test_cors.html";
-  if (network::features::ShouldEnableOutOfBlinkCorsForTesting())
-    test += "?cors_mode=network_service";
-  else
-    test += "?cors_mode=blink";
-  ASSERT_TRUE(RunExtensionSubtest("webrequest", test)) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", test_name())) << message_;
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    Enabled,
+    ExtensionWebRequestApiPolicyTest,
+    testing::Values(ExtraHeadersRequirementMode::kEnabled));
+
+INSTANTIATE_TEST_SUITE_P(
+    Disabled,
+    ExtensionWebRequestApiPolicyTest,
+    testing::Values(ExtraHeadersRequirementMode::kDisabled));
+
+INSTANTIATE_TEST_SUITE_P(
+    EnabledWithCorsLegacyModeEnabledPolicy,
+    ExtensionWebRequestApiPolicyTest,
+    testing::Values(
+        ExtraHeadersRequirementMode::kEnabledWithCorsLegacyModeEnabledPolicy));
+
+INSTANTIATE_TEST_SUITE_P(
+    EnabledWithCorsMitigationListPolicy,
+    ExtensionWebRequestApiPolicyTest,
+    testing::Values(
+        ExtraHeadersRequirementMode::kEnabledWithCorsMitigationListPolicy));
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestRedirects) {
   ASSERT_TRUE(StartEmbeddedTestServer());

@@ -94,7 +94,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
     mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver;
     media::mojom::AudioInputStreamClientPtr client;
     media::mojom::AudioInputStreamObserverPtr observer;
-    media::mojom::AudioLogPtr log;
+    mojo::Remote<media::mojom::AudioLog> log;
     const std::string device_id;
     const media::AudioParameters params;
     uint32_t shared_memory_count;

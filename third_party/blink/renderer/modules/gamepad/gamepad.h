@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_button.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_haptic_actuator.h"
-#include "third_party/blink/renderer/modules/gamepad/gamepad_pose.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -89,15 +88,6 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
     return vibration_actuator_type_;
   }
 
-  GamepadPose* pose() const { return pose_; }
-  void SetPose(const device::GamepadPose&);
-
-  const String& hand() const { return hand_; }
-  void SetHand(const device::GamepadHand&);
-
-  unsigned displayId() const { return display_id_; }
-  void SetDisplayId(unsigned val) { display_id_ = val; }
-
   void Trace(blink::Visitor*) override;
 
  private:
@@ -131,15 +121,6 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
 
   // The type of haptic actuator used for vibration effects.
   device::GamepadHapticActuatorType vibration_actuator_type_;
-
-  // Snapshot of the gamepad pose.
-  Member<GamepadPose> pose_;
-
-  // A string representing the handedness of the gamepad.
-  String hand_;
-
-  // An identifier for associating a gamepad with a VR headset.
-  unsigned display_id_;
 
   // True if the data in |axes_| has changed since the last time it was
   // accessed.

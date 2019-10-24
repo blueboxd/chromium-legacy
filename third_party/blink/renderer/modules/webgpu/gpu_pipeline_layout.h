@@ -11,7 +11,7 @@ namespace blink {
 
 class GPUPipelineLayoutDescriptor;
 
-class GPUPipelineLayout : public DawnObject<DawnPipelineLayout> {
+class GPUPipelineLayout : public DawnObject<WGPUPipelineLayout> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -19,7 +19,7 @@ class GPUPipelineLayout : public DawnObject<DawnPipelineLayout> {
       GPUDevice* device,
       const GPUPipelineLayoutDescriptor* webgpu_desc);
   explicit GPUPipelineLayout(GPUDevice* device,
-                             DawnPipelineLayout pipeline_layout);
+                             WGPUPipelineLayout pipeline_layout);
   ~GPUPipelineLayout() override;
 
  private:

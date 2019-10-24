@@ -158,16 +158,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) {}
 
-  // Used to abort an ongoing renderer-initiated navigation.
-  // Only used with PerNavigationMojoInterface disabled.
-  virtual void OnAbortNavigation(FrameTreeNode* frame_tree_node) {}
-
-  // Cancel a NavigationRequest for |frame_tree_node|. If the request is
-  // renderer-initiated and |inform_renderer| is true, an IPC will be sent to
-  // the renderer process to inform it that the navigation it requested was
-  // cancelled.
-  virtual void CancelNavigation(FrameTreeNode* frame_tree_node,
-                                bool inform_renderer) {}
+  // Cancel a NavigationRequest for |frame_tree_node|.
+  virtual void CancelNavigation(FrameTreeNode* frame_tree_node) {}
 
   // Called when the network stack started handling the navigation request
   // so that the |timestamp| when it happened can be recorded into an histogram.

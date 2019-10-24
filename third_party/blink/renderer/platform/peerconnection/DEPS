@@ -27,6 +27,7 @@ include_rules = [
 
 specific_include_rules = {
     ".*_test\.cc": [
+        "+base/task/task_traits.h",
         "+base/threading/thread.h",
         "+gpu/command_buffer/common/mailbox.h",
         "+media/video/mock_gpu_video_accelerator_factories.h",

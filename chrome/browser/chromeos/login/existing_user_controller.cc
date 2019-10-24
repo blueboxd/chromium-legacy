@@ -28,6 +28,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
@@ -437,10 +438,8 @@ void ExistingUserController::UpdateLoginDisplay(
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
     // KioskAppManager and ArcKioskAppManager.
-    if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP ||
-        user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
+    if (user->IsKioskType())
       continue;
-    }
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
     const bool meets_supervised_requirements =
         user->GetType() != user_manager::USER_TYPE_SUPERVISED ||
@@ -502,11 +501,11 @@ void ExistingUserController::Observe(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ExistingUserController, ArcKioskAppManager::ArcKioskAppManagerObserver
+// ExistingUserController, KioskAppManagerObserver
 // implementation:
 //
 
-void ExistingUserController::OnArcKioskAppsChanged() {
+void ExistingUserController::OnKioskAppsSettingsChanged() {
   ConfigureAutoLogin();
 }
 

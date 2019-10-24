@@ -24,6 +24,7 @@ class EVENTS_OZONE_EVDEV_EXPORT PalmDetectionFilter {
   // shared_palm_state is not owned!
   explicit PalmDetectionFilter(
       SharedPalmDetectionFilterState* shared_palm_state);
+  virtual ~PalmDetectionFilter();
 
   // Execute a filter event. Expected to be executed on every update to touches.
   // Arguments are:
@@ -43,12 +44,11 @@ class EVENTS_OZONE_EVDEV_EXPORT PalmDetectionFilter {
   // The name of this filter, for testing purposes.
   virtual std::string FilterNameForTesting() const = 0;
 
-  virtual ~PalmDetectionFilter();
-
  protected:
   // Not owned!
-  SharedPalmDetectionFilterState* shared_palm_state_;
+  SharedPalmDetectionFilterState* const shared_palm_state_;
 };
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_PALM_DETECTION_FILTER_H_

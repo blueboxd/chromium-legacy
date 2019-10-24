@@ -2253,7 +2253,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_SwapOut, OnSwapOut)
     IPC_MESSAGE_HANDLER(FrameMsg_SwapIn, OnSwapIn)
     IPC_MESSAGE_HANDLER(FrameMsg_Stop, OnStop)
-    IPC_MESSAGE_HANDLER(FrameMsg_DroppedNavigation, OnDroppedNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_Collapse, OnCollapse)
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
@@ -5072,11 +5071,7 @@ void RenderFrameImpl::AbortClientNavigation() {
   sync_navigation_callback_.Cancel();
   mhtml_body_loader_client_.reset();
   NotifyObserversOfFailedProvisionalLoad();
-  if (!IsPerNavigationMojoInterfaceEnabled()) {
-    Send(new FrameHostMsg_AbortNavigation(routing_id_));
-  } else {
-    navigation_client_impl_.reset();
-  }
+  navigation_client_impl_.reset();
 }
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {

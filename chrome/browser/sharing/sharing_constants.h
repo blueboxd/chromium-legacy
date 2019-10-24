@@ -14,6 +14,9 @@ extern const char kFCMScope[];
 // Sender ID linked to GCM messages for Sharing.
 extern const char kSharingFCMAppID[];
 
+// Amount of time before a message is considered timeout if no ack is received.
+extern const base::TimeDelta kSendMessageTimeout;
+
 // Amount of time before an ack message is expired.
 extern const base::TimeDelta kAckTimeToLive;
 
@@ -23,14 +26,8 @@ extern const base::TimeDelta kDeviceExpiration;
 // Amount of time before FCM registration should happen again.
 extern const base::TimeDelta kRegistrationExpiration;
 
-// Amount of time before a message is considered timeout if no ack is received.
-extern const base::TimeDelta kSendMessageTimeout;
-
 // Backoff policy for registration retry.
 extern const net::BackoffEntry::Policy kRetryBackoffPolicy;
-
-// Time limit for message expiration.
-extern const base::TimeDelta kSharingMessageTTL;
 
 // Maximum number of devices to be shown in dialog and context menu.
 extern const int kMaxDevicesShown;

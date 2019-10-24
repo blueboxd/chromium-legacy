@@ -324,7 +324,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const AXEventNotificationDetails& details);
 
   void EvictFromBackForwardCacheWithReason(
-      base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason);
+      BackForwardCacheMetrics::NotRestoredReason reason);
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -1395,8 +1395,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidBlockNavigation(const GURL& blocked_url,
                             const GURL& initiator_url,
                             blink::NavigationBlockedReason reason);
-  // Only used with PerNavigationMojoInterface disabled.
-  void OnAbortNavigation();
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnDispatchLoad();

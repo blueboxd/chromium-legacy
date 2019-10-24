@@ -38,8 +38,8 @@
 #include "extensions/common/extension.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/isolated_context.h"
-#include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_types.h"
+#include "storage/common/file_system/file_system_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_MACOSX)

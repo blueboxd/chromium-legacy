@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 
-#include "build/buildflag.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -14,10 +13,8 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
-#include "components/unified_consent/feature.h"
-#include "components/unified_consent/scoped_unified_consent.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT) || defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #endif
 
@@ -28,45 +25,28 @@
 
 namespace browsing_data_counter_utils {
 
-class BrowsingDataCounterUtilsBrowserTest
-    : public SyncTest,
-      public testing::WithParamInterface<bool> {
+class BrowsingDataCounterUtilsBrowserTest : public SyncTest {
  public:
   BrowsingDataCounterUtilsBrowserTest()
-      : SyncTest(SINGLE_CLIENT),
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-        scoped_dice_(GetParam()
-                         ? std::make_unique<ScopedAccountConsistencyDice>()
-                         : nullptr),
-#elif defined(OS_CHROMEOS)
-        scoped_mirror_(std::make_unique<ScopedAccountConsistencyMirror>()),
+      : SyncTest(SINGLE_CLIENT)
+#if defined(OS_CHROMEOS)
+        ,
+        scoped_mirror_(std::make_unique<ScopedAccountConsistencyMirror>())
 #endif
-        scoped_unified_consent_(
-            GetParam()
-                ? unified_consent::UnifiedConsentFeatureState::kEnabled
-                : unified_consent::UnifiedConsentFeatureState::kDisabled) {
+  {
   }
   ~BrowsingDataCounterUtilsBrowserTest() override = default;
 
  private:
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // ScopedAccountConsistencyDice is required for unified consent to be enabled.
-  const std::unique_ptr<ScopedAccountConsistencyDice> scoped_dice_;
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   // Need to manually turn on mirror for now.
   const std::unique_ptr<ScopedAccountConsistencyMirror> scoped_mirror_;
 #endif
-  const unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataCounterUtilsBrowserTest);
 };
 
-// Instantiate test for unified consent disabled & enabled.
-INSTANTIATE_TEST_SUITE_P(,
-                         BrowsingDataCounterUtilsBrowserTest,
-                         ::testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
+IN_PROC_BROWSER_TEST_F(BrowsingDataCounterUtilsBrowserTest,
                        ShouldShowCookieException) {
   Profile* profile = browser()->profile();
 

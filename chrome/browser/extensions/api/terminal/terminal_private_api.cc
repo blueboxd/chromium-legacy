@@ -12,8 +12,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
@@ -24,7 +26,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/terminal_private.h"
+#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,6 +48,8 @@ namespace CloseTerminalProcess =
 namespace SendInput = extensions::api::terminal_private::SendInput;
 namespace AckOutput = extensions::api::terminal_private::AckOutput;
 
+using crostini::mojom::InstallerState;
+
 namespace {
 
 const char kCroshName[] = "crosh";
@@ -57,26 +63,19 @@ const char kVmShellCommand[] = "/usr/bin/vsh";
 const char kSwitchOwnerId[] = "owner_id";
 const char kSwitchVmName[] = "vm_name";
 const char kSwitchTargetContainer[] = "target_container";
+const char kSwitchStartupId[] = "startup_id";
 
-// Returns the value of the specified |switch_name| if present.  If not present,
-// sets that switch to and returns |default_value|.
-std::string GetSwitch(base::CommandLine* command_line,
+// Copies the value of |switch_name| if present from |src| to |dst|.  If not
+// present, uses |default_value|.  Returns the value set into |dst|.
+std::string GetSwitch(const base::CommandLine* src,
+                      base::CommandLine* dst,
                       const std::string& switch_name,
                       const std::string& default_value) {
-  if (command_line->HasSwitch(switch_name)) {
-    return command_line->GetSwitchValueASCII(switch_name);
-  }
-  command_line->AppendSwitchASCII(switch_name, default_value);
-  return default_value;
-}
-
-void OnCrostiniRestarted(base::OnceClosure callback,
-                         crostini::CrostiniResult result) {
-  if (result != crostini::CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Error restarting crostini for terminal: "
-               << static_cast<int>(result);
-  }
-  std::move(callback).Run();
+  std::string result = src->HasSwitch(switch_name)
+                           ? src->GetSwitchValueASCII(switch_name)
+                           : default_value;
+  dst->AppendSwitchASCII(switch_name, result);
+  return result;
 }
 
 void NotifyProcessOutput(content::BrowserContext* browser_context,
@@ -119,6 +118,112 @@ int GetTabOrWindowSessionId(content::BrowserContext* browser_context,
   return window ? window->session_id().id() : -1;
 }
 
+class CrostiniRestartObserver
+    : public crostini::CrostiniManager::RestartObserver {
+ public:
+  CrostiniRestartObserver(
+      base::RepeatingCallback<void(const std::string&)> print,
+      base::OnceClosure callback)
+      : print_(std::move(print)), callback_(std::move(callback)) {}
+
+  void OnCrostiniRestarted(crostini::CrostiniResult result) {
+    if (result != crostini::CrostiniResult::SUCCESS) {
+      LOG(ERROR) << "Error starting crostini for terminal: "
+                 << static_cast<int>(result);
+      PrintWithTimestamp(base::StringPrintf(
+          "Error starting penguin container: %d\r\n", result));
+    } else {
+      PrintWithTimestamp("Ready\r\n");
+    }
+    std::move(callback_).Run();
+    delete this;
+  }
+
+ private:
+  // crostini::CrostiniManager::RestartObserver
+  void OnStageStarted(InstallerState stage) override {
+    switch (stage) {
+      case InstallerState::kStart:
+        PrintWithTimestamp("Chrome OS " + version_info::GetVersionNumber() +
+                           " " +
+                           chromeos::version_loader::GetVersion(
+                               chromeos::version_loader::VERSION_FULL) +
+                           "\r\n");
+        PrintWithTimestamp("Starting terminal...\r\n");
+        break;
+      case InstallerState::kInstallImageLoader:
+        PrintWithTimestamp("Checking cros-termina component... ");
+        break;
+      case InstallerState::kStartConcierge:
+        PrintWithTimestamp("Starting VM controller... ");
+        break;
+      case InstallerState::kCreateDiskImage:
+        PrintWithTimestamp("Creating termina VM image... ");
+        break;
+      case InstallerState::kStartTerminaVm:
+        PrintWithTimestamp("Starting termina VM... ");
+        break;
+      case InstallerState::kCreateContainer:
+        PrintWithTimestamp("Creating penguin container... ");
+        break;
+      case InstallerState::kSetupContainer:
+        PrintWithTimestamp("Checking penguin container setup... ");
+        break;
+      case InstallerState::kStartContainer:
+        PrintWithTimestamp("Starting penguin container... ");
+        break;
+      case InstallerState::kFetchSshKeys:
+        PrintWithTimestamp("Fetching penguin container ssh keys... ");
+        break;
+      case InstallerState::kMountContainer:
+        PrintWithTimestamp("Mounting penguin container sshfs... ");
+        break;
+    }
+  }
+  void OnComponentLoaded(crostini::CrostiniResult result) override {
+    PrintCrostiniResult(result);
+  }
+  void OnConciergeStarted(bool success) override { PrintSuccess(success); }
+  void OnDiskImageCreated(bool success,
+                          vm_tools::concierge::DiskImageStatus status,
+                          int64_t disk_size_available) override {
+    PrintSuccess(success);
+  }
+  void OnVmStarted(bool success) override { PrintSuccess(success); }
+  void OnContainerDownloading(int32_t download_percent) override { Print("."); }
+  void OnContainerCreated(crostini::CrostiniResult result) override {
+    PrintCrostiniResult(result);
+  }
+  void OnContainerSetup(bool success) override { PrintSuccess(success); }
+  void OnContainerStarted(crostini::CrostiniResult result) override {
+    PrintCrostiniResult(result);
+  }
+  void OnSshKeysFetched(bool success) override { PrintSuccess(success); }
+  void OnContainerMounted(bool success) override { PrintSuccess(success); }
+
+  void Print(const std::string& output) { print_.Run(output); }
+  void PrintWithTimestamp(const std::string& output) {
+    base::Time::Exploded exploded;
+    base::Time::Now().LocalExplode(&exploded);
+    Print(base::StringPrintf(
+        "%04d-%02d-%02d %02d:%02d:%02d.%03d %s", exploded.year, exploded.month,
+        exploded.day_of_month, exploded.hour, exploded.minute, exploded.second,
+        exploded.millisecond, output.c_str()));
+  }
+  void Println(const std::string& output) { Print(output + "\r\n"); }
+  void PrintCrostiniResult(crostini::CrostiniResult result) {
+    if (result == crostini::CrostiniResult::SUCCESS) {
+      Println("done");
+    } else {
+      Println(base::StringPrintf("error=%d", result));
+    }
+  }
+  void PrintSuccess(bool success) { Println(success ? "done" : "error"); }
+
+  base::RepeatingCallback<void(const std::string& output)> print_;
+  base::OnceClosure callback_;
+};
+
 }  // namespace
 
 namespace extensions {
@@ -135,62 +240,12 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
       OpenTerminalProcess::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  // Passing --crosh-command overrides any JS process name.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kCroshCommand)) {
-    OpenProcess({command_line->GetSwitchValueASCII(switches::kCroshCommand)});
-
-  } else if (params->process_name == kCroshName) {
-    // command=crosh: use '/usr/bin/crosh' on a device, 'cat' otherwise.
-    if (base::SysInfo::IsRunningOnChromeOS()) {
-      OpenProcess({kCroshCommand});
-    } else {
-      OpenProcess({kStubbedCroshCommand});
-    }
-
-  } else if (params->process_name == kVmShellName) {
-    // command=vmshell: ensure --owner_id, --vm_name, --target_container are set
-    // and the specified vm/container is running.
-    std::vector<std::string> args = {kVmShellCommand};
-    if (params->args)
-      args.insert(args.end(), params->args->begin(), params->args->end());
-    base::CommandLine vmshell_cmd(args);
-    std::string owner_id =
-        GetSwitch(&vmshell_cmd, kSwitchOwnerId, UserIdHash());
-    std::string vm_name = GetSwitch(&vmshell_cmd, kSwitchVmName,
-                                    crostini::kCrostiniDefaultVmName);
-    std::string container_name =
-        GetSwitch(&vmshell_cmd, kSwitchTargetContainer,
-                  crostini::kCrostiniDefaultContainerName);
-
-    auto open_process =
-        base::BindOnce(&TerminalPrivateOpenTerminalProcessFunction::OpenProcess,
-                       this, vmshell_cmd.argv());
-    crostini::CrostiniManager::GetForProfile(
-        Profile::FromBrowserContext(browser_context()))
-        ->RestartCrostini(
-            vm_name, container_name,
-            base::BindOnce(&OnCrostiniRestarted, std::move(open_process)));
-
-  } else {
-    // command=[unrecognized].
-    return RespondNow(Error("Invalid process name: " + params->process_name));
-  }
-  return RespondLater();
-}
-
-std::string TerminalPrivateOpenTerminalProcessFunction::UserIdHash() {
-  return extensions::ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
-      browser_context());
-}
-
-void TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
-    const std::vector<std::string> arguments) {
-  DCHECK(!arguments.empty());
-
+  const std::string& user_id_hash =
+      extensions::ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
+          browser_context());
   content::WebContents* caller_contents = GetSenderWebContents();
   if (!caller_contents)
-    return Respond(Error("No web contents."));
+    return RespondNow(Error("No web contents."));
 
   // Passed to terminalPrivate.ackOutput, which is called from the API's custom
   // bindings after terminalPrivate.onProcessOutput is dispatched. It is used to
@@ -204,8 +259,67 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
   //     needed to fix crbug.com/210295.
   int tab_id = GetTabOrWindowSessionId(browser_context(), caller_contents);
   if (tab_id < 0)
-    return Respond(Error("Not called from a tab or app window"));
+    return RespondNow(Error("Not called from a tab or app window"));
 
+  // Passing --crosh-command overrides any JS process name.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kCroshCommand)) {
+    OpenProcess(user_id_hash, tab_id,
+                {command_line->GetSwitchValueASCII(switches::kCroshCommand)});
+
+  } else if (params->process_name == kCroshName) {
+    // command=crosh: use '/usr/bin/crosh' on a device, 'cat' otherwise.
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      OpenProcess(user_id_hash, tab_id, {kCroshCommand});
+    } else {
+      OpenProcess(user_id_hash, tab_id, {kStubbedCroshCommand});
+    }
+
+  } else if (params->process_name == kVmShellName) {
+    // command=vmshell: ensure --owner_id, --vm_name, and --target_container are
+    // set and the specified vm/container is running.
+    base::CommandLine vmshell_cmd({kVmShellCommand});
+    std::vector<std::string> args = {kVmShellCommand};
+    if (params->args)
+      args.insert(args.end(), params->args->begin(), params->args->end());
+    base::CommandLine params_args(args);
+    std::string owner_id =
+        GetSwitch(&params_args, &vmshell_cmd, kSwitchOwnerId, user_id_hash);
+    std::string vm_name = GetSwitch(&params_args, &vmshell_cmd, kSwitchVmName,
+                                    crostini::kCrostiniDefaultVmName);
+    std::string container_name =
+        GetSwitch(&params_args, &vmshell_cmd, kSwitchTargetContainer,
+                  crostini::kCrostiniDefaultContainerName);
+    std::string startup_id = params_args.GetSwitchValueASCII(kSwitchStartupId);
+
+    auto open_process =
+        base::BindOnce(&TerminalPrivateOpenTerminalProcessFunction::OpenProcess,
+                       this, user_id_hash, tab_id, vmshell_cmd.argv());
+    auto* observer = new CrostiniRestartObserver(
+        base::BindRepeating(&NotifyProcessOutput, browser_context(), tab_id,
+                            startup_id,
+                            api::terminal_private::ToString(
+                                api::terminal_private::OUTPUT_TYPE_STDOUT)),
+        std::move(open_process));
+    crostini::CrostiniManager::GetForProfile(
+        Profile::FromBrowserContext(browser_context()))
+        ->RestartCrostini(
+            vm_name, container_name,
+            base::BindOnce(&CrostiniRestartObserver::OnCrostiniRestarted,
+                           base::Unretained(observer)),
+            observer);
+  } else {
+    // command=[unrecognized].
+    return RespondNow(Error("Invalid process name: " + params->process_name));
+  }
+  return RespondLater();
+}
+
+void TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
+    const std::string& user_id_hash,
+    int tab_id,
+    const std::vector<std::string>& arguments) {
+  DCHECK(!arguments.empty());
   // Registry lives on its own task runner.
   chromeos::ProcessProxyRegistry::GetTaskRunner()->PostTask(
       FROM_HERE,
@@ -215,7 +329,7 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
           base::Bind(
               &TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread,
               this),
-          arguments, UserIdHash()));
+          arguments, user_id_hash));
 }
 
 void TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner(

@@ -62,6 +62,9 @@
 // Returns matcher for a cancel button.
 + (id<GREYMatcher>)cancelButton;
 
+// Returns the matcher for an enabled cancel button in a navigation bar.
++ (id<GREYMatcher>)navigationBarCancelButton;
+
 // Returns matcher for a close button.
 + (id<GREYMatcher>)closeButton;
 
@@ -369,6 +372,63 @@
 // Returns the GREYMatcher for the button to close the cell at |index| in the
 // tab grid.
 + (id<GREYMatcher>)tabGridCloseButtonForCellAtIndex:(unsigned int)index;
+
+// Returns a matcher for the password settings collection view.
++ (id<GREYMatcher>)settingsPasswordMatcher;
+
+// Returns a matcher for the search bar in password settings.
++ (id<GREYMatcher>)settingsPasswordSearchMatcher;
+
+// Returns a matcher for the profiles settings collection view.
++ (id<GREYMatcher>)settingsProfileMatcher;
+
+// Returns a matcher for an autofill suggestion view.
++ (id<GREYMatcher>)autofillSuggestionViewMatcher;
+
+#pragma mark - Manual Fallback
+
+// Returns a matcher for the scroll view in keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackFormSuggestionViewMatcher;
+
+// Returns a matcher for the keyboard icon in the keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackKeyboardIconMatcher;
+
+// Returns a matcher for the password icon in the keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackPasswordIconMatcher;
+
+// Returns a matcher for the password table view in manual fallback.
++ (id<GREYMatcher>)manualFallbackPasswordTableViewMatcher;
+
+// Returns a matcher for the password search bar in manual fallback.
++ (id<GREYMatcher>)manualFallbackPasswordSearchBarMatcher;
+
+// Returns a matcher for the button to open password settings in manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackManagePasswordsMatcher;
+
+// Returns a matcher for the button to open all passwords in manual fallback.
++ (id<GREYMatcher>)manualFallbackOtherPasswordsMatcher;
+
+// Returns a matcher for the button to dismiss all passwords in manual fallback.
++ (id<GREYMatcher>)manualFallbackOtherPasswordsDismissMatcher;
+
+// Returns a matcher for the a password in the manual fallback list.
++ (id<GREYMatcher>)manualFallbackPasswordButtonMatcher;
+
+// Returns a matcher for the PasswordTableView window.
++ (id<GREYMatcher>)manualFallbackPasswordTableViewWindowMatcher;
+
+// Returns a matcher for the profiles icon in the keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackProfilesIconMatcher;
+
+// Returns a matcher for the profiles table view in manual fallback.
++ (id<GREYMatcher>)manualFallbackProfilesTableViewMatcher;
+// Returns a matcher for the button to open profile settings in manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackManageProfilesMatcher;
+
+// Returns a matcher for the ProfileTableView window.
++ (id<GREYMatcher>)manualFallbackProfileTableViewWindowMatcher;
 
 @end
 

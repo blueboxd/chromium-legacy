@@ -49,7 +49,7 @@ class CONTENT_EXPORT OldRenderFrameAudioInputStreamFactory
   using CreateDelegateCallback =
       base::RepeatingCallback<std::unique_ptr<media::AudioInputDelegate>(
           AudioInputDeviceManager* audio_input_device_manager,
-          media::mojom::AudioLogPtr audio_log,
+          mojo::PendingRemote<media::mojom::AudioLog> audio_log,
           AudioInputDeviceManager::KeyboardMicRegistration
               keyboard_mic_registration,
           uint32_t shared_memory_count,

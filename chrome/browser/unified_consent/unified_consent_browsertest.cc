@@ -16,7 +16,6 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
-#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "components/unified_consent/unified_consent_service.h"
 
@@ -25,9 +24,7 @@ namespace {
 
 class UnifiedConsentBrowserTest : public SyncTest {
  public:
-  UnifiedConsentBrowserTest(UnifiedConsentFeatureState feature_state =
-                                UnifiedConsentFeatureState::kEnabled)
-      : SyncTest(TWO_CLIENT), scoped_unified_consent_state_(feature_state) {}
+  UnifiedConsentBrowserTest() : SyncTest(TWO_CLIENT) {}
   ~UnifiedConsentBrowserTest() override = default;
 
   void EnableSync(int client_id) {
@@ -67,32 +64,12 @@ class UnifiedConsentBrowserTest : public SyncTest {
 
   std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
 
-  ScopedUnifiedConsent scoped_unified_consent_state_;
-
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentBrowserTest);
-};
-
-class UnifiedConsentDisabledBrowserTest : public UnifiedConsentBrowserTest {
- public:
-  UnifiedConsentDisabledBrowserTest()
-      : UnifiedConsentBrowserTest(UnifiedConsentFeatureState::kDisabled) {}
-  ~UnifiedConsentDisabledBrowserTest() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(UnifiedConsentDisabledBrowserTest);
 };
 
 // Tests that the settings histogram is recorded if unified consent is enabled.
 // The histogram is recorded during profile initialization.
 IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest, SettingsHistogram_None) {
-  histogram_tester_.ExpectUniqueSample(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kNone, 1);
-}
-
-// Tests that the settings histogram is recorded if unified consent is disabled.
-// The histogram is recorded during profile initialization.
-IN_PROC_BROWSER_TEST_F(UnifiedConsentDisabledBrowserTest,
-                       SettingsHistogram_None) {
   histogram_tester_.ExpectUniqueSample(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
       metrics::SettingsHistogramValue::kNone, 1);

@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_CONVERSIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_CONVERSIONS_H_
 
-#include <dawn/dawn.h>
+#include <dawn/webgpu.h>
 
 #include <memory>
 
@@ -38,14 +38,14 @@ DawnEnum AsDawnEnum(const WTF::String& webgpu_enum);
 // These conversions are used multiple times and are declared here. Conversions
 // used only once, for example for object construction, are defined
 // individually.
-DawnColor AsDawnColor(const Vector<double>&);
-DawnColor AsDawnType(const GPUColorDict*);
-DawnColor AsDawnType(const DoubleSequenceOrGPUColorDict*);
-DawnExtent3D AsDawnType(const UnsignedLongSequenceOrGPUExtent3DDict*);
-DawnOrigin3D AsDawnType(const UnsignedLongSequenceOrGPUOrigin3DDict*);
+WGPUColor AsDawnColor(const Vector<double>&);
+WGPUColor AsDawnType(const GPUColorDict*);
+WGPUColor AsDawnType(const DoubleSequenceOrGPUColorDict*);
+WGPUExtent3D AsDawnType(const UnsignedLongSequenceOrGPUExtent3DDict*);
+WGPUOrigin3D AsDawnType(const UnsignedLongSequenceOrGPUOrigin3DDict*);
 
 using OwnedProgrammableStageDescriptor =
-    std::tuple<DawnProgrammableStageDescriptor, std::unique_ptr<char[]>>;
+    std::tuple<WGPUProgrammableStageDescriptor, std::unique_ptr<char[]>>;
 OwnedProgrammableStageDescriptor AsDawnType(
     const GPUProgrammableStageDescriptor*);
 

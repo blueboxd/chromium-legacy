@@ -131,7 +131,6 @@ include_rules = [
   "+components/location/android",
   "+components/login",
   "+components/media_message_center",
-  "+components/metal_util",
   "+components/metrics",
   "+components/metrics_services_manager",
   "+components/metrics/ui",

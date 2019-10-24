@@ -235,7 +235,7 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
 
 void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   url_loader_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   CHECK(throttle_will_redirect_redirect_url_.is_empty());
 
   for (const std::string& header : removed_headers_)
@@ -254,7 +254,7 @@ void ThrottlingURLLoader::RestartWithFactory(
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
   url_loader_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   start_info_->url_loader_factory = std::move(factory);
   start_info_->options = url_loader_options;
   StartNow();
@@ -315,7 +315,7 @@ void ThrottlingURLLoader::ResumeReadingBodyFromNet() {
 
 network::mojom::URLLoaderClientEndpointsPtr ThrottlingURLLoader::Unbind() {
   return network::mojom::URLLoaderClientEndpoints::New(
-      url_loader_.PassInterface(), client_binding_.Unbind());
+      url_loader_.Unbind(), client_receiver_.Unbind());
 }
 
 ThrottlingURLLoader::ThrottlingURLLoader(
@@ -323,7 +323,6 @@ ThrottlingURLLoader::ThrottlingURLLoader(
     network::mojom::URLLoaderClient* client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : forwarding_client_(client),
-      client_binding_(this),
       traffic_annotation_(traffic_annotation) {
   throttles_.reserve(throttles.size());
   for (auto& throttle : throttles)
@@ -445,21 +444,19 @@ void ThrottlingURLLoader::StartNow() {
     return;
   }
 
-  network::mojom::URLLoaderClientPtr client;
-  client_binding_.Bind(mojo::MakeRequest(&client), start_info_->task_runner);
-
-  // TODO(https://crbug.com/919736): Remove this call.
-  client_binding_.EnableBatchDispatch();
-
-  client_binding_.set_connection_error_handler(base::BindOnce(
-      &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));
-
   DCHECK(start_info_->url_loader_factory);
   start_info_->url_loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader_), start_info_->routing_id,
+      url_loader_.BindNewPipeAndPassReceiver(), start_info_->routing_id,
       start_info_->request_id, start_info_->options, start_info_->url_request,
-      std::move(client),
+      network::mojom::URLLoaderClientPtr(
+          client_receiver_.BindNewPipeAndPassRemote(start_info_->task_runner)),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation_));
+
+  // TODO(https://crbug.com/919736): Remove this call.
+  client_receiver_.internal_state()->EnableBatchDispatch();
+
+  client_receiver_.set_disconnect_handler(base::BindOnce(
+      &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));
 
   if (!pausing_reading_body_from_net_throttles_.empty())
     url_loader_->PauseReadingBodyFromNet();
@@ -477,7 +474,7 @@ void ThrottlingURLLoader::StartNow() {
 void ThrottlingURLLoader::RestartWithFlagsNow() {
   DCHECK(has_pending_restart_);
   url_loader_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   start_info_->url_request.load_flags |= pending_restart_flags_;
   has_pending_restart_ = false;
   pending_restart_flags_ = 0;
@@ -541,7 +538,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
 
     if (deferred) {
       deferred_stage_ = DEFERRED_BEFORE_RESPONSE;
-      client_binding_.PauseIncomingMethodCallProcessing();
+      client_receiver_.Pause();
       return;
     }
 
@@ -566,7 +563,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
     if (deferred) {
       deferred_stage_ = DEFERRED_RESPONSE;
       response_info_ = std::make_unique<ResponseInfo>(std::move(response_head));
-      client_binding_.PauseIncomingMethodCallProcessing();
+      client_receiver_.Pause();
       return;
     }
   }
@@ -613,9 +610,10 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       deferred_stage_ = DEFERRED_REDIRECT;
       redirect_info_ = std::make_unique<RedirectInfo>(redirect_info,
                                                       std::move(response_head));
-      // |client_binding_| can be unbound if the redirect came from a throttle.
-      if (client_binding_.is_bound())
-        client_binding_.PauseIncomingMethodCallProcessing();
+      // |client_receiver_| can be unbound if the redirect came from a
+      // throttle.
+      if (client_receiver_.is_bound())
+        client_receiver_.Pause();
       return;
     }
   }
@@ -690,7 +688,7 @@ void ThrottlingURLLoader::OnComplete(
 
     if (deferred) {
       deferred_stage_ = DEFERRED_COMPLETE;
-      client_binding_.PauseIncomingMethodCallProcessing();
+      client_receiver_.Pause();
       return;
     }
 
@@ -739,9 +737,10 @@ void ThrottlingURLLoader::Resume() {
       break;
     }
     case DEFERRED_REDIRECT: {
-      // |client_binding_| can be unbound if the redirect came from a throttle.
-      if (client_binding_.is_bound())
-        client_binding_.ResumeIncomingMethodCallProcessing();
+      // |client_receiver_| can be unbound if the redirect came from a
+      // throttle.
+      if (client_receiver_.is_bound())
+        client_receiver_.Resume();
       // TODO(dhausknecht) at this point we do not actually know if we commit to
       // the redirect or if it will be cancelled. FollowRedirect would be a more
       // suitable place to set this URL but there we do not have the data.
@@ -764,7 +763,7 @@ void ThrottlingURLLoader::Resume() {
       break;
     }
     case DEFERRED_RESPONSE: {
-      client_binding_.ResumeIncomingMethodCallProcessing();
+      client_receiver_.Resume();
       forwarding_client_->OnReceiveResponse(
           std::move(response_info_->response_head));
       // Note: |this| may be deleted here.
@@ -844,25 +843,26 @@ void ThrottlingURLLoader::InterceptResponse(
   response_intercepted_ = true;
 
   if (original_loader)
-    *original_loader = std::move(url_loader_);
-  url_loader_ = std::move(new_loader);
+    *original_loader = network::mojom::URLLoaderPtr(url_loader_.Unbind());
+  url_loader_.Bind(new_loader.PassInterface());
 
   if (original_client_request)
-    *original_client_request = client_binding_.Unbind();
-  client_binding_.Bind(std::move(new_client_request), start_info_->task_runner);
-  client_binding_.set_connection_error_handler(base::BindOnce(
+    *original_client_request = client_receiver_.Unbind();
+  client_receiver_.Bind(std::move(new_client_request),
+                        start_info_->task_runner);
+  client_receiver_.set_disconnect_handler(base::BindOnce(
       &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));
 }
 
 void ThrottlingURLLoader::DisconnectClient(base::StringPiece custom_reason) {
-  client_binding_.Close();
+  client_receiver_.reset();
 
   if (!custom_reason.empty()) {
     url_loader_.ResetWithReason(
         network::mojom::URLLoader::kClientDisconnectReason,
         custom_reason.as_string());
   } else {
-    url_loader_ = nullptr;
+    url_loader_.reset();
   }
 
   loader_completed_ = true;

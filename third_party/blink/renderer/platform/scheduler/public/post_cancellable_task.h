@@ -56,6 +56,15 @@ class PLATFORM_EXPORT TaskHandle {
                              const base::Location&,
                              base::OnceClosure,
                              base::TimeDelta delay) WARN_UNUSED_RESULT;
+  friend PLATFORM_EXPORT TaskHandle
+  PostNonNestableCancellableTask(base::SequencedTaskRunner&,
+                                 const base::Location&,
+                                 base::OnceClosure) WARN_UNUSED_RESULT;
+  friend PLATFORM_EXPORT TaskHandle PostNonNestableDelayedCancellableTask(
+      base::SequencedTaskRunner&,
+      const base::Location&,
+      base::OnceClosure,
+      base::TimeDelta delay) WARN_UNUSED_RESULT;
 
   explicit TaskHandle(scoped_refptr<Runner>);
   scoped_refptr<Runner> runner_;
@@ -72,6 +81,15 @@ PostDelayedCancellableTask(base::SequencedTaskRunner&,
                            const base::Location&,
                            base::OnceClosure,
                            base::TimeDelta delay) WARN_UNUSED_RESULT;
+PLATFORM_EXPORT TaskHandle
+PostNonNestableCancellableTask(base::SequencedTaskRunner&,
+                               const base::Location&,
+                               base::OnceClosure) WARN_UNUSED_RESULT;
+PLATFORM_EXPORT TaskHandle
+PostNonNestableDelayedCancellableTask(base::SequencedTaskRunner&,
+                                      const base::Location&,
+                                      base::OnceClosure,
+                                      base::TimeDelta delay) WARN_UNUSED_RESULT;
 
 }  // namespace blink
 

@@ -53,8 +53,8 @@ enum AudioLogComponent {
 interface AudioLogFactory {
   // Creates an AudioLog object for tracking the behavior for one instance of
   // the given |component|.  Each instance of an "owning" class must create its
-  // own AudioLog. The created AudioLog object is bound to |audio_log_request|.
+  // own AudioLog. The created AudioLog object is bound to |audio_log_receiver|.
   CreateAudioLog(AudioLogComponent component,
                  int32 component_id,
-                 AudioLog& audio_log_request);
+                 pending_receiver<AudioLog> audio_log_receiver);
 };

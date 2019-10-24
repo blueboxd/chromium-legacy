@@ -14,6 +14,8 @@
 #include "content/common/content_export.h"
 #include "media/audio/audio_input_delegate.h"
 #include "media/mojo/mojom/audio_logging.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 class AudioManager;
@@ -46,7 +48,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
       int render_process_id,
       int render_frame_id,
       AudioInputDeviceManager* audio_input_device_manager,
-      media::mojom::AudioLogPtr audio_log,
+      mojo::PendingRemote<media::mojom::AudioLog> audio_log,
       AudioInputDeviceManager::KeyboardMicRegistration
           keyboard_mic_registration,
       uint32_t shared_memory_count,
@@ -70,7 +72,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
       media::UserInputMonitor* user_input_monitor,
       const media::AudioParameters& audio_parameters,
       int render_process_id,
-      media::mojom::AudioLogPtr audio_log,
+      mojo::PendingRemote<media::mojom::AudioLog> audio_log,
       AudioInputDeviceManager::KeyboardMicRegistration
           keyboard_mic_registration,
       int stream_id,
@@ -95,7 +97,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
   std::unique_ptr<ControllerEventHandler> controller_event_handler_;
   std::unique_ptr<media::AudioInputSyncWriter> writer_;
   std::unique_ptr<base::CancelableSyncSocket> foreign_socket_;
-  media::mojom::AudioLogPtr const audio_log_;
+  mojo::Remote<media::mojom::AudioLog> const audio_log_;
   scoped_refptr<media::AudioInputController> controller_;
   const AudioInputDeviceManager::KeyboardMicRegistration
       keyboard_mic_registration_;

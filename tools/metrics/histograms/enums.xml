@@ -25159,6 +25159,8 @@ Called by update_net_error_codes.py.-->
   <int value="3061" label="DecompressionStreamConstructor"/>
   <int value="3062" label="V8RTCRtpReceiver_PlayoutDelayHint_AttributeGetter"/>
   <int value="3063" label="V8RTCRtpReceiver_PlayoutDelayHint_AttributeSetter"/>
+  <int value="3064" label="V8RegExpExecCalledOnSlowRegExp"/>
+  <int value="3065" label="V8RegExpReplaceCalledOnSlowRegExp"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

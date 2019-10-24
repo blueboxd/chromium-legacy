@@ -33,8 +33,9 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
   using OpenProcessCallback =
       base::Callback<void(bool success, const std::string& terminal_id)>;
 
-  std::string UserIdHash();
-  void OpenProcess(const std::vector<std::string> arguments);
+  void OpenProcess(const std::string& user_id_hash,
+                   int tab_id,
+                   const std::vector<std::string>& arguments);
   void OpenOnRegistryTaskRunner(const ProcessOutputCallback& output_callback,
                                 const OpenProcessCallback& callback,
                                 const std::vector<std::string>& arguments,

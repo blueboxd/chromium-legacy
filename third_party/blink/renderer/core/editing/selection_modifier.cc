@@ -159,9 +159,9 @@ base::Optional<TextDirection> DirectionAt(const VisiblePosition& position) {
     return base::nullopt;
 
   if (NGInlineFormattingContextOf(adjusted.GetPosition())) {
-    if (const NGPaintFragment* fragment =
-            ComputeNGCaretPosition(adjusted).PaintFragment())
-      return fragment->PhysicalFragment().ResolvedDirection();
+    const NGInlineCursor& cursor = ComputeNGCaretPosition(adjusted).cursor;
+    if (cursor)
+      return cursor.CurrentResolvedDirection();
     return base::nullopt;
   }
 
@@ -181,11 +181,11 @@ base::Optional<TextDirection> LineDirectionAt(const VisiblePosition& position) {
     return base::nullopt;
 
   if (NGInlineFormattingContextOf(adjusted.GetPosition())) {
-    if (const NGPaintFragment* fragment =
-            ComputeNGCaretPosition(adjusted).PaintFragment()) {
-      return ParagraphDirectionOf(*fragment);
-    }
-    return base::nullopt;
+    NGInlineCursor line = ComputeNGCaretPosition(adjusted).cursor;
+    if (!line)
+      return base::nullopt;
+    line.MoveToContainingLine();
+    return line.CurrentBaseDirection();
   }
 
   if (const InlineBox* box =

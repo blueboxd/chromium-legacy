@@ -1388,6 +1388,9 @@ message DeviceRebootOnUserSignoutProto {
     ARC_SESSION = 2;
     // Always reboot on signout.
     ALWAYS = 3;
+    // Reboot on signout if an ARC session was active or a VM was started
+    // during the user session.
+    VM_STARTED_OR_ARC_SESSION = 4;
   }
 
   optional RebootOnSignoutMode reboot_on_signout_mode = 1 [default = NEVER];

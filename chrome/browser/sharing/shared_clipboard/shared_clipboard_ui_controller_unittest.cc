@@ -90,7 +90,7 @@ TEST_F(SharedClipboardUiControllerTest, OnDeviceChosen) {
   sharing_message.mutable_shared_clipboard_message()->set_text(kExpectedText);
   EXPECT_CALL(*service(),
               SendMessageToDevice(testing::Eq(kReceiverGuid),
-                                  testing::Eq(kSharingMessageTTL),
+                                  testing::Eq(kSendMessageTimeout),
                                   ProtoEquals(sharing_message), testing::_));
   controller_->OnDeviceChosen(device_info);
 }

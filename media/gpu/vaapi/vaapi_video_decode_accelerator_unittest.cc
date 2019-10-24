@@ -67,7 +67,7 @@ class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
 
 class MockVaapiWrapper : public VaapiWrapper {
  public:
-  MockVaapiWrapper() = default;
+  MockVaapiWrapper(CodecMode mode) : VaapiWrapper(mode) {}
   MOCK_METHOD5(CreateContextAndSurfaces,
                bool(unsigned int,
                     const gfx::Size&,
@@ -152,8 +152,8 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
         decoder_thread_("VaapiVideoDecodeAcceleratorTestThread"),
         mock_decoder_(new ::testing::StrictMock<MockAcceleratedVideoDecoder>),
         mock_vaapi_picture_factory_(new MockVaapiPictureFactory()),
-        mock_vaapi_wrapper_(new MockVaapiWrapper()),
-        mock_vpp_vaapi_wrapper_(new MockVaapiWrapper()),
+        mock_vaapi_wrapper_(new MockVaapiWrapper(VaapiWrapper::kDecode)),
+        mock_vpp_vaapi_wrapper_(new MockVaapiWrapper(VaapiWrapper::kDecode)),
         weak_ptr_factory_(this) {
     decoder_thread_.Start();
 

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -191,7 +192,7 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     return;
   browser->window()->ShowIntentPickerBubble(
       std::move(apps), show_stay_in_chrome, show_remember_selection,
-      PageActionIconType::kIntentPicker, std::move(callback));
+      PageActionIconType::kIntentPicker, base::nullopt, std::move(callback));
 }
 
 AppsNavigationThrottle::AppsNavigationThrottle(

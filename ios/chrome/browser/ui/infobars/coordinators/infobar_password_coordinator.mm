@@ -149,6 +149,10 @@
   return YES;
 }
 
+- (BOOL)isInfobarAccepted {
+  return YES;
+}
+
 - (void)infobarBannerWasPresented {
   // There's a chance the Delegate was destroyed while the presentation was
   // taking place e.g. User navigated away. Check if the delegate still exists.

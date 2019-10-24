@@ -12,7 +12,8 @@
 #include "third_party/webrtc/api/task_queue/task_queue_factory.h"
 
 // Creates factory for webrtc::TaskQueueBase backed by base::SequencedTaskRunner
-// Tested by /content/renderer/media/webrtc/task_queue_factory_unittest.cc
+// Tested by
+// /third_party/blink/renderer/platform/peerconnection/task_queue_factory_test.cc
 std::unique_ptr<webrtc::TaskQueueFactory> CreateWebRtcTaskQueueFactory();
 
 std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>

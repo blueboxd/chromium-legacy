@@ -4,9 +4,35 @@
 
 #include "chrome/browser/unexpire_flags.h"
 
+#include "base/no_destructor.h"
 #include "chrome/browser/expired_flags_list.h"
 
 namespace flags {
+
+namespace {
+
+class FlagPredicateSingleton {
+ public:
+  FlagPredicateSingleton() = default;
+  ~FlagPredicateSingleton() = default;
+
+  static const testing::FlagPredicate& GetPredicate() {
+    return GetInstance()->predicate_;
+  }
+  static void SetPredicate(testing::FlagPredicate predicate) {
+    GetInstance()->predicate_ = predicate;
+  }
+
+ private:
+  static FlagPredicateSingleton* GetInstance() {
+    static base::NoDestructor<FlagPredicateSingleton> instance;
+    return instance.get();
+  }
+
+  testing::FlagPredicate predicate_;
+};
+
+}  // namespace
 
 const base::Feature kUnexpireFlagsM76{"TemporaryUnexpireFlagsM76",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -35,6 +61,9 @@ bool ExpiryEnabledForMstone(int mstone) {
 }
 
 bool IsFlagExpired(const char* internal_name) {
+  if (FlagPredicateSingleton::GetPredicate())
+    return FlagPredicateSingleton::GetPredicate().Run(internal_name);
+
   for (int i = 0; kExpiredFlags[i].name; ++i) {
     const ExpiredFlag* f = &kExpiredFlags[i];
     if (!strcmp(f->name, internal_name) && ExpiryEnabledForMstone(f->mstone))
@@ -42,5 +71,13 @@ bool IsFlagExpired(const char* internal_name) {
   }
   return false;
 }
+
+namespace testing {
+
+void SetFlagExpiredPredicate(FlagPredicate predicate) {
+  FlagPredicateSingleton::SetPredicate(predicate);
+}
+
+}  // namespace testing
 
 }  // namespace flags

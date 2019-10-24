@@ -132,22 +132,16 @@ LayoutUnit ComputeFloatAncestorInlineEndSize(const NGConstraintSpace& space,
   return inline_end_size;
 }
 
-scoped_refptr<const NGPhysicalTextFragment> CreateHyphenFragment(
-    NGInlineNode node,
-    WritingMode writing_mode,
-    const NGInlineItem& item) {
+void CreateHyphen(NGInlineNode node,
+                  WritingMode writing_mode,
+                  const NGInlineItem& item,
+                  NGInlineItemResult* item_result) {
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
   TextDirection direction = style.Direction();
-  String hyphen_string = style.HyphenString();
-  HarfBuzzShaper shaper(hyphen_string);
-  scoped_refptr<ShapeResult> hyphen_result =
-      shaper.Shape(&style.GetFont(), direction);
-  NGTextFragmentBuilder builder(writing_mode);
-  builder.SetText(item.GetLayoutObject(), hyphen_string, &style,
-                  /* is_ellipsis_style */ false,
-                  ShapeResultView::Create(hyphen_result.get()));
-  return builder.ToTextFragment();
+  item_result->hyphen_string = style.HyphenString();
+  HarfBuzzShaper shaper(item_result->hyphen_string);
+  item_result->hyphen_shape_result = shaper.Shape(&style.GetFont(), direction);
 }
 
 inline void ClearNeedsLayout(const NGInlineItem& item) {
@@ -260,25 +254,6 @@ void NGLineBreaker::SetMaxSizeCache(MaxSizeCache* max_size_cache) {
   DCHECK_NE(mode_, NGLineBreakerMode::kContent);
   DCHECK(max_size_cache);
   max_size_cache_ = max_size_cache;
-}
-
-LayoutUnit NGLineBreaker::SetLineEndFragment(
-    scoped_refptr<const NGPhysicalTextFragment> fragment,
-    NGLineInfo* line_info) {
-  LayoutUnit inline_size;
-  bool is_horizontal =
-      IsHorizontalWritingMode(constraint_space_.GetWritingMode());
-  if (line_info->LineEndFragment()) {
-    const PhysicalSize& size = line_info->LineEndFragment()->Size();
-    inline_size = is_horizontal ? -size.width : -size.height;
-  }
-  if (fragment) {
-    const PhysicalSize& size = fragment->Size();
-    inline_size = is_horizontal ? size.width : size.height;
-  }
-  line_info->SetLineEndFragment(std::move(fragment));
-  position_ += inline_size;
-  return inline_size;
 }
 
 // Compute the base direction for bidi algorithm for this line.
@@ -752,25 +727,24 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
     CHECK_GT(result.break_offset, item_result->start_offset);
 
     inline_size = shape_result->SnappedWidth().ClampNegativeToZero();
-    item_result->inline_size = inline_size;
     if (UNLIKELY(result.is_hyphenated)) {
       const WritingMode writing_mode = constraint_space_.GetWritingMode();
-      scoped_refptr<const NGPhysicalTextFragment> hyphen_fragment =
-          CreateHyphenFragment(node_, writing_mode, item);
+      CreateHyphen(node_, writing_mode, item, item_result);
+      DCHECK(item_result->hyphen_shape_result);
+      DCHECK(item_result->hyphen_string);
       LayoutUnit space_for_hyphen = available_width - inline_size;
-      LayoutUnit hyphen_inline_size = IsHorizontalWritingMode(writing_mode)
-                                          ? hyphen_fragment->Size().width
-                                          : hyphen_fragment->Size().height;
+      LayoutUnit hyphen_inline_size = item_result->HyphenInlineSize();
       // If the hyphen overflows, retry with the reduced available width.
       if (space_for_hyphen >= 0 && hyphen_inline_size > space_for_hyphen) {
         available_width -= hyphen_inline_size;
         continue;
       }
-      inline_size += SetLineEndFragment(std::move(hyphen_fragment), line_info);
-      item_result->text_end_effect = NGTextEndEffect::kHyphen;
+      inline_size += hyphen_inline_size;
+    } else if (UNLIKELY(item_result->hyphen_shape_result)) {
+      item_result->hyphen_shape_result = nullptr;
+      item_result->hyphen_string = String();
     }
-    item_result->inline_size =
-        shape_result->SnappedWidth().ClampNegativeToZero();
+    item_result->inline_size = inline_size;
     item_result->end_offset = result.break_offset;
     item_result->shape_result = std::move(shape_result);
     break;
@@ -1744,8 +1718,6 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
           if (new_end == item_results->size()) {
             position_ =
                 available_width + width_to_rewind + item_result->inline_size;
-            if (line_info->LineEndFragment())
-              SetLineEndFragment(nullptr, line_info);
             DCHECK_EQ(position_, line_info->ComputeWidth());
             item_index_ = item_result->item_index;
             offset_ = item_result->end_offset;
@@ -1762,6 +1734,8 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
           return;
         }
         SetCurrentStyle(*was_current_style);
+        if (i < item_results->size() - 1 && item_result->can_break_after)
+          break_before = i + 1;
         position_maybe_changed = true;
       }
     }
@@ -1814,6 +1788,23 @@ void NGLineBreaker::RewindOverflow(unsigned new_end, NGLineInfo* line_info) {
   const Vector<NGInlineItem>& items = Items();
   const NGInlineItemResults& item_results = line_info->Results();
   DCHECK_LT(new_end, item_results.size());
+
+  // |HandleOverflow()| may have tried to break the last text item. In that
+  // case, stop trying to include following items because there is a gap to the
+  // next item.
+  if (new_end) {
+    const NGInlineItemResult& item_result = item_results[new_end - 1];
+    DCHECK(item_result.item);
+    const NGInlineItem& item = *item_result.item;
+    if (item.Type() == NGInlineItem::kText &&
+        item.EndOffset() != item_result.end_offset) {
+      Rewind(new_end, line_info);
+      DCHECK_EQ(static_cast<unsigned>(&item - items.begin()), item_index_);
+      HandleTrailingSpaces(item, line_info);
+      return;
+    }
+  }
+
   unsigned open_tag_count = 0;
   const String& text = Text();
   for (unsigned index = new_end; index < item_results.size(); index++) {
@@ -1966,7 +1957,6 @@ void NGLineBreaker::Rewind(unsigned new_end, NGLineInfo* line_info) {
   item_results.Shrink(new_end);
 
   trailing_collapsible_space_.reset();
-  SetLineEndFragment(nullptr, line_info);
   position_ = line_info->ComputeWidth();
 }
 

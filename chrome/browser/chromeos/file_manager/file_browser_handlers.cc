@@ -45,8 +45,8 @@
 #include "net/base/escape.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "storage/common/fileapi/file_system_info.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_info.h"
+#include "storage/common/file_system/file_system_util.h"
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;

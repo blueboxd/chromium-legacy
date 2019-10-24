@@ -1326,10 +1326,6 @@
       status: "experimental",
     },
     {
-      name: "QuicTransport",
-      status: "experimental",
-    },
-    {
       name: "ReducedReferrerGranularity",
     },
     {
@@ -1765,9 +1761,6 @@
       name: "WebUSBOnDedicatedWorkers",
       status: "stable",
       depends_on: ["WebUSB"],
-    },
-    {
-      name: "WebVR",
     },
     {
       name: "WebVTTRegions",

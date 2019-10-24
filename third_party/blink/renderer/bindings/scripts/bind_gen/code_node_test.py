@@ -279,3 +279,23 @@ void blink::bindings::func(int arg1, int arg2) {
   return var2;
 }
 """)
+
+    def test_template_error_handling(self):
+        renderer = MakoRenderer()
+
+        root = SymbolScopeNode(renderer=renderer)
+        root.append(
+            SymbolScopeNode([
+                # Have Mako raise a NameError.
+                TextNode("${unbound_symbol}"),
+            ]))
+
+        with self.assertRaises(NameError):
+            root.render()
+
+        callers_on_error = list(renderer.callers_on_error)
+        self.assertEqual(len(callers_on_error), 3)
+        self.assertEqual(callers_on_error[0], root[0][0])
+        self.assertEqual(callers_on_error[1], root[0])
+        self.assertEqual(callers_on_error[2], root)
+        self.assertEqual(renderer.last_caller_on_error, root[0][0])

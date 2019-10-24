@@ -10,13 +10,13 @@ namespace blink {
 
 // static
 GPURenderBundle* GPURenderBundle::Create(GPUDevice* device,
-                                         DawnRenderBundle render_bundle) {
+                                         WGPURenderBundle render_bundle) {
   return MakeGarbageCollected<GPURenderBundle>(device, render_bundle);
 }
 
 GPURenderBundle::GPURenderBundle(GPUDevice* device,
-                                 DawnRenderBundle render_bundle)
-    : DawnObject<DawnRenderBundle>(device, render_bundle) {}
+                                 WGPURenderBundle render_bundle)
+    : DawnObject<WGPURenderBundle>(device, render_bundle) {}
 
 GPURenderBundle::~GPURenderBundle() {
   if (IsDawnControlClientDestroyed()) {

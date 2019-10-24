@@ -7,10 +7,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
+
 namespace ui {
+
 class OpenPalmDetectionFilterTest : public testing::Test {
  public:
   OpenPalmDetectionFilterTest() = default;
+
   void SetUp() override {
     shared_palm_state = std::make_unique<SharedPalmDetectionFilterState>();
     palm_detection_filter_.reset(
@@ -19,8 +22,8 @@ class OpenPalmDetectionFilterTest : public testing::Test {
 
  protected:
   std::unique_ptr<SharedPalmDetectionFilterState> shared_palm_state;
-
   std::unique_ptr<PalmDetectionFilter> palm_detection_filter_;
+
   DISALLOW_COPY_AND_ASSIGN(OpenPalmDetectionFilterTest);
 };
 
@@ -35,4 +38,5 @@ TEST_F(OpenPalmDetectionFilterTest, TestSetsToZero) {
   EXPECT_TRUE(hold.none());
   EXPECT_TRUE(suppress.none());
 }
+
 }  // namespace ui

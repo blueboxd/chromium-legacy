@@ -16,6 +16,7 @@
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class TaskRunner;
@@ -53,11 +54,11 @@ class DeviceSyncClient {
   virtual ~DeviceSyncClient();
 
   // Completes initialization. Must be called after connecting the DeviceSync
-  // mojo interface pointer to the implementation.
+  // mojo remote to the implementation.
   virtual void Initialize(scoped_refptr<base::TaskRunner> task_runner) {}
 
-  // Returns the DeviceSync mojo interface pointer.
-  virtual mojom::DeviceSyncPtr* GetDeviceSyncPtr();
+  // Returns the DeviceSync mojo remote.
+  virtual mojo::Remote<mojom::DeviceSync>* GetDeviceSyncRemote();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

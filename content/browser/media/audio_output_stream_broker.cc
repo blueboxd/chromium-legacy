@@ -147,11 +147,9 @@ void AudioOutputStreamBroker::CreateStream(
   constexpr int log_component_id = 0;
   factory->CreateOutputStream(
       std::move(stream_receiver), std::move(observer),
-      MediaInternals::GetInstance()
-          ->CreateMojoAudioLog(
-              media::AudioLogFactory::AudioComponent::AUDIO_OUTPUT_CONTROLLER,
-              log_component_id, render_process_id(), render_frame_id())
-          .PassInterface(),
+      MediaInternals::GetInstance()->CreateMojoAudioLog(
+          media::AudioLogFactory::AudioComponent::AUDIO_OUTPUT_CONTROLLER,
+          log_component_id, render_process_id(), render_frame_id()),
       output_device_id_, params_, group_id_, processing_id_,
       base::BindOnce(&AudioOutputStreamBroker::StreamCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(stream)));

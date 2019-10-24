@@ -1296,6 +1296,8 @@ jumbo_static_library("ui") {
       "webui/settings/protocol_handlers_handler.h",
       "webui/settings/reset_settings_handler.cc",
       "webui/settings/reset_settings_handler.h",
+      "webui/settings/safety_check_handler.cc",
+      "webui/settings/safety_check_handler.h",
       "webui/settings/search_engines_handler.cc",
       "webui/settings/search_engines_handler.h",
       "webui/settings/settings_clear_browsing_data_handler.cc",
@@ -4137,6 +4139,8 @@ static_library("test_support") {
       "tabs/tab_ukm_test_helper.h",
       "test/test_confirm_bubble_model.cc",
       "test/test_confirm_bubble_model.h",
+      "webui/help/test_version_updater.cc",
+      "webui/help/test_version_updater.h",
     ]
     deps += [
       "//chrome/test:test_support_ui",
@@ -4161,7 +4165,10 @@ static_library("test_support") {
       "ash/test_wallpaper_controller.cc",
       "ash/test_wallpaper_controller.h",
     ]
-    deps += [ "//ash/public/cpp" ]
+    deps += [
+      "//ash/public/cpp",
+      "//chromeos/dbus",
+    ]
   }
 
   if (enable_extensions) {

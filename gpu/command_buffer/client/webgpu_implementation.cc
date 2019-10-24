@@ -325,7 +325,7 @@ void WebGPUImplementation::FlushCommands() {
   helper_->Flush();
 }
 
-DawnDevice WebGPUImplementation::GetDefaultDevice() {
+WGPUDevice WebGPUImplementation::GetDefaultDevice() {
 #if BUILDFLAG(USE_DAWN)
   return wire_client_->GetDevice();
 #else
@@ -334,7 +334,7 @@ DawnDevice WebGPUImplementation::GetDefaultDevice() {
 #endif
 }
 
-ReservedTexture WebGPUImplementation::ReserveTexture(DawnDevice device) {
+ReservedTexture WebGPUImplementation::ReserveTexture(WGPUDevice device) {
 #if BUILDFLAG(USE_DAWN)
   dawn_wire::ReservedTexture reservation = wire_client_->ReserveTexture(device);
   return {reservation.texture, reservation.id, reservation.generation};

@@ -18,7 +18,9 @@
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class TaskRunner;
@@ -51,7 +53,7 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
   ~DeviceSyncClientImpl() override;
 
   void Initialize(scoped_refptr<base::TaskRunner> task_runner) override;
-  mojom::DeviceSyncPtr* GetDeviceSyncPtr() override;
+  mojo::Remote<mojom::DeviceSync>* GetDeviceSyncRemote() override;
 
   // DeviceSyncClient:
   void ForceEnrollmentNow(
@@ -94,12 +96,12 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
       mojom::NetworkRequestResult result_code,
       mojom::FindEligibleDevicesResponsePtr response);
 
-  mojom::DeviceSyncObserverPtr GenerateInterfacePtr();
+  mojo::PendingRemote<mojom::DeviceSyncObserver> GenerateRemote();
 
   void FlushForTesting();
 
-  mojom::DeviceSyncPtr device_sync_ptr_;
-  mojo::Binding<mojom::DeviceSyncObserver> observer_binding_;
+  mojo::Remote<mojom::DeviceSync> device_sync_;
+  mojo::Receiver<mojom::DeviceSyncObserver> observer_receiver_{this};
   std::unique_ptr<multidevice::ExpiringRemoteDeviceCache>
       expiring_device_cache_;
 

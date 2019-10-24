@@ -263,6 +263,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   views::View* sync_info_container_ = nullptr;
   views::View* shortcut_features_container_ = nullptr;
   views::View* features_container_ = nullptr;
+  views::View* profile_mgmt_separator_container_ = nullptr;
   views::View* profile_mgmt_heading_container_ = nullptr;
   views::View* selectable_profiles_container_ = nullptr;
   views::View* profile_mgmt_shortcut_features_container_ = nullptr;

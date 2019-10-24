@@ -12,6 +12,7 @@
 #include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
 
 namespace ui {
+
 class HeuristicStylusPalmDetectionFilterTest : public testing::Test {
  public:
   HeuristicStylusPalmDetectionFilterTest() = default;
@@ -32,10 +33,12 @@ class HeuristicStylusPalmDetectionFilterTest : public testing::Test {
 
   const base::TimeDelta sample_interval =
       base::TimeDelta::FromMillisecondsD(7.5);
+
   std::unique_ptr<SharedPalmDetectionFilterState> shared_palm_state;
   std::unique_ptr<PalmDetectionFilter> palm_detection_filter_;
   std::vector<InProgressTouchEvdev> touches_;
   base::TimeTicks test_start_time_;
+
   DISALLOW_COPY_AND_ASSIGN(HeuristicStylusPalmDetectionFilterTest);
 };
 
@@ -174,4 +177,5 @@ TEST_F(HeuristicStylusPalmDetectionFilterTest, TestHover) {
   hold.reset(0);
   EXPECT_TRUE(hold.none());
 }
+
 }  // namespace ui

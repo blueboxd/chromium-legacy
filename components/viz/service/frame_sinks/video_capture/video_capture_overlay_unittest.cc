@@ -129,16 +129,17 @@ class VideoCaptureOverlayTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureOverlayTest);
 };
 
-// Tests that, when the VideoCaptureOverlay binds to a mojo request, it reports
-// when the binding is closed.
+// Tests that, when the VideoCaptureOverlay binds to a mojo pending receiver, it
+// reports when the receiver is closed.
 TEST_F(VideoCaptureOverlayTest, ReportsLostMojoConnection) {
-  mojom::FrameSinkVideoCaptureOverlayPtr overlay_ptr;
-  VideoCaptureOverlay overlay(frame_source(), mojo::MakeRequest(&overlay_ptr));
-  ASSERT_TRUE(overlay_ptr);
+  mojo::Remote<mojom::FrameSinkVideoCaptureOverlay> overlay_remote;
+  VideoCaptureOverlay overlay(frame_source(),
+                              overlay_remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(overlay_remote);
   RunUntilIdle();  // Propagate mojo tasks.
 
   EXPECT_CALL(*frame_source(), OnOverlayConnectionLost(&overlay));
-  overlay_ptr.reset();
+  overlay_remote.reset();
   RunUntilIdle();  // Propagate mojo tasks.
 }
 

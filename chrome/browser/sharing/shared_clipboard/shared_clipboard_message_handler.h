@@ -19,8 +19,8 @@ class SharedClipboardMessageHandler : public SharingMessageHandler {
   ~SharedClipboardMessageHandler() override;
 
   // SharingMessageHandler implementation:
-  void OnMessage(
-      const chrome_browser_sharing::SharingMessage& message) override;
+  void OnMessage(chrome_browser_sharing::SharingMessage message,
+                 SharingMessageHandler::DoneCallback done_callback) override;
 
  protected:
   // Called after the message has been copied to the clipboard. Implementers

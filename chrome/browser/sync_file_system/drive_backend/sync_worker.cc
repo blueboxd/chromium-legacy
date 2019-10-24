@@ -27,7 +27,7 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "extensions/browser/extension_registry.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 namespace sync_file_system {
 

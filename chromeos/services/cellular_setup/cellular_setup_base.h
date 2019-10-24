@@ -7,26 +7,27 @@
 
 #include "base/macros.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace chromeos {
 
 namespace cellular_setup {
 
-// mojom::CellularSetup implementation which accepts requests to bind to it.
+// mojom::CellularSetup implementation which accepts receivers to bind to it.
 // This class does not implement any of mojom::CellularSetup's functions, so
 // derived classes should override them.
 class CellularSetupBase : public mojom::CellularSetup {
  public:
   ~CellularSetupBase() override;
 
-  void BindRequest(mojom::CellularSetupRequest request);
+  void BindReceiver(mojo::PendingReceiver<mojom::CellularSetup> receiver);
 
  protected:
   CellularSetupBase();
 
  private:
-  mojo::BindingSet<mojom::CellularSetup> bindings_;
+  mojo::ReceiverSet<mojom::CellularSetup> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(CellularSetupBase);
 };

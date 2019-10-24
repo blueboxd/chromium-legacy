@@ -9,14 +9,9 @@
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/unified_consent/feature.h"
 #include "components/unified_consent/pref_names.h"
-#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using unified_consent::ScopedUnifiedConsent;
-using unified_consent::UnifiedConsentFeatureState;
 
 namespace ukm {
 
@@ -123,7 +118,6 @@ class SyncDisableObserverTest : public testing::Test {
 
   void SetUrlKeyedAnonymizedDataCollectionEnabled(PrefService* prefs,
                                                   bool enabled) {
-    DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
     prefs->SetBoolean(
         unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
         enabled);
@@ -154,21 +148,7 @@ TEST_F(SyncDisableObserverTest, NotActive) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
-TEST_F(SyncDisableObserverTest, OneEnabled_UnifiedConsentDisabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kDisabled);
-  TestSyncDisableObserver observer;
-  MockSyncService sync;
-  sync.SetStatus(false, true, true);
-  observer.ObserveServiceForSyncDisables(&sync, nullptr);
-  EXPECT_TRUE(observer.SyncStateAllowsUkm());
-  EXPECT_TRUE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-}
-
-TEST_F(SyncDisableObserverTest, OneEnabled_UnifiedConsentEnabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabled);
+TEST_F(SyncDisableObserverTest, OneEnabled) {
   sync_preferences::TestingPrefServiceSyncable prefs;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs);
   SetUrlKeyedAnonymizedDataCollectionEnabled(&prefs, true);
@@ -185,83 +165,7 @@ TEST_F(SyncDisableObserverTest, OneEnabled_UnifiedConsentEnabled) {
   }
 }
 
-TEST_F(SyncDisableObserverTest, Passphrased_UnifiedConsentDisabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kDisabled);
-  MockSyncService sync;
-  sync.SetStatus(true, true, true);
-  TestSyncDisableObserver observer;
-  observer.ObserveServiceForSyncDisables(&sync, nullptr);
-  EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  EXPECT_FALSE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-}
-
-TEST_F(SyncDisableObserverTest, HistoryDisabled_UnifiedConsentDisabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kDisabled);
-  TestSyncDisableObserver observer;
-  MockSyncService sync;
-  sync.SetStatus(false, false, true);
-  observer.ObserveServiceForSyncDisables(&sync, nullptr);
-  EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  EXPECT_FALSE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-}
-
-TEST_F(SyncDisableObserverTest, AuthError_UnifiedConsentDisabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kDisabled);
-  TestSyncDisableObserver observer;
-  MockSyncService sync;
-  sync.SetStatus(false, true, true);
-  observer.ObserveServiceForSyncDisables(&sync, nullptr);
-  EXPECT_TRUE(observer.SyncStateAllowsUkm());
-  sync.SetAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  sync.SetAuthError(GoogleServiceAuthError::NONE);
-  EXPECT_TRUE(observer.SyncStateAllowsUkm());
-}
-
-TEST_F(SyncDisableObserverTest, MixedProfiles1_UnifiedConsentDisabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kDisabled);
-  TestSyncDisableObserver observer;
-  MockSyncService sync1;
-  sync1.SetStatus(false, false, true);
-  observer.ObserveServiceForSyncDisables(&sync1, nullptr);
-  MockSyncService sync2;
-  sync2.SetStatus(false, true, true);
-  observer.ObserveServiceForSyncDisables(&sync2, nullptr);
-  EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  EXPECT_FALSE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-}
-
-TEST_F(SyncDisableObserverTest, MixedProfiles2_UnifiedConsentDisabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kDisabled);
-  TestSyncDisableObserver observer;
-  MockSyncService sync1;
-  sync1.SetStatus(false, true, true);
-  observer.ObserveServiceForSyncDisables(&sync1, nullptr);
-  EXPECT_TRUE(observer.ResetNotified());
-
-  MockSyncService sync2;
-  sync2.SetStatus(false, false, true);
-  observer.ObserveServiceForSyncDisables(&sync2, nullptr);
-  EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  EXPECT_TRUE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-  sync2.Shutdown();
-  EXPECT_TRUE(observer.SyncStateAllowsUkm());
-  EXPECT_TRUE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-}
-
-TEST_F(SyncDisableObserverTest, MixedProfiles_UnifiedConsentEnabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabled);
+TEST_F(SyncDisableObserverTest, MixedProfiles) {
   sync_preferences::TestingPrefServiceSyncable prefs1;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs1);
   sync_preferences::TestingPrefServiceSyncable prefs2;
@@ -279,25 +183,7 @@ TEST_F(SyncDisableObserverTest, MixedProfiles_UnifiedConsentEnabled) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
-TEST_F(SyncDisableObserverTest, TwoEnabled_UnifiedConsentDisabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kDisabled);
-  TestSyncDisableObserver observer;
-  MockSyncService sync1;
-  sync1.SetStatus(false, true, true);
-  observer.ObserveServiceForSyncDisables(&sync1, nullptr);
-  EXPECT_TRUE(observer.ResetNotified());
-  MockSyncService sync2;
-  sync2.SetStatus(false, true, true);
-  observer.ObserveServiceForSyncDisables(&sync2, nullptr);
-  EXPECT_TRUE(observer.SyncStateAllowsUkm());
-  EXPECT_FALSE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-}
-
-TEST_F(SyncDisableObserverTest, TwoEnabled_UnifiedConsentEnabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabled);
+TEST_F(SyncDisableObserverTest, TwoEnabled) {
   sync_preferences::TestingPrefServiceSyncable prefs1;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs1);
   sync_preferences::TestingPrefServiceSyncable prefs2;
@@ -316,28 +202,7 @@ TEST_F(SyncDisableObserverTest, TwoEnabled_UnifiedConsentEnabled) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
-TEST_F(SyncDisableObserverTest, OneAddRemove_UnifiedConsentDisabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kDisabled);
-  TestSyncDisableObserver observer;
-  MockSyncService sync;
-  observer.ObserveServiceForSyncDisables(&sync, nullptr);
-  EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  EXPECT_FALSE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-  sync.SetStatus(false, true, true);
-  EXPECT_TRUE(observer.SyncStateAllowsUkm());
-  EXPECT_TRUE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-  sync.Shutdown();
-  EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  EXPECT_TRUE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-}
-
-TEST_F(SyncDisableObserverTest, OneAddRemove_UnifiedConsentEnabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabled);
+TEST_F(SyncDisableObserverTest, OneAddRemove) {
   sync_preferences::TestingPrefServiceSyncable prefs;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs);
   TestSyncDisableObserver observer;
@@ -356,30 +221,7 @@ TEST_F(SyncDisableObserverTest, OneAddRemove_UnifiedConsentEnabled) {
   EXPECT_FALSE(observer.ResetPurged());
 }
 
-TEST_F(SyncDisableObserverTest, PurgeOnDisable_UnifiedConsentDisabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kDisabled);
-  TestSyncDisableObserver observer;
-  MockSyncService sync;
-  sync.SetStatus(false, true, true);
-  observer.ObserveServiceForSyncDisables(&sync, nullptr);
-  EXPECT_TRUE(observer.SyncStateAllowsUkm());
-  EXPECT_TRUE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-  sync.SetStatus(false, false, true);
-  EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  EXPECT_TRUE(observer.ResetNotified());
-  EXPECT_TRUE(observer.ResetPurged());
-  sync.Shutdown();
-  EXPECT_FALSE(observer.SyncStateAllowsUkm());
-  EXPECT_FALSE(observer.ResetNotified());
-  EXPECT_FALSE(observer.ResetPurged());
-}
-
-TEST_F(SyncDisableObserverTest, PurgeOnDisable_UnifiedConsentEnabled) {
-  ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabled);
-
+TEST_F(SyncDisableObserverTest, PurgeOnDisable) {
   sync_preferences::TestingPrefServiceSyncable prefs;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs);
   TestSyncDisableObserver observer;

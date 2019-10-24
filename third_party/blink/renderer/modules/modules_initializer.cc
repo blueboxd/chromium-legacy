@@ -74,8 +74,6 @@
 #include "third_party/blink/renderer/modules/storage/dom_window_storage_controller.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
-#include "third_party/blink/renderer/modules/vr/navigator_vr.h"
-#include "third_party/blink/renderer/modules/vr/vr_controller.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/inspector_web_audio_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
@@ -241,8 +239,6 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
   NavigatorGamepad::From(document);
   NavigatorServiceWorker::From(document);
   DOMWindowStorageController::From(document);
-  if (RuntimeEnabledFeatures::WebVREnabled(document.GetExecutionContext()))
-    NavigatorVR::From(document);
   if (RuntimeEnabledFeatures::WebXREnabled(document.GetExecutionContext()))
     NavigatorXR::From(document);
   if (RuntimeEnabledFeatures::PresentationEnabled() &&

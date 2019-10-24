@@ -59,6 +59,9 @@ id<GREYMatcher> PrimaryToolbar();
 // Returns matcher for a cancel button.
 id<GREYMatcher> CancelButton();
 
+// Returns the matcher for an enabled cancel button in a navigation bar.
+id<GREYMatcher> NavigationBarCancelButton();
+
 // Returns matcher for a close button.
 id<GREYMatcher> CloseButton();
 
@@ -364,6 +367,67 @@ id<GREYMatcher> TabGridOtherDevicesPanelButton();
 // Returns the GREYMatcher for the button to close the cell at |index| in the
 // tab grid.
 id<GREYMatcher> TabGridCloseButtonForCellAtIndex(unsigned int index);
-}
+
+// Returns a matcher for the password settings collection view.
+id<GREYMatcher> SettingsPasswordMatcher();
+
+// Returns a matcher for the search bar in password settings.
+id<GREYMatcher> SettingsPasswordSearchMatcher();
+
+// Returns a matcher for the profiles settings collection view.
+id<GREYMatcher> SettingsProfileMatcher();
+
+// Returns a matcher for an autofill suggestion view.
+id<GREYMatcher> AutofillSuggestionViewMatcher();
+
+#pragma mark - Manual Fallback
+
+// Returns a matcher for the scroll view in keyboard accessory bar.
+id<GREYMatcher> ManualFallbackFormSuggestionViewMatcher();
+
+// Returns a matcher for the keyboard icon in the keyboard accessory bar.
+id<GREYMatcher> ManualFallbackKeyboardIconMatcher();
+
+// Returns a matcher for the password icon in the keyboard accessory bar.
+id<GREYMatcher> ManualFallbackPasswordIconMatcher();
+
+// Returns a matcher for the password table view in manual fallback.
+id<GREYMatcher> ManualFallbackPasswordTableViewMatcher();
+
+// Returns a matcher for the password search bar in manual fallback.
+id<GREYMatcher> ManualFallbackPasswordSearchBarMatcher();
+
+// Returns a matcher for the button to open password settings in manual
+// fallback.
+id<GREYMatcher> ManualFallbackManagePasswordsMatcher();
+
+// Returns a matcher for the button to open all passwords in manual fallback.
+id<GREYMatcher> ManualFallbackOtherPasswordsMatcher();
+
+// Returns a matcher for the button to dismiss all passwords in manual fallback.
+id<GREYMatcher> ManualFallbackOtherPasswordsDismissMatcher();
+
+// Returns a matcher for the a password in the manual fallback list.
+id<GREYMatcher> ManualFallbackPasswordButtonMatcher();
+
+// Returns a matcher for the PasswordTableView window.
+id<GREYMatcher> ManualFallbackPasswordTableViewWindowMatcher();
+
+// Returns a matcher for the profiles icon in the keyboard accessory bar.
+id<GREYMatcher> ManualFallbackProfilesIconMatcher();
+
+// Returns a matcher for the profiles table view in manual fallback.
+id<GREYMatcher> ManualFallbackProfilesTableViewMatcher();
+// Returns a matcher for the button to open profile settings in manual
+// fallback.
+id<GREYMatcher> ManualFallbackManageProfilesMatcher();
+
+// Returns a matcher for the profiles settings collection view.
+id<GREYMatcher> SettingsProfileMatcher();
+
+// Returns a matcher for the ProfileTableView window.
+id<GREYMatcher> ManualFallbackProfileTableViewWindowMatcher();
+
+}  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

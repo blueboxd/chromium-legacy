@@ -1913,7 +1913,6 @@ test("content_unittests") {
     "../renderer/media/webrtc/peer_connection_dependency_factory_unittest.cc",
     "../renderer/media/webrtc/peer_connection_tracker_unittest.cc",
     "../renderer/media/webrtc/rtc_peer_connection_handler_unittest.cc",
-    "../renderer/media/webrtc/task_queue_factory_unittest.cc",
     "../renderer/media/webrtc/webrtc_audio_renderer_unittest.cc",
     "../renderer/media/webrtc/webrtc_set_description_observer_unittest.cc",
     "../renderer/peripheral_content_heuristic_unittest.cc",

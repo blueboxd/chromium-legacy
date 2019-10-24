@@ -21,7 +21,7 @@ class MockSharingService : public SharingService {
 
   MOCK_METHOD4(SendMessageToDevice,
                void(const std::string& device_guid,
-                    base::TimeDelta time_to_live,
+                    base::TimeDelta response_timeout,
                     chrome_browser_sharing::SharingMessage message,
                     SharingService::SendMessageCallback callback));
 

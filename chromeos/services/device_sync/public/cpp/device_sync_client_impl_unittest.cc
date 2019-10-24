@@ -183,7 +183,8 @@ class DeviceSyncClientImplTest : public testing::Test {
     // the TaskRunner so that the tasks can be run via a RunLoop later on.
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     client_ = std::make_unique<DeviceSyncClientImpl>();
-    device_sync_->BindRequest(mojo::MakeRequest(client_->GetDeviceSyncPtr()));
+    device_sync_->BindReceiver(
+        client_->GetDeviceSyncRemote()->BindNewPipeAndPassReceiver());
     client_->Initialize(test_task_runner);
     test_task_runner->RunUntilIdle();
   }

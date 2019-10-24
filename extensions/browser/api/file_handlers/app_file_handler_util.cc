@@ -25,8 +25,8 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/file_system/isolated_context.h"
-#include "storage/common/fileapi/file_system_mount_option.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_mount_option.h"
+#include "storage/common/file_system/file_system_types.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/browser/api/file_handlers/non_native_file_system_delegate.h"

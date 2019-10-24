@@ -201,8 +201,10 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (void)bannerInfobarButtonWasPressed:(id)sender {
   [self performInfobarAction];
-  [self.badgeDelegate infobarWasAccepted:self.infobarType
-                             forWebState:self.webState];
+  if ([self isInfobarAccepted]) {
+    [self.badgeDelegate infobarWasAccepted:self.infobarType
+                               forWebState:self.webState];
+  }
   [self dismissInfobarBanner:sender animated:YES completion:nil];
 }
 
@@ -346,6 +348,11 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 #pragma mark InfobarCoordinatorImplementation
 
 - (BOOL)configureModalViewController {
+  NOTREACHED() << "Subclass must implement.";
+  return NO;
+}
+
+- (BOOL)isInfobarAccepted {
   NOTREACHED() << "Subclass must implement.";
   return NO;
 }

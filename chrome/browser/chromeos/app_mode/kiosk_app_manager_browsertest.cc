@@ -275,7 +275,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   }
 
   std::string GetAppIds() const {
-    KioskAppManager::Apps apps;
+    KioskAppManager::AppList apps;
     manager()->GetApps(&apps);
 
     std::string str;
@@ -355,13 +355,13 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     return manager()->GetCachedCrx(app_id, file_path, version);
   }
 
-  void UpdateAppData() { manager()->UpdateAppData(); }
+  void UpdateAppsFromPolicy() { manager()->UpdateAppsFromPolicy(); }
 
   void CheckAppData(const std::string& app_id,
                     const std::string& expected_app_name,
                     const std::string& expected_required_platform_version) {
     // Check manifest data is cached correctly.
-    KioskAppManager::Apps apps;
+    KioskAppManager::AppList apps;
     manager()->GetApps(&apps);
     ASSERT_EQ(1u, apps.size());
     EXPECT_EQ(app_id, apps[0].app_id);
@@ -399,12 +399,9 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_required_platform_version, required_platform_version);
 
     base::FilePath expected_icon_path;
-    ASSERT_TRUE(
-        base::PathService::Get(chrome::DIR_USER_DATA, &expected_icon_path));
+    manager()->GetKioskAppIconCacheDir(&expected_icon_path);
     expected_icon_path =
-        expected_icon_path.AppendASCII(KioskAppManager::kIconCacheDir)
-            .AppendASCII(app_id)
-            .AddExtension(".png");
+        expected_icon_path.AppendASCII(app_id).AddExtension(".png");
     EXPECT_EQ(expected_icon_path.value(), icon_path_string);
   }
 
@@ -693,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DownloadNewApp) {
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, RemoveApp) {
   // Add a new app.
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
-  KioskAppManager::Apps apps;
+  KioskAppManager::AppList apps;
   manager()->GetApps(&apps);
   ASSERT_EQ(1u, apps.size());
   base::FilePath crx_path;
@@ -720,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, RemoveApp) {
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateApp) {
   // Add a version 1 app first.
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
-  KioskAppManager::Apps apps;
+  KioskAppManager::AppList apps;
   manager()->GetApps(&apps);
   ASSERT_EQ(1u, apps.size());
   base::FilePath crx_path;
@@ -737,7 +734,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateApp) {
       kTestLocalFsKioskApp,
       "abbjjkefakmllanciinhgjgjamdmlbdg_v2_read_and_verify_data.crx", "2.0.0");
   AppDataLoadWaiter waiter(manager(), 1);
-  UpdateAppData();
+  UpdateAppsFromPolicy();
   waiter.Wait();
   EXPECT_TRUE(waiter.loaded());
 
@@ -768,7 +765,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateApp) {
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAndRemoveApp) {
   // Add a version 1 app first.
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
-  KioskAppManager::Apps apps;
+  KioskAppManager::AppList apps;
   manager()->GetApps(&apps);
   ASSERT_EQ(1u, apps.size());
   base::FilePath v1_crx_path;
@@ -785,7 +782,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAndRemoveApp) {
       kTestLocalFsKioskApp,
       "abbjjkefakmllanciinhgjgjamdmlbdg_v2_read_and_verify_data.crx", "2.0.0");
   AppDataLoadWaiter waiter(manager(), 1);
-  UpdateAppData();
+  UpdateAppsFromPolicy();
   waiter.Wait();
   EXPECT_TRUE(waiter.loaded());
 

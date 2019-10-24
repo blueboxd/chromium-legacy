@@ -20,8 +20,10 @@
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -301,7 +303,15 @@ TEST_F(TabGridMediatorTest, AddNewItemAtEndCommand) {
   ASSERT_TRUE(web_state);
   EXPECT_EQ(web_state->GetBrowserState(), browser_state_.get());
   EXPECT_FALSE(web_state->HasOpener());
-  EXPECT_EQ(kChromeUINewTabURL, web_state->GetVisibleURL().spec());
+  if (web::features::UseWKWebViewLoading()) {
+    // The URL of pending item (i.e. kChromeUINewTabURL) will not be returned
+    // here because WebState doesn't load the URL until it's visible and
+    // NavigationManager::GetVisibleURL requires WebState::IsLoading to be true
+    // to return pending item's URL.
+    EXPECT_EQ("", web_state->GetVisibleURL().spec());
+  } else {
+    EXPECT_EQ(kChromeUINewTabURL, web_state->GetVisibleURL().spec());
+  }
   NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
   EXPECT_FALSE([original_identifiers_ containsObject:identifier]);
   // Consumer checks.
@@ -323,7 +333,15 @@ TEST_F(TabGridMediatorTest, InsertNewItemCommand) {
   ASSERT_TRUE(web_state);
   EXPECT_EQ(web_state->GetBrowserState(), browser_state_.get());
   EXPECT_FALSE(web_state->HasOpener());
-  EXPECT_EQ(kChromeUINewTabURL, web_state->GetVisibleURL().spec());
+  if (web::features::UseWKWebViewLoading()) {
+    // The URL of pending item (i.e. kChromeUINewTabURL) will not be returned
+    // here because WebState doesn't load the URL until it's visible and
+    // NavigationManager::GetVisibleURL requires WebState::IsLoading to be true
+    // to return pending item's URL.
+    EXPECT_EQ("", web_state->GetVisibleURL().spec());
+  } else {
+    EXPECT_EQ(kChromeUINewTabURL, web_state->GetVisibleURL().spec());
+  }
   NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
   EXPECT_FALSE([original_identifiers_ containsObject:identifier]);
   // Consumer checks.

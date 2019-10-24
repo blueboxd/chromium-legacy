@@ -39,7 +39,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
   static std::unique_ptr<AudioOutputDelegate> Create(
       EventHandler* handler,
       media::AudioManager* audio_manager,
-      media::mojom::AudioLogPtr audio_log,
+      mojo::PendingRemote<media::mojom::AudioLog> audio_log,
       MediaObserver* media_observer,
       int stream_id,
       int render_frame_id,
@@ -54,7 +54,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
       std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
       EventHandler* handler,
       media::AudioManager* audio_manager,
-      media::mojom::AudioLogPtr audio_log,
+      mojo::PendingRemote<media::mojom::AudioLog> audio_log,
       MediaObserver* media_observer,
       int stream_id,
       int render_frame_id,
@@ -86,7 +86,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
 
   // This is the event handler which |this| send notifications to.
   EventHandler* subscriber_;
-  const media::mojom::AudioLogPtr audio_log_;
+  const mojo::Remote<media::mojom::AudioLog> audio_log_;
   // |controller_event_handler_| proxies events from controller to |this|.
   // |controller_event_handler_|, and |reader_| will outlive |this|, see the
   // destructor for details.

@@ -557,7 +557,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   void FireKioskAppSettingsChanged() {
-    KioskAppManager::Get()->UpdateAppData();
+    KioskAppManager::Get()->UpdateAppsFromPolicy();
   }
 
   void SetupTestAppUpdateCheck() {

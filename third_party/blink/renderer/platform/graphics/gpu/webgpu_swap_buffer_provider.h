@@ -35,13 +35,13 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   WebGPUSwapBufferProvider(
       Client* client,
       scoped_refptr<DawnControlClientHolder> dawn_control_client,
-      DawnTextureUsage usage,
-      DawnTextureFormat format);
+      WGPUTextureUsage usage,
+      WGPUTextureFormat format);
   ~WebGPUSwapBufferProvider() override;
 
   cc::Layer* CcLayer();
   void Neuter();
-  DawnTexture GetNewTexture(DawnDevice device, const IntSize& size);
+  WGPUTexture GetNewTexture(WGPUDevice device, const IntSize& size);
 
   // cc::TextureLayerClient implementation.
   bool PrepareTransferableResource(
@@ -84,7 +84,7 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   scoped_refptr<cc::TextureLayer> layer_;
   bool neutered_ = false;
 
-  DawnTextureUsage usage_;
+  WGPUTextureUsage usage_;
 
   uint32_t wire_texture_id_ = 0;
   uint32_t wire_texture_generation_ = 0;

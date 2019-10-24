@@ -100,7 +100,7 @@ FirstRunDialog::FirstRunDialog(Profile* profile) : profile_(profile) {
                               ChromeLayoutProvider::Get()->GetDistanceMetric(
                                   views::DISTANCE_RELATED_CONTROL_VERTICAL));
   auto report_crashes = std::make_unique<views::Checkbox>(
-      l10n_util::GetStringUTF16(IDS_SETTINGS_ENABLE_LOGGING));
+      l10n_util::GetStringUTF16(IDS_FR_ENABLE_LOGGING));
   // Having this box checked means the user has to opt-out of metrics recording.
   report_crashes->SetChecked(!first_run::IsMetricsReportingOptIn());
   report_crashes_ = layout->AddView(std::move(report_crashes));

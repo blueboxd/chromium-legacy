@@ -69,11 +69,6 @@ class UnifiedConsentService
   // Register the prefs used by this UnifiedConsentService.
   static void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Rolls back changes made during migration. This method does nothing if the
-  // user hasn't migrated to unified consent yet.
-  static void RollbackIfNeeded(PrefService* user_pref_service,
-                               syncer::SyncService* sync_service);
-
   // Enables or disables URL-keyed anonymized data collection.
   void SetUrlKeyedAnonymizedDataCollectionEnabled(bool enabled);
 

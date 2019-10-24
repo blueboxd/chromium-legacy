@@ -19,6 +19,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #import "ios/web/test/fakes/crw_fake_session_controller_delegate.h"
 #include "ios/web/test/fakes/fake_navigation_manager_delegate.h"
@@ -76,6 +77,8 @@ class CRWSessionControllerTest : public PlatformTest {
     navigation_manager->SetDelegate(&navigation_manager_delegate_);
     navigation_manager->SetSessionController(session_controller);
     navigation_managers_.push_back(std::move(navigation_manager));
+
+    navigation_manager_delegate_.SetWebState(&web_state_);
   }
 
   web::Referrer MakeReferrer(const std::string& url) {
@@ -85,6 +88,7 @@ class CRWSessionControllerTest : public PlatformTest {
   base::test::ScopedFeatureList feature_list_;
   web::WebTaskEnvironment task_environment_;
   web::TestBrowserState browser_state_;
+  web::TestWebState web_state_;
   web::FakeNavigationManagerDelegate navigation_manager_delegate_;
   CRWSessionController* session_controller_;
   CRWFakeSessionControllerDelegate* session_controller_delegate_ = nil;
@@ -1173,6 +1177,7 @@ TEST_F(CRWSessionControllerTest, VisibleItemWithCommittedAndTransientItems) {
 // Tests that visible URL is the same as pending URL if it was user-initiated.
 TEST_F(CRWSessionControllerTest,
        VisibleItemWithSingleUserInitiatedPendingItem) {
+  web_state_.SetLoading(true);
   [session_controller_
                addPendingItem:GURL("http://www.example.com/0")
                      referrer:MakeReferrer("http://www.example.com/a")
@@ -1188,6 +1193,7 @@ TEST_F(CRWSessionControllerTest,
 // and there is a committed item.
 TEST_F(CRWSessionControllerTest,
        VisibleItemWithCommittedAndUserInitiatedPendingItem) {
+  web_state_.SetLoading(true);
   [session_controller_
                addPendingItem:GURL("http://www.example.com")
                      referrer:MakeReferrer("http://www.example.com/a")

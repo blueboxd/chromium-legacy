@@ -364,6 +364,7 @@ std::unique_ptr<cricket::PortAllocator>
 PeerConnectionDependencyFactory::CreatePortAllocator(
     blink::WebLocalFrame* web_frame) {
   DCHECK(web_frame);
+  EnsureInitialized();
 
   // Copy the flag from Preference associated with this WebLocalFrame.
   P2PPortAllocator::Config port_config;
@@ -464,6 +465,7 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
 
 std::unique_ptr<webrtc::AsyncResolverFactory>
 PeerConnectionDependencyFactory::CreateAsyncResolverFactory() {
+  EnsureInitialized();
   return std::make_unique<ProxyAsyncResolverFactory>(socket_factory_.get());
 }
 

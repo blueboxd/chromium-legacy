@@ -58,8 +58,10 @@ class CodeNode(object):
 
         def __init__(self):
             # Symbols used in generated code, but not yet defined.  See also
-            # SymbolNode.
-            self.undefined_code_symbols = set()
+            # SymbolNode.  Code symbols are accumulated in order from the first
+            # appearance to the last.  This order affects the insertion order of
+            # SymbolDefinitionNodes at SymbolScopeNode.
+            self.undefined_code_symbols = []
 
     class _LooseFormatter(string.Formatter):
         def get_value(self, key, args, kwargs):
@@ -281,11 +283,21 @@ class CodeNode(object):
             return self.upstream.is_code_symbol_defined(symbol_node)
         return False
 
+    def is_code_symbol_registered(self, symbol_node):
+        """
+        Returns True if |symbol_node| is registered and available for use at
+        this point.  See also |SymbolScopeNode.register_code_symbol|.
+        """
+        if self.outer is not None:
+            return self.outer.is_code_symbol_registered(symbol_node)
+        return False
+
     def on_undefined_code_symbol_found(self, symbol_node):
         """Receives a report of use of an undefined symbol node."""
         assert isinstance(symbol_node, SymbolNode)
         state = self.current_render_state
-        state.undefined_code_symbols.add(symbol_node)
+        if symbol_node not in state.undefined_code_symbols:
+            state.undefined_code_symbols.append(symbol_node)
 
     def likeliness_of_undefined_code_symbol_usage(self, symbol_node):
         """
@@ -532,13 +544,12 @@ class SymbolScopeNode(SequenceNode):
             separator_last="\n",
             renderer=renderer)
 
+        self._registered_code_symbols = set()
+
     def _render(self, renderer, last_render_state):
-        # Sort nodes in order to render reproducible results.
-        symbol_nodes = sorted(
-            last_render_state.undefined_code_symbols,
-            key=lambda symbol_node: symbol_node.name)
-        for symbol_node in symbol_nodes:
-            if not self.is_code_symbol_defined(symbol_node):
+        for symbol_node in last_render_state.undefined_code_symbols:
+            if (self.is_code_symbol_registered(symbol_node)
+                    and not self.is_code_symbol_defined(symbol_node)):
                 self._insert_symbol_definition(symbol_node)
 
         return super(SymbolScopeNode, self)._render(
@@ -605,10 +616,17 @@ class SymbolScopeNode(SequenceNode):
         did_insert = insert_right_before_first_use(self)
         assert did_insert
 
+    def is_code_symbol_registered(self, symbol_node):
+        if symbol_node in self._registered_code_symbols:
+            return True
+        return super(SymbolScopeNode,
+                     self).is_code_symbol_registered(symbol_node)
+
     def register_code_symbol(self, symbol_node):
         """Registers a SymbolNode and makes it available in this scope."""
         assert isinstance(symbol_node, SymbolNode)
         self.add_template_var(symbol_node.name, symbol_node)
+        self._registered_code_symbols.add(symbol_node)
 
     def register_code_symbols(self, symbol_nodes):
         for symbol_node in symbol_nodes:

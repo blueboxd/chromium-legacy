@@ -19,8 +19,8 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -64,9 +64,9 @@ class ExistingUserController
     : public LoginDisplay::Delegate,
       public content::NotificationObserver,
       public LoginPerformer::Delegate,
+      public KioskAppManagerObserver,
       public UserSessionManagerDelegate,
       public user_manager::UserManager::Observer,
-      public ArcKioskAppManager::ArcKioskAppManagerObserver,
       public policy::MinimumVersionPolicyHandler::Observer {
  public:
   // Returns the current existing user controller fetched from the current
@@ -127,8 +127,8 @@ class ExistingUserController
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // ArcKioskAppManager::ArcKioskAppManagerObserver overrides.
-  void OnArcKioskAppsChanged() override;
+  // KioskAppManagerObserver overrides.
+  void OnKioskAppsSettingsChanged() override;
 
   // policy::MinimumVersionPolicyHandler::Observer overrides.
   void OnMinimumVersionStateChanged() override;

@@ -5,10 +5,9 @@
 #include "chrome/test/data/webui/signin_browsertest.h"
 
 #include "chrome/browser/signin/scoped_account_consistency.h"
-#include "components/unified_consent/scoped_unified_consent.h"
 
 SigninBrowserTest::SigninBrowserTest() {
-  EnableUnity();
+  EnableDice();
 }
 
 SigninBrowserTest::~SigninBrowserTest() {}
@@ -16,11 +15,4 @@ SigninBrowserTest::~SigninBrowserTest() {}
 void SigninBrowserTest::EnableDice() {
   scoped_account_consistency_ = std::make_unique<ScopedAccountConsistency>(
       signin::AccountConsistencyMethod::kDice);
-}
-
-void SigninBrowserTest::EnableUnity() {
-  EnableDice();
-  scoped_unified_consent_ =
-      std::make_unique<unified_consent::ScopedUnifiedConsent>(
-          unified_consent::UnifiedConsentFeatureState::kEnabled);
 }

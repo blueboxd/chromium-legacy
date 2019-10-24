@@ -17,7 +17,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "storage/browser/file_system/mount_points.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_types.h"
 
 namespace storage {
 class FileSystemURL;

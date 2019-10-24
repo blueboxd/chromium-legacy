@@ -52,26 +52,12 @@ ArcKioskAppManager* ArcKioskAppManager::Get() {
 ArcKioskAppManager::ArcKioskAppManager()
     : auto_launch_account_id_(EmptyAccountId()) {
   DCHECK(!g_arc_kiosk_app_manager);  // Only one instance is allowed.
-  UpdateApps();
-  local_accounts_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-      kAccountsPrefDeviceLocalAccounts,
-      base::Bind(&ArcKioskAppManager::UpdateApps, base::Unretained(this)));
-  local_account_auto_login_id_subscription_ =
-      CrosSettings::Get()->AddSettingsObserver(
-          kAccountsPrefDeviceLocalAccountAutoLoginId,
-          base::Bind(&ArcKioskAppManager::UpdateApps, base::Unretained(this)));
   g_arc_kiosk_app_manager = this;
+  UpdateAppsFromPolicy();
 }
 
 ArcKioskAppManager::~ArcKioskAppManager() {
-  local_accounts_subscription_.reset();
-  local_account_auto_login_id_subscription_.reset();
-  apps_.clear();
   g_arc_kiosk_app_manager = nullptr;
-}
-
-const AccountId& ArcKioskAppManager::GetAutoLaunchAccountId() const {
-  return auto_launch_account_id_;
 }
 
 const ArcKioskAppData* ArcKioskAppManager::GetAppByAccountId(
@@ -83,11 +69,21 @@ const ArcKioskAppData* ArcKioskAppManager::GetAppByAccountId(
   return nullptr;
 }
 
-void ArcKioskAppManager::GetAllApps(Apps* apps) const {
+void ArcKioskAppManager::GetApps(std::vector<App>* apps) const {
   apps->clear();
   apps->reserve(apps_.size());
-  for (auto& app : apps_)
+  for (auto& app : apps_) {
+    apps->emplace_back(*app.get());
+  }
+}
+
+void ArcKioskAppManager::GetAppsForTesting(
+    std::vector<const ArcKioskAppData*>* apps) const {
+  apps->clear();
+  apps->reserve(apps_.size());
+  for (auto& app : apps_) {
     apps->push_back(app.get());
+  }
 }
 
 void ArcKioskAppManager::UpdateNameAndIcon(const std::string& app_id,
@@ -99,14 +95,6 @@ void ArcKioskAppManager::UpdateNameAndIcon(const std::string& app_id,
       return;
     }
   }
-}
-
-void ArcKioskAppManager::AddObserver(ArcKioskAppManagerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ArcKioskAppManager::RemoveObserver(ArcKioskAppManagerObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void ArcKioskAppManager::AddAutoLaunchAppForTest(
@@ -128,7 +116,11 @@ void ArcKioskAppManager::AddAutoLaunchAppForTest(
   auto_launched_with_zero_delay_ = true;
 }
 
-void ArcKioskAppManager::UpdateApps() {
+const AccountId& ArcKioskAppManager::GetAutoLaunchAccountId() const {
+  return auto_launch_account_id_;
+}
+
+void ArcKioskAppManager::UpdateAppsFromPolicy() {
   // Do not populate ARC kiosk apps if ARC kiosk apps can't be run on the
   // device.
   // Apps won't be added to kiosk Apps menu and won't be auto-launched.
@@ -192,23 +184,11 @@ void ArcKioskAppManager::UpdateApps() {
     KioskCryptohomeRemover::CancelDelayedCryptohomeRemoval(account_id);
   }
 
-  ClearRemovedApps(old_apps);
+  std::vector<KioskAppDataBase*> old_apps_to_remove;
+  for (auto& entry : old_apps)
+    old_apps_to_remove.emplace_back(entry.second.get());
+  ClearRemovedApps(old_apps_to_remove);
 
-  for (auto& observer : observers_) {
-    observer.OnArcKioskAppsChanged();
-  }
+  NotifyKioskAppsChanged();
 }
-
-void ArcKioskAppManager::ClearRemovedApps(
-    const std::map<std::string, std::unique_ptr<ArcKioskAppData>>& old_apps) {
-  std::vector<AccountId> account_ids_to_remove;
-  account_ids_to_remove.reserve(old_apps.size());
-  for (auto& entry : old_apps) {
-    entry.second->ClearCache();
-    account_ids_to_remove.push_back(entry.second->account_id());
-  }
-  KioskCryptohomeRemover::RemoveCryptohomesAndExitIfNeeded(
-      account_ids_to_remove);
-}
-
 }  // namespace chromeos

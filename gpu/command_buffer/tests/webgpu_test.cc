@@ -4,8 +4,8 @@
 
 #include "gpu/command_buffer/tests/webgpu_test.h"
 
-#include <dawn/dawn.h>
 #include <dawn/dawn_proc.h>
+#include <dawn/webgpu.h>
 
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
@@ -98,13 +98,13 @@ void WebGPUTest::RunPendingTasks() {
   context_->GetTaskRunner()->RunPendingTasks();
 }
 
-void WebGPUTest::WaitForCompletion(dawn::Device device) {
+void WebGPUTest::WaitForCompletion(wgpu::Device device) {
   // Insert a fence signal and wait for it to be signaled. The guarantees of
   // Dawn are that all previous operations will have been completed and more
   // importantly the callbacks will have been called.
-  dawn::Queue queue = device.CreateQueue();
-  dawn::FenceDescriptor fence_desc{nullptr, 0};
-  dawn::Fence fence = queue.CreateFence(&fence_desc);
+  wgpu::Queue queue = device.CreateQueue();
+  wgpu::FenceDescriptor fence_desc{nullptr, 0};
+  wgpu::Fence fence = queue.CreateFence(&fence_desc);
 
   queue.Submit(0, nullptr);
   queue.Signal(fence, 1u);

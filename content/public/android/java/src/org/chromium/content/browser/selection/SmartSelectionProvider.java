@@ -73,8 +73,16 @@ public class SmartSelectionProvider {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
     public void setTextClassifier(TextClassifier textClassifier) {
         mTextClassifier = textClassifier;
+
+        Context context = mWindowAndroid.getContext().get();
+        if (context == null) {
+            return;
+        }
+        ((TextClassificationManager) context.getSystemService(Context.TEXT_CLASSIFICATION_SERVICE))
+                .setTextClassifier(textClassifier);
     }
 
     // TODO(wnwen): Remove this suppression once the constant is added to lint.

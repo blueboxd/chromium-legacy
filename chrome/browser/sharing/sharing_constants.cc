@@ -8,17 +8,20 @@ const char kFCMScope[] = "GCM";
 
 const char kSharingFCMAppID[] = "com.google.chrome.sharing.fcm";
 
+// Based on Stable + Beta metrics on 23-Oct-2019, 95th percentile of round trip
+// time (Sharing.MessageAckTime) is ~16 seconds. Message timeout is set as round
+// trip expected time, and ack TTL is set as half of the value.
+const constexpr base::TimeDelta kSendMessageTimeout =
+    base::TimeDelta::FromSeconds(16);
+
 const constexpr base::TimeDelta kAckTimeToLive =
-    base::TimeDelta::FromMinutes(30);
+    base::TimeDelta::FromSeconds(8);
 
 const constexpr base::TimeDelta kDeviceExpiration =
     base::TimeDelta::FromDays(2);
 
 const constexpr base::TimeDelta kRegistrationExpiration =
     base::TimeDelta::FromDays(1);
-
-const constexpr base::TimeDelta kSendMessageTimeout =
-    base::TimeDelta::FromSeconds(15);
 
 const constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
@@ -51,8 +54,6 @@ const constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
     // is the first delay once we start exponential backoff.
     false,
 };
-
-constexpr base::TimeDelta kSharingMessageTTL = base::TimeDelta::FromSeconds(10);
 
 constexpr int kMaxDevicesShown = 10;
 

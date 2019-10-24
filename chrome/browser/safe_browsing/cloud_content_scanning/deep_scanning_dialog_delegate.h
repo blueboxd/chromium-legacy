@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_DEEP_SCANNING_DIALOG_DELEGATE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_DEEP_SCANNING_DIALOG_DELEGATE_H_
 
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -159,6 +163,11 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
 
   // Overrides the DM token used for testing purposes.
   static void SetDMTokenForTesting(const char* dm_token);
+
+  // Returns true if the given file type is supported for scanning.
+  static bool FileTypeSupported(const bool for_malware_scan,
+                                const bool for_dlp_scan,
+                                const base::FilePath& path);
 
  protected:
   DeepScanningDialogDelegate(content::WebContents* web_contents,

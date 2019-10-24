@@ -195,11 +195,11 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   bool HasPollingWork() const override { return true; }
 
   void PerformPollingWork() override {
-    DCHECK(dawn_device_);
+    DCHECK(wgpu_device_);
     DCHECK(wire_serializer_);
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                  "WebGPUDecoderImpl::PerformPollingWork");
-    dawn_procs_.deviceTick(dawn_device_);
+    dawn_procs_.deviceTick(wgpu_device_);
     wire_serializer_->Flush();
   }
 
@@ -363,7 +363,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::unique_ptr<dawn_native::Instance> dawn_instance_;
   std::vector<dawn_native::Adapter> dawn_adapters_;
   DawnProcTable dawn_procs_;
-  DawnDevice dawn_device_ = nullptr;
+  WGPUDevice wgpu_device_ = nullptr;
   std::unique_ptr<dawn_wire::WireServer> wire_server_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGPUDecoderImpl);
@@ -416,8 +416,8 @@ WebGPUDecoderImpl::~WebGPUDecoderImpl() {
   // Reset the wire server first so all objects are destroyed before the device.
   // TODO(enga): Handle Device/Context lost.
   wire_server_ = nullptr;
-  if (dawn_device_ != nullptr) {
-    dawn_procs_.deviceRelease(dawn_device_);
+  if (wgpu_device_ != nullptr) {
+    dawn_procs_.deviceRelease(wgpu_device_);
   }
 }
 
@@ -431,18 +431,18 @@ error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
   DCHECK(adapter != nullptr && (*adapter));
 
   // TODO(jiawei.shao@intel.com): support multiple Dawn devices.
-  if (dawn_device_ != nullptr) {
+  if (wgpu_device_ != nullptr) {
     DCHECK(wire_server_);
     return error::kNoError;
   }
 
-  dawn_device_ = adapter->CreateDevice();
-  if (dawn_device_ == nullptr) {
+  wgpu_device_ = adapter->CreateDevice();
+  if (wgpu_device_ == nullptr) {
     return error::kLostContext;
   }
 
   dawn_wire::WireServerDescriptor descriptor = {};
-  descriptor.device = dawn_device_;
+  descriptor.device = wgpu_device_;
   descriptor.procs = &dawn_procs_;
   descriptor.serializer = wire_serializer_.get();
   descriptor.memoryTransferService = memory_transfer_service_.get();
@@ -655,7 +655,7 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   uint32_t device_generation = static_cast<uint32_t>(c.device_generation);
   uint32_t id = static_cast<uint32_t>(c.id);
   uint32_t generation = static_cast<uint32_t>(c.generation);
-  uint32_t usage = static_cast<DawnTextureUsage>(c.usage);
+  uint32_t usage = static_cast<WGPUTextureUsage>(c.usage);
 
   // Unpack the mailbox
   if (sizeof(Mailbox) > immediate_data_size) {
@@ -680,23 +680,23 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   }
 
   static constexpr uint32_t kAllowedTextureUsages = static_cast<uint32_t>(
-      DAWN_TEXTURE_USAGE_COPY_SRC | DAWN_TEXTURE_USAGE_COPY_DST |
-      DAWN_TEXTURE_USAGE_SAMPLED | DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT);
+      WGPUTextureUsage_CopySrc | WGPUTextureUsage_CopyDst |
+      WGPUTextureUsage_Sampled | WGPUTextureUsage_OutputAttachment);
   if (usage & ~kAllowedTextureUsages) {
     DLOG(ERROR) << "AssociateMailbox: Invalid usage";
     return error::kInvalidArguments;
   }
-  DawnTextureUsage dawn_usage = static_cast<DawnTextureUsage>(usage);
+  WGPUTextureUsage wgpu_usage = static_cast<WGPUTextureUsage>(usage);
 
-  // Create a DawnTexture from the mailbox.
+  // Create a WGPUTexture from the mailbox.
   std::unique_ptr<SharedImageRepresentationDawn> shared_image =
-      shared_image_representation_factory_->ProduceDawn(mailbox, dawn_device_);
+      shared_image_representation_factory_->ProduceDawn(mailbox, wgpu_device_);
   if (!shared_image) {
     DLOG(ERROR) << "AssociateMailbox: Couldn't produce shared image";
     return error::kInvalidArguments;
   }
 
-  DawnTexture texture = shared_image->BeginAccess(dawn_usage);
+  WGPUTexture texture = shared_image->BeginAccess(wgpu_usage);
   if (!texture) {
     DLOG(ERROR) << "AssociateMailbox: Couldn't begin shared image access";
     return error::kInvalidArguments;

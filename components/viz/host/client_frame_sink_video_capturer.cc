@@ -267,12 +267,12 @@ void ClientFrameSinkVideoCapturer::Overlay::EstablishConnection(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(client_capturer_);
 
-  capturer->CreateOverlay(stacking_index_, mojo::MakeRequest(&overlay_));
-  // Note: There's no need to add a connection error handler on the
-  // InterfacePtr. If the connection to the service is lost, the
-  // ClientFrameSinkVideoCapturer will realize this when the
-  // FrameSinkVideoCapturer's binding is lost, and re-establish a connection to
-  // both that and this overlay.
+  capturer->CreateOverlay(stacking_index_,
+                          overlay_.BindNewPipeAndPassReceiver());
+  // Note: There's no need to add a connection error handler on the remote. If
+  // the connection to the service is lost, the ClientFrameSinkVideoCapturer
+  // will realize this when the FrameSinkVideoCapturer's binding is lost, and
+  // re-establish a connection to both that and this overlay.
 
   if (!image_.isNull())
     overlay_->SetImageAndBounds(image_, bounds_);

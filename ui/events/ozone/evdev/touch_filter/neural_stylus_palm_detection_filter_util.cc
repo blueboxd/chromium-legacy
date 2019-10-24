@@ -5,55 +5,59 @@
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util.h"
 
 namespace ui {
-DistilledDevInfo::DistilledDevInfo(const EventDeviceInfo& devinfo) {
-  max_x = devinfo.GetAbsMaximum(ABS_MT_POSITION_X);
-  x_res = devinfo.GetAbsResolution(ABS_MT_POSITION_X);
-  max_y = devinfo.GetAbsMaximum(ABS_MT_POSITION_Y);
-  y_res = devinfo.GetAbsResolution(ABS_MT_POSITION_Y);
-  if (x_res == 0) {
-    x_res = 1;
+
+PalmFilterDeviceInfo CreatePalmFilterDeviceInfo(
+    const EventDeviceInfo& devinfo) {
+  PalmFilterDeviceInfo info;
+
+  info.max_x = devinfo.GetAbsMaximum(ABS_MT_POSITION_X);
+  info.x_res = devinfo.GetAbsResolution(ABS_MT_POSITION_X);
+  info.max_y = devinfo.GetAbsMaximum(ABS_MT_POSITION_Y);
+  info.y_res = devinfo.GetAbsResolution(ABS_MT_POSITION_Y);
+  if (info.x_res == 0) {
+    info.x_res = 1;
   }
-  if (y_res == 0) {
-    y_res = 1;
+  if (info.y_res == 0) {
+    info.y_res = 1;
   }
 
-  major_radius_res = devinfo.GetAbsResolution(ABS_MT_TOUCH_MAJOR);
-  if (major_radius_res == 0) {
+  info.major_radius_res = devinfo.GetAbsResolution(ABS_MT_TOUCH_MAJOR);
+  if (info.major_radius_res == 0) {
     // Device does not report major res: set to 1.
-    major_radius_res = 1;
+    info.major_radius_res = 1;
   }
   if (devinfo.HasAbsEvent(ABS_MT_TOUCH_MINOR)) {
-    minor_radius_supported = true;
-    minor_radius_res = devinfo.GetAbsResolution(ABS_MT_TOUCH_MINOR);
+    info.minor_radius_supported = true;
+    info.minor_radius_res = devinfo.GetAbsResolution(ABS_MT_TOUCH_MINOR);
   } else {
-    minor_radius_supported = false;
-    minor_radius_res = major_radius_res;
+    info.minor_radius_supported = false;
+    info.minor_radius_res = info.major_radius_res;
   }
-  if (minor_radius_res == 0) {
+  if (info.minor_radius_res == 0) {
     // Device does not report minor res: set to 1.
-    minor_radius_res = 1;
+    info.minor_radius_res = 1;
   }
+
+  return info;
 }
 
-const DistilledDevInfo DistilledDevInfo::Create(
-    const EventDeviceInfo& devinfo) {
-  return DistilledDevInfo(devinfo);
-}
+PalmFilterSample CreatePalmFilterSample(const InProgressTouchEvdev& touch,
+                                        const base::TimeTicks& time,
+                                        const PalmFilterDeviceInfo& dev_info) {
+  // radius_x and radius_y have been
+  // scaled by resolution already.
 
-Sample::Sample(const InProgressTouchEvdev& touch,
-               const base::TimeTicks& time,
-               const DistilledDevInfo& dev_info)
-    : time(time) {  // radius_x and radius_y have been
-                    // scaled by resolution.already.
+  PalmFilterSample sample;
+  sample.time = time;
 
   // Original model here is not normalized appropriately, so we divide by 40.
-  major_radius = std::max(touch.major, touch.minor) * dev_info.x_res / 40.0 *
-                 dev_info.major_radius_res;
+  sample.major_radius = std::max(touch.major, touch.minor) * dev_info.x_res /
+                        40.0 * dev_info.major_radius_res;
   if (dev_info.minor_radius_supported) {
-    minor_radius = std::min(touch.major, touch.minor) * dev_info.x_res / 40.0 *
-                   dev_info.minor_radius_res;
+    sample.minor_radius = std::min(touch.major, touch.minor) * dev_info.x_res /
+                          40.0 * dev_info.minor_radius_res;
   } else {
-    minor_radius = major_radius;
+    sample.minor_radius = sample.major_radius;
   }
 
   // Nearest edge distance, in cm.
@@ -61,33 +65,38 @@ Sample::Sample(const InProgressTouchEvdev& touch,
   float nearest_y_edge = std::min(touch.y, dev_info.max_y - touch.y);
   float normalized_x_edge = nearest_x_edge / dev_info.x_res;
   float normalized_y_edge = nearest_y_edge / dev_info.y_res;
-  edge = std::min(normalized_x_edge, normalized_y_edge);
-  point = gfx::PointF(touch.x / dev_info.x_res, touch.y / dev_info.y_res);
-  tracking_id = touch.tracking_id;
-  pressure = touch.pressure;
+  sample.edge = std::min(normalized_x_edge, normalized_y_edge);
+  sample.point =
+      gfx::PointF(touch.x / dev_info.x_res, touch.y / dev_info.y_res);
+  sample.tracking_id = touch.tracking_id;
+  sample.pressure = touch.pressure;
+
+  return sample;
 }
 
-Sample::Sample(const Sample& other) = default;
-Sample& Sample::operator=(const Sample& other) = default;
+PalmFilterStroke::PalmFilterStroke(size_t max_length)
+    : max_length_(max_length) {}
+PalmFilterStroke::PalmFilterStroke(const PalmFilterStroke& other) = default;
+PalmFilterStroke::PalmFilterStroke(PalmFilterStroke&& other) = default;
+PalmFilterStroke& PalmFilterStroke::operator=(const PalmFilterStroke& other) =
+    default;
+PalmFilterStroke& PalmFilterStroke::operator=(PalmFilterStroke&& other) =
+    default;
+PalmFilterStroke::~PalmFilterStroke() {}
 
-Stroke::Stroke(const Stroke& other) = default;
-Stroke::Stroke(Stroke&& other) = default;
-Stroke::Stroke(int max_length) : max_length_(max_length) {}
-Stroke::~Stroke() {}
-
-void Stroke::AddSample(const Sample& samp) {
+void PalmFilterStroke::AddSample(const PalmFilterSample& sample) {
   samples_seen_++;
   if (samples_.empty()) {
-    tracking_id_ = samp.tracking_id;
+    tracking_id_ = sample.tracking_id;
   }
-  DCHECK_EQ(tracking_id_, samp.tracking_id);
-  samples_.push_back(samp);
+  DCHECK_EQ(tracking_id_, sample.tracking_id);
+  samples_.push_back(sample);
   while (samples_.size() > max_length_) {
     samples_.pop_front();
   }
 }
 
-gfx::PointF Stroke::GetCentroid() const {
+gfx::PointF PalmFilterStroke::GetCentroid() const {
   // TODO(robsc): Implement a Kahan sum to accurately track running sum instead
   // of brute force.
   if (samples_.size() == 0) {
@@ -100,23 +109,23 @@ gfx::PointF Stroke::GetCentroid() const {
   return gfx::ScalePoint(unscaled_centroid, 1.f / samples_.size());
 }
 
-const std::deque<Sample>& Stroke::samples() const {
+const std::deque<PalmFilterSample>& PalmFilterStroke::samples() const {
   return samples_;
 }
 
-int Stroke::tracking_id() const {
+int PalmFilterStroke::tracking_id() const {
   return tracking_id_;
 }
 
-uint64_t Stroke::samples_seen() const {
+uint64_t PalmFilterStroke::samples_seen() const {
   return samples_seen_;
 }
 
-void Stroke::SetTrackingId(int tracking_id) {
+void PalmFilterStroke::SetTrackingId(int tracking_id) {
   tracking_id_ = tracking_id;
 }
 
-float Stroke::MaxMajorRadius() const {
+float PalmFilterStroke::MaxMajorRadius() const {
   float maximum = 0.0;
   for (const auto& sample : samples_) {
     maximum = std::max(maximum, sample.major_radius);
@@ -124,7 +133,7 @@ float Stroke::MaxMajorRadius() const {
   return maximum;
 }
 
-float Stroke::BiggestSize() const {
+float PalmFilterStroke::BiggestSize() const {
   float biggest = 0;
   for (const auto& sample : samples_) {
     float size;

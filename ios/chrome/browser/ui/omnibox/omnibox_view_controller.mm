@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_text_change_delegate.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_text_field_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -32,7 +34,10 @@ const CGFloat kClearButtonSize = 28.0f;
 
 }  // namespace
 
-@interface OmniboxViewController ()
+@interface OmniboxViewController () <OmniboxTextFieldDelegate> {
+  // Weak, acts as a delegate
+  OmniboxTextChangeDelegate* _textChangeDelegate;
+}
 
 // Override of UIViewController's view with a different type.
 @property(nonatomic, strong) OmniboxContainerView* view;
@@ -42,6 +47,17 @@ const CGFloat kClearButtonSize = 28.0f;
 @property(nonatomic, assign) BOOL searchByImageEnabled;
 
 @property(nonatomic, assign) BOOL incognito;
+
+// YES if we are already forwarding an OnDidChange() message to the edit view.
+// Needed to prevent infinite recursion.
+// TODO(crbug.com/1015413): There must be a better way.
+@property(nonatomic, assign) BOOL forwardingOnDidChange;
+
+// YES if this text field is currently processing a user-initiated event,
+// such as typing in the omnibox or pressing the clear button.  Used to
+// distinguish between calls to textDidChange that are triggered by the user
+// typing vs by calls to setText.
+@property(nonatomic, assign) BOOL processingUserEvent;
 
 @end
 
@@ -83,6 +99,8 @@ const CGFloat kClearButtonSize = 28.0f;
            iconTint:iconTintColor];
   self.view.incognito = self.incognito;
 
+  self.textField.delegate = self;
+
   SetA11yLabelAndUiAutomationName(self.textField, IDS_ACCNAME_LOCATION,
                                   @"Address");
 }
@@ -113,13 +131,6 @@ const CGFloat kClearButtonSize = 28.0f;
              name:UITextInputCurrentInputModeDidChangeNotification
            object:nil];
 
-  // TODO(crbug.com/866446): Use UITextFieldDelegate instead.
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(textFieldDidBeginEditing)
-             name:UITextFieldTextDidBeginEditingNotification
-           object:self.textField];
-
   [self updateLeadingImageVisibility];
 }
 
@@ -141,10 +152,97 @@ const CGFloat kClearButtonSize = 28.0f;
   [self updateLeadingImageVisibility];
 }
 
+- (void)setTextChangeDelegate:(OmniboxTextChangeDelegate*)textChangeDelegate {
+  _textChangeDelegate = textChangeDelegate;
+}
+
 #pragma mark - public methods
 
 - (OmniboxTextFieldIOS*)textField {
   return self.view.textField;
+}
+
+#pragma mark - OmniboxTextFieldDelegate
+
+- (BOOL)textField:(UITextField*)textField
+    shouldChangeCharactersInRange:(NSRange)range
+                replacementString:(NSString*)newText {
+  DCHECK(_textChangeDelegate);
+  self.processingUserEvent = _textChangeDelegate->OnWillChange(range, newText);
+  return self.processingUserEvent;
+}
+
+- (void)textFieldDidChange:(id)sender {
+  // If the text is empty, update the leading image.
+  if (self.textField.text.length == 0) {
+    [self.view setLeadingImage:self.emptyTextLeadingImage];
+  }
+
+  [self updateClearButtonVisibility];
+  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
+
+  if (self.forwardingOnDidChange)
+    return;
+
+  BOOL savedProcessingUserEvent = self.processingUserEvent;
+  self.processingUserEvent = NO;
+  self.forwardingOnDidChange = YES;
+  DCHECK(_textChangeDelegate);
+  _textChangeDelegate->OnDidChange(savedProcessingUserEvent);
+  self.forwardingOnDidChange = NO;
+}
+
+// Delegate method for UITextField, called when user presses the "go" button.
+- (BOOL)textFieldShouldReturn:(UITextField*)textField {
+  DCHECK(_textChangeDelegate);
+  _textChangeDelegate->OnAccept();
+  return NO;
+}
+
+// Always update the text field colors when we start editing.  It's possible
+// for this method to be called when we are already editing (popup focus
+// change).  In this case, OnDidBeginEditing will be called multiple times.
+// If that becomes an issue a boolean should be added to track editing state.
+- (void)textFieldDidBeginEditing:(UITextField*)textField {
+  // Update the clear button state.
+  [self updateClearButtonVisibility];
+  [self.view setLeadingImage:self.textField.text.length
+                                 ? self.defaultLeadingImage
+                                 : self.emptyTextLeadingImage];
+
+  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
+
+  DCHECK(_textChangeDelegate);
+  _textChangeDelegate->OnDidBeginEditing();
+}
+
+- (BOOL)textFieldShouldEndEditing:(UITextField*)textField {
+  DCHECK(_textChangeDelegate);
+  _textChangeDelegate->OnWillEndEditing();
+  return YES;
+}
+
+// When editing, forward the message on to |_textChangeDelegate|.
+- (BOOL)textFieldShouldClear:(UITextField*)textField {
+  DCHECK(_textChangeDelegate);
+  _textChangeDelegate->ClearText();
+  self.processingUserEvent = YES;
+  return YES;
+}
+
+- (BOOL)onCopy {
+  DCHECK(_textChangeDelegate);
+  return _textChangeDelegate->OnCopy();
+}
+
+- (void)willPaste {
+  DCHECK(_textChangeDelegate);
+  _textChangeDelegate->WillPaste();
+}
+
+- (void)onDeleteBackward {
+  DCHECK(_textChangeDelegate);
+  _textChangeDelegate->OnDeleteBackward();
 }
 
 #pragma mark - OmniboxConsumer
@@ -190,17 +288,6 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 #pragma mark notification callbacks
-
-// Called on UITextFieldTextDidBeginEditingNotification for self.textField.
-- (void)textFieldDidBeginEditing {
-  // Update the clear button state.
-  [self updateClearButtonVisibility];
-  [self.view setLeadingImage:self.textField.text.length
-                                 ? self.defaultLeadingImage
-                                 : self.emptyTextLeadingImage];
-
-  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
-}
 
 // Called on UITextInputCurrentInputModeDidChangeNotification for self.textField
 - (void)textInputModeDidChange {
@@ -264,17 +351,6 @@ const CGFloat kClearButtonSize = 28.0f;
     // the clear button visibility manually.
     [self.textField sendActionsForControlEvents:UIControlEventEditingChanged];
   }
-}
-
-// Called on textField's UIControlEventEditingChanged.
-- (void)textFieldDidChange:(UITextField*)textField {
-  // If the text is empty, update the leading image.
-  if (self.textField.text.length == 0) {
-    [self.view setLeadingImage:self.emptyTextLeadingImage];
-  }
-
-  [self updateClearButtonVisibility];
-  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
 }
 
 // Hides the clear button if the textfield is empty; shows it otherwise.

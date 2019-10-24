@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 namespace chromeos {
@@ -40,7 +41,7 @@ class CellularSetupDialogUI : public ui::MojoWebDialogUI {
   ~CellularSetupDialogUI() override;
 
  private:
-  void BindCellularSetup(mojom::CellularSetupRequest request);
+  void BindCellularSetup(mojo::PendingReceiver<mojom::CellularSetup> receiver);
 
   DISALLOW_COPY_AND_ASSIGN(CellularSetupDialogUI);
 };

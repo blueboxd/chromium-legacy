@@ -28,7 +28,7 @@ void FakeNavigationManagerDelegate::OnNavigationItemsPruned(
 void FakeNavigationManagerDelegate::OnNavigationItemCommitted(
     NavigationItem* item) {}
 WebState* FakeNavigationManagerDelegate::GetWebState() {
-  return nullptr;
+  return web_state_;
 }
 id<CRWWebViewNavigationProxy>
 FakeNavigationManagerDelegate::GetWebViewNavigationProxy() const {
@@ -47,6 +47,10 @@ NavigationItemImpl* FakeNavigationManagerDelegate::GetPendingItem() {
 
 void FakeNavigationManagerDelegate::SetWebViewNavigationProxy(id web_view) {
   test_web_view_ = web_view;
+}
+
+void FakeNavigationManagerDelegate::SetWebState(WebState* web_state) {
+  web_state_ = web_state;
 }
 
 }  // namespace web

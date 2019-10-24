@@ -50,3 +50,6 @@
 # histogram is not recorded before the end of the test.
 -SignedExchangeRequestHandlerBrowserTest.Simple/3
 -SignedExchangeRequestHandlerBrowserTest.VariantMatch/3
+
+# https://crbug.com/1017605
+-SecurityExploitBrowserTest.InvalidBeginNavigationInitiator

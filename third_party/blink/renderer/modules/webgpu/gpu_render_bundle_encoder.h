@@ -17,7 +17,7 @@ class GPURenderBundleDescriptor;
 class GPURenderBundleEncoderDescriptor;
 class GPURenderPipeline;
 
-class GPURenderBundleEncoder : public DawnObject<DawnRenderBundleEncoder> {
+class GPURenderBundleEncoder : public DawnObject<WGPURenderBundleEncoder> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -26,7 +26,7 @@ class GPURenderBundleEncoder : public DawnObject<DawnRenderBundleEncoder> {
       const GPURenderBundleEncoderDescriptor* webgpu_desc);
   explicit GPURenderBundleEncoder(
       GPUDevice* device,
-      DawnRenderBundleEncoder render_bundle_encoder);
+      WGPURenderBundleEncoder render_bundle_encoder);
   ~GPURenderBundleEncoder() override;
 
   // gpu_render_bundle_encoder.idl

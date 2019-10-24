@@ -19,7 +19,7 @@ class TabSharingUI;
 // Layout for currently shared tab:
 // "Sharing this tab to |app_name_|  [Stop]"
 // Layout for all other tabs:
-// "Sharing |shared_tab_name_| to |app_name_| [Share this tab] [Stop]"
+// "Sharing |shared_tab_name_| to |app_name_| [Stop] [Share this tab instead]"
 class TabSharingInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a tab sharing infobar. If |shared_tab_name| is empty, it creates an

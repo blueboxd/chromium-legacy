@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_left_image_consumer.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_text_change_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_provider.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
@@ -19,7 +20,6 @@ class AutocompleteResult;
 class GURL;
 class WebOmniboxEditController;
 struct AutocompleteMatch;
-@class AutocompleteTextFieldDelegate;
 @class OmniboxTextFieldIOS;
 @class OmniboxTextFieldPasteDelegate;
 @protocol OmniboxFocuser;
@@ -31,7 +31,8 @@ class ChromeBrowserState;
 // iOS implementation of OmniBoxView.  Wraps a UITextField and
 // interfaces with the rest of the autocomplete system.
 class OmniboxViewIOS : public OmniboxView,
-                       public OmniboxPopupViewSuggestionsDelegate {
+                       public OmniboxPopupViewSuggestionsDelegate,
+                       public OmniboxTextChangeDelegate {
  public:
   // Retains |field|.
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
@@ -39,7 +40,6 @@ class OmniboxViewIOS : public OmniboxView,
                  id<OmniboxLeftImageConsumer> left_image_consumer,
                  ios::ChromeBrowserState* browser_state,
                  id<OmniboxFocuser> omnibox_focuser);
-  ~OmniboxViewIOS() override;
 
   void SetPopupProvider(OmniboxPopupProvider* provider) {
     popup_provider_ = provider;
@@ -92,16 +92,17 @@ class OmniboxViewIOS : public OmniboxView,
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
 
-  // AutocompleteTextFieldDelegate methods
-  void OnDidBeginEditing();
-  bool OnWillChange(NSRange range, NSString* new_text);
-  void OnDidChange(bool processing_user_input);
-  void OnWillEndEditing();
-  void OnAccept();
-  void OnClear();
-  bool OnCopy();
-  void WillPaste();
-  void OnDeleteBackward();
+  // OmniboxTextChangeDelegate methods
+
+  void OnDidBeginEditing() override;
+  bool OnWillChange(NSRange range, NSString* new_text) override;
+  void OnDidChange(bool processing_user_input) override;
+  void OnWillEndEditing() override;
+  void OnAccept() override;
+  bool OnCopy() override;
+  void ClearText() override;
+  void WillPaste() override;
+  void OnDeleteBackward() override;
 
   // OmniboxPopupViewSuggestionsDelegate methods
 
@@ -126,8 +127,7 @@ class OmniboxViewIOS : public OmniboxView,
   // Updates the appearance of popup to have proper text alignment.
   void UpdatePopupAppearance();
 
-  // Clears the text from the omnibox.
-  void ClearText();
+  void OnClear();
 
   // Hide keyboard and call OnDidEndEditing.  This dismisses the keyboard and
   // also finalizes the editing state of the omnibox.
@@ -198,9 +198,6 @@ class OmniboxViewIOS : public OmniboxView,
   // iOS 10.3 fails to apply the strikethrough style unless an extra style is
   // also applied. See https://crbug.com/699702 for discussion.
   BOOL use_strikethrough_workaround_;
-
-  // Bridges delegate method calls from |field_| to C++ land.
-  AutocompleteTextFieldDelegate* field_delegate_;
 
   // Temporary pointer to the attributed display string, stored as color and
   // other emphasis attributes are applied by the superclass.

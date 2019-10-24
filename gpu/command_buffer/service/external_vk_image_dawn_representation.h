@@ -15,24 +15,24 @@ class ExternalVkImageDawnRepresentation : public SharedImageRepresentationDawn {
   ExternalVkImageDawnRepresentation(SharedImageManager* manager,
                                     SharedImageBacking* backing,
                                     MemoryTypeTracker* tracker,
-                                    DawnDevice device,
-                                    DawnTextureFormat dawn_format,
+                                    WGPUDevice device,
+                                    WGPUTextureFormat dawn_format,
                                     int memory_fd,
                                     VkDeviceSize allocation_size,
                                     uint32_t memory_type_index);
   ~ExternalVkImageDawnRepresentation() override;
 
-  DawnTexture BeginAccess(DawnTextureUsage usage) override;
+  WGPUTexture BeginAccess(WGPUTextureUsage usage) override;
   void EndAccess() override;
 
  private:
-  const DawnDevice device_;
-  const DawnTextureFormat dawn_format_;
+  const WGPUDevice device_;
+  const WGPUTextureFormat wgpu_format_;
   const int memory_fd_;
   const VkDeviceSize allocation_size_;
   const uint32_t memory_type_index_;
 
-  DawnTexture texture_ = nullptr;
+  WGPUTexture texture_ = nullptr;
 
   // TODO(cwallez@chromium.org): Load procs only once when the factory is
   // created and pass a pointer to them around?

@@ -861,7 +861,7 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
   void CallAddObserver() {
     base::RunLoop run_loop;
     device_sync_->AddObserver(
-        fake_device_sync_observer_->GenerateInterfacePtr(),
+        fake_device_sync_observer_->GenerateRemote(),
         base::BindOnce(&DeviceSyncServiceTest::OnAddObserverCompleted,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();

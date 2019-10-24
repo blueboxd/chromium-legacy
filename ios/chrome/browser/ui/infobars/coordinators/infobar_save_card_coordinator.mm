@@ -84,6 +84,10 @@
 
 #pragma mark - InfobarCoordinatorImplementation
 
+- (BOOL)isInfobarAccepted {
+  return YES;
+}
+
 - (void)performInfobarAction {
   if (self.saveCardInfoBarDelegate->upload()) {
     // TODO(crbug.com/1014652): Open Modal if CreditCard details will be

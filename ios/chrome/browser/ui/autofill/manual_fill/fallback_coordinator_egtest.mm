@@ -2,30 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <EarlGrey/GREYAppleInternals.h>
-#import <EarlGrey/GREYKeyboard.h>
-#include <atomic>
-
 #include "base/ios/ios_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "ios/chrome/browser/application_context.h"
-#import "ios/chrome/browser/autofill/form_suggestion_constants.h"
-#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/address_view_controller.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/testing/earl_grey/keyboard_app_interface.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -34,7 +20,24 @@
 #error "This file requires ARC support."
 #endif
 
-using manual_fill::AccessoryKeyboardAccessibilityIdentifier;
+#if defined(CHROME_EARL_GREY_2)
+// TODO(crbug.com/1015113): The EG2 macro is breaking indexing for some reason
+// without the trailing semicolon.  For now, disable the extra semi warning
+// so Xcode indexing works for the egtest.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(KeyboardAppInterface);
+#pragma clang diagnostic pop
+#endif  // defined(CHROME_EARL_GREY_2)
+
+using base::test::ios::kWaitForActionTimeout;
+using chrome_test_util::AutofillSuggestionViewMatcher;
+using chrome_test_util::ManualFallbackFormSuggestionViewMatcher;
+using chrome_test_util::ManualFallbackKeyboardIconMatcher;
+using chrome_test_util::ManualFallbackManageProfilesMatcher;
+using chrome_test_util::ManualFallbackProfilesIconMatcher;
+using chrome_test_util::ManualFallbackProfilesTableViewMatcher;
+using chrome_test_util::ManualFallbackProfileTableViewWindowMatcher;
 
 namespace {
 
@@ -43,39 +46,6 @@ constexpr char kFormElementCity[] = "city";
 
 constexpr char kFormHTMLFile[] = "/profile_form.html";
 
-// EarlGrey fails to detect undocked keyboards on screen, so this help check
-// for them.
-static std::atomic_bool gCHRIsKeyboardShown(false);
-
-// Returns a matcher for the scroll view in keyboard accessory bar.
-id<GREYMatcher> FormSuggestionViewMatcher() {
-  return grey_accessibilityID(kFormSuggestionsViewAccessibilityIdentifier);
-}
-
-// Returns a matcher for the profiles icon in the keyboard accessory bar.
-id<GREYMatcher> ProfilesIconMatcher() {
-  return grey_accessibilityID(
-      manual_fill::AccessoryAddressAccessibilityIdentifier);
-}
-
-// Returns a matcher for the profiles table view in manual fallback.
-id<GREYMatcher> ProfilesTableViewMatcher() {
-  return grey_accessibilityID(
-      manual_fill::AddressTableViewAccessibilityIdentifier);
-}
-
-// Returns a matcher for the profiles table view in manual fallback.
-id<GREYMatcher> SuggestionViewMatcher() {
-  return grey_accessibilityID(kFormSuggestionLabelAccessibilityIdentifier);
-}
-
-// Returns a matcher for the ProfileTableView's window.
-id<GREYMatcher> ProfilesTableViewWindowMatcher() {
-  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
-  id<GREYMatcher> parentMatcher = grey_descendant(ProfilesTableViewMatcher());
-  return grey_allOf(classMatcher, parentMatcher, nil);
-}
-
 // Returns a matcher for a button in the ProfileTableView. Currently it returns
 // the company one.
 id<GREYMatcher> ProfileTableViewButtonMatcher() {
@@ -83,25 +53,9 @@ id<GREYMatcher> ProfileTableViewButtonMatcher() {
   return grey_buttonTitle(@"Underworld");
 }
 
-// Matcher for the Keyboard icon in the accessory bar.
-id<GREYMatcher> KeyboardIconMatcher() {
-  return grey_accessibilityID(AccessoryKeyboardAccessibilityIdentifier);
-}
-
-// Saves an example profile in the store.
-void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
-  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  size_t profileCount = personalDataManager->GetProfiles().size();
-  personalDataManager->AddProfile(profile);
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForActionTimeout,
-                 ^bool() {
-                   return profileCount <
-                          personalDataManager->GetProfiles().size();
-                 }),
-             @"Failed to add profile.");
-}
-
+// TODO(crbug.com/1016367): Remove the guard once ExecuteJavaScript is updated
+// to compile on EG2.
+#if defined(CHROME_EARL_GREY_1)
 // Polls the JavaScript query |java_script_condition| until the returned
 // |boolValue| is YES with a kWaitForActionTimeout timeout.
 BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
@@ -110,82 +64,14 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
         chrome_test_util::ExecuteJavaScript(java_script_condition, nil);
     return [boolValue isEqual:@YES];
   };
-  NSTimeInterval timeout = base::test::ios::kWaitForActionTimeout;
+  //  NSTimeInterval timeout = base::test::ios::kWaitForActionTimeout;
   NSString* condition_name = [NSString
       stringWithFormat:@"Wait for JS condition: %@", java_script_condition];
   GREYCondition* condition = [GREYCondition conditionWithName:condition_name
                                                         block:verify_block];
-  return [condition waitWithTimeout:timeout];
+  return [condition waitWithTimeout:kWaitForActionTimeout];
 }
-
-// If the keyboard is not present this will add a text field to the hierarchy,
-// make it first responder and return it. If it is already present, this does
-// nothing and returns nil.
-UITextField* ShowKeyboard() {
-  UITextField* textField = nil;
-  if (!gCHRIsKeyboardShown) {
-    CGRect rect = CGRectMake(0, 0, 300, 100);
-    textField = [[UITextField alloc] initWithFrame:rect];
-    textField.backgroundColor = [UIColor blueColor];
-    [[[UIApplication sharedApplication] keyWindow] addSubview:textField];
-    [textField becomeFirstResponder];
-  }
-  auto verify_block = ^BOOL {
-    return gCHRIsKeyboardShown;
-  };
-  NSTimeInterval timeout = base::test::ios::kWaitForUIElementTimeout;
-  NSString* condition_name =
-      [NSString stringWithFormat:@"Wait for keyboard to appear"];
-  GREYCondition* condition = [GREYCondition conditionWithName:condition_name
-                                                        block:verify_block];
-  [condition waitWithTimeout:timeout];
-  return textField;
-}
-
-// Returns the dismiss key if present in the passed keyboard layout. Returns nil
-// if not found.
-UIAccessibilityElement* KeyboardDismissKeyInLayout(UIView* layout) {
-  UIAccessibilityElement* key = nil;
-  if ([layout accessibilityElementCount] != NSNotFound) {
-    for (NSInteger i = [layout accessibilityElementCount]; i >= 0; --i) {
-      id element = [layout accessibilityElementAtIndex:i];
-      if ([[[element key] valueForKey:@"name"]
-              isEqualToString:@"Dismiss-Key"]) {
-        key = element;
-        break;
-      }
-    }
-  }
-  return key;
-}
-
-// Matcher for the Keyboard Window.
-id<GREYMatcher> KeyboardWindow(UIView* layout) {
-  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
-  UIAccessibilityElement* key = KeyboardDismissKeyInLayout(layout);
-  id<GREYMatcher> parentMatcher =
-      grey_descendant(grey_accessibilityLabel(key.accessibilityLabel));
-  return grey_allOf(classMatcher, parentMatcher, nil);
-}
-
-// Returns YES if the keyboard is docked at the bottom. NO otherwise.
-BOOL IsKeyboardDockedForLayout(UIView* layout) {
-  CGRect windowBounds = layout.window.bounds;
-  UIView* viewToCompare = layout;
-  while (viewToCompare &&
-         viewToCompare.bounds.size.height < windowBounds.size.height) {
-    CGRect keyboardFrameInWindow =
-        [viewToCompare.window convertRect:viewToCompare.bounds
-                                 fromView:viewToCompare];
-
-    CGFloat maxY = CGRectGetMaxY(keyboardFrameInWindow);
-    if ([@(maxY) isEqualToNumber:@(windowBounds.size.height)]) {
-      return YES;
-    }
-    viewToCompare = viewToCompare.superview;
-  }
-  return NO;
-}
+#endif
 
 // Undocks and split the keyboard by swiping it up. Does nothing if already
 // undocked. Some devices, like iPhone or iPad Pro, do not allow undocking or
@@ -194,46 +80,23 @@ BOOL UndockAndSplitKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return NO;
   }
-
-  UITextField* textField = ShowKeyboard();
-
-  // Assert the "Dismiss-Key" is present.
-  UIView* layout = [[UIKeyboardImpl sharedInstance] _layout];
-  GREYAssert([[layout valueForKey:@"keyplaneContainsDismissKey"] boolValue],
-             @"No dismiss key is pressent");
+  UITextField* textField = [KeyboardAppInterface showKeyboard];
 
   // Return if already undocked.
-  if (!IsKeyboardDockedForLayout(layout)) {
-    // If we created a dummy textfield for this, remove it.
+  if (![KeyboardAppInterface isKeyboadDocked]) {
+    // If a dummy textfield was created for this, remove it.
     [textField removeFromSuperview];
     return YES;
   }
 
-  // Swipe it up.
-  if (!layout.accessibilityIdentifier.length) {
-    layout.accessibilityIdentifier = @"CRKBLayout";
-  }
+  [[EarlGrey
+      selectElementWithMatcher:[KeyboardAppInterface keyboardWindowMatcher]]
+      performAction:[KeyboardAppInterface keyboardUndockAction]];
 
-  UIAccessibilityElement* key = KeyboardDismissKeyInLayout(layout);
-  CGRect keyFrameInScreen = [key accessibilityFrame];
-  CGRect keyFrameInWindow = [UIScreen.mainScreen.coordinateSpace
-            convertRect:keyFrameInScreen
-      toCoordinateSpace:layout.window.coordinateSpace];
-  CGRect windowBounds = layout.window.bounds;
+  // If a dummy textfield was created for this, remove it.
+  [textField removeFromSuperview];
 
-  CGPoint startPoint = CGPointMake(
-      (keyFrameInWindow.origin.x + keyFrameInWindow.size.width / 2.0) /
-          windowBounds.size.width,
-      (keyFrameInWindow.origin.y + keyFrameInWindow.size.height / 2.0) /
-          windowBounds.size.height);
-
-  id action = grey_swipeFastInDirectionWithStartPoint(
-      kGREYDirectionUp, startPoint.x, startPoint.y);
-
-  [[EarlGrey selectElementWithMatcher:KeyboardWindow(layout)]
-      performAction:action];
-
-  return !IsKeyboardDockedForLayout(layout);
+  return ![KeyboardAppInterface isKeyboadDocked];
 }
 
 // Docks the keyboard by swiping it down. Does nothing if already docked.
@@ -242,129 +105,56 @@ void DockKeyboard() {
     return;
   }
 
-  UITextField* textField = ShowKeyboard();
-
-  // Assert the "Dismiss-Key" is present.
-  UIView* layout = [[UIKeyboardImpl sharedInstance] _layout];
-  GREYAssert([[layout valueForKey:@"keyplaneContainsDismissKey"] boolValue],
-             @"No dismiss key is pressent");
+  UITextField* textField = [KeyboardAppInterface showKeyboard];
 
   // Return if already docked.
-  if (IsKeyboardDockedForLayout(layout)) {
+  if ([KeyboardAppInterface isKeyboadDocked]) {
     // If we created a dummy textfield for this, remove it.
     [textField removeFromSuperview];
     return;
   }
 
-  // Swipe it down.
-  UIAccessibilityElement* key = KeyboardDismissKeyInLayout(layout);
-
-  CGRect keyFrameInScreen = [key accessibilityFrame];
-  CGRect keyFrameInWindow = [UIScreen.mainScreen.coordinateSpace
-            convertRect:keyFrameInScreen
-      toCoordinateSpace:layout.window.coordinateSpace];
-  CGRect windowBounds = layout.window.bounds;
-
-  GREYAssertFalse(CGRectEqualToRect(keyFrameInWindow, CGRectZero),
-                  @"The dismiss key accessibility frame musn't be zero");
-  CGPoint startPoint = CGPointMake(
-      (keyFrameInWindow.origin.x + keyFrameInWindow.size.width / 2.0) /
-          windowBounds.size.width,
-      (keyFrameInWindow.origin.y + keyFrameInWindow.size.height / 2.0) /
-          windowBounds.size.height);
-  id<GREYAction> action = grey_swipeFastInDirectionWithStartPoint(
-      kGREYDirectionDown, startPoint.x, startPoint.y);
-
-  [[EarlGrey selectElementWithMatcher:KeyboardWindow(layout)]
-      performAction:action];
+  [[EarlGrey
+      selectElementWithMatcher:[KeyboardAppInterface keyboardWindowMatcher]]
+      performAction:[KeyboardAppInterface keyboardDockAction]];
 
   // If we created a dummy textfield for this, remove it.
   [textField removeFromSuperview];
 
-  GREYCondition* waitForDockedKeyboard =
-      [GREYCondition conditionWithName:@"Wait For Docked Keyboard Animations"
-                                 block:^BOOL {
-                                   return IsKeyboardDockedForLayout(layout);
-                                 }];
+  GREYCondition* waitForDockedKeyboard = [GREYCondition
+      conditionWithName:@"Wait For Docked Keyboard Animations"
+                  block:^BOOL {
+                    return [KeyboardAppInterface isKeyboadDocked];
+                  }];
 
-  GREYAssertTrue([waitForDockedKeyboard
-                     waitWithTimeout:base::test::ios::kWaitForActionTimeout],
+  GREYAssertTrue([waitForDockedKeyboard waitWithTimeout:kWaitForActionTimeout],
                  @"Keyboard animations still present.");
+}
+
+// Waits for the keyboard to appear. Returns NO on timeout.
+BOOL WaitForKeyboardToAppear() {
+  GREYCondition* waitForKeyboard = [GREYCondition
+      conditionWithName:@"Wait for keyboard"
+                  block:^BOOL {
+                    return [ChromeEarlGrey isKeyboardShownWithError:nil];
+                  }];
+  return [waitForKeyboard waitWithTimeout:kWaitForActionTimeout];
 }
 
 }  // namespace
 
 // Integration Tests for fallback coordinator.
-@interface FallbackCoordinatorTestCase : ChromeTestCase {
-  // The PersonalDataManager instance for the current browser state.
-  autofill::PersonalDataManager* _personalDataManager;
-}
+@interface FallbackCoordinatorTestCase : ChromeTestCase
 
 @end
 
 @implementation FallbackCoordinatorTestCase
 
-+ (void)load {
-  @autoreleasepool {
-    // EarlGrey fails to detect undocked keyboards on screen, so this help check
-    // for them.
-    auto block = ^(NSNotification* note) {
-      CGRect keyboardFrame =
-          [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
-      UIWindow* window = [UIApplication sharedApplication].keyWindow;
-      keyboardFrame = [window convertRect:keyboardFrame fromWindow:nil];
-      CGRect windowFrame = window.frame;
-      CGRect frameIntersection = CGRectIntersection(windowFrame, keyboardFrame);
-      gCHRIsKeyboardShown =
-          frameIntersection.size.width > 1 && frameIntersection.size.height > 1;
-    };
-
-    [[NSNotificationCenter defaultCenter]
-        addObserverForName:UIKeyboardDidChangeFrameNotification
-                    object:nil
-                     queue:nil
-                usingBlock:block];
-
-    [[NSNotificationCenter defaultCenter]
-        addObserverForName:UIKeyboardDidShowNotification
-                    object:nil
-                     queue:nil
-                usingBlock:block];
-
-    [[NSNotificationCenter defaultCenter]
-        addObserverForName:UIKeyboardDidHideNotification
-                    object:nil
-                     queue:nil
-                usingBlock:block];
-  }
-}
-
-+ (void)setUp {
+- (void)setUp {
   [super setUp];
   // If the previous run was manually stopped then the profile will be in the
   // store and the test will fail. We clean it here for those cases.
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  autofill::PersonalDataManager* personalDataManager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
-  for (const auto* profile : personalDataManager->GetProfiles()) {
-    personalDataManager->RemoveByGUID(profile->guid());
-  }
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForActionTimeout,
-                 ^bool() {
-                   return 0 == personalDataManager->GetProfiles().size();
-                 }),
-             @"Failed to clean profiles.");
-}
-
-- (void)setUp {
-  [super setUp];
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  _personalDataManager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
-  _personalDataManager->SetSyncingForTest(true);
+  [AutofillAppInterface clearProfilesStore];
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   [ChromeEarlGrey loadURL:URL];
@@ -372,9 +162,8 @@ void DockKeyboard() {
 }
 
 - (void)tearDown {
-  for (const auto* profile : _personalDataManager->GetProfiles()) {
-    _personalDataManager->RemoveByGUID(profile->guid());
-  }
+  [AutofillAppInterface clearProfilesStore];
+
   // Leaving a picker on iPads causes problems with the docking logic. This
   // will dismiss any.
   if ([ChromeEarlGrey isIPadIdiom]) {
@@ -389,6 +178,9 @@ void DockKeyboard() {
   [super tearDown];
 }
 
+// TODO(crbug.com/1016367): Remove the guard once ExecuteJavaScript is updated
+// to compile on EG2.
+#if defined(CHROME_EARL_GREY_1)
 // Tests that the when tapping the outside the popover on iPad, suggestions
 // continue working.
 - (void)testIPadTappingOutsidePopOverResumesSuggestionsCorrectly {
@@ -396,67 +188,61 @@ void DockKeyboard() {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
 
-  GREYAssertEqual(_personalDataManager->GetProfiles().size(), 0,
-                  @"Test started in an unclean state. Profiles were already "
-                  @"present in the data manager.");
-
   // Add the profile to be tested.
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the profiles icon.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the profiles controller table view is visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap on a point outside of the popover.
   // The way EarlGrey taps doesn't go through the window hierarchy. Because of
   // this, the tap needs to be done in the same window as the popover.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewWindowMatcher()]
+  [[EarlGrey
+      selectElementWithMatcher:ManualFallbackProfileTableViewWindowMatcher()]
       performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
   // Verify the profiles controller table view is NOT visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
 
   // Tap on the suggestion.
-  [[EarlGrey selectElementWithMatcher:SuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:AutofillSuggestionViewMatcher()]
       performAction:grey_tap()];
 
   // Verify Web Content was filled.
-  autofill::AutofillProfile* profile = _personalDataManager->GetProfiles()[0];
-  base::string16 name =
-      profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                       GetApplicationContext()->GetApplicationLocale());
-
+  NSString* name = [AutofillAppInterface exampleProfileName];
   NSString* javaScriptCondition = [NSString
       stringWithFormat:@"document.getElementById('%s').value === '%@'",
-                       kFormElementName, base::SysUTF16ToNSString(name)];
+                       kFormElementName, name];
   XCTAssertTrue(WaitForJavaScriptCondition(javaScriptCondition));
 }
+#endif  // CHROME_EARL_GREY_1
 
 // Tests that the manual fallback view concedes preference to the system picker
 // for selection elements.
 - (void)testPickerDismissesManualFallback {
   // Add the profile to be used.
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Tap on the profiles icon.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the profiles controller table view is visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap any option.
@@ -464,22 +250,22 @@ void DockKeyboard() {
       performAction:grey_tap()];
 
   // Verify the profiles controller table view is not visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
 
   // Verify the status of the icons.
   if ([ChromeEarlGrey isIPadIdiom]) {
     // Hidden on iPad.
-    [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
         assertWithMatcher:grey_notVisible()];
-    [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+    [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
         assertWithMatcher:grey_not(grey_sufficientlyVisible())];
   } else {
-    [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
         assertWithMatcher:grey_sufficientlyVisible()];
-    [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
         assertWithMatcher:grey_userInteractionEnabled()];
-    [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+    [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
         assertWithMatcher:grey_not(grey_sufficientlyVisible())];
   }
 }
@@ -488,7 +274,7 @@ void DockKeyboard() {
 // present.
 - (void)testInputAccessoryBarIsPresentAfterPickers {
   // Add the profile to be used.
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -496,13 +282,13 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Tap on the profiles icon.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the profiles controller table view is visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap any option.
@@ -510,7 +296,7 @@ void DockKeyboard() {
       performAction:grey_tap()];
 
   // Verify the profiles controller table view is not visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
 
   // On iPad the picker is a table view in a popover, we need to dismiss that
@@ -530,18 +316,18 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Wait for the accessory icon to appear.
-  [GREYKeyboard waitForKeyboardToAppear];
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 
   // Verify the profiles icon is visible, and therefore also the input accessory
   // bar.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
@@ -553,7 +339,7 @@ void DockKeyboard() {
   }
 
   // Add the profile to be used.
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -568,17 +354,17 @@ void DockKeyboard() {
   // When keyboard is split, icons are not visible, so we rely on timeout before
   // docking again, because EarlGrey synchronization isn't working properly with
   // the keyboard.
-  [self waitForMatcherToBeVisible:ProfilesIconMatcher()
+  [self waitForMatcherToBeVisible:ManualFallbackProfilesIconMatcher()
                           timeout:base::test::ios::kWaitForUIElementTimeout];
 
   DockKeyboard();
 
   // Tap on the profiles icon.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the profiles controller table view is visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap any option.
@@ -586,7 +372,7 @@ void DockKeyboard() {
       performAction:grey_tap()];
 
   // Verify the profiles controller table view is not visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
 
   // On iPad the picker is a table view in a popover, we need to dismiss that
@@ -603,18 +389,18 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Wait for the accessory icon to appear.
-  [GREYKeyboard waitForKeyboardToAppear];
+  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 
   // Verify the profiles icon is visible, and therefore also the input accessory
   // bar.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
@@ -626,7 +412,7 @@ void DockKeyboard() {
   }
 
   // Add the profile to use for verification.
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -641,28 +427,28 @@ void DockKeyboard() {
   // When keyboard is split, icons are not visible, so we rely on timeout before
   // docking again, because EarlGrey synchronization isn't working properly with
   // the keyboard.
-  [self waitForMatcherToBeVisible:ProfilesIconMatcher()
+  [self waitForMatcherToBeVisible:ManualFallbackProfilesIconMatcher()
                           timeout:base::test::ios::kWaitForUIElementTimeout];
 
   DockKeyboard();
 
   // Verify the profiles icon is visible, and therefore also the input accessory
   // bar.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Tests that the manual fallback view is present in incognito.
 - (void)testIncognitoManualFallbackMenu {
   // Add the profile to use for verification.
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -670,9 +456,9 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open a tab in incognito.
@@ -687,9 +473,9 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -699,15 +485,15 @@ void DockKeyboard() {
 - (void)testOpeningIncognitoTabsDoNotLeak {
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   std::string webViewText("Profile form");
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface saveExampleProfile];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open a tab in incognito.
@@ -719,9 +505,9 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [ChromeEarlGrey closeCurrentTab];
@@ -735,9 +521,9 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open a tab in incognito.
@@ -761,16 +547,16 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // This will fail if there is more than one profiles icon in the hierarchy.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that the manual fallback view is not duplicated after incognito.
 - (void)testReturningFromIncognitoDoesNotDuplicatesManualFallbackMenu {
   // Add the profile to use for verification.
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -778,9 +564,9 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open a tab in incognito.
@@ -805,9 +591,9 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // This will fail if there is more than one profiles icon in the hierarchy.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -816,6 +602,8 @@ void DockKeyboard() {
 // Waits for the passed matcher to be visible with a given timeout.
 - (void)waitForMatcherToBeVisible:(id<GREYMatcher>)matcher
                           timeout:(CFTimeInterval)timeout {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-result"
   [[GREYCondition conditionWithName:@"Wait for visible matcher condition"
                               block:^BOOL {
                                 NSError* error;
@@ -824,6 +612,7 @@ void DockKeyboard() {
                                                 error:&error];
                                 return error == nil;
                               }] waitWithTimeout:timeout];
+#pragma clang diagnostic pop
 }
 
 @end

@@ -14,9 +14,11 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "fuchsia/base/init_logging.h"
 #include "url/gurl.h"
 
@@ -30,8 +32,7 @@ void PrintUsage() {
 }
 
 int main(int argc, char** argv) {
-  // Set up a MessageLoop for async task execution.
-  base::MessageLoopForIO message_loop;
+  base::SingleThreadTaskExecutor executor(base::MessagePumpType::IO);
 
   // Parse the command line arguments and set up logging.
   CHECK(base::CommandLine::Init(argc, argv));

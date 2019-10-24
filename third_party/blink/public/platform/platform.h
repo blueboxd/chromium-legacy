@@ -72,10 +72,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace cricket {
-class PortAllocator;
-}
-
 namespace gpu {
 class GpuMemoryBufferManager;
 }
@@ -99,10 +95,6 @@ class Local;
 
 namespace viz {
 class ContextProvider;
-}
-
-namespace webrtc {
-class AsyncResolverFactory;
 }
 
 namespace blink {
@@ -575,14 +567,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() {
     return nullptr;
   }
-
-  // May return null if WebRTC functionality is not implemented.
-  virtual std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
-      WebLocalFrame* frame);
-
-  // May return null if WebRTC functionality is not implemented.
-  virtual std::unique_ptr<webrtc::AsyncResolverFactory>
-  CreateWebRtcAsyncResolverFactory();
 
   // Checks if the default minimum starting volume value for the AGC is
   // overridden on the command line.

@@ -13,7 +13,7 @@
 #include "chrome/browser/sharing/sharing_app.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/views/hover_button.h"
-#include "chrome/test/views/chrome_views_test_base.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,24 +22,23 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/test/widget_test.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace {
 
-class SharingDialogViewMock : public SharingDialogView {
+class SharingDialogViewFake : public SharingDialogView {
  public:
-  SharingDialogViewMock(views::View* anchor_view,
+  SharingDialogViewFake(views::View* anchor_view,
                         content::WebContents* web_contents,
                         SharingDialogData data)
       : SharingDialogView(anchor_view, web_contents, std::move(data)) {}
-  ~SharingDialogViewMock() override = default;
+  ~SharingDialogViewFake() override = default;
 
   // The delegate cannot find widget since it is created from a null profile.
   // This method will be called inside ButtonPressed(). Unit tests will
   // crash without mocking.
-  MOCK_METHOD0(CloseBubble, void());
+  void CloseBubble() override {}
 };
 
 }  // namespace
@@ -52,22 +51,18 @@ MATCHER_P(AppEquals, app, "") {
   return app->name == arg.name;
 }
 
-class SharingDialogViewTest : public ChromeViewsTestBase {
+class SharingDialogViewTest : public BrowserWithTestWindowTest {
  protected:
   void SetUp() override {
-    ChromeViewsTestBase::SetUp();
+    BrowserWithTestWindowTest::SetUp();
 
-    // Create an anchor for the bubble.
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    anchor_widget_ = std::make_unique<views::Widget>();
-    anchor_widget_->Init(std::move(params));
-  }
-
-  void TearDown() override {
-    anchor_widget_.reset();
-    ChromeViewsTestBase::TearDown();
+    // We create |web_contents| to have a valid commited page origin to check
+    // against when showing the origin view.
+    GURL url("https://google.com");
+    web_contents_ = browser()->OpenURL(content::OpenURLParams(
+        url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+        ui::PAGE_TRANSITION_TYPED, false));
+    CommitPendingLoad(&web_contents_->GetController());
   }
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> CreateDevices(int count) {
@@ -98,9 +93,8 @@ class SharingDialogViewTest : public ChromeViewsTestBase {
 
   std::unique_ptr<SharingDialogView> CreateDialogView(
       SharingDialogData dialog_data) {
-    auto dialog = std::make_unique<SharingDialogViewMock>(
-        anchor_widget_->GetContentsView(), /*web_contents=*/nullptr,
-        std::move(dialog_data));
+    auto dialog = std::make_unique<SharingDialogViewFake>(
+        /*anchor_view=*/nullptr, web_contents_, std::move(dialog_data));
     dialog->Init();
     return dialog;
   }
@@ -123,23 +117,25 @@ class SharingDialogViewTest : public ChromeViewsTestBase {
         IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES;
     data.help_link_text_id =
         IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK;
+    data.origin_text_id =
+        IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_INITIATING_ORIGIN;
 
     data.help_callback = base::BindLambdaForTesting(
-        [&](SharingDialogType type) { help_callback.Call(type); });
+        [&](SharingDialogType type) { help_callback_.Call(type); });
     data.device_callback =
         base::BindLambdaForTesting([&](const syncer::DeviceInfo& device) {
-          device_callback.Call(device);
+          device_callback_.Call(device);
         });
     data.app_callback = base::BindLambdaForTesting(
-        [&](const SharingApp& app) { app_callback.Call(app); });
+        [&](const SharingApp& app) { app_callback_.Call(app); });
 
     return data;
   }
 
-  std::unique_ptr<views::Widget> anchor_widget_;
-  testing::MockFunction<void(SharingDialogType)> help_callback;
-  testing::MockFunction<void(const syncer::DeviceInfo&)> device_callback;
-  testing::MockFunction<void(const SharingApp&)> app_callback;
+  testing::MockFunction<void(SharingDialogType)> help_callback_;
+  testing::MockFunction<void(const syncer::DeviceInfo&)> device_callback_;
+  testing::MockFunction<void(const SharingApp&)> app_callback_;
+  content::WebContents* web_contents_ = nullptr;
 };
 
 TEST_F(SharingDialogViewTest, PopulateDialogView) {
@@ -157,7 +153,7 @@ TEST_F(SharingDialogViewTest, DevicePressed) {
                                  /*last_updated_timestamp=*/base::Time::Now(),
                                  /*send_tab_to_self_receiving_enabled=*/false,
                                  /*sharing_info=*/base::nullopt);
-  EXPECT_CALL(device_callback, Call(DeviceEquals(&device_info)));
+  EXPECT_CALL(device_callback_, Call(DeviceEquals(&device_info)));
 
   auto dialog_data = CreateDialogData(/*devices=*/3, /*apps=*/2);
   auto dialog = CreateDialogView(std::move(dialog_data));
@@ -172,7 +168,7 @@ TEST_F(SharingDialogViewTest, DevicePressed) {
 TEST_F(SharingDialogViewTest, AppPressed) {
   SharingApp app(&vector_icons::kOpenInNewIcon, gfx::Image(),
                  base::UTF8ToUTF16("app0"), std::string());
-  EXPECT_CALL(app_callback, Call(AppEquals(&app)));
+  EXPECT_CALL(app_callback_, Call(AppEquals(&app)));
 
   auto dialog_data = CreateDialogData(/*devices=*/3, /*apps=*/2);
   auto dialog = CreateDialogView(std::move(dialog_data));
@@ -186,7 +182,7 @@ TEST_F(SharingDialogViewTest, AppPressed) {
 }
 
 TEST_F(SharingDialogViewTest, HelpTextClickedEmpty) {
-  EXPECT_CALL(help_callback, Call(SharingDialogType::kEducationalDialog));
+  EXPECT_CALL(help_callback_, Call(SharingDialogType::kEducationalDialog));
 
   auto dialog_data = CreateDialogData(/*devices=*/0, /*apps=*/0);
   auto dialog = CreateDialogView(std::move(dialog_data));
@@ -196,7 +192,7 @@ TEST_F(SharingDialogViewTest, HelpTextClickedEmpty) {
 }
 
 TEST_F(SharingDialogViewTest, HelpTextClickedOnlyApps) {
-  EXPECT_CALL(help_callback,
+  EXPECT_CALL(help_callback_,
               Call(SharingDialogType::kDialogWithoutDevicesWithApp));
 
   auto dialog_data = CreateDialogData(/*devices=*/0, /*apps=*/1);
@@ -217,53 +213,22 @@ TEST_F(SharingDialogViewTest, ThemeChangedEmptyList) {
   dialog->OnThemeChanged();
 }
 
-TEST_F(SharingDialogViewTest, OriginViewShown) {
+TEST_F(SharingDialogViewTest, OriginView) {
   auto dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
-  dialog_data.origin_text_id =
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_INITIATING_ORIGIN;
+  auto dialog = CreateDialogView(std::move(dialog_data));
+  const int children_without_origin = dialog->children().size();
+
+  dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
   dialog_data.initiating_origin =
       url::Origin::Create(GURL("https://example.com"));
+  dialog = CreateDialogView(std::move(dialog_data));
+  const int children_with_origin = dialog->children().size();
+  EXPECT_EQ(children_without_origin + 1, children_with_origin);
 
-  views::test::WidgetTest::WidgetAutoclosePtr bubble_widget(
-      views::BubbleDialogDelegateView::CreateBubble(
-          CreateDialogView(std::move(dialog_data)).release()));
-
-  auto* frame_view = static_cast<views::BubbleFrameView*>(
-      bubble_widget->non_client_view()->frame_view());
-
-  EXPECT_NE(nullptr, frame_view->GetHeaderViewForTesting());
-}
-
-TEST_F(SharingDialogViewTest, OriginViewHiddenIfNoOrigin) {
-  auto dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
-  dialog_data.origin_text_id =
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_INITIATING_ORIGIN;
-  // Do not set an origin.
-  dialog_data.initiating_origin = base::nullopt;
-
-  views::test::WidgetTest::WidgetAutoclosePtr bubble_widget(
-      views::BubbleDialogDelegateView::CreateBubble(
-          CreateDialogView(std::move(dialog_data)).release()));
-
-  auto* frame_view = static_cast<views::BubbleFrameView*>(
-      bubble_widget->non_client_view()->frame_view());
-
-  EXPECT_EQ(nullptr, frame_view->GetHeaderViewForTesting());
-}
-
-TEST_F(SharingDialogViewTest, OriginViewHiddenIfNoOriginText) {
-  auto dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
-  // Do not set an origin text.
-  dialog_data.origin_text_id = 0;
+  dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
   dialog_data.initiating_origin =
-      url::Origin::Create(GURL("https://example.com"));
-
-  views::test::WidgetTest::WidgetAutoclosePtr bubble_widget(
-      views::BubbleDialogDelegateView::CreateBubble(
-          CreateDialogView(std::move(dialog_data)).release()));
-
-  auto* frame_view = static_cast<views::BubbleFrameView*>(
-      bubble_widget->non_client_view()->frame_view());
-
-  EXPECT_EQ(nullptr, frame_view->GetHeaderViewForTesting());
+      url::Origin::Create(GURL("https://google.com"));
+  dialog = CreateDialogView(std::move(dialog_data));
+  const int children_with_same_origin = dialog->children().size();
+  EXPECT_EQ(children_without_origin, children_with_same_origin);
 }

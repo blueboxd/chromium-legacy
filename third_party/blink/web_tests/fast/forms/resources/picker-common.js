@@ -45,8 +45,17 @@ function openPicker(element, callback, errorCallback) {
             eventSender.keyDown("ArrowDown", ["altKey"]);
         }
     }
-    // To avoid flakiness of test about focused status of the element.
-    element.focus();
+    popupWindow = internals.pagePopupWindow;
+    if (typeof callback === "function" && popupWindow)
+        setPopupOpenCallback(callback);
+    else if (typeof errorCallback === "function" && !popupWindow)
+        errorCallback();
+}
+
+function clickToOpenPicker(x, y, callback, errorCallback) {
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
     popupWindow = internals.pagePopupWindow;
     if (typeof callback === "function" && popupWindow)
         setPopupOpenCallback(callback);

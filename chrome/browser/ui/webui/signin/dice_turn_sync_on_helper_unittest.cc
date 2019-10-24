@@ -35,8 +35,6 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync/driver/sync_user_settings_mock.h"
-#include "components/unified_consent/feature.h"
-#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -440,14 +438,11 @@ class DiceTurnSyncOnHelperTest : public DiceTurnSyncOnHelperTestBase {
 class DiceTurnSyncOnHelperTestWithUnifiedConsent
     : public DiceTurnSyncOnHelperTestBase {
  public:
-  DiceTurnSyncOnHelperTestWithUnifiedConsent()
-      : scoped_unified_consent_(
-            unified_consent::UnifiedConsentFeatureState::kEnabled) {}
+  DiceTurnSyncOnHelperTestWithUnifiedConsent() {}
   ~DiceTurnSyncOnHelperTestWithUnifiedConsent() override {}
 
  private:
   ScopedAccountConsistencyDice scoped_dice_;
-  unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
 };
 
 // TestDiceTurnSyncOnHelperDelegate implementation.
@@ -742,7 +737,6 @@ TEST_F(DiceTurnSyncOnHelperTest, ShowSyncDialogForEndConsumerAccount) {
 // Tests that the user enabled unified consent,
 TEST_F(DiceTurnSyncOnHelperTestWithUnifiedConsent,
        ShowSyncDialogForEndConsumerAccount_UnifiedConsentEnabled) {
-  ASSERT_TRUE(unified_consent::IsUnifiedConsentFeatureEnabled());
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::

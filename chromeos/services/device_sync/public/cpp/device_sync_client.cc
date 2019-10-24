@@ -12,7 +12,7 @@ DeviceSyncClient::DeviceSyncClient() = default;
 
 DeviceSyncClient::~DeviceSyncClient() = default;
 
-mojom::DeviceSyncPtr* DeviceSyncClient::GetDeviceSyncPtr() {
+mojo::Remote<mojom::DeviceSync>* DeviceSyncClient::GetDeviceSyncRemote() {
   return nullptr;
 }
 

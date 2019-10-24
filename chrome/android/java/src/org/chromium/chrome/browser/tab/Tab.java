@@ -727,7 +727,7 @@ public class Tab {
             // If the NativePage was frozen while in the background (see NativePageAssassin),
             // recreate the NativePage now.
             NativePage nativePage = getNativePage();
-            if (nativePage instanceof FrozenNativePage) {
+            if (nativePage != null && nativePage.isFrozen()) {
                 maybeShowNativePage(nativePage.getUrl(), true);
             }
             NativePageAssassin.getInstance().tabShown(this);
@@ -783,18 +783,15 @@ public class Tab {
      * @param nativePage The {@link NativePage} to show.
      */
     private void showNativePage(NativePage nativePage) {
+        assert nativePage != null;
         if (mNativePage == nativePage) return;
-        NativePage previousNativePage = mNativePage;
-        if (mNativePage != null && !(mNativePage instanceof FrozenNativePage)) {
-            mNativePage.getView().removeOnAttachStateChangeListener(mAttachStateChangeListener);
-        }
-        mNativePage = nativePage;
-        if (mNativePage != null && !(mNativePage instanceof FrozenNativePage)) {
-            mNativePage.getView().addOnAttachStateChangeListener(mAttachStateChangeListener);
-        }
-        pushNativePageStateToNavigationEntry();
-        notifyContentChanged();
-        destroyNativePageInternal(previousNativePage);
+        hideNativePage(true, () -> {
+            mNativePage = nativePage;
+            if (!mNativePage.isFrozen()) {
+                mNativePage.getView().addOnAttachStateChangeListener(mAttachStateChangeListener);
+            }
+            pushNativePageStateToNavigationEntry();
+        });
     }
 
     /**
@@ -802,8 +799,10 @@ public class Tab {
      * to reduce memory pressure.
      */
     public void freezeNativePage() {
-        if (mNativePage == null || mNativePage instanceof FrozenNativePage) return;
-        assert mNativePage.getView().getParent() == null : "Cannot freeze visible native page";
+        if (mNativePage == null || mNativePage.isFrozen()
+                || mNativePage.getView().getParent() == null) {
+            return;
+        }
         mNativePage = FrozenNativePage.freeze(mNativePage);
         updateInteractableState();
     }
@@ -813,14 +812,25 @@ public class Tab {
      */
     protected void showRenderedPage() {
         updateTitle();
+        hideNativePage(true, null);
+    }
 
-        if (mNativePage == null) return;
+    /**
+     * Hide and destroy the native page if it was being shown.
+     * @param notify {@code true} to trigger {@link #onContentChanged} event.
+     * @param postHideTask {@link Runnable} task to run before actually destroying the
+     *        native page. This is necessary to keep the tasks to perform in order.
+     */
+    private void hideNativePage(boolean notify, Runnable postHideTask) {
         NativePage previousNativePage = mNativePage;
-        if (!(mNativePage instanceof FrozenNativePage)) {
-            mNativePage.getView().removeOnAttachStateChangeListener(mAttachStateChangeListener);
+        if (mNativePage != null) {
+            if (!mNativePage.isFrozen()) {
+                mNativePage.getView().removeOnAttachStateChangeListener(mAttachStateChangeListener);
+            }
+            mNativePage = null;
         }
-        mNativePage = null;
-        notifyContentChanged();
+        if (postHideTask != null) postHideTask.run();
+        if (notify) notifyContentChanged();
         destroyNativePageInternal(previousNativePage);
     }
 
@@ -894,7 +904,7 @@ public class Tab {
      * Set {@link TabDelegateFactory} instance and updates the references.
      * @param factory TabDelegateFactory instance.
      */
-    public void setDelegateFactory(TabDelegateFactory factory) {
+    private void setDelegateFactory(TabDelegateFactory factory) {
         // Update the delegate factory, then recreate and propagate all delegates.
         mDelegateFactory = factory;
 
@@ -908,10 +918,25 @@ public class Tab {
     }
 
     /**
-     * Notify observers of the new attachment state to activity.
-     * @param attached {@code true} if the tab gets attached.
+     * Notify observers of the new attachment state to activity. If attached, {@link WindowAndroid}
+     * and {@link TabDelegateFactory} for the new activity are provided. Passing {@code null}
+     * for both indicates that the tab is not attached.
+     * @param window A new {@link WindowAndroid} to attach the tab to.
+     * @param tabDelegateFactory The new delegate factory this tab should be using.
      */
-    public void notifyActivityAttachmentChanged(boolean attached) {
+    public void notifyActivityAttachmentChanged(
+            @Nullable WindowAndroid window, @Nullable TabDelegateFactory tabDelegateFactory) {
+        boolean attached = (window != null && tabDelegateFactory != null);
+        assert attached || (window == null && tabDelegateFactory == null);
+
+        if (attached) {
+            updateWindowAndroid(window);
+            setDelegateFactory(tabDelegateFactory);
+
+            // Reload the NativePage (if any), since the old NativePage has a reference to the old
+            // activity.
+            maybeShowNativePage(getUrl(), true);
+        }
         for (TabObserver observer : mObservers) {
             observer.onActivityAttachmentChanged(this, attached);
         }
@@ -1049,9 +1074,7 @@ public class Tab {
             mContentView = cv;
             webContents.initialize(PRODUCT_VERSION, new TabViewAndroidDelegate(this, cv), cv,
                     getWindowAndroid(), WebContents.createDefaultInternalsHolder());
-            NativePage previousNativePage = mNativePage;
-            mNativePage = null;
-            destroyNativePageInternal(previousNativePage);
+            hideNativePage(false, null);
 
             if (oldWebContents != null) {
                 oldWebContents.setImportance(ChildProcessImportance.NORMAL);
@@ -1091,7 +1114,7 @@ public class Tab {
      *                    matches the URL.
      * @return True, if a native page was displayed for url.
      */
-    public boolean maybeShowNativePage(String url, boolean forceReload) {
+    boolean maybeShowNativePage(String url, boolean forceReload) {
         // While detached for reparenting we don't have an owning Activity, or TabModelSelector,
         // so we can't create the native page. The native page will be created once reparenting is
         // completed.
@@ -1144,10 +1167,7 @@ public class Tab {
         mObservers.clear();
 
         mUserDataHost.destroy();
-
-        NativePage currentNativePage = mNativePage;
-        mNativePage = null;
-        destroyNativePageInternal(currentNativePage);
+        hideNativePage(false, null);
         destroyWebContents(true);
 
         TabImportanceManager.tabDestroyed(this);
@@ -1518,40 +1538,32 @@ public class Tab {
 
     /** This is currently called when committing a pre-rendered page. */
     void swapWebContents(WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
-        int originalWidth = 0;
-        int originalHeight = 0;
-        if (mContentView != null && mWebContents != null) {
-            originalWidth = mContentView.getWidth();
-            originalHeight = mContentView.getHeight();
-            mWebContents.onHide();
-        }
-
-        Rect bounds = new Rect();
-        if (originalWidth == 0 && originalHeight == 0) {
-            bounds = ExternalPrerenderHandler.estimateContentSize(getApplicationContext(), false);
-            originalWidth = bounds.right - bounds.left;
-            originalHeight = bounds.bottom - bounds.top;
-        }
+        boolean hasWebContents = mContentView != null && mWebContents != null;
+        Rect original = hasWebContents
+                ? new Rect(0, 0, mContentView.getWidth(), mContentView.getHeight())
+                : new Rect();
+        if (hasWebContents) mWebContents.onHide();
+        Rect bounds = original.isEmpty()
+                ? ExternalPrerenderHandler.estimateContentSize(getApplicationContext(), false)
+                : null;
+        if (bounds != null) original.set(bounds);
 
         destroyWebContents(false /* do not delete native web contents */);
-        NativePage previousNativePage = mNativePage;
-        mNativePage = null;
+        hideNativePage(false, () -> {
+            // Size of the new content is zero at this point. Set the view size in advance
+            // so that next onShow() call won't send a resize message with zero size
+            // to the renderer process. This prevents the size fluttering that may confuse
+            // Blink and break rendered result (see http://crbug.com/340987).
+            webContents.setSize(original.width(), original.height());
 
-        // Size of the new content is zero at this point. Set the view size in advance
-        // so that next onShow() call won't send a resize message with zero size
-        // to the renderer process. This prevents the size fluttering that may confuse
-        // Blink and break rendered result (see http://crbug.com/340987).
-        webContents.setSize(originalWidth, originalHeight);
-
-        if (!bounds.isEmpty()) {
-            assert mNativeTabAndroid != 0;
-            TabJni.get().onPhysicalBackingSizeChanged(
-                    mNativeTabAndroid, Tab.this, webContents, bounds.right, bounds.bottom);
-        }
-        webContents.onShow();
-        initWebContents(webContents);
-
-        destroyNativePageInternal(previousNativePage);
+            if (bounds != null) {
+                assert mNativeTabAndroid != 0;
+                TabJni.get().onPhysicalBackingSizeChanged(
+                        mNativeTabAndroid, Tab.this, webContents, bounds.right, bounds.bottom);
+            }
+            webContents.onShow();
+            initWebContents(webContents);
+        });
 
         String url = getUrl();
 

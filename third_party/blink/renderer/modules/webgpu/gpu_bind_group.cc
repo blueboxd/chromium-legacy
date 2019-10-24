@@ -14,8 +14,8 @@
 
 namespace blink {
 
-DawnBindGroupBinding AsDawnType(const GPUBindGroupBinding* webgpu_binding) {
-  DawnBindGroupBinding dawn_binding = {};
+WGPUBindGroupBinding AsDawnType(const GPUBindGroupBinding* webgpu_binding) {
+  WGPUBindGroupBinding dawn_binding = {};
 
   dawn_binding.binding = webgpu_binding->binding();
 
@@ -23,7 +23,7 @@ DawnBindGroupBinding AsDawnType(const GPUBindGroupBinding* webgpu_binding) {
     GPUBufferBinding* buffer =
         webgpu_binding->resource().GetAsGPUBufferBinding();
     dawn_binding.offset = buffer->offset();
-    dawn_binding.size = buffer->hasSize() ? buffer->size() : DAWN_WHOLE_SIZE;
+    dawn_binding.size = buffer->hasSize() ? buffer->size() : WGPU_WHOLE_SIZE;
     dawn_binding.buffer = AsDawnType(buffer->buffer());
 
   } else if (webgpu_binding->resource().IsGPUSampler()) {
@@ -51,10 +51,10 @@ GPUBindGroup* GPUBindGroup::Create(GPUDevice* device,
   uint32_t binding_count =
       static_cast<uint32_t>(webgpu_desc->bindings().size());
 
-  std::unique_ptr<DawnBindGroupBinding[]> bindings =
+  std::unique_ptr<WGPUBindGroupBinding[]> bindings =
       binding_count != 0 ? AsDawnType(webgpu_desc->bindings()) : nullptr;
 
-  DawnBindGroupDescriptor dawn_desc = {};
+  WGPUBindGroupDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
   dawn_desc.bindingCount = binding_count;
@@ -68,8 +68,8 @@ GPUBindGroup* GPUBindGroup::Create(GPUDevice* device,
                                                        &dawn_desc));
 }
 
-GPUBindGroup::GPUBindGroup(GPUDevice* device, DawnBindGroup bind_group)
-    : DawnObject<DawnBindGroup>(device, bind_group) {}
+GPUBindGroup::GPUBindGroup(GPUDevice* device, WGPUBindGroup bind_group)
+    : DawnObject<WGPUBindGroup>(device, bind_group) {}
 
 GPUBindGroup::~GPUBindGroup() {
   if (IsDawnControlClientDestroyed()) {

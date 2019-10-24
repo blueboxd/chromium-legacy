@@ -16,7 +16,7 @@
 #include "storage/browser/file_system/file_system_usage_cache.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 #include "url/origin.h"
 
 namespace storage {

@@ -725,10 +725,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_SwapIn)
 // Instructs the frame to stop the load in progress, if any.
 IPC_MESSAGE_ROUTED0(FrameMsg_Stop)
 
-// Informs the renderer that the browser stopped processing a renderer-initiated
-// navigation. It does not stop ongoing loads in the current page.
-IPC_MESSAGE_ROUTED0(FrameMsg_DroppedNavigation)
-
 // A message sent to RenderFrameProxy to indicate that its corresponding
 // RenderFrame has started loading a document.
 IPC_MESSAGE_ROUTED0(FrameMsg_DidStartLoading)
@@ -1319,10 +1315,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidBlockNavigation,
                     GURL /* blocked_url */,
                     GURL /* initiator_url */,
                     blink::NavigationBlockedReason /* reason */)
-
-// Tells the browser to abort an ongoing renderer-initiated navigation. This is
-// used when the page calls document.open.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_AbortNavigation)
 
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.

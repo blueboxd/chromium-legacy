@@ -16,8 +16,8 @@ class SmsFetchRequestHandler : public SharingMessageHandler {
   ~SmsFetchRequestHandler() override;
 
   // SharingMessageHandler
-  void OnMessage(
-      const chrome_browser_sharing::SharingMessage& message) override;
+  void OnMessage(chrome_browser_sharing::SharingMessage message,
+                 SharingMessageHandler::DoneCallback done_callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SmsFetchRequestHandler);

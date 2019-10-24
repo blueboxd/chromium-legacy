@@ -114,7 +114,6 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
 #include "components/ui_devtools/switches.h"
-#include "components/unified_consent/feature.h"
 #include "components/version_info/version_info.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
@@ -3248,10 +3247,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVizDisplayCompositorName,
      flag_descriptions::kVizDisplayCompositorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kVizDisplayCompositor)},
-
-    {"unified-consent", flag_descriptions::kUnifiedConsentName,
-     flag_descriptions::kUnifiedConsentDescription, kOsAll,
-     FEATURE_VALUE_TYPE(unified_consent::kUnifiedConsent)},
 
     {"simplify-https-indicator", flag_descriptions::kSimplifyHttpsIndicatorName,
      flag_descriptions::kSimplifyHttpsIndicatorDescription, kOsDesktop,

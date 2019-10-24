@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_IMPL_H_
 #define CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_IMPL_H_
 
+#include <bitset>
 #include <list>
 #include <memory>
 #include <unordered_map>
@@ -74,28 +75,30 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   ~BackForwardCacheImpl();
 
   struct CanStoreDocumentResult {
+    using NotStoredReasons =
+        std::bitset<static_cast<size_t>(
+                        BackForwardCacheMetrics::NotRestoredReason::kMaxValue) +
+                    1ul>;
+
+    CanStoreDocumentResult();
     CanStoreDocumentResult(const CanStoreDocumentResult&);
     ~CanStoreDocumentResult();
 
-    bool can_store;
-    // TODO(hajimehoshi): Accept multiple reasons.
-    base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason;
-    uint64_t blocklisted_features;
+    NotStoredReasons not_stored_reasons;
+    uint64_t blocklisted_features = 0;
 
-    static CanStoreDocumentResult Yes();
-    static CanStoreDocumentResult No(
-        BackForwardCacheMetrics::NotRestoredReason reason);
-    static CanStoreDocumentResult NoDueToFeatures(uint64_t features);
+    bool CanStore() const;
 
-    std::string ToString();
+    std::string ToString() const;
 
-    operator bool() const { return can_store; }
+    void No(BackForwardCacheMetrics::NotRestoredReason reason);
+    void NoDueToFeatures(uint64_t features);
+
+    operator bool() const { return CanStore(); }
 
    private:
-    CanStoreDocumentResult(
-        bool can_store,
-        base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason,
-        uint64_t blocklisted_features);
+    std::string NotRestoredReasonToString(
+        BackForwardCacheMetrics::NotRestoredReason reason) const;
   };
 
   // Returns whether a RenderFrameHost can be stored into the
@@ -182,8 +185,8 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   void DestroyEvictedFrames();
 
   // Helper for recursively checking each child.
-  CanStoreDocumentResult CanStoreRenderFrameHost(
-      RenderFrameHostImpl* render_frame_host);
+  void CanStoreRenderFrameHost(CanStoreDocumentResult* result,
+                               RenderFrameHostImpl* render_frame_host);
 
   // Contains the set of stored Entries.
   // Invariant:

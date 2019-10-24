@@ -93,15 +93,15 @@ base::Optional<DXGI_FORMAT> VizFormatToDXGIFormat(
 }
 
 #if BUILDFLAG(USE_DAWN)
-base::Optional<DawnTextureFormat> VizResourceFormatToDawnTextureFormat(
+base::Optional<WGPUTextureFormat> VizResourceFormatToWGPUTextureFormat(
     viz::ResourceFormat viz_resource_format) {
   switch (viz_resource_format) {
     case viz::RGBA_F16:
-      return DAWN_TEXTURE_FORMAT_RGBA16_FLOAT;
+      return WGPUTextureFormat_RGBA16Float;
     case viz::BGRA_8888:
-      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
+      return WGPUTextureFormat_BGRA8Unorm;
     case viz::RGBA_8888:
-      return DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
+      return WGPUTextureFormat_RGBA8Unorm;
     default:
       NOTREACHED();
       return {};
@@ -162,7 +162,7 @@ class SharedImageRepresentationDawnD3D : public SharedImageRepresentationDawn {
   SharedImageRepresentationDawnD3D(SharedImageManager* manager,
                                    SharedImageBacking* backing,
                                    MemoryTypeTracker* tracker,
-                                   DawnDevice device)
+                                   WGPUDevice device)
       : SharedImageRepresentationDawn(manager, backing, tracker),
         device_(device),
         dawn_procs_(dawn_native::GetProcs()) {
@@ -178,12 +178,12 @@ class SharedImageRepresentationDawnD3D : public SharedImageRepresentationDawn {
     dawn_procs_.deviceRelease(device_);
   }
 
-  DawnTexture BeginAccess(DawnTextureUsage usage) override;
+  WGPUTexture BeginAccess(WGPUTextureUsage usage) override;
   void EndAccess() override;
 
  private:
-  DawnDevice device_;
-  DawnTexture texture_ = nullptr;
+  WGPUDevice device_;
+  WGPUTexture texture_ = nullptr;
 
   // TODO(cwallez@chromium.org): Load procs only once when the factory is
   // created and pass a pointer to them around?
@@ -258,7 +258,7 @@ class SharedImageBackingD3D : public SharedImageBacking {
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      DawnDevice device) override {
+      WGPUDevice device) override {
 #if BUILDFLAG(USE_DAWN)
     return std::make_unique<SharedImageRepresentationDawnD3D>(manager, this,
                                                               tracker, device);
@@ -431,16 +431,16 @@ class SharedImageBackingD3D : public SharedImageBacking {
 };
 
 #if BUILDFLAG(USE_DAWN)
-DawnTexture SharedImageRepresentationDawnD3D::BeginAccess(
-    DawnTextureUsage usage) {
+WGPUTexture SharedImageRepresentationDawnD3D::BeginAccess(
+    WGPUTextureUsage usage) {
   SharedImageBackingD3D* d3d_image_backing =
       static_cast<SharedImageBackingD3D*>(backing());
 
   const HANDLE shared_handle = d3d_image_backing->GetSharedHandle();
   const viz::ResourceFormat viz_resource_format = d3d_image_backing->format();
-  const base::Optional<DawnTextureFormat> dawn_texture_format =
-      VizResourceFormatToDawnTextureFormat(viz_resource_format);
-  if (!dawn_texture_format.has_value()) {
+  const base::Optional<WGPUTextureFormat> wgpu_texture_format =
+      VizResourceFormatToWGPUTextureFormat(viz_resource_format);
+  if (!wgpu_texture_format.has_value()) {
     DLOG(ERROR) << "Unsupported viz format found: " << viz_resource_format;
     return nullptr;
   }
@@ -450,11 +450,11 @@ DawnTexture SharedImageRepresentationDawnD3D::BeginAccess(
     return nullptr;
   }
 
-  DawnTextureDescriptor desc;
+  WGPUTextureDescriptor desc;
   desc.nextInChain = nullptr;
-  desc.format = dawn_texture_format.value();
+  desc.format = wgpu_texture_format.value();
   desc.usage = usage;
-  desc.dimension = DAWN_TEXTURE_DIMENSION_2D;
+  desc.dimension = WGPUTextureDimension_2D;
   desc.size = {size().width(), size().height(), 1};
   desc.arrayLayerCount = 1;
   desc.mipLevelCount = 1;

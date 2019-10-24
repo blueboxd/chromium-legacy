@@ -436,7 +436,7 @@ void FrameTreeNode::CreatedNavigationRequest(
       // Mark the old request as aborted.
       navigation_request_->set_net_error(net::ERR_ABORTED);
     }
-    ResetNavigationRequest(true, true);
+    ResetNavigationRequest(true);
   }
 
   navigation_request_ = std::move(navigation_request);
@@ -452,18 +452,11 @@ void FrameTreeNode::CreatedNavigationRequest(
   DidStartLoading(to_different_document, was_previously_loading);
 }
 
-void FrameTreeNode::ResetNavigationRequest(bool keep_state,
-                                           bool inform_renderer) {
+void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
   if (!navigation_request_)
     return;
 
   devtools_instrumentation::OnResetNavigationRequest(navigation_request_.get());
-
-  // The renderer should be informed if the caller allows to do so and the
-  // navigation came from a BeginNavigation IPC.
-  bool need_to_inform_renderer =
-      !IsPerNavigationMojoInterfaceEnabled() & inform_renderer &&
-      navigation_request_->from_begin_navigation();
 
   NavigationRequest::AssociatedSiteInstanceType site_instance_type =
       navigation_request_->associated_site_instance_type();
@@ -482,16 +475,6 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state,
   if (site_instance_type ==
       NavigationRequest::AssociatedSiteInstanceType::CURRENT) {
     current_frame_host()->ClearPendingWebUI();
-  }
-
-  // If the navigation is renderer-initiated, the renderer should also be
-  // informed that the navigation stopped if needed. In the case the renderer
-  // process asked for the navigation to be aborted, e.g. following a
-  // document.open, do not send an IPC to the renderer process as it already
-  // expects the navigation to stop.
-  if (need_to_inform_renderer) {
-    current_frame_host()->Send(
-        new FrameMsg_DroppedNavigation(current_frame_host()->GetRoutingID()));
   }
 }
 
@@ -552,7 +535,7 @@ void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
 bool FrameTreeNode::StopLoading() {
   if (navigation_request_ && navigation_request_->IsNavigationStarted())
     navigation_request_->set_net_error(net::ERR_ABORTED);
-  ResetNavigationRequest(false, true);
+  ResetNavigationRequest(false);
 
   // TODO(nasko): see if child frames should send IPCs in site-per-process
   // mode.
@@ -587,7 +570,7 @@ void FrameTreeNode::BeforeUnloadCanceled() {
   // as it has not been created yet. It is only created when the
   // BeforeUnloadACK is received.
   if (navigation_request_)
-    ResetNavigationRequest(false, true);
+    ResetNavigationRequest(false);
 }
 
 bool FrameTreeNode::NotifyUserActivation() {

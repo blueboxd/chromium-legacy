@@ -43,7 +43,6 @@ Gamepad::Gamepad(Client* client,
       timestamp_(0.0),
       has_vibration_actuator_(false),
       vibration_actuator_type_(device::GamepadHapticActuatorType::kDualRumble),
-      display_id_(0),
       is_axis_data_dirty_(true),
       is_button_data_dirty_(true),
       time_origin_(time_origin),
@@ -72,21 +71,11 @@ void Gamepad::UpdateFromDeviceState(const device::Gamepad& device_gamepad) {
   // also simpler than logic to conditionally call.
   SetVibrationActuatorInfo(device_gamepad.vibration_actuator);
 
-  if (device_gamepad.is_xr) {
-    SetPose(device_gamepad.pose);
-    SetHand(device_gamepad.hand);
-  }
-
   // These fields are not expected to change and will only be written when the
   // gamepad is newly connected.
   if (newly_connected) {
     SetId(device_gamepad.id);
     SetMapping(device_gamepad.mapping);
-
-    if (device_gamepad.is_xr && device_gamepad.display_id) {
-      // Re-map display ids, since we will hand out at most one VRDisplay.
-      SetDisplayId(1);
-    }
   }
 }
 
@@ -158,35 +147,6 @@ void Gamepad::SetVibrationActuatorInfo(
   vibration_actuator_type_ = actuator.type;
 }
 
-void Gamepad::SetPose(const device::GamepadPose& pose) {
-  if (!pose.not_null) {
-    if (pose_)
-      pose_ = nullptr;
-    return;
-  }
-
-  if (!pose_)
-    pose_ = MakeGarbageCollected<GamepadPose>();
-
-  pose_->SetPose(pose);
-}
-
-void Gamepad::SetHand(const device::GamepadHand& hand) {
-  switch (hand) {
-    case device::GamepadHand::kNone:
-      hand_ = "";
-      break;
-    case device::GamepadHand::kLeft:
-      hand_ = "left";
-      break;
-    case device::GamepadHand::kRight:
-      hand_ = "right";
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 // Convert the raw timestamp from the device to a relative one and apply the
 // floor.
 void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad) {
@@ -209,7 +169,6 @@ void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad) {
 void Gamepad::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
   visitor->Trace(buttons_);
-  visitor->Trace(pose_);
   ScriptWrappable::Trace(visitor);
 }
 

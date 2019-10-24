@@ -64,17 +64,6 @@ bool ShouldIgnoreIncomingRendererRequest(
          ongoing_navigation_request->browser_initiated() && !has_user_gesture;
 }
 
-// Informs the RenderFrameImpl associated with the |frame_tree_node| that a
-// navigation it started was dropped.
-void DropNavigation(FrameTreeNode* frame_tree_node) {
-  if (!IsPerNavigationMojoInterfaceEnabled()) {
-    RenderFrameHost* current_frame_host =
-        frame_tree_node->render_manager()->current_frame_host();
-    current_frame_host->Send(
-        new FrameMsg_DroppedNavigation(current_frame_host->GetRoutingID()));
-  }
-}
-
 }  // namespace
 
 struct NavigatorImpl::NavigationMetricsData {
@@ -501,7 +490,7 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
   // after the navigation started. The last user input shoud be respected, and
   // the navigation cancelled anyway.
   if (!proceed) {
-    CancelNavigation(frame_tree_node, true);
+    CancelNavigation(frame_tree_node);
     return;
   }
 
@@ -566,13 +555,12 @@ void NavigatorImpl::OnBeginNavigation(
           .is_history_navigation_in_new_child_frame) {
     // Preemptively clear this local pointer before deleting the request.
     ongoing_navigation_request = nullptr;
-    frame_tree_node->ResetNavigationRequest(false, true);
+    frame_tree_node->ResetNavigationRequest(false);
   }
 
   // Verify this navigation has precedence.
   if (ShouldIgnoreIncomingRendererRequest(ongoing_navigation_request,
                                           common_params->has_user_gesture)) {
-    DropNavigation(frame_tree_node);
     return;
   }
 
@@ -648,24 +636,10 @@ void NavigatorImpl::RestartNavigationAsCrossDocument(
   // See https://crbug.com/770157.
 }
 
-void NavigatorImpl::OnAbortNavigation(FrameTreeNode* frame_tree_node) {
-  DCHECK(!IsPerNavigationMojoInterfaceEnabled());
-  NavigationRequest* ongoing_navigation_request =
-      frame_tree_node->navigation_request();
-  if (!ongoing_navigation_request ||
-      ongoing_navigation_request->browser_initiated()) {
-    return;
-  }
-
-  // Abort the renderer-initiated navigation request.
-  CancelNavigation(frame_tree_node, false);
-}
-
-void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node,
-                                     bool inform_renderer) {
+void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
   if (frame_tree_node->navigation_request())
     frame_tree_node->navigation_request()->set_net_error(net::ERR_ABORTED);
-  frame_tree_node->ResetNavigationRequest(false, inform_renderer);
+  frame_tree_node->ResetNavigationRequest(false);
   if (frame_tree_node->IsMainFrame())
     navigation_data_.reset();
 }

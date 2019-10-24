@@ -89,7 +89,7 @@ interface DeviceSyncObserver {
 // Calls to this API run in the browser process.
 interface DeviceSync {
   // Adds an Observer of this API.
-  AddObserver(DeviceSyncObserver observer) => ();
+  AddObserver(pending_remote<DeviceSyncObserver> observer) => ();
 
   // Triggers an enrollment; result is relayed via the OnEnrollmentFinished()
   // observer function. Returns whether the call could be completed

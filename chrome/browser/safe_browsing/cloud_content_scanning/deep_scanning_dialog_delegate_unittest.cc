@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -560,7 +561,7 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileData) {
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
 
   bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
@@ -585,8 +586,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileData2) {
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar.doc"));
 
   bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
@@ -613,8 +614,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileData) {
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar.doc"));
 
   bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
@@ -644,11 +645,11 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataPartialSuccess) {
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_1"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_2"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_status"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_rule"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_1.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_malware_2.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_status.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_fail_dlp_rule.doc"));
 
   // Mark some files with failed scans.
   PathFailsDeepScan(data.paths[1],
@@ -706,6 +707,165 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, EmptyWait) {
             EXPECT_EQ(0u, data.paths.size());
             ASSERT_EQ(0u, result.text_results.size());
             ASSERT_EQ(0u, result.paths_results.size());
+            *called = true;
+          },
+          &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
+  SetWaitPolicy(DELAY_UPLOADS);
+
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.bzip"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.cab"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.docx"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.eps"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.gzip"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.hwp"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.img_for_ocr"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.kml"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.kmz"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.odp"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ods"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.odt"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.pdf"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ppt"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.pptx"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ps"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.rar"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.rtf"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sdc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sdd"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sdw"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.seven_z"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sxc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sxi"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sxw"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.tar"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ttf"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.txt"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.wml"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.wpd"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xls"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xlsx"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xml"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xps"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.zip"));
+
+  // Mark all files with failed scans.
+  for (const auto& path : data.paths)
+    PathFailsDeepScan(path, FakeDeepScanningDialogDelegate::MalwareResponse(
+                                MalwareDeepScanningVerdict::UWS));
+
+  bool called = false;
+  DeepScanningDialogDelegate::ShowForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(36u, data.paths.size());
+            ASSERT_EQ(36u, result.paths_results.size());
+
+            // The supported types should be marked as false.
+            for (const auto& result : result.paths_results)
+              EXPECT_FALSE(result);
+            *called = true;
+          },
+          &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypes) {
+  SetWaitPolicy(DELAY_UPLOADS);
+
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.these"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.file"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.types"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.are"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.not"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.supported"));
+
+  // Mark all files with failed scans.
+  for (const auto& path : data.paths)
+    PathFailsDeepScan(path, FakeDeepScanningDialogDelegate::MalwareResponse(
+                                MalwareDeepScanningVerdict::UWS));
+
+  bool called = false;
+  DeepScanningDialogDelegate::ShowForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(6u, data.paths.size());
+            ASSERT_EQ(6u, result.paths_results.size());
+
+            // The unsupported types should be marked as true.
+            for (const bool path_result : result.paths_results)
+              EXPECT_TRUE(path_result);
+            *called = true;
+          },
+          &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedAndUnsupportedTypes) {
+  SetWaitPolicy(DELAY_UPLOADS);
+
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  // Only 3 of these file types are supported (bzip, cab and doc). They are
+  // mixed in the list so as to show that insertion order does not matter.
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.bzip"));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.these"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.file"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.types"));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.cab"));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.are"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.not"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.supported"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo_no_extension"));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+
+  // Mark all files with failed scans.
+  for (const auto& path : data.paths)
+    PathFailsDeepScan(path, FakeDeepScanningDialogDelegate::MalwareResponse(
+                                MalwareDeepScanningVerdict::UWS));
+
+  bool called = false;
+  DeepScanningDialogDelegate::ShowForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(10u, data.paths.size());
+            ASSERT_EQ(10u, result.paths_results.size());
+
+            // The unsupported types should be marked as true, and the valid
+            // types as false since they are marked as failed scans.
+            size_t i = 0;
+            for (const bool expected : {false, true, true, true, false, true,
+                                        true, true, true, false}) {
+              ASSERT_EQ(expected, result.paths_results[i]);
+              ++i;
+            }
             *called = true;
           },
           &called));

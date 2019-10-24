@@ -206,7 +206,7 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
 std::unique_ptr<SharedImageRepresentationDawn> SharedImageManager::ProduceDawn(
     const Mailbox& mailbox,
     MemoryTypeTracker* tracker,
-    DawnDevice device) {
+    WGPUDevice device) {
   CALLED_ON_VALID_THREAD();
 
   AutoLock autolock(this);

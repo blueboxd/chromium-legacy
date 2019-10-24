@@ -49,9 +49,6 @@ class MODULES_EXPORT GamepadStateCompareResult {
                       Gamepad* new_gamepad,
                       size_t gamepad_index,
                       bool compare_all);
-  bool ComparePose(Gamepad* old_gamepad, Gamepad* new_gamepad);
-  bool CompareFloat32Array(DOMFloat32Array* old_array,
-                           DOMFloat32Array* new_array);
 
   bool any_change_ = false;
   std::bitset<device::Gamepads::kItemsLengthCap> gamepad_connected_;

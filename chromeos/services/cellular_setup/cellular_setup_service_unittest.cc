@@ -46,8 +46,8 @@ class CellularSetupServiceTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     service_ = std::make_unique<FakeCellularSetup>();
-    service_->BindRequest(mojo::MakeRequest(&cellular_setup_ptr_));
-    cellular_setup_ptr_.FlushForTesting();
+    service_->BindReceiver(cellular_setup_remote_.BindNewPipeAndPassReceiver());
+    cellular_setup_remote_.FlushForTesting();
   }
 
   // Calls StartActivation() and returns the fake CarrierPortalHandler and its
@@ -61,11 +61,11 @@ class CellularSetupServiceTest : public testing::Test {
     base::RunLoop run_loop;
 
     // Make StartActivation() call and propagate it to the service.
-    cellular_setup_ptr_->StartActivation(
+    cellular_setup_remote_->StartActivation(
         fake_activation_delegate->GenerateRemote(),
         base::BindOnce(&CellularSetupServiceTest::OnStartActivationResult,
                        base::Unretained(this), run_loop.QuitClosure()));
-    cellular_setup_ptr_.FlushForTesting();
+    cellular_setup_remote_.FlushForTesting();
 
     // Verify that the call was made successfully.
     EXPECT_EQ(num_args_before_call + 1u, start_activation_invocations.size());
@@ -166,7 +166,7 @@ class CellularSetupServiceTest : public testing::Test {
 
   mojo::Remote<mojom::CarrierPortalHandler> last_carrier_portal_observer_;
 
-  mojom::CellularSetupPtr cellular_setup_ptr_;
+  mojo::Remote<mojom::CellularSetup> cellular_setup_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(CellularSetupServiceTest);
 };

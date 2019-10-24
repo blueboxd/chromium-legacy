@@ -440,6 +440,9 @@ external/wpt/css/css-text/text-transform/text-transform-full-size-kana-006.html 
 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-007.html [ WontFix ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-008.html [ WontFix ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-009.html [ WontFix ]
+external/wpt/css/css-text/writing-system/writing-system-line-break-001.html [ WontFix ]
+external/wpt/css/css-text/writing-system/writing-system-line-break-002.html [ WontFix ]
+external/wpt/css/css-text/writing-system/writing-system-segment-break-001.html [ WontFix ]
 
 # Undefined behavior without any implementations.
 external/wpt/css/css-text/white-space/seg-break-transformation-019.html [ WontFix ]

@@ -17,15 +17,15 @@ namespace blink {
 // static
 GPURenderPassEncoder* GPURenderPassEncoder::Create(
     GPUDevice* device,
-    DawnRenderPassEncoder render_pass_encoder) {
+    WGPURenderPassEncoder render_pass_encoder) {
   return MakeGarbageCollected<GPURenderPassEncoder>(device,
                                                     render_pass_encoder);
 }
 
 GPURenderPassEncoder::GPURenderPassEncoder(
     GPUDevice* device,
-    DawnRenderPassEncoder render_pass_encoder)
-    : DawnObject<DawnRenderPassEncoder>(device, render_pass_encoder) {}
+    WGPURenderPassEncoder render_pass_encoder)
+    : DawnObject<WGPURenderPassEncoder>(device, render_pass_encoder) {}
 
 GPURenderPassEncoder::~GPURenderPassEncoder() {
   if (IsDawnControlClientDestroyed()) {
@@ -68,7 +68,7 @@ void GPURenderPassEncoder::setBlendColor(DoubleSequenceOrGPUColorDict& color,
     return;
   }
 
-  DawnColor dawn_color = AsDawnType(&color);
+  WGPUColor dawn_color = AsDawnType(&color);
   GetProcs().renderPassEncoderSetBlendColor(GetHandle(), &dawn_color);
 }
 
@@ -137,7 +137,7 @@ void GPURenderPassEncoder::drawIndexedIndirect(GPUBuffer* indirectBuffer,
 
 void GPURenderPassEncoder::executeBundles(
     const HeapVector<Member<GPURenderBundle>>& bundles) {
-  std::unique_ptr<DawnRenderBundle[]> dawn_bundles = AsDawnType(bundles);
+  std::unique_ptr<WGPURenderBundle[]> dawn_bundles = AsDawnType(bundles);
 
   GetProcs().renderPassEncoderExecuteBundles(GetHandle(), bundles.size(),
                                              dawn_bundles.get());

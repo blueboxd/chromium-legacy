@@ -74,8 +74,8 @@
 #include "google_apis/drive/auth_service.h"
 #include "net/base/hex_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_types.h"
+#include "storage/common/file_system/file_system_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 

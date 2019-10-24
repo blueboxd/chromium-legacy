@@ -18,9 +18,9 @@ ALWAYS_INLINE bool IsHashTableDeleteValue(const void* value) {
 
 }  // namespace
 
-MarkingVisitorBase::MarkingVisitorBase(ThreadState* state,
-                                       MarkingMode marking_mode,
-                                       int task_id)
+MarkingVisitorCommon::MarkingVisitorCommon(ThreadState* state,
+                                           MarkingMode marking_mode,
+                                           int task_id)
     : Visitor(state),
       marking_worklist_(Heap().GetMarkingWorklist(), task_id),
       not_fully_constructed_worklist_(Heap().GetNotFullyConstructedWorklist(),
@@ -34,17 +34,17 @@ MarkingVisitorBase::MarkingVisitorBase(ThreadState* state,
       marking_mode_(marking_mode),
       task_id_(task_id) {}
 
-void MarkingVisitorBase::FlushCompactionWorklists() {
+void MarkingVisitorCommon::FlushCompactionWorklists() {
   movable_reference_worklist_.FlushToGlobal();
   backing_store_callback_worklist_.FlushToGlobal();
 }
 
-void MarkingVisitorBase::RegisterWeakCallback(void* object,
-                                              WeakCallback callback) {
+void MarkingVisitorCommon::RegisterWeakCallback(void* object,
+                                                WeakCallback callback) {
   weak_callback_worklist_.Push({object, callback});
 }
 
-void MarkingVisitorBase::RegisterBackingStoreReference(void** slot) {
+void MarkingVisitorCommon::RegisterBackingStoreReference(void** slot) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
   MovableReference* movable_reference =
@@ -55,7 +55,7 @@ void MarkingVisitorBase::RegisterBackingStoreReference(void** slot) {
   }
 }
 
-void MarkingVisitorBase::RegisterBackingStoreCallback(
+void MarkingVisitorCommon::RegisterBackingStoreCallback(
     void* backing,
     MovingObjectCallback callback) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
@@ -65,15 +65,15 @@ void MarkingVisitorBase::RegisterBackingStoreCallback(
   }
 }
 
-bool MarkingVisitorBase::RegisterWeakTable(
+bool MarkingVisitorCommon::RegisterWeakTable(
     const void* closure,
     EphemeronCallback iteration_callback) {
   weak_table_worklist_.Push({const_cast<void*>(closure), iteration_callback});
   return true;
 }
 
-void MarkingVisitorBase::AdjustMarkedBytes(HeapObjectHeader* header,
-                                           size_t old_size) {
+void MarkingVisitorCommon::AdjustMarkedBytes(HeapObjectHeader* header,
+                                             size_t old_size) {
   DCHECK(header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>());
   // Currently, only expansion of an object is supported during marking.
   DCHECK_GE(header->size(), old_size);

@@ -4,6 +4,7 @@
 
 #ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_NEURAL_STYLUS_PALM_DETECTION_FILTER_UTIL_H_
 #define UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_NEURAL_STYLUS_PALM_DETECTION_FILTER_UTIL_H_
+
 #include <cstdint>
 #include <deque>
 #include <vector>
@@ -14,13 +15,8 @@
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
-struct EVENTS_OZONE_EVDEV_EXPORT DistilledDevInfo {
- private:
-  explicit DistilledDevInfo(const EventDeviceInfo& devinfo);
 
- public:
-  static const DistilledDevInfo Create(const EventDeviceInfo& devinfo);
-  DistilledDevInfo() = delete;
+struct EVENTS_OZONE_EVDEV_EXPORT PalmFilterDeviceInfo {
   float max_x = 0.f;
   float max_y = 0.f;
   float x_res = 1.f;
@@ -30,48 +26,51 @@ struct EVENTS_OZONE_EVDEV_EXPORT DistilledDevInfo {
   bool minor_radius_supported = false;
 };
 
-// Data for a single touch event.
-class EVENTS_OZONE_EVDEV_EXPORT Sample {
- public:
-  Sample(const InProgressTouchEvdev& touch,
-         const base::TimeTicks& time,
-         const DistilledDevInfo& dev_info);
-  Sample(const Sample& other);
-  Sample() = delete;
-  Sample& operator=(const Sample& other);
+EVENTS_OZONE_EVDEV_EXPORT
+PalmFilterDeviceInfo CreatePalmFilterDeviceInfo(const EventDeviceInfo& devinfo);
 
+// Data for a single touch event.
+struct EVENTS_OZONE_EVDEV_EXPORT PalmFilterSample {
   float major_radius = 0;
   float minor_radius = 0;
   float pressure = 0;
   float edge = 0;
   int tracking_id = 0;
   gfx::PointF point;
-  base::TimeTicks time = base::TimeTicks::UnixEpoch();
+  base::TimeTicks time;
 };
 
-class EVENTS_OZONE_EVDEV_EXPORT Stroke {
- public:
-  explicit Stroke(int max_length);
-  Stroke(const Stroke& other);
-  Stroke(Stroke&& other);
-  virtual ~Stroke();
+EVENTS_OZONE_EVDEV_EXPORT
+PalmFilterSample CreatePalmFilterSample(const InProgressTouchEvdev& touch,
+                                        const base::TimeTicks& time,
+                                        const PalmFilterDeviceInfo& dev_info);
 
-  void AddSample(const Sample& sample);
+class EVENTS_OZONE_EVDEV_EXPORT PalmFilterStroke {
+ public:
+  explicit PalmFilterStroke(size_t max_length);
+  PalmFilterStroke(const PalmFilterStroke& other);
+  PalmFilterStroke(PalmFilterStroke&& other);
+  PalmFilterStroke& operator=(const PalmFilterStroke& other);
+  PalmFilterStroke& operator=(PalmFilterStroke&& other);
+  ~PalmFilterStroke();
+
+  void AddSample(const PalmFilterSample& sample);
   gfx::PointF GetCentroid() const;
   float BiggestSize() const;
   // If no elements in stroke, returns 0.0;
   float MaxMajorRadius() const;
   void SetTrackingId(int tracking_id);
-  const std::deque<Sample>& samples() const;
+  const std::deque<PalmFilterSample>& samples() const;
   uint64_t samples_seen() const;
   int tracking_id() const;
 
  private:
-  std::deque<Sample> samples_;
+  std::deque<PalmFilterSample> samples_;
   int tracking_id_ = 0;
   uint64_t samples_seen_ = 0;
   uint64_t max_length_;
 };
 
 }  // namespace ui
+
 #endif  // UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_NEURAL_STYLUS_PALM_DETECTION_FILTER_UTIL_H_

@@ -301,6 +301,12 @@ bool User::IsDeviceLocalAccount() const {
   return false;
 }
 
+bool User::IsKioskType() const {
+  UserType type = GetType();
+  return type == USER_TYPE_KIOSK_APP || type == USER_TYPE_ARC_KIOSK_APP ||
+         type == USER_TYPE_WEB_KIOSK_APP;
+}
+
 User* User::CreateRegularUser(const AccountId& account_id,
                               const UserType user_type) {
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)

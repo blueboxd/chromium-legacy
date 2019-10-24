@@ -49,6 +49,8 @@ class PLATFORM_EXPORT DarkModeFilter {
                                  Image* image,
                                  cc::PaintFlags* flags);
 
+  SkColorFilter* GetImageFilterForTesting() { return image_filter_.get(); }
+
  private:
   DarkModeSettings settings_;
 

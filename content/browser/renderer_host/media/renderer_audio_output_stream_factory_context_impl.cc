@@ -14,6 +14,7 @@
 #include "content/public/common/content_features.h"
 #include "media/audio/audio_system.h"
 #include "media/mojo/mojom/audio_logging.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
@@ -64,16 +65,16 @@ RendererAudioOutputStreamFactoryContextImpl::CreateDelegate(
   MediaObserver* const media_observer =
       GetContentClient()->browser()->GetMediaObserver();
 
-  media::mojom::AudioLogPtr audio_log_ptr =
+  mojo::Remote<media::mojom::AudioLog> audio_log(
       MediaInternals::GetInstance()->CreateMojoAudioLog(
           media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER, stream_id,
-          render_process_id_, render_frame_id);
-  audio_log_ptr->OnCreated(params, unique_device_id);
+          render_process_id_, render_frame_id));
+  audio_log->OnCreated(params, unique_device_id);
 
   return AudioOutputDelegateImpl::Create(
-      handler, audio_manager_, std::move(audio_log_ptr), media_observer,
-      stream_id, render_frame_id, render_process_id_, params,
-      std::move(stream_observer), unique_device_id);
+      handler, audio_manager_, audio_log.Unbind(), media_observer, stream_id,
+      render_frame_id, render_process_id_, params, std::move(stream_observer),
+      unique_device_id);
 }
 
 }  // namespace content

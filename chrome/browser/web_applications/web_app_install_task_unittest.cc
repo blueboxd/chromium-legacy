@@ -369,6 +369,7 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   const std::string description = "Description";
   const GURL scope = GURL("https://example.com/scope");
   const base::Optional<SkColor> theme_color = 0xAABBCCDD;
+  const base::Optional<SkColor> expected_theme_color = 0xFFBBCCDD;  // Opaque.
 
   const AppId app_id = GenerateAppIdFromURL(url);
 
@@ -402,7 +403,7 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   EXPECT_EQ(description, web_app->description());
   EXPECT_EQ(url, web_app->launch_url());
   EXPECT_EQ(scope, web_app->scope());
-  EXPECT_EQ(theme_color, web_app->theme_color());
+  EXPECT_EQ(expected_theme_color, web_app->theme_color());
 }
 
 TEST_F(WebAppInstallTaskTest, AlreadyInstalled) {
@@ -502,6 +503,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   const std::string manifest_name = "Name from Manifest";
   const GURL manifest_scope = GURL("https://example.com/scope");
   const base::Optional<SkColor> manifest_theme_color = 0xAABBCCDD;
+  const base::Optional<SkColor> expected_theme_color = 0xFFBBCCDD;  // Opaque.
 
   {
     auto manifest = std::make_unique<blink::Manifest>();
@@ -541,7 +543,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   EXPECT_EQ(manifest_start_url, web_app->launch_url());
   EXPECT_EQ(renderer_description, web_app->description());
   EXPECT_EQ(manifest_scope, web_app->scope());
-  EXPECT_EQ(manifest_theme_color, web_app->theme_color());
+  EXPECT_EQ(expected_theme_color, web_app->theme_color());
 }
 
 TEST_F(WebAppInstallTaskTest, GetIcons) {

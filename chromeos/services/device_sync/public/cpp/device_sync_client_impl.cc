@@ -46,15 +46,14 @@ DeviceSyncClientImpl::Factory::BuildInstance() {
 }
 
 DeviceSyncClientImpl::DeviceSyncClientImpl()
-    : observer_binding_(this),
-      expiring_device_cache_(
+    : expiring_device_cache_(
           std::make_unique<multidevice::ExpiringRemoteDeviceCache>()) {}
 
 DeviceSyncClientImpl::~DeviceSyncClientImpl() = default;
 
 void DeviceSyncClientImpl::Initialize(
     scoped_refptr<base::TaskRunner> task_runner) {
-  device_sync_ptr_->AddObserver(GenerateInterfacePtr(), base::OnceClosure());
+  device_sync_->AddObserver(GenerateRemote(), base::OnceClosure());
 
   // Delay calling these until after initialization finishes.
   task_runner->PostTask(
@@ -65,8 +64,8 @@ void DeviceSyncClientImpl::Initialize(
                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
-mojom::DeviceSyncPtr* DeviceSyncClientImpl::GetDeviceSyncPtr() {
-  return &device_sync_ptr_;
+mojo::Remote<mojom::DeviceSync>* DeviceSyncClientImpl::GetDeviceSyncRemote() {
+  return &device_sync_;
 }
 
 void DeviceSyncClientImpl::OnEnrollmentFinished() {
@@ -86,12 +85,12 @@ void DeviceSyncClientImpl::OnNewDevicesSynced() {
 
 void DeviceSyncClientImpl::ForceEnrollmentNow(
     mojom::DeviceSync::ForceEnrollmentNowCallback callback) {
-  device_sync_ptr_->ForceEnrollmentNow(std::move(callback));
+  device_sync_->ForceEnrollmentNow(std::move(callback));
 }
 
 void DeviceSyncClientImpl::ForceSyncNow(
     mojom::DeviceSync::ForceSyncNowCallback callback) {
-  device_sync_ptr_->ForceSyncNow(std::move(callback));
+  device_sync_->ForceSyncNow(std::move(callback));
 }
 
 multidevice::RemoteDeviceRefList DeviceSyncClientImpl::GetSyncedDevices() {
@@ -113,14 +112,14 @@ void DeviceSyncClientImpl::SetSoftwareFeatureState(
     bool enabled,
     bool is_exclusive,
     mojom::DeviceSync::SetSoftwareFeatureStateCallback callback) {
-  device_sync_ptr_->SetSoftwareFeatureState(
-      public_key, software_feature, enabled, is_exclusive, std::move(callback));
+  device_sync_->SetSoftwareFeatureState(public_key, software_feature, enabled,
+                                        is_exclusive, std::move(callback));
 }
 
 void DeviceSyncClientImpl::FindEligibleDevices(
     multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
-  device_sync_ptr_->FindEligibleDevices(
+  device_sync_->FindEligibleDevices(
       software_feature,
       base::BindOnce(&DeviceSyncClientImpl::OnFindEligibleDevicesCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -128,12 +127,12 @@ void DeviceSyncClientImpl::FindEligibleDevices(
 
 void DeviceSyncClientImpl::GetDevicesActivityStatus(
     mojom::DeviceSync::GetDevicesActivityStatusCallback callback) {
-  device_sync_ptr_->GetDevicesActivityStatus(std::move(callback));
+  device_sync_->GetDevicesActivityStatus(std::move(callback));
 }
 
 void DeviceSyncClientImpl::GetDebugInfo(
     mojom::DeviceSync::GetDebugInfoCallback callback) {
-  device_sync_ptr_->GetDebugInfo(std::move(callback));
+  device_sync_->GetDebugInfo(std::move(callback));
 }
 
 void DeviceSyncClientImpl::AttemptToBecomeReady() {
@@ -156,13 +155,13 @@ void DeviceSyncClientImpl::AttemptToBecomeReady() {
 }
 
 void DeviceSyncClientImpl::LoadSyncedDevices() {
-  device_sync_ptr_->GetSyncedDevices(
+  device_sync_->GetSyncedDevices(
       base::BindOnce(&DeviceSyncClientImpl::OnGetSyncedDevicesCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceSyncClientImpl::LoadLocalDeviceMetadata() {
-  device_sync_ptr_->GetLocalDeviceMetadata(
+  device_sync_->GetLocalDeviceMetadata(
       base::BindOnce(&DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -243,14 +242,13 @@ void DeviceSyncClientImpl::OnFindEligibleDevicesCompleted(
   std::move(callback).Run(result_code, eligible_devices, ineligible_devices);
 }
 
-mojom::DeviceSyncObserverPtr DeviceSyncClientImpl::GenerateInterfacePtr() {
-  mojom::DeviceSyncObserverPtr interface_ptr;
-  observer_binding_.Bind(mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::DeviceSyncObserver>
+DeviceSyncClientImpl::GenerateRemote() {
+  return observer_receiver_.BindNewPipeAndPassRemote();
 }
 
 void DeviceSyncClientImpl::FlushForTesting() {
-  device_sync_ptr_.FlushForTesting();
+  device_sync_.FlushForTesting();
 }
 
 }  // namespace device_sync

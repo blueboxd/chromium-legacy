@@ -14,12 +14,12 @@
 namespace blink {
 
 // static
-GPUQueue* GPUQueue::Create(GPUDevice* device, DawnQueue queue) {
+GPUQueue* GPUQueue::Create(GPUDevice* device, WGPUQueue queue) {
   return MakeGarbageCollected<GPUQueue>(device, queue);
 }
 
-GPUQueue::GPUQueue(GPUDevice* device, DawnQueue queue)
-    : DawnObject<DawnQueue>(device, queue) {}
+GPUQueue::GPUQueue(GPUDevice* device, WGPUQueue queue)
+    : DawnObject<WGPUQueue>(device, queue) {}
 
 GPUQueue::~GPUQueue() {
   if (IsDawnControlClientDestroyed()) {
@@ -29,7 +29,7 @@ GPUQueue::~GPUQueue() {
 }
 
 void GPUQueue::submit(const HeapVector<Member<GPUCommandBuffer>>& buffers) {
-  std::unique_ptr<DawnCommandBuffer[]> commandBuffers = AsDawnType(buffers);
+  std::unique_ptr<WGPUCommandBuffer[]> commandBuffers = AsDawnType(buffers);
 
   GetProcs().queueSubmit(GetHandle(), buffers.size(), commandBuffers.get());
   // WebGPU guarantees that submitted commands finish in finite time so we
@@ -48,7 +48,7 @@ void GPUQueue::signal(GPUFence* fence, uint64_t signal_value) {
 GPUFence* GPUQueue::createFence(const GPUFenceDescriptor* descriptor) {
   DCHECK(descriptor);
 
-  DawnFenceDescriptor desc = {};
+  WGPUFenceDescriptor desc = {};
   desc.nextInChain = nullptr;
   desc.initialValue = descriptor->initialValue();
   if (descriptor->hasLabel()) {

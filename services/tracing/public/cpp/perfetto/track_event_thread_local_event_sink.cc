@@ -169,12 +169,6 @@ TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
     : ThreadLocalEventSink(std::move(trace_writer),
                            session_id,
                            disable_interning),
-      // TODO(eseckler): Tune these values experimentally.
-      interned_event_categories_(1000),
-      interned_event_names_(1000, 100),
-      interned_annotation_names_(1000, 100),
-      interned_source_locations_(1000),
-      interned_log_message_bodies_(100),
       process_id_(TraceLog::GetInstance()->process_id()),
       thread_id_(static_cast<int>(base::PlatformThread::CurrentId())),
       privacy_filtering_enabled_(proto_writer_filtering_enabled) {

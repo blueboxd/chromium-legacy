@@ -275,6 +275,7 @@ void AvatarToolbarButton::ShowAvatarHighlightAnimation() {
   DCHECK_NE(GetState(), State::kIncognitoProfile);
   DCHECK_NE(GetState(), State::kGuestSession);
   DCHECK(!profile_->IsOffTheRecord());
+  signin_ui_util::RecordAvatarIconHighlighted(browser_->profile());
   ShowHighlightAnimation();
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

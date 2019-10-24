@@ -6,22 +6,22 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_COMPUTE_PASS_ENCODER_H_
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 
 namespace blink {
 
 class GPUBindGroup;
+class GPUBuffer;
 class GPUComputePipeline;
 
-class GPUComputePassEncoder : public DawnObject<DawnComputePassEncoder> {
+class GPUComputePassEncoder : public DawnObject<WGPUComputePassEncoder> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static GPUComputePassEncoder* Create(
       GPUDevice* device,
-      DawnComputePassEncoder compute_pass_encoder);
+      WGPUComputePassEncoder compute_pass_encoder);
   explicit GPUComputePassEncoder(GPUDevice* device,
-                                 DawnComputePassEncoder compute_pass_encoder);
+                                 WGPUComputePassEncoder compute_pass_encoder);
   ~GPUComputePassEncoder() override;
 
   // gpu_compute_pass_encoder.idl

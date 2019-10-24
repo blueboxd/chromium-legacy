@@ -121,7 +121,10 @@ class SharingUiController {
 
   // Called after a message got sent to a device. Shows a new error dialog if
   // |success| is false and updates the omnibox icon.
-  void OnMessageSentToDevice(int dialog_id, SharingSendMessageResult result);
+  void OnMessageSentToDevice(
+      int dialog_id,
+      SharingSendMessageResult result,
+      std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
   void OnAppsReceived(int dialog_id,
                       const base::Optional<url::Origin>& initiating_origin,

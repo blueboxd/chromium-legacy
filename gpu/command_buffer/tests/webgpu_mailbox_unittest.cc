@@ -17,7 +17,7 @@ namespace {
 class MockBufferMapReadCallback {
  public:
   MOCK_METHOD4(Call,
-               void(DawnBufferMapAsyncStatus status,
+               void(WGPUBufferMapAsyncStatus status,
                     const uint32_t* ptr,
                     uint64_t data_length,
                     void* userdata));
@@ -25,7 +25,7 @@ class MockBufferMapReadCallback {
 
 std::unique_ptr<testing::StrictMock<MockBufferMapReadCallback>>
     mock_buffer_map_read_callback;
-void ToMockBufferMapReadCallback(DawnBufferMapAsyncStatus status,
+void ToMockBufferMapReadCallback(WGPUBufferMapAsyncStatus status,
                                  const void* ptr,
                                  uint64_t data_length,
                                  void* userdata) {
@@ -37,12 +37,12 @@ void ToMockBufferMapReadCallback(DawnBufferMapAsyncStatus status,
 class MockUncapturedErrorCallback {
  public:
   MOCK_METHOD3(Call,
-               void(DawnErrorType type, const char* message, void* userdata));
+               void(WGPUErrorType type, const char* message, void* userdata));
 };
 
 std::unique_ptr<testing::StrictMock<MockUncapturedErrorCallback>>
     mock_device_error_callback;
-void ToMockUncapturedErrorCallback(DawnErrorType type,
+void ToMockUncapturedErrorCallback(WGPUErrorType type,
                                    const char* message,
                                    void* userdata) {
   mock_device_error_callback->Call(type, message, userdata);
@@ -90,7 +90,7 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
   SyncToken mailbox_produced_token = sii->GenVerifiedSyncToken();
   webgpu()->WaitSyncTokenCHROMIUM(mailbox_produced_token.GetConstData());
 
-  dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
+  wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
 
   // Part 1: Write to the texture using Dawn
   {
@@ -99,29 +99,29 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
         webgpu()->ReserveTexture(device.Get());
 
     webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                               DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT,
+                               WGPUTextureUsage_OutputAttachment,
                                reinterpret_cast<GLbyte*>(&mailbox));
-    dawn::Texture texture = dawn::Texture::Acquire(reservation.texture);
+    wgpu::Texture texture = wgpu::Texture::Acquire(reservation.texture);
 
     // Clear the texture using a render pass.
-    dawn::RenderPassColorAttachmentDescriptor color_desc;
+    wgpu::RenderPassColorAttachmentDescriptor color_desc;
     color_desc.attachment = texture.CreateView();
     color_desc.resolveTarget = nullptr;
-    color_desc.loadOp = dawn::LoadOp::Clear;
-    color_desc.storeOp = dawn::StoreOp::Store;
+    color_desc.loadOp = wgpu::LoadOp::Clear;
+    color_desc.storeOp = wgpu::StoreOp::Store;
     color_desc.clearColor = {0, 255, 0, 255};
 
-    dawn::RenderPassDescriptor render_pass_desc;
+    wgpu::RenderPassDescriptor render_pass_desc;
     render_pass_desc.colorAttachmentCount = 1;
     render_pass_desc.colorAttachments = &color_desc;
     render_pass_desc.depthStencilAttachment = nullptr;
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&render_pass_desc);
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&render_pass_desc);
     pass.EndPass();
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
 
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commands);
 
     // Dissociate the mailbox, flushing previous commands first
@@ -140,35 +140,35 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     webgpu()->FlushCommands();
 
     webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                               DAWN_TEXTURE_USAGE_COPY_SRC,
+                               WGPUTextureUsage_CopySrc,
                                reinterpret_cast<GLbyte*>(&mailbox));
-    dawn::Texture texture = dawn::Texture::Acquire(reservation.texture);
+    wgpu::Texture texture = wgpu::Texture::Acquire(reservation.texture);
 
     // Copy the texture in a mappable buffer.
-    dawn::BufferDescriptor buffer_desc;
+    wgpu::BufferDescriptor buffer_desc;
     buffer_desc.size = 4;
-    buffer_desc.usage = dawn::BufferUsage::MapRead | dawn::BufferUsage::CopyDst;
-    dawn::Buffer readback_buffer = device.CreateBuffer(&buffer_desc);
+    buffer_desc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
+    wgpu::Buffer readback_buffer = device.CreateBuffer(&buffer_desc);
 
-    dawn::TextureCopyView copy_src;
+    wgpu::TextureCopyView copy_src;
     copy_src.texture = texture;
     copy_src.mipLevel = 0;
     copy_src.arrayLayer = 0;
     copy_src.origin = {0, 0, 0};
 
-    dawn::BufferCopyView copy_dst;
+    wgpu::BufferCopyView copy_dst;
     copy_dst.buffer = readback_buffer;
     copy_dst.offset = 0;
     copy_dst.rowPitch = 256;
     copy_dst.imageHeight = 0;
 
-    dawn::Extent3D copy_size = {1, 1, 1};
+    wgpu::Extent3D copy_size = {1, 1, 1};
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     encoder.CopyTextureToBuffer(&copy_src, &copy_dst, &copy_size);
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
 
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commands);
 
     // Dissociate the mailbox, flushing previous commands first
@@ -179,7 +179,7 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     readback_buffer.MapReadAsync(ToMockBufferMapReadCallback, 0);
     uint32_t buffer_contents = 0xFF00FF00;
     EXPECT_CALL(*mock_buffer_map_read_callback,
-                Call(DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS,
+                Call(WGPUBufferMapAsyncStatus_Success,
                      testing::Pointee(testing::Eq(buffer_contents)),
                      sizeof(uint32_t), 0))
         .Times(1);
@@ -208,23 +208,23 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
   webgpu()->WaitSyncTokenCHROMIUM(mailbox_produced_token.GetConstData());
 
   // Create the device, and expect a validation error.
-  dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
+  wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   device.SetUncapturedErrorCallback(ToMockUncapturedErrorCallback, 0);
 
   // Associate and immediately dissociate the image.
   gpu::webgpu::ReservedTexture reservation =
       webgpu()->ReserveTexture(device.Get());
-  dawn::Texture texture = dawn::Texture::Acquire(reservation.texture);
+  wgpu::Texture texture = wgpu::Texture::Acquire(reservation.texture);
 
   webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                             DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT,
+                             WGPUTextureUsage_OutputAttachment,
                              reinterpret_cast<GLbyte*>(&mailbox));
   webgpu()->DissociateMailbox(reservation.id, reservation.generation);
 
   // Try using the texture, it should produce a validation error.
-  dawn::TextureView view = texture.CreateView();
+  wgpu::TextureView view = texture.CreateView();
   EXPECT_CALL(*mock_device_error_callback,
-              Call(DAWN_ERROR_TYPE_VALIDATION, testing::_, testing::_))
+              Call(WGPUErrorType_Validation, testing::_, testing::_))
       .Times(1);
   WaitForCompletion(device);
 }

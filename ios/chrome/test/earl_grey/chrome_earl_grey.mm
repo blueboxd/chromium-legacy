@@ -81,6 +81,17 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 #endif
 }
 
+- (BOOL)isKeyboardShownWithError:(NSError**)error {
+  return
+#if defined(CHROME_EARL_GREY_1)
+      [GREYKeyboard isKeyboardShown];
+#elif defined(CHROME_EARL_GREY_2)
+      [EarlGrey isKeyboardShownWithError:error];
+#else
+#error Neither CHROME_EARL_GREY_1 nor CHROME_EARL_GREY_2 are defined
+#endif
+}
+
 - (BOOL)isIPadIdiom {
 #if defined(CHROME_EARL_GREY_1)
   UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];

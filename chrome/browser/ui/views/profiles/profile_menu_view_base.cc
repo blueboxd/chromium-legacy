@@ -251,7 +251,7 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
 void ProfileMenuViewBase::SetHeading(const base::string16& heading,
                                      const base::string16& tooltip_text,
                                      base::RepeatingClosure action) {
-  constexpr int kInsidePadding = 4;
+  constexpr int kInsidePadding = 8;
   const SkColor kBackgroundColor =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
@@ -260,16 +260,15 @@ void ProfileMenuViewBase::SetHeading(const base::string16& heading,
   heading_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
   heading_container_->SetBackground(
       views::CreateSolidBackground(kBackgroundColor));
-  heading_container_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kInsidePadding)));
 
-  views::Link* link =
-      heading_container_->AddChildView(std::make_unique<views::Link>(heading));
-  link->SetEnabledColor(views::style::GetColor(
+  views::LabelButton* button = heading_container_->AddChildView(
+      std::make_unique<HoverButton>(this, heading));
+  button->SetEnabledTextColors(views::style::GetColor(
       *this, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
-  link->SetTooltipText(tooltip_text);
-  link->set_listener(this);
-  RegisterClickAction(link, std::move(action));
+  button->SetTooltipText(tooltip_text);
+  button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  button->SetBorder(views::CreateEmptyBorder(gfx::Insets(kInsidePadding)));
+  RegisterClickAction(button, std::move(action));
 }
 
 void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
@@ -304,8 +303,13 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
   gfx::ImageSkia sized_badge =
       AddCircularBackground(SizeImage(badge, kBadgeSize), kBadgeBackgroundColor,
                             kBadgeSize + 2 * kBadgePadding);
-  gfx::ImageSkia badged_image =
-      gfx::ImageSkiaOperations::CreateIconWithBadge(sized_image, sized_badge);
+  gfx::ImageSkia sized_badge_with_shadow =
+      gfx::ImageSkiaOperations::CreateImageWithDropShadow(
+          sized_badge,
+          gfx::ShadowValue::MakeMdShadowValues(/*elevation=*/1, SK_ColorBLACK));
+
+  gfx::ImageSkia badged_image = gfx::ImageSkiaOperations::CreateIconWithBadge(
+      sized_image, sized_badge_with_shadow);
   image_view->SetImage(badged_image);
   image_view->SetBorder(views::CreateEmptyBorder(0, 0, kImageBottomMargin, 0));
 
@@ -433,6 +437,19 @@ void ProfileMenuViewBase::AddFeatureButton(const gfx::ImageSkia& icon,
 
 void ProfileMenuViewBase::SetProfileManagementHeading(
     const base::string16& heading) {
+  constexpr int kSeparatorMargins = 4;
+
+  // Add separator before heading.
+  profile_mgmt_separator_container_->RemoveAllChildViews(
+      /*delete_children=*/true);
+  profile_mgmt_separator_container_->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  profile_mgmt_separator_container_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(kSeparatorMargins, /*horizontal=*/0)));
+  profile_mgmt_separator_container_->AddChildView(
+      std::make_unique<views::Separator>());
+
+  // Initialize heading layout.
   profile_mgmt_heading_container_->RemoveAllChildViews(
       /*delete_children=*/true);
   profile_mgmt_heading_container_->SetLayoutManager(
@@ -440,6 +457,7 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
   profile_mgmt_heading_container_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(kDefaultVerticalMargin, kMenuEdgeMargin)));
 
+  // Add heading.
   views::Label* label = profile_mgmt_heading_container_->AddChildView(
       std::make_unique<views::Label>(heading, views::style::CONTEXT_LABEL,
                                      STYLE_HINT));
@@ -625,20 +643,24 @@ void ProfileMenuViewBase::Reset() {
       components->AddChildView(std::make_unique<views::View>());
   features_container_ =
       components->AddChildView(std::make_unique<views::View>());
-  // Second, add the profile management header.
-  components->AddChildView(new views::Separator());
-  auto profile_header = std::make_unique<views::View>();
-  views::BoxLayout* profile_header_layout = profile_header->SetLayoutManager(
-      CreateBoxLayout(views::BoxLayout::Orientation::kHorizontal,
-                      views::BoxLayout::CrossAxisAlignment::kCenter));
+  profile_mgmt_separator_container_ =
+      components->AddChildView(std::make_unique<views::View>());
+  // Second, add the profile management header. This includes the heading and
+  // the shortcut feature(s) next to it.
+  auto profile_mgmt_header = std::make_unique<views::View>();
+  views::BoxLayout* profile_mgmt_header_layout =
+      profile_mgmt_header->SetLayoutManager(
+          CreateBoxLayout(views::BoxLayout::Orientation::kHorizontal,
+                          views::BoxLayout::CrossAxisAlignment::kCenter));
   profile_mgmt_heading_container_ =
-      profile_header->AddChildView(std::make_unique<views::View>());
-  profile_header_layout->SetFlexForView(profile_mgmt_heading_container_, 1);
+      profile_mgmt_header->AddChildView(std::make_unique<views::View>());
+  profile_mgmt_header_layout->SetFlexForView(profile_mgmt_heading_container_,
+                                             1);
   profile_mgmt_shortcut_features_container_ =
-      profile_header->AddChildView(std::make_unique<views::View>());
-  profile_header_layout->SetFlexForView(
+      profile_mgmt_header->AddChildView(std::make_unique<views::View>());
+  profile_mgmt_header_layout->SetFlexForView(
       profile_mgmt_shortcut_features_container_, 0);
-  components->AddChildView(std::move(profile_header));
+  components->AddChildView(std::move(profile_mgmt_header));
   // Third, add the profile management buttons.
   selectable_profiles_container_ =
       components->AddChildView(std::make_unique<views::View>());

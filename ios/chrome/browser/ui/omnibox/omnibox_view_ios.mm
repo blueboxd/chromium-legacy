@@ -66,95 +66,6 @@ UIColor* IncognitoSecureTextColor() {
 
 }  // namespace
 
-#pragma mark - AutocompleteTextFieldDelegate
-
-// Simple Obj-C object to forward UITextFieldDelegate method calls back to the
-// OmniboxViewIOS.
-@interface AutocompleteTextFieldDelegate : NSObject<OmniboxTextFieldDelegate> {
- @private
-  OmniboxViewIOS* editView_;  // weak, owns us
-
-  // YES if we are already forwarding an OnDidChange() message to the edit view.
-  // Needed to prevent infinite recursion.
-  // TODO(rohitrao): There must be a better way.
-  BOOL forwardingOnDidChange_;
-
-  // YES if this text field is currently processing a user-initiated event,
-  // such as typing in the omnibox or pressing the clear button.  Used to
-  // distinguish between calls to textDidChange that are triggered by the user
-  // typing vs by calls to setText.
-  BOOL processingUserEvent_;
-}
-@end
-
-@implementation AutocompleteTextFieldDelegate
-- (id)initWithEditView:(OmniboxViewIOS*)editView {
-  if ((self = [super init])) {
-    editView_ = editView;
-    forwardingOnDidChange_ = NO;
-    processingUserEvent_ = NO;
-  }
-  return self;
-}
-
-- (BOOL)textField:(UITextField*)textField
-    shouldChangeCharactersInRange:(NSRange)range
-                replacementString:(NSString*)newText {
-  processingUserEvent_ = editView_->OnWillChange(range, newText);
-  return processingUserEvent_;
-}
-
-- (void)textFieldDidChange:(id)sender {
-  if (forwardingOnDidChange_)
-    return;
-
-  BOOL savedProcessingUserEvent = processingUserEvent_;
-  processingUserEvent_ = NO;
-  forwardingOnDidChange_ = YES;
-  editView_->OnDidChange(savedProcessingUserEvent);
-  forwardingOnDidChange_ = NO;
-}
-
-// Delegate method for UITextField, called when user presses the "go" button.
-- (BOOL)textFieldShouldReturn:(UITextField*)textField {
-  editView_->OnAccept();
-  return NO;
-}
-
-// Always update the text field colors when we start editing.  It's possible
-// for this method to be called when we are already editing (popup focus
-// change).  In this case, OnDidBeginEditing will be called multiple times.
-// If that becomes an issue a boolean should be added to track editing state.
-- (void)textFieldDidBeginEditing:(UITextField*)textField {
-  editView_->OnDidBeginEditing();
-}
-
-- (BOOL)textFieldShouldEndEditing:(UITextField*)textField {
-  editView_->OnWillEndEditing();
-  return YES;
-}
-
-// When editing, forward the message on to |editView_|.
-- (BOOL)textFieldShouldClear:(UITextField*)textField {
-  editView_->ClearText();
-  processingUserEvent_ = YES;
-  return YES;
-}
-
-- (BOOL)onCopy {
-  return editView_->OnCopy();
-}
-
-- (void)willPaste {
-  editView_->WillPaste();
-}
-
-- (void)onDeleteBackward {
-  editView_->OnDeleteBackward();
-}
-
-@end
-
 #pragma mark - OminboxViewIOS
 
 OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
@@ -176,27 +87,12 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       attributing_display_string_(nil),
       popup_provider_(nullptr) {
   DCHECK(field_);
-  field_delegate_ =
-      [[AutocompleteTextFieldDelegate alloc] initWithEditView:this];
 
   paste_delegate_ = [[OmniboxTextFieldPasteDelegate alloc] init];
   [field_ setPasteDelegate:paste_delegate_];
 
-  [field_ setDelegate:field_delegate_];
-  [field_ addTarget:field_delegate_
-                action:@selector(textFieldDidChange:)
-      forControlEvents:UIControlEventEditingChanged];
   use_strikethrough_workaround_ = base::ios::IsRunningOnOrLater(10, 3, 0) &&
                                   !base::ios::IsRunningOnOrLater(11, 2, 0);
-}
-
-OmniboxViewIOS::~OmniboxViewIOS() {
-  // |field_| outlives this object.
-  [field_ setDelegate:nil];
-
-  [field_ removeTarget:field_delegate_
-                action:@selector(textFieldDidChange:)
-      forControlEvents:UIControlEventEditingChanged];
 }
 
 void OmniboxViewIOS::OpenMatch(const AutocompleteMatch& match,

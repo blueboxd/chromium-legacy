@@ -487,6 +487,25 @@ def main():
             filter=PrintTarProgress)
   MaybeUpload(args.upload, translation_unit_dir + '.tgz', platform)
 
+  # Zip up the libclang binaries.
+  libclang_dir = 'libclang-' + stamp
+  shutil.rmtree(libclang_dir, ignore_errors=True)
+  os.makedirs(os.path.join(libclang_dir, 'bin'))
+  os.makedirs(os.path.join(libclang_dir, 'bindings', 'python', 'clang'))
+  if sys.platform == 'win32':
+    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'libclang.dll'),
+                os.path.join(libclang_dir, 'bin'))
+  for filename in ['__init__.py', 'cindex.py', 'enumerations.py']:
+    shutil.copy(os.path.join(LLVM_DIR, 'clang', 'bindings', 'python', 'clang',
+                             filename),
+                os.path.join(libclang_dir, 'bindings', 'python', 'clang'))
+  tar_entries = ['bin', 'bindings' ]
+  with tarfile.open(libclang_dir + '.tgz', 'w:gz') as tar:
+    for entry in tar_entries:
+      tar.add(os.path.join(libclang_dir, entry), arcname=entry,
+              filter=PrintTarProgress)
+  MaybeUpload(args.upload, libclang_dir + '.tgz', platform)
+
   if sys.platform == 'win32' and args.upload:
     UploadPDBToSymbolServer()
 

@@ -88,9 +88,9 @@ template("trichrome_library_apk_tmpl") {
           "//chrome/android:product_version_resources"
     }
 
-    # TODO(torne): using system_webview_resources just to get a temporary icon
+    # TODO(torne): using icon_resources just to get a temporary icon
     deps = [
-      "//android_webview:system_webview_resources",
+      "//android_webview/apk:icon_resources",
     ]
 
     if (trichrome_shared_assets) {

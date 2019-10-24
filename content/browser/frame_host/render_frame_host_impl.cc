@@ -1251,8 +1251,11 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
 
 void RenderFrameHostImpl::DisableBackForwardCache() {
   is_back_forward_cache_disabled_ = true;
-  if (is_in_back_forward_cache())
-    EvictFromBackForwardCacheWithReason(base::nullopt);
+  if (is_in_back_forward_cache()) {
+    EvictFromBackForwardCacheWithReason(
+        BackForwardCacheMetrics::NotRestoredReason::
+            kDisableForRenderFrameHostCalled);
+  }
 }
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
@@ -1628,7 +1631,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidBlockNavigation, OnDidBlockNavigation)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_AbortNavigation, OnAbortNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardResourceTimingToParent,
                         OnForwardResourceTimingToParent)
@@ -3528,14 +3530,6 @@ void RenderFrameHostImpl::OnDidBlockNavigation(
   delegate_->OnDidBlockNavigation(blocked_url, initiator_url, reason);
 }
 
-void RenderFrameHostImpl::OnAbortNavigation() {
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnAbortNavigation",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
-  if (!is_active())
-    return;
-  frame_tree_node()->navigator()->OnAbortNavigation(frame_tree_node());
-}
-
 void RenderFrameHostImpl::OnForwardResourceTimingToParent(
     const ResourceTimingInfo& resource_timing) {
   // Don't forward the resource timing if this RFH is pending deletion. This can
@@ -3701,7 +3695,7 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
 }
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
-    base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason) {
+    BackForwardCacheMetrics::NotRestoredReason reason) {
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -3718,8 +3712,8 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
   // TODO(hajimehoshi): Record the 'race condition' by JavaScript execution when
   // |is_in_back_forward_cache()| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
-  if (is_in_back_forward_cache() && reason && metrics)
-    metrics->MarkNotRestoredWithReason(reason.value());
+  if (is_in_back_forward_cache() && metrics)
+    metrics->MarkNotRestoredWithReason(reason);
 
   if (!in_back_forward_cache) {
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
@@ -4869,7 +4863,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
         frame_tree_node_->navigation_request()->IsNavigationStarted()) {
       frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
     }
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    frame_tree_node_->ResetNavigationRequest(false);
   }
 
   // In renderer-initiated navigations, don't check for beforeunload in the
@@ -5110,7 +5104,7 @@ void RenderFrameHostImpl::ResetNavigationsForPendingDeletion() {
   for (auto& child : children_)
     child->current_frame_host()->ResetNavigationsForPendingDeletion();
   ResetNavigationRequests();
-  frame_tree_node_->ResetNavigationRequest(false, false);
+  frame_tree_node_->ResetNavigationRequest(false);
   frame_tree_node_->render_manager()->CleanUpNavigation();
 }
 
@@ -7879,6 +7873,8 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache(
   if (can_store)
     return;
 
+  // TODO(hajimehoshi): The not-restored reasons at
+  // |can_store.not_stored_reasons| should also be passed.
   EvictFromBackForwardCacheWithReason(reason);
 }
 

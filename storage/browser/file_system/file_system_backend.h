@@ -19,7 +19,7 @@
 #include "storage/browser/file_system/file_permission_policy.h"
 #include "storage/browser/file_system/open_file_system_mode.h"
 #include "storage/browser/file_system/task_runner_bound_observer_list.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_types.h"
 
 class GURL;
 

@@ -43,6 +43,8 @@ source_set("test_support") {
     # Explicitly reference imported headers from web_view library to avoid
     # depending on the framework (as it is statically linked).
     "//ios/web_view/public/cwv_export.h",
+    "//ios/web_view/public/cwv_navigation_delegate.h",
+    "//ios/web_view/public/cwv_navigation_type.h",
     "//ios/web_view/public/cwv_web_view.h",
     "//ios/web_view/public/cwv_web_view_configuration.h",
     "observer.h",

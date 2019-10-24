@@ -4,11 +4,15 @@
 
 #include "chrome/browser/sharing/ping_message_handler.h"
 
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
+
 PingMessageHandler::PingMessageHandler() = default;
 
 PingMessageHandler::~PingMessageHandler() = default;
 
 void PingMessageHandler::OnMessage(
-    const chrome_browser_sharing::SharingMessage& message) {
-  // TODO
+    chrome_browser_sharing::SharingMessage message,
+    SharingMessageHandler::DoneCallback done_callback) {
+  // Delibrately empty.
+  std::move(done_callback).Run(/*response=*/nullptr);
 }

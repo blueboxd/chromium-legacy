@@ -106,6 +106,10 @@ bool ShouldShowAnimatedIdentityOnOpeningWindow(
 // used for metrics and to decide whether/when the animation can be shown again.
 void RecordAnimatedIdentityTriggered(Profile* profile);
 
+// Records that the avatar icon was highlighted for the given profile. This is
+// used for metrics.
+void RecordAvatarIconHighlighted(Profile* profile);
+
 // Called when the ProfileMenuView is opened. Used for metrics.
 void RecordProfileMenuViewShown(Profile* profile);
 

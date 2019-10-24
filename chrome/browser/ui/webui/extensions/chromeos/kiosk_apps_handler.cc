@@ -224,7 +224,7 @@ KioskAppsHandler::GetSettingsDictionary() {
   settings->SetBoolean("hasAutoLaunchApp",
                        !kiosk_app_manager_->GetAutoLaunchApp().empty());
 
-  KioskAppManager::Apps apps;
+  KioskAppManager::AppList apps;
   kiosk_app_manager_->GetApps(&apps);
 
   std::unique_ptr<base::ListValue> apps_list(new base::ListValue);

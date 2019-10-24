@@ -13,7 +13,8 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -192,9 +193,9 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // object). And it is possible that the implementation of |forwarding_client_|
   // destroys this object synchronously when this object is calling into it.
   network::mojom::URLLoaderClient* forwarding_client_;
-  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
+  mojo::Remote<network::mojom::URLLoader> url_loader_;
 
-  network::mojom::URLLoaderPtr url_loader_;
+  mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
 
   struct StartInfo {
     StartInfo(

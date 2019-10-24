@@ -16,7 +16,7 @@ class DOMArrayBuffer;
 class GPUBufferDescriptor;
 class ScriptPromiseResolver;
 
-class GPUBuffer : public DawnObject<DawnBuffer> {
+class GPUBuffer : public DawnObject<WGPUBuffer> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -26,7 +26,7 @@ class GPUBuffer : public DawnObject<DawnBuffer> {
       GPUDevice* device,
       const GPUBufferDescriptor* webgpu_desc,
       ExceptionState& exception_state);
-  explicit GPUBuffer(GPUDevice* device, uint64_t size, DawnBuffer buffer);
+  explicit GPUBuffer(GPUDevice* device, uint64_t size, WGPUBuffer buffer);
   ~GPUBuffer() override;
 
   void Trace(blink::Visitor* visitor) override;
@@ -47,7 +47,7 @@ class GPUBuffer : public DawnObject<DawnBuffer> {
 
  private:
   void OnMapAsyncCallback(ScriptPromiseResolver* resolver,
-                          DawnBufferMapAsyncStatus status,
+                          WGPUBufferMapAsyncStatus status,
                           void* data,
                           uint64_t data_length);
   void DetachArrayBufferForCurrentMapping(ScriptState* script_state);

@@ -879,10 +879,9 @@ void SpeechRecognizerImpl::CreateAudioCapturerSource() {
   if (connector) {
     audio_capturer_source_ = audio::CreateInputDevice(
         connector->Clone(), device_id_,
-        MediaInternals::GetInstance()
-            ->CreateMojoAudioLog(media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
-                                 0 /* component_id */)
-            .PassInterface());
+        MediaInternals::GetInstance()->CreateMojoAudioLog(
+            media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
+            0 /* component_id */));
   }
 }
 

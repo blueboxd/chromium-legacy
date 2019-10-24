@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "storage/common/fileapi/file_system_mount_option.h"
+#include "storage/common/file_system/file_system_mount_option.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define FPL FILE_PATH_LITERAL

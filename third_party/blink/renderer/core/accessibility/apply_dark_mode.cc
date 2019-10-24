@@ -102,18 +102,9 @@ DarkModeSettings GetEnabledSettings(const Settings& frame_settings) {
   return settings;
 }
 
-// In theory it should be sufficient for the disabled settings to set mode to
-// kOff (or to just return the default struct) without also setting
-// image_policy. However, this causes images to be inverted unexpectedly in
-// some cases (such as when toggling between the site's light and dark theme
-// on arstechnica.com).
-//
-// TODO(gilmanmh): Investigate unexpected image inversion behavior when
-// image_policy not set to kFilterNone.
 DarkModeSettings GetDisabledSettings() {
   DarkModeSettings settings;
   settings.mode = DarkModeInversionAlgorithm::kOff;
-  settings.image_policy = DarkModeImagePolicy::kFilterNone;
   return settings;
 }
 

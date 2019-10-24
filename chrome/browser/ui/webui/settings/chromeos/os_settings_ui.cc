@@ -49,7 +49,6 @@
 #include "chrome/grit/os_settings_resources_map.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/unified_consent/feature.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
@@ -103,8 +102,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::WallpaperHandler>(web_ui));
 
-  html_source->AddBoolean("unifiedConsentEnabled",
-                          unified_consent::IsUnifiedConsentFeatureEnabled());
+  // TODO(msarda): Remove |unifiedConsentEnabled| from all settings resources.
+  html_source->AddBoolean("unifiedConsentEnabled", true);
 
   html_source->AddBoolean("showAppManagement", base::FeatureList::IsEnabled(
                                                    features::kAppManagement));

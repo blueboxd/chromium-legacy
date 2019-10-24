@@ -25,8 +25,8 @@ class WebGPUInterfaceStub : public WebGPUInterface {
   // WebGPUInterface implementation
   const DawnProcTable& GetProcs() const override;
   void FlushCommands() override;
-  DawnDevice GetDefaultDevice() override;
-  ReservedTexture ReserveTexture(DawnDevice device) override;
+  WGPUDevice GetDefaultDevice() override;
+  ReservedTexture ReserveTexture(WGPUDevice device) override;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

@@ -118,7 +118,7 @@ public class ReparentingTask implements UserData {
 
         // TabModelSelector of this Tab, if present, gets notified to remove the tab from
         // the TabModel it belonged to.
-        tab.notifyActivityAttachmentChanged(false);
+        tab.notifyActivityAttachmentChanged(null, null);
     }
 
     /**
@@ -144,20 +144,12 @@ public class ReparentingTask implements UserData {
      * java and native sides.
      *
      * @param window A new {@link WindowAndroid} to attach the tab to.
-     * @param activity  The new activity this tab should be associated with.
      * @param tabDelegateFactory  The new delegate factory this tab should be using.
      */
     private void attach(WindowAndroid window, TabDelegateFactory tabDelegateFactory) {
         assert Tab.isDetached(mTab);
-        mTab.updateWindowAndroid(window);
-        mTab.setDelegateFactory(tabDelegateFactory);
-
-        // Reload the NativePage (if any), since the old NativePage has a reference to the old
-        // activity.
-        mTab.maybeShowNativePage(mTab.getUrl(), true);
-
+        mTab.notifyActivityAttachmentChanged(window, tabDelegateFactory);
         ReparentingTaskJni.get().attachTab(mTab.getWebContents());
-        mTab.notifyActivityAttachmentChanged(true);
     }
 
     @NativeMethods

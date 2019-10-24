@@ -101,14 +101,13 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
           bundled_exchanges_handle_tracker) override;
   void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) override;
-  void OnAbortNavigation(FrameTreeNode* frame_tree_node) override;
   void LogResourceRequestTime(base::TimeTicks timestamp,
                               const GURL& url) override;
   void LogBeforeUnloadTime(
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time) override;
-  void CancelNavigation(FrameTreeNode* frame_tree_node,
-                        bool inform_renderer) override;
+  void CancelNavigation(FrameTreeNode* frame_tree_node) override;
+
  private:
   // Holds data used to track browser side navigation metrics.
   struct NavigationMetricsData;

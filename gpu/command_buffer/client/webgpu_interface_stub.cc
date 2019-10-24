@@ -23,10 +23,10 @@ const DawnProcTable& WebGPUInterfaceStub::GetProcs() const {
   return null_procs_;
 }
 void WebGPUInterfaceStub::FlushCommands() {}
-DawnDevice WebGPUInterfaceStub::GetDefaultDevice() {
+WGPUDevice WebGPUInterfaceStub::GetDefaultDevice() {
   return nullptr;
 }
-ReservedTexture WebGPUInterfaceStub::ReserveTexture(DawnDevice device) {
+ReservedTexture WebGPUInterfaceStub::ReserveTexture(WGPUDevice device) {
   return {nullptr, 0, 0};
 }
 

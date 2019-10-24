@@ -10,10 +10,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "ui/base/page_transition_types.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -127,11 +129,13 @@ enum class Scheme {
 
 // Shows ARC version of the dialog. Returns true if ARC is supported, running,
 // and in a context where it is allowed to handle external protocol.
-bool RunArcExternalProtocolDialog(const GURL& url,
-                                  int render_process_host_id,
-                                  int routing_id,
-                                  ui::PageTransition page_transition,
-                                  bool has_user_gesture);
+bool RunArcExternalProtocolDialog(
+    const GURL& url,
+    const base::Optional<url::Origin>& initiating_origin,
+    int render_process_host_id,
+    int routing_id,
+    ui::PageTransition page_transition,
+    bool has_user_gesture);
 
 GetActionResult GetActionForTesting(
     const GURL& original_url,

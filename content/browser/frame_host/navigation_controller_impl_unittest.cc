@@ -3049,7 +3049,7 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
   // Suppose it aborts before committing, if it's a 204 or download or due to a
   // stop or a new navigation from the user.  The URL should remain visible.
   static_cast<NavigatorImpl*>(main_test_rfh()->frame_tree_node()->navigator())
-      ->CancelNavigation(main_test_rfh()->frame_tree_node(), true);
+      ->CancelNavigation(main_test_rfh()->frame_tree_node());
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
 
   // If something else later modifies the contents of the about:blank page, then

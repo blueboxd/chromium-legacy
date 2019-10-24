@@ -974,7 +974,19 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMinimumIncrement) {
 }
 
 #if ATK_CHECK_VERSION(2, 12, 0)
+typedef bool (*SetValueFunction)(AtkValue* component, double value);
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueChangedSignal) {
+  // There's a chance we may be compiled with a newer version of ATK and then
+  // run with an older one, so we need to do a runtime check for this method
+  // that is available in ATK 2.12 instead of linking directly.
+  SetValueFunction set_value = reinterpret_cast<SetValueFunction>(
+      dlsym(RTLD_DEFAULT, "atk_value_set_value"));
+  if (!set_value) {
+    LOG(WARNING) << "Skipping TestAtkValueChangedSignal"
+                    " because ATK version < 2.12 detected.";
+    return;
+  }
+
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kSlider;
@@ -994,7 +1006,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueChangedSignal) {
       }),
       &saw_value_change);
 
-  atk_value_set_value(ATK_VALUE(root_object), 24.0);
+  set_value(ATK_VALUE(root_object), 24.0);
   GetRootPlatformNode()->NotifyAccessibilityEvent(
       ax::mojom::Event::kValueChanged);
 
@@ -1005,7 +1017,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueChangedSignal) {
   EXPECT_TRUE(saw_value_change);
 
   saw_value_change = false;
-  atk_value_set_value(ATK_VALUE(root_object), 100.0);
+  set_value(ATK_VALUE(root_object), 100.0);
   GetRootPlatformNode()->NotifyAccessibilityEvent(
       ax::mojom::Event::kValueChanged);
 

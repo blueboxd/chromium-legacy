@@ -57,9 +57,9 @@ class DeviceSyncClientHolder : public KeyedService {
             Profile::FromBrowserContext(context))),
         device_sync_client_(
             DeviceSyncClientImpl::Factory::Get()->BuildInstance()) {
-    // Connect the client's mojo interface pointer to the implementation.
-    device_sync_->BindRequest(
-        mojo::MakeRequest(device_sync_client_->GetDeviceSyncPtr()));
+    // Connect the client's mojo remote to the implementation.
+    device_sync_->BindReceiver(device_sync_client_->GetDeviceSyncRemote()
+                                   ->BindNewPipeAndPassReceiver());
     // Finish client initialization.
     device_sync_client_->Initialize(base::ThreadTaskRunnerHandle::Get());
   }
@@ -70,7 +70,7 @@ class DeviceSyncClientHolder : public KeyedService {
   // KeyedService:
   void Shutdown() override {
     device_sync_client_.reset();
-    device_sync_->CloseAllBindings();
+    device_sync_->CloseAllReceivers();
     device_sync_.reset();
   }
 

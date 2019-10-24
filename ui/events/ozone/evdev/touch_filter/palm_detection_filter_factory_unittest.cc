@@ -10,14 +10,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_device_test_util.h"
+#include "ui/events/ozone/evdev/touch_filter/heuristic_stylus_palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/open_palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
 
 namespace ui {
+
 class PalmDetectionFilterFactoryTest : public testing::Test {
  public:
   PalmDetectionFilterFactoryTest() = default;
+
   void SetUp() override {
     EXPECT_TRUE(
         CapabilitiesToDeviceInfo(kEveTouchScreen, &eve_touchscreen_info_));
@@ -34,6 +37,7 @@ class PalmDetectionFilterFactoryTest : public testing::Test {
   EventDeviceInfo eve_touchscreen_info_, eve_stylus_info_,
       nocturne_touchscreen_info_, nocturne_stylus_info_;
   SharedPalmDetectionFilterState shared_palm_state_;
+
   DISALLOW_COPY_AND_ASSIGN(PalmDetectionFilterFactoryTest);
 };
 

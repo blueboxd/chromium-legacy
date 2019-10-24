@@ -56,51 +56,66 @@ constexpr base::TimeDelta kDelayForCrossWindowAnimationReplay =
 
 // UserData attached to the user profile, keeping track of the last time the
 // animation was shown to the user.
-class AnimatedIdentityUserData : public base::SupportsUserData::Data {
+class AvatarButtonUserData : public base::SupportsUserData::Data {
  public:
-  ~AnimatedIdentityUserData() override = default;
+  ~AvatarButtonUserData() override = default;
 
-  // Returns the  last time the animation was shown. Returns the null time if it
-  // was never shown.
-  static base::TimeTicks GetLastShown(Profile* profile) {
+  // Returns the  last time the animated identity was shown. Returns the null
+  // time if it was never shown.
+  static base::TimeTicks GetAnimatedIdentityLastShown(Profile* profile) {
     DCHECK(profile);
-    AnimatedIdentityUserData* data = GetForProfile(profile);
+    AvatarButtonUserData* data = GetForProfile(profile);
     if (!data)
       return base::TimeTicks();
-
-    DCHECK(!data->last_shown_.is_null());
-    return data->last_shown_;
+    return data->animated_identity_last_shown_;
   }
 
-  // Sets the animation time.
-  static void SetLastShown(Profile* profile, base::TimeTicks time) {
+  // Sets the time when the animated identity was shown.
+  static void SetAnimatedIdentityLastShown(Profile* profile,
+                                           base::TimeTicks time) {
     DCHECK(!time.is_null());
-    GetOrCreateForProfile(profile)->last_shown_ = time;
+    GetOrCreateForProfile(profile)->animated_identity_last_shown_ = time;
+  }
+
+  // Returns the last time the avatar was highlighted. Returns the null time if
+  // it was never shown.
+  static base::TimeTicks GetAvatarLastHighlighted(Profile* profile) {
+    DCHECK(profile);
+    AvatarButtonUserData* data = GetForProfile(profile);
+    if (!data)
+      return base::TimeTicks();
+    return data->avatar_last_highlighted_;
+  }
+
+  // Sets the time when the avatar was highlighted.
+  static void SetAvatarLastHighlighted(Profile* profile, base::TimeTicks time) {
+    DCHECK(!time.is_null());
+    GetOrCreateForProfile(profile)->avatar_last_highlighted_ = time;
   }
 
  private:
-  // Returns nullptr if there is no AnimatedIdentityUserData attached to the
+  // Returns nullptr if there is no AvatarButtonUserData attached to the
   // profile.
-  static AnimatedIdentityUserData* GetForProfile(Profile* profile) {
-    return static_cast<AnimatedIdentityUserData*>(
+  static AvatarButtonUserData* GetForProfile(Profile* profile) {
+    return static_cast<AvatarButtonUserData*>(
         profile->GetUserData(kAnimatedIdentityKeyName));
   }
 
   // Never returns nullptr.
-  static AnimatedIdentityUserData* GetOrCreateForProfile(Profile* profile) {
+  static AvatarButtonUserData* GetOrCreateForProfile(Profile* profile) {
     DCHECK(profile);
-    AnimatedIdentityUserData* existing_data = GetForProfile(profile);
+    AvatarButtonUserData* existing_data = GetForProfile(profile);
     if (existing_data)
       return existing_data;
 
-    auto new_data = std::make_unique<AnimatedIdentityUserData>();
+    auto new_data = std::make_unique<AvatarButtonUserData>();
     auto* new_data_ptr = new_data.get();
     profile->SetUserData(kAnimatedIdentityKeyName, std::move(new_data));
     return new_data_ptr;
   }
 
-  // Last time the animation was shown.
-  base::TimeTicks last_shown_;
+  base::TimeTicks animated_identity_last_shown_;
+  base::TimeTicks avatar_last_highlighted_;
 };
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -340,7 +355,7 @@ bool ShouldShowAnimatedIdentityOnOpeningWindow(
   DCHECK(identity_manager->AreRefreshTokensLoaded());
 
   base::TimeTicks animation_last_shown =
-      AnimatedIdentityUserData::GetLastShown(profile);
+      AvatarButtonUserData::GetAnimatedIdentityLastShown(profile);
   // When a new window is created, only show the animation if it was never shown
   // for this profile, or if it was shown in another window in the last few
   // seconds (because the user may have missed it).
@@ -360,7 +375,14 @@ bool ShouldShowAnimatedIdentityOnOpeningWindow(
 }
 
 void RecordAnimatedIdentityTriggered(Profile* profile) {
-  AnimatedIdentityUserData::SetLastShown(profile, base::TimeTicks::Now());
+  AvatarButtonUserData::SetAnimatedIdentityLastShown(profile,
+                                                     base::TimeTicks::Now());
+}
+
+void RecordAvatarIconHighlighted(Profile* profile) {
+  base::RecordAction(base::UserMetricsAction("AvatarToolbarButtonHighlighted"));
+  AvatarButtonUserData::SetAvatarLastHighlighted(profile,
+                                                 base::TimeTicks::Now());
 }
 
 void RecordProfileMenuViewShown(Profile* profile) {
@@ -373,13 +395,18 @@ void RecordProfileMenuViewShown(Profile* profile) {
     base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened_Incognito"));
   }
 
-  base::TimeTicks animation_last_shown =
-      AnimatedIdentityUserData::GetLastShown(profile);
-  if (animation_last_shown.is_null())
-    return;
+  base::TimeTicks last_shown =
+      AvatarButtonUserData::GetAnimatedIdentityLastShown(profile);
+  if (!last_shown.is_null()) {
+    base::UmaHistogramLongTimes("Profile.Menu.OpenedAfterAvatarAnimation",
+                                base::TimeTicks::Now() - last_shown);
+  }
 
-  base::UmaHistogramLongTimes("Profile.Menu.OpenedAfterAvatarAnimation",
-                              base::TimeTicks::Now() - animation_last_shown);
+  last_shown = AvatarButtonUserData::GetAvatarLastHighlighted(profile);
+  if (!last_shown.is_null()) {
+    base::UmaHistogramLongTimes("Profile.Menu.OpenedAfterAvatarHighlight",
+                                base::TimeTicks::Now() - last_shown);
+  }
 }
 
 void RecordProfileMenuClick(Profile* profile) {

@@ -1008,7 +1008,7 @@
     <activity
         android:label="WebView
         Crashes"
-        android:name="org.chromium.android_webview.ui.CrashesListActivity"
+        android:name="org.chromium.android_webview.devui.CrashesListActivity"
         android:process=":webview_apk"/>
     <activity
         android:enabled="false"

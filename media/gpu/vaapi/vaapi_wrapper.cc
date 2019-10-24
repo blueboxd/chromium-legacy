@@ -1081,7 +1081,7 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
     return nullptr;
   }
 
-  scoped_refptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
+  scoped_refptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper(mode));
   if (vaapi_wrapper->VaInitialize(report_error_to_uma_cb)) {
     if (vaapi_wrapper->Initialize(mode, va_profile))
       return vaapi_wrapper;
@@ -1412,11 +1412,10 @@ bool VaapiWrapper::CreateContext(const gfx::Size& size) {
   // (non-null) IDs until the signature gets updated.
   constexpr VASurfaceID* empty_va_surfaces_ids_pointer = nullptr;
   constexpr size_t empty_va_surfaces_ids_size = 0u;
-  // TODO(hiroh): VA_PROGRESSIVE might not ought to be set in VPP case. Think
-  // about removing it if something wrong happens or it turns out to be wrong.
+  const int flag = mode_ != kVideoProcess ? VA_PROGRESSIVE : 0x0;
   const VAStatus va_res =
       vaCreateContext(va_display_, va_config_id_, size.width(), size.height(),
-                      VA_PROGRESSIVE, empty_va_surfaces_ids_pointer,
+                      flag, empty_va_surfaces_ids_pointer,
                       empty_va_surfaces_ids_size, &va_context_id_);
   VA_LOG_ON_ERROR(va_res, "vaCreateContext failed");
   return va_res == VA_STATUS_SUCCESS;
@@ -2022,8 +2021,9 @@ void VaapiWrapper::PreSandboxInitialization() {
   VASupportedProfiles::Get();
 }
 
-VaapiWrapper::VaapiWrapper()
-    : va_lock_(VADisplayState::Get()->va_lock()),
+VaapiWrapper::VaapiWrapper(CodecMode mode)
+    : mode_(mode),
+      va_lock_(VADisplayState::Get()->va_lock()),
       va_display_(NULL),
       va_config_id_(VA_INVALID_ID),
       va_context_id_(VA_INVALID_ID) {}

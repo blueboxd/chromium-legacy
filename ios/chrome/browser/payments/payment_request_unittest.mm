@@ -1265,8 +1265,9 @@ TEST_F(PaymentRequestTest, CanPay) {
       &test_personal_data_manager_);
   EXPECT_FALSE(payment_request5.IsAbleToPay());
 
-  profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                  base::ASCIIToUTF16("John Doe"), "en-US");
+  test_personal_data_manager_.GetProfiles()[0]->SetInfo(
+      autofill::AutofillType(autofill::NAME_FULL),
+      base::ASCIIToUTF16("John Doe"), "en-US");
 
   // Has a selected shipping address, but no selected shipping option.
   payments::TestPaymentRequest payment_request6(

@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL UTF-8 module script with UTF-8 BOM assert_equals: Should be decoded as UTF-8 expected (string) "三村かな子" but got (undefined) undefined
+PASS UTF-16 module script with UTF-16BE BOM
+PASS UTF-16 module script with UTF-16LE BOM
+Harness: the test ran to completion.
+

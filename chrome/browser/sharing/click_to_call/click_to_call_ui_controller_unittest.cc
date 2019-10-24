@@ -86,7 +86,7 @@ TEST_F(ClickToCallUiControllerTest, OnDeviceChosen) {
       kExpectedPhoneNumber);
   EXPECT_CALL(*service(),
               SendMessageToDevice(testing::Eq(kReceiverGuid),
-                                  testing::Eq(kSharingMessageTTL),
+                                  testing::Eq(kSendMessageTimeout),
                                   ProtoEquals(sharing_message), testing::_));
   controller_->OnDeviceChosen(device_info);
 }

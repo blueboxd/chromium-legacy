@@ -38,7 +38,9 @@ class MockSharingMessageHandler : public SharingMessageHandler {
   ~MockSharingMessageHandler() override = default;
 
   // SharingMessageHandler implementation:
-  MOCK_METHOD1(OnMessage, void(const SharingMessage& message));
+  MOCK_METHOD2(OnMessage,
+               void(SharingMessage message,
+                    SharingMessageHandler::DoneCallback done_callback));
 };
 
 class MockSharingFCMSender : public SharingFCMSender {
@@ -123,7 +125,7 @@ TEST_F(SharingFCMHandlerTest, AckMessageHandler) {
       CreateGCMIncomingMessage(kTestMessageId, sharing_message);
 
   EXPECT_CALL(mock_sharing_message_handler_,
-              OnMessage(ProtoEquals(sharing_message)));
+              OnMessage(ProtoEquals(sharing_message), _));
   EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToDevice(_, _, _, _, _))
       .Times(0);
   sharing_fcm_handler_->AddSharingHandler(SharingMessage::kAckMessage,
@@ -149,14 +151,20 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
       chrome_browser_sharing::PING_MESSAGE);
 
   // Tests OnMessage flow in SharingFCMHandler when no handler is registered.
-  EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_)).Times(0);
+  EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_, _)).Times(0);
   EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToDevice(_, _, _, _, _))
       .Times(0);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
 
   // Tests OnMessage flow in SharingFCMHandler after handler is added.
-  EXPECT_CALL(mock_sharing_message_handler_,
-              OnMessage(ProtoEquals(sharing_message)));
+  ON_CALL(mock_sharing_message_handler_,
+          OnMessage(ProtoEquals(sharing_message), _))
+      .WillByDefault(testing::Invoke(
+          [](const SharingMessage& message,
+             SharingMessageHandler::DoneCallback done_callback) {
+            std::move(done_callback).Run(/*response=*/nullptr);
+          }));
+  EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_, _));
   EXPECT_CALL(mock_sharing_fcm_sender_,
               SendMessageToDevice(DeviceMatcher(), testing::Eq(kAckTimeToLive),
                                   ProtoEquals(sharing_ack_message),
@@ -167,10 +175,46 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
 
   // Tests OnMessage flow in SharingFCMHandler after registered handler is
   // removed.
-  EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_)).Times(0);
+  EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_, _)).Times(0);
   EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToDevice(_, _, _, _, _))
       .Times(0);
   sharing_fcm_handler_->RemoveSharingHandler(SharingMessage::kPingMessage);
+  sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
+}
+
+TEST_F(SharingFCMHandlerTest, PingMessageHandlerWithResponse) {
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_.get());
+
+  SharingMessage sharing_message;
+  sharing_message.set_sender_guid(kSenderGuid);
+  sharing_message.mutable_ping_message();
+  gcm::IncomingMessage incoming_message =
+      CreateGCMIncomingMessage(kTestMessageId, sharing_message);
+
+  SharingMessage sharing_ack_message;
+  sharing_ack_message.mutable_ack_message()->set_original_message_id(
+      kTestMessageId);
+  sharing_ack_message.mutable_ack_message()->set_original_message_type(
+      chrome_browser_sharing::PING_MESSAGE);
+  sharing_ack_message.mutable_ack_message()->mutable_response_message();
+
+  // Tests OnMessage flow in SharingFCMHandler after handler is added.
+  ON_CALL(mock_sharing_message_handler_,
+          OnMessage(ProtoEquals(sharing_message), _))
+      .WillByDefault(testing::Invoke([](const SharingMessage& message,
+                                        SharingMessageHandler::DoneCallback
+                                            done_callback) {
+        std::move(done_callback)
+            .Run(std::make_unique<chrome_browser_sharing::ResponseMessage>());
+      }));
+  EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_, _));
+  EXPECT_CALL(mock_sharing_fcm_sender_,
+              SendMessageToDevice(DeviceMatcher(), testing::Eq(kAckTimeToLive),
+                                  ProtoEquals(sharing_ack_message),
+                                  testing::Eq(nullptr), _));
+  sharing_fcm_handler_->AddSharingHandler(SharingMessage::kPingMessage,
+                                          &mock_sharing_message_handler_);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
 }
 
@@ -193,8 +237,13 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerSecondaryUser) {
       chrome_browser_sharing::PING_MESSAGE);
 
   // Tests OnMessage flow in SharingFCMHandler after handler is added.
-  EXPECT_CALL(mock_sharing_message_handler_,
-              OnMessage(ProtoEquals(sharing_message)));
+  ON_CALL(mock_sharing_message_handler_,
+          OnMessage(ProtoEquals(sharing_message), _))
+      .WillByDefault(testing::Invoke(
+          [](const SharingMessage& message,
+             SharingMessageHandler::DoneCallback done_callback) {
+            std::move(done_callback).Run(/*response=*/nullptr);
+          }));
   EXPECT_CALL(mock_sharing_fcm_sender_,
               SendMessageToDevice(DeviceMatcher(), testing::Eq(kAckTimeToLive),
                                   ProtoEquals(sharing_ack_message),
@@ -224,8 +273,13 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerWithRecipientInfo) {
   sharing_ack_message.mutable_ack_message()->set_original_message_type(
       chrome_browser_sharing::PING_MESSAGE);
 
-  EXPECT_CALL(mock_sharing_message_handler_,
-              OnMessage(ProtoEquals(sharing_message)));
+  ON_CALL(mock_sharing_message_handler_,
+          OnMessage(ProtoEquals(sharing_message), _))
+      .WillByDefault(testing::Invoke(
+          [](const SharingMessage& message,
+             SharingMessageHandler::DoneCallback done_callback) {
+            std::move(done_callback).Run(/*response=*/nullptr);
+          }));
   EXPECT_CALL(mock_sharing_fcm_sender_,
               SendMessageToDevice(DeviceMatcher(), testing::Eq(kAckTimeToLive),
                                   ProtoEquals(sharing_ack_message),

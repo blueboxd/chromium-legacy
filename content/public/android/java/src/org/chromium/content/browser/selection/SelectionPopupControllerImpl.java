@@ -31,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.textclassifier.SelectionEvent;
 import android.view.textclassifier.TextClassifier;
 
 import androidx.annotation.Nullable;
@@ -374,7 +375,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                         break;
                     case MenuSourceType.MENU_SOURCE_ADJUST_SELECTION_RESET:
                         mSelectionMetricsLogger.logSelectionAction(mLastSelectedText,
-                                mLastSelectionOffset, SmartSelectionMetricsLogger.ActionType.RESET,
+                                mLastSelectionOffset, SelectionEvent.ACTION_RESET,
                                 /* SelectionClient.Result = */ null);
                         break;
                     case MenuSourceType.MENU_SOURCE_TOUCH_HANDLE:
@@ -971,28 +972,28 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     private int getActionType(int menuItemId, int menuItemGroupId) {
         if (menuItemGroupId == android.R.id.textAssist) {
-            return SmartSelectionMetricsLogger.ActionType.SMART_SHARE;
+            return SelectionEvent.ACTION_SMART_SHARE;
         }
         if (menuItemId == R.id.select_action_menu_select_all) {
-            return SmartSelectionMetricsLogger.ActionType.SELECT_ALL;
+            return SelectionEvent.ACTION_SELECT_ALL;
         }
         if (menuItemId == R.id.select_action_menu_cut) {
-            return SmartSelectionMetricsLogger.ActionType.CUT;
+            return SelectionEvent.ACTION_CUT;
         }
         if (menuItemId == R.id.select_action_menu_copy) {
-            return SmartSelectionMetricsLogger.ActionType.COPY;
+            return SelectionEvent.ACTION_COPY;
         }
         if (menuItemId == R.id.select_action_menu_paste
                 || menuItemId == R.id.select_action_menu_paste_as_plain_text) {
-            return SmartSelectionMetricsLogger.ActionType.PASTE;
+            return SelectionEvent.ACTION_PASTE;
         }
         if (menuItemId == R.id.select_action_menu_share) {
-            return SmartSelectionMetricsLogger.ActionType.SHARE;
+            return SelectionEvent.ACTION_SHARE;
         }
         if (menuItemId == android.R.id.textAssist) {
-            return SmartSelectionMetricsLogger.ActionType.SMART_SHARE;
+            return SelectionEvent.ACTION_SMART_SHARE;
         }
-        return SmartSelectionMetricsLogger.ActionType.OTHER;
+        return SelectionEvent.ACTION_OTHER;
     }
 
     /**
@@ -1396,7 +1397,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         if (unSelected) {
             if (mSelectionMetricsLogger != null) {
                 mSelectionMetricsLogger.logSelectionAction(mLastSelectedText, mLastSelectionOffset,
-                        SmartSelectionMetricsLogger.ActionType.ABANDON,
+                        SelectionEvent.ACTION_ABANDON,
                         /* SelectionClient.Result = */ null);
             }
             destroyActionModeAndKeepSelection();

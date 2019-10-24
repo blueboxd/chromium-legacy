@@ -161,7 +161,7 @@ void OldRenderFrameAudioInputStreamFactory::DoCreateStream(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int stream_id = ++next_stream_id_;
 
-  media::mojom::AudioLogPtr audio_log_ptr =
+  mojo::PendingRemote<media::mojom::AudioLog> audio_log =
       MediaInternals::GetInstance()->CreateMojoAudioLog(
           media::AudioLogFactory::AUDIO_INPUT_CONTROLLER, stream_id,
           render_process_id_, render_frame_id_);
@@ -172,7 +172,7 @@ void OldRenderFrameAudioInputStreamFactory::DoCreateStream(
       base::BindOnce(
           create_delegate_callback_,
           base::Unretained(media_stream_manager_->audio_input_device_manager()),
-          std::move(audio_log_ptr), std::move(keyboard_mic_registration),
+          std::move(audio_log), std::move(keyboard_mic_registration),
           shared_memory_count, stream_id, session_id, automatic_gain_control,
           audio_params),
       base::BindOnce(&OldRenderFrameAudioInputStreamFactory::RemoveStream,

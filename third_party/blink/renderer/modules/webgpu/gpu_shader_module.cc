@@ -11,9 +11,9 @@ namespace blink {
 
 namespace {
 
-DawnShaderModuleDescriptor AsDawnType(
+WGPUShaderModuleDescriptor AsDawnType(
     const GPUShaderModuleDescriptor* webgpu_desc) {
-  DawnShaderModuleDescriptor dawn_desc = {};
+  WGPUShaderModuleDescriptor dawn_desc = {};
 
   dawn_desc.nextInChain = nullptr;
   dawn_desc.code = webgpu_desc->code().View()->Data();
@@ -33,15 +33,15 @@ GPUShaderModule* GPUShaderModule::Create(
     const GPUShaderModuleDescriptor* webgpu_desc) {
   DCHECK(device);
   DCHECK(webgpu_desc);
-  DawnShaderModuleDescriptor dawn_desc = AsDawnType(webgpu_desc);
+  WGPUShaderModuleDescriptor dawn_desc = AsDawnType(webgpu_desc);
   return MakeGarbageCollected<GPUShaderModule>(
       device, device->GetProcs().deviceCreateShaderModule(device->GetHandle(),
                                                           &dawn_desc));
 }
 
 GPUShaderModule::GPUShaderModule(GPUDevice* device,
-                                 DawnShaderModule shader_module)
-    : DawnObject<DawnShaderModule>(device, shader_module) {}
+                                 WGPUShaderModule shader_module)
+    : DawnObject<WGPUShaderModule>(device, shader_module) {}
 
 GPUShaderModule::~GPUShaderModule() {
   if (IsDawnControlClientDestroyed()) {

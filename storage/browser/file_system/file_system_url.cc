@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 namespace storage {
 

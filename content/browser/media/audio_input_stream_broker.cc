@@ -169,11 +169,9 @@ void AudioInputStreamBroker::CreateStream(
   constexpr int log_component_id = 0;
   factory->CreateInputStream(
       std::move(stream_receiver), std::move(client), std::move(observer),
-      MediaInternals::GetInstance()
-          ->CreateMojoAudioLog(
-              media::AudioLogFactory::AudioComponent::AUDIO_INPUT_CONTROLLER,
-              log_component_id, render_process_id(), render_frame_id())
-          .PassInterface(),
+      MediaInternals::GetInstance()->CreateMojoAudioLog(
+          media::AudioLogFactory::AudioComponent::AUDIO_INPUT_CONTROLLER,
+          log_component_id, render_process_id(), render_frame_id()),
       device_id_, params_, shared_memory_count_, enable_agc_,
       mojo::WrapReadOnlySharedMemoryRegion(std::move(key_press_count_buffer)),
       std::move(processing_config_),

@@ -39,7 +39,6 @@
   <link rel="import" href="chrome://resources/cr_components/certificate_manager/certificate_manager.html">
 </if>
 <link rel="import" href="privacy_page_browser_proxy.html">
-<link rel="import" href="personalization_options.html">
 
 <dom-module id="settings-privacy-page">
   <template>
@@ -83,17 +82,10 @@
     <settings-animated-pages id="pages" section="privacy"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <template is="dom-if" if="[[!unifiedConsentEnabled_]]">
-          <div class="settings-box first">
-            <p class="privacy-explanation">
-              $i18nRaw{improveBrowsingExperience}
-            </p>
-          </div>
-        </template>
         <cr-link-row label="$i18n{syncAndNonPersonalizedServices}"
             sub-label="$i18n{syncAndGoogleServicesPrivacyDescription}"
-            on-click="onSyncAndGoogleServicesClick_"
-            hidden="[[!unifiedConsentEnabled_]]"></cr-link-row>
+            on-click="onSyncAndGoogleServicesClick_">
+        </cr-link-row>
 <if expr="not chromeos">
         <settings-toggle-button id="signinAllowedToggle"
             pref="{{prefs.signin.allowed_on_next_startup}}"
@@ -103,12 +95,6 @@
             no-set-pref>
         </settings-toggle-button>
 </if><!-- not chromeos -->
-        <template is="dom-if" if="[[!unifiedConsentEnabled_]]">
-          <settings-personalization-options prefs="{{prefs}}"
-              page-visibility="[[pageVisibility]]"
-              unified-consent-enabled="[[unifiedConsentEnabled_]]">
-          </settings-personalization-options>
-        </template>
         <settings-toggle-button id="doNotTrack"
             pref="{{prefs.enable_do_not_track}}" label="$i18n{doNotTrack}"
             on-settings-boolean-control-change="onDoNotTrackChange_"

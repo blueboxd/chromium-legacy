@@ -3084,12 +3084,9 @@ KURL HTMLMediaElement::SelectNextSourceChild(
       continue;
     looking_for_start_node = false;
 
-    if (!IsHTMLSourceElement(*node))
+    source = DynamicTo<HTMLSourceElement>(node);
+    if (!source || node->parentNode() != this)
       continue;
-    if (node->parentNode() != this)
-      continue;
-
-    source = ToHTMLSourceElement(node);
 
     // 2. If candidate does not have a src attribute, or if its src
     // attribute's value is the empty string ... jump down to the failed

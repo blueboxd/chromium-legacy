@@ -694,4 +694,5 @@ const char TouchEventConverterEvdev::kHoldCountAtCancelEventName[] =
     "Ozone.TouchEventConverterEvdev.HoldCountAtCancel";
 const char TouchEventConverterEvdev::kPalmFilterTimerEventName[] =
     "Ozone.TouchEventConverterEvdev.PalmDetectionFilterTime";
+
 }  // namespace ui

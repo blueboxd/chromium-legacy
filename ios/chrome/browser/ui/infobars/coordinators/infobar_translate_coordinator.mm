@@ -32,6 +32,9 @@
 // InfobarBannerViewController owned by this Coordinator.
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
 
+// The current state of translate.
+@property(nonatomic, assign) translate::TranslateStep currentStep;
+
 // Tracks user actions taken throughout Translate lifetime.
 @property(nonatomic, assign) UserAction userAction;
 
@@ -52,6 +55,7 @@
         std::make_unique<TranslateInfobarDelegateObserverBridge>(
             infoBarDelegate, self);
     _userAction = UserActionNone;
+    _currentStep = translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
   }
   return self;
 }
@@ -61,7 +65,8 @@
 - (void)translateInfoBarDelegate:(translate::TranslateInfoBarDelegate*)delegate
           didChangeTranslateStep:(translate::TranslateStep)step
                    withErrorType:(translate::TranslateErrors::Type)errorType {
-  // TODO(crbug.com/1014959): implement
+  // TODO(crbug.com/1014959): Update currentStep and call
+  // infobarWasAccepted:forWebState: if translate finished.
 }
 
 - (BOOL)translateInfoBarDelegateDidDismissWithoutInteraction:
@@ -99,6 +104,11 @@
 }
 
 #pragma mark - InfobarCoordinatorImplementation
+
+- (BOOL)shouldBadgeBeAccepted {
+  return self.currentStep ==
+         translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE;
+}
 
 - (void)performInfobarAction {
   self.userAction |= UserActionTranslate;

@@ -25,7 +25,7 @@
 #include "storage/browser/file_system/plugin_private_file_system_backend.h"
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
 #include "storage/browser/file_system/task_runner_bound_observer_list.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_types.h"
 
 namespace base {
 class FilePath;

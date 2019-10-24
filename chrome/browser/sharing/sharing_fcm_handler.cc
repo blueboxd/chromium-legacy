@@ -122,10 +122,14 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
     LOG(ERROR) << "No handler found for payload : "
                << sharing_message.payload_case();
   } else {
-    it->second->OnMessage(sharing_message);
+    SharingMessageHandler::DoneCallback done_callback = base::DoNothing();
+    if (sharing_message.payload_case() != SharingMessage::kAckMessage) {
+      done_callback = base::BindOnce(
+          &SharingFCMHandler::SendAckMessage, weak_ptr_factory_.GetWeakPtr(),
+          std::move(message_id), message_type, GetSharingInfo(sharing_message));
+    }
 
-    if (sharing_message.payload_case() != SharingMessage::kAckMessage)
-      SendAckMessage(sharing_message, message_id);
+    it->second->OnMessage(std::move(sharing_message), std::move(done_callback));
   }
 }
 
@@ -157,18 +161,11 @@ SharingFCMHandler::GetSharingInfo(const SharingMessage& original_message) {
   return sync_preference_->GetSharingInfo(original_message.sender_guid());
 }
 
-void SharingFCMHandler::SendAckMessage(const SharingMessage& original_message,
-                                       const std::string& original_message_id) {
-  SharingMessage ack_message;
-  ack_message.mutable_ack_message()->set_original_message_id(
-      original_message_id);
-  chrome_browser_sharing::MessageType original_message_type =
-      SharingPayloadCaseToMessageType(original_message.payload_case());
-  ack_message.mutable_ack_message()->set_original_message_type(
-      original_message_type);
-
-  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
-      GetSharingInfo(original_message);
+void SharingFCMHandler::SendAckMessage(
+    std::string original_message_id,
+    chrome_browser_sharing::MessageType original_message_type,
+    base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info,
+    std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
   if (!sharing_info) {
     LOG(ERROR) << "Unable to find sharing info";
     LogSendSharingAckMessageResult(original_message_type,
@@ -176,16 +173,24 @@ void SharingFCMHandler::SendAckMessage(const SharingMessage& original_message,
     return;
   }
 
+  SharingMessage sharing_message;
+  chrome_browser_sharing::AckMessage* ack_message =
+      sharing_message.mutable_ack_message();
+  ack_message->set_original_message_id(original_message_id);
+  ack_message->set_original_message_type(original_message_type);
+  if (response)
+    ack_message->set_allocated_response_message(response.release());
+
   sharing_fcm_sender_->SendMessageToDevice(
-      std::move(*sharing_info), kAckTimeToLive, std::move(ack_message),
+      std::move(*sharing_info), kAckTimeToLive, std::move(sharing_message),
       /*sender_device_info=*/nullptr,
       base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
-                     weak_ptr_factory_.GetWeakPtr(), original_message_id,
-                     original_message_type));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(original_message_id), original_message_type));
 }
 
 void SharingFCMHandler::OnAckMessageSent(
-    const std::string& original_message_id,
+    std::string original_message_id,
     chrome_browser_sharing::MessageType original_message_type,
     SharingSendMessageResult result,
     base::Optional<std::string> message_id) {

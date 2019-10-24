@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -110,21 +106,20 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Make sure the omnibox is autocompleted.
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(pageString),
-                                          grey_ancestor(grey_kindOfClass(
-                                              [OmniboxTextFieldIOS class])),
+                                          grey_ancestor(grey_kindOfClassName(
+                                              @"OmniboxTextFieldIOS")),
                                           nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open the suggestion. The suggestion needs to be the first suggestion to
   // have the prerenderer activated.
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(pageString),
-                                   grey_kindOfClass(
-                                       [OmniboxPopupTruncatingLabel class]),
-                                   grey_ancestor(grey_accessibilityID(
-                                       @"omnibox suggestion 0")),
-                                   grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(pageString),
+                                          grey_kindOfClassName(
+                                              @"OmniboxPopupTruncatingLabel"),
+                                          grey_ancestor(grey_accessibilityID(
+                                              @"omnibox suggestion 0")),
+                                          grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];

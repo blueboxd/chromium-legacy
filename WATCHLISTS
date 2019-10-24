@@ -1698,7 +1698,8 @@
     },
     'tab_ui_and_start_surface': {
       'filepath': 'chrome/android/features/tab_ui/' \
-        '|chrome/android/features/start_surface/',
+                  '|chrome/android/features/start_surface/' \
+                  '|chrome/android/.*/src/org/chromium/chrome/browser/tasks/'
     },
     'tbmv2_metrics': {
       'filepath': 'third_party/catapult/tracing/tracing/metrics'

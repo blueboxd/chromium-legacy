@@ -16,9 +16,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #import "ios/chrome/browser/autofill/form_suggestion_constants.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/address_mediator.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/address_view_controller.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -37,11 +34,15 @@
 
 using chrome_test_util::CancelButton;
 using chrome_test_util::GetOriginalBrowserState;
+using chrome_test_util::ManualFallbackFormSuggestionViewMatcher;
+using chrome_test_util::ManualFallbackKeyboardIconMatcher;
+using chrome_test_util::ManualFallbackManageProfilesMatcher;
+using chrome_test_util::ManualFallbackProfilesIconMatcher;
+using chrome_test_util::ManualFallbackProfilesTableViewMatcher;
+using chrome_test_util::ManualFallbackProfileTableViewWindowMatcher;
+using chrome_test_util::NavigationBarCancelButton;
+using chrome_test_util::SettingsProfileMatcher;
 using ios::ChromeBrowserState;
-using manual_fill::AccessoryAddressAccessibilityIdentifier;
-using manual_fill::AccessoryKeyboardAccessibilityIdentifier;
-using manual_fill::AddressTableViewAccessibilityIdentifier;
-using manual_fill::ManageAddressAccessibilityIdentifier;
 
 namespace {
 
@@ -49,51 +50,6 @@ constexpr char kFormElementName[] = "name";
 constexpr char kFormElementCity[] = "city";
 
 constexpr char kFormHTMLFile[] = "/profile_form.html";
-
-// Returns a matcher for the scroll view in keyboard accessory bar.
-id<GREYMatcher> FormSuggestionViewMatcher() {
-  return grey_accessibilityID(kFormSuggestionsViewAccessibilityIdentifier);
-}
-
-// Returns a matcher for the profiles icon in the keyboard accessory bar.
-id<GREYMatcher> ProfilesIconMatcher() {
-  return grey_accessibilityID(AccessoryAddressAccessibilityIdentifier);
-}
-
-// Matcher for the Keyboard icon in the accessory bar.
-id<GREYMatcher> KeyboardIconMatcher() {
-  return grey_accessibilityID(AccessoryKeyboardAccessibilityIdentifier);
-}
-
-// Returns a matcher for the profiles table view in manual fallback.
-id<GREYMatcher> ProfilesTableViewMatcher() {
-  return grey_accessibilityID(AddressTableViewAccessibilityIdentifier);
-}
-
-// Returns a matcher for the button to open profile settings in manual
-// fallback.
-id<GREYMatcher> ManageProfilesMatcher() {
-  return grey_accessibilityID(ManageAddressAccessibilityIdentifier);
-}
-
-// Returns the matcher for an enabled cancel button in a navigation bar.
-id<GREYMatcher> NavigationBarCancelMatcher() {
-  return grey_allOf(
-      grey_ancestor(grey_kindOfClass([UINavigationBar class])), CancelButton(),
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
-}
-
-// Returns a matcher for the profiles settings collection view.
-id<GREYMatcher> ProfileSettingsMatcher() {
-  return grey_accessibilityID(kAutofillProfileTableViewID);
-}
-
-// Returns a matcher for the ProfileTableView window.
-id<GREYMatcher> ProfileTableViewWindowMatcher() {
-  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
-  id<GREYMatcher> parentMatcher = grey_descendant(ProfilesTableViewMatcher());
-  return grey_allOf(classMatcher, parentMatcher, nil);
-}
 
 // Saves an example profile in the store.
 void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
@@ -174,13 +130,13 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the address controller table view is visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -192,15 +148,15 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the address controller contains the "Manage Addresses..." action.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-  [[EarlGrey selectElementWithMatcher:ManageProfilesMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackManageProfilesMatcher()]
       assertWithMatcher:grey_interactable()];
 }
 
@@ -211,19 +167,19 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Tap the "Manage Addresses..." action.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-  [[EarlGrey selectElementWithMatcher:ManageProfilesMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackManageProfilesMatcher()]
       performAction:grey_tap()];
 
   // Verify the address settings opened.
-  [[EarlGrey selectElementWithMatcher:ProfileSettingsMatcher()]
+  [[EarlGrey selectElementWithMatcher:SettingsProfileMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -235,43 +191,43 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the status of the icon.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_not(grey_userInteractionEnabled())];
 
   // Tap the "Manage Addresses..." action.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-  [[EarlGrey selectElementWithMatcher:ManageProfilesMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackManageProfilesMatcher()]
       performAction:grey_tap()];
 
   // Verify the address settings opened.
-  [[EarlGrey selectElementWithMatcher:ProfileSettingsMatcher()]
+  [[EarlGrey selectElementWithMatcher:SettingsProfileMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap Cancel Button.
-  [[EarlGrey selectElementWithMatcher:NavigationBarCancelMatcher()]
+  [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
       performAction:grey_tap()];
 
   // Verify the address settings closed.
-  [[EarlGrey selectElementWithMatcher:ProfileSettingsMatcher()]
+  [[EarlGrey selectElementWithMatcher:SettingsProfileMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
   // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
   // Verify the keyboard is not cover by the profiles view.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -288,24 +244,24 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the address controller table view is visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap on the keyboard icon.
-  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the address controller table view and the address icon is NOT
   // visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -320,26 +276,27 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
   // Verify the address controller table view is visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap on a point outside of the popover.
   // The way EarlGrey taps doesn't go through the window hierarchy. Because of
   // this, the tap needs to be done in the same window as the popover.
-  [[EarlGrey selectElementWithMatcher:ProfileTableViewWindowMatcher()]
+  [[EarlGrey
+      selectElementWithMatcher:ManualFallbackProfileTableViewWindowMatcher()]
       performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
   // Verify the address controller table view and the address icon is NOT
   // visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -356,7 +313,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
   [GREYKeyboard waitForKeyboardToAppear];
 
   // Assert the address icon is not visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_notVisible()];
 
   // Store one address.
@@ -367,14 +324,14 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Assert the address icon is visible now.
-  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 

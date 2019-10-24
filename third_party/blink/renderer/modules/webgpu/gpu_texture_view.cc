@@ -10,12 +10,12 @@ namespace blink {
 
 // static
 GPUTextureView* GPUTextureView::Create(GPUDevice* device,
-                                       DawnTextureView texture_view) {
+                                       WGPUTextureView texture_view) {
   return MakeGarbageCollected<GPUTextureView>(device, texture_view);
 }
 
-GPUTextureView::GPUTextureView(GPUDevice* device, DawnTextureView texture_view)
-    : DawnObject<DawnTextureView>(device, texture_view) {}
+GPUTextureView::GPUTextureView(GPUDevice* device, WGPUTextureView texture_view)
+    : DawnObject<WGPUTextureView>(device, texture_view) {}
 
 GPUTextureView::~GPUTextureView() {
   if (IsDawnControlClientDestroyed()) {

@@ -31,7 +31,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 namespace content {
 

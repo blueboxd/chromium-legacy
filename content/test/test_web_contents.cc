@@ -320,7 +320,7 @@ void TestWebContents::TestSetIsLoading(bool value) {
           node->render_manager()->speculative_frame_host();
       if (speculative_frame_host)
         speculative_frame_host->ResetLoadingState();
-      node->ResetNavigationRequest(false, true);
+      node->ResetNavigationRequest(false);
     }
   }
 }

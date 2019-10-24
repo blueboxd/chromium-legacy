@@ -16,15 +16,15 @@ class DoubleSequenceOrGPUColorDict;
 class GPURenderBundle;
 class GPURenderPipeline;
 
-class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
+class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static GPURenderPassEncoder* Create(
       GPUDevice* device,
-      DawnRenderPassEncoder render_pass_encoder);
+      WGPURenderPassEncoder render_pass_encoder);
   explicit GPURenderPassEncoder(GPUDevice* device,
-                                DawnRenderPassEncoder render_pass_encoder);
+                                WGPURenderPassEncoder render_pass_encoder);
   ~GPURenderPassEncoder() override;
 
   // gpu_render_pass_encoder.idl

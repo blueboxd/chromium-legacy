@@ -306,6 +306,10 @@ luci.console_view(
             category = 'win10|1803',
         ),
         luci.console_view_entry(
+            builder = 'ci/win32-arm64-rel',
+            category = 'win32|arm64',
+        ),
+        luci.console_view_entry(
             builder = 'ci/win-celab-builder-rel',
             category = 'celab',
         ),

@@ -291,10 +291,6 @@ if (enable_mojom_typemapping) {
 #       correct dependency order. Note that this only has an effect if
 #       the |enable_mojom_closure_compile| global arg is set to |true| as well.
 #
-#   use_old_js_lite_bindings_names (optional)
-#       Use old names i.e. FooProxy, Foo, getProxy(), etc. instead of the new
-#       names i.e. FooRemote, FooReceiver, getRemote(), etc.
-#
 #   use_typescript_sources (optional)
 #       Uses the Typescript generator to generate JavaScript bindings.
 #
@@ -1295,11 +1291,6 @@ template("mojom") {
 
         if (generate_fuzzing) {
           args += [ "--generate_fuzzing" ]
-        }
-
-        if (defined(invoker.use_old_js_lite_bindings_names) &&
-            invoker.use_old_js_lite_bindings_names) {
-          args += [ "--use_old_js_lite_bindings_names" ]
         }
       }
     }

@@ -24,7 +24,7 @@
       <iron-icon id="deviceIcon" icon="[[getDeviceIcon_(device)]]">
       </iron-icon>
       <div class="middle">
-        <div class="name" connected$="[[device.connected]]">
+        <div class="name" connected$="[[device.connected]]" aria-hidden="true">
           [[getDeviceName_(device)]]
         </div>
         <div class="state secondary" connected$="[[device.connected]]"

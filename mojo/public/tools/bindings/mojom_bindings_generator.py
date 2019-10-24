@@ -219,7 +219,6 @@ class MojomProcessor(object):
             variant=args.variant, bytecode_path=args.bytecode_path,
             for_blink=args.for_blink,
             js_bindings_mode=args.js_bindings_mode,
-            use_old_js_lite_bindings_names=args.use_old_js_lite_bindings_names,
             export_attribute=args.export_attribute,
             export_header=args.export_header,
             generate_non_variant_code=args.generate_non_variant_code,
@@ -471,11 +470,6 @@ def main():
       help="This option only affects the JavaScript bindings. The value could "
       "be \"new\" to generate new-style lite JS bindings in addition to the "
       "old, or \"old\" to only generate old bindings.")
-  generate_parser.add_argument(
-      "--use_old_js_lite_bindings_names", action="store_true",
-      help="This option only affects the JavaScript bindings. Specifying this "
-      "argument causes the generated new-style lite JS bindings to use the old"
-      "names for primitives e.g. Foo, FooProxy, getProxy(), etc.")
   generate_parser.add_argument(
       "--export_attribute", default="",
       help="Optional attribute to specify on class declaration to export it "

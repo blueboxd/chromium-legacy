@@ -18,7 +18,6 @@ using testing::SetArgPointee;
 using testing::WithArg;
 
 namespace chromecast {
-namespace shell {
 
 namespace {
 
@@ -255,5 +254,5 @@ TEST_F(CastContentGestureHandlerTest, VerifySimpleRightSuccess) {
   dispatcher_.HandleSideSwipe(CastSideSwipeEvent::END,
                               CastSideSwipeOrigin::LEFT, kRightGestureEndPoint);
 }
-}  // namespace shell
+
 }  // namespace chromecast

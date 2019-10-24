@@ -409,9 +409,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   memory_usage_reporting_timer_.SetTaskRunner(
       frame_->GetTaskRunner(blink::TaskType::kInternalMedia));
 
-  if (frame_->IsAdSubframe())
-    media_metrics_provider_->SetIsAdMedia();
-
 #if defined(OS_ANDROID)
   renderer_factory_selector_->SetRemotePlayStateChangeCB(
       BindToCurrentLoop(base::BindRepeating(
@@ -749,9 +746,6 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 
     auto url_data =
         url_index_->GetByUrl(url, static_cast<UrlData::CorsMode>(cors_mode));
-    // Notify |this| of bytes received by the network.
-    url_data->AddBytesReceivedCallback(BindToCurrentLoop(
-        base::BindRepeating(&WebMediaPlayerImpl::OnBytesReceived, weak_this_)));
     mb_data_source_ = new MultibufferDataSource(
         main_task_runner_, std::move(url_data), media_log_.get(),
         buffered_data_source_host_.get(),
@@ -2435,29 +2429,6 @@ void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
   MaybeSendOverlayInfoToDecoder();
 }
 
-void WebMediaPlayerImpl::SendBytesReceivedUpdate() {
-  media_metrics_provider_->AddBytesReceived(bytes_received_since_last_update_);
-  bytes_received_since_last_update_ = 0;
-}
-
-void WebMediaPlayerImpl::OnBytesReceived(uint64_t data_length) {
-  bytes_received_since_last_update_ += data_length;
-  constexpr base::TimeDelta kBytesReceivedUpdateInterval =
-      base::TimeDelta::FromMilliseconds(500);
-  auto current_time = base::TimeTicks::Now();
-  if (earliest_time_next_bytes_received_update_.is_null() ||
-      earliest_time_next_bytes_received_update_ <= current_time) {
-    report_bytes_received_timer_.Stop();
-    SendBytesReceivedUpdate();
-    earliest_time_next_bytes_received_update_ =
-        current_time + kBytesReceivedUpdateInterval;
-  } else {
-    report_bytes_received_timer_.Start(
-        FROM_HERE, kBytesReceivedUpdateInterval, this,
-        &WebMediaPlayerImpl::SendBytesReceivedUpdate);
-  }
-}
-
 void WebMediaPlayerImpl::ScheduleRestart() {
   // TODO(watk): All restart logic should be moved into PipelineController.
   if (pipeline_controller_->IsPipelineRunning() &&
@@ -2717,9 +2688,6 @@ void WebMediaPlayerImpl::StartPipeline() {
                          BindToCurrentLoop(base::Bind(
                              &WebMediaPlayerImpl::OnProgress, weak_this_)),
                          encrypted_media_init_data_cb, media_log_.get());
-    // Notify |this| of bytes that are received via MSE.
-    chunk_demuxer_->AddBytesReceivedCallback(BindToCurrentLoop(
-        base::BindRepeating(&WebMediaPlayerImpl::OnBytesReceived, weak_this_)));
     demuxer_.reset(chunk_demuxer_);
 
     if (base::FeatureList::IsEnabled(kMemoryPressureBasedSourceBufferGC)) {
@@ -3219,8 +3187,9 @@ void WebMediaPlayerImpl::UpdateSecondaryProperties() {
   watch_time_reporter_->UpdateSecondaryProperties(
       mojom::SecondaryPlaybackProperties::New(
           pipeline_metadata_.audio_decoder_config.codec(),
-          pipeline_metadata_.video_decoder_config.codec(), audio_decoder_name_,
-          video_decoder_name_,
+          pipeline_metadata_.video_decoder_config.codec(),
+          pipeline_metadata_.video_decoder_config.profile(),
+          audio_decoder_name_, video_decoder_name_,
           DetermineEncryptionMode(
               pipeline_metadata_.audio_decoder_config.encryption_scheme()),
           DetermineEncryptionMode(

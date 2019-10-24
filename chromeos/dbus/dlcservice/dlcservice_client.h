@@ -48,6 +48,19 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
       const std::string& err,
       const dlcservice::DlcModuleList& dlc_module_list)>;
 
+  class Observer : public base::CheckedObserver {
+   public:
+    // Observers should not dictate the finalization of install based purely on
+    // what's notified, but based on the callback passed to |Install()|.
+    virtual void OnProgressUpdate(double progress) = 0;
+  };
+
+  virtual void AddObserver(Observer* obs) = 0;
+
+  virtual void RemoveObserver(Observer* obs) = 0;
+
+  virtual void NotifyProgressUpdateForTest(double progress) = 0;
+
   virtual void Install(const dlcservice::DlcModuleList& dlc_module_list,
                        InstallCallback callback) = 0;
 

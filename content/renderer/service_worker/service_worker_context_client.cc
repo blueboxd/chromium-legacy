@@ -142,15 +142,14 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     // service.
     // Note that the default factory is the network service factory. It's set
     // on the start worker sequence.
-    network_service_connection_error_handler_holder_.Bind(
+    network_service_disconnect_handler_holder_.Bind(
         std::move(subresource_loaders->pending_default_factory()));
-    network_service_connection_error_handler_holder_->Clone(
+    network_service_disconnect_handler_holder_->Clone(
         subresource_loaders->pending_default_factory()
             .InitWithNewPipeAndPassReceiver());
-    network_service_connection_error_handler_holder_
-        .set_connection_error_handler(base::BindOnce(
-            &ServiceWorkerContextClient::StopWorkerOnInitiatorThread,
-            base::Unretained(this)));
+    network_service_disconnect_handler_holder_.set_disconnect_handler(
+        base::BindOnce(&ServiceWorkerContextClient::StopWorkerOnInitiatorThread,
+                       base::Unretained(this)));
   }
 
   loader_factories_ = base::MakeRefCounted<ChildURLLoaderFactoryBundle>(

@@ -897,6 +897,7 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
 
   if (inner_viewport_scroll_delta.IsZero() && info.page_scale_delta == 1.f &&
       info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta &&
+      !info.bottom_controls_delta &&
       !info.browser_controls_constraint_changed &&
       !info.scroll_gesture_did_end &&
       info.is_pinch_gesture_active == is_pinch_gesture_active_from_impl_) {
@@ -924,8 +925,8 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   client_->ApplyViewportChanges(
       {inner_viewport_scroll_delta, info.elastic_overscroll_delta,
        info.page_scale_delta, info.is_pinch_gesture_active,
-       info.top_controls_delta, info.browser_controls_constraint,
-       info.scroll_gesture_did_end});
+       info.top_controls_delta, info.bottom_controls_delta,
+       info.browser_controls_constraint, info.scroll_gesture_did_end});
   SetNeedsUpdateLayers();
 }
 
@@ -1258,11 +1259,14 @@ void LayerTreeHost::SetBrowserControlsHeight(float top_height,
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetBrowserControlsShownRatio(float ratio) {
-  if (top_controls_shown_ratio_ == ratio)
+void LayerTreeHost::SetBrowserControlsShownRatio(float top_ratio,
+                                                 float bottom_ratio) {
+  if (top_controls_shown_ratio_ == top_ratio &&
+      bottom_controls_shown_ratio_ == bottom_ratio)
     return;
 
-  top_controls_shown_ratio_ = ratio;
+  top_controls_shown_ratio_ = top_ratio;
+  bottom_controls_shown_ratio_ = bottom_ratio;
   SetNeedsCommit();
 }
 
@@ -1569,7 +1573,8 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->SetTopControlsHeight(top_controls_height_);
   tree_impl->SetBottomControlsHeight(bottom_controls_height_);
   tree_impl->set_overscroll_behavior(overscroll_behavior_);
-  tree_impl->PushBrowserControlsFromMainThread(top_controls_shown_ratio_);
+  tree_impl->PushBrowserControlsFromMainThread(top_controls_shown_ratio_,
+                                               bottom_controls_shown_ratio_);
   tree_impl->elastic_overscroll()->PushMainToPending(elastic_overscroll_);
   if (tree_impl->IsActiveTree())
     tree_impl->elastic_overscroll()->PushPendingToActive();

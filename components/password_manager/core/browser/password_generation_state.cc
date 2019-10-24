@@ -56,8 +56,8 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   bool IsBlacklisted() const override;
   void Save() override;
   void Update(const PasswordForm& credentials_to_update) override;
-  void UpdateUsername(const base::string16& new_username) override;
-  void UpdatePasswordValue(const base::string16& new_password) override;
+  void OnUpdateUsernameFromPrompt(const base::string16& new_username) override;
+  void OnUpdatePasswordFromPrompt(const base::string16& new_password) override;
   void OnNopeUpdateClicked() override;
   void OnNeverClicked() override;
   void OnNoInteraction(bool is_update) override;
@@ -141,11 +141,12 @@ void PasswordDataForUI::Update(const PasswordForm&) {
   NOTREACHED();
 }
 
-void PasswordDataForUI::UpdateUsername(const base::string16& new_username) {
+void PasswordDataForUI::OnUpdateUsernameFromPrompt(
+    const base::string16& new_username) {
   pending_form_.username_value = new_username;
 }
 
-void PasswordDataForUI::UpdatePasswordValue(
+void PasswordDataForUI::OnUpdatePasswordFromPrompt(
     const base::string16& new_password) {
   // Ignore. The generated password can be edited in-place.
 }

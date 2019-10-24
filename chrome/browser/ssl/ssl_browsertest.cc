@@ -73,7 +73,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/content_settings_renderer.mojom.h"
+#include "chrome/common/content_settings_agent.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -3601,9 +3601,9 @@ class SSLUIWorkerFetchTest
   void SetAllowRunningInsecureContent() {
     content::RenderFrameHost* render_frame_host =
         browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-    mojo::AssociatedRemote<chrome::mojom::ContentSettingsRenderer> renderer;
-    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&renderer);
-    renderer->SetAllowRunningInsecureContent();
+    mojo::AssociatedRemote<chrome::mojom::ContentSettingsAgent> agent;
+    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
+    agent->SetAllowRunningInsecureContent();
   }
 
   void CheckErrorStateIsCleared() {

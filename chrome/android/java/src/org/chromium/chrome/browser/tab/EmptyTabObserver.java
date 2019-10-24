@@ -92,7 +92,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onLoadStopped(Tab tab, boolean toDifferentDocument) { }
 
     @Override
-    public void onLoadProgressChanged(Tab tab, int progress) { }
+    public void onLoadProgressChanged(Tab tab, float progress) {}
 
     @Override
     public void onUpdateUrl(Tab tab, String url) { }

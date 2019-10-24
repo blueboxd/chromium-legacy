@@ -431,7 +431,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         }
 
         @Override
-        public void onProgressBarUpdated(int progress) {
+        public void onProgressBarUpdated(float progress) {
             setProgressBarCompletion(progress);
             requestUpdate();
         }

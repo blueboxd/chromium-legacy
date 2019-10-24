@@ -85,8 +85,6 @@ class TestImageTransportFactory : public ui::ContextFactory,
   void AddVSyncParameterObserver(
       ui::Compositor* compositor,
       viz::mojom::VSyncParameterObserverPtr observer) override {}
-  void SetDisplayTransformHint(ui::Compositor* compositor,
-                               gfx::OverlayTransform transform) override {}
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;

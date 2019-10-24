@@ -354,9 +354,10 @@ class WebWidgetClient {
   // purposes.
   virtual int GetLayerTreeId() const { return 0; }
 
-  // Sets the amount that the browser controls are showing, from 0 (hidden) to 1
-  // (fully shown).
-  virtual void SetBrowserControlsShownRatio(float) {}
+  // Sets the amount that the top and bottom browser controls are showing, from
+  // 0 (hidden) to 1 (fully shown).
+  virtual void SetBrowserControlsShownRatio(float top_ratio,
+                                            float bottom_ratio) {}
 
   // Set browser controls height. If |shrink_viewport| is set to true, then
   // Blink shrunk the viewport clip layers by the top and bottom browser

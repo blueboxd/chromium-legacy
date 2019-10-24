@@ -12,6 +12,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/mock_media_log.h"
+#include "media/base/video_codecs.h"
 #include "media/base/watch_time_keys.h"
 #include "media/blink/watch_time_reporter.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
@@ -245,14 +246,12 @@ class WatchTimeReporterTest
             receiver) override {}
     void Initialize(bool is_mse, mojom::MediaURLScheme url_scheme) override {}
     void OnError(PipelineStatus status) override {}
-    void SetIsAdMedia() override {}
     void SetIsEME() override {}
     void SetTimeToMetadata(base::TimeDelta elapsed) override {}
     void SetTimeToFirstFrame(base::TimeDelta elapsed) override {}
     void SetTimeToPlayReady(base::TimeDelta elapsed) override {}
     void SetContainerName(
         container_names::MediaContainerName container_name) override {}
-    void AddBytesReceived(uint64_t bytes_received) override {}
     void SetHasPlayed() override {}
     void SetHaveEnough() override {}
     void SetHasAudio(AudioCodec audio_codec) override {}
@@ -806,6 +805,7 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterSecondaryProperties) {
   auto properties = mojom::SecondaryPlaybackProperties::New(
       has_audio_ ? kCodecAAC : kUnknownAudioCodec,
       has_video_ ? kCodecH264 : kUnknownVideoCodec,
+      has_video_ ? H264PROFILE_MAIN : VIDEO_CODEC_PROFILE_UNKNOWN,
       has_audio_ ? "FirstAudioDecoder" : "",
       has_video_ ? "FirstVideoDecoder" : "",
       has_audio_ ? EncryptionMode::kCenc : EncryptionMode::kUnencrypted,
@@ -842,8 +842,8 @@ TEST_P(WatchTimeReporterTest, SecondaryProperties_SizeIncreased) {
   EXPECT_CALL(*this, OnUpdateSecondaryProperties(_))
       .Times((has_audio_ && has_video_) ? 3 : 2);
   wtr_->UpdateSecondaryProperties(mojom::SecondaryPlaybackProperties::New(
-      kUnknownAudioCodec, kUnknownVideoCodec, "", "",
-      EncryptionMode::kUnencrypted, EncryptionMode::kUnencrypted,
+      kUnknownAudioCodec, kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN, "",
+      "", EncryptionMode::kUnencrypted, EncryptionMode::kUnencrypted,
       kSizeJustRight));
   EXPECT_TRUE(IsMonitoring());
 
@@ -864,8 +864,8 @@ TEST_P(WatchTimeReporterTest, SecondaryProperties_SizeDecreased) {
   EXPECT_CALL(*this, OnUpdateSecondaryProperties(_))
       .Times((has_audio_ && has_video_) ? 3 : 2);
   wtr_->UpdateSecondaryProperties(mojom::SecondaryPlaybackProperties::New(
-      kUnknownAudioCodec, kUnknownVideoCodec, "", "",
-      EncryptionMode::kUnencrypted, EncryptionMode::kUnencrypted,
+      kUnknownAudioCodec, kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN, "",
+      "", EncryptionMode::kUnencrypted, EncryptionMode::kUnencrypted,
       kSizeTooSmall));
   EXPECT_WATCH_TIME_FINALIZED();
   CycleReportingTimer();

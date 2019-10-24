@@ -45,7 +45,7 @@
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/content_settings_observer.h"
+#include "chrome/renderer/content_settings_agent_impl.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/media/flash_embed_rewrite.h"
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
@@ -452,7 +452,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   bool should_whitelist_for_content_settings =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInstantProcess);
-  ContentSettingsObserver* content_settings = new ContentSettingsObserver(
+  ContentSettingsAgentImpl* content_settings = new ContentSettingsAgentImpl(
       render_frame, should_whitelist_for_content_settings, registry);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   content_settings->SetExtensionDispatcher(
@@ -783,8 +783,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       params.mime_type = WebString::FromUTF8(actual_mime_type);
     }
 
-    ContentSettingsObserver* observer =
-        ContentSettingsObserver::Get(render_frame);
+    ContentSettingsAgentImpl* content_settings_agent =
+        ContentSettingsAgentImpl::Get(render_frame);
 
     const ContentSettingsType content_type =
         ShouldUseJavaScriptSettingForPlugin(info)
@@ -793,7 +793,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
     if ((status == chrome::mojom::PluginStatus::kUnauthorized ||
          status == chrome::mojom::PluginStatus::kBlocked) &&
-        observer->IsPluginTemporarilyAllowed(identifier)) {
+        content_settings_agent->IsPluginTemporarilyAllowed(identifier)) {
       status = chrome::mojom::PluginStatus::kAllowed;
     }
 
@@ -989,7 +989,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
             plugin_auth_host.BindNewEndpointAndPassReceiver());
         plugin_auth_host->BlockedUnauthorizedPlugin(group_name, identifier);
-        observer->DidBlockContentType(content_type, group_name);
+        content_settings_agent->DidBlockContentType(content_type, group_name);
         break;
       }
       case chrome::mojom::PluginStatus::kBlocked: {
@@ -998,7 +998,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
         placeholder->AllowLoading();
         RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Blocked"));
-        observer->DidBlockContentType(content_type, group_name);
+        content_settings_agent->DidBlockContentType(content_type, group_name);
         break;
       }
       case chrome::mojom::PluginStatus::kBlockedByPolicy: {
@@ -1008,7 +1008,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                                        group_name));
         RenderThread::Get()->RecordAction(
             UserMetricsAction("Plugin_BlockedByPolicy"));
-        observer->DidBlockContentType(content_type, group_name);
+        content_settings_agent->DidBlockContentType(content_type, group_name);
         break;
       }
       case chrome::mojom::PluginStatus::kBlockedNoLoading: {
@@ -1016,7 +1016,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED_NO_LOADING,
                                        group_name));
-        observer->DidBlockContentType(content_type, group_name);
+        content_settings_agent->DidBlockContentType(content_type, group_name);
         break;
       }
       case chrome::mojom::PluginStatus::kComponentUpdateRequired: {

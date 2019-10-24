@@ -115,16 +115,6 @@ class TestSignPart(unittest.TestCase):
         signing.sign_part(self.paths, self.config, part)
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--timestamp', '--requirements',
-            '=designated => identifier "test.signing.app"', '--keychain',
-            '[KEYCHAIN]', '$W/Test.app'
-        ])
-
-    def test_sign_part_no_keychain(self, run_command):
-        config = test_config.TestConfig(identity='[IDENTITY]', keychain=None)
-        part = model.CodeSignedProduct('Test.app', 'test.signing.app')
-        signing.sign_part(self.paths, config, part)
-        run_command.assert_called_once_with([
-            'codesign', '--sign', '[IDENTITY]', '--timestamp', '--requirements',
             '=designated => identifier "test.signing.app"', '$W/Test.app'
         ])
 
@@ -134,18 +124,15 @@ class TestSignPart(unittest.TestCase):
         signing.sign_part(self.paths, config, part)
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--requirements',
-            '=designated => identifier "test.signing.app"', '--keychain',
-            '[KEYCHAIN]', '$W/Test.app'
+            '=designated => identifier "test.signing.app"', '$W/Test.app'
         ])
 
     def test_sign_part_no_identifier_requirement(self, run_command):
         part = model.CodeSignedProduct(
             'Test.app', 'test.signing.app', identifier_requirement=False)
         signing.sign_part(self.paths, self.config, part)
-        run_command.assert_called_once_with([
-            'codesign', '--sign', '[IDENTITY]', '--timestamp', '--keychain',
-            '[KEYCHAIN]', '$W/Test.app'
-        ])
+        run_command.assert_called_once_with(
+            ['codesign', '--sign', '[IDENTITY]', '--timestamp', '$W/Test.app'])
 
     def test_sign_with_identifier(self, run_command):
         part = model.CodeSignedProduct(
@@ -154,8 +141,7 @@ class TestSignPart(unittest.TestCase):
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--timestamp', '--identifier',
             'test.signing.app', '--requirements',
-            '=designated => identifier "test.signing.app"', '--keychain',
-            '[KEYCHAIN]', '$W/Test.app'
+            '=designated => identifier "test.signing.app"', '$W/Test.app'
         ])
 
     def test_sign_with_identifier_no_requirement(self, run_command):
@@ -167,7 +153,7 @@ class TestSignPart(unittest.TestCase):
         signing.sign_part(self.paths, self.config, part)
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--timestamp', '--identifier',
-            'test.signing.app', '--keychain', '[KEYCHAIN]', '$W/Test.app'
+            'test.signing.app', '$W/Test.app'
         ])
 
     def test_sign_part_with_options(self, run_command):
@@ -179,8 +165,8 @@ class TestSignPart(unittest.TestCase):
         signing.sign_part(self.paths, self.config, part)
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--timestamp', '--requirements',
-            '=designated => identifier "test.signing.app"', '--keychain',
-            '[KEYCHAIN]', '--options', 'restrict,library', '$W/Test.app'
+            '=designated => identifier "test.signing.app"', '--options',
+            'restrict,library', '$W/Test.app'
         ])
 
     def test_sign_part_with_entitlements(self, run_command):
@@ -191,9 +177,8 @@ class TestSignPart(unittest.TestCase):
             identifier_requirement=False)
         signing.sign_part(self.paths, self.config, part)
         run_command.assert_called_once_with([
-            'codesign', '--sign', '[IDENTITY]', '--timestamp', '--keychain',
-            '[KEYCHAIN]', '--entitlements', '$W/entitlements.plist',
-            '$W/Test.app'
+            'codesign', '--sign', '[IDENTITY]', '--timestamp', '--entitlements',
+            '$W/entitlements.plist', '$W/Test.app'
         ])
 
     def test_verify_part(self, run_command):

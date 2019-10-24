@@ -105,6 +105,7 @@ import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
@@ -159,7 +160,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * The minimum load progress that can be shown when a page is loading.  This is not 0 so that
      * it's obvious to the user that something is attempting to load.
      */
-    private static final int MINIMUM_LOAD_PROGRESS = 5;
+    private static final float MINIMUM_LOAD_PROGRESS = 0.05f;
 
     private final IncognitoStateProvider mIncognitoStateProvider;
     private final TabCountProvider mTabCountProvider;
@@ -449,17 +450,16 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
                 // If we made some progress, fast-forward to complete, otherwise just dismiss any
                 // MINIMUM_LOAD_PROGRESS that had been set.
-                if (tab.getProgress() > MINIMUM_LOAD_PROGRESS && tab.getProgress() < 100) {
-                    updateLoadProgress(100);
+                if (tab.getProgress() > MINIMUM_LOAD_PROGRESS && tab.getProgress() < 1) {
+                    updateLoadProgress(1);
                 }
                 finishLoadProgress(true);
             }
 
             @Override
-            public void onLoadProgressChanged(Tab tab, int progress) {
+            public void onLoadProgressChanged(Tab tab, float progress) {
                 if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
 
-                // TODO(kkimlabs): Investigate using float progress all the way up to Blink.
                 updateLoadProgress(progress);
             }
 
@@ -1903,7 +1903,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (updateUrl) updateButtonStatus();
     }
 
-    private void updateLoadProgress(int progress) {
+    private void updateLoadProgress(float progress) {
         // If it's a native page, progress bar is already hidden or being hidden, so don't update
         // the value.
         // TODO(kkimlabs): Investigate back/forward navigation with native page & web content and
@@ -1914,8 +1914,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         }
 
         progress = Math.max(progress, MINIMUM_LOAD_PROGRESS);
-        mToolbar.setLoadProgress(progress / 100f);
-        if (progress == 100) finishLoadProgress(true);
+        mToolbar.setLoadProgress(progress);
+        if (MathUtils.areFloatsEqual(progress, 1)) finishLoadProgress(true);
     }
 
     private void finishLoadProgress(boolean delayed) {
@@ -1969,13 +1969,13 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private static class LoadProgressSimulator {
         private static final int MSG_ID_UPDATE_PROGRESS = 1;
 
-        private static final int PROGRESS_INCREMENT = 10;
+        private static final float PROGRESS_INCREMENT = 0.1f;
         private static final int PROGRESS_INCREMENT_DELAY_MS = 10;
 
         private final ToolbarManager mToolbarManager;
         private final Handler mHandler;
 
-        private int mProgress;
+        private float mProgress;
 
         public LoadProgressSimulator(ToolbarManager toolbar) {
             mToolbarManager = toolbar;
@@ -1983,10 +1983,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 @Override
                 public void handleMessage(Message msg) {
                     assert msg.what == MSG_ID_UPDATE_PROGRESS;
-                    mProgress = Math.min(100, mProgress += PROGRESS_INCREMENT);
+                    mProgress = Math.min(1, mProgress += PROGRESS_INCREMENT);
                     mToolbarManager.updateLoadProgress(mProgress);
 
-                    if (mProgress == 100) {
+                    if (MathUtils.areFloatsEqual(mProgress, 1)) {
                         mToolbarManager.mToolbar.finishLoadProgress(true);
                         return;
                     }

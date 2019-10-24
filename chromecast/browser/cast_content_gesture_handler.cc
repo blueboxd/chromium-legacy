@@ -7,7 +7,6 @@
 #include "chromecast/base/chromecast_switches.h"
 
 namespace chromecast {
-namespace shell {
 
 namespace {
 constexpr int kDefaultBackGestureHorizontalThreshold = 80;
@@ -117,5 +116,4 @@ void CastContentGestureHandler::HandleTapGesture(
   delegate_->ConsumeGesture(GestureType::TAP);
 }
 
-}  // namespace shell
 }  // namespace chromecast

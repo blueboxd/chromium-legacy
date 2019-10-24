@@ -61,6 +61,7 @@ if (is_mac) {
     deps = [
       "//base",
       "//components/crash/core/common:crash_key",
+      "//components/metal_util",
       "//ui/gfx",
       "//ui/gl",
     ]

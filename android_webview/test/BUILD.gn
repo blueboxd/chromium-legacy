@@ -133,7 +133,6 @@ android_assets("webview_instrumentation_apk_assets") {
     "shell/assets/visual_state_on_page_commit_visible_test.html",
     "shell/assets/visual_state_waits_for_js_detached_test.html",
     "shell/assets/visual_state_waits_for_js_test.html",
-    "shell/assets/webvr_not_functional_test.html",
   ]
 
   if (use_v8_context_snapshot) {
@@ -287,7 +286,6 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/WebViewAsynchronousFindApisTest.java",
     "../javatests/src/org/chromium/android_webview/test/WebViewFindApisTestRule.java",
     "../javatests/src/org/chromium/android_webview/test/WebViewModalDialogOverrideTest.java",
-    "../javatests/src/org/chromium/android_webview/test/WebViewWebVrTest.java",
     "../javatests/src/org/chromium/android_webview/test/common/variations/VariationsUtilsTest.java",
     "../javatests/src/org/chromium/android_webview/test/services/CrashReceiverServiceTest.java",
     "../javatests/src/org/chromium/android_webview/test/services/MinidumpUploaderTest.java",

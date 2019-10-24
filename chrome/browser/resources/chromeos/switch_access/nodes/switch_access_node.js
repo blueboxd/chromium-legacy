@@ -148,6 +148,32 @@ class SAChildNode {
    * Called when a node stops being the primary highlighted node.
    */
   onUnfocus() {}
+
+  /**
+   * String-ifies the node (for debugging purposes).
+   * @param {boolean} wholeTree Whether to recursively include descendants.
+   * @param {string=} prefix
+   * @param {SAChildNode=} currentNode the currentNode, to highlight.
+   * @return {string}
+   */
+  debugString(wholeTree, prefix = '', currentNode = null) {
+    if (this.isGroup_ && wholeTree) {
+      return this.asRootNode().debugString(
+          wholeTree, prefix + '  ', currentNode);
+    }
+
+    let str = this.role + ' ';
+
+    const autoNode = this.automationNode;
+    if (autoNode && autoNode.name) str += 'name(' + autoNode.name + ') ';
+
+    const loc = this.location;
+    if (loc) str += 'loc(' + RectHelper.toString(loc) + ') ';
+
+    if (this.isGroup_) str += '[isGroup]';
+
+    return str;
+  }
 }
 
 /**
@@ -231,6 +257,31 @@ class SARootNode {
 
   /** Called when a group is exiting. */
   onExit() {}
+
+  /**
+   * String-ifies the node (for debugging purposes).
+   * @param {boolean=} wholeTree Whether to recursively descend the tree
+   * @param {string=} prefix
+   * @param {SAChildNode} currentNode the currently focused node, to mark.
+   * @return {string}
+   */
+  debugString(wholeTree = false, prefix = '', currentNode = null) {
+    const autoNode = this.automationNode;
+    let str = 'Root: ';
+    if (autoNode && autoNode.role) str += autoNode.role + ' ';
+    if (autoNode && autoNode.name) str += 'name(' + autoNode.name + ') ';
+
+    const loc = this.location;
+    if (loc) str += 'loc(' + RectHelper.toString(loc) + ') ';
+
+
+    for (const child of this.children) {
+      str += '\n' + prefix + ((child.equals(currentNode)) ? ' * ' : ' - ');
+      str += child.debugString(wholeTree, prefix, currentNode);
+    }
+
+    return str;
+  }
 
   /**
    * Helper function to connect children.

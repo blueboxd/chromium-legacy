@@ -13,7 +13,6 @@ namespace device_sync {
 extern const char kCryptAuthGcmAppId[];
 extern const char kCryptAuthGcmSenderId[];
 extern const char kCryptAuthV2EnrollmentAuthorizedEntity[];
-extern const char kCryptAuthV2DeviceSyncAuthorizedEntity[];
 
 }  // namespace device_sync
 

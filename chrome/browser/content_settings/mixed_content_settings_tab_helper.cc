@@ -4,7 +4,7 @@
 
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 
-#include "chrome/common/content_settings_renderer.mojom.h"
+#include "chrome/common/content_settings_agent.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -49,9 +49,9 @@ void MixedContentSettingsTabHelper::RenderFrameCreated(
   if (!is_running_insecure_content_allowed_)
     return;
 
-  mojo::AssociatedRemote<chrome::mojom::ContentSettingsRenderer> renderer;
-  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&renderer);
-  renderer->SetAllowRunningInsecureContent();
+  mojo::AssociatedRemote<chrome::mojom::ContentSettingsAgent> agent;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
+  agent->SetAllowRunningInsecureContent();
 }
 
 void MixedContentSettingsTabHelper::DidFinishNavigation(

@@ -62,7 +62,7 @@ class CryptAuthFeatureStatusGetterImpl : public CryptAuthFeatureStatusGetter {
 
   void FinishAttempt(CryptAuthDeviceSyncResult::ResultCode result_code);
 
-  IdToFeatureStatusMap id_to_feature_status_map_;
+  IdToDeviceSoftwareFeatureInfoMap id_to_device_software_feature_info_map_;
 
   // The CryptAuthClient for the latest CryptAuth request. The client can only
   // be used for one call; therefore, for each API call, a new client needs to

@@ -1823,9 +1823,6 @@ GLenum GL_APIENTRY GLES2GetGraphicsResetStatusKHR() {
 void GL_APIENTRY GLES2BlendBarrierKHR() {
   gles2::GetGLContext()->BlendBarrierKHR();
 }
-void GL_APIENTRY GLES2ApplyScreenSpaceAntialiasingCHROMIUM() {
-  gles2::GetGLContext()->ApplyScreenSpaceAntialiasingCHROMIUM();
-}
 void GL_APIENTRY GLES2BindFragDataLocationIndexedEXT(GLuint program,
                                                      GLuint colorNumber,
                                                      GLuint index,
@@ -3352,11 +3349,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glBlendBarrierKHR",
         reinterpret_cast<GLES2FunctionPointer>(glBlendBarrierKHR),
-    },
-    {
-        "glApplyScreenSpaceAntialiasingCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glApplyScreenSpaceAntialiasingCHROMIUM),
     },
     {
         "glBindFragDataLocationIndexedEXT",

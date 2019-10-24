@@ -577,7 +577,8 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   cc::ApplyViewportChangesArgs args;
   args.page_scale_delta = 1.f;
   args.is_pinch_gesture_active = true;
-  args.browser_controls_delta = 0.f;
+  args.top_controls_delta = 0.f;
+  args.bottom_controls_delta = 0.f;
   args.browser_controls_constraint = cc::BrowserControlsState::kHidden;
   args.scroll_gesture_did_end = false;
 

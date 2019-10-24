@@ -713,8 +713,6 @@ void DockedMagnifierControllerImpl::CreateMagnifierViewport() {
       GetViewportParentContainerForRoot(current_source_root_window_);
   params.name = kDockedMagnifierViewportWindowName;
   viewport_widget_->Init(std::move(params));
-  viewport_widget_->Show();
-  viewport_widget_->AddObserver(this);
 
   // 2- Create the separator layer right below the viwport widget, parented to
   //    the layer of the root window.
@@ -760,6 +758,11 @@ void DockedMagnifierControllerImpl::CreateMagnifierViewport() {
 
   // 6- Confine the mouse cursor within the remaining part of the display.
   ConfineMouseCursorOutsideViewport();
+
+  // 7- Show the widget, which can trigger events to request movement of the
+  // viewport now that all internal state has been created.
+  viewport_widget_->AddObserver(this);
+  viewport_widget_->Show();
 }
 
 void DockedMagnifierControllerImpl::MaybeCachePointOfInterestMinimumHeight(

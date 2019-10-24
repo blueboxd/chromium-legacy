@@ -199,9 +199,9 @@ public interface TabObserver {
     /**
      * Called when the load progress of a {@link Tab} changes.
      * @param tab      The notifying {@link Tab}.
-     * @param progress The new progress from [0,100].
+     * @param progress The new progress from [0,1].
      */
-    void onLoadProgressChanged(Tab tab, int progress);
+    void onLoadProgressChanged(Tab tab, float progress);
 
     /**
      * Called when the URL of a {@link Tab} changes.

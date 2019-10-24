@@ -249,7 +249,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // Used to intercept requests from the controllee and dispatch them
   // as events to the controller ServiceWorker.
-  network::mojom::URLLoaderFactoryPtr subresource_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> subresource_loader_factory_;
 
   // Used when we create |subresource_loader_factory_|.
   scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory_;

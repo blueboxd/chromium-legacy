@@ -40,13 +40,18 @@ std::unique_ptr<DeskPreviewView> CreateDeskPreviewView(
   return desk_preview_view;
 }
 
+// Returns the width of the desk preview based on its |preview_height| and the
+// aspect ratio of the root window taken from |root_window_size|.
+int GetPreviewWidth(const gfx::Size& root_window_size, int preview_height) {
+  return preview_height * root_window_size.width() / root_window_size.height();
+}
+
 // The desk preview bounds are proportional to the bounds of the display on
 // which it resides, but always has a fixed height given as |preview_height|
 // which depends on the width of the OverviewGrid.
 gfx::Rect GetDeskPreviewBounds(aura::Window* root_window, int preview_height) {
   const auto root_size = root_window->GetBoundsInRootWindow().size();
-  return gfx::Rect(preview_height * root_size.width() / root_size.height(),
-                   preview_height);
+  return gfx::Rect(GetPreviewWidth(root_size, preview_height), preview_height);
 }
 
 }  // namespace
@@ -152,14 +157,14 @@ void DeskMiniView::Layout() {
   auto* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   DCHECK(root_window);
 
-  const bool uses_small_screen = owner_bar_->UsesSmallScreenLayout();
-  const gfx::Rect preview_bounds = GetDeskPreviewBounds(
-      root_window, DeskPreviewView::GetHeight(uses_small_screen));
+  const bool compact = owner_bar_->UsesCompactLayout();
+  const gfx::Rect preview_bounds =
+      GetDeskPreviewBounds(root_window, DeskPreviewView::GetHeight(compact));
   desk_preview_->SetBoundsRect(preview_bounds);
 
-  label_->SetVisible(!uses_small_screen);
+  label_->SetVisible(!compact);
 
-  if (!uses_small_screen) {
+  if (!compact) {
     const gfx::Size label_size = label_->GetPreferredSize();
     const gfx::Rect label_bounds{
         (preview_bounds.width() - label_size.width()) / 2,
@@ -181,16 +186,17 @@ gfx::Size DeskMiniView::CalculatePreferredSize() const {
   auto* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   DCHECK(root_window);
 
-  const bool uses_small_screen = owner_bar_->UsesSmallScreenLayout();
-  const gfx::Rect preview_bounds = GetDeskPreviewBounds(
-      root_window, DeskPreviewView::GetHeight(uses_small_screen));
-  if (uses_small_screen)
+  const bool compact = owner_bar_->UsesCompactLayout();
+  const gfx::Rect preview_bounds =
+      GetDeskPreviewBounds(root_window, DeskPreviewView::GetHeight(compact));
+  if (compact)
     return preview_bounds.size();
 
-  const gfx::Size label_size = label_->GetPreferredSize();
-  return gfx::Size{
-      std::max(preview_bounds.width(), label_size.width()),
-      preview_bounds.height() + kLabelPreviewSpacing + label_size.height()};
+  // The preferred size takes into account only the width of the preview
+  // view.
+  return gfx::Size{preview_bounds.width(),
+                   preview_bounds.height() + kLabelPreviewSpacing +
+                       label_->GetPreferredSize().height()};
 }
 
 void DeskMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -277,6 +283,14 @@ bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {
   gfx::Point point_in_view = screen_location;
   ConvertPointFromScreen(this, &point_in_view);
   return HitTestPoint(point_in_view);
+}
+
+int DeskMiniView::GetMinWidthForDefaultLayout() const {
+  auto* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  DCHECK(root_window);
+
+  return GetPreviewWidth(root_window->GetBoundsInRootWindow().size(),
+                         DeskPreviewView::GetHeight(/*compact=*/false));
 }
 
 void DeskMiniView::OnCloseButtonPressed() {

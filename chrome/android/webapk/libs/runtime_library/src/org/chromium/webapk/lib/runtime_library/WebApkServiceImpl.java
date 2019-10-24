@@ -28,7 +28,7 @@ public class WebApkServiceImpl extends IWebApkApi.Stub {
     public static final String KEY_SMALL_ICON_ID = "small_icon_id";
     public static final String KEY_HOST_BROWSER_UID = "host_browser_uid";
 
-    private static final String TAG = "cr_WebApkServiceImpl";
+    private static final String TAG = "WebApkServiceImpl";
 
     private final Context mContext;
 

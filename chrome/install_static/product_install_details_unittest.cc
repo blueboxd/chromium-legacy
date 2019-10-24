@@ -122,6 +122,26 @@ TEST(ProductInstallDetailsTest, GetInstallSuffix) {
   }
 }
 
+TEST(ProductInstallDetailsTest, GetUserDataSuffix) {
+  std::wstring suffix;
+  const std::pair<const wchar_t*, const wchar_t*> kData[] = {
+      {L"%ls\\User Data", L""},
+      {L"%ls\\User Data\\", L""},
+      {L"\\%ls\\User Data", L""},
+      {L"\\%ls\\User Data\\", L""},
+      {L"C:\\foo\\%ls\\User Data\\foo.exe", L""},
+      {L"%ls Blorf\\User Data", L" Blorf"},
+      {L"%ls Blorf\\User Data\\", L" Blorf"},
+      {L"\\%ls Blorf\\User Data", L" Blorf"},
+      {L"\\%ls Blorf\\User Data\\", L" Blorf"},
+      {L"C:\\foo\\%ls Blorf\\User Data\\foo.exe", L" Blorf"},
+  };
+  for (const auto& data : kData) {
+    const std::wstring path = base::StringPrintf(data.first, kProductPathName);
+    EXPECT_EQ(std::wstring(data.second), GetUserDataSuffix(path)) << path;
+  }
+}
+
 struct TestData {
   const wchar_t* path;
   InstallConstantIndex index;

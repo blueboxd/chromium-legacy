@@ -243,10 +243,10 @@ void PreviewsOptimizationGuideImpl::OnHintsComponentAvailable(
   }
 
   // Create PreviewsHints from the newly available component on a background
-  // thread, providing a HintUpdateData for component update from the hint
+  // thread, providing a StoreUpdateData for component update from the hint
   // cache, so that each hint within the component can be moved into it. In the
   // case where the component's version is not newer than the hint cache store's
-  // component version, HintUpdateData will be a nullptr and hint
+  // component version, StoreUpdateData will be a nullptr and hint
   // processing will be skipped. After PreviewsHints::Create() returns the newly
   // created PreviewsHints, it is initialized in UpdateHints() on the UI thread.
   base::PostTaskAndReplyWithResult(

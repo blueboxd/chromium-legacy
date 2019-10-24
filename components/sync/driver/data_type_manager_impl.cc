@@ -302,7 +302,7 @@ void DataTypeManagerImpl::Restart() {
   }
 
   // Check for new or resolved data type crypto errors.
-  if (encryption_handler_->IsPassphraseRequired()) {
+  if (encryption_handler_->HasCryptoError()) {
     ModelTypeSet encrypted_types = encryption_handler_->GetEncryptedDataTypes();
     encrypted_types.RetainAll(last_requested_types_);
     encrypted_types.RemoveAll(data_type_status_table_.GetCryptoErrorTypes());

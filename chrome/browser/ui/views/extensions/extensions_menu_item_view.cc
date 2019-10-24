@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,18 +26,6 @@
 namespace {
 constexpr int EXTENSION_CONTEXT_MENU = 13;
 constexpr int EXTENSION_PINNING = 14;
-
-std::unique_ptr<views::ImageButton> CreateButton(
-    int id,
-    views::ButtonListener* listener) {
-  auto button = views::CreateVectorImageButton(listener);
-
-  // Items within a menu should not show focus rings.
-  button->SetInstallFocusRingOnFocus(false);
-  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  button->SetID(id);
-  return button;
-}
 }  // namespace
 
 ExtensionsMenuItemView::ExtensionsMenuItemView(
@@ -68,13 +57,14 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_DefaultIconColor);
 
-  auto pin_button = CreateButton(EXTENSION_PINNING, this);
+  auto pin_button = CreateBubbleMenuItem(EXTENSION_PINNING, this);
   pin_button->set_ink_drop_base_color(icon_color);
 
   pin_button_ = pin_button.get();
   AddChildView(std::move(pin_button));
 
-  auto context_menu_button = CreateButton(EXTENSION_CONTEXT_MENU, nullptr);
+  auto context_menu_button =
+      CreateBubbleMenuItem(EXTENSION_CONTEXT_MENU, nullptr);
   views::SetImageFromVectorIcon(context_menu_button.get(), kBrowserToolsIcon,
                                 kSecondaryIconSizeDp, icon_color);
   context_menu_button->SetTooltipText(

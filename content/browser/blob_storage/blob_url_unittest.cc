@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -201,8 +202,9 @@ class BlobURLTest : public testing::Test {
     url_store.Register(std::move(blob_remote), url, loop.QuitClosure());
     loop.Run();
 
-    network::mojom::URLLoaderFactoryPtr url_loader_factory;
-    url_store.ResolveAsURLLoaderFactory(url, MakeRequest(&url_loader_factory));
+    mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
+    url_store.ResolveAsURLLoaderFactory(
+        url, url_loader_factory.BindNewPipeAndPassReceiver());
 
     network::mojom::URLLoaderPtr url_loader;
     network::TestURLLoaderClient url_loader_client;

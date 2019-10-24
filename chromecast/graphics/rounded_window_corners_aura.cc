@@ -8,6 +8,7 @@
 
 #include "base/threading/thread_checker.h"
 #include "chromecast/graphics/cast_window_manager.h"
+#include "chromecast/ui/mojom/ui_service.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/layout/layout_provider.h"
@@ -93,7 +94,7 @@ RoundedWindowCornersAura::RoundedWindowCornersAura(
   add_view(kCornerRadius, false, true);
   add_view(kCornerRadius, true, true);
 
-  widget_.reset(new views::Widget);
+  widget_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = window_manager->GetRootWindow();
@@ -104,8 +105,8 @@ RoundedWindowCornersAura::RoundedWindowCornersAura(
   widget_->SetContentsView(main_view.release());
   widget_->GetNativeWindow()->SetName("RoundCorners");
 
-  window_manager->SetWindowId(widget_->GetNativeView(),
-                              CastWindowManager::CORNERS_OVERLAY);
+  window_manager->SetZOrder(widget_->GetNativeView(),
+                            mojom::ZOrder::CORNERS_OVERLAY);
 
   widget_->Show();
 }

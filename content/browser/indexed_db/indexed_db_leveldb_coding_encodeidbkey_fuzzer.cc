@@ -100,6 +100,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto decoded_key = std::make_unique<IndexedDBKey>();
   auto result_str_piece = base::StringPiece(result);
   ignore_result(content::DecodeIDBKey(&result_str_piece, &decoded_key));
-  assert(decoded_key.Equals(key));
+  assert(decoded_key->Equals(key));
   return 0;
 }

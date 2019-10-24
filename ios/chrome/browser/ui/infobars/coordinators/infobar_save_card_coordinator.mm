@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_table_view_controller.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,9 +22,9 @@
 
 // InfobarBannerViewController owned by this Coordinator.
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
-// ModalViewController owned by this Coordinator.
-// TODO(crbug.com/1014652): Replace with CustomVC later on.
-@property(nonatomic, strong) UIViewController* modalViewController;
+// InfobarSaveCardTableViewController owned by this Coordinator.
+@property(nonatomic, strong)
+    InfobarSaveCardTableViewController* modalViewController;
 // Delegate that holds the Infobar information and actions.
 @property(nonatomic, readonly)
     autofill::AutofillSaveCardInfoBarDelegateMobile* saveCardInfoBarDelegate;
@@ -133,17 +134,41 @@
 #pragma mark Modal
 
 - (BOOL)configureModalViewController {
-  // TODO(crbug.com/1014652): Continue implementation.
-  return NO;
+  // Return early if there's no delegate. e.g. A Modal presentation has been
+  // triggered after the Infobar was destroyed, but before the badge/banner
+  // were dismissed.
+  if (!self.saveCardInfoBarDelegate)
+    return NO;
+
+  self.modalViewController =
+      [[InfobarSaveCardTableViewController alloc] initWithModalDelegate:self];
+  // TODO(crbug.com/1014652): Replace with Modal specific text.
+  self.modalViewController.title =
+      base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->GetMessageText());
+
+  return YES;
 }
 
 - (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner {
-  // TODO(crbug.com/1014652): Continue implementation.
+  // TODO(crbug.com/1014652): Check if there's a metric that should be recorded
+  // here, or if there's a need to keep track of the presented state of the
+  // Infobar for recording metrics on de-alloc. (See equivalent method on
+  // InfobarPasswordCoordinator).
 }
 
 - (CGFloat)infobarModalHeightForWidth:(CGFloat)width {
-  // TODO(crbug.com/1014652): Continue implementation.
-  return 0.0;
+  UITableView* tableView = self.modalViewController.tableView;
+  // Update the tableView frame to then layout its content for |width|.
+  tableView.frame = CGRectMake(0, 0, width, tableView.frame.size.height);
+  [tableView setNeedsLayout];
+  [tableView layoutIfNeeded];
+
+  // Since the TableView is contained in a NavigationController get the
+  // navigation bar height.
+  CGFloat navigationBarHeight = self.modalViewController.navigationController
+                                    .navigationBar.frame.size.height;
+
+  return tableView.contentSize.height + navigationBarHeight;
 }
 
 @end

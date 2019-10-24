@@ -52,13 +52,10 @@ interface FakeBluetoothChooser {
 
 // FakeBluetoothChooserFactory ensures that FakeBluetoothChoosers are created
 // with an associated FakeBluetoothChooserClient.
-// TODO(crbug.com/955171): Use |pending_associated_remote| instead of
-// |associated| after supporting mojom_js_generator.py completely for
-// associated interfaces.
 interface FakeBluetoothChooserFactory {
   CreateFakeBluetoothChooser(
       pending_receiver<FakeBluetoothChooser> fake_chooser,
-      associated FakeBluetoothChooserClient client);
+      pending_associated_remote<FakeBluetoothChooserClient> client);
 };
 
 // FakeBluetoothChooserEvent describes the type of chooser event that has been

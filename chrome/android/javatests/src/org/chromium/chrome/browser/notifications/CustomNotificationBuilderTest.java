@@ -409,7 +409,11 @@ public class CustomNotificationBuilderTest {
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         Drawable bigViewIcon = ((ImageView) bigView.findViewById(R.id.icon)).getDrawable();
         Assert.assertNotNull(bigViewIcon);
-        Assert.assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
+
+        // Starts from Android O MR1, large icon can be downscaled by Android platform code.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
+            Assert.assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
+        }
     }
 
     private static void assertSmallNotificationIconAsExpected(

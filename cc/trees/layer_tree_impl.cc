@@ -17,6 +17,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
@@ -118,6 +119,7 @@ LayerTreeImpl::LayerTreeImpl(
     LayerTreeHostImpl* host_impl,
     scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
     scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio,
+    scoped_refptr<SyncedBrowserControls> bottom_controls_shown_ratio,
     scoped_refptr<SyncedElasticOverscroll> elastic_overscroll)
     : host_impl_(host_impl),
       source_frame_number_(-1),
@@ -144,7 +146,8 @@ LayerTreeImpl::LayerTreeImpl(
       browser_controls_shrink_blink_size_(false),
       top_controls_height_(0),
       bottom_controls_height_(0),
-      top_controls_shown_ratio_(top_controls_shown_ratio) {
+      top_controls_shown_ratio_(std::move(top_controls_shown_ratio)),
+      bottom_controls_shown_ratio_(std::move(bottom_controls_shown_ratio)) {
   property_trees()->is_main_thread = false;
 }
 
@@ -356,21 +359,23 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
                         this);
 
   // Top/bottom controls always share the same shown ratio.
-  float controls_shown_ratio =
+  float top_controls_shown_ratio =
       top_controls_shown_ratio_->Current(IsActiveTree());
+  float bottom_controls_shown_ratio =
+      bottom_controls_shown_ratio_->Current(IsActiveTree());
   float top_controls_layout_height =
       browser_controls_shrink_blink_size() ? top_controls_height() : 0.f;
-  float top_content_offset = top_controls_height_ > 0
-                                 ? top_controls_height_ * controls_shown_ratio
-                                 : 0.0f;
+  float top_content_offset =
+      top_controls_height_ > 0 ? top_controls_height_ * top_controls_shown_ratio
+                               : 0.f;
   float delta_from_top_controls =
       top_controls_layout_height - top_content_offset;
   float bottom_controls_layout_height =
       browser_controls_shrink_blink_size() ? bottom_controls_height() : 0.f;
   float bottom_content_offset =
       bottom_controls_height_ > 0
-          ? bottom_controls_height_ * controls_shown_ratio
-          : 0.0f;
+          ? bottom_controls_height_ * bottom_controls_shown_ratio
+          : 0.f;
   delta_from_top_controls +=
       bottom_controls_layout_height - bottom_content_offset;
 
@@ -547,7 +552,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
       browser_controls_shrink_blink_size_);
   target_tree->SetTopControlsHeight(top_controls_height_);
   target_tree->SetBottomControlsHeight(bottom_controls_height_);
-  target_tree->PushBrowserControls(nullptr);
+  target_tree->PushBrowserControls(nullptr, nullptr);
 
   target_tree->set_overscroll_behavior(overscroll_behavior_);
 
@@ -1023,39 +1028,57 @@ void LayerTreeImpl::set_overscroll_behavior(
   overscroll_behavior_ = behavior;
 }
 
-bool LayerTreeImpl::ClampBrowserControlsShownRatio() {
+bool LayerTreeImpl::ClampTopControlsShownRatio() {
   float ratio = top_controls_shown_ratio_->Current(true);
-  ratio = std::max(ratio, 0.f);
-  ratio = std::min(ratio, 1.f);
-  return top_controls_shown_ratio_->SetCurrent(ratio);
+  return top_controls_shown_ratio_->SetCurrent(
+      base::ClampToRange(ratio, 0.f, 1.f));
 }
 
-bool LayerTreeImpl::SetCurrentBrowserControlsShownRatio(float ratio) {
-  TRACE_EVENT1("cc", "LayerTreeImpl::SetCurrentBrowserControlsShownRatio",
-               "ratio", ratio);
-  bool changed = top_controls_shown_ratio_->SetCurrent(ratio);
-  changed |= ClampBrowserControlsShownRatio();
+bool LayerTreeImpl::ClampBottomControlsShownRatio() {
+  float ratio = bottom_controls_shown_ratio_->Current(true);
+  return bottom_controls_shown_ratio_->SetCurrent(
+      base::ClampToRange(ratio, 0.f, 1.f));
+}
+
+bool LayerTreeImpl::SetCurrentBrowserControlsShownRatio(float top_ratio,
+                                                        float bottom_ratio) {
+  TRACE_EVENT2("cc", "LayerTreeImpl::SetCurrentBrowserControlsShownRatio",
+               "top_ratio", top_ratio, "bottom_ratio", bottom_ratio);
+  bool changed = top_controls_shown_ratio_->SetCurrent(top_ratio);
+  changed |= ClampTopControlsShownRatio();
+  changed |= bottom_controls_shown_ratio_->SetCurrent(bottom_ratio);
+  changed |= ClampBottomControlsShownRatio();
   return changed;
 }
 
 void LayerTreeImpl::PushBrowserControlsFromMainThread(
-    float top_controls_shown_ratio) {
-  PushBrowserControls(&top_controls_shown_ratio);
+    float top_controls_shown_ratio,
+    float bottom_controls_shown_ratio) {
+  PushBrowserControls(&top_controls_shown_ratio, &bottom_controls_shown_ratio);
 }
 
-void LayerTreeImpl::PushBrowserControls(const float* top_controls_shown_ratio) {
+void LayerTreeImpl::PushBrowserControls(
+    const float* top_controls_shown_ratio,
+    const float* bottom_controls_shown_ratio) {
+  DCHECK(top_controls_shown_ratio || bottom_controls_shown_ratio ||
+         IsActiveTree());
+  DCHECK(!top_controls_shown_ratio || bottom_controls_shown_ratio);
   DCHECK(top_controls_shown_ratio || IsActiveTree());
 
   if (top_controls_shown_ratio) {
     DCHECK(!IsActiveTree() || !host_impl_->pending_tree());
     bool changed_pending =
         top_controls_shown_ratio_->PushMainToPending(*top_controls_shown_ratio);
+    changed_pending |= bottom_controls_shown_ratio_->PushMainToPending(
+        *bottom_controls_shown_ratio);
     if (!IsActiveTree() && changed_pending)
       UpdateViewportContainerSizes();
   }
   if (IsActiveTree()) {
     bool changed_active = top_controls_shown_ratio_->PushPendingToActive();
-    changed_active |= ClampBrowserControlsShownRatio();
+    changed_active |= ClampTopControlsShownRatio();
+    changed_active |= bottom_controls_shown_ratio_->PushPendingToActive();
+    changed_active |= ClampBottomControlsShownRatio();
     if (changed_active)
       host_impl_->DidChangeBrowserControlsPosition();
   }

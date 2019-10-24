@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
@@ -21,10 +22,9 @@ class Window;
 
 namespace ash {
 
-// Only used by HomeLauncherGestureHandler::Mode::kDragWindowToHomeOrOverview
-// mode. It's the window drag controller for a window that's being dragging from
-// swiping up from the shelf.
-class DragWindowFromShelfController {
+// The window drag controller that will be used when a window is dragged up by
+// swiping up from the shelf to homescreen, overview or splitview.
+class DragWindowFromShelfController : public aura::WindowObserver {
  public:
   // The distance for the dragged window to pass over shelf so that it can be
   // dragged into home launcher or overview. If not pass this value, the window
@@ -48,7 +48,7 @@ class DragWindowFromShelfController {
   static constexpr float kVelocityToOverviewThreshold = 1000.f;
 
   explicit DragWindowFromShelfController(aura::Window* window);
-  ~DragWindowFromShelfController();
+  ~DragWindowFromShelfController() override;
 
   // Called during swiping up on the shelf.
   void Drag(const gfx::Point& location_in_screen,
@@ -57,6 +57,9 @@ class DragWindowFromShelfController {
   void EndDrag(const gfx::Point& location_in_screen,
                base::Optional<float> velocity_y);
   void CancelDrag();
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
 
  private:
   class WindowsHider;
@@ -109,7 +112,7 @@ class DragWindowFromShelfController {
   // screen after drag ends.
   void ScaleDownWindowAfterDrag();
 
-  aura::Window* const window_;
+  aura::Window* window_ = nullptr;
   gfx::Point initial_location_in_screen_;
   gfx::Point previous_location_in_screen_;
   bool drag_started_ = false;

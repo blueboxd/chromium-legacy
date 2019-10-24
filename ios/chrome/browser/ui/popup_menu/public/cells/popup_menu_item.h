@@ -52,6 +52,7 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   PopupMenuActionShowSavePasswordOptions,
   PopupMenuActionShowUpdatePasswordOptions,
   PopupMenuActionShowSaveCardOptions,
+  PopupMenuActionShowTranslateOptions,
 };
 
 // Protocol defining a popup item.

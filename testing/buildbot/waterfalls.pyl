@@ -677,6 +677,9 @@
         'test_suites': {
           'gtest_tests': 'webview_bot_oor_cors_gtests',
         },
+        'args': [
+          '--enable-features=OutOfBlinkCors',
+        ],
         'use_swarming': True,
         'os_type': 'android',
       },

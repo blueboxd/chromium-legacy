@@ -68,7 +68,8 @@ def main():
     parser = argparse.ArgumentParser(
         description='Code sign and package Chrome for channel distribution.')
     parser.add_argument(
-        '--keychain', help='The keychain to load the identity from.')
+        '--keychain',
+        help='The keychain to load the identity from. OBSOLETE AND INGORED.')
     parser.add_argument(
         '--identity',
         required=True,
@@ -134,9 +135,8 @@ def main():
                          'are required with --notarize.')
 
     config = create_config(
-        (args.identity, args.installer_identity, args.keychain,
-         args.notary_user, args.notary_password, args.notary_asc_provider),
-        args.development)
+        (args.identity, args.installer_identity, args.notary_user,
+         args.notary_password, args.notary_asc_provider), args.development)
     paths = model.Paths(args.input, args.output, None)
 
     if not os.path.exists(paths.output):

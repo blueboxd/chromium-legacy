@@ -14,6 +14,7 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/ozone/public/mojom/gesture_properties_service.mojom.h"
 
 namespace base {
@@ -92,7 +93,8 @@ class COMPONENT_EXPORT(OZONE_BASE) InputController {
                                          std::vector<DomCode> allowed_keys) = 0;
 
   virtual void GetGesturePropertiesService(
-      ui::ozone::mojom::GesturePropertiesServiceRequest request) = 0;
+      mojo::PendingReceiver<ui::ozone::mojom::GesturePropertiesService>
+          receiver) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputController);

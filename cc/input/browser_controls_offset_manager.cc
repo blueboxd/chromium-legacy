@@ -65,7 +65,7 @@ float BrowserControlsOffsetManager::ContentTopOffset() const {
 }
 
 float BrowserControlsOffsetManager::TopControlsShownRatio() const {
-  return client_->CurrentBrowserControlsShownRatio();
+  return client_->CurrentTopControlsShownRatio();
 }
 
 float BrowserControlsOffsetManager::TopControlsHeight() const {
@@ -82,7 +82,7 @@ float BrowserControlsOffsetManager::ContentBottomOffset() const {
 }
 
 float BrowserControlsOffsetManager::BottomControlsShownRatio() const {
-  return TopControlsShownRatio();
+  return client_->CurrentBottomControlsShownRatio();
 }
 
 void BrowserControlsOffsetManager::UpdateBrowserControlsState(
@@ -115,10 +115,11 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
   // Don't do anything if there is no change in offset.
   float final_shown_ratio = 1.f;
   if (constraints == BrowserControlsState::kHidden ||
-      current == BrowserControlsState::kHidden)
+      current == BrowserControlsState::kHidden) {
     final_shown_ratio = 0.f;
+  }
   if (final_shown_ratio == TopControlsShownRatio()) {
-    TRACE_EVENT_INSTANT0("cc", "Ratio Unchanged", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("cc", "Ratios Unchanged", TRACE_EVENT_SCOPE_THREAD);
     ResetAnimations();
     return;
   }
@@ -127,7 +128,8 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
     SetupAnimation(final_shown_ratio ? SHOWING_CONTROLS : HIDING_CONTROLS);
   } else {
     ResetAnimations();
-    client_->SetCurrentBrowserControlsShownRatio(final_shown_ratio);
+    client_->SetCurrentBrowserControlsShownRatio(final_shown_ratio,
+                                                 final_shown_ratio);
   }
 }
 
@@ -151,10 +153,7 @@ gfx::Vector2dF BrowserControlsOffsetManager::ScrollBy(
     const gfx::Vector2dF& pending_delta) {
   // If one or both of the top/bottom controls are showing, the shown ratio
   // needs to be computed.
-  float controls_height =
-      TopControlsHeight() ? TopControlsHeight() : BottomControlsHeight();
-
-  if (!controls_height)
+  if (!TopControlsHeight() && !BottomControlsHeight())
     return pending_delta;
 
   if (pinch_gesture_active_)
@@ -168,15 +167,27 @@ gfx::Vector2dF BrowserControlsOffsetManager::ScrollBy(
 
   accumulated_scroll_delta_ += pending_delta.y();
 
+  // We want to base our calculations on top or bottom controls. After consuming
+  // the scroll delta, we will calculate a shown ratio for the controls. The
+  // top controls have the priority because they need to visually be in sync
+  // with the web contents.
+  bool base_on_top_controls = TopControlsHeight();
+
   float old_top_offset = ContentTopOffset();
-  float baseline_content_offset = TopControlsHeight()
-      ? baseline_top_content_offset_ : baseline_bottom_content_offset_;
-  client_->SetCurrentBrowserControlsShownRatio(
-      (baseline_content_offset - accumulated_scroll_delta_) / controls_height);
+  float baseline_content_offset = base_on_top_controls
+                                      ? baseline_top_content_offset_
+                                      : baseline_bottom_content_offset_;
+  // The top and bottom controls ratios can be calculated independently.
+  // However, we want the ratios to be equal when scrolling.
+  float shown_ratio =
+      (baseline_content_offset - accumulated_scroll_delta_) /
+      (base_on_top_controls ? TopControlsHeight() : BottomControlsHeight());
+
+  client_->SetCurrentBrowserControlsShownRatio(shown_ratio, shown_ratio);
 
   // If the controls are fully visible, treat the current position as the
   // new baseline even if the gesture didn't end.
-  if (TopControlsShownRatio() == 1.f)
+  if (TopControlsShownRatio() == 1.f && BottomControlsShownRatio() == 1.f)
     ResetBaseline();
 
   ResetAnimations();
@@ -233,7 +244,7 @@ gfx::Vector2dF BrowserControlsOffsetManager::Animate(
   float new_ratio = gfx::Tween::ClampedFloatValueBetween(
       monotonic_time, animation_start_time_, animation_start_value_,
       animation_stop_time_, animation_stop_value_);
-  client_->SetCurrentBrowserControlsShownRatio(new_ratio);
+  client_->SetCurrentBrowserControlsShownRatio(new_ratio, new_ratio);
 
   if (IsAnimationComplete(new_ratio))
     ResetAnimations();
@@ -262,8 +273,8 @@ void BrowserControlsOffsetManager::SetupAnimation(
     return;
 
   if (!TopControlsHeight() && !BottomControlsHeight()) {
-    client_->SetCurrentBrowserControlsShownRatio(
-        direction == HIDING_CONTROLS ? 0.f : 1.f);
+    float ratio = direction == HIDING_CONTROLS ? 0.f : 1.f;
+    client_->SetCurrentBrowserControlsShownRatio(ratio, ratio);
     return;
   }
 

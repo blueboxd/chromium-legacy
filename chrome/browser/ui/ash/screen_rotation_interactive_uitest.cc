@@ -130,7 +130,15 @@ class WindowAnimationWaiter : public ui::LayerAnimationObserver {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(ScreenRotationTest, RotateInTablet) {
+// Failing flakily on ChromeOS debug, ASAN, and MSAN.
+// https://crbug.com/1017206
+#if defined(OS_CHROMEOS) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER) || \
+                             defined(MEMORY_SANITIZER))
+#define MAYBE_RotateInTablet DISABLED_RotateInTablet
+#else
+#define MAYBE_RotateInTablet RotateInTablet
+#endif
+IN_PROC_BROWSER_TEST_P(ScreenRotationTest, MAYBE_RotateInTablet) {
   // Browser window is used just to identify display.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   gfx::NativeWindow browser_window =

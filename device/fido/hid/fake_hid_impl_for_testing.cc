@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "device/fido/fido_parsing_utils.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -152,7 +153,7 @@ void FakeFidoHidManager::AddFidoHidDevice(std::string guid) {
 }
 
 void FakeFidoHidManager::GetDevicesAndSetClient(
-    device::mojom::HidManagerClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<device::mojom::HidManagerClient> client,
     GetDevicesCallback callback) {
   GetDevices(std::move(callback));
 

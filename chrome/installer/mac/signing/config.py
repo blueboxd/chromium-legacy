@@ -32,13 +32,12 @@ class CodeSignConfig(object):
     def __init__(self,
                  identity,
                  installer_identity=None,
-                 keychain=None,
                  notary_user=None,
                  notary_password=None,
                  notary_asc_provider=None):
         """Creates a CodeSignConfig that will sign the product using the static
         properties on the class, using the code signing identity passed to the
-        constructor, which is found in the specified keychain.
+        constructor.
 
         Args:
             identity: The name of the code signing identity to use for non-PKG
@@ -51,8 +50,6 @@ class CodeSignConfig(object):
                 hash is not a valid option, as it is for |identity| above. The
                 common name of the cert will work. If there is any distribution
                 that is packaged in a PKG this must not be None.
-            keychain: Optional path to the keychain file, in which the signing
-                |identity| will be searched for.
             notary_user: Optional string username that will be used to
                 authenticate to Apple's notary service if notarizing.
             notary_password: Optional string password or password reference
@@ -65,7 +62,6 @@ class CodeSignConfig(object):
         assert identity
         self._identity = identity
         self._installer_identity = installer_identity
-        self._keychain = keychain
         self._notary_user = notary_user
         self._notary_password = notary_password
         self._notary_asc_provider = notary_asc_provider
@@ -83,13 +79,6 @@ class CodeSignConfig(object):
         PKG file products.
         """
         return self._installer_identity
-
-    @property
-    def keychain(self):
-        """Returns the filename of the keychain in which |identity| will be
-        searched for. May be None.
-        """
-        return self._keychain
 
     @property
     def notary_user(self):

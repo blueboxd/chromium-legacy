@@ -20,7 +20,6 @@ class GLContext;
 typedef void(GL_BINDING_CALL* glActiveShaderProgramProc)(GLuint pipeline,
                                                          GLuint program);
 typedef void(GL_BINDING_CALL* glActiveTextureProc)(GLenum texture);
-typedef void(GL_BINDING_CALL* glApplyFramebufferAttachmentCMAAINTELProc)(void);
 typedef void(GL_BINDING_CALL* glAttachShaderProc)(GLuint program,
                                                   GLuint shader);
 typedef void(GL_BINDING_CALL* glBeginQueryProc)(GLenum target, GLuint id);
@@ -1930,7 +1929,6 @@ struct ExtensionsGL {
   bool b_GL_EXT_unpack_subimage;
   bool b_GL_EXT_window_rectangles;
   bool b_GL_IMG_multisampled_render_to_texture;
-  bool b_GL_INTEL_framebuffer_CMAA;
   bool b_GL_KHR_blend_equation_advanced;
   bool b_GL_KHR_debug;
   bool b_GL_KHR_parallel_shader_compile;
@@ -1954,8 +1952,6 @@ struct ExtensionsGL {
 struct ProcsGL {
   glActiveShaderProgramProc glActiveShaderProgramFn;
   glActiveTextureProc glActiveTextureFn;
-  glApplyFramebufferAttachmentCMAAINTELProc
-      glApplyFramebufferAttachmentCMAAINTELFn;
   glAttachShaderProc glAttachShaderFn;
   glBeginQueryProc glBeginQueryFn;
   glBeginTransformFeedbackProc glBeginTransformFeedbackFn;
@@ -2462,7 +2458,6 @@ class GL_EXPORT GLApi {
 
   virtual void glActiveShaderProgramFn(GLuint pipeline, GLuint program) = 0;
   virtual void glActiveTextureFn(GLenum texture) = 0;
-  virtual void glApplyFramebufferAttachmentCMAAINTELFn(void) = 0;
   virtual void glAttachShaderFn(GLuint program, GLuint shader) = 0;
   virtual void glBeginQueryFn(GLenum target, GLuint id) = 0;
   virtual void glBeginTransformFeedbackFn(GLenum primitiveMode) = 0;
@@ -4116,8 +4111,6 @@ class GL_EXPORT GLApi {
 #define glActiveShaderProgram \
   ::gl::g_current_gl_context->glActiveShaderProgramFn
 #define glActiveTexture ::gl::g_current_gl_context->glActiveTextureFn
-#define glApplyFramebufferAttachmentCMAAINTEL \
-  ::gl::g_current_gl_context->glApplyFramebufferAttachmentCMAAINTELFn
 #define glAttachShader ::gl::g_current_gl_context->glAttachShaderFn
 #define glBeginQuery ::gl::g_current_gl_context->glBeginQueryFn
 #define glBeginTransformFeedback \

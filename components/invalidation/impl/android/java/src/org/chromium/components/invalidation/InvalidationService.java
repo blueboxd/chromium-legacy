@@ -30,7 +30,7 @@ import org.chromium.components.sync.notifier.InvalidationPreferences;
 public class InvalidationService {
     private final long mNativeInvalidationServiceAndroid;
 
-    private static final String TAG = "cr_invalidation";
+    private static final String TAG = "invalidation";
 
     private InvalidationService(long nativeInvalidationServiceAndroid) {
         mNativeInvalidationServiceAndroid = nativeInvalidationServiceAndroid;

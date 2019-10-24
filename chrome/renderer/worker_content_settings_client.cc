@@ -5,10 +5,11 @@
 #include "chrome/renderer/worker_content_settings_client.h"
 
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/content_settings_observer.h"
+#include "chrome/renderer/content_settings_agent_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -17,19 +18,25 @@
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
     content::RenderFrame* render_frame)
-    : routing_id_(render_frame->GetRoutingID()), is_unique_origin_(false) {
+    : routing_id_(render_frame->GetRoutingID()),
+      sync_message_filter_(
+          content::RenderThread::Get()->GetSyncMessageFilter()) {
   blink::WebLocalFrame* frame = render_frame->GetWebFrame();
-  if (frame->GetDocument().GetSecurityOrigin().IsUnique() ||
+  const blink::WebDocument& document = frame->GetDocument();
+  if (document.GetSecurityOrigin().IsUnique() ||
       frame->Top()->GetSecurityOrigin().IsUnique())
     is_unique_origin_ = true;
-  sync_message_filter_ = content::RenderThread::Get()->GetSyncMessageFilter();
-  document_origin_ = frame->GetDocument().GetSecurityOrigin();
-  site_for_cookies_ = frame->GetDocument().SiteForCookies();
-  top_frame_origin_ = frame->GetDocument().TopFrameOrigin();
-  allow_running_insecure_content_ = ContentSettingsObserver::Get(render_frame)
-                                        ->allow_running_insecure_content();
-  content_setting_rules_ =
-      ContentSettingsObserver::Get(render_frame)->GetContentSettingRules();
+
+  document_origin_ = document.GetSecurityOrigin();
+  site_for_cookies_ = document.SiteForCookies();
+  top_frame_origin_ = document.TopFrameOrigin();
+
+  render_frame->GetBrowserInterfaceBroker()->GetInterface(
+      pending_content_settings_manager_.InitWithNewPipeAndPassReceiver());
+
+  ContentSettingsAgentImpl* agent = ContentSettingsAgentImpl::Get(render_frame);
+  allow_running_insecure_content_ = agent->allow_running_insecure_content();
+  content_setting_rules_ = agent->GetContentSettingRules();
 }
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
@@ -41,7 +48,11 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
       top_frame_origin_(other.top_frame_origin_),
       allow_running_insecure_content_(other.allow_running_insecure_content_),
       sync_message_filter_(other.sync_message_filter_),
-      content_setting_rules_(other.content_setting_rules_) {}
+      content_setting_rules_(other.content_setting_rules_) {
+  other.EnsureContentSettingsManager();
+  other.content_settings_manager_->Clone(
+      pending_content_settings_manager_.InitWithNewPipeAndPassReceiver());
+}
 
 WorkerContentSettingsClient::~WorkerContentSettingsClient() {}
 
@@ -51,38 +62,20 @@ WorkerContentSettingsClient::Clone() {
 }
 
 bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
-  if (is_unique_origin_)
-    return false;
-
-  bool result = false;
-  sync_message_filter_->Send(new ChromeViewHostMsg_RequestFileSystemAccessSync(
-      routing_id_, document_origin_, site_for_cookies_, top_frame_origin_,
-      &result));
-  return result;
+  return AllowStorageAccess(
+      chrome::mojom::ContentSettingsManager::StorageType::FILE_SYSTEM);
 }
 
 bool WorkerContentSettingsClient::AllowIndexedDB(
     const blink::WebSecurityOrigin&) {
-  if (is_unique_origin_)
-    return false;
-
-  bool result = false;
-  sync_message_filter_->Send(new ChromeViewHostMsg_AllowIndexedDB(
-      routing_id_, document_origin_, site_for_cookies_, top_frame_origin_,
-      &result));
-  return result;
+  return AllowStorageAccess(
+      chrome::mojom::ContentSettingsManager::StorageType::INDEXED_DB);
 }
 
 bool WorkerContentSettingsClient::AllowCacheStorage(
     const blink::WebSecurityOrigin&) {
-  if (is_unique_origin_)
-    return false;
-
-  bool result = false;
-  sync_message_filter_->Send(new ChromeViewHostMsg_AllowCacheStorage(
-      routing_id_, document_origin_, site_for_cookies_, top_frame_origin_,
-      &result));
-  return result;
+  return AllowStorageAccess(
+      chrome::mojom::ContentSettingsManager::StorageType::CACHE);
 }
 
 bool WorkerContentSettingsClient::AllowRunningInsecureContent(
@@ -120,4 +113,26 @@ bool WorkerContentSettingsClient::AllowScriptFromSource(
   }
 
   return true;
+}
+
+bool WorkerContentSettingsClient::AllowStorageAccess(
+    chrome::mojom::ContentSettingsManager::StorageType storage_type) {
+  if (is_unique_origin_)
+    return false;
+
+  EnsureContentSettingsManager();
+
+  bool result = false;
+  content_settings_manager_->AllowStorageAccess(storage_type, document_origin_,
+                                                site_for_cookies_,
+                                                top_frame_origin_, &result);
+  return result;
+}
+
+void WorkerContentSettingsClient::EnsureContentSettingsManager() const {
+  // Lazily bind |content_settings_manager_| so it is bound on the right thread.
+  if (content_settings_manager_)
+    return;
+  DCHECK(pending_content_settings_manager_);
+  content_settings_manager_.Bind(std::move(pending_content_settings_manager_));
 }

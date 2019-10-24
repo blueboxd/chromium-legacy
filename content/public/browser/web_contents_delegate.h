@@ -157,12 +157,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void LoadingStateChanged(WebContents* source,
                                    bool to_different_document) {}
 
-  // Notifies the delegate that the page has made some progress loading.
-  // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully
-  // loaded).
-  virtual void LoadProgressChanged(WebContents* source,
-                                   double progress) {}
-
   // Request the delegate to close this web contents, and do whatever cleanup
   // it needs to do.
   virtual void CloseContents(WebContents* source) {}

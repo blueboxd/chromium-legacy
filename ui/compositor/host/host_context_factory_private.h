@@ -90,8 +90,6 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
   void AddVSyncParameterObserver(
       Compositor* compositor,
       viz::mojom::VSyncParameterObserverPtr observer) override;
-  void SetDisplayTransformHint(Compositor* compositor,
-                               gfx::OverlayTransform transform) override;
 
  private:
   struct CompositorData {

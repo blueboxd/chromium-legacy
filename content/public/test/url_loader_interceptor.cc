@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/network/public/cpp/features.h"
@@ -92,7 +93,7 @@ class URLLoaderInterceptor::IOState
   void CreateURLLoaderFactoryForSubresources(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
-      network::mojom::URLLoaderFactoryPtrInfo original_factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory);
 
   bool Intercept(RequestParams* params) {
     // The lock ensures that |URLLoaderInterceptor| can't be deleted while it
@@ -139,8 +140,8 @@ class URLLoaderInterceptor::IOState
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     auto proxied_receiver = std::move(*receiver);
-    network::mojom::URLLoaderFactoryPtr target_factory;
-    *receiver = mojo::MakeRequest(&target_factory);
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory;
+    *receiver = target_factory.InitWithNewPipeAndPassReceiver();
 
     navigation_wrappers_.emplace(
         std::make_unique<URLLoaderFactoryNavigationWrapper>(
@@ -352,7 +353,7 @@ class URLLoaderInterceptor::URLLoaderFactoryNavigationWrapper {
  public:
   URLLoaderFactoryNavigationWrapper(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      network::mojom::URLLoaderFactoryPtr target_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
       URLLoaderInterceptor::IOState* parent)
       : target_factory_(std::move(target_factory)) {
     interceptor_ = std::make_unique<Interceptor>(
@@ -365,7 +366,7 @@ class URLLoaderInterceptor::URLLoaderFactoryNavigationWrapper {
 
  private:
   std::unique_ptr<Interceptor> interceptor_;
-  network::mojom::URLLoaderFactoryPtr target_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
 };
 
 // This class intercepts calls to
@@ -375,7 +376,7 @@ class URLLoaderInterceptor::BrowserProcessWrapper {
   BrowserProcessWrapper(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
       URLLoaderInterceptor::IOState* parent,
-      network::mojom::URLLoaderFactoryPtr original_factory)
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory)
       : interceptor_(
             parent,
             base::BindRepeating([]() { return 0; }),
@@ -393,7 +394,7 @@ class URLLoaderInterceptor::BrowserProcessWrapper {
   }
 
   Interceptor interceptor_;
-  network::mojom::URLLoaderFactoryPtr original_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> original_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessWrapper);
 };
@@ -406,7 +407,7 @@ class URLLoaderInterceptor::SubresourceWrapper {
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
       int process_id,
       URLLoaderInterceptor::IOState* parent,
-      network::mojom::URLLoaderFactoryPtrInfo original_factory)
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory)
       : interceptor_(
             parent,
             base::BindRepeating([](int process_id) { return process_id; },
@@ -428,7 +429,7 @@ class URLLoaderInterceptor::SubresourceWrapper {
   }
 
   Interceptor interceptor_;
-  network::mojom::URLLoaderFactoryPtr original_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> original_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceWrapper);
 };
@@ -611,7 +612,7 @@ void URLLoaderInterceptor::WriteResponse(
 void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     int process_id,
-    network::mojom::URLLoaderFactoryPtrInfo original_factory) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
@@ -625,13 +626,13 @@ void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
       std::move(receiver), process_id, std::move(original_factory));
 }
 
-network::mojom::URLLoaderFactoryPtr
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
 URLLoaderInterceptor::GetURLLoaderFactoryForBrowserProcess(
-    network::mojom::URLLoaderFactoryPtr original_factory) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  network::mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> loader_factory;
   browser_process_interceptors_.emplace(std::make_unique<BrowserProcessWrapper>(
-      mojo::MakeRequest(&loader_factory), io_thread_.get(),
+      loader_factory.InitWithNewPipeAndPassReceiver(), io_thread_.get(),
       std::move(original_factory)));
   return loader_factory;
 }
@@ -641,8 +642,8 @@ void URLLoaderInterceptor::InterceptNavigationRequestCallback(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   auto proxied_receiver = std::move(*receiver);
-  network::mojom::URLLoaderFactoryPtr target_factory;
-  *receiver = mojo::MakeRequest(&target_factory);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory;
+  *receiver = target_factory.InitWithNewPipeAndPassReceiver();
 
   navigation_wrappers_.emplace(
       std::make_unique<URLLoaderFactoryNavigationWrapper>(
@@ -703,7 +704,7 @@ void URLLoaderInterceptor::IOState::GetNetworkFactoryCallback(
 void URLLoaderInterceptor::IOState::CreateURLLoaderFactoryForSubresources(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     int process_id,
-    network::mojom::URLLoaderFactoryPtrInfo original_factory) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   subresource_wrappers_.emplace(std::make_unique<SubresourceWrapper>(
       std::move(receiver), process_id, this, std::move(original_factory)));

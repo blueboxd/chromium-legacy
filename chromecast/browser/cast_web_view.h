@@ -15,22 +15,18 @@
 #include "base/values.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/cast_web_contents.h"
-#include "chromecast/graphics/cast_window_manager.h"
+#include "chromecast/ui/mojom/ui_service.mojom.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace chromecast {
 
-class CastWindowManager;
-
-using shell::VisibilityPriority;
-
 // A simplified interface for loading and displaying WebContents in cast_shell.
 class CastWebView {
  public:
   class Delegate : public CastWebContents::Delegate,
-                   public shell::CastContentWindow::Delegate {
+                   public CastContentWindow::Delegate {
    public:
     // Invoked by CastWebView when WebContentsDelegate::RunBluetoothChooser is
     // called. Returns a BluetoothChooser, a class used to solicit bluetooth
@@ -65,7 +61,7 @@ class CastWebView {
     CastWebContents::InitParams web_contents_params;
 
     // Parameters for creating the content window for this CastWebView.
-    shell::CastContentWindow::CreateParams window_params;
+    CastContentWindow::CreateParams window_params;
 
     // Identifies the activity that is hosted by this CastWebView.
     std::string activity_id = "";
@@ -90,7 +86,7 @@ class CastWebView {
   CastWebView();
   virtual ~CastWebView();
 
-  virtual shell::CastContentWindow* window() const = 0;
+  virtual CastContentWindow* window() const = 0;
 
   virtual content::WebContents* web_contents() const = 0;
 
@@ -109,8 +105,7 @@ class CastWebView {
   // Adds the page to the window manager and makes it visible to the user if
   // |is_visible| is true. |z_order| determines how this window is layered in
   // relationt other windows (higher value == more foreground).
-  virtual void InitializeWindow(CastWindowManager* window_manager,
-                                CastWindowManager::WindowId z_order,
+  virtual void InitializeWindow(mojom::ZOrder z_order,
                                 VisibilityPriority initial_priority) = 0;
 
   // Allows the page to be shown on the screen. The page cannot be shown on the

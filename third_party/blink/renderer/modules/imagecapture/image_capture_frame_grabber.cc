@@ -18,6 +18,7 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace WTF {
 // Template specialization of [1], needed to be able to pass callbacks
@@ -79,7 +80,8 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks /* current_time */) {
   DCHECK(frame->format() == media::PIXEL_FORMAT_I420 ||
-         frame->format() == media::PIXEL_FORMAT_I420A);
+         frame->format() == media::PIXEL_FORMAT_I420A ||
+         frame->format() == media::PIXEL_FORMAT_NV12);
 
   if (first_frame_received_)
     return;
@@ -107,25 +109,68 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
   const uint32_t destination_pixel_format =
       (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
                                                    : libyuv::FOURCC_ARGB;
+  uint8_t* destination_plane = static_cast<uint8_t*>(pixmap.writable_addr());
+  int destination_stride = pixmap.width() * 4;
+  int destination_width = pixmap.width();
+  int destination_height = pixmap.height();
 
-  libyuv::ConvertFromI420(frame->visible_data(media::VideoFrame::kYPlane),
-                          frame->stride(media::VideoFrame::kYPlane),
-                          frame->visible_data(media::VideoFrame::kUPlane),
-                          frame->stride(media::VideoFrame::kUPlane),
-                          frame->visible_data(media::VideoFrame::kVPlane),
-                          frame->stride(media::VideoFrame::kVPlane),
-                          static_cast<uint8_t*>(pixmap.writable_addr()),
-                          pixmap.width() * 4, pixmap.width(), pixmap.height(),
-                          destination_pixel_format);
+  if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    auto* gmb = frame->GetGpuMemoryBuffer();
+    if (!gmb->Map()) {
+      DLOG(ERROR) << "Error mapping GpuMemoryBuffer video frame";
+      std::move(wrapper_callback).Run(sk_sp<SkImage>());
+      return;
+    }
 
-  if (frame->format() == media::PIXEL_FORMAT_I420A) {
-    DCHECK(!info.isOpaque());
-    // This function copies any plane into the alpha channel of an ARGB image.
-    libyuv::ARGBCopyYToAlpha(frame->visible_data(media::VideoFrame::kAPlane),
-                             frame->stride(media::VideoFrame::kAPlane),
-                             static_cast<uint8_t*>(pixmap.writable_addr()),
-                             pixmap.width() * 4, pixmap.width(),
-                             pixmap.height());
+    // NV12 is the only supported pixel format at the moment.
+    DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_NV12);
+    int y_stride = gmb->stride(0);
+    int uv_stride = gmb->stride(1);
+    const uint8_t* y_plane =
+        (static_cast<uint8_t*>(gmb->memory(0)) + frame->visible_rect().x() +
+         (frame->visible_rect().y() * y_stride));
+    // UV plane of NV12 has 2-byte pixel width, with half chroma subsampling
+    // both horizontally and vertically.
+    const uint8_t* uv_plane = (static_cast<uint8_t*>(gmb->memory(1)) +
+                               ((frame->visible_rect().x() * 2) / 2) +
+                               ((frame->visible_rect().y() / 2) * uv_stride));
+
+    switch (destination_pixel_format) {
+      case libyuv::FOURCC_ABGR:
+        libyuv::NV12ToABGR(y_plane, y_stride, uv_plane, uv_stride,
+                           destination_plane, destination_stride,
+                           destination_width, destination_height);
+        break;
+      case libyuv::FOURCC_ARGB:
+        libyuv::NV12ToARGB(y_plane, y_stride, uv_plane, uv_stride,
+                           destination_plane, destination_stride,
+                           destination_width, destination_height);
+        break;
+      default:
+        NOTREACHED();
+    }
+    gmb->Unmap();
+  } else {
+    DCHECK(frame->format() == media::PIXEL_FORMAT_I420 ||
+           frame->format() == media::PIXEL_FORMAT_I420A);
+    libyuv::ConvertFromI420(frame->visible_data(media::VideoFrame::kYPlane),
+                            frame->stride(media::VideoFrame::kYPlane),
+                            frame->visible_data(media::VideoFrame::kUPlane),
+                            frame->stride(media::VideoFrame::kUPlane),
+                            frame->visible_data(media::VideoFrame::kVPlane),
+                            frame->stride(media::VideoFrame::kVPlane),
+                            destination_plane, destination_stride,
+                            destination_width, destination_height,
+                            destination_pixel_format);
+
+    if (frame->format() == media::PIXEL_FORMAT_I420A) {
+      DCHECK(!info.isOpaque());
+      // This function copies any plane into the alpha channel of an ARGB image.
+      libyuv::ARGBCopyYToAlpha(frame->visible_data(media::VideoFrame::kAPlane),
+                               frame->stride(media::VideoFrame::kAPlane),
+                               destination_plane, destination_stride,
+                               destination_width, destination_height);
+    }
   }
 
   std::move(wrapper_callback).Run(surface->makeImageSnapshot());

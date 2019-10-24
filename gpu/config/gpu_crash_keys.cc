@@ -32,6 +32,12 @@ crash_reporter::CrashKeyString<1024> current_shader_0("current-shader-0");
 crash_reporter::CrashKeyString<1024> current_shader_1("current-shader-1");
 crash_reporter::CrashKeyString<4> gpu_watchdog_kill_after_power_resume(
     "gpu-watchdog-kill-after-power-resume");
+crash_reporter::CrashKeyString<16> gpu_watchdog_slow_system_type(
+    "gpu-watchdog-slow-system-type");
+crash_reporter::CrashKeyString<20> gpu_watchdog_extra_seconds_needed(
+    "gpu-watchdog-extra-seconds-needed");
+crash_reporter::CrashKeyString<4> gpu_watchdog_crashed_in_gpu_init(
+    "gpu-watchdog-crashed-in-gpu-init");
 
 }  // namespace crash_keys
 }  // namespace gpu

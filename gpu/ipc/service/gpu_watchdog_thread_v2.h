@@ -57,6 +57,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void InProgress();
   bool IsArmed();
   void OnWatchdogTimeout();
+  bool GpuIsAlive();
 
   // Do not change the function name. It is used for [GPU HANG] carsh reports.
   void DeliberatelyTerminateToRecoverFromHang();

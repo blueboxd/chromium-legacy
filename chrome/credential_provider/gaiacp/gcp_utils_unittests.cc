@@ -8,6 +8,7 @@
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
@@ -445,8 +446,12 @@ TEST(Enroll, EnrollToGoogleMdmIfNeeded_NotEnabled) {
 // 4. User SID.
 // 5. Username.
 // 6. Domain.
+// 7. Serial Number.
+// 8. Machine Guid.
 class GcpEnrollmentArgsTest
     : public ::testing::TestWithParam<std::tuple<const char*,
+                                                 const char*,
+                                                 const char*,
                                                  const char*,
                                                  const char*,
                                                  const char*,
@@ -468,10 +473,18 @@ TEST_P(GcpEnrollmentArgsTest, EnrollToGoogleMdmIfNeeded_MissingArgs) {
   const char* sid = std::get<3>(GetParam());
   const char* username = std::get<4>(GetParam());
   const char* domain = std::get<5>(GetParam());
+  const char* serial_number = std::get<6>(GetParam());
+  base::string16 serial_number16 =
+      base::UTF8ToUTF16(base::StringPrintf("%s", serial_number));
+  const char* machine_guid = std::get<7>(GetParam());
+  base::string16 machine_guid16 =
+      base::UTF8ToUTF16(base::StringPrintf("%s", machine_guid));
 
   bool should_succeed = (email && email[0]) && (id_token && id_token[0]) &&
                         (access_token && access_token[0]) && (sid && sid[0]) &&
-                        (username && username[0]) && (domain && domain[0]);
+                        (username && username[0]) && (domain && domain[0]) &&
+                        (machine_guid && machine_guid[0]) &&
+                        (serial_number && serial_number[0]);
 
   base::Value properties(base::Value::Type::DICTIONARY);
   if (email)
@@ -487,6 +500,9 @@ TEST_P(GcpEnrollmentArgsTest, EnrollToGoogleMdmIfNeeded_MissingArgs) {
   if (domain)
     properties.SetStringKey(kKeyDomain, domain);
 
+  SetMachineGuidForTesting(machine_guid16);
+  GoogleSerialNumberForTesting g_serial_number(serial_number16);
+
   // EnrollToGoogleMdmIfNeeded() should fail if any field is missing.
   if (should_succeed) {
     ASSERT_EQ(S_OK, EnrollToGoogleMdmIfNeeded(properties));
@@ -496,13 +512,27 @@ TEST_P(GcpEnrollmentArgsTest, EnrollToGoogleMdmIfNeeded_MissingArgs) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    GcpRegistrationData,
     GcpEnrollmentArgsTest,
     ::testing::Combine(::testing::Values("foo@gmail.com", "", nullptr),
                        ::testing::Values("id_token", "", nullptr),
                        ::testing::Values("access_token", "", nullptr),
                        ::testing::Values("sid", "", nullptr),
                        ::testing::Values("username", "", nullptr),
-                       ::testing::Values("domain", "", nullptr)));
+                       ::testing::Values("domain", "", nullptr),
+                       ::testing::Values("serial_number"),
+                       ::testing::Values("machine_guid")));
+
+INSTANTIATE_TEST_SUITE_P(
+    GcpRegistrationHardwareIds,
+    GcpEnrollmentArgsTest,
+    ::testing::Combine(::testing::Values("foo@gmail.com"),
+                       ::testing::Values("id_token"),
+                       ::testing::Values("access_token"),
+                       ::testing::Values("sid"),
+                       ::testing::Values("username"),
+                       ::testing::Values("domain"),
+                       ::testing::Values("serial_number", ""),
+                       ::testing::Values("machine_guid", "")));
 
 }  // namespace credential_provider

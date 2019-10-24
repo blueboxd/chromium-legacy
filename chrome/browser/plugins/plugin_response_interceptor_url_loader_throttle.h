@@ -30,7 +30,7 @@ class PluginResponseInterceptorURLLoaderThrottle
  private:
   // blink::URLLoaderThrottle overrides;
   void WillProcessResponse(const GURL& response_url,
-                           network::ResourceResponseHead* response_head,
+                           network::mojom::URLResponseHead* response_head,
                            bool* defer) override;
   // Resumes loading for an intercepted response. This would give the extension
   // layer chance to initialize its browser side state.

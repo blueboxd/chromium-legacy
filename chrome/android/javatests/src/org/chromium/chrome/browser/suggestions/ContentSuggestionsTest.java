@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -75,7 +76,9 @@ public class ContentSuggestionsTest {
     private NewTabPage loadNTPWithSearchSuggestState(final boolean enabled) {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().setSearchSuggestEnabled(enabled));
+                ()
+                        -> PrefServiceBridge.getInstance().setBoolean(
+                                Pref.SEARCH_SUGGEST_ENABLED, enabled));
 
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         NewTabPageTestUtils.waitForNtpLoaded(tab);

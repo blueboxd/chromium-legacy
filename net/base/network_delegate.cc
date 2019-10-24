@@ -61,14 +61,15 @@ int NetworkDelegate::NotifyHeadersReceived(
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     const IPEndPoint& endpoint,
-    GURL* allowed_unsafe_redirect_url) {
+    base::Optional<GURL>* preserve_fragment_on_redirect_url) {
   TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::NotifyHeadersReceived");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(original_response_headers);
   DCHECK(!callback.is_null());
+  DCHECK(!preserve_fragment_on_redirect_url->has_value());
   return OnHeadersReceived(request, std::move(callback),
                            original_response_headers, override_response_headers,
-                           endpoint, allowed_unsafe_redirect_url);
+                           endpoint, preserve_fragment_on_redirect_url);
 }
 
 void NetworkDelegate::NotifyResponseStarted(URLRequest* request,

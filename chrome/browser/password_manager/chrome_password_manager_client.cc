@@ -155,8 +155,8 @@ void AddToWidgetInputEventObservers(
   // added, the observer is removed and added again, to ensure that it is added
   // only once.
 #if defined(OS_ANDROID)
-  widget_host->RemoveImeTextCommittedEventObserver(observer);
-  widget_host->AddImeTextCommittedEventObserver(observer);
+  widget_host->RemoveImeInputEventObserver(observer);
+  widget_host->AddImeInputEventObserver(observer);
 #endif
   widget_host->RemoveInputEventObserver(observer);
   widget_host->AddInputEventObserver(observer);
@@ -662,7 +662,23 @@ void ChromePasswordManagerClient::RenderFrameCreated(
 void ChromePasswordManagerClient::OnImeTextCommittedEvent(
     const base::string16& text_str) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  password_reuse_detection_manager_.OnKeyPressed(text_str);
+  password_reuse_detection_manager_.OnKeyPressedCommitted(text_str);
+#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+}
+
+void ChromePasswordManagerClient::OnImeSetComposingTextEvent(
+    const base::string16& text_str) {
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  last_composing_text_ = text_str;
+  password_reuse_detection_manager_.OnKeyPressedUncommitted(
+      last_composing_text_);
+#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+}
+
+void ChromePasswordManagerClient::OnImeFinishComposingTextEvent() {
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  password_reuse_detection_manager_.OnKeyPressedCommitted(last_composing_text_);
+  last_composing_text_.clear();
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 }
 #endif  // defined(OS_ANDROID)
@@ -679,10 +695,10 @@ void ChromePasswordManagerClient::OnInputEvent(
     return;
   const blink::WebKeyboardEvent& key_event =
       static_cast<const blink::WebKeyboardEvent&>(event);
-  password_reuse_detection_manager_.OnKeyPressed(key_event.text);
+  password_reuse_detection_manager_.OnKeyPressedCommitted(key_event.text);
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 
-#else   // defined(OS_ANDROID)
+#else   // !defined(OS_ANDROID)
   if (event.GetType() != blink::WebInputEvent::kChar)
     return;
   const blink::WebKeyboardEvent& key_event =
@@ -692,7 +708,7 @@ void ChromePasswordManagerClient::OnInputEvent(
   if (key_event.windows_key_code == (ui::VKEY_V & 0x1f)) {
     OnPaste();
   } else {
-    password_reuse_detection_manager_.OnKeyPressed(key_event.text);
+    password_reuse_detection_manager_.OnKeyPressedCommitted(key_event.text);
   }
 #endif  // defined(OS_ANDROID)
 }

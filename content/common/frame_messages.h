@@ -920,10 +920,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_EnableViewSourceMode)
 // ScopedPageLoadDeferrer is on the stack for SwapOut.
 IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
 
-// Notifies the RenderFrame about a user activation detected in the browser side
-// (e.g. during Android voice search).
-IPC_MESSAGE_ROUTED0(FrameMsg_NotifyUserActivation)
-
 // Notifies a parent frame that the child frame requires information about
 // whether it is occluded or has visual effects applied.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetNeedsOcclusionTracking,

@@ -25,9 +25,11 @@ namespace chromecast {
 
 CastWebContentsManager::CastWebContentsManager(
     content::BrowserContext* browser_context,
-    CastWebViewFactory* web_view_factory)
+    CastWebViewFactory* web_view_factory,
+    CastWindowManager* window_manager)
     : browser_context_(browser_context),
       web_view_factory_(web_view_factory),
+      window_manager_(window_manager),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DCHECK(browser_context_);

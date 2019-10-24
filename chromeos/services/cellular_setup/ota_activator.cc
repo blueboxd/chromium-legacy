@@ -11,17 +11,15 @@ namespace chromeos {
 namespace cellular_setup {
 
 OtaActivator::OtaActivator(base::OnceClosure on_finished_callback)
-    : on_finished_callback_(std::move(on_finished_callback)), binding_(this) {}
+    : on_finished_callback_(std::move(on_finished_callback)) {}
 
 OtaActivator::~OtaActivator() = default;
 
-mojom::CarrierPortalHandlerPtr OtaActivator::GenerateInterfacePtr() {
-  // Only one InterfacePtr should be created per instance.
-  DCHECK(!binding_);
-
-  mojom::CarrierPortalHandlerPtr interface_ptr;
-  binding_.Bind(mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::CarrierPortalHandler>
+OtaActivator::GenerateRemote() {
+  // Only one mojo::PendingRemote<> should be created per instance.
+  DCHECK(!receiver_.is_bound());
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 void OtaActivator::InvokeOnFinishedCallback() {

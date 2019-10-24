@@ -284,15 +284,6 @@ void WebViewPermissionHelper::RequestFileSystemPermission(
       url, allowed_by_default, std::move(callback));
 }
 
-void WebViewPermissionHelper::FileSystemAccessedAsync(int render_process_id,
-                                                      int render_frame_id,
-                                                      int request_id,
-                                                      const GURL& url,
-                                                      bool blocked_by_policy) {
-  web_view_permission_helper_delegate_->FileSystemAccessedAsync(
-      render_process_id, render_frame_id, request_id, url, blocked_by_policy);
-}
-
 int WebViewPermissionHelper::RequestPermission(
     WebViewPermissionType permission_type,
     const base::DictionaryValue& request_info,

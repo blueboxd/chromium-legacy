@@ -216,7 +216,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
                          const content::ContextMenuParams& params) final;
   bool HandleKeyboardEvent(content::WebContents* source,
                            const content::NativeWebKeyboardEvent& event) final;
-  void LoadProgressChanged(content::WebContents* source, double progress) final;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) final;
   void RendererResponsive(content::WebContents* source,
@@ -274,6 +273,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) final;
   void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
+  void LoadProgressChanged(double progress) final;
   void DocumentOnLoadCompletedInMainFrame() final;
   void RenderProcessGone(base::TerminationStatus status) final;
   void UserAgentOverrideSet(const std::string& user_agent) final;

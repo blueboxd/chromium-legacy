@@ -142,20 +142,6 @@ public final class BrowserController {
                 observer.visibleUrlChanged(uri);
             }
         }
-
-        @Override
-        public void loadingStateChanged(boolean isLoading, boolean toDifferentDocument) {
-            for (BrowserObserver observer : mObservers) {
-                observer.loadingStateChanged(isLoading, toDifferentDocument);
-            }
-        }
-
-        @Override
-        public void loadProgressChanged(double progress) {
-            for (BrowserObserver observer : mObservers) {
-                observer.loadProgressChanged(progress);
-            }
-        }
     }
 
     private final class DownloadDelegateClientImpl extends IDownloadDelegateClient.Stub {

@@ -22,6 +22,7 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_state.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -4617,6 +4618,39 @@ TEST_F(DisplayManagerTest, PanelOrientation) {
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
   EXPECT_EQ(OrientationLockType::kPortraitPrimary,
             screen_orientation_controller->GetCurrentOrientation());
+}
+
+TEST_F(DisplayManagerTest, UpdateRootWindowForNewWindows) {
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  // Sets display configuration with three displays, sets the "root window for
+  // new windows" to the one at index before, removes the one at index 2, and
+  // checks that the "root window for new windows" is the one at index after.
+  const auto test_removing_secondary = [this](size_t before, size_t after) {
+    UpdateDisplay("800x600,800x600,800x600");
+    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
+        root_windows[before]);
+    UpdateDisplay("800x600,800x600");
+    EXPECT_EQ(root_windows[after], Shell::GetRootWindowForNewWindows());
+  };
+  test_removing_secondary(0u, 0u);
+  test_removing_secondary(1u, 1u);
+  test_removing_secondary(2u, 0u);
+
+  // Each iteration sets display configuration with three displays, sets the
+  // "root window for new windows" to the one at index before, enters unified
+  // desktop mode, and checks that the "root window for new windows" is the
+  // primary one.
+  for (size_t before = 0u; before < 3u; ++before) {
+    UpdateDisplay("800x600,800x600,800x600");
+    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
+        Shell::GetAllRootWindows()[before]);
+    display_manager()->SetUnifiedDesktopEnabled(true);
+    EXPECT_EQ(Shell::GetPrimaryRootWindow(),
+              Shell::GetRootWindowForNewWindows());
+    display_manager()->SetUnifiedDesktopEnabled(false);
+  }
 }
 
 }  // namespace ash

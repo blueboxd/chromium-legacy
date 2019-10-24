@@ -43,7 +43,8 @@ class FakeCryptAuthFeatureStatusGetter : public CryptAuthFeatureStatusGetter {
 
   // Calls OnAttemptFinished() with the same input parameters.
   void FinishAttempt(
-      const IdToFeatureStatusMap& id_to_feature_status_map,
+      const IdToDeviceSoftwareFeatureInfoMap&
+          id_to_device_software_feature_info_map,
       CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
  private:

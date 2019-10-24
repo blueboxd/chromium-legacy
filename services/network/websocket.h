@@ -16,6 +16,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/util/type_safety/strong_alias.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -88,7 +89,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       net::CompletionOnceCallback callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-      GURL* allowed_unsafe_redirect_url);
+      base::Optional<GURL>* preserve_fragment_on_redirect_url);
 
   // Gets the WebSocket associated with this request.
   static WebSocket* ForRequest(const net::URLRequest& request);
@@ -136,10 +137,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   void OnHeadersReceivedComplete(
       net::CompletionOnceCallback callback,
       scoped_refptr<net::HttpResponseHeaders>* out_headers,
-      GURL* out_allowed_unsafe_redirect_url,
+      base::Optional<GURL>* out_preserve_fragment_on_redirect_url,
       int result,
       const base::Optional<std::string>& headers,
-      const GURL& allowed_unsafe_redirect_url);
+      const base::Optional<GURL>& preserve_fragment_on_redirect_url);
 
   void Reset();
 

@@ -406,12 +406,7 @@ class PrefServiceSyncableMergeTest : public testing::Test {
         kDefaultCharsetPrefName, kDefaultCharsetValue,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
-    // Downcast to PrefModelAssociator so that tests can access its' specific
-    // behavior. This is a smell. The roles between PrefServiceSyncable and
-    // PrefModelAssociator are not clearly separated (and this test should only
-    // test against the SyncableService interface).
-    pref_sync_service_ =  // static_cast<PrefModelAssociator*>(
-        prefs_.GetSyncableService(syncer::PREFERENCES);  //);
+    pref_sync_service_ = prefs_.GetSyncableService(syncer::PREFERENCES);
     ASSERT_THAT(pref_sync_service_, NotNull());
   }
 
@@ -653,8 +648,9 @@ TEST_F(PrefServiceSyncableMergeTest, ShouldIgnoreUpdatesToNotSyncablePrefs) {
   remote_changes.push_back(MakeRemoteChange(
       1, pref_name, base::Value("remote_value2"), SyncChange::ACTION_UPDATE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, remote_changes);
-  EXPECT_THAT(prefs_.IsPrefSynced(pref_name), Eq(false));
-
+  // The pref isn't synced.
+  EXPECT_THAT(pref_sync_service_->GetAllSyncData(syncer::PREFERENCES),
+              IsEmpty());
   EXPECT_THAT(GetPreferenceValue(pref_name).GetString(), Eq("default_value"));
 }
 
@@ -741,7 +737,7 @@ TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionAdd) {
 
   const base::Value& actual = GetPreferenceValue(kStringPrefName);
   EXPECT_TRUE(expected.Equals(&actual));
-  EXPECT_TRUE(pref_sync_service_->IsPrefSynced(kStringPrefName));
+  EXPECT_TRUE(pref_sync_service_->IsPrefSyncedForTesting(kStringPrefName));
 }
 
 TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeUnknownPreference) {
@@ -1007,14 +1003,14 @@ TEST_F(PrefServiceSyncableChromeOsTest, IsPrefSynced_OsPref) {
   InitSyncForAllTypes();
   auto* associator = static_cast<PrefModelAssociator*>(
       prefs_->GetSyncableService(syncer::OS_PREFERENCES));
-  EXPECT_FALSE(associator->IsPrefSynced("os_pref"));
+  EXPECT_FALSE(associator->IsPrefSyncedForTesting("os_pref"));
 
   syncer::SyncChangeList list;
   list.push_back(MakeRemoteChange(1, "os_pref", base::Value("value"),
                                   SyncChange::ACTION_ADD,
                                   syncer::OS_PREFERENCES));
   associator->ProcessSyncChanges(FROM_HERE, list);
-  EXPECT_TRUE(associator->IsPrefSynced("os_pref"));
+  EXPECT_TRUE(associator->IsPrefSyncedForTesting("os_pref"));
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, IsPrefSynced_OsPriorityPref) {
@@ -1023,14 +1019,14 @@ TEST_F(PrefServiceSyncableChromeOsTest, IsPrefSynced_OsPriorityPref) {
   InitSyncForAllTypes();
   auto* associator = static_cast<PrefModelAssociator*>(
       prefs_->GetSyncableService(syncer::OS_PRIORITY_PREFERENCES));
-  EXPECT_FALSE(associator->IsPrefSynced("os_priority_pref"));
+  EXPECT_FALSE(associator->IsPrefSyncedForTesting("os_priority_pref"));
 
   syncer::SyncChangeList list;
   list.push_back(MakeRemoteChange(1, "os_priority_pref", base::Value("value"),
                                   SyncChange::ACTION_ADD,
                                   syncer::OS_PRIORITY_PREFERENCES));
   associator->ProcessSyncChanges(FROM_HERE, list);
-  EXPECT_TRUE(associator->IsPrefSynced("os_priority_pref"));
+  EXPECT_TRUE(associator->IsPrefSyncedForTesting("os_priority_pref"));
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, SyncedPrefObserver_OsPref) {
@@ -1093,7 +1089,7 @@ TEST_F(PrefServiceSyncableChromeOsTest,
   // Future changes will be synced back to browser preferences as well.
   auto* associator = static_cast<PrefModelAssociator*>(
       prefs_->GetSyncableService(syncer::PREFERENCES));
-  EXPECT_TRUE(associator->IsPrefSynced("os_pref"));
+  EXPECT_TRUE(associator->IsPrefSyncedForTesting("os_pref"));
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest,
@@ -1117,7 +1113,7 @@ TEST_F(PrefServiceSyncableChromeOsTest,
   // Future changes will be synced back to browser preferences as well.
   auto* associator = static_cast<PrefModelAssociator*>(
       prefs_->GetSyncableService(syncer::PREFERENCES));
-  EXPECT_TRUE(associator->IsPrefSynced("os_pref"));
+  EXPECT_TRUE(associator->IsPrefSyncedForTesting("os_pref"));
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest,
@@ -1149,7 +1145,7 @@ TEST_F(PrefServiceSyncableChromeOsTest,
 
   // The pref is not considered to be syncing, because it still has its default
   // value.
-  EXPECT_FALSE(browser_associator->IsPrefSynced("os_pref"));
+  EXPECT_FALSE(browser_associator->IsPrefSyncedForTesting("os_pref"));
 
   // Observers were not notified of changes.
   EXPECT_EQ(0, observer.changed_count_);

@@ -328,6 +328,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // implemented for the one caller doing Blob URL revocation.
   bool HasSecurityState(int child_id);
 
+  // Sets "killed_process_origin_lock" crash key with lock info for the
+  // process associated with |child_id|.
+  void LogKilledProcessOriginLock(int child_id);
+
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
   friend class ChildProcessSecurityPolicyTest;
@@ -497,6 +501,11 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   void AddIsolatedOrigins(const std::vector<IsolatedOriginPattern>& patterns,
                           IsolatedOriginSource source,
                           BrowserContext* browser_context = nullptr);
+
+  // Creates the value to place in the "killed_process_origin_lock" crash key
+  // based on the contents of |security_state|.
+  static std::string GetKilledProcessOriginLock(
+      const SecurityState* security_state);
 
   // You must acquire this lock before reading or writing any members of this
   // class, except for isolated_origins_ which uses its own lock.  You must not

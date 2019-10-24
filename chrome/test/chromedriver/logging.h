@@ -80,7 +80,7 @@ class WebDriverLog : public Log {
 };
 
 // Initializes logging system for ChromeDriver. Returns true on success.
-bool InitLogging();
+bool InitLogging(uint16_t port);
 
 // Creates |Log|s, |DevToolsEventListener|s, and |CommandListener|s based on
 // logging preferences.

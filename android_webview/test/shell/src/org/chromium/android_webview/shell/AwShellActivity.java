@@ -51,7 +51,7 @@ import java.net.URL;
  * This is a lightweight activity for tests that only require WebView functionality.
  */
 public class AwShellActivity extends Activity {
-    private static final String TAG = "cr.AwShellActivity";
+    private static final String TAG = "AwShellActivity";
     private static final String PREFERENCES_NAME = "AwShellPrefs";
     private static final String INITIAL_URL = ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL;
     private AwBrowserContext mBrowserContext;

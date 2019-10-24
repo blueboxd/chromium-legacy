@@ -91,8 +91,8 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Return the factory to use to create new widgets in the same process.
   remote_cocoa::ApplicationHost* GetRemoteCocoaApplicationHost() const;
 
-  // Return the app shim interface.
-  chrome::mojom::AppShim* GetAppShim() const;
+  // Return the app shim interface. Virtual for tests.
+  virtual chrome::mojom::AppShim* GetAppShim() const;
 
  protected:
   void ChannelError(uint32_t custom_reason, const std::string& description);

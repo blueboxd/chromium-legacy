@@ -43,7 +43,6 @@ class CastServiceSimple : public CastService, public CastWebView::Delegate {
   std::string GetId() override;
 
  private:
-  CastWindowManager* const window_manager_;
   const std::unique_ptr<CastWebViewFactory> web_view_factory_;
   const std::unique_ptr<CastWebContentsManager> web_contents_manager_;
   std::unique_ptr<CastWebView> cast_web_view_;

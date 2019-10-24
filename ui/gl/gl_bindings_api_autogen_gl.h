@@ -14,7 +14,6 @@
 
 void glActiveShaderProgramFn(GLuint pipeline, GLuint program) override;
 void glActiveTextureFn(GLenum texture) override;
-void glApplyFramebufferAttachmentCMAAINTELFn(void) override;
 void glAttachShaderFn(GLuint program, GLuint shader) override;
 void glBeginQueryFn(GLenum target, GLuint id) override;
 void glBeginTransformFeedbackFn(GLenum primitiveMode) override;

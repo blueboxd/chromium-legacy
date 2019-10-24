@@ -14,6 +14,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -27,11 +28,13 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Base class for task-focused activities that need to display a single tab.
+ * @param <C> - type of associated Dagger component.
  *
  * Example applications that might use this Activity would be webapps and streaming media
  * activities - anything where maintaining multiple tabs is unnecessary.
  */
-public abstract class SingleTabActivity extends ChromeActivity {
+public abstract class SingleTabActivity<C extends ChromeActivityComponent>
+        extends ChromeActivity<C> {
     private static final int PREWARM_RENDERER_DELAY_MS = 500;
 
     protected static final String BUNDLE_TAB_ID = "tabId";

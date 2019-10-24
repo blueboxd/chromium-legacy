@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @JNINamespace("net::test_server")
 public class EmbeddedTestServerImpl extends IEmbeddedTestServerImpl.Stub {
-    private static final String TAG = "cr_TestServer";
+    private static final String TAG = "TestServer";
 
     private static AtomicInteger sCount = new AtomicInteger();
 

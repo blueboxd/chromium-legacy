@@ -6,6 +6,7 @@ package org.chromium.weblayer.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
@@ -19,11 +20,16 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NavigationObserver;
 import org.chromium.weblayer.shell.WebLayerShellActivity;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -54,9 +60,38 @@ public class NavigationTest {
             }
         }
 
+        public static class NavigationObserverValueRecorder {
+            private List<String> mObservedValues =
+                    Collections.synchronizedList(new ArrayList<String>());
+
+            public void recordValue(String parameter) {
+                mObservedValues.add(parameter);
+            }
+
+            public List<String> getObservedValues() {
+                return mObservedValues;
+            }
+
+            public void waitUntilValueObserved(String expectation) {
+                CriteriaHelper.pollInstrumentationThread(
+                        new Criteria() {
+                            @Override
+                            public boolean isSatisfied() {
+                                return mObservedValues.contains(expectation);
+                            }
+                        },
+                        CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL,
+                        CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            }
+        }
+
         public NavigationCallbackHelper onStartedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCommittedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCompletedCallback = new NavigationCallbackHelper();
+        public NavigationObserverValueRecorder loadStateChangedCallback =
+                new NavigationObserverValueRecorder();
+        public NavigationObserverValueRecorder loadProgressChangedCallback =
+                new NavigationObserverValueRecorder();
         public CallbackHelper onFirstContentfulPaintCallback = new CallbackHelper();
 
         @Override
@@ -77,6 +112,18 @@ public class NavigationTest {
         @Override
         public void onFirstContentfulPaint() {
             onFirstContentfulPaintCallback.notifyCalled();
+        }
+
+        @Override
+        public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
+            loadStateChangedCallback.recordValue(
+                    Boolean.toString(isLoading) + " " + Boolean.toString(toDifferentDocument));
+        }
+
+        @Override
+        public void loadProgressChanged(double progress) {
+            loadProgressChangedCallback.recordValue(
+                    progress == 1 ? "load complete" : "load started");
         }
     }
 
@@ -100,6 +147,39 @@ public class NavigationTest {
         mObserver.onCommittedCallback.assertCalledWith(curCommittedCount, URL2);
         mObserver.onCompletedCallback.assertCalledWith(curCompletedCount, URL2);
         mObserver.onFirstContentfulPaintCallback.waitForCallback(curOnFirstContentfulPaintCount);
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadStateUpdates() throws Exception {
+        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        setNavigationObserver(activity);
+        mActivityTestRule.navigateAndWait(URL1);
+
+        /* Wait until the NavigationObserver is notified of load completion. */
+        mObserver.loadStateChangedCallback.waitUntilValueObserved("false false");
+        mObserver.loadProgressChangedCallback.waitUntilValueObserved("load complete");
+
+        /* Verify that the NavigationObserver was notified of load progress /before/ load
+         * completion.
+         */
+        int finishStateIndex =
+                mObserver.loadStateChangedCallback.getObservedValues().indexOf("false false");
+        int finishProgressIndex =
+                mObserver.loadProgressChangedCallback.getObservedValues().indexOf("load complete");
+        int startStateIndex =
+                mObserver.loadStateChangedCallback.getObservedValues().lastIndexOf("true true");
+        int startProgressIndex =
+                mObserver.loadProgressChangedCallback.getObservedValues().lastIndexOf(
+                        "load started");
+
+        assertNotEquals(startStateIndex, -1);
+        assertNotEquals(startProgressIndex, -1);
+        assertNotEquals(finishStateIndex, -1);
+        assertNotEquals(finishProgressIndex, -1);
+
+        assertTrue(startStateIndex < finishStateIndex);
+        assertTrue(startProgressIndex < finishProgressIndex);
     }
 
     @Test

@@ -12,6 +12,7 @@ include_rules = [
   "+chromecast/metrics",
   "+chromecast/net",
   "+chromecast/service",
+  "+chromecast/ui",
   "+components/cdm/browser",
   "+components/crash",
   "+components/download/public/common",

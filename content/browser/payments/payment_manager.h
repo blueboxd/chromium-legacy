@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -23,6 +24,7 @@ class CONTENT_EXPORT PaymentManager : public payments::mojom::PaymentManager {
  public:
   PaymentManager(
       PaymentAppContextImpl* payment_app_context,
+      const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
 
   ~PaymentManager() override;
@@ -60,13 +62,12 @@ class CONTENT_EXPORT PaymentManager : public payments::mojom::PaymentManager {
       PaymentManager::SetPaymentInstrumentCallback callback,
       payments::mojom::PaymentHandlerStatus status);
 
-  // PaymentAppContextImpl owns PaymentManager
-  PaymentAppContextImpl* payment_app_context_;
-
+  PaymentAppContextImpl* const payment_app_context_;  // Owns PaymentManager.
+  const url::Origin origin_;
+  mojo::Receiver<payments::mojom::PaymentManager> receiver_;
   bool should_set_payment_app_info_;
   GURL context_url_;
   GURL scope_;
-  mojo::Receiver<payments::mojom::PaymentManager> receiver_;
   base::WeakPtrFactory<PaymentManager> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PaymentManager);
 };

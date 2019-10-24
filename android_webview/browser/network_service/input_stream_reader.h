@@ -21,7 +21,7 @@ class InputStream;
 class InputStreamReader {
  public:
   // The constructor is called on the IO thread, not on the worker thread.
-  InputStreamReader(android_webview::InputStream* stream);
+  explicit InputStreamReader(android_webview::InputStream* stream);
   virtual ~InputStreamReader();
 
   // Perform a seek operation on the InputStream associated with this job.
@@ -57,6 +57,6 @@ class InputStreamReader {
   DISALLOW_COPY_AND_ASSIGN(InputStreamReader);
 };
 
-} // namespace android_webview
+}  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_INPUT_STREAM_READER_H_

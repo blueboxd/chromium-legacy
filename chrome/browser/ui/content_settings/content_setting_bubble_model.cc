@@ -42,7 +42,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/content_settings_renderer.mojom.h"
+#include "chrome/common/content_settings_agent.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -157,9 +157,9 @@ int GetIdForContentType(const ContentSettingsTypeIdEntry* entries,
 }
 
 void SetAllowRunningInsecureContent(content::RenderFrameHost* frame) {
-  mojo::AssociatedRemote<chrome::mojom::ContentSettingsRenderer> renderer;
-  frame->GetRemoteAssociatedInterfaces()->GetInterface(&renderer);
-  renderer->SetAllowRunningInsecureContent();
+  mojo::AssociatedRemote<chrome::mojom::ContentSettingsAgent> agent;
+  frame->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
+  agent->SetAllowRunningInsecureContent();
 }
 
 }  // namespace

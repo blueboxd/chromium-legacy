@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -24,6 +25,7 @@
 
 namespace views {
 
+class Label;
 class Link;
 class StyledLabelListener;
 
@@ -168,6 +170,11 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   };
   using StyleRanges = std::list<StyleRange>;
 
+  // Returns the starting X coordinate for the views in a line, based on the
+  // current |horizontal_alignment_| and insets and given the amount of excess
+  // space available on that line.
+  int StartX(int excess_space) const;
+
   // Returns the default line height, based on the default style.
   int GetDefaultLineHeight() const;
 
@@ -182,14 +189,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // |width_at_last_size_calculation_|. Returns the needed size.
   gfx::Size CalculateAndDoLayout(int width, bool dry_run);
 
-  // Adjusts the offsets of the views in a line for alignment and other line
-  // parameters.
-  void AdvanceOneLine(int* line_number,
-                      gfx::Point* offset,
-                      int* max_line_height,
-                      int width,
-                      std::vector<View*>* views_in_a_line,
-                      bool new_line = true);
+  // Creates a Label for a given |text| and |style_info|.
+  std::unique_ptr<Label> CreateLabel(const base::string16& text,
+                                     const RangeStyleInfo& style_info) const;
 
   // The text to display.
   base::string16 text_;
@@ -198,7 +200,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   int default_text_style_ = style::STYLE_PRIMARY;
 
   // Line height. If zero, style::GetLineHeight() is used.
-  int specified_line_height_;
+  int specified_line_height_ = 0;
 
   // The listener that will be informed of link clicks.
   StyledLabelListener* listener_;
@@ -216,16 +218,16 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // This variable saves the result of the last GetHeightForWidth call in order
   // to avoid repeated calculation.
   mutable gfx::Size calculated_size_;
-  mutable int width_at_last_size_calculation_;
-  int width_at_last_layout_;
+  mutable int width_at_last_calculation_ = 0;
+  int width_at_last_layout_ = 0;
 
   // Background color on which the label is drawn, for auto color readability.
-  SkColor displayed_on_background_color_;
-  bool displayed_on_background_color_set_;
+  SkColor displayed_on_background_color_ = SK_ColorWHITE;
+  bool displayed_on_background_color_set_ = false;
 
   // Controls whether the text is automatically re-colored to be readable on the
   // background.
-  bool auto_color_readability_enabled_;
+  bool auto_color_readability_enabled_ = true;
 
   // The horizontal alignment. This value is flipped for RTL. The default
   // behavior is to align left in LTR UI and right in RTL UI.

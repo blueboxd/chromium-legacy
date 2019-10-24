@@ -116,10 +116,10 @@ public final class ToolbarSecurityIconTest {
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
-        assertEquals(R.drawable.omnibox_https_invalid,
+        assertEquals(R.drawable.omnibox_not_secure_warning,
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.DANGEROUS,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-        assertEquals(R.drawable.omnibox_https_invalid,
+        assertEquals(R.drawable.omnibox_not_secure_warning,
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.DANGEROUS,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 

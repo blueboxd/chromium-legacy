@@ -77,7 +77,7 @@ class CONTENT_EXPORT SharedWorkerHost
   using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int worker_process_id,
-      network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory)>;
   static void SetNetworkFactoryForSubresourcesForTesting(
       const CreateNetworkFactoryCallback& url_loader_factory_callback);
 

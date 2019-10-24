@@ -20,7 +20,7 @@ class CastWindowManagerDefault : public CastWindowManager {
   // CastWindowManager implementation:
   void TearDown() override;
   void AddWindow(gfx::NativeView window) override;
-  void SetWindowId(gfx::NativeView window, WindowId window_id) override;
+  void SetZOrder(gfx::NativeView window, mojom::ZOrder z_order) override;
   gfx::NativeView GetRootWindow() override;
   std::vector<WindowId> GetWindowOrder() override;
   void InjectEvent(ui::Event* event) override;

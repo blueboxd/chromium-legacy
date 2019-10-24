@@ -17,6 +17,7 @@
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
 #include "mojo/public/cpp/bindings/map.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 using ::chromeos::machine_learning::mojom::BuiltinModelId;
 using ::chromeos::machine_learning::mojom::BuiltinModelSpec;
@@ -78,11 +79,11 @@ class MlServiceClientImpl : public MlServiceClient {
   // available.
   void InitMlServiceHandlesIfNeeded();
 
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   // Pointers used to execute functions in the ML service server end.
   ::chromeos::machine_learning::mojom::ModelPtr model_;
-  ::chromeos::machine_learning::mojom::GraphExecutorPtr executor_;
+  mojo::Remote<::chromeos::machine_learning::mojom::GraphExecutor> executor_;
 
   base::WeakPtrFactory<MlServiceClientImpl> weak_factory_{this};
 
@@ -145,15 +146,15 @@ void MlServiceClientImpl::InitMlServiceHandlesIfNeeded() {
   if (!executor_) {
     // Get the graph executor.
     model_->CreateGraphExecutor(
-        mojo::MakeRequest(&executor_),
+        executor_.BindNewPipeAndPassReceiver(),
         base::BindOnce(&MlServiceClientImpl::CreateGraphExecutorCallback,
                        weak_factory_.GetWeakPtr()));
-    executor_.set_connection_error_handler(base::BindOnce(
-        &MlServiceClientImpl::OnConnectionError, weak_factory_.GetWeakPtr()));
+    executor_.set_disconnect_handler(base::BindOnce(
+        &MlServiceClientImpl::OnMojoDisconnect, weak_factory_.GetWeakPtr()));
   }
 }
 
-void MlServiceClientImpl::OnConnectionError() {
+void MlServiceClientImpl::OnMojoDisconnect() {
   // TODO(crbug.com/893425): Log to UMA.
   LOG(WARNING) << "Mojo connection for ML service closed.";
   executor_.reset();

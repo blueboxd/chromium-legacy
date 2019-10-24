@@ -284,12 +284,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_sent_packet_manager_cleanup,
           true)
 
-// If true, QuicSession::ShouldKeepConnectionAlive() will not consider locally
-// closed streams whose highest byte offset is not received yet.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_aggressive_connection_aliveness,
-          true)
-
 // If true, QuicStreamSequencer will not take in new data if the stream is
 // reset.
 QUIC_FLAG(bool,
@@ -316,9 +310,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_reply_to_old_android_conformance_test,
           true)
 
-// If true, no SPDY SETTINGS will be sent after handshake is confirmed.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_send_settings, true)
-
 // The maximum amount of CRYPTO frame data that can be buffered.
 QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
 
@@ -333,13 +324,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_supports_tls_handshake, true)
 // If true, deprecate SpuriousRetransmitDetected and call SpuriousLossDetected
 // instead.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_detect_spurious_loss, true)
-
-// If true, a stream will reset itself if it receives a stream frame that
-// includes a data beyond the close offset.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_rst_if_stream_frame_beyond_close_offset,
-    true)
 
 // If true, enable IETF loss detection as described in
 // https://tools.ietf.org/html/draft-ietf-quic-recovery-22#section-6.1.
@@ -404,3 +388,26 @@ QUIC_FLAG(bool,
 // bandwidth * this flag), consider the current aggregation completed
 // and starts a new one.
 QUIC_FLAG(double, FLAGS_quic_ack_aggregation_bandwidth_threshold, 1.0)
+
+// If set to non-zero, the maximum number of consecutive pings that can be sent
+// with aggressive initial retransmittable on wire timeout if there is no new
+// data received. After which, the timeout will be exponentially back off until
+// exceeds the default ping timeout.
+QUIC_FLAG(int32_t,
+          FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count,
+          0)
+
+// If true, Adjacent stream frames will be combined into one stream frame before
+// the packet is serialized.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_coalesce_stream_frames, false)
+
+// If true, populate nonretransmittable frames in SerializedPacket.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_populate_nonretransmittable_frames,
+          false)
+
+// If true, a stream will be reset if it receives fin that has offset less than
+// its highest offset.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_no_decrease_in_final_offset,
+          false)

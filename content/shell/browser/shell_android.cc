@@ -79,11 +79,6 @@ void Shell::PlatformSetTitle(const base::string16& title) {
   NOTIMPLEMENTED() << ": " << title;
 }
 
-void Shell::LoadProgressChanged(WebContents* source, double progress) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_Shell_onLoadProgressChanged(env, java_object_, progress);
-}
-
 void Shell::SetOverlayMode(bool use_overlay_mode) {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_Shell_setOverlayMode(env, java_object_, use_overlay_mode);
@@ -99,6 +94,11 @@ bool Shell::PlatformIsFullscreenForTabOrPending(
     const WebContents* web_contents) const {
   JNIEnv* env = AttachCurrentThread();
   return Java_Shell_isFullscreenForTabOrPending(env, java_object_);
+}
+
+void Shell::LoadProgressChanged(double progress) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_Shell_onLoadProgressChanged(env, java_object_, progress);
 }
 
 void Shell::Close() {

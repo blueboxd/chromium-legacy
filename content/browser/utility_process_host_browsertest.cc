@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest,
 
 // Disabled because currently this causes a WER dialog to appear.
 IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest,
-                       LaunchElevatedProcessAndCrash_DISABLED) {
+                       DISABLED_LaunchElevatedProcessAndCrash) {
   RunUtilityProcess(true, true);
 }
 #endif

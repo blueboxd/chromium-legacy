@@ -77,39 +77,7 @@ void ExpectInitialOriginTrialFreezingPolicyWorks(
 TEST_F(PageAggregatorTest, InitialOriginTrialFreezingPolicy) {
   auto* mock_graph = graph();
 
-  // Unknown x [Unknown, Default, OptIn, OptOut]
-
-  ExpectInitialOriginTrialFreezingPolicyWorks(
-      mock_graph, InterventionPolicy::kUnknown /* f0_policy */,
-      InterventionPolicy::kUnknown /* f1_policy */,
-      InterventionPolicy::kUnknown /* f0_policy_aggregated */,
-      InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
-
-  ExpectInitialOriginTrialFreezingPolicyWorks(
-      mock_graph, InterventionPolicy::kUnknown /* f0_policy */,
-      InterventionPolicy::kDefault /* f1_policy */,
-      InterventionPolicy::kUnknown /* f0_policy_aggregated */,
-      InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
-
-  ExpectInitialOriginTrialFreezingPolicyWorks(
-      mock_graph, InterventionPolicy::kUnknown /* f0_policy */,
-      InterventionPolicy::kOptIn /* f1_policy */,
-      InterventionPolicy::kUnknown /* f0_policy_aggregated */,
-      InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
-
-  ExpectInitialOriginTrialFreezingPolicyWorks(
-      mock_graph, InterventionPolicy::kUnknown /* f0_policy */,
-      InterventionPolicy::kOptOut /* f1_policy */,
-      InterventionPolicy::kUnknown /* f0_policy_aggregated */,
-      InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
-
-  // Default x [Unknown, Default, OptIn, OptOut]
-
-  ExpectInitialOriginTrialFreezingPolicyWorks(
-      mock_graph, InterventionPolicy::kDefault /* f0_policy */,
-      InterventionPolicy::kUnknown /* f1_policy */,
-      InterventionPolicy::kDefault /* f0_policy_aggregated */,
-      InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
+  // Default x [Default, OptIn, OptOut]
 
   ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kDefault /* f0_policy */,
@@ -129,13 +97,7 @@ TEST_F(PageAggregatorTest, InitialOriginTrialFreezingPolicy) {
       InterventionPolicy::kDefault /* f0_policy_aggregated */,
       InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
 
-  // OptIn x [Unknown, Default, OptIn, OptOut]
-
-  ExpectInitialOriginTrialFreezingPolicyWorks(
-      mock_graph, InterventionPolicy::kOptIn /* f0_policy */,
-      InterventionPolicy::kUnknown /* f1_policy */,
-      InterventionPolicy::kOptIn /* f0_policy_aggregated */,
-      InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
+  // OptIn x [Default, OptIn, OptOut]
 
   ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptIn /* f0_policy */,
@@ -155,13 +117,7 @@ TEST_F(PageAggregatorTest, InitialOriginTrialFreezingPolicy) {
       InterventionPolicy::kOptIn /* f0_policy_aggregated */,
       InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
 
-  // OptOut x [Unknown, Default, OptIn, OptOut]
-
-  ExpectInitialOriginTrialFreezingPolicyWorks(
-      mock_graph, InterventionPolicy::kOptOut /* f0_policy */,
-      InterventionPolicy::kUnknown /* f1_policy */,
-      InterventionPolicy::kOptOut /* f0_policy_aggregated */,
-      InterventionPolicy::kUnknown /* f0f1_policy_aggregated */);
+  // OptOut x [Default, OptIn, OptOut]
 
   ExpectInitialOriginTrialFreezingPolicyWorks(
       mock_graph, InterventionPolicy::kOptOut /* f0_policy */,
@@ -191,15 +147,13 @@ TEST_F(PageAggregatorTest, OriginTrialFreezingPolicyChanges) {
       graph()->CreateFrameNodeAutoId(process.get(), page.get());
   frame->SetIsCurrent(true);
 
-  EXPECT_EQ(InterventionPolicy::kUnknown, page->origin_trial_freeze_policy());
+  EXPECT_EQ(InterventionPolicy::kDefault, page->origin_trial_freeze_policy());
   frame->SetOriginTrialFreezePolicy(InterventionPolicy::kOptIn);
   EXPECT_EQ(InterventionPolicy::kOptIn, page->origin_trial_freeze_policy());
   frame->SetOriginTrialFreezePolicy(InterventionPolicy::kOptOut);
   EXPECT_EQ(InterventionPolicy::kOptOut, page->origin_trial_freeze_policy());
   frame->SetOriginTrialFreezePolicy(InterventionPolicy::kDefault);
   EXPECT_EQ(InterventionPolicy::kDefault, page->origin_trial_freeze_policy());
-  frame->SetOriginTrialFreezePolicy(InterventionPolicy::kUnknown);
-  EXPECT_EQ(InterventionPolicy::kUnknown, page->origin_trial_freeze_policy());
 }
 
 TEST_F(PageAggregatorTest, WebLocksAggregation) {

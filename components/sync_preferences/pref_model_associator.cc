@@ -458,10 +458,6 @@ base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
   return value.release();
 }
 
-bool PrefModelAssociator::IsPrefSynced(const std::string& name) const {
-  return synced_preferences_.find(name) != synced_preferences_.end();
-}
-
 void PrefModelAssociator::AddSyncedPrefObserver(const std::string& name,
                                                 SyncedPrefObserver* observer) {
   auto& observers = synced_pref_observers_[name];
@@ -478,6 +474,11 @@ void PrefModelAssociator::RemoveSyncedPrefObserver(
   if (observer_iter == synced_pref_observers_.end())
     return;
   observer_iter->second->RemoveObserver(observer);
+}
+
+bool PrefModelAssociator::IsPrefSyncedForTesting(
+    const std::string& name) const {
+  return synced_preferences_.find(name) != synced_preferences_.end();
 }
 
 void PrefModelAssociator::RegisterPref(const std::string& name) {

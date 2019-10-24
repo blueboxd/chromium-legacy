@@ -17,6 +17,5 @@ payment
 picture-in-picture
 sync-xhr
 usb
-vr
 xr-spatial-tracking
 

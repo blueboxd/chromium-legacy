@@ -22,9 +22,9 @@
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
+#include "ash/shell_state.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "ash/utility/transformer_util.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -76,16 +76,11 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
                                 const display::Display& display) {
   display::ManagedDisplayInfo info =
       GetDisplayManager()->GetDisplayInfo(display.id());
-  const display::Display::Rotation effective_rotation =
-      info.GetLogicalActiveRotation();
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  ash_host->SetCursorConfig(display, effective_rotation);
+  ash_host->SetCursorConfig(display, info.GetLogicalActiveRotation());
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(host->window(), display));
   ash_host->SetRootWindowTransformer(std::move(transformer));
-
-  host->SetDisplayTransformHint(
-      DisplayRotationToOverlayTransform(effective_rotation));
 
   // Just moving the display requires the full redraw.
   // chrome-os-partner:33558.
@@ -231,6 +226,7 @@ void WindowTreeHostManager::Shutdown() {
   }
   CHECK(primary_rwc);
 
+  Shell::Get()->shell_state()->SetRootWindowForNewWindows(nullptr);
   for (auto* rwc : to_delete)
     delete rwc;
   delete primary_rwc;
@@ -472,7 +468,8 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
 
     AshWindowTreeHost* ash_host =
         AddWindowTreeHostForDisplay(display, AshWindowTreeHostInitParams());
-    RootWindowController::CreateForSecondaryDisplay(ash_host);
+    RootWindowController* new_root_window_controller =
+        RootWindowController::CreateForSecondaryDisplay(ash_host);
 
     // Magnifier controllers keep pointers to the current root window.
     // Update them here to avoid accessing them later.
@@ -484,15 +481,12 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
             ash_host->AsWindowTreeHost()->window());
 
     AshWindowTreeHost* to_delete = primary_tree_host_for_replace_;
-    primary_tree_host_for_replace_ = nullptr;
 
     // Show the shelf if the original WTH had a visible system
     // tray. It may or may not be visible depending on OOBE state.
     RootWindowController* old_root_window_controller =
         RootWindowController::ForWindow(
             to_delete->AsWindowTreeHost()->window());
-    RootWindowController* new_root_window_controller =
-        ash::Shell::Get()->GetPrimaryRootWindowController();
     TrayBackgroundView* old_tray =
         old_root_window_controller->GetStatusAreaWidget()
             ->unified_system_tray();
@@ -504,16 +498,15 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
       new_tray->GetWidget()->Show();
     }
 
-    DeleteHost(to_delete);
-#ifndef NDEBUG
-    auto iter = std::find_if(
-        window_tree_hosts_.begin(), window_tree_hosts_.end(),
+    // |to_delete| has already been removed from |window_tree_hosts_|.
+    DCHECK(std::none_of(
+        window_tree_hosts_.cbegin(), window_tree_hosts_.cend(),
         [to_delete](const std::pair<int64_t, AshWindowTreeHost*>& pair) {
           return pair.second == to_delete;
-        });
-    DCHECK(iter == window_tree_hosts_.end());
-#endif
-    // the host has already been removed from the window_tree_host_.
+        }));
+
+    DeleteHost(to_delete);
+    DCHECK(!primary_tree_host_for_replace_);
   } else if (primary_tree_host_for_replace_) {
     // TODO(oshima): It should be possible to consolidate logic for
     // unified and non unified, but I'm keeping them separated to minimize
@@ -543,15 +536,23 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
 
 void WindowTreeHostManager::DeleteHost(AshWindowTreeHost* host_to_delete) {
   ClearDisplayPropertiesOnHost(host_to_delete);
+  aura::Window* root_being_deleted = GetWindow(host_to_delete);
   RootWindowController* controller =
-      RootWindowController::ForWindow(GetWindow(host_to_delete));
+      RootWindowController::ForWindow(root_being_deleted);
   DCHECK(controller);
-  controller->MoveWindowsTo(GetPrimaryRootWindow());
+  aura::Window* primary_root_after_host_deletion =
+      GetRootWindowForDisplayId(GetPrimaryDisplayId());
+  controller->MoveWindowsTo(primary_root_after_host_deletion);
   // Delete most of root window related objects, but don't delete
   // root window itself yet because the stack may be using it.
   controller->Shutdown();
   if (primary_tree_host_for_replace_ == host_to_delete)
     primary_tree_host_for_replace_ = nullptr;
+  DCHECK_EQ(primary_root_after_host_deletion, Shell::GetPrimaryRootWindow());
+  if (Shell::GetRootWindowForNewWindows() == root_being_deleted) {
+    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
+        primary_root_after_host_deletion);
+  }
   // NOTE: ShelfWidget is gone, but Shelf still exists until this task runs.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, controller);
 }

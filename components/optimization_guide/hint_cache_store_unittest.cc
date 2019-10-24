@@ -13,9 +13,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/leveldb_proto/testing/fake_db.h"
-#include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
+#include "components/optimization_guide/store_update_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -111,7 +111,7 @@ class HintCacheStoreTest : public testing::Test {
   }
 
   // Moves the specified number of component hints into the update data.
-  void SeedComponentUpdateData(HintUpdateData* update_data,
+  void SeedComponentUpdateData(StoreUpdateData* update_data,
                                size_t component_hint_count) {
     for (size_t i = 0; i < component_hint_count; ++i) {
       std::string host_suffix = GetHostSuffix(i);
@@ -124,7 +124,7 @@ class HintCacheStoreTest : public testing::Test {
     }
   }
   // Moves the specified number of component hints into the update data.
-  void SeedFetchedUpdateData(HintUpdateData* update_data,
+  void SeedFetchedUpdateData(StoreUpdateData* update_data,
                              size_t fetched_hint_count) {
     for (size_t i = 0; i < fetched_hint_count; ++i) {
       std::string host_suffix = GetHostSuffix(i);
@@ -180,7 +180,7 @@ class HintCacheStoreTest : public testing::Test {
     }
   }
 
-  void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data,
+  void UpdateComponentHints(std::unique_ptr<StoreUpdateData> component_data,
                             bool update_success = true,
                             bool load_hint_entry_keys_success = true) {
     EXPECT_CALL(*this, OnUpdateHints());
@@ -196,7 +196,7 @@ class HintCacheStoreTest : public testing::Test {
     }
   }
 
-  void UpdateFetchedHints(std::unique_ptr<HintUpdateData> fetched_data,
+  void UpdateFetchedHints(std::unique_ptr<StoreUpdateData> fetched_data,
                           bool update_success = true,
                           bool load_hint_entry_keys_success = true) {
     EXPECT_CALL(*this, OnUpdateHints());
@@ -828,7 +828,7 @@ TEST_F(HintCacheStoreTest,
   SeedInitialData(schema_state, 10);
   CreateDatabase();
 
-  // HintUpdateData for a component update should only be created if the store
+  // StoreUpdateData for a component update should only be created if the store
   // is initialized.
   EXPECT_FALSE(hint_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kUpdateComponentVersion)));
@@ -840,7 +840,7 @@ TEST_F(HintCacheStoreTest, CreateComponentUpdateDataFailsForEarlierVersion) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  // No HintUpdateData for a component update should be created when the
+  // No StoreUpdateData for a component update should be created when the
   // component version of the update is older than the store's component
   // version.
   EXPECT_FALSE(hint_store()->MaybeCreateUpdateDataForComponentHints(
@@ -853,7 +853,7 @@ TEST_F(HintCacheStoreTest, CreateComponentUpdateDataFailsForCurrentVersion) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  // No HintUpdateData should be created when the component version of the
+  // No StoreUpdateData should be created when the component version of the
   // update is the same as the store's component version.
   EXPECT_FALSE(hint_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kDefaultComponentVersion)));
@@ -866,7 +866,7 @@ TEST_F(HintCacheStoreTest,
   CreateDatabase();
   InitializeStore(schema_state);
 
-  // HintUpdateData for a component update should be created when there is no
+  // StoreUpdateData for a component update should be created when there is no
   // pre-existing component in the store.
   EXPECT_TRUE(hint_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kDefaultComponentVersion)));
@@ -878,7 +878,7 @@ TEST_F(HintCacheStoreTest, CreateComponentUpdateDataSucceedsForNewerVersion) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  // HintUpdateData for a component update should be created when the component
+  // StoreUpdateData for a component update should be created when the component
   // version of the update is newer than the store's component version.
   EXPECT_TRUE(hint_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kUpdateComponentVersion)));
@@ -890,7 +890,7 @@ TEST_F(HintCacheStoreTest, UpdateComponentHintsUpdateEntriesFails) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -909,7 +909,7 @@ TEST_F(HintCacheStoreTest, UpdateComponentHintsGetKeysFails) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -932,7 +932,7 @@ TEST_F(HintCacheStoreTest, UpdateComponentHints) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -955,7 +955,7 @@ TEST_F(HintCacheStoreTest, UpdateComponentHintsAfterInitializationDataPurge) {
   CreateDatabase();
   InitializeStore(schema_state, true /*=purge_existing_data*/);
 
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -978,14 +978,14 @@ TEST_F(HintCacheStoreTest, CreateComponentDataWithAlreadyUpdatedVersionFails) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
   SeedComponentUpdateData(update_data.get(), update_hint_count);
   UpdateComponentHints(std::move(update_data));
 
-  // HintUpdateData for the component update should not be created for a second
+  // StoreUpdateData for the component update should not be created for a second
   // component update with the same version as the first component update.
   EXPECT_FALSE(hint_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kUpdateComponentVersion)));
@@ -1001,10 +1001,10 @@ TEST_F(HintCacheStoreTest, UpdateComponentHintsWithUpdatedVersionFails) {
   InitializeStore(schema_state);
 
   // Create two updates for the same component version with different counts.
-  std::unique_ptr<HintUpdateData> update_data_1 =
+  std::unique_ptr<StoreUpdateData> update_data_1 =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
-  std::unique_ptr<HintUpdateData> update_data_2 =
+  std::unique_ptr<StoreUpdateData> update_data_2 =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data_1);
@@ -1108,7 +1108,7 @@ TEST_F(HintCacheStoreTest, LoadHintSuccessUpdateData) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -1180,7 +1180,7 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyUpdateData) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -1216,7 +1216,7 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyForFetchedHints) {
   CreateDatabase();
   InitializeStore(schema_state);
 
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->CreateUpdateDataForFetchedHints(
           update_time, update_time + optimization_guide::features::
                                          StoredFetchedHintsFreshnessDuration());
@@ -1242,7 +1242,7 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyCheckFetchedBeforeComponentHints) {
   InitializeStore(schema_state);
 
   base::Version version("2.0.0");
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -1301,7 +1301,7 @@ TEST_F(HintCacheStoreTest, ClearFetchedHints) {
   InitializeStore(schema_state);
 
   base::Version version("2.0.0");
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -1364,7 +1364,7 @@ TEST_F(HintCacheStoreTest, ClearFetchedHints) {
 
   // Add Components back - newer version.
   base::Version version3("3.0.0");
-  std::unique_ptr<HintUpdateData> update_data2 =
+  std::unique_ptr<StoreUpdateData> update_data2 =
       hint_store()->MaybeCreateUpdateDataForComponentHints(version3);
 
   ASSERT_TRUE(update_data2);
@@ -1411,7 +1411,7 @@ TEST_F(HintCacheStoreTest, FetchHintsPurgeExpiredFetchedHints) {
   InitializeStore(schema_state);
 
   base::Version version("2.0.0");
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
@@ -1477,7 +1477,7 @@ TEST_F(HintCacheStoreTest, FetchedHintsLoadExpiredHint) {
   InitializeStore(schema_state);
 
   base::Version version("2.0.0");
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);

@@ -44,7 +44,7 @@ class CastWindowManagerAura : public CastWindowManager,
   void AddWindow(gfx::NativeView window) override;
   gfx::NativeView GetRootWindow() override;
   std::vector<WindowId> GetWindowOrder() override;
-  void SetWindowId(gfx::NativeView window, WindowId window_id) override;
+  void SetZOrder(gfx::NativeView window, mojom::ZOrder z_order) override;
   void InjectEvent(ui::Event* event) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;

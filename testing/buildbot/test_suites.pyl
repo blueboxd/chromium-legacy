@@ -4805,15 +4805,6 @@
       },
     },
 
-    'system_webview_shell_instrumentation_tests_oor_cors': {
-      'system_webview_shell_layout_test_apk_oor_cors': {
-        'args': [
-          '--enable-features=OutOfBlinkCors',
-        ],
-        'test': 'system_webview_shell_layout_test_apk',
-      },
-    },
-
     'system_webview_wpt': {
       'system_webview_wpt': {
         'swarming': {
@@ -4993,25 +4984,8 @@
       },
     },
 
-    'webview_bot_instrumentation_test_apk_oor_cors_gtest': {
-      'webview_instrumentation_test_apk_oor_cors': {
-        'args': ['--enable-features=OutOfBlinkCors'],
-        'swarming': {
-          'shards': 12,
-        },
-        'test': 'webview_instrumentation_test_apk',
-      },
-    },
-
     'webview_bot_unittests_gtest': {
       'android_webview_unittests': {},
-    },
-
-    'webview_bot_unittests_oor_cors_gtest': {
-      'android_webview_unittests_oor_cors': {
-        'args': ['--enable-features=OutOfBlinkCors'],
-        'test': 'android_webview_unittests',
-      },
     },
 
     'webview_cts_tests_gtest': {
@@ -5048,25 +5022,6 @@
       },
     },
 
-    'webview_cts_tests_gtest_oor_cors': {
-      'webview_cts_tests_oor_cors': {
-        'args': [
-          '--enable-features=OutOfBlinkCors',
-        ],
-        'swarming': {
-          'shards': 3,
-          'cipd_packages': [
-            {
-              "cipd_package": 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': '4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C',
-            }
-          ]
-        },
-        'test': 'webview_cts_tests',
-      },
-    },
-
     'webview_ui_instrumentation_tests': {
       'webview_ui_test_app_test_apk': {},
     },
@@ -5075,15 +5030,6 @@
       'webview_ui_test_app_test_apk_no_field_trial': {
         'args': [
           '--disable-field-trial-config',
-        ],
-        'test': 'webview_ui_test_app_test_apk',
-      },
-    },
-
-    'webview_ui_instrumentation_tests_oor_cors': {
-      'webview_ui_test_app_test_apk_oor_cors': {
-        'args': [
-          '--enable-features=OutOfBlinkCors',
         ],
         'test': 'webview_ui_test_app_test_apk',
       },
@@ -5985,11 +5931,11 @@
     ],
 
     'webview_bot_oor_cors_gtests': [
-      'system_webview_shell_instrumentation_tests_oor_cors',
-      'webview_bot_instrumentation_test_apk_oor_cors_gtest',
-      'webview_bot_unittests_oor_cors_gtest',
-      'webview_cts_tests_gtest_oor_cors',
-      'webview_ui_instrumentation_tests_oor_cors',
+      'system_webview_shell_instrumentation_tests',
+      'webview_bot_instrumentation_test_apk_gtest',
+      'webview_bot_unittests_gtest',
+      'webview_cts_tests_gtest',
+      'webview_ui_instrumentation_tests',
     ],
 
     'webview_bot_system_gtests': [

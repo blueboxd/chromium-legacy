@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "extensions/renderer/extension_throttle_entry.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -23,10 +24,6 @@ class WebURLRequest;
 namespace net {
 struct RedirectInfo;
 }  // namespace net
-
-namespace network {
-struct ResourceResponseHead;
-}  // namespace network
 
 namespace extensions {
 
@@ -58,8 +55,9 @@ class ExtensionThrottleManager {
                             const net::RedirectInfo& redirect_info);
 
   // Must be called when the |response_head| for a request has been received.
-  void WillProcessResponse(const GURL& response_url,
-                           const network::ResourceResponseHead& response_head);
+  void WillProcessResponse(
+      const GURL& response_url,
+      const network::mojom::URLResponseHead& response_head);
 
   // Set the network status online state as specified in |is_online|.
   void SetOnline(bool is_online);

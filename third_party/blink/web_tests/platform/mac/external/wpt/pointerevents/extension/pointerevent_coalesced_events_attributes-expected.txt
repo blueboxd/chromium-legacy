@@ -4,7 +4,7 @@ PASS touch pointercancel should not have any coalesced events
 PASS touch pointerover should not have any coalesced events
 PASS touch pointerenter should not have any coalesced events
 PASS touch pointerdown should not have any coalesced events
-PASS touch pointermove should have >2 coalesced events as main thread is busy.
+FAIL touch pointermove should have >2 coalesced events as main thread is busy. assert_greater_than: pointermove should have at least 2 coalesced events. expected a number greater than 1 but got 1
 PASS touch pointermove coalesced events should all be marked as trusted.
 PASS touch time stamps of coalesced events must be ascending.
 PASS touch pointermove coalesced events should all bubbles and cancelable as false.

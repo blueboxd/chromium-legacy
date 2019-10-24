@@ -71,7 +71,6 @@ enum AntialiasingMode {
   kAntialiasingModeNone,
   kAntialiasingModeMSAAImplicitResolve,
   kAntialiasingModeMSAAExplicitResolve,
-  kAntialiasingModeScreenSpaceAntialiasing,
 };
 
 struct WebglPreferences {

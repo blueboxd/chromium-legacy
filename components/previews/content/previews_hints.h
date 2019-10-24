@@ -39,7 +39,7 @@ class PreviewsHints {
   // processing.
   static std::unique_ptr<PreviewsHints> CreateFromHintsComponent(
       const optimization_guide::HintsComponentInfo& info,
-      std::unique_ptr<optimization_guide::HintUpdateData>
+      std::unique_ptr<optimization_guide::StoreUpdateData>
           component_update_data);
 
   // Creates a Hints instance from the provided hints configuration. This must
@@ -47,7 +47,7 @@ class PreviewsHints {
   // amount of processing.
   static std::unique_ptr<PreviewsHints> CreateFromHintsConfiguration(
       std::unique_ptr<optimization_guide::proto::Configuration> config,
-      std::unique_ptr<optimization_guide::HintUpdateData>
+      std::unique_ptr<optimization_guide::StoreUpdateData>
           component_update_data);
 
   // Set |hint_cache_| and updates the hint cache's component data if
@@ -93,8 +93,8 @@ class PreviewsHints {
   friend class PreviewsHintsTest;
 
   // Constructs PreviewsHints with |component_update_data|. This
-  // HintUpdateData is later moved into the HintCache during Initialize().
-  PreviewsHints(std::unique_ptr<optimization_guide::HintUpdateData>
+  // StoreUpdateData is later moved into the HintCache during Initialize().
+  PreviewsHints(std::unique_ptr<optimization_guide::StoreUpdateData>
                     component_update_data);
 
   // Parses optimization filters from |config| and populates corresponding
@@ -106,10 +106,10 @@ class PreviewsHints {
   // guide, which is guaranteed to outlive PreviewsHints.
   optimization_guide::HintCache* hint_cache_;
 
-  // HintUpdateData provided by the HintCache and populated during
+  // StoreUpdateData provided by the HintCache and populated during
   // PreviewsHints::Create(). |component_update_data_| is set during
   // construction and moved into the HintCache during Initialize().
-  std::unique_ptr<optimization_guide::HintUpdateData> component_update_data_;
+  std::unique_ptr<optimization_guide::StoreUpdateData> component_update_data_;
 
   // Blacklist of host suffixes for LITE_PAGE_REDIRECT Previews.
   std::unique_ptr<optimization_guide::OptimizationFilter>

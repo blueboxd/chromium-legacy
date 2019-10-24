@@ -264,10 +264,9 @@ public class VrShell extends GvrLayout
             }
 
             @Override
-            public void onLoadProgressChanged(Tab tab, int progress) {
+            public void onLoadProgressChanged(Tab tab, float progress) {
                 if (mNativeVrShell == 0) return;
-                VrShellJni.get().onLoadProgressChanged(
-                        mNativeVrShell, VrShell.this, progress / 100.0);
+                VrShellJni.get().onLoadProgressChanged(mNativeVrShell, VrShell.this, progress);
             }
 
             @Override

@@ -140,6 +140,10 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
                         infobarType:InfobarType::kInfobarTypeSaveCard];
 }
 
+- (void)translateBadgeButtonTapped:(id)sender {
+  // TODO(crbug.com/1014959): Implement.
+}
+
 - (void)overflowBadgeButtonTapped:(id)sender {
   NSMutableArray<id<BadgeItem>>* popupMenuBadges =
       [[NSMutableArray alloc] init];

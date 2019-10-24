@@ -69,6 +69,7 @@ source_set("unit_tests") {
     "//chromeos/services/device_sync",
     "//chromeos/services/device_sync:test_support",
     "//components/gcm_driver:test_support",
+    "//components/prefs:test_support",
     "//components/signin/public/identity_manager:test_support",
     "//net",
     "//services/network:test_support",

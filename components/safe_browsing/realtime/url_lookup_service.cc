@@ -29,6 +29,16 @@ const size_t kBackOffResetDurationInSeconds = 5 * 60;  // 5 minutes.
 
 const size_t kURLLookupTimeoutDurationInSeconds = 1 * 60;  // 1 minute.
 
+// Fragements, usernames and passwords are removed, becuase fragments are only
+// used for local navigations and usernames/passwords are too privacy sensitive.
+GURL SanitizeURL(const GURL& url) {
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  return url.ReplaceComponents(replacements);
+}
+
 }  // namespace
 
 RealTimeUrlLookupService::RealTimeUrlLookupService(
@@ -43,7 +53,7 @@ void RealTimeUrlLookupService::StartLookup(
   DCHECK(url.is_valid());
 
   RTLookupRequest request;
-  request.set_url(url.spec());
+  request.set_url(SanitizeURL(url).spec());
   request.set_lookup_type(RTLookupRequest::NAVIGATION);
   std::string req_data, req_base64;
   request.SerializeToString(&req_data);

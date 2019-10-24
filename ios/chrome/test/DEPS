@@ -21,6 +21,7 @@ include_rules = [
   "+ios/chrome/app",
   "+ios/chrome/browser",
   "+ios/public/provider/chrome",
+  "+ios/web/web_state/ui",
   "+ios/public/test",
   "+mojo/core/embedder",
   "+net/url_request",

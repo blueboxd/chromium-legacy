@@ -48,7 +48,7 @@ import java.nio.ByteBuffer;
 @JNINamespace("media")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ScreenCapture extends Fragment {
-    private static final String TAG = "cr_ScreenCapture";
+    private static final String TAG = "ScreenCapture";
 
     private static final int REQUEST_MEDIA_PROJECTION = 1;
 

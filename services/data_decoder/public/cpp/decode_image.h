@@ -9,6 +9,9 @@
 
 #include <vector>
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/data_decoder/public/mojom/data_decoder_service.mojom.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 
 namespace gfx {
@@ -40,10 +43,38 @@ void DecodeImage(service_manager::Connector* connector,
                  const gfx::Size& desired_image_frame_size,
                  mojom::ImageDecoder::DecodeImageCallback callback);
 
+// Same as above but uses an ImageDecoder interface directly instead of going
+// through the Service Manager.
+void DecodeImage(mojo::PendingRemote<mojom::ImageDecoder> pending_decoder,
+                 const std::vector<uint8_t>& encoded_bytes,
+                 mojom::ImageCodec codec,
+                 bool shrink_to_fit,
+                 uint64_t max_size_in_bytes,
+                 const gfx::Size& desired_image_frame_size,
+                 mojom::ImageDecoder::DecodeImageCallback callback);
+
+// Same as above but uses a dedicated DataDecoderService instance for the
+// operation.
+void DecodeImage(mojo::Remote<mojom::DataDecoderService> service,
+                 const std::vector<uint8_t>& encoded_bytes,
+                 mojom::ImageCodec codec,
+                 bool shrink_to_fit,
+                 uint64_t max_size_in_bytes,
+                 const gfx::Size& desired_image_frame_size,
+                 mojom::ImageDecoder::DecodeImageCallback callback);
+
 // Helper function to decode an animation via the data_decoder service. Any
 // image with multiple frames is considered an animation, so long as the frames
 // are all the same size.
-void DecodeAnimation(service_manager::Connector* connector,
+void DecodeAnimation(mojo::PendingRemote<mojom::ImageDecoder> pending_decoder,
+                     const std::vector<uint8_t>& encoded_bytes,
+                     bool shrink_to_fit,
+                     uint64_t max_size_in_bytes,
+                     mojom::ImageDecoder::DecodeAnimationCallback callback);
+
+// Same as above but uses a dedicated DataDecoderService instance for the
+// operation.
+void DecodeAnimation(mojo::Remote<mojom::DataDecoderService> service,
                      const std::vector<uint8_t>& encoded_bytes,
                      bool shrink_to_fit,
                      uint64_t max_size_in_bytes,

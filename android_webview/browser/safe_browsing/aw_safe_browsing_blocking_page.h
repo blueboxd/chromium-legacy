@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_BLOCKING_PAGE_H_
 #define ANDROID_WEBVIEW_BROWSER_SAFE_BROWSING_AW_SAFE_BROWSING_BLOCKING_PAGE_H_
 
+#include <memory>
+
 #include "components/safe_browsing/base_blocking_page.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 

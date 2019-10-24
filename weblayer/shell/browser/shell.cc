@@ -32,13 +32,17 @@ std::vector<Shell*> Shell::windows_;
 Shell::Shell(std::unique_ptr<BrowserController> browser_controller)
     : browser_controller_(std::move(browser_controller)), window_(nullptr) {
   windows_.push_back(this);
-  if (browser_controller_)
+  if (browser_controller_) {
     browser_controller_->AddObserver(this);
+    browser_controller_->GetNavigationController()->AddObserver(this);
+  }
 }
 
 Shell::~Shell() {
-  if (browser_controller_)
+  if (browser_controller_) {
+    browser_controller_->GetNavigationController()->RemoveObserver(this);
     browser_controller_->RemoveObserver(this);
+  }
   PlatformCleanUp();
 
   for (size_t i = 0; i < windows_.size(); ++i) {
@@ -104,24 +108,25 @@ void Shell::Initialize() {
   PlatformInitialize(GetShellDefaultSize());
 }
 
-void Shell::LoadingStateChanged(bool is_loading, bool to_different_document) {
-  int current_index = browser_controller_->GetNavigationController()
-                          ->GetNavigationListCurrentIndex();
-  int max_index =
-      browser_controller_->GetNavigationController()->GetNavigationListSize() -
-      1;
+void Shell::DisplayedUrlChanged(const GURL& url) {
+  PlatformSetAddressBarURL(url);
+}
 
-  PlatformEnableUIControl(BACK_BUTTON, current_index > 0);
-  PlatformEnableUIControl(FORWARD_BUTTON, current_index < max_index);
-  PlatformEnableUIControl(STOP_BUTTON, to_different_document && is_loading);
+void Shell::LoadStateChanged(bool is_loading, bool to_different_document) {
+  NavigationController* navigation_controller =
+      browser_controller_->GetNavigationController();
+
+  PlatformEnableUIControl(STOP_BUTTON, is_loading && to_different_document);
+
+  // TODO(estade): These should be updated in callbacks that correspond to the
+  // back/forward list changing, such as NavigationEntriesDeleted.
+  PlatformEnableUIControl(BACK_BUTTON, navigation_controller->CanGoBack());
+  PlatformEnableUIControl(FORWARD_BUTTON,
+                          navigation_controller->CanGoForward());
 }
 
 void Shell::LoadProgressChanged(double progress) {
   PlatformSetLoadProgress(progress);
-}
-
-void Shell::DisplayedUrlChanged(const GURL& url) {
-  PlatformSetAddressBarURL(url);
 }
 
 gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {

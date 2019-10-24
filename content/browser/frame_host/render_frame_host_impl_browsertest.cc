@@ -47,7 +47,6 @@
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_constants.h"
@@ -264,9 +263,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        URLLoaderFactoryNotTrusted) {
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
-  network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
   shell()->web_contents()->GetMainFrame()->CreateNetworkServiceDefaultFactory(
-      mojo::MakeRequest(&url_loader_factory));
+      url_loader_factory.BindNewPipeAndPassReceiver());
 
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();

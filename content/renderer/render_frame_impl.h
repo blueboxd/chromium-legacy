@@ -1159,7 +1159,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const std::set<blink::mojom::WebFeature>& features);
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
   void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
-  void OnNotifyUserActivation();
   void OnMediaPlayerActionAt(const gfx::PointF&,
                              const blink::WebMediaPlayerAction&);
   void OnRenderFallbackContent() const;

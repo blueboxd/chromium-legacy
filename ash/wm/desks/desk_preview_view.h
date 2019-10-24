@@ -62,8 +62,9 @@ class ASH_EXPORT DeskPreviewView : public views::View {
   explicit DeskPreviewView(DeskMiniView* mini_view);
   ~DeskPreviewView() override;
 
-  // Returns the height of the DeskPreviewView.
-  static int GetHeight(bool for_small_screens);
+  // Returns the height of the DeskPreviewView based on whether the |compact|
+  // small screens layout is used or not.
+  static int GetHeight(bool compact);
 
   void SetBorderColor(SkColor color);
 

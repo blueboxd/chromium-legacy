@@ -22,7 +22,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.BrowserController;
-import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationObserver;
 import org.chromium.weblayer.shell.WebLayerShellActivity;
@@ -51,11 +50,9 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
                     checkComplete();
                 }
             }
-        };
 
-        private BrowserObserver mBrowserObserver = new BrowserObserver() {
             @Override
-            public void loadingStateChanged(boolean isLoading, boolean toDifferentDocument) {
+            public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
                 mDoneLoading = !isLoading;
                 checkComplete();
             }
@@ -68,7 +65,6 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
 
         public void navigateAndWait() {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                mController.addObserver(mBrowserObserver);
                 mController.getNavigationController().addObserver(mNavigationObserver);
                 mController.getNavigationController().navigate(Uri.parse(mUrl));
             });
@@ -78,7 +74,6 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
                 throw new RuntimeException(e);
             }
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                mController.removeObserver(mBrowserObserver);
                 mController.getNavigationController().removeObserver(mNavigationObserver);
             });
         }

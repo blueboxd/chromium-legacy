@@ -313,7 +313,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   // LTHI always has an active tree.
   active_tree_ = std::make_unique<LayerTreeImpl>(
       this, new SyncedProperty<ScaleGroup>, new SyncedBrowserControls,
-      new SyncedElasticOverscroll);
+      new SyncedBrowserControls, new SyncedElasticOverscroll);
   active_tree_->property_trees()->is_active = true;
 
   viewport_ = Viewport::Create(this);
@@ -1697,10 +1697,11 @@ void LayerTreeHostImpl::BlockImplSideInvalidationRequestsForTesting(
 void LayerTreeHostImpl::ResetTreesForTesting() {
   if (active_tree_)
     active_tree_->DetachLayers();
-  active_tree_ =
-      std::make_unique<LayerTreeImpl>(this, active_tree()->page_scale_factor(),
-                                      active_tree()->top_controls_shown_ratio(),
-                                      active_tree()->elastic_overscroll());
+  active_tree_ = std::make_unique<LayerTreeImpl>(
+      this, active_tree()->page_scale_factor(),
+      active_tree()->top_controls_shown_ratio(),
+      active_tree()->bottom_controls_shown_ratio(),
+      active_tree()->elastic_overscroll());
   active_tree_->property_trees()->is_active = true;
   active_tree_->property_trees()->clear();
   if (pending_tree_)
@@ -2887,6 +2888,7 @@ void LayerTreeHostImpl::CreatePendingTree() {
     pending_tree_ = std::make_unique<LayerTreeImpl>(
         this, active_tree()->page_scale_factor(),
         active_tree()->top_controls_shown_ratio(),
+        active_tree()->bottom_controls_shown_ratio(),
         active_tree()->elastic_overscroll());
   }
   pending_tree_fully_painted_ = false;
@@ -3533,13 +3535,20 @@ float LayerTreeHostImpl::BottomControlsHeight() const {
   return active_tree_->bottom_controls_height();
 }
 
-void LayerTreeHostImpl::SetCurrentBrowserControlsShownRatio(float ratio) {
-  if (active_tree_->SetCurrentBrowserControlsShownRatio(ratio))
+void LayerTreeHostImpl::SetCurrentBrowserControlsShownRatio(
+    float top_ratio,
+    float bottom_ratio) {
+  if (active_tree_->SetCurrentBrowserControlsShownRatio(top_ratio,
+                                                        bottom_ratio))
     DidChangeBrowserControlsPosition();
 }
 
-float LayerTreeHostImpl::CurrentBrowserControlsShownRatio() const {
-  return active_tree_->CurrentBrowserControlsShownRatio();
+float LayerTreeHostImpl::CurrentTopControlsShownRatio() const {
+  return active_tree_->CurrentTopControlsShownRatio();
+}
+
+float LayerTreeHostImpl::CurrentBottomControlsShownRatio() const {
+  return active_tree_->CurrentBottomControlsShownRatio();
 }
 
 void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
@@ -5124,6 +5133,8 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
          scroll_info->page_scale_delta == 1.f);
   scroll_info->top_controls_delta =
       active_tree()->top_controls_shown_ratio()->PullDeltaForMainThread();
+  scroll_info->bottom_controls_delta =
+      active_tree()->bottom_controls_shown_ratio()->PullDeltaForMainThread();
   scroll_info->elastic_overscroll_delta =
       active_tree_->elastic_overscroll()->PullDeltaForMainThread();
   scroll_info->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);

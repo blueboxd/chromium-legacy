@@ -26,8 +26,7 @@
 #include "content/test/not_implemented_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -90,12 +89,12 @@ class SharedWorkerHostTest : public testing::Test {
 
     base::Optional<SubresourceLoaderParams> subresource_loader_params =
         SubresourceLoaderParams();
-    network::mojom::URLLoaderFactoryPtr loader_factory_ptr;
-    mojo::MakeStrongBinding(
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> loader_factory_remote;
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
-        mojo::MakeRequest(&loader_factory_ptr));
+        loader_factory_remote.InitWithNewPipeAndPassReceiver());
     subresource_loader_params->pending_appcache_loader_factory =
-        loader_factory_ptr.PassInterface();
+        std::move(loader_factory_remote);
 
     // Set up for service worker.
     auto service_worker_handle =

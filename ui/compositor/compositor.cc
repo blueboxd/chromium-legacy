@@ -456,14 +456,6 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space,
   }
 }
 
-void Compositor::SetDisplayTransformHint(gfx::OverlayTransform transform) {
-  if (display_transform_ == transform)
-    return;
-
-  display_transform_ = transform;
-  context_factory_private_->SetDisplayTransformHint(this, display_transform_);
-}
-
 void Compositor::SetBackgroundColor(SkColor color) {
   host_->set_background_color(color);
 

@@ -11,7 +11,6 @@ namespace device_sync {
 const char kCryptAuthGcmAppId[] = "com.google.chrome.cryptauth";
 const char kCryptAuthGcmSenderId[] = "381449029288";
 const char kCryptAuthV2EnrollmentAuthorizedEntity[] = "16502139086";
-const char kCryptAuthV2DeviceSyncAuthorizedEntity[] = "302798585788";
 
 }  // namespace device_sync
 

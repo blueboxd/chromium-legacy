@@ -138,6 +138,13 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   float top_controls_height = 0.f;
   float top_controls_shown_ratio = 0.f;
 
+#if defined(OS_ANDROID)
+  // Used to position Android bottom bar, whose position is computed by the
+  // renderer compositor.
+  float bottom_controls_height = 0.f;
+  float bottom_controls_shown_ratio = 0.f;
+#endif
+
   // The time at which the LocalSurfaceId used to submit this CompositorFrame
   // was allocated.
   base::TimeTicks local_surface_id_allocation_time;

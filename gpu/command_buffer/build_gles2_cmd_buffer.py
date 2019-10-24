@@ -1765,13 +1765,6 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
   },
-  'ApplyScreenSpaceAntialiasingCHROMIUM': {
-    'decoder_func': 'DoApplyScreenSpaceAntialiasingCHROMIUM',
-    'extension': 'CHROMIUM_screen_space_antialiasing',
-    'extension_flag': 'chromium_screen_space_antialiasing',
-    'unit_test': False,
-    'client_test': False,
-  },
   'AttachShader': {'decoder_func': 'DoAttachShader'},
   'BindAttribLocation': {
     'type': 'GLchar',

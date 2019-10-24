@@ -13,6 +13,9 @@
 // Action when a Save Card badge is tapped.
 - (void)saveCardBadgeButtonTapped:(id)sender;
 
+// Action when a Translate badge is tapped.
+- (void)translateBadgeButtonTapped:(id)sender;
+
 // Action when the overflow badge is tapped.
 - (void)overflowBadgeButtonTapped:(id)sender;
 @end

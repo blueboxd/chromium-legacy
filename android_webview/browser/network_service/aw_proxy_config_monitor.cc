@@ -5,7 +5,9 @@
 #include "android_webview/browser/network_service/aw_proxy_config_monitor.h"
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"

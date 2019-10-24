@@ -246,7 +246,7 @@ TraceEventMetadataSource::GenerateLegacyMetadataDict() {
     if (!metadata_dict) {
       continue;
     }
-    merged_metadata->MergeDictionary(merged_metadata.get());
+    merged_metadata->MergeDictionary(metadata_dict.get());
   }
 
   base::trace_event::MetadataFilterPredicate metadata_filter =

@@ -1025,4 +1025,17 @@ Page::PageClients::~PageClients() = default;
 
 template class CORE_TEMPLATE_EXPORT Supplement<Page>;
 
+const char InternalSettingsPageSupplementBase::kSupplementName[] =
+    "InternalSettings";
+
+// static
+void Page::PrepareForLeakDetection() {
+  // Internal settings are ScriptWrappable and thus may retain documents
+  // depending on whether the garbage collector(s) are able to find the settings
+  // object through the Page supplement. Prepares for leak detection by removing
+  // all InternalSetting objects from Pages.
+  for (Page* page : OrdinaryPages())
+    page->RemoveSupplement<InternalSettingsPageSupplementBase>();
+}
+
 }  // namespace blink

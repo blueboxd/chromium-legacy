@@ -14,6 +14,7 @@
 #include "base/sequence_checker.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
@@ -26,7 +27,8 @@ class TrustedVaultClient;
 // This class functions as mostly independent component of SyncService that
 // handles things related to encryption, including holding lots of state and
 // encryption communications with the sync thread.
-class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
+class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
+                          public DataTypeEncryptionHandler {
  public:
   // |sync_prefs| must not be null and must outlive this object.
   // |trusted_vault_client| may be null, but if non-null, the pointee must
@@ -55,9 +57,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // Returns the actual passphrase type being used for encryption.
   PassphraseType GetPassphraseType() const;
 
-  // Returns the current set of encrypted data types.
-  ModelTypeSet GetEncryptedDataTypes() const;
-
   // SyncEncryptionHandler::Observer implementation.
   void OnPassphraseRequired(
       PassphraseRequiredReason reason,
@@ -75,6 +74,10 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
                                    bool has_pending_keys) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time passphrase_time) override;
+
+  // DataTypeEncryptionHandler implementation.
+  bool HasCryptoError() const override;
+  ModelTypeSet GetEncryptedDataTypes() const override;
 
   // Used to provide the engine when it is initialized.
   void SetSyncEngine(const CoreAccountInfo& account_info, SyncEngine* engine);

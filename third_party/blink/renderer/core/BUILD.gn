@@ -241,6 +241,8 @@ component("core") {
 }
 
 jumbo_source_set("testing") {
+  testonly = true
+
   configs += [
     ":blink_core_pch",
     "//third_party/blink/renderer:config",

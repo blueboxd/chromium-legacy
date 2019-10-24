@@ -85,6 +85,9 @@ builder(
     ],
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
+    properties = {
+        'xcode_build_version': '10e1001',
+    },
 )
 
 builder(
@@ -98,6 +101,9 @@ builder(
     ],
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
+    properties = {
+        'xcode_build_version': '10e1001',
+    },
 )
 
 builder(
@@ -109,6 +115,9 @@ builder(
         ),
     ],
     os = os.MAC_ANY,
+    properties = {
+        'xcode_build_version': '10e1001',
+    },
 )
 
 builder(

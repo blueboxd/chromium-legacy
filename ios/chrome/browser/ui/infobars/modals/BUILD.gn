@@ -11,6 +11,8 @@ source_set("modals") {
     "infobar_password_modal_delegate.h",
     "infobar_password_table_view_controller.h",
     "infobar_password_table_view_controller.mm",
+    "infobar_save_card_table_view_controller.h",
+    "infobar_save_card_table_view_controller.mm",
   ]
   deps = [
     ":public",

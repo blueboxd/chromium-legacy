@@ -436,6 +436,14 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
   metadata_batch.entity_metadata = deserialized_data->entity_metadata();
   processor_->ModelReadyToSync(this, std::move(metadata_batch));
 
+  if (state_.passphrase_type == NigoriSpecifics::UNKNOWN) {
+    // Commit with keystore initialization wasn't successfully completed before
+    // the restart, so trigger it again here.
+    DCHECK(!state_.keystore_keys_cryptographer->IsEmpty());
+    QueuePendingLocalCommit(
+        PendingLocalNigoriCommit::ForKeystoreInitialization());
+  }
+
   // Keystore key rotation might be not performed, but required.
   MaybeTriggerKeystoreKeyRotation();
 }

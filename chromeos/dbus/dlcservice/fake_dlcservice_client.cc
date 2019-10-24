@@ -13,6 +13,18 @@ FakeDlcserviceClient::FakeDlcserviceClient() = default;
 
 FakeDlcserviceClient::~FakeDlcserviceClient() = default;
 
+void FakeDlcserviceClient::AddObserver(Observer* obs) {
+  VLOG(1) << "Requesting to add observer.";
+}
+
+void FakeDlcserviceClient::RemoveObserver(Observer* obs) {
+  VLOG(1) << "Requesting to remove observer.";
+}
+
+void FakeDlcserviceClient::NotifyProgressUpdateForTest(double progress) {
+  NOTREACHED();
+}
+
 void FakeDlcserviceClient::Install(
     const dlcservice::DlcModuleList& dlc_module_list,
     InstallCallback callback) {

@@ -13,8 +13,6 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -51,11 +49,8 @@ const int kUpperBoundCorner = 26;
 
 class ExploreSitesImageHelperTest : public testing::Test {
  public:
-  ExploreSitesImageHelperTest()
-      : data_decoder_(connector_factory_.RegisterInstance(
-            data_decoder::mojom::kServiceName)) {}
-
-  ~ExploreSitesImageHelperTest() override {}
+  ExploreSitesImageHelperTest() = default;
+  ~ExploreSitesImageHelperTest() override = default;
 
   EncodedImageList GetEncodedImageList(int num_icons);
   BitmapCallback StoreBitmap() {
@@ -68,14 +63,11 @@ class ExploreSitesImageHelperTest : public testing::Test {
 
   std::vector<std::unique_ptr<SkBitmap>> last_bitmap_list;
 
+  data_decoder::DataDecoderService* data_decoder() { return &data_decoder_; }
+
  protected:
   base::test::TaskEnvironment task_environment_;
 
-  std::unique_ptr<service_manager::Connector> GetConnector() {
-    return connector_factory_.CreateConnector();
-  }
-
-  service_manager::TestConnectorFactory connector_factory_;
   data_decoder::DataDecoderService data_decoder_;
   base::HistogramTester histogram_tester_;
 };
@@ -95,7 +87,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_SiteIcon) {
   ImageHelper image_helper;
 
   image_helper.ComposeSiteImage(StoreBitmap(), GetEncodedImageList(1),
-                                GetConnector());
+                                data_decoder());
 
   task_environment_.RunUntilIdle();
 
@@ -110,14 +102,14 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_SiteIcon) {
 TEST_F(ExploreSitesImageHelperTest, TestImageHelper_SiteIcon_MultipleCalls) {
   ImageHelper image_helper;
   image_helper.ComposeSiteImage(StoreBitmap(), GetEncodedImageList(1),
-                                GetConnector());
+                                data_decoder());
   task_environment_.RunUntilIdle();
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
   EXPECT_FALSE(last_bitmap_list[0]->isNull());
 
   image_helper.ComposeSiteImage(StoreBitmap(), GetEncodedImageList(1),
-                                GetConnector());
+                                data_decoder());
   task_environment_.RunUntilIdle();
 
   ASSERT_NE(nullptr, last_bitmap_list[1]);
@@ -128,9 +120,9 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_SiteIcon_MultipleCalls) {
 TEST_F(ExploreSitesImageHelperTest, TestImageHelper_SiteIcon_ConcurrentCalls) {
   ImageHelper image_helper;
   image_helper.ComposeSiteImage(StoreBitmap(), GetEncodedImageList(1),
-                                GetConnector());
+                                data_decoder());
   image_helper.ComposeSiteImage(StoreBitmap(), GetEncodedImageList(1),
-                                GetConnector());
+                                data_decoder());
   task_environment_.RunUntilIdle();
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
@@ -143,7 +135,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_SiteIcon_ConcurrentCalls) {
 TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_One) {
   ImageHelper image_helper;
   image_helper.ComposeCategoryImage(StoreBitmap(), kIconSize,
-                                    GetEncodedImageList(1), GetConnector());
+                                    GetEncodedImageList(1), data_decoder());
   task_environment_.RunUntilIdle();
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
@@ -170,7 +162,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_One) {
 TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Two) {
   ImageHelper image_helper;
   image_helper.ComposeCategoryImage(StoreBitmap(), kIconSize,
-                                    GetEncodedImageList(2), GetConnector());
+                                    GetEncodedImageList(2), data_decoder());
   task_environment_.RunUntilIdle();
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
@@ -196,7 +188,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Two) {
 TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Three) {
   ImageHelper image_helper;
   image_helper.ComposeCategoryImage(StoreBitmap(), kIconSize,
-                                    GetEncodedImageList(3), GetConnector());
+                                    GetEncodedImageList(3), data_decoder());
   task_environment_.RunUntilIdle();
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
@@ -225,7 +217,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Three) {
 TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_Four) {
   ImageHelper image_helper;
   image_helper.ComposeCategoryImage(StoreBitmap(), kIconSize,
-                                    GetEncodedImageList(4), GetConnector());
+                                    GetEncodedImageList(4), data_decoder());
   task_environment_.RunUntilIdle();
 
   ASSERT_NE(nullptr, last_bitmap_list[0]);
@@ -265,7 +257,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_InvalidWebP) {
       image_list.push_back(std::make_unique<EncodedImageBytes>(kWebpBytes));
     }
     image_helper.ComposeCategoryImage(StoreBitmap(), kIconSize,
-                                      std::move(image_list), GetConnector());
+                                      std::move(image_list), data_decoder());
 
     task_environment_.RunUntilIdle();
 
@@ -284,7 +276,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_ImageDecodedUMA) {
 
   // Record one success UMA from CompseSiteImage.
   image_helper.ComposeSiteImage(StoreBitmap(), GetEncodedImageList(1),
-                                GetConnector());
+                                data_decoder());
   task_environment_.RunUntilIdle();
 
   histograms().ExpectTotalCount("ExploreSites.ImageDecoded", 1);
@@ -294,7 +286,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_ImageDecodedUMA) {
   EncodedImageList image_list;
   image_list.push_back(std::make_unique<EncodedImageBytes>(kInvalidWebpBytes));
   image_helper.ComposeSiteImage(StoreBitmap(), std::move(image_list),
-                                GetConnector());
+                                data_decoder());
   task_environment_.RunUntilIdle();
 
   histograms().ExpectTotalCount("ExploreSites.ImageDecoded", 2);
@@ -302,7 +294,7 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_ImageDecodedUMA) {
 
   // Record 2 samples from ComposeCategoryImage.
   image_helper.ComposeCategoryImage(StoreBitmap(), kIconSize,
-                                    GetEncodedImageList(2), GetConnector());
+                                    GetEncodedImageList(2), data_decoder());
   task_environment_.RunUntilIdle();
 
   histograms().ExpectTotalCount("ExploreSites.ImageDecoded", 4);

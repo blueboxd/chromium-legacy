@@ -48,13 +48,15 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
  public:
   virtual ~MockDelegate() {}
 
-  std::unique_ptr<AvatarMenu> CreateAvatarMenu(
-      AvatarMenuObserver* observer) override {
-    return nullptr;
+  void GetProfilesForAppAsync(
+      const std::string& app_id,
+      const std::vector<base::FilePath>& profile_paths_to_check,
+      base::OnceCallback<void(const std::vector<base::FilePath>&)> callback)
+      override {
+    get_profiles_for_app_callbacks_.push_back(
+        base::BindOnce(std::move(callback), profile_paths_to_check));
   }
-  base::FilePath GetFullProfilePath(const base::FilePath& relative_path) {
-    return relative_path;
-  }
+
   MOCK_METHOD1(ProfileForPath, Profile*(const base::FilePath&));
   void LoadProfileAsync(const base::FilePath& path,
                         base::OnceCallback<void(Profile*)> callback) override {
@@ -136,11 +138,21 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
     return callbacks_.erase(path);
   }
 
+  bool RunGetProfilesForAppCallback() {
+    if (get_profiles_for_app_callbacks_.empty())
+      return false;
+    std::move(get_profiles_for_app_callbacks_.front()).Run();
+    get_profiles_for_app_callbacks_.pop_front();
+    return true;
+  }
+
  private:
   ShimLaunchedCallback* launch_shim_callback_capture_ = nullptr;
   ShimTerminatedCallback* terminated_shim_callback_capture_ = nullptr;
   std::map<base::FilePath, base::OnceCallback<void(Profile*)>> callbacks_;
   std::unique_ptr<AppShimHost> host_for_create_ = nullptr;
+
+  std::list<base::OnceClosure> get_profiles_for_app_callbacks_;
   bool allow_shim_to_connect_ = true;
 };
 
@@ -162,6 +174,16 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
     ExtensionAppShimHandler::OnShimFocus(host, focus_type, files);
   }
 
+  void SetProfileMenuItems(
+      std::vector<chrome::mojom::ProfileMenuItemPtr> new_profile_menu_items) {
+    new_profile_menu_items_ = std::move(new_profile_menu_items);
+  }
+  void UpdateProfileMenuItems() override {
+    profile_menu_items_.clear();
+    for (const auto& item : new_profile_menu_items_)
+      profile_menu_items_.push_back(item.Clone());
+  }
+
   void SetAcceptablyCodeSigned(bool is_acceptable_code_signed) {
     is_acceptably_code_signed_ = is_acceptable_code_signed;
   }
@@ -172,6 +194,7 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
   content::NotificationRegistrar& GetRegistrar() { return registrar(); }
 
  private:
+  std::vector<chrome::mojom::ProfileMenuItemPtr> new_profile_menu_items_;
   bool is_acceptably_code_signed_ = true;
   DISALLOW_COPY_AND_ASSIGN(TestingExtensionAppShimHandler);
 };
@@ -231,6 +254,22 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
 const char kTestAppIdA[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kTestAppIdB[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
+class TestAppShim : public chrome::mojom::AppShim {
+ public:
+  // chrome::mojom::AppShim:
+  void CreateRemoteCocoaApplication(
+      remote_cocoa::mojom::ApplicationAssociatedRequest request) override {}
+  void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
+  void SetBadgeLabel(const std::string& badge_label) override {}
+  void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
+  void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
+                             profile_menu_items) override {
+    profile_menu_items_ = std::move(profile_menu_items);
+  }
+
+  std::vector<chrome::mojom::ProfileMenuItemPtr> profile_menu_items_;
+};
+
 class TestHost : public AppShimHost {
  public:
   TestHost(const base::FilePath& profile_path,
@@ -240,8 +279,13 @@ class TestHost : public AppShimHost {
                     app_id,
                     profile_path,
                     false /* uses_remote_views */),
+        test_app_shim_(new TestAppShim),
         test_weak_factory_(this) {}
   ~TestHost() override {}
+
+  chrome::mojom::AppShim* GetAppShim() const override {
+    return test_app_shim_.get();
+  }
 
   // Record whether or not OnBootstrapConnected has been called.
   void OnBootstrapConnected(
@@ -257,6 +301,8 @@ class TestHost : public AppShimHost {
   }
 
   using AppShimHost::ProfileSelectedFromMenu;
+
+  std::unique_ptr<TestAppShim> test_app_shim_;
 
  private:
   bool did_connect_to_host_ = false;
@@ -901,6 +947,75 @@ TEST_F(ExtensionAppShimHandlerTest, MultiProfileSelectMenu) {
   EXPECT_CALL(*delegate_, LaunchApp(_, _, _)).Times(0);
   host_aa_->ProfileSelectedFromMenu(profile_path_a_);
   host_aa_->ProfileSelectedFromMenu(profile_path_b_);
+}
+
+TEST_F(ExtensionAppShimHandlerTest, ProfileMenuOneProfile) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAppShimMultiProfile},
+      /*disabled_features=*/{});
+
+  // Set this app to be installed for profile A.
+  {
+    auto item_a = chrome::mojom::ProfileMenuItem::New();
+    item_a->profile_path = profile_path_a_;
+    item_a->menu_index = 999;
+
+    std::vector<chrome::mojom::ProfileMenuItemPtr> items;
+    items.push_back(std::move(item_a));
+    handler_->SetProfileMenuItems(std::move(items));
+  }
+
+  // When the app activates, a host is created. This will trigger building
+  // the avatar menu.
+  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
+  handler_->OnAppActivated(&profile_a_, kTestAppIdA);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+
+  // Launch the shim.
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get(), _))
+      .Times(0);
+  RegisterOnlyLaunch(bootstrap_aa_, nullptr);
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+  const auto& menu_items = host_aa_->test_app_shim_->profile_menu_items_;
+
+  // We should have no menu items, because there is only one installed profile.
+  EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
+  EXPECT_FALSE(delegate_->RunGetProfilesForAppCallback());
+  EXPECT_TRUE(menu_items.empty());
+
+  // Add profile B to the avatar menu and call the avatar menu observer update
+  // method.
+  {
+    auto item_a = chrome::mojom::ProfileMenuItem::New();
+    item_a->profile_path = profile_path_a_;
+    item_a->menu_index = 999;
+
+    auto item_b = chrome::mojom::ProfileMenuItem::New();
+    item_b->profile_path = profile_path_b_;
+    item_b->menu_index = 111;
+
+    std::vector<chrome::mojom::ProfileMenuItemPtr> items;
+    items.push_back(std::move(item_a));
+    items.push_back(std::move(item_b));
+    handler_->SetProfileMenuItems(std::move(items));
+  }
+  handler_->OnAvatarMenuChanged(nullptr);
+  EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
+  EXPECT_FALSE(delegate_->RunGetProfilesForAppCallback());
+
+  // We should now have 2 menu items. They should be sorted by menu_index,
+  // making b be before a.
+  EXPECT_EQ(menu_items.size(), 2u);
+  EXPECT_EQ(menu_items[0]->profile_path, profile_path_b_);
+  EXPECT_EQ(menu_items[1]->profile_path, profile_path_a_);
+
+  // Activate profile B. This should trigger re-building the avatar menu.
+  handler_->OnAppActivated(&profile_b_, kTestAppIdA);
+  EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
+  EXPECT_FALSE(delegate_->RunGetProfilesForAppCallback());
 }
 
 }  // namespace apps

@@ -9,7 +9,7 @@
 #include "base/test/mock_callback.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/header_modification_delegate.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -165,7 +165,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
   // referrer but we do for testing purposes.
   redirect_info.new_referrer = kTestURL.spec();
 
-  auto response_head = std::make_unique<network::ResourceResponseHead>();
+  auto response_head = network::mojom::URLResponseHead::New();
   response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
   response_head->headers->AddHeader("X-Response-1: Foo");
   response_head->headers->AddHeader("X-Response-2: Bar");
@@ -209,7 +209,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
         EXPECT_EQ(GURL(), redirect_url);
       }));
 
-  response_head = std::make_unique<network::ResourceResponseHead>();
+  response_head = network::mojom::URLResponseHead::New();
   response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
   response_head->headers->AddHeader("X-Response-3: Foo");
   response_head->headers->AddHeader("X-Response-4: Bar");
@@ -256,19 +256,19 @@ TEST(ChromeSigninURLLoaderThrottleTest, InterceptSubFrame) {
 
   net::RedirectInfo redirect_info;
   redirect_info.new_url = GURL("https://youtube.com");
-  network::ResourceResponseHead response_head;
+  auto response_head = network::mojom::URLResponseHead::New();
 
   std::vector<std::string> request_headers_to_remove;
   net::HttpRequestHeaders modified_request_headers;
-  throttle->WillRedirectRequest(&redirect_info, response_head, &defer,
+  throttle->WillRedirectRequest(&redirect_info, *response_head, &defer,
                                 &request_headers_to_remove,
                                 &modified_request_headers);
   EXPECT_FALSE(defer);
   EXPECT_TRUE(request_headers_to_remove.empty());
   EXPECT_TRUE(modified_request_headers.IsEmpty());
 
-  throttle->WillProcessResponse(GURL("https://youtube.com"), &response_head,
-                                &defer);
+  throttle->WillProcessResponse(GURL("https://youtube.com"),
+                                response_head.get(), &defer);
   EXPECT_FALSE(defer);
 }
 

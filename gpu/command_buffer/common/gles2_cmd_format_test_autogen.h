@@ -5456,17 +5456,6 @@ TEST_F(GLES2FormatTest, BlendBarrierKHR) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, ApplyScreenSpaceAntialiasingCHROMIUM) {
-  cmds::ApplyScreenSpaceAntialiasingCHROMIUM& cmd =
-      *GetBufferAs<cmds::ApplyScreenSpaceAntialiasingCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd);
-  EXPECT_EQ(
-      static_cast<uint32_t>(cmds::ApplyScreenSpaceAntialiasingCHROMIUM::kCmdId),
-      cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, BindFragDataLocationIndexedEXTBucket) {
   cmds::BindFragDataLocationIndexedEXTBucket& cmd =
       *GetBufferAs<cmds::BindFragDataLocationIndexedEXTBucket>();

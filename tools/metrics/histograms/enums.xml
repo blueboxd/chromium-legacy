@@ -2504,6 +2504,13 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="PROMO_SEEN"/>
 </enum>
 
+<enum name="AppSeedRequestState">
+  <int value="0" label="Unknown seed state"/>
+  <int value="1" label="Current seed fresh"/>
+  <int value="2" label="New seed requested from the service"/>
+  <int value="3" label="Seed request to service throttled by client"/>
+</enum>
+
 <enum name="AppsPageDragSource">
   <int value="0" label="Same apps pane"/>
   <int value="1" label="Different apps pane"/>
@@ -18475,6 +18482,7 @@ Called by update_net_error_codes.py.-->
   <int value="634" label="InsecureContentAllowedForUrls"/>
   <int value="635" label="InsecureContentBlockedForUrls"/>
   <int value="636" label="DeviceWebBasedAttestationAllowedUrls"/>
+  <int value="637" label="BlockExternalExtensions"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -21043,6 +21051,7 @@ Called by update_net_error_codes.py.-->
   <int value="1395" label="AUTOTESTPRIVATE_SETAPPWINDOWSTATE"/>
   <int value="1396" label="AUTOTESTPRIVATE_CLOSEAPPWINDOW"/>
   <int value="1397" label="AUTOTESTPRIVATE_REFRESHENTERPRISEPOLICIES"/>
+  <int value="1398" label="AUTOTESTPRIVATE_INSTALLPWAFORCURRENTURL"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -30788,8 +30797,23 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2004287464" label="AUDCLNT_E_BUFFER_ERROR"/>
   <int value="-2004287463" label="AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED"/>
   <int value="-2004287456" label="AUDCLNT_E_INVALID_DEVICE_PERIOD"/>
+  <int value="-2003283968" label="DWRITE_E_FILEFORMAT"/>
+  <int value="-2003283967" label="DWRITE_E_UNEXPECTED"/>
+  <int value="-2003283966" label="DWRITE_E_NOFONT"/>
+  <int value="-2003283965" label="DWRITE_E_FILENOTFOUND"/>
+  <int value="-2003283964" label="DWRITE_E_FILEACCESS"/>
+  <int value="-2003283963" label="DWRITE_E_FONTCOLLECTIONOBSOLETE"/>
+  <int value="-2003283962" label="DWRITE_E_ALREADYREGISTERED"/>
+  <int value="-2003283961" label="DWRITE_E_CACHEFORMAT"/>
+  <int value="-2003283960" label="DWRITE_E_CACHEVERSION"/>
+  <int value="-2003283959" label="DWRITE_E_UNSUPPORTEDOPERATION"/>
+  <int value="-2003283958" label="DWRITE_E_TEXTRENDERERINCOMPATIBLE"/>
+  <int value="-2003283957" label="DWRITE_E_FLOWDIRECTIONCONFLICTS"/>
+  <int value="-2003283956" label="DWRITE_E_NOCOLOR"/>
   <int value="-1606219753" label="GOOPDATE_E_NON_BLOCKING_CALL_PENDING"/>
   <int value="-1606219747" label="GOOPDATE_E_APP_USING_EXTERNAL_UPDATER"/>
+  <int value="-805306212" label="STATUS_DEVICE_DATA_ERROR"/>
+  <int value="-805305979" label="STATUS_IO_DEVICE_ERROR"/>
   <int value="143196161" label="AUDCLNT_S_BUFFER_EMPTY"/>
   <int value="143196162" label="AUDCLNT_S_THREAD_ALREADY_REGISTERED"/>
   <int value="143196163" label="AUDCLNT_S_POSITION_STALLED"/>
@@ -37619,6 +37643,7 @@ from previous Chrome versions.
   <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
   <int value="976278412" label="google-password-manager:enabled"/>
   <int value="977968353" label="WebUITabStrip:disabled"/>
+  <int value="978712907" label="PrintServerUi:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="981818901" label="AppBanners:enabled"/>
@@ -37659,6 +37684,7 @@ from previous Chrome versions.
       label="disable-hide-inactive-stacked-tab-close-buttons"/>
   <int value="1022424308" label="SignedExchangeSubresourcePrefetch:enabled"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
+  <int value="1023668536" label="PrintServerUi:enabled"/>
   <int value="1024560563" label="EnableFuzzyAppSearch:enabled"/>
   <int value="1026981579" label="TLS13HardeningForLocalAnchors:enabled"/>
   <int value="1027252926" label="SyncSupportSecondaryAccount:enabled"/>

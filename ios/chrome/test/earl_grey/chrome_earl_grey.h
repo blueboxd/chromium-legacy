@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include <string>
 
@@ -39,6 +39,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 @interface ChromeEarlGreyImpl : BaseEGTestHelperImpl
 
 #pragma mark - Device Utilities
+
+// Simulate the user action to rotate the device to a certain orientation.
+// TODO(crbug.com/1017265): Remove along EG1 support.
+- (void)rotateDeviceToOrientation:(UIDeviceOrientation)deviceOrientation
+                            error:(NSError**)error;
 
 // Returns YES if running on an iPad.
 - (BOOL)isIPadIdiom;

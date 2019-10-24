@@ -49,8 +49,7 @@ IncrementalMarkingTestDriver::~IncrementalMarkingTestDriver() {
 }
 
 void IncrementalMarkingTestDriver::Start() {
-  thread_state_->IncrementalMarkingStart(
-      BlinkGC::GCReason::kForcedGCForTesting);
+  thread_state_->IncrementalMarkingStartForTesting();
 }
 
 bool IncrementalMarkingTestDriver::SingleStep(BlinkGC::StackState stack_state) {
@@ -75,7 +74,7 @@ void IncrementalMarkingTestDriver::FinishGC(bool complete_sweep) {
   FinishSteps(BlinkGC::StackState::kNoHeapPointersOnStack);
   CHECK_EQ(ThreadState::kIncrementalMarkingFinalizeScheduled,
            thread_state_->GetGCState());
-  thread_state_->RunScheduledGC(BlinkGC::StackState::kNoHeapPointersOnStack);
+  thread_state_->IncrementalMarkingFinalize();
   CHECK(!thread_state_->IsIncrementalMarking());
   if (complete_sweep) {
     thread_state_->CompleteSweep();

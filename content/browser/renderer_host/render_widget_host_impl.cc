@@ -762,23 +762,16 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   process_->UpdateClientPriority(this);
 }
 
-void RenderWidgetHostImpl::OnImeTextCommittedEvent(
-    const base::string16& text_str) {
-  for (auto& observer : ime_text_committed_observers_) {
-    observer.OnImeTextCommittedEvent(text_str);
+void RenderWidgetHostImpl::AddImeInputEventObserver(
+    RenderWidgetHost::InputEventObserver* observer) {
+  if (!ime_input_event_observers_.HasObserver(observer)) {
+    ime_input_event_observers_.AddObserver(observer);
   }
 }
 
-void RenderWidgetHostImpl::AddImeTextCommittedEventObserver(
+void RenderWidgetHostImpl::RemoveImeInputEventObserver(
     RenderWidgetHost::InputEventObserver* observer) {
-  if (!ime_text_committed_observers_.HasObserver(observer)) {
-    ime_text_committed_observers_.AddObserver(observer);
-  }
-}
-
-void RenderWidgetHostImpl::RemoveImeTextCommittedEventObserver(
-    RenderWidgetHost::InputEventObserver* observer) {
-  ime_text_committed_observers_.RemoveObserver(observer);
+  ime_input_event_observers_.RemoveObserver(observer);
 }
 #endif
 
@@ -1955,6 +1948,11 @@ void RenderWidgetHostImpl::ImeSetComposition(
     int selection_end) {
   GetWidgetInputHandler()->ImeSetComposition(
       text, ime_text_spans, replacement_range, selection_start, selection_end);
+#if defined(OS_ANDROID)
+  for (auto& observer : ime_input_event_observers_) {
+    observer.OnImeSetComposingTextEvent(text);
+  }
+#endif
 }
 
 void RenderWidgetHostImpl::ImeCommitText(
@@ -1965,10 +1963,20 @@ void RenderWidgetHostImpl::ImeCommitText(
   GetWidgetInputHandler()->ImeCommitText(text, ime_text_spans,
                                          replacement_range, relative_cursor_pos,
                                          base::OnceClosure());
+#if defined(OS_ANDROID)
+  for (auto& observer : ime_input_event_observers_) {
+    observer.OnImeTextCommittedEvent(text);
+  }
+#endif
 }
 
 void RenderWidgetHostImpl::ImeFinishComposingText(bool keep_selection) {
   GetWidgetInputHandler()->ImeFinishComposingText(keep_selection);
+#if defined(OS_ANDROID)
+  for (auto& observer : ime_input_event_observers_) {
+    observer.OnImeFinishComposingTextEvent();
+  }
+#endif
 }
 
 void RenderWidgetHostImpl::ImeCancelComposition() {

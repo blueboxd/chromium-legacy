@@ -724,38 +724,6 @@ TEST_F(GestureProviderTest, NoTapAfterScrollBegins) {
   EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_LONG_TAP));
 }
 
-TEST_F(GestureProviderTest, ScrollBeginLatencyUMA) {
-  auto histogram_tester = std::make_unique<base::HistogramTester>();
-  base::TimeTicks event_time = base::TimeTicks::Now();
-
-  // Send in a DOWN and MOVE that exceeds the slop threshold, and validate
-  // that the UMA fires.
-  MockMotionEvent event =
-      ObtainMotionEvent(event_time, MotionEvent::Action::DOWN);
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
-  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
-
-  const float touch_slop = GetTouchSlop();
-  event =
-      ObtainMotionEvent(event_time + kOneMicrosecond, MotionEvent::Action::MOVE,
-                        kFakeCoordX + 2 * touch_slop, kFakeCoordY);
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetMostRecentGestureEventType());
-
-  base::TimeTicks complete_time = base::TimeTicks::Now();
-  std::vector<base::Bucket> buckets =
-      histogram_tester->GetAllSamples("Event.Scroll.TouchGestureLatency");
-
-  EXPECT_EQ(buckets.size(), 1ULL);
-  EXPECT_LE(buckets.front().min, (complete_time - event_time).InMilliseconds());
-
-  event = ObtainMotionEvent(event_time + kOneSecond, MotionEvent::Action::UP,
-                            kFakeCoordX + 2 * touch_slop, kFakeCoordY);
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_SCROLL_END, GetMostRecentGestureEventType());
-}
-
 TEST_F(GestureProviderTest, DoubleTap) {
   base::TimeTicks event_time = base::TimeTicks::Now();
 
@@ -1024,7 +992,6 @@ TEST_F(GestureProviderTest, SlopRegionCheckOnTwoFingerScroll) {
   EnableTwoFingerTap(kMaxTwoFingerTapSeparation, base::TimeDelta());
   const float scaled_touch_slop = GetTouchSlop();
 
-  auto histogram_tester = std::make_unique<base::HistogramTester>();
   base::TimeTicks event_time = base::TimeTicks::Now();
 
   MockMotionEvent event =
@@ -1072,10 +1039,6 @@ TEST_F(GestureProviderTest, SlopRegionCheckOnTwoFingerScroll) {
   EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetReceivedGesture(3).type());
   EXPECT_EQ(ET_GESTURE_SCROLL_END, GetReceivedGesture(4).type());
   EXPECT_EQ(5U, GetReceivedGestureCount());
-
-  // Even when there are two pointers, we should only log the gesture latency
-  // one time.
-  histogram_tester->ExpectTotalCount("Event.Scroll.TouchGestureLatency", 1);
 }
 
 // This test simulates cases like (crbug.com/704426) in which some of the events

@@ -676,9 +676,8 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   // The OSCrypt keys are process bound, so if network service is out of
   // process, send it the required key.
   if (content::IsOutOfProcessNetworkService()) {
-    std::string key = OSCrypt::GetRawEncryptionKey();
-    DCHECK(!key.empty());
-    content::GetNetworkService()->SetEncryptionKey(key);
+    content::GetNetworkService()->SetEncryptionKey(
+        OSCrypt::GetRawEncryptionKey());
   }
 #endif
 

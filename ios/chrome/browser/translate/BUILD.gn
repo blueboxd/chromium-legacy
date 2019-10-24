@@ -5,6 +5,7 @@
 source_set("public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "translate_constants.h",
     "translate_infobar_delegate_observer_bridge.h",
     "translate_infobar_delegate_observer_bridge.mm",
   ]

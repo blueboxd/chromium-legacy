@@ -51,7 +51,7 @@ import java.lang.annotation.RetentionPolicy;
  * The URL text entry view for the Omnibox.
  */
 public abstract class UrlBar extends AutocompleteEditText {
-    private static final String TAG = "cr_UrlBar";
+    private static final String TAG = "UrlBar";
 
     private static final boolean DEBUG = false;
 

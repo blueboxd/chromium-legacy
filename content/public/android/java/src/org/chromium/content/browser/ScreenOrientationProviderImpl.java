@@ -40,7 +40,7 @@ public class ScreenOrientationProviderImpl
                 new ScreenOrientationProviderImpl();
     }
 
-    private static final String TAG = "cr.ScreenOrientation";
+    private static final String TAG = "ScreenOrientation";
 
     private ScreenOrientationDelegate mDelegate;
 

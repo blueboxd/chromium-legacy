@@ -86,6 +86,7 @@ crbug.com/902685 virtual/site-isolated-code-cache/http/tests/devtools/isolated-c
 crbug.com/902685 virtual/not-site-per-process/http/tests/devtools/isolated-code-cache/ [ Slow ]
 crbug.com/902685 http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Slow ]
 crbug.com/902685 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Slow ]
+crbug.com/902685 virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/ [ Slow ]
 
 # Misc DevTools tests that are slow
 crbug.com/246190 [ Release ] http/tests/devtools/indexeddb/ [ Slow ]

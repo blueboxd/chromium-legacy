@@ -12,10 +12,12 @@
 #include "content/public/browser/web_ui_controller.h"
 
 class Browser;
+class TabStripUIHandler;
+struct TabStripUILayout;
 
 namespace gfx {
 class Point;
-}
+}  // namespace gfx
 
 namespace ui {
 class MenuModel;
@@ -37,18 +39,27 @@ class TabStripUI : public content::WebUIController {
     virtual void ShowContextMenuAtPoint(
         gfx::Point point,
         std::unique_ptr<ui::MenuModel> menu_model) = 0;
+
+    virtual TabStripUILayout GetLayout() = 0;
   };
 
   explicit TabStripUI(content::WebUI* web_ui);
   ~TabStripUI() override;
 
-  // Initialize TabStripUI with its embedder and the Browser it's running in.
-  // Must be called exactly once. The WebUI won't work until this is called.
+  // Initialize TabStripUI with its embedder and the Browser it's
+  // running in. Must be called exactly once. The WebUI won't work until
+  // this is called.
   void Initialize(Browser* browser, Embedder* embedder);
+
+  // The embedder should call this whenever the result of
+  // Embedder::GetLayout() changes.
+  void LayoutChanged();
 
  private:
   void HandleThumbnailUpdate(int extension_tab_id,
                              ThumbnailTracker::CompressedThumbnailData image);
+
+  TabStripUIHandler* handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripUI);
 };

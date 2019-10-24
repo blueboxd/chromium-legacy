@@ -114,6 +114,8 @@ bool g_needs_set_up_for_test_case = true;
       forceRestart:NO];
 }
 
+#pragma mark - Private
+
 // Prevents tests inheriting from this class from putting logic in +setUp.
 // +setUp will be called before the application is launched,
 // and thus is not suitable for most test case setup. Inheriting tests should

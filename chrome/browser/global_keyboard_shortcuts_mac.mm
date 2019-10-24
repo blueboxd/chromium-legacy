@@ -59,7 +59,7 @@ NSMenuItem* FindMenuItem(NSEvent* key, NSMenu* menu) {
   return result;
 }
 
-int MenuCommandForKeyEvent(NSEvent* event, SEL* action) {
+int MenuCommandForKeyEvent(NSEvent* event) {
   if ([event type] != NSKeyDown)
     return -1;
 
@@ -78,10 +78,8 @@ int MenuCommandForKeyEvent(NSEvent* event, SEL* action) {
   if (!item)
     return -1;
 
-  if ([item action] == @selector(commandDispatch:) && [item tag] > 0) {
-    *action = [item action];
+  if ([item action] == @selector(commandDispatch:) && [item tag] > 0)
     return [item tag];
-  }
 
   // "Close window" doesn't use the |commandDispatch:| mechanism. Menu items
   // that do not correspond to IDC_ constants need no special treatment however,
@@ -120,15 +118,15 @@ GetDelayedShortcutsNotPresentInMainMenu() {
 }
 
 CommandForKeyEventResult NoCommand() {
-  return {-1, nil, /*from_main_menu=*/false};
+  return {-1, /*from_main_menu=*/false};
 }
 
-CommandForKeyEventResult MainMenuCommand(int cmd, SEL action) {
-  return {cmd, action, /*from_main_menu=*/true};
+CommandForKeyEventResult MainMenuCommand(int cmd) {
+  return {cmd, /*from_main_menu=*/true};
 }
 
 CommandForKeyEventResult ShortcutCommand(int cmd) {
-  return {cmd, nil, /*from_main_menu=*/false};
+  return {cmd, /*from_main_menu=*/false};
 }
 
 }  // namespace
@@ -205,10 +203,9 @@ CommandForKeyEventResult CommandForKeyEvent(NSEvent* event) {
   if ([event type] != NSKeyDown)
     return NoCommand();
 
-  SEL action;
-  int cmdNum = MenuCommandForKeyEvent(event, &action);
+  int cmdNum = MenuCommandForKeyEvent(event);
   if (cmdNum != -1)
-    return MainMenuCommand(cmdNum, action);
+    return MainMenuCommand(cmdNum);
 
   // Scan through keycodes and see if it corresponds to one of the non-menu
   // shortcuts.

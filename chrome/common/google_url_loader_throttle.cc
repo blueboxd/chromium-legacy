@@ -60,12 +60,11 @@ void GoogleURLLoaderThrottle::WillStartRequest(
 
 void GoogleURLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* /* defer */,
     std::vector<std::string>* to_be_removed_headers,
     net::HttpRequestHeaders* modified_headers) {
-  network::mojom::URLResponseHeadPtr response_head_ptr = response_head;
-  variations::RemoveVariationsHeaderIfNeeded(*redirect_info, *response_head_ptr,
+  variations::RemoveVariationsHeaderIfNeeded(*redirect_info, response_head,
                                              to_be_removed_headers);
 
   // URLLoaderThrottles can only change the redirect URL when the network
@@ -96,7 +95,7 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void GoogleURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   // Built-in additional protection for the chrome web store origin.
   GURL webstore_url(extension_urls::GetWebstoreLaunchURL());

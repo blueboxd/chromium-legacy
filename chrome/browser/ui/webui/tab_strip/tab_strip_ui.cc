@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/tab_strip_resources.h"
@@ -111,6 +112,8 @@ class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
   const int tab_index_;
 };
 
+}  // namespace
+
 class TabStripUIHandler : public content::WebUIMessageHandler,
                           public TabStripModelObserver {
  public:
@@ -123,6 +126,12 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
 
   void OnJavascriptAllowed() override {
     browser_->tab_strip_model()->AddObserver(this);
+  }
+
+  void NotifyLayoutChanged() {
+    if (!IsJavascriptAllowed())
+      return;
+    FireWebUIListener("layout-changed");
   }
 
   // TabStripModelObserver:
@@ -215,6 +224,9 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
         "showTabContextMenu",
         base::Bind(&TabStripUIHandler::HandleShowTabContextMenu,
                    base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "getLayout", base::Bind(&TabStripUIHandler::HandleGetLayout,
+                                base::Unretained(this)));
   }
 
  private:
@@ -352,6 +364,14 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
         std::make_unique<WebUITabContextMenu>(tab_strip_model, tab_index));
   }
 
+  void HandleGetLayout(const base::ListValue* args) {
+    AllowJavascript();
+    const base::Value& callback_id = args->GetList()[0];
+
+    base::Value layout = embedder_->GetLayout().AsDictionary();
+    ResolveJavascriptCallback(callback_id, layout);
+  }
+
   void AddTrackedTab(const base::ListValue* args) {
     AllowJavascript();
 
@@ -398,8 +418,6 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
 
   DISALLOW_COPY_AND_ASSIGN(TabStripUIHandler);
 };
-
-}  // namespace
 
 TabStripUI::TabStripUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
@@ -452,6 +470,11 @@ TabStripUI::~TabStripUI() {}
 void TabStripUI::Initialize(Browser* browser, Embedder* embedder) {
   content::WebUI* const web_ui = TabStripUI::web_ui();
   DCHECK_EQ(Profile::FromWebUI(web_ui), browser->profile());
-  web_ui->AddMessageHandler(
-      std::make_unique<TabStripUIHandler>(browser, embedder));
+  auto handler = std::make_unique<TabStripUIHandler>(browser, embedder);
+  handler_ = handler.get();
+  web_ui->AddMessageHandler(std::move(handler));
+}
+
+void TabStripUI::LayoutChanged() {
+  handler_->NotifyLayoutChanged();
 }

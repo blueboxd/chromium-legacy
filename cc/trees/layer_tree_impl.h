@@ -95,10 +95,12 @@ class CC_EXPORT LayerTreeImpl {
   // This is the number of times a fixed point has to be hit continuously by a
   // layer to consider it as jittering.
   enum : int { kFixedPointHitsThreshold = 3 };
-  LayerTreeImpl(LayerTreeHostImpl* host_impl,
-                scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
-                scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio,
-                scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
+  LayerTreeImpl(
+      LayerTreeHostImpl* host_impl,
+      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
+      scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio,
+      scoped_refptr<SyncedBrowserControls> bottom_controls_shown_ratio,
+      scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
   LayerTreeImpl(const LayerTreeImpl&) = delete;
   virtual ~LayerTreeImpl();
 
@@ -415,6 +417,12 @@ class CC_EXPORT LayerTreeImpl {
   const SyncedBrowserControls* top_controls_shown_ratio() const {
     return top_controls_shown_ratio_.get();
   }
+  SyncedBrowserControls* bottom_controls_shown_ratio() {
+    return bottom_controls_shown_ratio_.get();
+  }
+  const SyncedBrowserControls* bottom_controls_shown_ratio() const {
+    return bottom_controls_shown_ratio_.get();
+  }
   gfx::Vector2dF current_elastic_overscroll() const {
     return elastic_overscroll()->Current(IsActiveTree());
   }
@@ -590,13 +598,17 @@ class CC_EXPORT LayerTreeImpl {
   bool browser_controls_shrink_blink_size() const {
     return browser_controls_shrink_blink_size_;
   }
-  bool SetCurrentBrowserControlsShownRatio(float ratio);
-  float CurrentBrowserControlsShownRatio() const {
+  bool SetCurrentBrowserControlsShownRatio(float top_ratio, float bottom_ratio);
+  float CurrentTopControlsShownRatio() const {
     return top_controls_shown_ratio_->Current(IsActiveTree());
+  }
+  float CurrentBottomControlsShownRatio() const {
+    return bottom_controls_shown_ratio_->Current(IsActiveTree());
   }
   void SetTopControlsHeight(float top_controls_height);
   float top_controls_height() const { return top_controls_height_; }
-  void PushBrowserControlsFromMainThread(float top_controls_shown_ratio);
+  void PushBrowserControlsFromMainThread(float top_controls_shown_ratio,
+                                         float bottom_controls_shown_ratio);
   void SetBottomControlsHeight(float bottom_controls_height);
   float bottom_controls_height() const { return bottom_controls_height_; }
 
@@ -681,8 +693,10 @@ class CC_EXPORT LayerTreeImpl {
   bool SetPageScaleFactorLimits(float min_page_scale_factor,
                                 float max_page_scale_factor);
   void DidUpdatePageScale();
-  void PushBrowserControls(const float* top_controls_shown_ratio);
-  bool ClampBrowserControlsShownRatio();
+  void PushBrowserControls(const float* top_controls_shown_ratio,
+                           const float* bottom_controls_shown_ratio);
+  bool ClampTopControlsShownRatio();
+  bool ClampBottomControlsShownRatio();
 
  private:
   friend class LayerTreeHost;
@@ -811,6 +825,7 @@ class CC_EXPORT LayerTreeImpl {
   // The amount that the browser controls are shown from 0 (hidden) to 1 (fully
   // shown).
   scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio_;
+  scoped_refptr<SyncedBrowserControls> bottom_controls_shown_ratio_;
 
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 

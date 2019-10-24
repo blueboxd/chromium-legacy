@@ -82,7 +82,7 @@ class AutocompleteMediator
         }
     }
 
-    private static final String TAG = "cr_Autocomplete";
+    private static final String TAG = "Autocomplete";
     private static final int SUGGESTION_NOT_FOUND = -1;
 
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint

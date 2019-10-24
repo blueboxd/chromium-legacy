@@ -33,5 +33,12 @@ bool ShellDelegateImpl::CanGoBack(gfx::NativeWindow window) const {
   return true;
 }
 
+mojo::Remote<data_decoder::mojom::DataDecoderService>
+ShellDelegateImpl::LaunchDataDecoder() {
+  mojo::Remote<data_decoder::mojom::DataDecoderService> remote;
+  ignore_result(remote.BindNewPipeAndPassReceiver());
+  return remote;
+}
+
 }  // namespace shell
 }  // namespace ash

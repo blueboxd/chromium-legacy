@@ -14,6 +14,8 @@
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #include "content/common/content_export.h"
 #include "content/common/web_contents_ns_view_bridge.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 @class WebContentsViewCocoa;
 
@@ -29,8 +31,9 @@ class CONTENT_EXPORT WebContentsNSViewBridge : public mojom::WebContentsNSView {
  public:
   // Create a bridge that will access its client in another process via a mojo
   // interface.
-  WebContentsNSViewBridge(uint64_t view_id,
-                          mojom::WebContentsNSViewHostAssociatedPtr client);
+  WebContentsNSViewBridge(
+      uint64_t view_id,
+      mojo::PendingAssociatedRemote<mojom::WebContentsNSViewHost> client);
   // Create a bridge that will access its client directly in-process.
   // TODO(ccameron): Change this to expose only the mojom::WebContentsNSView
   // when all communication is through mojo.
@@ -54,7 +57,7 @@ class CONTENT_EXPORT WebContentsNSViewBridge : public mojom::WebContentsNSView {
 
  private:
   base::scoped_nsobject<WebContentsViewCocoa> ns_view_;
-  mojom::WebContentsNSViewHostAssociatedPtr host_;
+  mojo::AssociatedRemote<mojom::WebContentsNSViewHost> host_;
 
   std::unique_ptr<ScopedNSViewIdMapping> view_id_;
 

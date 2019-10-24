@@ -24,6 +24,8 @@ class ShellDelegateImpl : public ShellDelegate {
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   bool CanGoBack(gfx::NativeWindow window) const override;
+  mojo::Remote<data_decoder::mojom::DataDecoderService> LaunchDataDecoder()
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);

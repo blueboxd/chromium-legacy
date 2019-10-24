@@ -4,6 +4,8 @@
 
 #import "ios/chrome/test/app/browsing_data_test_util.h"
 
+#import <WebKit/WebKit.h>
+
 #include "base/task/post_task.h"
 #import "base/test/ios/wait_util.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
@@ -14,6 +16,7 @@
 #include "ios/web/public/security/certificate_policy_cache.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
+#import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -52,6 +55,23 @@ bool ClearBrowsingHistory() {
 
 bool ClearAllBrowsingData(bool off_the_record) {
   return ClearBrowsingData(off_the_record, BrowsingDataRemoveMask::REMOVE_ALL);
+}
+
+bool ClearAllWebStateBrowsingData() {
+  __block bool callback_finished = false;
+  [[WKWebsiteDataStore defaultDataStore]
+      removeDataOfTypes:[WKWebsiteDataStore allWebsiteDataTypes]
+          modifiedSince:[NSDate distantPast]
+      completionHandler:^{
+        web::BrowserState* browser_state =
+            chrome_test_util::GetOriginalBrowserState();
+        web::WKWebViewConfigurationProvider::FromBrowserState(browser_state)
+            .Purge();
+        callback_finished = true;
+      }];
+  return WaitUntilConditionOrTimeout(20, ^{
+    return callback_finished;
+  });
 }
 
 bool ClearCertificatePolicyCache(bool off_the_record) {

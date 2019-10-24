@@ -525,6 +525,7 @@ source_set("blink_headers") {
   ]
 
   public_deps = [
+    ":resources_grit",
     "//net",
     "//services/service_manager/public/cpp",
     "//skia",

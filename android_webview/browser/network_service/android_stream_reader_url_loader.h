@@ -5,12 +5,16 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
 #define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/http/http_byte_range.h"
 #include "services/network/public/cpp/net_adapters.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace android_webview {
 
@@ -107,7 +111,7 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
 
   net::HttpByteRange byte_range_;
   network::ResourceRequest resource_request_;
-  std::unique_ptr<network::ResourceResponseHead> resource_response_head_;
+  network::mojom::URLResponseHeadPtr response_head_;
   network::mojom::URLLoaderClientPtr client_;
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
   std::unique_ptr<ResponseDelegate> response_delegate_;

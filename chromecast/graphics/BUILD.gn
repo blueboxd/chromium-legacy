@@ -21,6 +21,10 @@ cast_source_set("graphics") {
     "//ui/gfx",
   ]
 
+  public_deps = [
+    "//chromecast/ui/mojom",
+  ]
+
   if (use_aura) {
     sources += [
       "accessibility/accessibility_cursor_ring_layer.cc",

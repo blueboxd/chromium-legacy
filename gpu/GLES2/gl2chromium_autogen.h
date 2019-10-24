@@ -387,8 +387,6 @@
 #define glCoverageModulationCHROMIUM GLES2_GET_FUN(CoverageModulationCHROMIUM)
 #define glGetGraphicsResetStatusKHR GLES2_GET_FUN(GetGraphicsResetStatusKHR)
 #define glBlendBarrierKHR GLES2_GET_FUN(BlendBarrierKHR)
-#define glApplyScreenSpaceAntialiasingCHROMIUM \
-  GLES2_GET_FUN(ApplyScreenSpaceAntialiasingCHROMIUM)
 #define glBindFragDataLocationIndexedEXT \
   GLES2_GET_FUN(BindFragDataLocationIndexedEXT)
 #define glBindFragDataLocationEXT GLES2_GET_FUN(BindFragDataLocationEXT)

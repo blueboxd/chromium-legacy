@@ -127,12 +127,13 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            &CreateSubresourceLoaderFactoryForProviderContext,
-            std::move(remote_container_host), std::move(remote_controller_),
-            client_id_, fallback_loader_factory_->Clone(),
-            controller_connector_.BindNewPipeAndPassReceiver(),
-            mojo::MakeRequest(&subresource_loader_factory_), task_runner));
+        base::BindOnce(&CreateSubresourceLoaderFactoryForProviderContext,
+                       std::move(remote_container_host),
+                       std::move(remote_controller_), client_id_,
+                       fallback_loader_factory_->Clone(),
+                       controller_connector_.BindNewPipeAndPassReceiver(),
+                       subresource_loader_factory_.BindNewPipeAndPassReceiver(),
+                       task_runner));
 
     DCHECK(!weak_wrapped_subresource_loader_factory_);
     weak_wrapped_subresource_loader_factory_ =

@@ -697,8 +697,13 @@ double Adapter::GetBrightnessBasedOnAmbientLogLux(
     double ambient_log_lux) const {
   DCHECK_EQ(adapter_status_, Status::kSuccess);
   // We use the latest curve available.
-  if (model_.personal_curve)
+  if (model_.personal_curve) {
+    VLOG(1) << "ABAdapter using personal curve for brightness change: \n"
+            << model_.personal_curve->ToString();
     return model_.personal_curve->Interpolate(ambient_log_lux);
+  }
+  VLOG(1) << "ABAdapter using global curve for brightness change: \n"
+          << model_.global_curve->ToString();
   return model_.global_curve->Interpolate(ambient_log_lux);
 }
 

@@ -13,11 +13,11 @@ namespace content {
 
 NetworkDownloadURLLoaderFactoryInfo::NetworkDownloadURLLoaderFactoryInfo(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
-    network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> proxy_factory_remote,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         proxy_factory_receiver)
     : url_loader_factory_getter_(url_loader_factory_getter),
-      proxy_factory_ptr_info_(std::move(proxy_factory_ptr_info)),
+      proxy_factory_remote_(std::move(proxy_factory_remote)),
       proxy_factory_receiver_(std::move(proxy_factory_receiver)) {}
 
 NetworkDownloadURLLoaderFactoryInfo::~NetworkDownloadURLLoaderFactoryInfo() =
@@ -34,7 +34,7 @@ NetworkDownloadURLLoaderFactoryInfo::CreateFactory() {
         std::move(proxy_factory_receiver_));
     lazy_factory_ =
         base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-            std::move(proxy_factory_ptr_info_));
+            std::move(proxy_factory_remote_));
   } else {
     lazy_factory_ = url_loader_factory_getter_->GetNetworkFactory();
   }

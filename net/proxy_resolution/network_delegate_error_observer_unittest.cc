@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
@@ -45,7 +46,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const net::IPEndPoint& endpoint,
-      GURL* allowed_unsafe_redirect_url) override {
+      base::Optional<GURL>* preserve_fragment_on_redirect_url) override {
     return OK;
   }
   void OnBeforeRedirect(URLRequest* request,

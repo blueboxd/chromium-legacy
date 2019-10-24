@@ -290,6 +290,8 @@ namespace autotestPrivate {
 
   callback WaitForDisplayRotationCallback = void (boolean success);
 
+  callback InstallPWAForCurrentURLCallback = void (DOMString appId);
+
   dictionary App {
     DOMString appId;
     DOMString name;
@@ -692,7 +694,7 @@ namespace autotestPrivate {
                                        RotationType rotation,
                                        WaitForDisplayRotationCallback callback);
 
-    // Get information on nall application windows. Callback will be called
+    // Get information on all application windows. Callback will be called
     // with the list of |AppWindowInfo| dictionary.
     // |callback|: called with window list.
     static void getAppWindowList(GetAppWindowListCallback callback);
@@ -709,6 +711,14 @@ namespace autotestPrivate {
     // |id|: the id of the window
     // |callback|: called when the window state is requested to close.
     static void closeAppWindow(long id, VoidCallback callback);
+
+    // Installs the Progressive Web App (PWA) that is in the current URL.
+    // |timeout_ms|: Timeout in milliseconds for the operation to complete.
+    // |callback|: called when the operation has completed. Passes the app Id
+    //             of the recently installed PWA as argument.
+    static void installPWAForCurrentURL(
+        long timeout_ms,
+        InstallPWAForCurrentURLCallback callback);
   };
 
   interface Events {

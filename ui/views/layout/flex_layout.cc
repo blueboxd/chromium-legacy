@@ -417,7 +417,8 @@ void FlexLayout::InitializeChildData(
       // We should revisit whether this is a valid assumption for text views
       // in vertical layouts.
       DCHECK_GE(flex_child.preferred_size.main(),
-                flex_child.current_size.main());
+                flex_child.current_size.main())
+          << " in " << child->GetClassName();
 
       // Keep track of non-hidden flex controls.
       const bool can_flex =

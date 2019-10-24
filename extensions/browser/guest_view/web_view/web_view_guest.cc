@@ -620,14 +620,6 @@ bool WebViewGuest::PreHandleGestureEvent(WebContents* source,
   return !allow_scaling_ && GuestViewBase::PreHandleGestureEvent(source, event);
 }
 
-void WebViewGuest::LoadProgressChanged(WebContents* source, double progress) {
-  auto args = std::make_unique<base::DictionaryValue>();
-  args->SetString(guest_view::kUrl, web_contents()->GetURL().spec());
-  args->SetDouble(webview::kProgress, progress);
-  DispatchEventToView(std::make_unique<GuestViewEvent>(
-      webview::kEventLoadProgress, std::move(args)));
-}
-
 void WebViewGuest::LoadAbort(bool is_top_level,
                              const GURL& url,
                              int error_code) {
@@ -898,6 +890,14 @@ void WebViewGuest::DidFinishNavigation(
       webview::kEventLoadCommit, std::move(args)));
 
   find_helper_.CancelAllFindSessions();
+}
+
+void WebViewGuest::LoadProgressChanged(double progress) {
+  auto args = std::make_unique<base::DictionaryValue>();
+  args->SetString(guest_view::kUrl, web_contents()->GetURL().spec());
+  args->SetDouble(webview::kProgress, progress);
+  DispatchEventToView(std::make_unique<GuestViewEvent>(
+      webview::kEventLoadProgress, std::move(args)));
 }
 
 void WebViewGuest::DocumentOnLoadCompletedInMainFrame() {

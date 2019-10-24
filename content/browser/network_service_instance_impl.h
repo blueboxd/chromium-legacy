@@ -21,7 +21,7 @@ CONTENT_EXPORT void ResetNetworkServiceForTesting();
 // Registers |handler| to run (on UI thread) after mojo::Remote<NetworkService>
 // encounters an error.  Note that there are no ordering guarantees wrt error
 // handlers for other interfaces (e.g. mojo::Remote<NetworkContext> and/or
-// URLLoaderFactoryPtr).
+// mojo::Remote<URLLoaderFactory>).
 //
 // Can only be called on the UI thread.  No-op if NetworkService is disabled.
 CONTENT_EXPORT std::unique_ptr<base::CallbackList<void()>::Subscription>

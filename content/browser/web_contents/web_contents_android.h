@@ -154,8 +154,8 @@ class CONTENT_EXPORT WebContentsAndroid {
   jint GetThemeColor(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
 
-  jint GetLoadProgress(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj);
+  jfloat GetLoadProgress(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
 
   void RequestSmartClipExtract(
       JNIEnv* env,

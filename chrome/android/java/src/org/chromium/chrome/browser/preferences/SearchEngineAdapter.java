@@ -56,7 +56,7 @@ import java.util.List;
 public class SearchEngineAdapter extends BaseAdapter
         implements TemplateUrlService.LoadListener, TemplateUrlService.TemplateUrlServiceObserver,
                 OnClickListener {
-    private static final String TAG = "cr_SearchEngines";
+    private static final String TAG = "SearchEngines";
 
     private static final int VIEW_TYPE_ITEM = 0;
     private static final int VIEW_TYPE_DIVIDER = 1;

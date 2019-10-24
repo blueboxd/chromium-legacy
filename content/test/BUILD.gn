@@ -667,9 +667,10 @@ mojom("web_ui_test_mojo_bindings") {
   ]
 }
 
-mojom("mojo_web_test_helper_test") {
+mojom("mojo_web_test_bindings") {
   testonly = true
   sources = [
+    "data/lite_js_test.mojom",
     "data/mojo_web_test_helper_test.mojom",
   ]
 
@@ -677,40 +678,6 @@ mojom("mojo_web_test_helper_test") {
   # prepackaged redistributable JS bindings. It is therefore not desirable to
   # scramble these messages.
   scramble_message_ids = false
-}
-
-mojom("mojo_web_test_bindings") {
-  testonly = true
-  sources = [
-    "data/lite_js_test.mojom",
-  ]
-
-  public_deps = [
-    ":mojo_web_test_helper_test",
-  ]
-
-  # This mojom interface is exposed publicly to web tests which use
-  # prepackaged redistributable JS bindings. It is therefore not desirable to
-  # scramble these messages.
-  scramble_message_ids = false
-}
-
-mojom("mojo_web_test_old_names_bindings") {
-  testonly = true
-  sources = [
-    "data/lite_js_old_names_test.mojom",
-  ]
-
-  public_deps = [
-    ":mojo_web_test_helper_test",
-  ]
-
-  # This mojom interface is exposed publicly to web tests which use
-  # prepackaged redistributable JS bindings. It is therefore not desirable to
-  # scramble these messages.
-  scramble_message_ids = false
-
-  use_old_js_lite_bindings_names = true
 }
 
 mojom("test_interfaces") {

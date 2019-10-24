@@ -18,6 +18,7 @@
 #include "chromeos/services/cellular_setup/fake_ota_activator.h"
 #include "chromeos/services/cellular_setup/ota_activator_impl.h"
 #include "chromeos/services/cellular_setup/public/cpp/fake_activation_delegate.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -38,7 +39,7 @@ class FakeOtaActivatorFactory : public OtaActivatorImpl::Factory {
  private:
   // OtaActivatorImpl::Factory:
   std::unique_ptr<OtaActivator> BuildInstance(
-      mojom::ActivationDelegatePtr activation_delegate,
+      mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
       base::OnceClosure on_finished_callback,
       NetworkStateHandler* network_state_handler,
       NetworkConnectionHandler* network_connection_handler,
@@ -92,7 +93,7 @@ class CellularSetupImplTest : public testing::Test {
 
     base::RunLoop run_loop;
     cellular_setup_->StartActivation(
-        fake_activation_delegate->GenerateInterfacePtr(),
+        fake_activation_delegate->GenerateRemote(),
         base::BindOnce(&CellularSetupImplTest::OnCarrierPortalHandlerReceived,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -108,7 +109,7 @@ class CellularSetupImplTest : public testing::Test {
  private:
   void OnCarrierPortalHandlerReceived(
       base::OnceClosure quit_closure,
-      mojom::CarrierPortalHandlerPtr carrier_portal_handler) {
+      mojo::PendingRemote<mojom::CarrierPortalHandler> carrier_portal_handler) {
     ++num_carrier_portal_handlers_received_;
     std::move(quit_closure).Run();
   }

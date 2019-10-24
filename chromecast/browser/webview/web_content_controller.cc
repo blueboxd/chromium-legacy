@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -24,7 +25,9 @@
 
 namespace chromecast {
 
-WebContentController::WebContentController(Client* client) : client_(client) {}
+WebContentController::WebContentController(Client* client) : client_(client) {
+  js_channels_ = std::make_unique<WebContentJsChannels>(client_);
+}
 
 WebContentController::~WebContentController() {
   if (surface_) {
@@ -125,7 +128,7 @@ void WebContentController::ProcessRequest(
 void WebContentController::AttachTo(aura::Window* window, int window_id) {
   content::WebContents* contents = GetWebContents();
   auto* contents_window = contents->GetNativeView();
-  window->SetLayoutManager(new WebviewLayoutManager(window, contents_window));
+  window->SetLayoutManager(new WebviewLayoutManager(window));
   contents_window->set_id(window_id);
   contents_window->SetBounds(gfx::Rect(window->bounds().size()));
   // The aura window is hidden to avoid being shown via the usual layer method,
@@ -251,12 +254,42 @@ void WebContentController::HandleEvaluateJavascript(
 
 void WebContentController::HandleAddJavascriptChannels(
     const webview::AddJavascriptChannelsRequest& request) {
-  // TODO(dnicoara): Handle this.
+  auto* rfh = GetWebContents()->GetMainFrame();
+  if (!rfh) {
+    LOG(WARNING) << "No current RenderFrameHost";
+    return;
+  }
+
+  auto* client =
+      JsClientInstance::Find(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+  if (!client) {
+    LOG(WARNING) << "Requested to add JS channels but no mojo client found";
+    return;
+  }
+
+  for (auto& channel : request.channels()) {
+    client->AddChannel(channel,
+                       base::BindRepeating(&WebContentJsChannels::SendMessage,
+                                           js_channels_->AsWeakPtr()));
+  }
 }
 
 void WebContentController::HandleRemoveJavascriptChannels(
     const webview::RemoveJavascriptChannelsRequest& request) {
-  // TODO(dnicoara): Handle this.
+  auto* rfh = GetWebContents()->GetMainFrame();
+  if (!rfh)
+    return;
+
+  auto* client =
+      JsClientInstance::Find(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+  if (!client) {
+    LOG(WARNING) << "Requested to remove JS channels but no mojo client found";
+    return;
+  }
+
+  for (auto& channel : request.channels()) {
+    client->RemoveChannel(channel);
+  }
 }
 
 void WebContentController::HandleGetCurrentUrl(int64_t id) {
@@ -360,6 +393,21 @@ void WebContentController::OnSurfaceDestroying(exo::Surface* surface) {
   DCHECK_EQ(surface, surface_);
   surface->RemoveSurfaceObserver(this);
   surface_ = nullptr;
+}
+
+WebContentJsChannels::WebContentJsChannels(WebContentController::Client* client)
+    : client_(client) {}
+
+WebContentJsChannels::~WebContentJsChannels() = default;
+
+void WebContentJsChannels::SendMessage(const std::string& channel,
+                                       const std::string& message) {
+  std::unique_ptr<webview::WebviewResponse> response =
+      std::make_unique<webview::WebviewResponse>();
+  auto* js_message = response->mutable_javascript_channel_message();
+  js_message->set_channel(channel);
+  js_message->set_message(message);
+  client_->EnqueueSend(std::move(response));
 }
 
 }  // namespace chromecast

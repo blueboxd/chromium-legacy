@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 
 #include "base/time/default_clock.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -40,7 +41,20 @@ void PasswordReuseDetectionManager::DidNavigateMainFrame(
   reuse_on_this_page_was_found_ = false;
 }
 
-void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
+void PasswordReuseDetectionManager::OnKeyPressedCommitted(
+    const base::string16& text) {
+  OnKeyPressed(text, /*is_committed*/ true);
+}
+
+#if defined(OS_ANDROID)
+void PasswordReuseDetectionManager::OnKeyPressedUncommitted(
+    const base::string16& text) {
+  OnKeyPressed(text, /*is_committed*/ false);
+}
+#endif
+
+void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text,
+                                                 const bool is_committed) {
   // Do not check reuse if it was already found on this page.
   if (reuse_on_this_page_was_found_)
     return;
@@ -59,16 +73,21 @@ void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
     return;
   }
 
-  input_characters_ += text;
+  if (is_committed)
+    input_characters_ += text;
+
   if (input_characters_.size() > kMaxNumberOfCharactersToStore) {
     input_characters_.erase(
         0, input_characters_.size() - kMaxNumberOfCharactersToStore);
   }
+
+  const base::string16 text_to_check =
+      is_committed ? input_characters_ : input_characters_ + text;
+
   PasswordStore* store = client_->GetProfilePasswordStore();
   if (!store)
     return;
-  store->CheckReuse(input_characters_, main_frame_url_.GetOrigin().spec(),
-                    this);
+  store->CheckReuse(text_to_check, main_frame_url_.GetOrigin().spec(), this);
 }
 
 void PasswordReuseDetectionManager::OnPaste(const base::string16 text) {

@@ -1269,12 +1269,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
 // - Freeze happens in renderer: PENDING_DISCARD->DISCARDED
 IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
                        TabFreezeDisallowedWhenProactivelyDiscarding) {
-  // Pretend that the background tab reported its origin trial freeze policy, to
-  // prevent CanFreeze() from returning false.
-  TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
-      GetWebContentsAt(1),
-      performance_manager::mojom::InterventionPolicy::kDefault);
-
   // Proactively discard the background tab.
   EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
   EXPECT_TRUE(

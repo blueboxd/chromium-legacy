@@ -54,13 +54,14 @@ class ChromeWebClient : public web::WebClient {
       bool overridable,
       int64_t navigation_id,
       const base::Callback<void(bool)>& callback) override;
-  void PrepareErrorPage(
-      web::WebState* web_state,
-      const GURL& url,
-      NSError* error,
-      bool is_post,
-      bool is_off_the_record,
-      const base::OnceCallback<void(NSString*)> callback) override;
+  void PrepareErrorPage(web::WebState* web_state,
+                        const GURL& url,
+                        NSError* error,
+                        bool is_post,
+                        bool is_off_the_record,
+                        const base::Optional<net::SSLInfo>& info,
+                        int64_t navigation_id,
+                        base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
 
  private:

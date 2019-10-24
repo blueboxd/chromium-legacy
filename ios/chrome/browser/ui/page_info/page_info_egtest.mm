@@ -30,14 +30,8 @@
   }
 
   if ([[UIDevice currentDevice] orientation] != UIDeviceOrientationPortrait) {
-#if defined(CHROME_EARL_GREY_1)
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                             errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
-#else
-#error Neither CHROME_EARL_GREY_1 nor CHROME_EARL_GREY_2 are defined
-#endif
+    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                                        error:nil];
   }
 
   [ChromeEarlGrey loadURL:GURL("https://invalid")];
@@ -54,16 +48,8 @@
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kPageInfoViewAccessibilityIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
-
-#if defined(CHROME_EARL_GREY_1)
-  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
-                           errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
-                                error:nil];
-#else
-#error Neither CHROME_EARL_GREY_1 nor CHROME_EARL_GREY_2 are defined
-#endif
+  [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
+                                      error:nil];
 
   // Expect that the page info view has disappeared.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(

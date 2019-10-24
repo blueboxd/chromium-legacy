@@ -638,33 +638,6 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeOriginTrialOptOut) {
             decision_details.FailureReason());
 }
 
-TEST_F(TabLifecycleUnitSourceTest, CannotFreezeOriginTrialUnknown) {
-  LifecycleUnit* background_lifecycle_unit = nullptr;
-  LifecycleUnit* foreground_lifecycle_unit = nullptr;
-  CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
-                &foreground_lifecycle_unit);
-  content::WebContents* background_contents =
-      tab_strip_model_->GetWebContentsAt(0);
-  TabLoadTracker::Get()->TransitionStateForTesting(
-      background_contents, TabLoadTracker::LoadingState::LOADED);
-
-  DecisionDetails decision_details;
-  EXPECT_TRUE(background_lifecycle_unit->CanFreeze(&decision_details));
-  EXPECT_TRUE(decision_details.IsPositive());
-  EXPECT_EQ(DecisionSuccessReason::HEURISTIC_OBSERVED_TO_BE_SAFE,
-            decision_details.SuccessReason());
-  decision_details.Clear();
-
-  // Tab cannot be frozen if its origin trial policy is still unknown.
-  TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
-      background_contents,
-      performance_manager::mojom::InterventionPolicy::kUnknown);
-  EXPECT_FALSE(background_lifecycle_unit->CanFreeze(&decision_details));
-  EXPECT_FALSE(decision_details.IsPositive());
-  EXPECT_EQ(DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN,
-            decision_details.FailureReason());
-}
-
 namespace {
 
 void NotifyUsesNotificationsInBackground(content::WebContents* web_contents) {

@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "components/url_pattern_index/url_pattern_index.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -150,6 +151,7 @@ class RulesetMatcher {
   explicit RulesetMatcher(std::string ruleset_data,
                           size_t id,
                           size_t priority,
+                          api::declarative_net_request::SourceType source_type,
                           const ExtensionId& extension_id);
 
   // Returns the ruleset's matching redirect rule and populates
@@ -181,6 +183,8 @@ class RulesetMatcher {
 
   const size_t id_;
   const size_t priority_;
+
+  const api::declarative_net_request::SourceType source_type_;
 
   // The ID of the extension from which this matcher's ruleset originates from.
   const ExtensionId extension_id_;

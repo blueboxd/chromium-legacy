@@ -16,19 +16,19 @@ class WebContents;
 }  // namespace content
 
 namespace chromecast {
-namespace shell {
 
 // Android implementation of CastContentWindow, which displays WebContents in
 // CastWebContentsActivity.
 class CastContentWindowAndroid : public CastContentWindow {
  public:
+  explicit CastContentWindowAndroid(
+      const CastContentWindow::CreateParams& params);
   ~CastContentWindowAndroid() override;
 
   // CastContentWindow implementation:
   void CreateWindowForWebContents(
-      content::WebContents* web_contents,
-      CastWindowManager* window_manager,
-      CastWindowManager::WindowId z_order,
+      CastWebContents* cast_web_contents,
+      mojom::ZOrder z_order,
       VisibilityPriority visibility_priority) override;
   void GrantScreenAccess() override;
   void RevokeScreenAccess() override;
@@ -53,18 +53,12 @@ class CastContentWindowAndroid : public CastContentWindow {
       const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
-  friend class CastContentWindow;
-
-  // This class should only be instantiated by CastContentWindow::Create.
-  CastContentWindowAndroid(const CastContentWindow::CreateParams& params);
-
   CastContentWindow::Delegate* const delegate_;
   base::android::ScopedJavaGlobalRef<jobject> java_window_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentWindowAndroid);
 };
 
-}  // namespace shell
 }  // namespace chromecast
 
 #endif  // CHROMECAST_BROWSER_ANDROID_CAST_CONTENT_WINDOW_ANDROID_H_

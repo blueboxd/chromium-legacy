@@ -503,7 +503,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   const bool using_gpu_compositing_;
   const bool using_swap_chain_;
   bool has_implicit_stencil_buffer_ = false;
-  bool storage_texture_supported_ = false;
 
   // The texture target (2D or RECTANGLE) for our allocations.
   GLenum texture_target_ = 0;

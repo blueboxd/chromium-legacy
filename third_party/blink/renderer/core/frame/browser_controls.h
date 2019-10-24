@@ -40,8 +40,9 @@ class CORE_EXPORT BrowserControls final
   bool ShrinkViewport() const { return shrink_viewport_; }
   void SetHeight(float top_height, float bottom_height, bool shrink_viewport);
 
-  float ShownRatio() const { return shown_ratio_; }
-  void SetShownRatio(float);
+  float TopShownRatio() const { return top_shown_ratio_; }
+  float BottomShownRatio() const { return bottom_shown_ratio_; }
+  void SetShownRatio(float top_ratio, float bottom_ratio);
 
   void UpdateConstraintsAndState(cc::BrowserControlsState constraints,
                                  cc::BrowserControlsState current,
@@ -73,7 +74,8 @@ class CORE_EXPORT BrowserControls final
   //     when responding to gesture scroll events.
   // This value is reflected in web layer tree and is synced with compositor
   // during the commit.
-  float shown_ratio_;
+  float top_shown_ratio_;
+  float bottom_shown_ratio_;
 
   // Content offset when last re-baseline occurred.
   float baseline_content_offset_;

@@ -114,7 +114,7 @@ class Internals final : public ScriptWrappable {
   void setBrowserControlsState(float top_height,
                                float bottom_height,
                                bool shrinks_layout);
-  void setBrowserControlsShownRatio(float);
+  void setBrowserControlsShownRatio(float top_ratio, float bottom_ratio);
 
   Node* effectiveRootScroller(Document*);
 

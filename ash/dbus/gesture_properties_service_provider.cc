@@ -359,11 +359,9 @@ GesturePropertiesServiceProvider::GetService() {
     return service_for_test_;
 
   if (!service_.is_bound()) {
-    ui::ozone::mojom::GesturePropertiesServiceRequest request =
-        mojo::MakeRequest(&service_);
     ui::OzonePlatform::GetInstance()
         ->GetInputController()
-        ->GetGesturePropertiesService(std::move(request));
+        ->GetGesturePropertiesService(service_.BindNewPipeAndPassReceiver());
   }
   return service_.get();
 }

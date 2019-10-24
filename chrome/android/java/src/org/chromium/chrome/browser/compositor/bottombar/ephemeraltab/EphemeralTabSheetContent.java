@@ -168,10 +168,10 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
         securityIcon.setImageResource(resId);
     }
 
-    /** Sets the progress percentage on the progress bar. */
-    public void setProgress(int progress) {
+    /** Sets the progress on the progress bar. */
+    public void setProgress(float progress) {
         ProgressBar progressBar = mToolbarView.findViewById(R.id.progress_bar);
-        progressBar.setProgress(progress);
+        progressBar.setProgress(Math.round(progress * 100));
     }
 
     /** Called to show or hide the progress bar. */

@@ -44,7 +44,6 @@ class SharedURLLoaderFactory;
 
 namespace optimization_guide {
 class HintCache;
-class HintUpdateData;
 class HintsFetcher;
 enum class OptimizationGuideDecision;
 class OptimizationFilter;
@@ -53,6 +52,7 @@ class OptimizationGuideService;
 enum class OptimizationTarget;
 enum class OptimizationTargetDecision;
 enum class OptimizationTypeDecision;
+class StoreUpdateData;
 class TopHostProvider;
 }  // namespace optimization_guide
 
@@ -156,11 +156,11 @@ class OptimizationGuideHintsManager
   //
   // Should always be called on the thread that belongs to
   // |background_task_runner_|.
-  std::unique_ptr<optimization_guide::HintUpdateData> ProcessHintsComponent(
+  std::unique_ptr<optimization_guide::StoreUpdateData> ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& info,
       const base::flat_set<optimization_guide::proto::OptimizationType>&
           registered_optimization_types,
-      std::unique_ptr<optimization_guide::HintUpdateData> update_data);
+      std::unique_ptr<optimization_guide::StoreUpdateData> update_data);
 
   // Processes the optimization filters contained in the hints component.
   //
@@ -180,7 +180,7 @@ class OptimizationGuideHintsManager
   // Updates the cache with the latest hints sent by the Component Updater.
   void UpdateComponentHints(
       base::OnceClosure update_closure,
-      std::unique_ptr<optimization_guide::HintUpdateData> hint_update_data);
+      std::unique_ptr<optimization_guide::StoreUpdateData> update_data);
 
   // Called when the hints have been fully updated with the latest hints from
   // the Component Updater. This is used as a signal during tests.

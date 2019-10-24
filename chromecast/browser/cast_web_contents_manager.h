@@ -26,6 +26,7 @@ class WebContents;
 namespace chromecast {
 
 class CastWebViewFactory;
+class CastWindowManager;
 
 // This class dispenses CastWebView objects which are used to wrap WebContents
 // in cast_shell. This class can take ownership of a WebContents instance when
@@ -35,7 +36,8 @@ class CastWebViewFactory;
 class CastWebContentsManager {
  public:
   CastWebContentsManager(content::BrowserContext* browser_context,
-                         CastWebViewFactory* web_view_factory);
+                         CastWebViewFactory* web_view_factory,
+                         CastWindowManager* window_manager);
   ~CastWebContentsManager();
 
   std::unique_ptr<CastWebView> CreateWebView(
@@ -46,6 +48,9 @@ class CastWebContentsManager {
   std::unique_ptr<CastWebView> CreateWebView(
       const CastWebView::CreateParams& params,
       const GURL& initial_url);
+
+  std::unique_ptr<CastContentWindow> CreateWindow(
+      const CastContentWindow::CreateParams& params);
 
   // Take ownership of |web_contents| and delete after |time_delta|, or sooner
   // if necessary.
@@ -58,6 +63,7 @@ class CastWebContentsManager {
 
   content::BrowserContext* const browser_context_;
   CastWebViewFactory* const web_view_factory_;
+  CastWindowManager* const window_manager_;
   base::flat_set<std::unique_ptr<content::WebContents>> expiring_web_contents_;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;

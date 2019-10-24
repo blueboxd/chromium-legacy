@@ -31,6 +31,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.WarmupManager;
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
+import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -53,6 +55,7 @@ import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -68,7 +71,7 @@ import java.util.HashMap;
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
  */
-public class WebappActivity extends SingleTabActivity {
+public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
     public static final String WEBAPP_SCHEME = "webapp";
 
     private static final String TAG = "WebappActivity";
@@ -136,9 +139,6 @@ public class WebappActivity extends SingleTabActivity {
      */
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
-        mTabObserverRegistrar = new TabObserverRegistrar(getLifecycleDispatcher());
-        mSplashController =
-                new SplashController(this, getLifecycleDispatcher(), mTabObserverRegistrar);
         mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
     }
 
@@ -325,6 +325,16 @@ public class WebappActivity extends SingleTabActivity {
         }
 
         initSplash();
+    }
+
+    @Override
+    protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
+        WebappActivityComponent component =
+                ChromeApplication.getComponent().createWebappActivityComponent(commonsModule);
+
+        mTabObserverRegistrar = component.resolveTabObserverRegistrar();
+        mSplashController = component.resolveSplashController();
+        return component;
     }
 
     @Override

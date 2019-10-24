@@ -240,34 +240,4 @@ void ChromeWebViewPermissionHelperDelegate::OnFileSystemPermissionResponse(
   std::move(callback).Run(allow && web_view_guest()->attached());
 }
 
-void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedAsync(
-    int render_process_id,
-    int render_frame_id,
-    int request_id,
-    const GURL& url,
-    bool blocked_by_policy) {
-  RequestFileSystemPermission(
-      url, !blocked_by_policy,
-      base::BindOnce(&ChromeWebViewPermissionHelperDelegate::
-                         FileSystemAccessedAsyncResponse,
-                     weak_factory_.GetWeakPtr(), render_process_id,
-                     render_frame_id, request_id, url));
-}
-
-void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedAsyncResponse(
-    int render_process_id,
-    int render_frame_id,
-    int request_id,
-    const GURL& url,
-    bool allowed) {
-  TabSpecificContentSettings::FileSystemAccessed(
-      render_process_id, render_frame_id, url, !allowed);
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (rfh) {
-    rfh->Send(new ChromeViewMsg_RequestFileSystemAccessAsyncResponse(
-        render_frame_id, request_id, allowed));
-  }
-}
-
 }  // namespace extensions

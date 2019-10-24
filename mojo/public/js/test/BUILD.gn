@@ -13,40 +13,15 @@ mojom("test_mojom") {
     "module_b_1.test-mojom",
     "module_b_2.test-mojom",
   ]
-
-  use_old_js_lite_bindings_names = false
-}
-
-mojom("test_old_names_mojom") {
-  testonly = true
-  sources = [
-    "module_a_old_names.test-mojom",
-    "module_b_1_old_names.test-mojom",
-    "module_b_2_old_names.test-mojom",
-  ]
-
-  use_old_js_lite_bindings_names = true
 }
 
 if (enable_mojom_closure_compile || closure_compile) {
-  js_library("compile_test_sources") {
-    sources = [
-      "compile_test.js",
-    ]
-    deps = [
-      ":test_mojom_js_library_for_compile",
-      ":test_old_names_mojom_js_library_for_compile",
-    ]
-  }
-
   js_binary("compile_test") {
     outputs = [
       "$target_gen_dir/compile_test.js",
     ]
     deps = [
-      ":compile_test_sources",
       ":test_mojom_js_library_for_compile",
-      ":test_old_names_mojom_js_library_for_compile",
     ]
     closure_flags = strict_error_checking_closure_args + [
                       "compilation_level=ADVANCED_OPTIMIZATIONS",

@@ -25,8 +25,7 @@ namespace weblayer {
 
 NavigationControllerImpl::NavigationControllerImpl(
     BrowserControllerImpl* browser_controller)
-    : WebContentsObserver(browser_controller->web_contents()),
-      browser_controller_(browser_controller) {}
+    : WebContentsObserver(browser_controller->web_contents()) {}
 
 NavigationControllerImpl::~NavigationControllerImpl() = default;
 
@@ -67,52 +66,46 @@ void NavigationControllerImpl::Navigate(const GURL& url) {
   content::NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  browser_controller_->web_contents()->GetController().LoadURLWithParams(
-      params);
+  web_contents()->GetController().LoadURLWithParams(params);
   // So that if the user had entered the UI in a bar it stops flashing the
   // caret.
-  browser_controller_->web_contents()->Focus();
+  web_contents()->Focus();
 }
 
 void NavigationControllerImpl::GoBack() {
-  browser_controller_->web_contents()->GetController().GoBack();
+  web_contents()->GetController().GoBack();
 }
 
 void NavigationControllerImpl::GoForward() {
-  browser_controller_->web_contents()->GetController().GoForward();
+  web_contents()->GetController().GoForward();
 }
 
 bool NavigationControllerImpl::CanGoBack() {
-  return browser_controller_->web_contents()->GetController().CanGoBack();
+  return web_contents()->GetController().CanGoBack();
 }
 
 bool NavigationControllerImpl::CanGoForward() {
-  return browser_controller_->web_contents()->GetController().CanGoForward();
+  return web_contents()->GetController().CanGoForward();
 }
 
 void NavigationControllerImpl::Reload() {
-  browser_controller_->web_contents()->GetController().Reload(
-      content::ReloadType::NORMAL, false);
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
 }
 
 void NavigationControllerImpl::Stop() {
-  browser_controller_->web_contents()->Stop();
+  web_contents()->Stop();
 }
 
 int NavigationControllerImpl::GetNavigationListSize() {
-  return browser_controller_->web_contents()->GetController().GetEntryCount();
+  return web_contents()->GetController().GetEntryCount();
 }
 
 int NavigationControllerImpl::GetNavigationListCurrentIndex() {
-  return browser_controller_->web_contents()
-      ->GetController()
-      .GetCurrentEntryIndex();
+  return web_contents()->GetController().GetCurrentEntryIndex();
 }
 
 GURL NavigationControllerImpl::GetNavigationEntryDisplayURL(int index) {
-  auto* entry =
-      browser_controller_->web_contents()->GetController().GetEntryAtIndex(
-          index);
+  auto* entry = web_contents()->GetController().GetEntryAtIndex(index);
   if (!entry)
     return GURL();
   return entry->GetVirtualURL();
@@ -206,6 +199,25 @@ void NavigationControllerImpl::DidFinishNavigation(
   navigation_map_.erase(navigation_map_.find(navigation_handle));
 }
 
+void NavigationControllerImpl::DidStartLoading() {
+  NotifyLoadStateChanged();
+}
+
+void NavigationControllerImpl::DidStopLoading() {
+  NotifyLoadStateChanged();
+}
+
+void NavigationControllerImpl::LoadProgressChanged(double progress) {
+#if defined(OS_ANDROID)
+  if (java_controller_) {
+    Java_NavigationControllerImpl_loadProgressChanged(
+        AttachCurrentThread(), java_controller_, progress);
+  }
+#endif
+  for (auto& observer : observers_)
+    observer.LoadProgressChanged(progress);
+}
+
 void NavigationControllerImpl::DidFirstVisuallyNonEmptyPaint() {
 #if defined(OS_ANDROID)
   Java_NavigationControllerImpl_onFirstContentfulPaint(AttachCurrentThread(),
@@ -214,6 +226,20 @@ void NavigationControllerImpl::DidFirstVisuallyNonEmptyPaint() {
 
   for (auto& observer : observers_)
     observer.OnFirstContentfulPaint();
+}
+
+void NavigationControllerImpl::NotifyLoadStateChanged() {
+#if defined(OS_ANDROID)
+  if (java_controller_) {
+    Java_NavigationControllerImpl_loadStateChanged(
+        AttachCurrentThread(), java_controller_, web_contents()->IsLoading(),
+        web_contents()->IsLoadingToDifferentDocument());
+  }
+#endif
+  for (auto& observer : observers_) {
+    observer.LoadStateChanged(web_contents()->IsLoading(),
+                              web_contents()->IsLoadingToDifferentDocument());
+  }
 }
 
 #if defined(OS_ANDROID)

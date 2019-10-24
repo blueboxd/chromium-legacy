@@ -15,6 +15,8 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/services/cellular_setup/ota_activator.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class DictionaryValue;
@@ -48,7 +50,7 @@ class OtaActivatorImpl : public OtaActivator,
   class Factory {
    public:
     static std::unique_ptr<OtaActivator> Create(
-        mojom::ActivationDelegatePtr activation_delegate,
+        mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
         base::OnceClosure on_finished_callback,
         NetworkStateHandler* network_state_handler,
         NetworkConnectionHandler* network_connection_handler,
@@ -58,7 +60,7 @@ class OtaActivatorImpl : public OtaActivator,
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<OtaActivator> BuildInstance(
-        mojom::ActivationDelegatePtr activation_delegate,
+        mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
         base::OnceClosure on_finished_callback,
         NetworkStateHandler* network_state_handler,
         NetworkConnectionHandler* network_connection_handler,
@@ -81,12 +83,13 @@ class OtaActivatorImpl : public OtaActivator,
   };
   friend std::ostream& operator<<(std::ostream& stream, const State& state);
 
-  OtaActivatorImpl(mojom::ActivationDelegatePtr activation_delegate,
-                   base::OnceClosure on_finished_callback,
-                   NetworkStateHandler* network_state_handler,
-                   NetworkConnectionHandler* network_connection_handler,
-                   NetworkActivationHandler* network_activation_handler,
-                   scoped_refptr<base::TaskRunner> task_runner);
+  OtaActivatorImpl(
+      mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
+      base::OnceClosure on_finished_callback,
+      NetworkStateHandler* network_state_handler,
+      NetworkConnectionHandler* network_connection_handler,
+      NetworkActivationHandler* network_activation_handler,
+      scoped_refptr<base::TaskRunner> task_runner);
 
   // mojom::CarrierPortalHandler:
   void OnCarrierPortalStatusChange(mojom::CarrierPortalStatus status) override;
@@ -117,7 +120,7 @@ class OtaActivatorImpl : public OtaActivator,
 
   void FlushForTesting();
 
-  mojom::ActivationDelegatePtr activation_delegate_;
+  mojo::Remote<mojom::ActivationDelegate> activation_delegate_;
   NetworkStateHandler* network_state_handler_;
   NetworkConnectionHandler* network_connection_handler_;
   NetworkActivationHandler* network_activation_handler_;

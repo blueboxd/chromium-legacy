@@ -311,6 +311,7 @@
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/arc/arc_prefs.h"
@@ -935,6 +936,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::AccountManager::RegisterPrefs(registry);
   chromeos::assistant::prefs::RegisterProfilePrefsForBrowser(registry);
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
+  chromeos::device_sync::DeviceSyncImpl::RegisterProfilePrefs(registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
   chromeos::KerberosCredentialsManager::RegisterProfilePrefs(registry);

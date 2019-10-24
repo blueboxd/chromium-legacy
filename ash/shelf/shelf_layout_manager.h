@@ -47,6 +47,7 @@ class MouseEvent;
 namespace ash {
 
 enum class AnimationChangeType;
+class DragWindowFromShelfController;
 class PanelLayoutManagerTest;
 class Shelf;
 class ShelfLayoutManagerObserver;
@@ -493,6 +494,14 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void SendA11yAlertForFullscreenWorkspaceState(
       WorkspaceWindowState current_workspace_window_state);
 
+  // Maybe start/update/end the window drag when swiping up from the shelf.
+  void MaybeStartDragWindowFromShelf(const ui::LocatedEvent& event_in_screen);
+  void MaybeUpdateWindowDrag(const ui::LocatedEvent& event_in_screen,
+                             float scroll_x,
+                             float scroll_y);
+  void MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
+  void MaybeCancelWindowDrag();
+
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_ = false;
@@ -623,6 +632,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // OnOverviewModeStartingAnimationComplete() calls are not balanced.
   base::Optional<ScopedSuspendVisibilityUpdate>
       overview_suspend_visibility_update_;
+
+  // The window drag controller that will be used when a window can be dragged
+  // up from shelf to homescreen, overview or splitview.
+  std::unique_ptr<DragWindowFromShelfController> window_drag_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

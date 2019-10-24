@@ -43,6 +43,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -672,7 +673,7 @@ class CONTENT_EXPORT RenderThreadImpl
       std::map<int, scoped_refptr<PendingFrameCreate>>;
   PendingFrameCreateMap pending_frame_creates_;
 
-  mojom::RendererHostAssociatedPtr renderer_host_;
+  mojo::AssociatedRemote<mojom::RendererHost> renderer_host_;
 
   blink::AssociatedInterfaceRegistry associated_interfaces_;
 

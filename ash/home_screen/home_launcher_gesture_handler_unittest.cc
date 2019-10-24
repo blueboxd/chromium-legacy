@@ -560,7 +560,7 @@ TEST_F(HomeLauncherGestureHandlerTest, HideHomeLauncherDuringDraggingTest) {
   auto window = CreateWindowForTesting();
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 0.f, 1.f);
   aura::Window* home_screen_window =
       Shell::Get()->home_screen_controller()->delegate()->GetHomeScreenWindow();
   EXPECT_TRUE(home_screen_window);
@@ -737,7 +737,7 @@ TEST_F(HomeLauncherGestureHandlerTest, RestoreWindowToOriginalBounds) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   GetGestureHandler()->OnScrollEvent(
-      gfx::Point(200, 300), 0.f,
+      gfx::Point(200, 200), 0.f,
       DragWindowFromShelfController::kShowOverviewThreshold + 1);
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -902,7 +902,7 @@ TEST_F(HomeLauncherGestureHandlerTest, WallpaperBlurDuringDragging) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   GetGestureHandler()->OnScrollEvent(
-      gfx::Point(shelf_bounds.x(), shelf_bounds.y() - 1), 0.f,
+      gfx::Point(0, 200), 0.f,
       DragWindowFromShelfController::kShowOverviewThreshold + 1);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_FALSE(overview_controller->InOverviewSession());

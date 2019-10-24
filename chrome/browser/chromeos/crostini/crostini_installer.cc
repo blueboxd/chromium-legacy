@@ -14,7 +14,6 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
@@ -279,6 +278,8 @@ void CrostiniInstaller::CancelBeforeStart() {
   RecordSetupResult(SetupResult::kNotStarted);
 }
 
+void CrostiniInstaller::OnStageStarted(InstallerState stage) {}
+
 void CrostiniInstaller::OnComponentLoaded(CrostiniResult result) {
   DCHECK_EQ(installing_state_, InstallerState::kInstallImageLoader);
 
@@ -374,6 +375,14 @@ void CrostiniInstaller::OnSshKeysFetched(bool success) {
     return;
   }
   UpdateInstallingState(InstallerState::kMountContainer);
+}
+
+void CrostiniInstaller::OnContainerMounted(bool success) {
+  DCHECK_EQ(installing_state_, InstallerState::kMountContainer);
+
+  if (!success) {
+    HandleError(InstallerError::kErrorMountingContainer);
+  }
 }
 
 bool CrostiniInstaller::CanInstall() {

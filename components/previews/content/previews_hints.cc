@@ -14,10 +14,10 @@
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "components/optimization_guide/bloom_filter.h"
-#include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_processing_util.h"
+#include "components/optimization_guide/store_update_data.h"
 #include "components/previews/core/previews_features.h"
 #include "url/gurl.h"
 
@@ -126,7 +126,7 @@ bool IsEnabledOptimizationType(
 }  // namespace
 
 PreviewsHints::PreviewsHints(
-    std::unique_ptr<optimization_guide::HintUpdateData> component_update_data)
+    std::unique_ptr<optimization_guide::StoreUpdateData> component_update_data)
     : hint_cache_(nullptr),
       component_update_data_(std::move(component_update_data)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -139,7 +139,8 @@ PreviewsHints::~PreviewsHints() {
 // static
 std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
     const optimization_guide::HintsComponentInfo& info,
-    std::unique_ptr<optimization_guide::HintUpdateData> component_update_data) {
+    std::unique_ptr<optimization_guide::StoreUpdateData>
+        component_update_data) {
   optimization_guide::ProcessHintsComponentResult result;
   std::unique_ptr<optimization_guide::proto::Configuration> config =
       ProcessHintsComponent(info, &result);
@@ -167,7 +168,8 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
 // static
 std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
     std::unique_ptr<optimization_guide::proto::Configuration> config,
-    std::unique_ptr<optimization_guide::HintUpdateData> component_update_data) {
+    std::unique_ptr<optimization_guide::StoreUpdateData>
+        component_update_data) {
   optimization_guide::ProcessHintsComponentResult process_hints_result =
       optimization_guide::ProcessHintsComponentResult::kSkippedProcessingHints;
   if (component_update_data) {

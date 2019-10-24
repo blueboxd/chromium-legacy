@@ -6171,12 +6171,12 @@ TEST_F(DrawPropertiesTest, ViewportBoundsDeltaAffectVisibleContentRect) {
   LayerImpl* scroll_layer = InnerViewportScrollLayer();
   scroll_layer->SetDrawsContent(true);
 
-  active_tree->SetCurrentBrowserControlsShownRatio(1.0f);
+  active_tree->SetCurrentBrowserControlsShownRatio(1.0f, 1.0f);
   active_tree->UpdateViewportContainerSizes();
   UpdateActiveTreeDrawProperties();
   EXPECT_EQ(gfx::Rect(container_size), scroll_layer->visible_layer_rect());
 
-  active_tree->SetCurrentBrowserControlsShownRatio(0.0f);
+  active_tree->SetCurrentBrowserControlsShownRatio(0.0f, 0.0f);
   active_tree->UpdateViewportContainerSizes();
   UpdateActiveTreeDrawProperties();
 

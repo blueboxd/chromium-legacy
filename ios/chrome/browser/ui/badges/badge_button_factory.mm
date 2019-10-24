@@ -28,6 +28,8 @@
       return [self passwordsUpdateBadgeButton];
     case BadgeType::kBadgeTypeSaveCard:
       return [self saveCardBadgeButton];
+    case BadgeType::kBadgeTypeTranslate:
+      return [self translateBadgeButton];
     case BadgeType::kBadgeTypeIncognito:
       return [self incognitoBadgeButton];
     case BadgeType::kBadgeTypeOverflow:
@@ -80,6 +82,19 @@
       forControlEvents:UIControlEventTouchUpInside];
   button.accessibilityIdentifier = kBadgeButtonSaveCardAccessibilityIdentifier;
   // TODO(crbug.com/1014652): Create a11y label hint.
+  return button;
+}
+
+- (BadgeButton*)translateBadgeButton {
+  BadgeButton* button =
+      [self createButtonForType:BadgeType::kBadgeTypeTranslate
+                     imageNamed:@"infobar_translate_icon"
+                  renderingMode:UIImageRenderingModeAlwaysTemplate];
+  [button addTarget:self.delegate
+                action:@selector(translateBadgeButtonTapped:)
+      forControlEvents:UIControlEventTouchUpInside];
+  button.accessibilityIdentifier = kBadgeButtonTranslateAccessibilityIdentifier;
+  // TODO(crbug.com/1014959): Create a11y label hint.
   return button;
 }
 

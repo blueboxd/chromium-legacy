@@ -18,19 +18,15 @@ enum CoordinationUnitType {
   kSystem,
 };
 
-// Intervention policy status. This mirrors the definitions used by the
-// InterventionPolicyDatabase defined in
-// chrome/browser/resource_coordinator/intervention_policy_database.proto
+// Intervention policy status.
 enum InterventionPolicy {
-  // The frame/page policy is yet unknown. This is the state while a frame is
-  // still loading.
-  kUnknown,
   // The frame/page has explicitly opted-in to an intervention.
   kOptIn,
   // The frame/page has explicitly opted-out from an intervention.
   kOptOut,
   // The frame/page has neither opted-in or opted-out. The intervention will be
-  // applied usings its own heuristics.
+  // applied using its own heuristics. This is the default state for a
+  // frame/page.
   kDefault,
 };
 

@@ -213,12 +213,6 @@ bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
     if (extensions_util->SupportsExtension(
             "GL_EXT_multisampled_render_to_texture")) {
       anti_aliasing_mode_ = kMSAAImplicitResolve;
-    } else if (extensions_util->SupportsExtension(
-                   "GL_CHROMIUM_screen_space_antialiasing") &&
-               drawing_buffer_->ContextProvider()
-                   ->GetGpuFeatureInfo()
-                   .IsWorkaroundEnabled(gpu::USE_FRAMEBUFFER_CMAA)) {
-      anti_aliasing_mode_ = kScreenSpaceAntialiasing;
     }
   }
   DVLOG(2) << __FUNCTION__
@@ -575,12 +569,7 @@ void XRWebGLDrawingBuffer::BindAndResolveDestinationFramebuffer() {
     client->DrawingBufferClientRestoreScissorTest();
   } else {
     gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    if (anti_aliasing_mode_ == kScreenSpaceAntialiasing) {
-      DVLOG(3) << __FUNCTION__ << ": screen space antialiasing";
-      gl->ApplyScreenSpaceAntialiasingCHROMIUM();
-    } else {
-      DVLOG(3) << __FUNCTION__ << ": nothing to do";
-    }
+    DVLOG(3) << __FUNCTION__ << ": nothing to do";
   }
 
   // On exit, leaves the destination framebuffer active. Caller is responsible

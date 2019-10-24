@@ -273,12 +273,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
                                    base::TimeDelta curr_time,
                                    TrackChangeCB change_completed_cb) override;
 
-  // Callback for reporting bytes appended to a SourceBuffer.
-  using BytesReceivedCB = base::RepeatingCallback<void(uint64_t)>;
-
-  // Register a BytesReceivedCB.
-  void AddBytesReceivedCallback(BytesReceivedCB bytes_received_cb);
-
   // Appends media data to the source buffer associated with |id|, applying
   // and possibly updating |*timestamp_offset| during coded frame processing.
   // |append_window_start| and |append_window_end| correspond to the MSE spec's
@@ -522,9 +516,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // references to these streams, so we need to keep them alive. But they'll be
   // in a shut down state, so reading from them will return EOS.
   std::vector<std::unique_ptr<ChunkDemuxerStream>> removed_streams_;
-
-  // Callback for reporting the number of bytes appended to this ChunkDemuxer.
-  BytesReceivedCB bytes_received_cb_;
 
   std::map<MediaTrack::Id, ChunkDemuxerStream*> track_id_to_demux_stream_map_;
 

@@ -13,7 +13,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/renderer/extension_url_loader_throttle.h"
 #include "net/base/url_util.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
@@ -108,7 +108,7 @@ bool ExtensionThrottleManager::ShouldRejectRedirect(
 
 void ExtensionThrottleManager::WillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   if (response_head.network_accessed) {
     // An entry GC when requests are outstanding can purge entries so check
     // before use.

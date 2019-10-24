@@ -605,7 +605,7 @@
             ],
             "experiments": [
                 {
-                    "name": "AppListZeroStateMixedTypesRanker",
+                    "name": "Enabled_20191017",
                     "enable_features": [
                         "EnableZeroStateMixedTypesRanker"
                     ]
@@ -1535,8 +1535,8 @@
                 {
                     "name": "Stable",
                     "params": {
-                        "cleaner_download_group": "stable/eset",
-                        "reporter_omaha_tag": "stable_eset"
+                        "cleaner_download_group": "fieldtrial",
+                        "reporter_omaha_tag": "fieldtrial"
                     },
                     "enable_features": [
                         "ChromeCleanupDistribution"
@@ -1555,6 +1555,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ChromeCleanupProtobufIPC"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ChromeOSParentalControlsSettings": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeOSParentalControlsSettings"
                     ]
                 }
             ]
@@ -2931,6 +2946,21 @@
             ]
         }
     ],
+    "IOSSettingsAddPaymentMethod": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SettingsAddPaymentMethod"
+                    ]
+                }
+            ]
+        }
+    ],
     "IdentityDiscIPH": [
         {
             "platforms": [
@@ -4114,6 +4144,21 @@
             ]
         }
     ],
+    "OzoneDrmMojo": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "OzoneDrmMojo",
+                    "enable_features": [
+                        "OzoneDrmMojo"
+                    ]
+                }
+            ]
+        }
+    ],
     "PDFClickToOpen": [
         {
             "platforms": [
@@ -4165,9 +4210,10 @@
             ],
             "experiments": [
                 {
-                    "name": "PartitionConnectionsAndSSLSessions",
+                    "name": "PartitionConnectionsAndSSLSessionsAndQuic",
                     "enable_features": [
                         "PartitionConnectionsByNetworkIsolationKey",
+                        "PartitionHttpServerPropertiesByNetworkIsolationKey",
                         "PartitionSSLSessionsByNetworkIsolationKey"
                     ]
                 }

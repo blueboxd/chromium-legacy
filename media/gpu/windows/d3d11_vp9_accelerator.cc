@@ -128,8 +128,10 @@ void D3D11VP9Accelerator::CopyFrameParams(const D3D11VP9Picture& pic,
   COPY_PARAM(frame_context_idx);
   COPY_PARAM(allow_high_precision_mv);
 
-  // extra_plane, BitDepthMinus8Luma, and BitDepthMinus8Chroma are initialized
-  // at 0 already.
+  // extra_plane is initialized to zero.
+
+  pic_params->BitDepthMinus8Luma = pic_params->BitDepthMinus8Chroma =
+      pic.frame_hdr->bit_depth - 8;
 
   pic_params->CurrPic.Index7Bits = pic.level();
   pic_params->frame_type = !pic.frame_hdr->IsKeyframe();

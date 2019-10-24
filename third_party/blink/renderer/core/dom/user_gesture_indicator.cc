@@ -19,8 +19,7 @@ const double kUserGestureTimeout = 1.0;
 UserGestureToken::UserGestureToken(Status status)
     : consumable_gestures_(0),
       clock_(base::DefaultClock::GetInstance()),
-      timestamp_(clock_->Now().ToDoubleT()),
-      timeout_policy_(kDefault) {
+      timestamp_(clock_->Now().ToDoubleT()) {
   if (status == kNewGesture || !UserGestureIndicator::CurrentTokenThreadSafe())
     consumable_gestures_++;
 }
@@ -43,27 +42,13 @@ bool UserGestureToken::ConsumeGesture() {
   return true;
 }
 
-void UserGestureToken::SetTimeoutPolicy(TimeoutPolicy policy) {
-  if (HasGestures() && policy > timeout_policy_)
-    timeout_policy_ = policy;
-}
-
 void UserGestureToken::ResetTimestamp() {
   timestamp_ = clock_->Now().ToDoubleT();
 }
 
 bool UserGestureToken::HasTimedOut() const {
-  if (timeout_policy_ == kHasPaused)
-    return false;
   return clock_->Now().ToDoubleT() - timestamp_ > kUserGestureTimeout;
 }
-
-// This enum is used in a histogram, so its values shouldn't change.
-enum GestureMergeState {
-  kOldTokenHasGesture = 1 << 0,
-  kNewTokenHasGesture = 1 << 1,
-  kGestureMergeStateEnd = 1 << 2,
-};
 
 UserGestureToken* UserGestureIndicator::root_token_ = nullptr;
 
@@ -130,13 +115,6 @@ UserGestureToken* UserGestureIndicator::CurrentToken() {
 // static
 UserGestureToken* UserGestureIndicator::CurrentTokenThreadSafe() {
   return IsMainThread() ? CurrentToken() : nullptr;
-}
-
-// static
-void UserGestureIndicator::SetTimeoutPolicy(
-    UserGestureToken::TimeoutPolicy policy) {
-  if (auto* token = CurrentTokenThreadSafe())
-    token->SetTimeoutPolicy(policy);
 }
 
 }  // namespace blink

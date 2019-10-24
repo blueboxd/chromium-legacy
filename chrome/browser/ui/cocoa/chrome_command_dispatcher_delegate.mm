@@ -94,24 +94,17 @@
   // By not passing the event to AppKit, we do lose out on the brief
   // highlighting of the NSMenu.
   CommandForKeyEventResult result = CommandForKeyEvent(event);
-
-  if (!result.found())
-    return ui::PerformKeyEquivalentResult::kUnhandled;
-
-  // If the menu item will dispatch to a different window (real-world example:
-  // the dictionary definition popover), don't handle the event here.
-  if (result.action && [NSApp targetForAction:result.action] != window)
-    return ui::PerformKeyEquivalentResult::kUnhandled;
-
-  auto* bridge =
-      remote_cocoa::NativeWidgetNSWindowBridge::GetFromNativeWindow(window);
-  if (bridge) {
-    bool was_executed = false;
-    bridge->host()->ExecuteCommand(
-        result.chrome_command, WindowOpenDisposition::CURRENT_TAB,
-        true /* is_before_first_responder */, &was_executed);
-    if (was_executed)
-      return ui::PerformKeyEquivalentResult::kHandled;
+  if (result.found()) {
+    auto* bridge =
+        remote_cocoa::NativeWidgetNSWindowBridge::GetFromNativeWindow(window);
+    if (bridge) {
+      bool was_executed = false;
+      bridge->host()->ExecuteCommand(
+          result.chrome_command, WindowOpenDisposition::CURRENT_TAB,
+          true /* is_before_first_responder */, &was_executed);
+      if (was_executed)
+        return ui::PerformKeyEquivalentResult::kHandled;
+    }
   }
 
   return ui::PerformKeyEquivalentResult::kUnhandled;

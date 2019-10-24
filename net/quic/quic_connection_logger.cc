@@ -63,17 +63,6 @@ base::Value NetLogQuicPacketSentParams(
   return dict;
 }
 
-base::Value NetLogQuicPacketRetransmittedParams(
-    quic::QuicPacketNumber old_packet_number,
-    quic::QuicPacketNumber new_packet_number) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("old_packet_number",
-              NetLogNumberValue(old_packet_number.ToUint64()));
-  dict.SetKey("new_packet_number",
-              NetLogNumberValue(new_packet_number.ToUint64()));
-  return dict;
-}
-
 base::Value NetLogQuicPacketLostParams(quic::QuicPacketNumber packet_number,
                                        quic::TransmissionType transmission_type,
                                        quic::QuicTime detection_time) {
@@ -605,22 +594,14 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
 
 void QuicConnectionLogger::OnPacketSent(
     const quic::SerializedPacket& serialized_packet,
-    quic::QuicPacketNumber original_packet_number,
     quic::TransmissionType transmission_type,
     quic::QuicTime sent_time) {
   if (!net_log_.IsCapturing())
     return;
-  if (!original_packet_number.IsInitialized()) {
-    net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PACKET_SENT, [&] {
-      return NetLogQuicPacketSentParams(serialized_packet, transmission_type,
-                                        sent_time);
-    });
-  } else {
-    net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PACKET_RETRANSMITTED, [&] {
-      return NetLogQuicPacketRetransmittedParams(
-          original_packet_number, serialized_packet.packet_number);
-    });
-  }
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PACKET_SENT, [&] {
+    return NetLogQuicPacketSentParams(serialized_packet, transmission_type,
+                                      sent_time);
+  });
 }
 
 void QuicConnectionLogger::OnPacketLoss(

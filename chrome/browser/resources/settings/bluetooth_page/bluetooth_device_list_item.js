@@ -19,6 +19,17 @@ Polymer({
     device: {
       type: Object,
     },
+
+    /**
+     * Uses getDeviceName_ as a label for a11y. It will be added as an
+     * attribute on this top-level bluetooth-device-list-item.
+     */
+    ariaLabel: {
+      type: String,
+      notify: true,
+      reflectToAttribute: true,
+      computed: 'getDeviceName_(device)',
+    },
   },
 
   /**

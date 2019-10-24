@@ -54,7 +54,6 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/gles2_cmd_apply_framebuffer_attachment_cmaa_intel.h"
 #include "gpu/command_buffer/service/gles2_cmd_clear_framebuffer.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
@@ -1179,7 +1178,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
       const volatile GLbyte* mailbox);
   void DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id, GLenum mode);
   void DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
-  void DoApplyScreenSpaceAntialiasingCHROMIUM();
 
   void BindImage(uint32_t client_texture_id,
                  uint32_t texture_target,
@@ -2706,8 +2704,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Log extra info.
   bool service_logging_;
 
-  std::unique_ptr<ApplyFramebufferAttachmentCMAAINTELResourceManager>
-      apply_framebuffer_attachment_cmaa_intel_;
   std::unique_ptr<CopyTexImageResourceManager> copy_tex_image_blit_;
   std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_chromium_;
   std::unique_ptr<SRGBConverter> srgb_converter_;
@@ -5316,11 +5312,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
   ReleaseAllBackTextures(have_context);
   if (have_context) {
-    if (apply_framebuffer_attachment_cmaa_intel_.get()) {
-      apply_framebuffer_attachment_cmaa_intel_->Destroy();
-      apply_framebuffer_attachment_cmaa_intel_.reset();
-    }
-
     if (copy_tex_image_blit_.get()) {
       copy_tex_image_blit_->Destroy();
       copy_tex_image_blit_.reset();
@@ -5437,7 +5428,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   // state_.current_program object.
   state_.current_program = nullptr;
 
-  apply_framebuffer_attachment_cmaa_intel_.reset();
   copy_tex_image_blit_.reset();
   copy_texture_chromium_.reset();
   srgb_converter_.reset();
@@ -18607,63 +18597,6 @@ void GLES2DecoderImpl::DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id) {
   }
 
   texture_ref->EndAccessSharedImage();
-}
-
-void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
-  Framebuffer* bound_framebuffer =
-      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
-  // TODO(dshwang): support it even after glBindFrameBuffer(GL_FRAMEBUFFER, 0).
-  // skia will need to render to the window. crbug.com/656618
-  if (!bound_framebuffer) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glApplyScreenSpaceAntialiasingCHROMIUM",
-                       "no bound framebuffer object");
-    return;
-  }
-
-  // Apply CMAA(Conservative Morphological Anti-Aliasing) algorithm to the
-  // color attachments of currently bound draw framebuffer.
-  // Reference GL_INTEL_framebuffer_CMAA for details.
-  // Use platform version if available.
-  if (!feature_info_->feature_flags()
-           .use_chromium_screen_space_antialiasing_via_shaders) {
-    api()->glApplyFramebufferAttachmentCMAAINTELFn();
-  } else {
-    // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
-    // needed because it takes ??s of milliseconds to initialize.
-    if (!apply_framebuffer_attachment_cmaa_intel_.get()) {
-      LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(
-          "glApplyFramebufferAttachmentCMAAINTEL");
-      apply_framebuffer_attachment_cmaa_intel_.reset(
-          new ApplyFramebufferAttachmentCMAAINTELResourceManager());
-      apply_framebuffer_attachment_cmaa_intel_->Initialize(this);
-      if (LOCAL_PEEK_GL_ERROR("glApplyFramebufferAttachmentCMAAINTEL") !=
-          GL_NO_ERROR)
-        return;
-    }
-    static const char kFunctionName[] =
-        "glApplyScreenSpaceAntialiasingCHROMIUM";
-    if (!InitializeCopyTextureCHROMIUM(kFunctionName))
-      return;
-    for (uint32_t i = 0; i < group_->max_draw_buffers(); ++i) {
-      const Framebuffer::Attachment* attachment =
-          bound_framebuffer->GetAttachment(GL_COLOR_ATTACHMENT0 + i);
-      if (attachment && attachment->IsTextureAttachment()) {
-        GLenum internal_format = attachment->internal_format();
-        if (!CanUseCopyTextureCHROMIUMInternalFormat(internal_format)) {
-          LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
-                             "Apply CMAA on framebuffer with attachment in "
-                             "invalid internalformat.");
-          return;
-        }
-      }
-    }
-
-    apply_framebuffer_attachment_cmaa_intel_
-        ->ApplyFramebufferAttachmentCMAAINTEL(this, bound_framebuffer,
-                                              copy_texture_chromium_.get(),
-                                              texture_manager());
-  }
 }
 
 void GLES2DecoderImpl::DoInsertEventMarkerEXT(

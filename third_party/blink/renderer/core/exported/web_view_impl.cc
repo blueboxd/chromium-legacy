@@ -1331,7 +1331,8 @@ void WebViewImpl::DidUpdateBrowserControls() {
 
   WebWidgetClient* client = main_frame->LocalRootFrameWidget()->Client();
   DCHECK(client);
-  client->SetBrowserControlsShownRatio(GetBrowserControls().ShownRatio());
+  client->SetBrowserControlsShownRatio(GetBrowserControls().TopShownRatio(),
+                                       GetBrowserControls().BottomShownRatio());
   client->SetBrowserControlsHeight(GetBrowserControls().TopHeight(),
                                    GetBrowserControls().BottomHeight(),
                                    GetBrowserControls().ShrinkViewport());
@@ -3296,8 +3297,9 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
   FloatPoint visual_viewport_offset = visual_viewport.VisibleRect().Location();
   visual_viewport_offset.Move(args.inner_delta.x(), args.inner_delta.y());
 
-  GetBrowserControls().SetShownRatio(GetBrowserControls().ShownRatio() +
-                                     args.browser_controls_delta);
+  GetBrowserControls().SetShownRatio(
+      GetBrowserControls().TopShownRatio() + args.top_controls_delta,
+      GetBrowserControls().BottomShownRatio() + args.bottom_controls_delta);
 
   SetPageScaleFactorAndLocation(PageScaleFactor() * args.page_scale_delta,
                                 args.is_pinch_gesture_active,

@@ -12,7 +12,7 @@ for more details on the presubmit API built into depot_tools.
 def _CommonChecks(input_api, output_api):
   commands = []
 
-  if ('infra/config/luci-milo.cfg' in input_api.LocalPaths() or
+  if ('infra/config/generated/luci-milo.cfg' in input_api.LocalPaths() or
       'infra/config/lint-luci-milo.py' in input_api.LocalPaths()):
     commands.append(
       input_api.Command(
@@ -20,9 +20,9 @@ def _CommonChecks(input_api, output_api):
           cmd=[input_api.python_executable, 'lint-luci-milo.py'],
           kwargs={},
           message=output_api.PresubmitError))
+  if ('infra/config/generated/luci-milo.cfg' in input_api.LocalPaths() or
+      'infra/config/luci-milo-dev.cfg' in input_api.LocalPaths()):
     commands.append(
-      # Technically doesn't rely on lint-luci-milo.py, but is a lightweight
-      # enough check it should be fine to trigger.
       input_api.Command(
         name='testing/buildbot config checks',
         cmd=[input_api.python_executable, input_api.os_path.join(

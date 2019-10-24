@@ -25,7 +25,8 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
           std::move(item),
           control_buttons_view_.get(),
           message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
-          message_center::kNotificationWidth) {
+          message_center::kNotificationWidth,
+          /*should_show_icon=*/true) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Since we own these, we don't want Views to destroy them when their parent

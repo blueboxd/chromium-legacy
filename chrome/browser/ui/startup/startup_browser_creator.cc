@@ -23,6 +23,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -42,6 +42,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -65,10 +66,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "printing/buildflags/buildflags.h"
@@ -111,12 +108,10 @@ using content::ChildProcessSecurityPolicy;
 namespace {
 
 // Keeps track on which profiles have been launched.
-class ProfileLaunchObserver : public content::NotificationObserver,
+class ProfileLaunchObserver : public ProfileObserver,
                               public BrowserListObserver {
  public:
   ProfileLaunchObserver() {
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   content::NotificationService::AllSources());
     BrowserList::AddObserver(this);
   }
 
@@ -128,12 +123,9 @@ class ProfileLaunchObserver : public content::NotificationObserver,
     MaybeActivateProfile();
   }
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
-    Profile* profile = content::Source<Profile>(source).ptr();
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override {
+    observed_profiles_.Remove(profile);
     launched_profiles_.erase(profile);
     opened_profiles_.erase(profile);
     if (profile == profile_to_activate_)
@@ -148,6 +140,8 @@ class ProfileLaunchObserver : public content::NotificationObserver,
   }
 
   void AddLaunched(Profile* profile) {
+    if (!observed_profiles_.IsObserving(profile))
+      observed_profiles_.Add(profile);
     launched_profiles_.insert(profile);
     if (chrome::FindBrowserWithProfile(profile)) {
       // A browser may get opened before we get initialized (e.g., in tests),
@@ -164,6 +158,8 @@ class ProfileLaunchObserver : public content::NotificationObserver,
   bool activated_profile() { return activated_profile_; }
 
   void set_profile_to_activate(Profile* profile) {
+    if (!observed_profiles_.IsObserving(profile))
+      observed_profiles_.Add(profile);
     profile_to_activate_ = profile;
     MaybeActivateProfile();
   }
@@ -186,7 +182,7 @@ class ProfileLaunchObserver : public content::NotificationObserver,
                    base::BindOnce(&ProfileLaunchObserver::ActivateProfile,
                                   base::Unretained(this)));
     // Avoid posting more than once before ActivateProfile gets called.
-    registrar_.RemoveAll();
+    observed_profiles_.RemoveAll();
     BrowserList::RemoveObserver(this);
   }
 
@@ -215,13 +211,13 @@ class ProfileLaunchObserver : public content::NotificationObserver,
   // |profile_to_activate_|, otherwise, new browser windows being opened will
   // be activated on top of it.
   std::set<const Profile*> opened_profiles_;
-  content::NotificationRegistrar registrar_;
   // This is null until the profile to activate has been chosen. This value
   // should only be set once all profiles have been launched, otherwise,
   // activation may not happen after the launch of newer profiles.
   Profile* profile_to_activate_ = nullptr;
   // Set once we attempted to activate a profile. We only get one shot at this.
   bool activated_profile_ = false;
+  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileLaunchObserver);
 };

@@ -78,11 +78,10 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "android_webview_unittests_oor_cors"
+            "android_webview_unittests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "android_webview_unittests_oor_cors",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -125,11 +124,10 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "system_webview_shell_layout_test_apk_oor_cors"
+            "system_webview_shell_layout_test_apk"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "system_webview_shell_layout_test_apk_oor_cors",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -172,11 +170,10 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "webview_cts_tests_oor_cors"
+            "webview_cts_tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "webview_cts_tests_oor_cors",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -225,11 +222,10 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "webview_instrumentation_test_apk_oor_cors"
+            "webview_instrumentation_test_apk"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "webview_instrumentation_test_apk_oor_cors",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -273,11 +269,10 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "webview_ui_test_app_test_apk_oor_cors"
+            "webview_ui_test_app_test_apk"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "webview_ui_test_app_test_apk_oor_cors",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [

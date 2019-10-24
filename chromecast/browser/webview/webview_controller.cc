@@ -4,7 +4,10 @@
 
 #include "chromecast/browser/webview/webview_controller.h"
 
+#include <set>
+
 #include "base/json/json_writer.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/base/version.h"
 #include "chromecast/browser/cast_web_contents_impl.h"
@@ -14,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -186,6 +190,7 @@ void WebviewController::ResourceLoadFailed(CastWebContents* cast_web_contents) {
 void WebviewController::Destroy() {
   // This webview is now abandoned and should close.
   client_ = nullptr;
+  js_channels_.reset();
   if (stopped_) {
     // If the page has been stopped this can be deleted immediately.
     delete this;

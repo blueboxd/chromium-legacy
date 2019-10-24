@@ -91,6 +91,7 @@
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
+#include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -226,7 +227,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
-      network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory)>;
   static void SetNetworkFactoryForTesting(
       const CreateNetworkFactoryCallback& url_loader_factory_callback);
 
@@ -926,9 +927,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool is_mhtml_document() { return is_mhtml_document_; }
 
-  // Notifies the render frame about a user activation from the browser side.
-  void NotifyUserActivation();
-
   // Notifies the render frame that |frame_tree_node_| has had the sticky
   // user activation bit set for the first time.
   void DidReceiveFirstUserActivation();
@@ -1132,6 +1130,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void CreatePermissionService(
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver);
+
+  void CreatePaymentManager(
+      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
 
   void CreateWebBluetoothService(
       mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
@@ -2403,8 +2404,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // For observing Network Service connection errors only. Will trigger
   // |OnNetworkServiceConnectionError()| and push updated factories to
   // |RenderFrame|.
-  network::mojom::URLLoaderFactoryPtr
-      network_service_connection_error_handler_holder_;
+  mojo::Remote<network::mojom::URLLoaderFactory>
+      network_service_disconnect_handler_holder_;
 
   // Whether UpdateSubresourceLoaderFactories should recreate the default
   // URLLoaderFactory when handling a NetworkService crash.  In case the frame

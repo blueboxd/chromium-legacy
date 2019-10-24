@@ -29,8 +29,6 @@
 
 namespace {
 
-constexpr int kMenuAvatarIconSize = 38;
-
 // Used in UMA histogram macros, shouldn't be reordered or renumbered
 enum ValidateMenuItemSelector {
   UNKNOWN_SELECTOR = 0,
@@ -159,16 +157,8 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
     if (dock) {
       [item setIndentationLevel:1];
     } else {
-      gfx::Image itemIcon;
-      // Always use the low-res, small default avatars in the menu.
-      AvatarMenu::GetImageForMenuButton(itemData.profile_path, &itemIcon);
-
-      // Shapes the avatar icon into a circle for consistency with other avatar
-      // UI elements.
-      itemIcon = profiles::GetSizedAvatarIcon(
-          itemIcon, /*is_rectangle=*/true, kMenuAvatarIconSize,
-          kMenuAvatarIconSize, profiles::SHAPE_CIRCLE);
-
+      gfx::Image itemIcon =
+          profiles::GetAvatarIconForNSMenu(itemData.profile_path);
       [item setImage:itemIcon.ToNSImage()];
       [item setState:itemData.active ? NSOnState : NSOffState];
     }

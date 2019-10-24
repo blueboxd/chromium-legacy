@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/file_util.h"
@@ -36,6 +37,8 @@
 
 namespace extensions {
 namespace declarative_net_request {
+
+namespace dnr_api = api::declarative_net_request;
 
 namespace {
 
@@ -153,12 +156,13 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
   TestRule rule_two = CreateGenericRule();
   rule_two.condition->url_filter = std::string("two.com");
 
-  auto should_block_request = [this](const WebRequestInfo& request,
+  auto should_block_request = [this](const WebRequestInfo& request, int rule_id,
                                      const ExtensionId& extension_id) {
     manager()->EvaluateRequest(request, false /*is_incognito_context*/);
     return !request.dnr_actions->empty() &&
            ((*request.dnr_actions)[0] ==
-            RequestAction(RequestActionType::BLOCK, extension_id));
+            RequestAction(RequestActionType::BLOCK, rule_id,
+                          dnr_api::SOURCE_TYPE_MANIFEST, extension_id));
   };
 
   for (int mask = 0; mask < 4; mask++) {
@@ -196,12 +200,14 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
     WebRequestInfo request_three_info(
         GetRequestParamsForURL("http://three.com"));
 
-    EXPECT_EQ((mask & kEnableRulesetOne) != 0,
-              should_block_request(request_one_info, extension_id_one));
-    EXPECT_EQ((mask & kEnableRulesetTwo) != 0,
-              should_block_request(request_two_info, extension_id_two));
-    EXPECT_FALSE(
-        should_block_request(request_three_info, "" /* extension_id */));
+    EXPECT_EQ(
+        (mask & kEnableRulesetOne) != 0,
+        should_block_request(request_one_info, *rule_one.id, extension_id_one));
+    EXPECT_EQ(
+        (mask & kEnableRulesetTwo) != 0,
+        should_block_request(request_two_info, *rule_two.id, extension_id_two));
+    EXPECT_FALSE(should_block_request(request_three_info, 0 /* rule_id */,
+                                      "" /* extension_id */));
 
     // Remove the rulesets.
     if (mask & kEnableRulesetOne)
@@ -236,9 +242,10 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
 
   manager()->EvaluateRequest(request_info, false /*is_incognito_context*/);
   ASSERT_EQ(1u, request_info.dnr_actions->size());
-  EXPECT_EQ(
-      RequestAction(RequestActionType::BLOCK, last_loaded_extension()->id()),
-      (*request_info.dnr_actions)[0]);
+  EXPECT_EQ(RequestAction(RequestActionType::BLOCK, *rule_one.id,
+                          dnr_api::SOURCE_TYPE_MANIFEST,
+                          last_loaded_extension()->id()),
+            (*request_info.dnr_actions)[0]);
   request_info.dnr_actions.reset();
 
   // Enabling the extension in incognito mode, should cause requests from
@@ -249,16 +256,18 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
 
   manager()->EvaluateRequest(request_info, true /*is_incognito_context*/);
   ASSERT_EQ(1u, request_info.dnr_actions->size());
-  EXPECT_EQ(
-      RequestAction(RequestActionType::BLOCK, last_loaded_extension()->id()),
-      (*request_info.dnr_actions)[0]);
+  EXPECT_EQ(RequestAction(RequestActionType::BLOCK, *rule_one.id,
+                          dnr_api::SOURCE_TYPE_MANIFEST,
+                          last_loaded_extension()->id()),
+            (*request_info.dnr_actions)[0]);
   request_info.dnr_actions.reset();
 
   manager()->EvaluateRequest(request_info, false /*is_incognito_context*/);
   ASSERT_EQ(1u, request_info.dnr_actions->size());
-  EXPECT_EQ(
-      RequestAction(RequestActionType::BLOCK, last_loaded_extension()->id()),
-      (*request_info.dnr_actions)[0]);
+  EXPECT_EQ(RequestAction(RequestActionType::BLOCK, *rule_one.id,
+                          dnr_api::SOURCE_TYPE_MANIFEST,
+                          last_loaded_extension()->id()),
+            (*request_info.dnr_actions)[0]);
   request_info.dnr_actions.reset();
 }
 
@@ -301,9 +310,10 @@ TEST_P(RulesetManagerTest, TotalEvaluationTimeHistogram) {
 
     manager()->EvaluateRequest(example_com_request, is_incognito_context);
     ASSERT_EQ(1u, example_com_request.dnr_actions->size());
-    EXPECT_EQ(
-        RequestAction(RequestActionType::BLOCK, last_loaded_extension()->id()),
-        (*example_com_request.dnr_actions)[0]);
+    EXPECT_EQ(RequestAction(RequestActionType::BLOCK, *rule.id,
+                            dnr_api::SOURCE_TYPE_MANIFEST,
+                            last_loaded_extension()->id()),
+              (*example_com_request.dnr_actions)[0]);
 
     tester.ExpectTotalCount(kHistogramName, 1);
 
@@ -336,7 +346,8 @@ TEST_P(RulesetManagerTest, Redirect) {
   // redirected to "google.com".
   const bool is_incognito_context = false;
   const char* kExampleURL = "http://example.com";
-  RequestAction expected_redirect_action(RequestActionType::REDIRECT,
+  RequestAction expected_redirect_action(RequestActionType::REDIRECT, *rule.id,
+                                         dnr_api::SOURCE_TYPE_MANIFEST,
                                          last_loaded_extension()->id());
   expected_redirect_action.redirect_url = GURL("http://google.com");
   WebRequestInfo request_1(GetRequestParamsForURL(kExampleURL, base::nullopt));
@@ -411,7 +422,8 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
   WebRequestInfo request_1(GetRequestParamsForURL("http://example.com"));
   manager()->EvaluateRequest(request_1, false /*is_incognito_context*/);
   ASSERT_EQ(1u, request_1.dnr_actions->size());
-  EXPECT_EQ(RequestAction(RequestActionType::BLOCK, extension_1->id()),
+  EXPECT_EQ(RequestAction(RequestActionType::BLOCK, kMinValidID,
+                          dnr_api::SOURCE_TYPE_MANIFEST, extension_1->id()),
             (*request_1.dnr_actions)[0]);
 
   // Ensure that the background page for |extension_1| won't be blocked or
@@ -497,6 +509,7 @@ TEST_P(RulesetManagerTest, RemoveHeaders) {
   // Removal of the cookie header should be attributed to |extension_2| because
   // it was installed later than |extension_1| and thus has more priority.
   RequestAction expected_action_1(RequestActionType::REMOVE_HEADERS,
+                                  kMinValidID, dnr_api::SOURCE_TYPE_MANIFEST,
                                   extension_2->id());
   expected_action_1.request_headers_to_remove.push_back(
       net::HttpRequestHeaders::kCookie);
@@ -506,6 +519,7 @@ TEST_P(RulesetManagerTest, RemoveHeaders) {
       net::HttpRequestHeaders::kReferer);
 
   RequestAction expected_action_2(RequestActionType::REMOVE_HEADERS,
+                                  kMinValidID, dnr_api::SOURCE_TYPE_MANIFEST,
                                   extension_1->id());
   expected_action_2.response_headers_to_remove.push_back("set-cookie");
 
@@ -541,6 +555,9 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
                           std::move(pattern_set));
   }
 
+  int rule_1_id = kMinValidID;
+  int rule_2_id = kMinValidID + 1;
+
   constexpr int kDummyFrameRoutingId = 2;
   constexpr int kDummyFrameId = 3;
   constexpr int kDummyParentFrameId = 1;
@@ -561,6 +578,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
     int frame_routing_id;
     base::Optional<FrameDataParams> frame_data_params;
     bool expect_blocked_with_allowed_pages;
+    base::Optional<int> matched_rule_id;
   } test_cases[] = {
       // Main frame requests. Allowed based on request url.
       {kAllowedPageURL, content::ResourceType::kMainFrame, base::nullopt,
@@ -568,18 +586,18 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         "http://google.com/xyz", base::nullopt}),
-       false},
+       false, base::nullopt},
       {"http://google.com/xyz", content::ResourceType::kMainFrame,
        base::nullopt, MSG_ROUTING_NONE,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         kAllowedPageURL, base::nullopt}),
-       true},
+       true, rule_2_id},
 
       // Non-navigation browser or service worker request. Not allowed,
       // since the request doesn't correspond to a frame.
       {"http://google.com/xyz", content::ResourceType::kScript, base::nullopt,
-       MSG_ROUTING_NONE, base::nullopt, true},
+       MSG_ROUTING_NONE, base::nullopt, true, rule_1_id},
 
       // Renderer requests - with no |pending_main_frame_url|. Allowed based
       // on the |last_committed_main_frame_url|.
@@ -587,12 +605,12 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
        kDummyFrameRoutingId,
        FrameDataParams({kDummyFrameId, kDummyParentFrameId,
                         "http://google.com/xyz", base::nullopt}),
-       true},
+       true, rule_1_id},
       {"http://google.com/xyz", content::ResourceType::kScript,
        "http://google.com", kDummyFrameRoutingId,
        FrameDataParams({kDummyFrameId, kDummyParentFrameId, kAllowedPageURL,
                         base::nullopt}),
-       false},
+       false, base::nullopt},
 
       // Renderer requests with |pending_main_frame_url|. This only happens for
       // main frame subresource requests.
@@ -604,7 +622,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         kAllowedPageURL, GURL("http://example.com/xyz")}),
-       true},
+       true, rule_1_id},
 
       // Here we'll determine |kAllowedPageURL| to be the main
       // frame url due to the origin.
@@ -613,7 +631,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         kAllowedPageURL, GURL("http://yahoo.com/xyz")}),
-       false},
+       false, base::nullopt},
 
       // In these cases both |pending_main_frame_url| and
       // |last_committed_main_frame_url| will be tested since we won't be able
@@ -623,20 +641,20 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         "http://google.com/abc", GURL(kAllowedPageURL)}),
-       false},
+       false, base::nullopt},
       {"http://example.com/script.js", content::ResourceType::kScript,
        base::nullopt, kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         kAllowedPageURL, GURL("http://google.com/abc")}),
-       false},
+       false, base::nullopt},
       {"http://example.com/script.js", content::ResourceType::kScript,
        base::nullopt, kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
                         "http://yahoo.com/abc",
                         GURL("http://yahoo.com/allow123")}),
-       true},
+       true, rule_1_id},
   };
 
   for (size_t i = 0; i < base::size(test_cases); ++i) {
@@ -667,9 +685,11 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
 
     if (test_case.expect_blocked_with_allowed_pages) {
       ASSERT_EQ(1u, actions.size());
-      EXPECT_EQ(RequestAction(RequestActionType::BLOCK,
-                              last_loaded_extension()->id()),
-                actions[0]);
+      EXPECT_EQ(
+          RequestAction(RequestActionType::BLOCK, *test_case.matched_rule_id,
+                        dnr_api::SOURCE_TYPE_MANIFEST,
+                        last_loaded_extension()->id()),
+          actions[0]);
     } else {
       EXPECT_TRUE(actions.empty());
     }
@@ -759,7 +779,8 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
     manager()->AddRuleset(redirect_extension_id, std::move(redirect_matcher),
                           URLPatternSet());
     for (const auto& test : cases) {
-      RequestAction redirect_action(RequestActionType::REDIRECT,
+      RequestAction redirect_action(RequestActionType::REDIRECT, kMinValidID,
+                                    dnr_api::SOURCE_TYPE_MANIFEST,
                                     redirect_extension_id);
       redirect_action.redirect_url = GURL("https://foo.com/");
 
@@ -776,7 +797,8 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
     manager()->AddRuleset(blocking_extension_id, std::move(blocking_matcher),
                           URLPatternSet());
     for (const auto& test : cases) {
-      RequestAction block_action(RequestActionType::BLOCK,
+      RequestAction block_action(RequestActionType::BLOCK, kMinValidID,
+                                 dnr_api::SOURCE_TYPE_MANIFEST,
                                  blocking_extension_id);
 
       verify_test_case(

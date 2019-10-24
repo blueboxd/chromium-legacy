@@ -1346,7 +1346,7 @@ if (!is_android) {
       "../renderer/autofill/password_generation_test_utils.h",
       "../renderer/chrome_content_renderer_client_browsertest.cc",
       "../renderer/chrome_render_frame_observer_browsertest.cc",
-      "../renderer/content_settings_observer_browsertest.cc",
+      "../renderer/content_settings_agent_impl_browsertest.cc",
       "../renderer/media/cast_session_browsertest.cc",
       "../renderer/translate/translate_helper_browsertest.cc",
       "../renderer/translate/translate_script_browsertest.cc",
@@ -3336,7 +3336,7 @@ test("unit_tests") {
     "../common/pref_names_util_unittest.cc",
     "../common/thread_profiler_unittest.cc",
     "../renderer/chrome_content_renderer_client_unittest.cc",
-    "../renderer/content_settings_observer_unittest.cc",
+    "../renderer/content_settings_agent_impl_unittest.cc",
     "../renderer/instant_restricted_id_cache_unittest.cc",
     "../renderer/media/chrome_key_systems_provider_unittest.cc",
     "../renderer/media/flash_embed_rewrite_unittest.cc",
@@ -5235,7 +5235,10 @@ test("unit_tests") {
   }
 
   if (enable_webui_tab_strip) {
-    sources += [ "../browser/ui/webui/tab_strip/thumbnail_tracker_unittest.cc" ]
+    sources += [
+      "../browser/ui/webui/tab_strip/tab_strip_ui_layout_unittest.cc",
+      "../browser/ui/webui/tab_strip/thumbnail_tracker_unittest.cc",
+    ]
   }
 }
 

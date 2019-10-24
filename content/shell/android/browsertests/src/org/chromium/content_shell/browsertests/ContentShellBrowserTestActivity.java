@@ -27,8 +27,7 @@ import java.io.File;
 
 /** An Activity base class for running browser tests against ContentShell. */
 public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestActivity {
-
-    private static final String TAG = "cr.native_test";
+    private static final String TAG = "native_test";
 
     private ShellManager mShellManager;
     private WindowAndroid mWindowAndroid;

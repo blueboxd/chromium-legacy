@@ -47,7 +47,7 @@ void OnNetworkConnectionError(
 
 // static
 std::unique_ptr<OtaActivator> OtaActivatorImpl::Factory::Create(
-    mojom::ActivationDelegatePtr activation_delegate,
+    mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
     base::OnceClosure on_finished_callback,
     NetworkStateHandler* network_state_handler,
     NetworkConnectionHandler* network_connection_handler,
@@ -74,7 +74,7 @@ void OtaActivatorImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
 OtaActivatorImpl::Factory::~Factory() = default;
 
 OtaActivatorImpl::OtaActivatorImpl(
-    mojom::ActivationDelegatePtr activation_delegate,
+    mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
     base::OnceClosure on_finished_callback,
     NetworkStateHandler* network_state_handler,
     NetworkConnectionHandler* network_connection_handler,
@@ -151,7 +151,7 @@ void OtaActivatorImpl::StartActivation() {
 
   // If |activation_delegate_| becomes disconnected, the activation request is
   // considered canceled.
-  activation_delegate_.set_connection_error_handler(base::BindOnce(
+  activation_delegate_.set_disconnect_handler(base::BindOnce(
       &OtaActivatorImpl::FinishActivationAttempt, base::Unretained(this),
       mojom::ActivationResult::kFailedToActivate));
 

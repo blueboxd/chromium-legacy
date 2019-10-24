@@ -454,6 +454,7 @@
         'ExtensionAllowInsecureUpdates',
         'ExtensionSettings',
         'ExtensionInstallListsMergeEnabled',
+        'BlockExternalExtensions',
       ],
     },
     {
@@ -4090,6 +4091,29 @@
       If you enable this setting, the values from machine platform policy, machine cloud policy and user platform policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
 
       If you disable this setting or leave it unset, only list entries from the highest priority source are taken and all other sources are shown as conflicts but ignored.''',
+    },
+    {
+      'name': 'BlockExternalExtensions',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:80-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 637,
+      'caption': '''Blocks external extensions from being installed''',
+      'tags': [],
+      'desc': '''Controls external extensions installation.
+
+      Enabling this setting blocks external extensions from being installed.
+
+      Disabling this setting or leaving it unset allows external extensions to be installed.
+
+      External extensions and their installation are documented at https://developer.chrome.com/apps/external_extensions.
+      ''',
     },
     {
       'name': 'ShowHomeButton',
@@ -19489,6 +19513,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 636,
+  'highest_id_currently_used': 637,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -25,12 +25,17 @@ InterpolableTransformList::ConvertCSSValue(const CSSValue& css_value,
 }
 
 void InterpolableTransformList::PreConcat(
-    const InterpolableTransformList& other) {
+    const InterpolableTransformList& underlying) {
   Vector<scoped_refptr<TransformOperation>> result;
-  result.ReserveCapacity(other.operations_.size() + operations_.size());
-  result.AppendVector(other.operations_.Operations());
+  result.ReserveCapacity(underlying.operations_.size() + operations_.size());
+  result.AppendVector(underlying.operations_.Operations());
   result.AppendVector(operations_.Operations());
   operations_.Operations() = result;
+}
+
+void InterpolableTransformList::AccumulateOnto(
+    const InterpolableTransformList& underlying) {
+  operations_ = underlying.operations_.Accumulate(operations_);
 }
 
 void InterpolableTransformList::Interpolate(const InterpolableValue& to,

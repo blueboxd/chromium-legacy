@@ -61,6 +61,7 @@ include_rules = [
   "+media/base",
   "+ppapi/shared_impl",
   "+services/network/public/cpp",
+  "+services/network/public/mojom",
   "+skia",
   "+storage/common",
   "+third_party/blink/public/mojom",

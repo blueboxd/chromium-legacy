@@ -34,6 +34,7 @@ import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.DownloadDelegate;
 import org.chromium.weblayer.FullscreenDelegate;
 import org.chromium.weblayer.NavigationController;
+import org.chromium.weblayer.NavigationObserver;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
@@ -212,9 +213,10 @@ public class WebLayerShellActivity extends FragmentActivity {
             public void visibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
-
+        });
+        mBrowserController.getNavigationController().addObserver(new NavigationObserver() {
             @Override
-            public void loadingStateChanged(boolean isLoading, boolean toDifferentDocument) {
+            public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
                 mLoadProgressBar.setVisibility(
                         isLoading && toDifferentDocument ? View.VISIBLE : View.INVISIBLE);
             }

@@ -1492,16 +1492,6 @@ std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
 }
 
 // static
-std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
-    LocalFrame* frame,
-    UserGestureToken* token) {
-  DCHECK(!RuntimeEnabledFeatures::UserActivationV2Enabled());
-  if (frame)
-    frame->NotifyUserActivation(false);
-  return std::make_unique<UserGestureIndicator>(token);
-}
-
-// static
 bool LocalFrame::HasTransientUserActivation(LocalFrame* frame,
                                             bool check_if_main_thread) {
   if (RuntimeEnabledFeatures::UserActivationV2Enabled())
@@ -1829,6 +1819,10 @@ void LocalFrame::GetTextSurroundingSelection(
 void LocalFrame::SendInterventionReport(const String& id,
                                         const String& message) {
   Intervention::GenerateReport(this, id, message);
+}
+
+void LocalFrame::NotifyUserActivation() {
+  NotifyUserActivation(false);
 }
 
 void LocalFrame::BindToReceiver(

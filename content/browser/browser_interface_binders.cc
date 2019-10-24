@@ -205,9 +205,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
       &ForwardServiceReceiver<device::mojom::VibrationManager>,
       device::mojom::kServiceName, base::Unretained(host)));
 
-  map->Add<payments::mojom::PaymentManager>(
-      base::BindRepeating(&RenderProcessHost::CreatePaymentManager,
-                          base::Unretained(host->GetProcess())));
+  map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
+      &RenderFrameHostImpl::CreatePaymentManager, base::Unretained(host)));
 
   map->Add<blink::mojom::WebBluetoothService>(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebBluetoothService, base::Unretained(host)));

@@ -8,11 +8,14 @@
 #include "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/certificate_policy_cache.h"
+#include "ios/web/public/security/security_style.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #include "ios/web/public/session/session_certificate_policy_cache.h"
 #import "ios/web/public/test/error_test_util.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
+#include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -71,6 +74,8 @@ class BadSslResponseTest : public WebTestWithWebState,
 
   void SetUp() override {
     WebTestWithWebState::SetUp();
+
+    web_state_observer_ = std::make_unique<TestWebStateObserver>(web_state());
     ASSERT_TRUE(https_server_.Start());
   }
 
@@ -88,8 +93,13 @@ class BadSslResponseTest : public WebTestWithWebState,
     return static_cast<TestWebClient*>(GetWebClient());
   }
 
+  TestDidChangeVisibleSecurityStateInfo* security_state_info() {
+    return web_state_observer_->did_change_visible_security_state_info();
+  }
+
   net::test_server::EmbeddedTestServer https_server_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<TestWebStateObserver> web_state_observer_;
   DISALLOW_COPY_AND_ASSIGN(BadSslResponseTest);
 };
 
@@ -239,6 +249,10 @@ TEST_P(BadSslResponseTest, ShowSSLErrorPageCommittedInterstitial) {
       testing::GetErrorText(web_state(), url, "NSURLErrorDomain",
                             /*error_code=*/NSURLErrorServerCertificateUntrusted,
                             /*is_post=*/false, /*is_otr=*/false)));
+  ASSERT_TRUE(security_state_info());
+  ASSERT_TRUE(security_state_info()->visible_ssl_status);
+  EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
+            security_state_info()->visible_ssl_status->security_style);
 }
 
 // Tests navigation to a page with self signed SSL cert and allowing the load

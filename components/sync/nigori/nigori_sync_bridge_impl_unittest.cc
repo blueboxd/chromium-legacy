@@ -13,6 +13,8 @@
 #include "components/sync/base/time.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/model/entity_data.h"
+#include "components/sync/nigori/keystore_keys_cryptographer.h"
+#include "components/sync/nigori/nigori_state.h"
 #include "components/sync/nigori/nigori_storage.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1152,6 +1154,52 @@ TEST(NigoriSyncBridgeImplPersistenceTest, ShouldRestoreKeystoreNigori) {
 
   // Verify that we restored Cryptographer state.
   const Cryptographer& cryptographer = bridge2->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
+}
+
+// Commit with keystore Nigori initialization might be not completed before
+// the browser restart. This test emulates loading non-initialized Nigori
+// after restart and expects that bridge will trigger initialization after
+// loading.
+TEST(NigoriSyncBridgeImplPersistenceTest,
+     ShouldInitializeKeystoreNigoriWhenLoadedFromStorage) {
+  const KeyParams kKeystoreKeyParams = Pbkdf2KeyParams("keystore_key");
+  NigoriState unitialized_state_with_keystore_keys;
+  unitialized_state_with_keystore_keys.keystore_keys_cryptographer =
+      KeystoreKeysCryptographer::FromKeystoreKeys(
+          {kKeystoreKeyParams.password});
+
+  sync_pb::NigoriLocalData nigori_local_data;
+  *nigori_local_data.mutable_nigori_model() =
+      unitialized_state_with_keystore_keys.ToLocalProto();
+
+  auto storage = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
+  ON_CALL(*storage, RestoreData()).WillByDefault(Return(nigori_local_data));
+
+  auto processor =
+      std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
+  ON_CALL(*processor, IsTrackingMetadata()).WillByDefault(Return(true));
+  MockNigoriLocalChangeProcessor* not_owned_processor = processor.get();
+
+  const FakeEncryptor kEncryptor;
+  // Calling bridge constructor triggers a commit cycle but doesn't immediately
+  // expose the new state, until the commit completes.
+  EXPECT_CALL(*not_owned_processor, Put(HasKeystoreNigori()));
+  auto bridge = std::make_unique<NigoriSyncBridgeImpl>(
+      std::move(processor), std::move(storage), &kEncryptor,
+      base::BindRepeating(&Nigori::GenerateScryptSalt),
+      /*packed_explicit_passphrase_key=*/std::string());
+  EXPECT_THAT(bridge->GetData(), HasKeystoreNigori());
+
+  // Emulate commit completeness.
+  EXPECT_THAT(bridge->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
+  EXPECT_THAT(bridge->GetData(), HasKeystoreNigori());
+  EXPECT_THAT(bridge->GetKeystoreMigrationTime(), Not(NullTime()));
+  EXPECT_EQ(bridge->GetPassphraseTypeForTesting(),
+            sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+
+  const Cryptographer& cryptographer = bridge->GetCryptographerForTesting();
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
 }

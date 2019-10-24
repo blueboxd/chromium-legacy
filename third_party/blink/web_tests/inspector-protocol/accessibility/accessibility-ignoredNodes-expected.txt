@@ -166,14 +166,14 @@ WebArea
 }
 
 WebArea
-  *GenericContainer
+  *generic
     text "Div in list isn't presentational"
 {
   "nodeId": "<string>",
   "ignored": false,
   "role": {
-    "type": "internalRole",
-    "value": "GenericContainer"
+    "type": "role",
+    "value": "generic"
   },
   "name": {
     "type": "computedString",
@@ -508,14 +508,14 @@ WebArea
 }
 
 WebArea
-  *GenericContainer "span with ARIA label"
+  *generic "span with ARIA label"
     text "should not be ignored"
 {
   "nodeId": "<string>",
   "ignored": false,
   "role": {
-    "type": "internalRole",
-    "value": "GenericContainer"
+    "type": "role",
+    "value": "generic"
   },
   "name": {
     "type": "computedString",
@@ -570,14 +570,14 @@ WebArea
 }
 
 WebArea
-  *GenericContainer
+  *generic
     text "summary element without details parent is ignored"
 {
   "nodeId": "<string>",
   "ignored": false,
   "role": {
-    "type": "internalRole",
-    "value": "GenericContainer"
+    "type": "role",
+    "value": "generic"
   },
   "name": {
     "type": "computedString",

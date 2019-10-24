@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -334,7 +335,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             }
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updatePreferences);
         } else if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
-            mPrefServiceBridge.setSearchSuggestEnabled((boolean) newValue);
+            mPrefServiceBridge.setBoolean(Pref.SEARCH_SUGGEST_ENABLED, (boolean) newValue);
         } else if (PREF_SAFE_BROWSING.equals(key)) {
             mPrefServiceBridge.setSafeBrowsingEnabled((boolean) newValue);
         } else if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
@@ -538,7 +539,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private void updatePreferences() {
         updateSyncPreferences();
 
-        mSearchSuggestions.setChecked(mPrefServiceBridge.isSearchSuggestEnabled());
+        mSearchSuggestions.setChecked(mPrefServiceBridge.getBoolean(Pref.SEARCH_SUGGEST_ENABLED));
         mNavigationError.setChecked(mPrefServiceBridge.isResolveNavigationErrorEnabled());
         mSafeBrowsing.setChecked(mPrefServiceBridge.isSafeBrowsingEnabled());
         mSafeBrowsingReporting.setChecked(
@@ -606,7 +607,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
                 return mPrefServiceBridge.isResolveNavigationErrorManaged();
             }
             if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
-                return mPrefServiceBridge.isSearchSuggestManaged();
+                return mPrefServiceBridge.isManagedPreference(Pref.SEARCH_SUGGEST_ENABLED);
             }
             if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
                 return mPrefServiceBridge.isSafeBrowsingExtendedReportingManaged();

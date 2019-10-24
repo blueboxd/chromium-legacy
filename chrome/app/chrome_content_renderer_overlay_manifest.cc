@@ -8,7 +8,7 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
-#include "chrome/common/content_settings_renderer.mojom.h"
+#include "chrome/common/content_settings_agent.mojom.h"
 #include "chrome/common/prerender.mojom.h"
 #include "chrome/common/search.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
@@ -63,7 +63,7 @@ const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
                 blink::mojom::PauseSubresourceLoadingHandle,
                 blink::mojom::PreviewsResourceLoadingHintsReceiver,
                 chrome::mojom::ChromeRenderFrame,
-                chrome::mojom::ContentSettingsRenderer,
+                chrome::mojom::ContentSettingsAgent,
                 chrome::mojom::PrerenderDispatcher,
                 dom_distiller::mojom::DistillerPageNotifierService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)

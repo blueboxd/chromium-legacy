@@ -420,9 +420,9 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.24), 0 0 24px rgba(0, 0, 0, 0.12);
   display: flex;
   height: 48px;
+  position: absolute;
   top: 0;
   visibility: hidden;  /* Need this for correct positioning. */
-  width: 100%;
 }
 
 .preview-mode:not(.wallpaper-set-successfully) #top-header {
@@ -460,7 +460,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 
 .top-header-contents #image-title {
   color: rgb(32, 33, 36);
-  max-width: 148px;
+  max-width: 786px;
   overflow: hidden;
   padding-inline-end: 8px;
   text-overflow: ellipsis;
@@ -477,6 +477,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   color: rgb(128, 134, 139);
   max-width: 312px;
   overflow: hidden;
+  padding-inline-end: 16px;
   padding-inline-start: 8px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -496,8 +497,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 
 .top-header-contents .more-options {
   display: flex;
-  position: absolute;
-  right: 8px;
+  margin-inline-end: 8px;
 }
 
 html[dir='rtl'] .top-header-contents .more-options {
@@ -522,7 +522,7 @@ html[dir='rtl'] .top-header-contents .more-options {
   background-color: #fff;
   color: rgb(26, 115, 232);
   display: none;
-  margin-top: -8px;
+  margin: -8px 0 8px 0;
   padding: 8px 24px;
 }
 

@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
@@ -42,14 +43,16 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
           pending_default_network_factory,
       SchemeMap pending_scheme_specific_factories,
       OriginMap pending_isolated_world_factories,
-      network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          direct_network_factory_remote,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_prefetch_loader_factory,
       bool bypass_redirect_checks);
   ~ChildURLLoaderFactoryBundleInfo() override;
 
-  network::mojom::URLLoaderFactoryPtrInfo& direct_network_factory_info() {
-    return direct_network_factory_info_;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>&
+  direct_network_factory_remote() {
+    return direct_network_factory_remote_;
   }
   mojo::PendingRemote<network::mojom::URLLoaderFactory>&
   pending_prefetch_loader_factory() {
@@ -60,7 +63,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
   // URLLoaderFactoryBundleInfo overrides.
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
-  network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info_;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      direct_network_factory_remote_;
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       pending_prefetch_loader_factory_;
 
@@ -74,8 +78,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
 class CONTENT_EXPORT ChildURLLoaderFactoryBundle
     : public blink::URLLoaderFactoryBundle {
  public:
-  using FactoryGetterCallback =
-      base::OnceCallback<network::mojom::URLLoaderFactoryPtr()>;
+  using FactoryGetterCallback = base::OnceCallback<
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>()>;
 
   ChildURLLoaderFactoryBundle();
 
@@ -128,7 +132,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
       bool include_appcache);
 
   FactoryGetterCallback direct_network_factory_getter_;
-  network::mojom::URLLoaderFactoryPtr direct_network_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> direct_network_factory_;
   mojo::Remote<network::mojom::URLLoaderFactory> prefetch_loader_factory_;
 
   std::map<GURL, mojom::TransferrableURLLoaderPtr> subresource_overrides_;

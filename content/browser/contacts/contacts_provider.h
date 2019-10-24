@@ -27,6 +27,7 @@ class ContactsProvider {
                       bool include_names,
                       bool include_emails,
                       bool include_tel,
+                      bool include_addresses,
                       ContactsSelectedCallback callback) = 0;
 };
 

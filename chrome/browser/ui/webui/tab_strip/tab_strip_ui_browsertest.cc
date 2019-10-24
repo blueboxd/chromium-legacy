@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -37,6 +38,7 @@ class MockTabStripUIEmbedder : public TabStripUI::Embedder {
               ShowContextMenuAtPoint,
               (gfx::Point point, std::unique_ptr<ui::MenuModel> menu_model),
               (override));
+  MOCK_METHOD(TabStripUILayout, GetLayout, (), (override));
 };
 
 }  // namespace
@@ -57,6 +59,11 @@ class TabStripUIBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    const TabStripUILayout default_layout =
+        TabStripUILayout::CalculateForWebViewportSize(gfx::Size(200, 200));
+    ON_CALL(mock_embedder_, GetLayout())
+        .WillByDefault(::testing::Return(default_layout));
+
     webui_contents_ = content::WebContents::Create(
         content::WebContents::CreateParams(browser()->profile()));
 

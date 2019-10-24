@@ -39,7 +39,7 @@ import org.chromium.chromecast.base.Unit;
  * activity is destroyed, CastContentWindowAndroid should be notified by intent.
  */
 public class CastWebContentsActivity extends Activity {
-    private static final String TAG = "cr_CastWebActivity";
+    private static final String TAG = "CastWebActivity";
     private static final boolean DEBUG = true;
 
     // Tracks whether this Activity is between onCreate() and onDestroy().

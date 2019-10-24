@@ -66,6 +66,21 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 #pragma mark - Device Utilities
 
+- (void)rotateDeviceToOrientation:(UIDeviceOrientation)deviceOrientation
+                            error:(NSError**)error {
+#if defined(CHROME_EARL_GREY_1)
+  NSError* strongErrorReference = nil;
+  [EarlGrey rotateDeviceToOrientation:deviceOrientation
+                           errorOrNil:&strongErrorReference];
+  if (error)
+    *error = strongErrorReference;
+#elif defined(CHROME_EARL_GREY_2)
+  [EarlGrey rotateDeviceToOrientation:deviceOrientation error:error];
+#else
+#error Neither CHROME_EARL_GREY_1 nor CHROME_EARL_GREY_2 are defined
+#endif
+}
+
 - (BOOL)isIPadIdiom {
 #if defined(CHROME_EARL_GREY_1)
   UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];

@@ -14,7 +14,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -66,7 +66,7 @@ void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
 
 void SubresourceRedirectURLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
     net::HttpRequestHeaders* modified_request_headers) {
@@ -78,7 +78,7 @@ void SubresourceRedirectURLLoaderThrottle::WillRedirectRequest(
 
 void SubresourceRedirectURLLoaderThrottle::BeforeWillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer) {
   // If response was not from the compression server, don't restart it.
   if (!response_url.is_valid())
@@ -112,7 +112,7 @@ void SubresourceRedirectURLLoaderThrottle::BeforeWillProcessResponse(
 
 void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   // If response was not from the compression server, don't record any metrics.
   if (!response_url.is_valid())

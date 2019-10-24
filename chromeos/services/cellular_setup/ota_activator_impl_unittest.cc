@@ -15,6 +15,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/cellular_setup/public/cpp/fake_activation_delegate.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -60,14 +61,14 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
   void BuildOtaActivator() {
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     ota_activator_ = OtaActivatorImpl::Factory::Create(
-        fake_activation_delegate_->GenerateInterfacePtr(),
+        fake_activation_delegate_->GenerateRemote(),
         base::BindOnce(&CellularSetupOtaActivatorImplTest::OnFinished,
                        base::Unretained(this)),
         test_helper_.network_state_handler(),
         fake_network_connection_handler_.get(),
         fake_network_activation_handler_.get(), test_task_runner);
     test_task_runner->RunUntilIdle();
-    carrier_portal_handler_ptr_ = ota_activator_->GenerateInterfacePtr();
+    carrier_portal_handler_remote_.Bind(ota_activator_->GenerateRemote());
   }
 
   void AddCellularDevice(bool has_valid_sim) {
@@ -159,9 +160,9 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
 
   void UpdateCarrierPortalState(
       mojom::CarrierPortalStatus carrier_portal_status) {
-    carrier_portal_handler_ptr_->OnCarrierPortalStatusChange(
+    carrier_portal_handler_remote_->OnCarrierPortalStatusChange(
         carrier_portal_status);
-    carrier_portal_handler_ptr_.FlushForTesting();
+    carrier_portal_handler_remote_.FlushForTesting();
   }
 
   void ConnectCellularNetwork() {
@@ -204,7 +205,9 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
     EXPECT_TRUE(is_finished_);
   }
 
-  void DisconnectDelegate() { fake_activation_delegate_->DisconnectBindings(); }
+  void DisconnectDelegate() {
+    fake_activation_delegate_->DisconnectReceivers();
+  }
 
   bool is_finished() { return is_finished_; }
 
@@ -224,7 +227,7 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
       fake_network_activation_handler_;
 
   std::unique_ptr<OtaActivator> ota_activator_;
-  mojom::CarrierPortalHandlerPtr carrier_portal_handler_ptr_;
+  mojo::Remote<mojom::CarrierPortalHandler> carrier_portal_handler_remote_;
 
   bool is_finished_ = false;
 

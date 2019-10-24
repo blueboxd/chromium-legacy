@@ -120,7 +120,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
       const net::IPEndPoint& endpoint,
-      GURL* allowed_unsafe_redirect_url);
+      base::Optional<GURL>* preserve_fragment_on_redirect_url);
 
   // mojom::AuthChallengeResponder:
   void OnAuthCredentials(
@@ -224,10 +224,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void OnHeadersReceivedComplete(
       net::CompletionOnceCallback callback,
       scoped_refptr<net::HttpResponseHeaders>* out_headers,
-      GURL* out_allowed_unsafe_redirect_url,
+      base::Optional<GURL>* out_preserve_fragment_on_redirect_url,
       int result,
       const base::Optional<std::string>& headers,
-      const GURL& allowed_unsafe_redirect_url);
+      const base::Optional<GURL>& preserve_fragment_on_redirect_url);
 
   void CompleteBlockedResponse(int error_code,
                                bool should_report_corb_blocking);

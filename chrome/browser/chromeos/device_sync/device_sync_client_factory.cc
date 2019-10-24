@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/cryptauth/client_app_metadata_provider_service.h"
 #include "chrome/browser/chromeos/cryptauth/client_app_metadata_provider_service_factory.h"
 #include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
@@ -12,9 +13,7 @@
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/device_sync/device_sync_service.h"
+#include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
@@ -22,12 +21,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_context.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -43,24 +37,14 @@ bool IsEnrollmentAllowedByPolicy(content::BrowserContext* context) {
       Profile::FromBrowserContext(context)->GetPrefs());
 }
 
-std::unique_ptr<DeviceSyncService> CreateServiceInstanceForProfile(
-    Profile* profile,
-    mojo::Remote<chromeos::device_sync::mojom::DeviceSyncService>* remote) {
-  mojo::Remote<chromeos::device_sync::mojom::DeviceSyncServiceInitializer>
-      initializer;
-  auto service = std::make_unique<DeviceSyncService>(
+std::unique_ptr<DeviceSyncBase> CreateDeviceSyncImplForProfile(
+    Profile* profile) {
+  return DeviceSyncImpl::Factory::Get()->BuildInstance(
       IdentityManagerFactory::GetForProfile(profile),
       gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
-      chromeos::GcmDeviceInfoProviderImpl::GetInstance(),
+      profile->GetPrefs(), chromeos::GcmDeviceInfoProviderImpl::GetInstance(),
       chromeos::ClientAppMetadataProviderServiceFactory::GetForProfile(profile),
-      profile->GetURLLoaderFactory(), initializer.BindNewPipeAndPassReceiver());
-  mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector;
-  content::BrowserContext::GetConnectorFor(profile)->Connect(
-      prefs::mojom::kServiceName,
-      pref_store_connector.InitWithNewPipeAndPassReceiver());
-  initializer->Initialize(remote->BindNewPipeAndPassReceiver(),
-                          std::move(pref_store_connector));
-  return service;
+      profile->GetURLLoaderFactory(), std::make_unique<base::OneShotTimer>());
 }
 
 }  // namespace
@@ -69,11 +53,16 @@ std::unique_ptr<DeviceSyncService> CreateServiceInstanceForProfile(
 class DeviceSyncClientHolder : public KeyedService {
  public:
   explicit DeviceSyncClientHolder(content::BrowserContext* context)
-      : service_(CreateServiceInstanceForProfile(
-            Profile::FromBrowserContext(context),
-            &remote_service_)),
-        device_sync_client_(DeviceSyncClientImpl::Factory::Get()->BuildInstance(
-            remote_service_.get())) {}
+      : device_sync_(CreateDeviceSyncImplForProfile(
+            Profile::FromBrowserContext(context))),
+        device_sync_client_(
+            DeviceSyncClientImpl::Factory::Get()->BuildInstance()) {
+    // Connect the client's mojo interface pointer to the implementation.
+    device_sync_->BindRequest(
+        mojo::MakeRequest(device_sync_client_->GetDeviceSyncPtr()));
+    // Finish client initialization.
+    device_sync_client_->Initialize(base::ThreadTaskRunnerHandle::Get());
+  }
 
   DeviceSyncClient* device_sync_client() { return device_sync_client_.get(); }
 
@@ -81,15 +70,11 @@ class DeviceSyncClientHolder : public KeyedService {
   // KeyedService:
   void Shutdown() override {
     device_sync_client_.reset();
-    service_.reset();
+    device_sync_->CloseAllBindings();
+    device_sync_.reset();
   }
 
-  mojo::Remote<chromeos::device_sync::mojom::DeviceSyncService> remote_service_;
-
-  // The in-process service instance. Never exposed publicly except through the
-  // DeviceSyncClient, which is isolated from the service by Mojo interfaces.
-  std::unique_ptr<chromeos::device_sync::DeviceSyncService> service_;
-
+  std::unique_ptr<DeviceSyncBase> device_sync_;
   std::unique_ptr<DeviceSyncClient> device_sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncClientHolder);

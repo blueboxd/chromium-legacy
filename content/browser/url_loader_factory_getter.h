@@ -13,6 +13,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
@@ -85,12 +87,12 @@ class URLLoaderFactoryGetter
       network::mojom::URLLoaderFactory* test_factory,
       bool is_corb_enabled = false);
 
-  CONTENT_EXPORT network::mojom::URLLoaderFactoryPtr*
+  CONTENT_EXPORT mojo::Remote<network::mojom::URLLoaderFactory>*
   original_network_factory_for_testing() {
     return &network_factory_;
   }
 
-  CONTENT_EXPORT network::mojom::URLLoaderFactoryPtr*
+  CONTENT_EXPORT mojo::Remote<network::mojom::URLLoaderFactory>*
   original_network_factory__corb_enabled_for_testing() {
     return &network_factory_corb_enabled_;
   }
@@ -116,13 +118,13 @@ class URLLoaderFactoryGetter
 
   CONTENT_EXPORT ~URLLoaderFactoryGetter();
   void InitializeOnIOThread(
-      network::mojom::URLLoaderFactoryPtrInfo network_factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> network_factory);
 
   // Moves |network_factory| to |network_factory_| or
   // |network_factory_corb_enabled_| depending on |is_corb_enabled| and sets up
   // an error handler.
   void ReinitializeOnIOThread(
-      network::mojom::URLLoaderFactoryPtr network_factory,
+      mojo::Remote<network::mojom::URLLoaderFactory> network_factory,
       bool is_corb_enabled);
 
   // Send |network_factory_request| to cached |StoragePartitionImpl|.
@@ -140,8 +142,8 @@ class URLLoaderFactoryGetter
   void FlushNetworkInterfaceForTesting(base::OnceClosure callback);
 
   // Only accessed on IO thread.
-  network::mojom::URLLoaderFactoryPtr network_factory_;
-  network::mojom::URLLoaderFactoryPtr network_factory_corb_enabled_;
+  mojo::Remote<network::mojom::URLLoaderFactory> network_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> network_factory_corb_enabled_;
   network::mojom::URLLoaderFactory* test_factory_ = nullptr;
   network::mojom::URLLoaderFactory* test_factory_corb_enabled_ = nullptr;
 

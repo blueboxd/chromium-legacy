@@ -19,7 +19,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 PluginResponseInterceptorURLLoaderThrottle::
     PluginResponseInterceptorURLLoaderThrottle(int resource_type,
@@ -31,7 +31,7 @@ PluginResponseInterceptorURLLoaderThrottle::
 
 void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (content::download_utils::MustDownload(response_url,
@@ -90,10 +90,13 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
                                std::move(new_client_request), &original_loader,
                                &original_client);
 
-  // Make a deep copy of ResourceResponseHead before passing it cross-thread.
-  auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
-  resource_response->head = *response_head;
-  auto deep_copied_response = resource_response->DeepCopy();
+  // Make a deep copy of URLResponseHead before passing it cross-thread.
+  auto deep_copied_response = response_head->Clone();
+  if (response_head->headers) {
+    deep_copied_response->headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            response_head->headers->raw_headers());
+  }
 
   auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
   transferrable_loader->url = GURL(
@@ -101,7 +104,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
       base::GenerateGUID());
   transferrable_loader->url_loader = original_loader.PassInterface();
   transferrable_loader->url_loader_client = std::move(original_client);
-  transferrable_loader->head = std::move(deep_copied_response->head);
+  transferrable_loader->head = std::move(deep_copied_response);
   transferrable_loader->head->intercepted_by_plugin = true;
 
   bool embedded =

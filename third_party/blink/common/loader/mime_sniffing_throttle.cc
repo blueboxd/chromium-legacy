@@ -7,7 +7,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/mime_sniffer.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_url_loader.h"
 
 namespace blink {
@@ -20,7 +20,7 @@ MimeSniffingThrottle::~MimeSniffingThrottle() = default;
 
 void MimeSniffingThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   // No need to do mime sniffing again.
   if (response_head->did_mime_sniff)
@@ -46,9 +46,9 @@ void MimeSniffingThrottle::WillProcessResponse(
     network::mojom::URLLoaderClientRequest source_client_request;
     MimeSniffingURLLoader* mime_sniffing_loader;
     std::tie(new_remote, new_receiver, mime_sniffing_loader) =
-        MimeSniffingURLLoader::CreateLoader(weak_factory_.GetWeakPtr(),
-                                            response_url, *response_head,
-                                            task_runner_);
+        MimeSniffingURLLoader::CreateLoader(
+            weak_factory_.GetWeakPtr(), response_url, response_head->Clone(),
+            task_runner_);
     delegate_->InterceptResponse(
         network::mojom::URLLoaderPtr(std::move(new_remote)),
         std::move(new_receiver), &source_loader, &source_client_request);

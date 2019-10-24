@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/public/browser/content_browser_client.h"
@@ -389,8 +390,8 @@ class ExtensionWebRequestEventRouter {
   // requests only, and allows modification of incoming response headers.
   // Returns net::ERR_IO_PENDING if an extension is intercepting the request,
   // OK otherwise. |original_response_headers| is reference counted. |callback|
-  // |override_response_headers| and |allowed_unsafe_redirect_url| are not owned
-  // but are guaranteed to be valid until |callback| is called or
+  // |override_response_headers| and |preserve_fragment_on_redirect_url| are not
+  // owned but are guaranteed to be valid until |callback| is called or
   // OnRequestWillBeDestroyed is called (whatever comes first).
   // Do not modify |original_response_headers| directly but write new ones
   // into |override_response_headers|.
@@ -400,7 +401,7 @@ class ExtensionWebRequestEventRouter {
       net::CompletionOnceCallback callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-      GURL* allowed_unsafe_redirect_url);
+      GURL* preserve_fragment_on_redirect_url);
 
   // Dispatches the OnAuthRequired event to any extensions whose filters match
   // the given request. If the listener is not registered as "blocking", then

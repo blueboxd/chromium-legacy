@@ -1286,8 +1286,6 @@ GLenum GetGraphicsResetStatusKHR() override;
 
 void BlendBarrierKHR() override;
 
-void ApplyScreenSpaceAntialiasingCHROMIUM() override;
-
 void BindFragDataLocationIndexedEXT(GLuint program,
                                     GLuint colorNumber,
                                     GLuint index,

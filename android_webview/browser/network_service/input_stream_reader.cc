@@ -94,4 +94,4 @@ int InputStreamReader::SkipToRequestedRange(
   return net::OK;
 }
 
-} // namespace android_webview
+}  // namespace android_webview

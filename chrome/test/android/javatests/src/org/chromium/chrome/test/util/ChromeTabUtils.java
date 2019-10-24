@@ -52,14 +52,14 @@ import java.util.concurrent.TimeoutException;
  * A utility class that contains methods generic to all Tabs tests.
  */
 public class ChromeTabUtils {
-    private static final String TAG = "cr_ChromeTabUtils";
+    private static final String TAG = "ChromeTabUtils";
     public static final int TITLE_UPDATE_TIMEOUT_MS = 3000;
 
     /**
      * The required page load percentage for the page to be considered ready assuming the
      * TextureView is also ready.
      */
-    private static final int CONSIDERED_READY_LOAD_PERCENTAGE = 100;
+    private static final float CONSIDERED_READY_LOAD_PERCENTAGE = 1;
 
     /**
      * An observer that waits for a Tab to load a page.
@@ -212,7 +212,8 @@ public class ChromeTabUtils {
                         "Page did not load.  Tab information at time of failure -- "
                                 + "expected url: '%s', actual URL: '%s', load progress: %d, is "
                                 + "loading: %b, web contents init: %b, web contents loading: %b",
-                        url, tab.getUrl(), tab.getProgress(), tab.isLoading(), webContents != null,
+                        url, tab.getUrl(), Math.round(100 * tab.getProgress()), tab.isLoading(),
+                        webContents != null,
                         webContents == null ? false : webContents.isLoadingToDifferentDocument()));
             }
         }

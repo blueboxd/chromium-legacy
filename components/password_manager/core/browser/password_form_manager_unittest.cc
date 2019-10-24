@@ -1075,7 +1075,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsernameEmptyStore) {
   expected.username_value = new_username;
   expected.username_element.clear();
 
-  form_manager_->UpdateUsername(new_username);
+  form_manager_->OnUpdateUsernameFromPrompt(new_username);
 
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
   EXPECT_TRUE(form_manager_->IsNewLogin());
@@ -1095,7 +1095,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsernameToAnotherFieldValue) {
   EXPECT_EQ(automatically_chosen_username,
             form_manager_->GetPendingCredentials().username_value);
 
-  form_manager_->UpdateUsername(user_chosen_username);
+  form_manager_->OnUpdateUsernameFromPrompt(user_chosen_username);
 
   EXPECT_EQ(user_chosen_username,
             form_manager_->GetPendingCredentials().username_value);
@@ -1126,7 +1126,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsernameToAlreadyExisting) {
   PasswordForm expected = saved_match_;
   expected.password_value = expected_password;
 
-  form_manager_->UpdateUsername(new_username);
+  form_manager_->OnUpdateUsernameFromPrompt(new_username);
 
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
   EXPECT_FALSE(form_manager_->IsNewLogin());
@@ -1145,7 +1145,7 @@ TEST_F(PasswordFormManagerTest, UpdatePasswordValueEmptyStore) {
   expected.password_value = new_password;
   expected.password_element.clear();
 
-  form_manager_->UpdatePasswordValue(new_password);
+  form_manager_->OnUpdatePasswordFromPrompt(new_password);
 
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
   EXPECT_TRUE(form_manager_->IsNewLogin());
@@ -1169,7 +1169,7 @@ TEST_F(PasswordFormManagerTest, UpdatePasswordValueToAlreadyExisting) {
 
   // The user changes password to already saved one.
   base::string16 password = saved_match_.password_value;
-  form_manager_->UpdatePasswordValue(password);
+  form_manager_->OnUpdatePasswordFromPrompt(password);
 
   CheckPendingCredentials(saved_match_, form_manager_->GetPendingCredentials());
   EXPECT_FALSE(form_manager_->IsNewLogin());
@@ -1196,7 +1196,7 @@ TEST_F(PasswordFormManagerTest, UpdatePasswordValueMultiplePasswordFields) {
   expected.password_element = form.fields[0].name;
 
   // Simulate that the user updates value to save for the first password field.
-  form_manager_->UpdatePasswordValue(password);
+  form_manager_->OnUpdatePasswordFromPrompt(password);
 
   // Check that newly created pending credentials are correct.
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());

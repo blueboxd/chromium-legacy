@@ -217,6 +217,8 @@ void ChromeWebClient::PrepareErrorPage(
     NSError* error,
     bool is_post,
     bool is_off_the_record,
+    const base::Optional<net::SSLInfo>& info,
+    int64_t navigation_id,
     base::OnceCallback<void(NSString*)> callback) {
   if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
     OfflinePageTabHelper* offline_page_tab_helper =
@@ -238,7 +240,24 @@ void ChromeWebClient::PrepareErrorPage(
     }
   }
   DCHECK(error);
-  std::move(callback).Run(GetErrorPage(url, error, is_post, is_off_the_record));
+  __block NSString* error_html = nil;
+  __block base::OnceCallback<void(NSString*)> error_html_callback =
+      std::move(callback);
+  if (info.has_value()) {
+    base::OnceCallback<void(bool)> proceed_callback;
+    base::OnceCallback<void(NSString*)> blocking_page_callback =
+        base::BindOnce(^(NSString* blocking_page_html) {
+          error_html = blocking_page_html;
+          std::move(error_html_callback).Run(error_html);
+        });
+    IOSSSLErrorHandler::HandleSSLError(
+        web_state, net::MapCertStatusToNetError(info.value().cert_status),
+        info.value(), url, info.value().is_fatal_cert_error, navigation_id,
+        std::move(proceed_callback), std::move(blocking_page_callback));
+  } else {
+    std::move(error_html_callback)
+        .Run(GetErrorPage(url, error, is_post, is_off_the_record));
+  }
 }
 
 UIView* ChromeWebClient::GetWindowedContainer() {

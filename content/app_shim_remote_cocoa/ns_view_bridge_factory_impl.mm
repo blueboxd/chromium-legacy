@@ -17,9 +17,11 @@
 #include "content/common/render_widget_host_ns_view.mojom.h"
 #include "content/common/web_contents_ns_view_bridge.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #include "ui/events/cocoa/cocoa_event_utils.h"
@@ -153,17 +155,15 @@ void CreateWebContentsNSView(
     uint64_t view_id,
     mojo::ScopedInterfaceEndpointHandle host_handle,
     mojo::ScopedInterfaceEndpointHandle view_request_handle) {
-  mojom::WebContentsNSViewHostAssociatedPtr host(
-      mojo::AssociatedInterfacePtrInfo<mojom::WebContentsNSViewHost>(
-          std::move(host_handle), 0));
-  mojom::WebContentsNSViewAssociatedRequest ns_view_request(
+  mojo::PendingAssociatedRemote<mojom::WebContentsNSViewHost> host(
+      std::move(host_handle), 0);
+  mojo::PendingAssociatedReceiver<mojom::WebContentsNSView> ns_view_receiver(
       std::move(view_request_handle));
   // Note that the resulting object will be destroyed when its underlying pipe
   // is closed.
-  mojo::MakeStrongAssociatedBinding(
-      std::make_unique<WebContentsNSViewBridge>(
-          view_id, mojom::WebContentsNSViewHostAssociatedPtr(std::move(host))),
-      std::move(ns_view_request),
+  mojo::MakeSelfOwnedAssociatedReceiver(
+      std::make_unique<WebContentsNSViewBridge>(view_id, std::move(host)),
+      std::move(ns_view_receiver),
       ui::WindowResizeHelperMac::Get()->task_runner());
 }
 

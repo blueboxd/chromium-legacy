@@ -36,6 +36,12 @@ struct CompositorFrameMetadata {
 
   float top_controls_shown_ratio;
 
+  [EnableIf=is_android]
+  float bottom_controls_height;
+
+  [EnableIf=is_android]
+  float bottom_controls_shown_ratio;
+
   mojo_base.mojom.TimeTicks local_surface_id_allocation_time;
 
   // Specifies the interval at which the client's content is updated. This can

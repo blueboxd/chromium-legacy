@@ -370,15 +370,14 @@ public class VrBrowserControllerInputTest {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
-                PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_webvr_page"),
-                PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_webvr_autopresent"),
-                PAGE_LOAD_TIMEOUT_S);
         mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_webxr_input"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
                 PAGE_LOAD_TIMEOUT_S);
         mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_gamepad_button"),
                 PAGE_LOAD_TIMEOUT_S);

@@ -28,7 +28,6 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -295,14 +294,15 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
         std::move(default_header_client), std::move(default_factory_receiver));
   } else {
-    network::mojom::URLLoaderFactoryPtr original_factory;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
     worker_process_host->CreateURLLoaderFactory(
         origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(default_header_client), mojo::MakeRequest(&original_factory));
+        std::move(default_header_client),
+        original_factory.InitWithNewPipeAndPassReceiver());
     GetCreateNetworkFactoryCallbackForSharedWorker().Run(
         std::move(default_factory_receiver), worker_process_id_,
-        original_factory.PassInterface());
+        std::move(original_factory));
   }
 
   return pending_default_factory;
@@ -362,7 +362,8 @@ void SharedWorkerHost::CreatePaymentManager(
   RenderProcessHost* worker_process_host = GetProcessHost();
   if (!worker_process_host)
     return;
-  worker_process_host->CreatePaymentManager(std::move(receiver));
+  worker_process_host->CreatePaymentManagerForOrigin(
+      url::Origin::Create(instance().url()), std::move(receiver));
 }
 
 void SharedWorkerHost::CreateIDBFactory(

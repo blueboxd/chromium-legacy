@@ -192,11 +192,6 @@ public class OverlayPanelContent {
             }
 
             @Override
-            public void onLoadProgressChanged(int progress) {
-                mProgressObserver.onProgressBarUpdated(progress);
-            }
-
-            @Override
             public void visibleSSLStateChanged() {
                 mContentDelegate.onSSLStateUpdated();
             }
@@ -333,6 +328,11 @@ public class OverlayPanelContent {
                     @Override
                     public void didStartLoading(String url) {
                         mContentDelegate.onContentLoadStarted(url);
+                    }
+
+                    @Override
+                    public void loadProgressChanged(float progress) {
+                        mProgressObserver.onProgressBarUpdated(progress);
                     }
 
                     @Override

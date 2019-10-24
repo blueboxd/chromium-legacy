@@ -167,7 +167,6 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
     kNone,
     kMSAAImplicitResolve,
     kMSAAExplicitResolve,
-    kScreenSpaceAntialiasing,
   };
 
   AntialiasingMode anti_aliasing_mode_ = kNone;

@@ -89,7 +89,7 @@ WebRequestProxyingWebSocket::~WebRequestProxyingWebSocket() {
   }
   if (on_headers_received_callback_) {
     std::move(on_headers_received_callback_)
-        .Run(net::ERR_ABORTED, base::nullopt, GURL());
+        .Run(net::ERR_ABORTED, base::nullopt, base::nullopt);
   }
 }
 
@@ -404,7 +404,8 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedComplete(int error_code) {
     base::Optional<std::string> headers;
     if (override_headers_)
       headers = override_headers_->raw_headers();
-    std::move(on_headers_received_callback_).Run(net::OK, headers, GURL());
+    std::move(on_headers_received_callback_)
+        .Run(net::OK, headers, base::nullopt);
   }
 
   if (override_headers_) {

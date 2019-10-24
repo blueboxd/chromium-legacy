@@ -1,8 +1,8 @@
 Tests Accessibility.getFullAXTree
 
 WebArea
-  GenericContainer
-    GenericContainer
+  generic
+    generic
       text "Some text in a div, also a"
         InlineTextBox
       link "link"

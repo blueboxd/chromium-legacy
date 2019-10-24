@@ -1441,10 +1441,11 @@ RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
     const base::flat_set<url::Origin>& isolated_world_origins) {
   blink::URLLoaderFactoryBundleInfo::OriginMap result;
   for (const url::Origin& initiator : isolated_world_origins) {
-    network::mojom::URLLoaderFactoryPtrInfo factory_info;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
     CreateNetworkServiceDefaultFactoryAndObserve(
-        initiator, network_isolation_key_, mojo::MakeRequest(&factory_info));
-    result[initiator] = std::move(factory_info);
+        initiator, network_isolation_key_,
+        factory_remote.InitWithNewPipeAndPassReceiver());
+    result[initiator] = std::move(factory_remote);
   }
   return result;
 }
@@ -3233,8 +3234,8 @@ void RenderFrameHostImpl::ViewSource() {
 }
 
 void RenderFrameHostImpl::FlushNetworkAndNavigationInterfacesForTesting() {
-  DCHECK(network_service_connection_error_handler_holder_);
-  network_service_connection_error_handler_holder_.FlushForTesting();
+  DCHECK(network_service_disconnect_handler_holder_);
+  network_service_disconnect_handler_holder_.FlushForTesting();
 
   if (!navigation_control_)
     GetNavigationControl();
@@ -3254,20 +3255,20 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   if (!has_committed_any_navigation_)
     return;
   DCHECK(!IsOutOfProcessNetworkService() ||
-         network_service_connection_error_handler_holder_.is_bound());
+         network_service_disconnect_handler_holder_.is_bound());
 
-  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = false;
   if (recreate_default_url_loader_factory_after_network_service_crash_) {
     bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
         last_committed_origin_, network_isolation_key_,
-        mojo::MakeRequest(&default_factory_info));
+        default_factory_remote.InitWithNewPipeAndPassReceiver());
   }
 
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories =
           std::make_unique<blink::URLLoaderFactoryBundleInfo>(
-              std::move(default_factory_info),
+              std::move(default_factory_remote),
               blink::URLLoaderFactoryBundleInfo::SchemeMap(),
               CreateURLLoaderFactoriesForIsolatedWorlds(
                   isolated_worlds_requiring_separate_url_loader_factory_),
@@ -4000,10 +4001,6 @@ void RenderFrameHostImpl::OnFocusedNodeChanged(
       this, gfx::Rect(GetView()->TransformPointToRootCoordSpace(
                           bounds_in_frame_widget.origin()),
                       bounds_in_frame_widget.size()));
-}
-
-void RenderFrameHostImpl::NotifyUserActivation() {
-  Send(new FrameMsg_NotifyUserActivation(routing_id_));
 }
 
 void RenderFrameHostImpl::DidReceiveFirstUserActivation() {
@@ -5691,13 +5688,13 @@ void RenderFrameHostImpl::FailedNavigation(
 
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories;
-  // TODO(domfarolino, crbug.com/955171): Replace this with Remote.
-  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-      origin, network_isolation_key_, mojo::MakeRequest(&default_factory_info));
+      origin, network_isolation_key_,
+      default_factory_remote.InitWithNewPipeAndPassReceiver());
   subresource_loader_factories =
       std::make_unique<blink::URLLoaderFactoryBundleInfo>(
-          std::move(default_factory_info),
+          std::move(default_factory_remote),
           blink::URLLoaderFactoryBundleInfo::SchemeMap(),
           blink::URLLoaderFactoryBundleInfo::OriginMap(),
           bypass_redirect_checks);
@@ -6193,23 +6190,23 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryInternal(
       origin, network_isolation_key, std::move(default_factory_receiver));
 
-  // Add connection error observer when Network Service is running
+  // Add a disconnect handler when Network Service is running
   // out-of-process.
   if (IsOutOfProcessNetworkService() &&
-      (!network_service_connection_error_handler_holder_ ||
-       network_service_connection_error_handler_holder_.encountered_error())) {
+      (!network_service_disconnect_handler_holder_ ||
+       !network_service_disconnect_handler_holder_.is_connected())) {
+    network_service_disconnect_handler_holder_.reset();
     StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
         GetSiteInstance()->GetBrowserContext(), GetSiteInstance());
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = GetProcess()->GetID();
     storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&network_service_connection_error_handler_holder_),
+        network_service_disconnect_handler_holder_.BindNewPipeAndPassReceiver(),
         std::move(params));
-    network_service_connection_error_handler_holder_
-        .set_connection_error_handler(base::BindOnce(
-            &RenderFrameHostImpl::UpdateSubresourceLoaderFactories,
-            weak_ptr_factory_.GetWeakPtr()));
+    network_service_disconnect_handler_holder_.set_disconnect_handler(
+        base::BindOnce(&RenderFrameHostImpl::UpdateSubresourceLoaderFactories,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
   return bypass_redirect_checks;
 }
@@ -6394,6 +6391,12 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
   if (!focused_frame)
     return;
   dst->focused_tree_id = focused_frame->GetAXTreeID();
+}
+
+void RenderFrameHostImpl::CreatePaymentManager(
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  GetProcess()->CreatePaymentManagerForOrigin(GetLastCommittedOrigin(),
+                                              std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateWebBluetoothService(

@@ -40,7 +40,7 @@ import java.util.NoSuchElementException;
 @JNINamespace("media")
 @MainDex
 class MediaCodecUtil {
-    private static final String TAG = "cr_MediaCodecUtil";
+    private static final String TAG = "MediaCodecUtil";
 
     /**
      * Information returned by createDecoder()

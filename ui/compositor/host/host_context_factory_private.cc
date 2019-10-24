@@ -143,8 +143,6 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   compositor_data.display_private->Resize(compositor->size());
   compositor_data.display_private->SetOutputIsSecure(
       compositor_data.output_is_secure);
-  compositor_data.display_private->SetDisplayTransformHint(
-      compositor->display_transform());
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
@@ -313,17 +311,6 @@ void HostContextFactoryPrivate::AddVSyncParameterObserver(
     iter->second.display_private->AddVSyncParameterObserver(
         std::move(observer));
   }
-}
-
-void HostContextFactoryPrivate::SetDisplayTransformHint(
-    Compositor* compositor,
-    gfx::OverlayTransform transform) {
-  auto iter = compositor_data_map_.find(compositor);
-  if (iter == compositor_data_map_.end())
-    return;
-
-  if (iter->second.display_private)
-    iter->second.display_private->SetDisplayTransformHint(transform);
 }
 
 HostContextFactoryPrivate::CompositorData::CompositorData() = default;

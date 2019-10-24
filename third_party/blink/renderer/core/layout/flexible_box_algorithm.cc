@@ -490,6 +490,11 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
   bool should_flip_main_axis =
       !algorithm->StyleRef().ResolvedIsColumnFlexDirection() &&
       !algorithm->IsLeftToRightFlow();
+  LayoutUnit width_for_rtl = container_logical_width;
+  // -webkit-box always started layout at an origin of 0, regardless of
+  // direction.
+  if (should_flip_main_axis && algorithm->StyleRef().IsDeprecatedWebkitBox())
+    width_for_rtl = sum_hypothetical_main_size;
   for (size_t i = 0; i < line_items.size(); ++i) {
     FlexItem& flex_item = line_items[i];
 
@@ -522,11 +527,11 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
     // In an RTL column situation, this will apply the margin-right/margin-end
     // on the left. This will be fixed later in
     // LayoutFlexibleBox::FlipForRightToLeftColumn.
-    flex_item.desired_location = LayoutPoint(
-        should_flip_main_axis
-            ? container_logical_width - main_axis_offset - child_main_extent
-            : main_axis_offset,
-        cross_axis_offset + flex_item.FlowAwareMarginBefore());
+    flex_item.desired_location =
+        LayoutPoint(should_flip_main_axis
+                        ? width_for_rtl - main_axis_offset - child_main_extent
+                        : main_axis_offset,
+                    cross_axis_offset + flex_item.FlowAwareMarginBefore());
     main_axis_offset += child_main_extent + flex_item.FlowAwareMarginEnd();
 
     if (i != line_items.size() - 1) {
@@ -819,10 +824,19 @@ TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode(
 StyleContentAlignmentData FlexLayoutAlgorithm::ResolvedJustifyContent(
     const ComputedStyle& style) {
   const bool is_webkit_box = style.IsDeprecatedWebkitBox();
-  ContentPosition position = is_webkit_box
-                                 ? BoxPackToContentPosition(style.BoxPack())
-                                 : style.ResolvedJustifyContentPosition(
-                                       ContentAlignmentNormalBehavior());
+  ContentPosition position;
+  if (is_webkit_box) {
+    position = BoxPackToContentPosition(style.BoxPack());
+    // -webkit-box treats end as start for horizontal rtl.
+    if (position == ContentPosition::kFlexEnd &&
+        !style.ResolvedIsColumnReverseFlexDirection() &&
+        !style.IsLeftToRightDirection()) {
+      position = ContentPosition::kFlexStart;
+    }
+  } else {
+    position =
+        style.ResolvedJustifyContentPosition(ContentAlignmentNormalBehavior());
+  }
   ContentDistributionType distribution =
       is_webkit_box ? BoxPackToContentDistribution(style.BoxPack())
                     : style.ResolvedJustifyContentDistribution(

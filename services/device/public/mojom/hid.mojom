@@ -314,10 +314,7 @@ interface HidManager {
   // Enumerates available devices and set as a client of HidManager.
   // The implementation of HidManager guarantees that the returned callback
   // will always be posted earlier than DeviceAdded() and DeviceRemoved().
-  // TODO(crbug.com/955171): Use |pending_associated_remote| instead of
-  // |associated| after supporting mojom_js_generator.py completely for
-  // associated interfaces.
-  GetDevicesAndSetClient(associated HidManagerClient client) =>
+  GetDevicesAndSetClient(pending_associated_remote<HidManagerClient> client) =>
                        (array<HidDeviceInfo> devices);
 
   // Enumerates available devices only.

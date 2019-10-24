@@ -48,6 +48,13 @@ class GoogleMdmEnrolledStatusForTesting {
   ~GoogleMdmEnrolledStatusForTesting();
 };
 
+// Class used in tests to force set serial number.
+class GoogleSerialNumberForTesting {
+ public:
+  explicit GoogleSerialNumberForTesting(base::string16 serial_number);
+  ~GoogleSerialNumberForTesting();
+};
+
 #if !defined(GOOGLE_CHROME_BUILD)
 // Class used in tests to force password escrow service availability when not
 // in a Google Chrome build.

@@ -380,9 +380,9 @@ TEST(TransformOperationsTest, AbsoluteAnimatedPerspectiveBoundsTest) {
 
   from_ops.BlendedBoundsForBox(box, to_ops, -0.25, 1.25, &bounds);
   // The perspective range was [20, 40] and blending will extrapolate that to
-  // [17, 53].  The cube has w/h/d of 10 and the observer is at 17, so the face
-  // closest the observer is 17-10=7.
-  double projected_size = 10.0 / 7.0 * 17.0;
+  // [17.777..., 53.333...].  The cube has w/h/d of 10 and the observer is at
+  // 17.777..., so the face closest the observer is 17.777...-10=7.777...
+  double projected_size = 10.0 / 7.7778 * 17.7778;
   EXPECT_PRED_FORMAT2(
       float_box_test::AssertAlmostEqual,
       FloatBox(0, 0, 0, projected_size, projected_size, projected_size),

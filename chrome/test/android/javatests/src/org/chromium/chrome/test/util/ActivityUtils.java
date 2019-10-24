@@ -34,7 +34,7 @@ import java.util.concurrent.Callable;
  * Collection of activity utilities.
  */
 public class ActivityUtils {
-    private static final String TAG = "cr_ActivityUtils";
+    private static final String TAG = "ActivityUtils";
 
     private static final long ACTIVITY_START_TIMEOUT_MS = 3000L;
     private static final long CONDITION_POLL_INTERVAL_MS = 100;

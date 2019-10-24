@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "ipc/ipc_channel.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 
 namespace ash {
@@ -40,9 +42,9 @@ void DecodeAnimation(const std::vector<uint8_t>& image_data,
   // also goes through libpng, but APNG support is handled specifically by
   // blink's PNGImageReader.cpp.
   data_decoder::DecodeAnimation(
-      Shell::Get()->connector(), image_data, true /*shrink_to_fit*/,
-      kMaxImageSizeInBytes,
-      base::Bind(&ConvertToAnimationFrame, Passed(&on_decoded)));
+      Shell::Get()->shell_delegate()->LaunchDataDecoder(), image_data,
+      true /*shrink_to_fit*/, kMaxImageSizeInBytes,
+      base::BindOnce(&ConvertToAnimationFrame, std::move(on_decoded)));
 }
 
 }  // namespace ash

@@ -13,6 +13,7 @@
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/ozone/public/mojom/gesture_properties_service.mojom.h"
 
 namespace dbus {
@@ -65,7 +66,7 @@ class ASH_EXPORT GesturePropertiesServiceProvider
 
   ui::ozone::mojom::GesturePropertiesService* GetService();
 
-  ui::ozone::mojom::GesturePropertiesServicePtr service_;
+  mojo::Remote<ui::ozone::mojom::GesturePropertiesService> service_;
   ui::ozone::mojom::GesturePropertiesService* service_for_test_ = nullptr;
 
   base::WeakPtrFactory<GesturePropertiesServiceProvider> weak_ptr_factory_;

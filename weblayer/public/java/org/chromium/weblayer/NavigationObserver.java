@@ -92,6 +92,22 @@ public abstract class NavigationObserver {
     public void navigationFailed(@NonNull Navigation navigation) {}
 
     /**
+     * The load state of the document has changed.
+     *
+     * @param isLoading Whether any resource is loading.
+     * @param toDifferentDocument True if the main frame is loading a different document. Only valid
+     *        when |isLoading| is true.
+     */
+    public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {}
+
+    /**
+     * The progress of loading the main frame in the document has changed.
+     *
+     * @param progress A value in the range of 0.0-1.0.
+     */
+    public void loadProgressChanged(double progress) {}
+
+    /**
      * This is fired after each navigation has completed to indicate that the first paint after a
      * non-empty layout has finished.
      */

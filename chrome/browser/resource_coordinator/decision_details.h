@@ -30,8 +30,6 @@ enum class DecisionFailureReason : int32_t {
   LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT,
   // A frame on the page opted itself out of the intervention via origin trial.
   ORIGIN_TRIAL_OPT_OUT,
-  // A frame on the page did not report its origin trial opt-in/opt-out yet.
-  ORIGIN_TRIAL_UNKNOWN,
   // The origin was opted out of the intervention in the global blacklist.
   GLOBAL_BLACKLIST,
   // The local heuristic opted the origin out of the intervention due to its use

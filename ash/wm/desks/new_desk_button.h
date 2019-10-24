@@ -32,6 +32,13 @@ class ASH_EXPORT NewDeskButton
 
   void SetLabelVisible(bool visible);
 
+  // Gets the minimum size of this view to properly lay out all its contents.
+  // |compact| is set to true for compact mode or false for default mode.
+  // The view containing this object can use the size returned from this
+  // function to decide its own proper size or layout in default or compact
+  // mode.
+  gfx::Size GetMinSize(bool compact) const;
+
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
 

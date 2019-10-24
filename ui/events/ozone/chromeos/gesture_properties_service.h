@@ -5,7 +5,8 @@
 #ifndef UI_EVENTS_OZONE_CHROMEOS_GESTURE_PROPERTIES_SERVICE_H_
 #define UI_EVENTS_OZONE_CHROMEOS_GESTURE_PROPERTIES_SERVICE_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
 #include "ui/ozone/public/mojom/gesture_properties_service.mojom.h"
@@ -19,7 +20,8 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertiesService
  public:
   GesturePropertiesService(
       GesturePropertyProvider* provider,
-      ui::ozone::mojom::GesturePropertiesServiceRequest request);
+      mojo::PendingReceiver<ui::ozone::mojom::GesturePropertiesService>
+          receiver);
 
   void ListDevices(ListDevicesCallback callback) override;
   void ListProperties(int32_t device_id,
@@ -34,7 +36,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertiesService
 
  private:
   GesturePropertyProvider* prop_provider_;
-  mojo::Binding<ui::ozone::mojom::GesturePropertiesService> binding_;
+  mojo::Receiver<ui::ozone::mojom::GesturePropertiesService> receiver_;
 };
 
 }  // namespace ui

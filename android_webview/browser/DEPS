@@ -59,6 +59,8 @@ include_rules = [
   "+printing",
 
   "+services/network/public",
+  # This is needed for the CookieManager to configure the CookieStore directly.
+  "+services/network/cookie_access_delegate_impl.h",
   "+services/resource_coordinator/public/cpp",
   "+services/service_manager/public/cpp",
 

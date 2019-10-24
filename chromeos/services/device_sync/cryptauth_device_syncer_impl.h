@@ -126,15 +126,15 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
 
   void GetFeatureStatuses();
   void OnGetFeatureStatusesFinished(
-      const CryptAuthFeatureStatusGetter::IdToFeatureStatusMap&
-          id_to_feature_status_map,
+      const CryptAuthFeatureStatusGetter::IdToDeviceSoftwareFeatureInfoMap&
+          id_to_device_software_feature_info_map,
       CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
   // Builds a new device registry map with all device information except
   // decrypted BetterTogetherDeviceMetadata for remote devices.
   void BuildNewDeviceRegistry(
-      const CryptAuthFeatureStatusGetter::IdToFeatureStatusMap&
-          id_to_feature_status_map);
+      const CryptAuthFeatureStatusGetter::IdToDeviceSoftwareFeatureInfoMap&
+          id_to_device_software_feature_info_map);
 
   // If an encrypted group private key was sent by CryptAuth, decrypt it. Even
   // if we already have the unencrypted group private key in the key registry,

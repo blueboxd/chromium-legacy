@@ -137,7 +137,9 @@
 #endif
 
 #if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#include "chromecast/browser/webview/js_channel_service.h"
 #include "chromecast/browser/webview/webview_controller.h"
+#include "chromecast/common/mojom/js_channel.mojom.h"
 #endif  // BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
 
 namespace chromecast {
@@ -1018,6 +1020,20 @@ bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
 #else
   return false;
 #endif
+}
+
+void CastContentBrowserClient::BindHostReceiverForRenderer(
+    content::RenderProcessHost* render_process_host,
+    mojo::GenericPendingReceiver receiver) {
+#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+  if (auto r = receiver.As<::chromecast::mojom::JsChannelBindingProvider>()) {
+    JsChannelService::Create(render_process_host, std::move(r),
+                             base::ThreadTaskRunnerHandle::Get());
+    return;
+  }
+#endif
+  ContentBrowserClient::BindHostReceiverForRenderer(render_process_host,
+                                                    std::move(receiver));
 }
 
 std::string CastContentBrowserClient::GetUserAgent() {

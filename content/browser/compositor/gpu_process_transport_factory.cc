@@ -487,7 +487,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       features::IsVizHitTestingSurfaceLayerEnabled());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
-  data->display->SetDisplayTransformHint(compositor->display_transform());
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
@@ -743,18 +742,6 @@ void GpuProcessTransportFactory::AddVSyncParameterObserver(
   DCHECK(data);
   data->vsync_listener =
       std::make_unique<viz::VSyncParameterListener>(std::move(observer));
-}
-
-void GpuProcessTransportFactory::SetDisplayTransformHint(
-    ui::Compositor* compositor,
-    gfx::OverlayTransform transform) {
-  auto it = per_compositor_data_.find(compositor);
-  if (it == per_compositor_data_.end())
-    return;
-  PerCompositorData* data = it->second.get();
-  DCHECK(data);
-  if (data->display)
-    data->display->SetDisplayTransformHint(transform);
 }
 
 void GpuProcessTransportFactory::AddObserver(

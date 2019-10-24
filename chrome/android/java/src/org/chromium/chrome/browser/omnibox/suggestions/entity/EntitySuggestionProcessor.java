@@ -23,9 +23,9 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.Map;
 
 /** A class that handles model and view creation for the Entity suggestions. */
-public class EntitySuggestionProcessor implements SuggestionProcessor {
-    private final static String TAG = "EntitySP";
+public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
+    private static final String TAG = "EntitySP";
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
     private final Map<String, List<PropertyModel>> mPendingImageRequests;
@@ -64,6 +64,7 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
      * @param suggestionHost A handle to the object using the suggestions.
      */
     public EntitySuggestionProcessor(Context context, SuggestionHost suggestionHost) {
+        super(context, suggestionHost);
         mContext = context;
         mSuggestionHost = suggestionHost;
         mPendingImageRequests = new HashMap<>();
@@ -99,15 +100,7 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {
-        int decorationType = DECORATION_TYPE_ICON;
-
-        if (model.get(EntitySuggestionViewProperties.IMAGE_BITMAP) != null) {
-            decorationType = DECORATION_TYPE_IMAGE;
-        } else if (model.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR)
-                != EntitySuggestionViewBinder.NO_DOMINANT_COLOR) {
-            decorationType = DECORATION_TYPE_COLOR;
-        }
-
+        int decorationType = model.get(EntitySuggestionViewProperties.DECORATION_TYPE);
         RecordHistogram.recordEnumeratedHistogram(
                 "Omnibox.RichEntity.DecorationType", decorationType, DECORATION_TYPE_TOTAL_COUNT);
     }
@@ -116,6 +109,15 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
     public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {
         // Bookkeeping handled in C++:
         // http://cs.chromium.org/Omnibox.SuggestionUsed.RichEntity
+    }
+
+    /**
+     * Specify ImageFetcher instance to be used for testing purposes.
+     * TODO(http://crbug.com/1015997): Create fetcher instance in AutocompleteMediator and pass it
+     * to the constructor.
+     */
+    void setImageFetcherForTesting(ImageFetcher fetcher) {
+        mImageFetcher = fetcher;
     }
 
     private void fetchEntityImage(OmniboxSuggestion suggestion, PropertyModel model) {
@@ -139,12 +141,21 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
                     ThreadUtils.assertOnUiThread();
 
                     final List<PropertyModel> pendingModels = mPendingImageRequests.remove(url);
+                    if (pendingModels == null || bitmap == null) {
+                        return;
+                    }
+
                     boolean didUpdate = false;
                     for (int i = 0; i < pendingModels.size(); i++) {
                         PropertyModel pendingModel = pendingModels.get(i);
                         if (!mSuggestionHost.isActiveModel(pendingModel)) continue;
-
-                        pendingModel.set(EntitySuggestionViewProperties.IMAGE_BITMAP, bitmap);
+                        setSuggestionDrawableState(pendingModel,
+                                SuggestionDrawableState.Builder.forBitmap(bitmap)
+                                        .setUseRoundedCorners(true)
+                                        .setLarge(true)
+                                        .build());
+                        pendingModel.set(EntitySuggestionViewProperties.DECORATION_TYPE,
+                                DECORATION_TYPE_IMAGE);
                         didUpdate = true;
                     }
                     if (didUpdate) mSuggestionHost.notifyPropertyModelsChanged();
@@ -153,27 +164,35 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
     @VisibleForTesting
     public void applyImageDominantColor(String colorSpec, PropertyModel model) {
-        int color = EntitySuggestionViewBinder.NO_DOMINANT_COLOR;
-        if (!TextUtils.isEmpty(colorSpec)) {
-            try {
-                color = Color.parseColor(colorSpec);
-            } catch (IllegalArgumentException e) {
-                Log.i(TAG, "Failed to parse dominant color: " + colorSpec);
-            }
+        if (TextUtils.isEmpty(colorSpec)) {
+            return;
         }
-        model.set(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR, color);
+
+        int color;
+        try {
+            color = Color.parseColor(colorSpec);
+        } catch (IllegalArgumentException e) {
+            Log.i(TAG, "Failed to parse dominant color: " + colorSpec);
+            return;
+        }
+
+        setSuggestionDrawableState(model,
+                SuggestionDrawableState.Builder.forColor(color)
+                        .setLarge(true)
+                        .setUseRoundedCorners(true)
+                        .build());
+        model.set(EntitySuggestionViewProperties.DECORATION_TYPE, DECORATION_TYPE_COLOR);
     }
 
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
-        // Note: to avoid flickering and unnecessary updates, ModelListAdapter re-uses values from
-        // previously bound model if the view is being re-used. This means our model may, and likely
-        // will not be empty at this point. Make sure we explicitly specify values to avoid using
-        // stale ones.
-        model.set(EntitySuggestionViewProperties.IMAGE_BITMAP, null);
-
-        SuggestionViewDelegate delegate =
-                mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
+        super.populateModel(suggestion, model, position);
+        setSuggestionDrawableState(model,
+                SuggestionDrawableState.Builder
+                        .forDrawableRes(mContext, R.drawable.ic_suggestion_magnifier)
+                        .setAllowTint(true)
+                        .build());
+        model.set(EntitySuggestionViewProperties.DECORATION_TYPE, DECORATION_TYPE_ICON);
 
         if (SysUtils.amountOfPhysicalMemoryKB() >= LOW_MEMORY_THRESHOLD_KB) {
             applyImageDominantColor(suggestion.getImageDominantColor(), model);
@@ -182,6 +201,5 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
         model.set(EntitySuggestionViewProperties.SUBJECT_TEXT, suggestion.getDisplayText());
         model.set(EntitySuggestionViewProperties.DESCRIPTION_TEXT, suggestion.getDescription());
-        model.set(EntitySuggestionViewProperties.DELEGATE, delegate);
     }
 }

@@ -61,8 +61,8 @@ import java.util.concurrent.TimeoutException;
  * "VR Shell".
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserNavigationTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
@@ -75,25 +75,23 @@ public class VrBrowserNavigationTest {
             new RenderTestRule("components/test/data/vr_browser_ui/render_tests");
 
     private WebXrVrTestFramework mWebXrVrTestFramework;
-    private WebVrTestFramework mWebVrTestFramework;
     private VrBrowserTestFramework mVrBrowserTestFramework;
 
     private static final String TEST_PAGE_2D_URL =
             VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
     private static final String TEST_PAGE_2D_2_URL =
             VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page2");
-    private static final String TEST_PAGE_WEBVR_URL =
-            WebVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webvr_page");
     private static final String TEST_PAGE_WEBXR_URL =
             WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page");
+    private static final String TEST_PAGE_WEBXR_2_URL =
+            WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page2");
 
-    @IntDef({Page.PAGE_2D, Page.PAGE_2D_2, Page.PAGE_WEBVR, Page.PAGE_WEBXR})
+    @IntDef({Page.PAGE_2D, Page.PAGE_2D_2, Page.PAGE_WEBXR})
     @Retention(RetentionPolicy.SOURCE)
     private @interface Page {
         int PAGE_2D = 0;
         int PAGE_2D_2 = 1;
-        int PAGE_WEBVR = 2;
-        int PAGE_WEBXR = 3;
+        int PAGE_WEBXR = 2;
     }
 
     @IntDef({PresentationMode.NON_PRESENTING, PresentationMode.PRESENTING})
@@ -113,7 +111,6 @@ public class VrBrowserNavigationTest {
     @Before
     public void setUp() {
         mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
-        mWebVrTestFramework = new WebVrTestFramework(mTestRule);
         mVrBrowserTestFramework = new VrBrowserTestFramework(mTestRule);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
     }
@@ -124,8 +121,6 @@ public class VrBrowserNavigationTest {
                 return TEST_PAGE_2D_URL;
             case Page.PAGE_2D_2:
                 return TEST_PAGE_2D_2_URL;
-            case Page.PAGE_WEBVR:
-                return TEST_PAGE_WEBVR_URL;
             case Page.PAGE_WEBXR:
                 return TEST_PAGE_WEBXR_URL;
             default:
@@ -134,7 +129,7 @@ public class VrBrowserNavigationTest {
     }
 
     /**
-     * Triggers navigation to either a 2D or WebVR page. Similar to
+     * Triggers navigation to either a 2D or WebXR page. Similar to
      * {@link ChromeActivityTestRule#loadUrl loadUrl} but makes sure page initiates the
      * navigation. This is desirable since we are testing navigation transitions end-to-end.
      */
@@ -204,21 +199,10 @@ public class VrBrowserNavigationTest {
     }
 
     /**
-     * Tests navigation from a 2D to a WebVR page.
-     */
-    @Test
-    @MediumTest
-    public void test2dToWebVr() throws IllegalArgumentException, TimeoutException {
-        impl2dToWeb(Page.PAGE_WEBVR, mWebVrTestFramework);
-    }
-
-    /**
      * Tests navigation from a 2D to a WebXR page.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void test2dToWebXr() throws IllegalArgumentException, TimeoutException {
         impl2dToWeb(Page.PAGE_WEBXR, mWebXrVrTestFramework);
@@ -235,21 +219,10 @@ public class VrBrowserNavigationTest {
     }
 
     /**
-     * Tests navigation from a fullscreened 2D to a WebVR page.
-     */
-    @Test
-    @MediumTest
-    public void test2dFullscreenToWebVr() throws IllegalArgumentException, TimeoutException {
-        impl2dFullscreenToWeb(Page.PAGE_WEBVR, mWebVrTestFramework);
-    }
-
-    /**
      * Tests navigation from a fullscreened 2D to a WebXR page.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void test2dFullscreenToWebXr()
             throws IllegalArgumentException, TimeoutException {
@@ -268,21 +241,10 @@ public class VrBrowserNavigationTest {
     }
 
     /**
-     * Tests navigation from a WebVR to a 2D page.
-     */
-    @Test
-    @MediumTest
-    public void testWebVrTo2d() throws IllegalArgumentException, TimeoutException {
-        webTo2dImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
-    }
-
-    /**
      * Tests navigation from a WebXR to a 2D page.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrTo2d() throws IllegalArgumentException, TimeoutException {
         webTo2dImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
@@ -299,21 +261,10 @@ public class VrBrowserNavigationTest {
     }
 
     /**
-     * Tests navigation from a WebVR to a WebVR page.
-     */
-    @Test
-    @MediumTest
-    public void testWebVrToWebVr() throws IllegalArgumentException, TimeoutException {
-        webToWebImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
-    }
-
-    /**
      * Tests navigation from a WebXR to a WebXR page.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrToWebXr() throws IllegalArgumentException, TimeoutException {
         webToWebImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
@@ -330,21 +281,10 @@ public class VrBrowserNavigationTest {
     }
 
     /**
-     * Tests navigation from a presenting WebVR to a 2D page.
-     */
-    @Test
-    @MediumTest
-    public void testWebVrPresentingTo2d() throws IllegalArgumentException, TimeoutException {
-        webPresentingTo2dImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
-    }
-
-    /**
      * Tests navigation from a presenting WebXR to a 2D page.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrPresentingTo2d()
             throws IllegalArgumentException, TimeoutException {
@@ -363,21 +303,10 @@ public class VrBrowserNavigationTest {
     }
 
     /**
-     * Tests navigation from a presenting WebVR to a WebVR page.
-     */
-    @Test
-    @MediumTest
-    public void testWebVrPresentingToWebVr() throws IllegalArgumentException, TimeoutException {
-        webPresentingToWebImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
-    }
-
-    /**
      * Tests navigation from a presenting WebXR to a WebXR page.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrPresentingToWebXr()
             throws IllegalArgumentException, TimeoutException {
@@ -396,21 +325,10 @@ public class VrBrowserNavigationTest {
     }
 
     /**
-     * Tests navigation from a fullscreened WebVR to a 2D page.
-     */
-    @Test
-    @MediumTest
-    public void testWebVrFullscreenTo2d() throws IllegalArgumentException, TimeoutException {
-        webFullscreenTo2dImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
-    }
-
-    /**
      * Tests navigation from a fullscreened WebXR to a 2D page.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrFullscreenTo2d()
             throws IllegalArgumentException, TimeoutException {
@@ -429,21 +347,10 @@ public class VrBrowserNavigationTest {
     }
 
     /**
-     * Tests navigation from a fullscreened WebVR to a WebVR page.
-     */
-    @Test
-    @MediumTest
-    public void testWebVrFullscreenToWebVr() throws IllegalArgumentException, TimeoutException {
-        webFullscreenToWebImpl(Page.PAGE_WEBVR, mWebVrTestFramework);
-    }
-
-    /**
      * Tests navigation from a fullscreened WebXR to a WebXR page.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testWebXrFullscreenToWebXr()
             throws IllegalArgumentException, TimeoutException {
@@ -661,15 +568,15 @@ public class VrBrowserNavigationTest {
         // Test Incognito's forward/back.
         // TODO(https://crbug.com/868506): Remove the waitForTabPageLoaded calls after the loadUrl
         // calls once the issue with Incognito loadUrl reporting page load too quickly is fixed.
-        mTestRule.loadUrl(TEST_PAGE_WEBVR_URL);
+        mTestRule.loadUrl(TEST_PAGE_WEBXR_2_URL);
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBVR_URL);
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_2_URL);
         mTestRule.loadUrl(TEST_PAGE_WEBXR_URL);
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_URL);
         VrBrowserTransitionUtils.navigateBack();
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBVR_URL);
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_2_URL);
         VrBrowserTransitionUtils.navigateForward();
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_URL);

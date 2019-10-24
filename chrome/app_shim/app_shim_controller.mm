@@ -415,7 +415,8 @@ void AppShimController::UpdateProfileMenu(
 
   // Note that this code to create menu items is nearly identical to the code
   // in ProfileMenuController in the browser process.
-  for (const auto& mojo_item : profile_menu_items_) {
+  for (size_t i = 0; i < profile_menu_items_.size(); ++i) {
+    const auto& mojo_item = profile_menu_items_[i];
     NSString* name = base::SysUTF16ToNSString(mojo_item->name);
     NSMenuItem* item =
         [[[NSMenuItem alloc] initWithTitle:name
@@ -426,7 +427,7 @@ void AppShimController::UpdateProfileMenu(
     [item setTarget:profile_menu_target_.get()];
     gfx::Image icon(mojo_item->icon);
     [item setImage:icon.ToNSImage()];
-    [menu insertItem:item atIndex:mojo_item->menu_index];
+    [menu insertItem:item atIndex:i];
   }
 }
 

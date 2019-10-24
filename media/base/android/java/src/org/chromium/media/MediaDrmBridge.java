@@ -61,7 +61,7 @@ import java.util.UUID;
 @SuppressLint("WrongConstant")
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class MediaDrmBridge {
-    private static final String TAG = "cr_media";
+    private static final String TAG = "media";
     private static final String SECURITY_LEVEL = "securityLevel";
     private static final String SERVER_CERTIFICATE = "serviceCertificate";
     private static final String ORIGIN = "origin";

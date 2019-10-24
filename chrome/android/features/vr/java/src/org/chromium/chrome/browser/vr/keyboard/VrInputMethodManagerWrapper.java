@@ -21,7 +21,7 @@ import org.chromium.content_public.browser.InputMethodManagerWrapper;
  * InputMethodManager and instead talks to the Daydream keyboard.
  */
 public class VrInputMethodManagerWrapper implements InputMethodManagerWrapper {
-    private static final String TAG = "cr_VrIme";
+    private static final String TAG = "VrIme";
     private static final boolean DEBUG_LOGS = false;
 
     private final Context mContext;

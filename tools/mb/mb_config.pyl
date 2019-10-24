@@ -22,8 +22,11 @@
       'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
       'linux-google-rel': 'official_goma',
       'mac-google-rel': 'official_goma',
-      'win-celab-rel': 'official_celab_release_bot',
       'win-google-rel': 'official_goma_x86',
+    },
+
+    'internal.chrome.fyi': {
+      'win-celab-rel': 'official_celab_release_bot',
     },
 
     'chromeos.chrome': {
@@ -1092,7 +1095,7 @@
     ],
 
     'android_debug_trybot_java_coverage': [
-      'android', 'debug_trybot', 'java_coverage', 'strip_debug_info',
+      'android', 'debug_trybot', 'use_java_coverage', 'strip_debug_info',
     ],
 
     'android_incremental_debug_bot': [
@@ -1111,7 +1114,7 @@
 
     'android_release_bot_minimal_symbols_arm64_coverage': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'strip_debug_info', 'java_coverage',
+      'strip_debug_info', 'use_java_coverage',
     ],
 
     'android_release_bot_minimal_symbols_arm64_webview_google': [
@@ -1414,6 +1417,10 @@
       'clang_tot', 'tsan', 'release',
     ],
 
+    'clang_tot_win_release_cross': [
+      'clang_tot', 'win_cross', 'minimal_symbols', 'shared', 'release', 'dcheck_always_on',
+    ],
+
     'closure_compilation': [
       # The closure bots run their own recipe and shouldn't go through MB.
       'error',
@@ -1510,18 +1517,6 @@
       'debug_bot', 'x86', 'no_com_init_hooks', 'chrome_with_codecs'
     ],
 
-    'libfuzzer_asan_debug_bot_v8_arm64': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
-    ],
-
-    'libfuzzer_asan_debug_bot_x86': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',  'disable_seed_corpus',
-    ],
-
-    'libfuzzer_asan_debug_bot_x86_v8_arm': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',  'disable_seed_corpus',
-    ],
-
     'debug_trybot': [
       'debug_trybot',
     ],
@@ -1609,7 +1604,7 @@
 
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage': [
       'android', 'release_trybot', 'arm64', 'static_angle', 'resource_whitelisting',
-      'java_coverage', 'partial_code_coverage_instrumentation',
+      'use_java_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     'gpu_tests_android_vulkan_release_trybot': [
@@ -1706,6 +1701,18 @@
 
     'libfuzzer_asan_debug_bot': [
       'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
+    ],
+
+    'libfuzzer_asan_debug_bot_v8_arm64': [
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
+    ],
+
+    'libfuzzer_asan_debug_bot_x86': [
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',  'disable_seed_corpus',
+    ],
+
+    'libfuzzer_asan_debug_bot_x86_v8_arm': [
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',  'disable_seed_corpus',
     ],
 
     'libfuzzer_chromeos_asan_release_bot': [
@@ -1998,10 +2005,6 @@
     'win32_arm64_release_bot': [
       'arm64', 'disable_nacl', 'minimal_symbols', 'release_bot',
     ],
-
-    'clang_tot_win_release_cross': [
-      'clang_tot', 'win_cross', 'minimal_symbols', 'shared', 'release', 'dcheck_always_on',
-    ],
   },
 
   # This is a dict mapping a given 'mixin' name to a dict of settings that
@@ -2048,14 +2051,6 @@
 
     'asan': {
       'gn_args': 'is_asan=true',
-    },
-
-    'ffmpeg_branding_chrome': {
-      'gn_args': 'ffmpeg_branding="Chrome"',
-    },
-
-    'ffmpeg_branding_chromeos': {
-      'gn_args': 'ffmpeg_branding="ChromeOS"',
     },
 
     'cast': {
@@ -2114,18 +2109,6 @@
 
     'clang': {
       'gn_args': 'is_clang=true',
-    },
-
-    'no_clang': {
-      'gn_args': 'is_clang=false',
-    },
-
-    'use_clang_coverage': {
-      'gn_args': 'use_clang_coverage=true',
-    },
-
-    'use_cxx11': {
-      'gn_args': 'use_cxx11=true',
     },
 
     # Settings used by the codesearch builders to generate cross-references.
@@ -2226,6 +2209,10 @@
       'gn_args': 'error',
     },
 
+    'ffmpeg_branding_chrome': {
+      'gn_args': 'ffmpeg_branding="Chrome"',
+    },
+
     'ffmpeg_branding_chromeos': {
       'gn_args': 'ffmpeg_branding="ChromeOS"',
     },
@@ -2287,10 +2274,6 @@
       'gn_args': 'target_cpu="x64"',
     },
 
-    'java_coverage': {
-      'gn_args': 'use_jacoco_coverage=true',
-    },
-
     'libcxx': {
       'gn_args': 'use_custom_libcxx=true',
     },
@@ -2323,6 +2306,10 @@
 
     'msan_no_origins': {
       'gn_args': 'is_msan=true msan_track_origins=0',
+    },
+
+    'no_clang': {
+      'gn_args': 'is_clang=false',
     },
 
     'no_com_init_hooks': {
@@ -2406,6 +2393,10 @@
       'mixins': ['release_bot', 'minimal_symbols', 'dcheck_always_on'],
     },
 
+    'resource_whitelisting': {
+      'gn_args': 'enable_resource_whitelist_generation=true',
+    },
+
     'shared': {
       'gn_args': 'is_component_build=true',
     },
@@ -2416,6 +2407,10 @@
 
     'shared_release_trybot': {
       'mixins': ['shared_release_bot', 'minimal_symbols', 'dcheck_always_on'],
+    },
+
+    'stable_channel': {
+      'gn_args': 'android_channel="stable"',
     },
 
     'static': {
@@ -2442,18 +2437,6 @@
       'gn_args': 'use_thin_lto=true thin_lto_enable_optimizations=true',
     },
 
-    'win_linker_timing': {
-      'gn_args': 'win_linker_timing=true',
-    },
-
-    'resource_whitelisting': {
-      'gn_args': 'enable_resource_whitelist_generation=true',
-    },
-
-    'stable_channel': {
-      'gn_args': 'android_channel="stable"',
-    },
-
     'tsan': {
       'gn_args': 'is_tsan=true',
     },
@@ -2475,10 +2458,22 @@
       'gn_args': 'is_ubsan_vptr=true',
     },
 
+    'use_clang_coverage': {
+      'gn_args': 'use_clang_coverage=true',
+    },
+
+    'use_cxx11': {
+      'gn_args': 'use_cxx11=true',
+    },
+
     # TODO(crbug.com/869348): Remove this if we set this by default or don't use
     # this feature.
     'use_dummy_lastchange': {
       'gn_args': 'use_dummy_lastchange=true',
+    },
+
+    'use_java_coverage': {
+      'gn_args': 'use_jacoco_coverage=true',
     },
 
     'v8_simulate_arm': {
@@ -2519,6 +2514,10 @@
 
     'win_cross': {
       'gn_args': 'target_os="win"',
+    },
+
+    'win_linker_timing': {
+      'gn_args': 'win_linker_timing=true',
     },
 
     'x64': {

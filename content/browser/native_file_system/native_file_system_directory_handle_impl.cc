@@ -49,11 +49,6 @@ bool IsCurrentOrParentDirectory(const std::string& name) {
 
 }  // namespace
 
-struct NativeFileSystemDirectoryHandleImpl::ReadDirectoryState {
-  GetEntriesCallback callback;
-  std::vector<NativeFileSystemEntryPtr> entries;
-};
-
 NativeFileSystemDirectoryHandleImpl::NativeFileSystemDirectoryHandleImpl(
     NativeFileSystemManagerImpl* manager,
     const BindingContext& context,
@@ -174,15 +169,20 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectory(
 }
 
 void NativeFileSystemDirectoryHandleImpl::GetEntries(
-    GetEntriesCallback callback) {
+    mojo::PendingRemote<blink::mojom::NativeFileSystemDirectoryEntriesListener>
+        pending_listener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto listener = std::make_unique<
+      mojo::Remote<blink::mojom::NativeFileSystemDirectoryEntriesListener>>(
+      std::move(pending_listener));
+  listener->reset_on_disconnect();
 
   DoFileSystemOperation(
       FROM_HERE, &FileSystemOperationRunner::ReadDirectory,
       base::BindRepeating(
           &NativeFileSystemDirectoryHandleImpl::DidReadDirectory,
-          weak_factory_.GetWeakPtr(),
-          base::Owned(new ReadDirectoryState{std::move(callback)})),
+          weak_factory_.GetWeakPtr(), base::Owned(std::move(listener))),
       url());
 }
 
@@ -284,19 +284,24 @@ void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
 }
 
 void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
-    ReadDirectoryState* state,
+    mojo::Remote<blink::mojom::NativeFileSystemDirectoryEntriesListener>*
+        listener,
     base::File::Error result,
     std::vector<filesystem::mojom::DirectoryEntry> file_list,
-    bool has_more) {
+    bool has_more_entries) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (!*listener)
+    return;
+
   if (result != base::File::FILE_OK) {
-    DCHECK(!has_more);
-    std::move(state->callback)
-        .Run(native_file_system_error::FromFileError(result), {});
+    DCHECK(!has_more_entries);
+    (*listener)->DidReadDirectory(
+        native_file_system_error::FromFileError(result), {}, false);
     return;
   }
 
+  std::vector<NativeFileSystemEntryPtr> entries;
   for (const auto& entry : file_list) {
     std::string basename = storage::FilePathToString(entry.name);
 
@@ -308,17 +313,12 @@ void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
     // |basename|.
     CHECK_EQ(get_child_url_result->status, NativeFileSystemStatus::kOk);
 
-    state->entries.push_back(
+    entries.push_back(
         CreateEntry(basename, child_url,
                     entry.type == filesystem::mojom::FsFileType::DIRECTORY));
   }
-
-  // TODO(mek): Change API so we can stream back entries as they come in, rather
-  // than waiting till we have retrieved them all.
-  if (!has_more) {
-    std::move(state->callback)
-        .Run(native_file_system_error::Ok(), std::move(state->entries));
-  }
+  (*listener)->DidReadDirectory(native_file_system_error::Ok(),
+                                std::move(entries), has_more_entries);
 }
 
 void NativeFileSystemDirectoryHandleImpl::RemoveEntryImpl(

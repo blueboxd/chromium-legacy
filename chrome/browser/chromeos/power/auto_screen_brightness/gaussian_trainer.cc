@@ -420,12 +420,16 @@ TrainingResult GaussianTrainer::Train(
   if (!need_to_update_curve_) {
     const double error = CalculateCurveError(data);
     LogModelCurveError(error, false /* model_updated */);
+    VLOG(1) << "ABTrainer training finished without new curve: \n"
+            << current_curve_->ToString();
     return TrainingResult(base::nullopt, error);
   }
 
   current_curve_ = MonotoneCubicSpline::CreateMonotoneCubicSpline(
       ambient_log_lux_, brightness_);
   DCHECK(current_curve_);
+  VLOG(1) << "ABTrainer training finished with new curve: \n"
+          << current_curve_->ToString();
   need_to_update_curve_ = false;
 
   const double error = CalculateCurveError(data);
@@ -451,6 +455,11 @@ void GaussianTrainer::AdjustCurveWithSingleDataPoint(
     const TrainingDataPoint& data) {
   const double brightness_global =
       global_curve_->Interpolate(data.ambient_log_lux);
+
+  VLOG(1) << "ABTrainer training data point (global,old,new,log_lux): "
+          << FormatToPrint(brightness_global) << ", "
+          << FormatToPrint(data.brightness_old) << ", "
+          << FormatToPrint(data.brightness_new) << ", " << data.ambient_log_lux;
 
   // Check if this |data| is an outlier and should be ignored. It's an outlier
   // if its original/old brightness is too far off from the brightness as

@@ -2,23 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Deletes libsystem.dylib from the build dir, since it shadows
-# /usr/lib/libSystem.dylib on macOS.
-# TODO(thakis): Remove this after a while.
-action("clean_up_old_dylib") {
-  script = "//build/rm.py"
-  stamp = "$target_gen_dir/clean_up_stamp"
-  outputs = [
-    stamp,
-  ]
-  args = [
-    "--stamp",
-    rebase_path(stamp, root_build_dir),
-    "-f",
-    "libsystem.dylib",
-  ]
-}
-
 component("system") {
   output_name = "mojo_public_system_cpp"
 
@@ -78,9 +61,6 @@ component("system") {
     "//base",
     "//mojo/public/c/system",
     "//mojo/public/cpp/platform",
-  ]
-  deps = [
-    ":clean_up_old_dylib",
   ]
 
   defines = [ "MOJO_CPP_SYSTEM_IMPLEMENTATION" ]

@@ -94,7 +94,6 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   void SetHasPlayed() override;
   void SetHasVideo(VideoCodec video_codec) override;
   void SetHaveEnough() override;
-  void SetIsAdMedia() override;
   void SetIsEME() override;
   void SetTimeToMetadata(base::TimeDelta elapsed) override;
   void SetTimeToFirstFrame(base::TimeDelta elapsed) override;
@@ -110,7 +109,6 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
       const std::string& taskName,
       mojo::PendingReceiver<media::learning::mojom::LearningTaskController>
           receiver) override;
-  void AddBytesReceived(uint64_t bytes_received) override;
 
   void ReportPipelineUMA();
   std::string GetUMANameForAVStream(const PipelineInfo& player_info);
@@ -131,16 +129,10 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   // UMA pipeline packaged data
   PipelineInfo uma_info_;
 
-  // These values are not always sent but have known defaults.
-  bool is_ad_media_ = false;
-
   // The values below are only set if |initialized_| is true.
   bool initialized_ = false;
   bool is_mse_;
   mojom::MediaURLScheme url_scheme_;
-
-  // Total number of bytes received by the media player so far.
-  uint64_t total_bytes_received_ = 0;
 
   base::TimeDelta time_to_metadata_ = kNoTimestamp;
   base::TimeDelta time_to_first_frame_ = kNoTimestamp;

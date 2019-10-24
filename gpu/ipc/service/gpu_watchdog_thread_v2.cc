@@ -4,18 +4,87 @@
 
 #include "gpu/ipc/service/gpu_watchdog_thread_v2.h"
 
+#if defined(OS_WIN)
+#include <d3d9.h>
+#include <dxgi.h>
+#endif
+
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
+#include "base/files/file_path.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/native_library.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
 
 namespace gpu {
+namespace {
+
+// For crash_keys::gpu_watchdog_slow_system_type
+enum GpuWatchdogCrashType {
+  kGpuHang = 0,
+  kSlow = 1,
+  kSlowFileAccess = 2,
+  kSlowThreads = 3,
+};
+
+#if defined(OS_WIN)
+bool LoadAndUnloadAFile(
+    base::NativeLibraryLoadError* native_library_load_error) {
+  // Try loading d3d9.dll first
+  base::NativeLibrary d3d9_library = base::LoadNativeLibrary(
+      base::FilePath(L"d3d9.dll"), native_library_load_error);
+  if (d3d9_library) {
+    typedef IDirect3D9Ex*(__stdcall * PFNDIRECT3DCREATE9EX)(unsigned int,
+                                                            IDirect3D9Ex**);
+    PFNDIRECT3DCREATE9EX direct3d_create9ex;
+    direct3d_create9ex =
+        (PFNDIRECT3DCREATE9EX)GetProcAddress(d3d9_library, "Direct3DCreate9Ex");
+
+    base::UnloadNativeLibrary(d3d9_library);
+    return true;
+  }
+
+  // if d3d9.dll is not available, try dxgi.dll
+  base::NativeLibrary dxgi_library = base::LoadNativeLibrary(
+      base::FilePath(L"dxgi.dll"), native_library_load_error);
+  if (dxgi_library) {
+    typedef HRESULT(WINAPI * PFNCREATEDXGIFACTORY1)(REFIID riid,
+                                                    void** ppFactory);
+    PFNCREATEDXGIFACTORY1 create_dxgi_factory1;
+    create_dxgi_factory1 = (PFNCREATEDXGIFACTORY1)GetProcAddress(
+        dxgi_library, "CreateDXGIFactory1");
+
+    base::UnloadNativeLibrary(dxgi_library);
+    return true;
+  }
+
+  return false;
+}
+
+bool CreateAndDestroyAThread() {
+  auto thread = base::WrapUnique(new base::Thread("GpuWatchdogKill"));
+  base::Thread::Options options;
+  // BACKGROUND: for threads that shouldn't disrupt high priority work.
+  options.priority = base::ThreadPriority::BACKGROUND;
+  options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+  bool successful = thread->StartWithOptions(options);
+
+  if (successful) {
+    successful = thread->WaitUntilThreadStarted();
+    thread->Stop();
+  }
+  return successful;
+}
+#endif
+}  // namespace
 
 GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
                                                  bool is_test_mode)
@@ -289,6 +358,14 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   DeliberatelyTerminateToRecoverFromHang();
 }
 
+bool GpuWatchdogThreadImplV2::GpuIsAlive() {
+  base::subtle::Atomic32 arm_disarm_counter =
+      base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+  bool gpu_makes_progress = arm_disarm_counter != last_arm_disarm_counter_;
+
+  return (gpu_makes_progress);
+}
+
 void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   DCHECK(watchdog_thread_task_runner_->BelongsToCurrentThread());
   // If this is for gpu testing, do not terminate the gpu process.
@@ -304,8 +381,10 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
 
   // Store variables so they're available in crash dumps to help determine the
   // cause of any hang.
-  base::TimeTicks current_timeticks = base::TimeTicks::Now();
-  base::debug::Alias(&current_timeticks);
+  bool in_gpu_init = base::subtle::NoBarrier_Load(&arm_disarm_counter_) == 1;
+  base::TimeTicks function_begin_timeticks = base::TimeTicks::Now();
+  base::debug::Alias(&in_gpu_init);
+  base::debug::Alias(&function_begin_timeticks);
   base::debug::Alias(&watchdog_start_timeticks_);
   base::debug::Alias(&suspend_timeticks_);
   base::debug::Alias(&resume_timeticks_);
@@ -318,7 +397,7 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&is_power_observer_added_);
   base::debug::Alias(&last_on_watchdog_timeout_timeticks_);
   base::TimeDelta timeticks_elapses =
-      current_timeticks - last_on_watchdog_timeout_timeticks_;
+      function_begin_timeticks - last_on_watchdog_timeout_timeticks_;
   base::debug::Alias(&timeticks_elapses);
 
   // If clock_time_elapses is much longer than time_elapses, it might be a sign
@@ -330,6 +409,90 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&time_elapses);
 
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogKill);
+
+#if defined(OS_WIN)
+  base::TimeDelta extra_time_to_survive;
+  int crash_key_type = kGpuHang;
+
+  if (GpuIsAlive()) {
+    extra_time_to_survive = base::TimeTicks::Now() - function_begin_timeticks;
+    crash_key_type = kSlow;
+  }
+
+  // (1)  Check how long it takes to load and unload a library from disk.
+  base::TimeTicks loading_start = base::TimeTicks::Now();
+  base::NativeLibraryLoadError native_library_load_error;
+  bool loading_successful = false;
+  base::TimeDelta file_loading_total;
+
+  // See if the gpu makes any progress after loading a file from disk
+  if (crash_key_type == kGpuHang) {
+    loading_successful = LoadAndUnloadAFile(&native_library_load_error);
+    file_loading_total = base::TimeTicks::Now() - loading_start;
+
+    if (GpuIsAlive()) {
+      extra_time_to_survive = base::TimeTicks::Now() - function_begin_timeticks;
+      if (loading_successful)
+        crash_key_type = kSlowFileAccess;
+      else
+        crash_key_type = kSlow;
+    }
+  }
+
+  base::debug::Alias(&loading_start);
+  base::debug::Alias(&native_library_load_error);
+  base::debug::Alias(&loading_successful);
+  base::debug::Alias(&file_loading_total);
+
+  // (2) Check how long it takes to create and destroy a new thread.
+  bool thread_successful = false;
+  base::TimeTicks thread_start = base::TimeTicks::Now();
+  base::TimeDelta thread_total;
+
+  if (crash_key_type == kGpuHang) {
+    thread_successful = CreateAndDestroyAThread();
+    thread_total = base::TimeTicks::Now() - thread_start;
+
+    // See if the gpu makes any progress after creating a new thread.
+    if (GpuIsAlive()) {
+      extra_time_to_survive = base::TimeTicks::Now() - function_begin_timeticks;
+      if (thread_successful)
+        crash_key_type = kSlowThreads;
+      else
+        crash_key_type = kSlow;
+    }
+  }
+  base::debug::Alias(&thread_successful);
+  base::debug::Alias(&thread_total);
+
+  // (3) Continue waiting until 60 seconds has passed in this funtion.
+  base::TimeTicks wait_start = base::TimeTicks::Now();
+  base::debug::Alias(&wait_start);
+
+  if (crash_key_type == kGpuHang) {
+    while (base::TimeTicks::Now() - function_begin_timeticks <
+           base::TimeDelta::FromSeconds(60)) {
+      // Sleep for 5 seconds each time and check if the GPU has made a progress.
+      base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(5));
+
+      if (GpuIsAlive()) {
+        extra_time_to_survive =
+            base::TimeTicks::Now() - function_begin_timeticks;
+        crash_key_type = kSlow;
+        break;
+      }
+    }
+  }
+
+  base::debug::Alias(&crash_key_type);
+  base::debug::Alias(&extra_time_to_survive);
+
+  crash_keys::gpu_watchdog_crashed_in_gpu_init.Set(in_gpu_init ? "1" : "0");
+  crash_keys::gpu_watchdog_slow_system_type.Set(
+      base::NumberToString(crash_key_type));
+  crash_keys::gpu_watchdog_extra_seconds_needed.Set(
+      base::NumberToString(extra_time_to_survive.InSeconds()));
+#endif
 
   crash_keys::gpu_watchdog_kill_after_power_resume.Set(
       is_first_timeout_after_power_resume ? "1" : "0");

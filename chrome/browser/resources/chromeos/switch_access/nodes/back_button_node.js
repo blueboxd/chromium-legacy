@@ -75,4 +75,9 @@ class BackButtonNode extends SAChildNode {
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
         false, RectHelper.ZERO_RECT, 0 /* num_actions */);
   }
+
+  /** @override */
+  debugString() {
+    return 'BackButtonNode';
+  }
 }

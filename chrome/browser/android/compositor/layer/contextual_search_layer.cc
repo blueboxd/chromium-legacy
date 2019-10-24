@@ -90,7 +90,7 @@ void ContextualSearchLayer::SetProperties(
     bool progress_bar_visible,
     float progress_bar_height,
     float progress_bar_opacity,
-    int progress_bar_completion,
+    float progress_bar_completion,
     float divider_line_visibility_percentage,
     float divider_line_width,
     float divider_line_height,

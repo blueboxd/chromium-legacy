@@ -49,13 +49,15 @@ enum DisplayType {
   ANGLE_VULKAN = 11,
   ANGLE_VULKAN_NULL = 12,
   ANGLE_D3D11on12 = 13,
-  DISPLAY_TYPE_MAX = 14,
+  ANGLE_SWIFTSHADER = 14,
+  DISPLAY_TYPE_MAX = 15,
 };
 
 GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
                                   bool supports_angle_opengl,
                                   bool supports_angle_null,
                                   bool supports_angle_vulkan,
+                                  bool supports_angle_swiftshader,
                                   const base::CommandLine* command_line,
                                   std::vector<DisplayType>* init_displays);
 

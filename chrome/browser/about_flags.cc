@@ -4148,6 +4148,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseSearchClickForRightClickName,
      flag_descriptions::kUseSearchClickForRightClickDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUseSearchClickForRightClick)},
+
+    {"enable-print-server-ui", flag_descriptions::kPrintServerUiName,
+     flag_descriptions::kPrintServerUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kPrintServerUi)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

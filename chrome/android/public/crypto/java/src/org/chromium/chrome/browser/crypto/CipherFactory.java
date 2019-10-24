@@ -51,7 +51,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 @ThreadSafe
 public class CipherFactory {
-    private static final String TAG = "cr.CipherFactory";
+    private static final String TAG = "CipherFactory";
     static final int NUM_BYTES = 16;
 
     static final String BUNDLE_IV = "org.chromium.content.browser.crypto.CipherFactory.IV";

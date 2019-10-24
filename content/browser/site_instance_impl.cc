@@ -1025,8 +1025,7 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
       // process.
       base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
                                      site_.spec());
-      base::debug::SetCrashKeyString(
-          bad_message::GetKilledProcessOriginLockKey(), process_lock.spec());
+      policy->LogKilledProcessOriginLock(process_->GetID());
       CHECK(false) << "Trying to lock a process to " << lock_url()
                    << " but the process is already locked to " << process_lock;
     } else {
@@ -1040,8 +1039,7 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
     if (!process_lock.is_empty()) {
       base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
                                      site_.spec());
-      base::debug::SetCrashKeyString(
-          bad_message::GetKilledProcessOriginLockKey(), process_lock.spec());
+      policy->LogKilledProcessOriginLock(process_->GetID());
       CHECK(false) << "Trying to commit non-isolated site " << site_
                    << " in process locked to " << process_lock;
     }

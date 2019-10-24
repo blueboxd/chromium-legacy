@@ -12,9 +12,10 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 #define ASSERT_ORIGIN_TRIAL(feature) \
-static_assert(std::is_same<decltype(::blink::RuntimeEnabledFeatures::feature##Enabled(\
-                                        nullptr)), bool>(), \
-              #feature " must be part of an origin trial");
+  static_assert(std::is_same<decltype(::blink::RuntimeEnabledFeatures::     \
+                                          feature##EnabledByRuntimeFlag()), \
+                             bool>(),                                       \
+                #feature " must be part of an origin trial");
 
 namespace blink {
 

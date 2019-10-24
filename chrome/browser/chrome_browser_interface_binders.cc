@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/content_settings_manager_impl.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
@@ -63,6 +64,9 @@ void ForwardToJavaFrame(content::RenderFrameHost* render_frame_host,
 
 void PopulateChromeFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+  map->Add<mojom::ContentSettingsManager>(
+      base::BindRepeating(&ContentSettingsManagerImpl::Create));
+
   map->Add<image_annotation::mojom::Annotator>(
       base::BindRepeating(&BindImageAnnotator));
 

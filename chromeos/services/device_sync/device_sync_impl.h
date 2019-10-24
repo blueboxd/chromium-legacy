@@ -18,11 +18,9 @@
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "chromeos/services/device_sync/remote_device_provider.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/preferences/public/cpp/pref_service_factory.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -33,10 +31,6 @@ class OneShotTimer;
 namespace gcm {
 class GCMDriver;
 }  // namespace gcm
-
-namespace signin {
-class IdentityManager;
-}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -56,12 +50,13 @@ class SoftwareFeatureManager;
 
 // Concrete DeviceSync implementation. When DeviceSyncImpl is constructed, it
 // starts an initialization flow with the following steps:
-// (1) Verify that the primary user is logged in with a valid account ID.
-// (2) Connect to the Prefs Service associated with that account.
+// (1) Check if the primary user is logged in with a valid account ID.
+// (2) If not, wait for IdentityManager to provide the primary account ID.
 // (3) Instantiate classes which communicate with the CryptAuth back-end.
 // (4) Check enrollment state; if not yet enrolled, enroll the device.
 // (5) When enrollment is valid, listen for device sync updates.
 class DeviceSyncImpl : public DeviceSyncBase,
+                       public signin::IdentityManager::Observer,
                        public CryptAuthEnrollmentManager::Observer,
                        public RemoteDeviceProvider::Observer {
  public:
@@ -77,8 +72,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
     virtual std::unique_ptr<DeviceSyncBase> BuildInstance(
         signin::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
-        mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
-            pref_store_conector,
+        PrefService* profile_prefs,
         const GcmDeviceInfoProvider* gcm_device_info_provider,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -87,6 +81,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
    private:
     static Factory* test_factory_instance_;
   };
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   ~DeviceSyncImpl() override;
 
@@ -117,27 +113,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
  private:
   friend class DeviceSyncServiceTest;
 
-  enum class Status {
-    FETCHING_ACCOUNT_INFO,
-    CONNECTING_TO_USER_PREFS,
-    WAITING_FOR_ENROLLMENT,
-    READY
-  };
-
-  // Wrapper around preferences code. This class is necessary so that tests can
-  // override this functionality to use a fake PrefService rather than a real
-  // connection to the Preferences service.
-  class PrefConnectionDelegate {
-   public:
-    virtual ~PrefConnectionDelegate();
-
-    virtual scoped_refptr<PrefRegistrySimple> CreatePrefRegistry();
-    virtual void ConnectToPrefService(
-        mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
-            pref_store_connector,
-        scoped_refptr<PrefRegistrySimple> pref_registry,
-        prefs::ConnectCallback callback);
-  };
+  enum class Status { FETCHING_ACCOUNT_INFO, WAITING_FOR_ENROLLMENT, READY };
 
   class PendingSetSoftwareFeatureRequest {
    public:
@@ -172,21 +148,21 @@ class DeviceSyncImpl : public DeviceSyncBase,
   DeviceSyncImpl(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
-      mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
-          pref_store_connector,
+      PrefService* profile_prefs,
       const GcmDeviceInfoProvider* gcm_device_info_provider,
       ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::Clock* clock,
-      std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate,
       std::unique_ptr<base::OneShotTimer> timer);
 
   // DeviceSyncBase:
   void Shutdown() override;
 
+  // signin::IdentityManager::Observer:
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
+
   void ProcessPrimaryAccountInfo(const CoreAccountInfo& primary_account_info);
-  void ConnectToPrefStore();
-  void OnConnectedToPrefService(std::unique_ptr<PrefService> pref_service);
   void InitializeCryptAuthManagementObjects();
   void CompleteInitializationAfterSuccessfulEnrollment();
 
@@ -221,22 +197,17 @@ class DeviceSyncImpl : public DeviceSyncBase,
   void StartSetSoftwareFeatureTimer();
   void OnSetSoftwareFeatureTimerFired();
 
-  void SetPrefConnectionDelegateForTesting(
-      std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
-
   signin::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
-  mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector_;
+  PrefService* profile_prefs_;
   const GcmDeviceInfoProvider* gcm_device_info_provider_;
   ClientAppMetadataProvider* client_app_metadata_provider_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   base::Clock* clock_;
-  std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate_;
   std::unique_ptr<base::OneShotTimer> set_software_feature_timer_;
 
   Status status_;
   CoreAccountInfo primary_account_info_;
-  std::unique_ptr<PrefService> pref_service_;
   base::flat_map<base::UnguessableToken,
                  std::unique_ptr<PendingSetSoftwareFeatureRequest>>
       id_to_pending_set_software_feature_request_map_;

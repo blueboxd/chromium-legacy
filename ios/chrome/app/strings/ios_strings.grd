@@ -1954,6 +1954,9 @@ New Search
       <message name="IDS_IOS_TRANSLATE_INFOBAR_DEFAULT_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement read by Voice Over when the Translate Infobar UI is shown in default mode. [Length: unlimited] [iOS only]">
         Translate is available. Options available near bottom of the screen.
       </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_ACTION" desc="The button text for the action to translate the page. [iOS only]">
+        Translate
+      </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_TRANSLATING_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement read by Voice Over when the Translate Infobar UI is shown in translating mode. [Length: unlimited] [iOS only]">
         Translating the page to <ph name="language">$1<ex>French</ex></ph>. Options available near bottom of the screen.
       </message>

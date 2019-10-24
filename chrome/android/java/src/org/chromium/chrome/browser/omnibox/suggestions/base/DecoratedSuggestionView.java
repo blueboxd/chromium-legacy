@@ -8,6 +8,7 @@ import android.content.Context;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import org.chromium.chrome.R;
@@ -19,7 +20,6 @@ import org.chromium.chrome.browser.ui.widget.RoundedCornerImageView;
 class DecoratedSuggestionView extends SimpleHorizontalLayoutView {
     private final RoundedCornerImageView mSuggestionIcon;
     private View mContentView;
-    private boolean mUseDarkIconTint;
 
     /**
      * Constructs a new suggestion view.
@@ -39,7 +39,7 @@ class DecoratedSuggestionView extends SimpleHorizontalLayoutView {
 
         mSuggestionIcon.setLayoutParams(new LayoutParams(
                 getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_icon_area_size),
-                LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.WRAP_CONTENT));
         addView(mSuggestionIcon);
     }
 

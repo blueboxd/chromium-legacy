@@ -31,8 +31,10 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
   MOCK_METHOD0(Save, void());
   MOCK_METHOD1(Update,
                void(const autofill::PasswordForm& credentials_to_update));
-  MOCK_METHOD1(UpdateUsername, void(const base::string16& new_username));
-  MOCK_METHOD1(UpdatePasswordValue, void(const base::string16& new_password));
+  MOCK_METHOD1(OnUpdateUsernameFromPrompt,
+               void(const base::string16& new_username));
+  MOCK_METHOD1(OnUpdatePasswordFromPrompt,
+               void(const base::string16& new_password));
   MOCK_METHOD0(OnNopeUpdateClicked, void());
   MOCK_METHOD0(OnNeverClicked, void());
   MOCK_METHOD1(OnNoInteraction, void(bool));

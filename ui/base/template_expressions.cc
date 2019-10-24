@@ -22,7 +22,9 @@ const size_t kLeaderSize = base::size(kLeader) - 1;
 const char kKeyOpen = '{';
 const char kKeyClose = '}';
 const char kHtmlTemplateStart[] = "_template: html`";
+const char kHtmlTemplateStartMin[] = "_template:html`";
 const size_t kHtmlTemplateStartSize = base::size(kHtmlTemplateStart) - 1;
+const size_t kHtmlTemplateStartMinSize = base::size(kHtmlTemplateStartMin) - 1;
 
 // Currently only legacy _template: html`...`, syntax is supported.
 enum HtmlTemplateType { INVALID = 0, NONE = 1, LEGACY = 2 };
@@ -69,14 +71,21 @@ TemplatePosition FindHtmlTemplateEnd(const base::StringPiece& source) {
 HtmlTemplate FindHtmlTemplate(const base::StringPiece& source) {
   HtmlTemplate out;
   base::StringPiece::size_type found = source.find(kHtmlTemplateStart);
+  base::StringPiece::size_type found_min = base::StringPiece::npos;
+  if (found == base::StringPiece::npos) {
+    found_min = source.find(kHtmlTemplateStartMin);
+  }
 
   // No template found, return early.
-  if (found == base::StringPiece::npos) {
+  if (found == base::StringPiece::npos &&
+      found_min == base::StringPiece::npos) {
     out.type = NONE;
     return out;
   }
 
-  out.start = found + kHtmlTemplateStartSize;
+  out.start = found == base::StringPiece::npos
+                  ? found_min + kHtmlTemplateStartMinSize
+                  : found + kHtmlTemplateStartSize;
   TemplatePosition end = FindHtmlTemplateEnd(source.substr(out.start));
   // Template is not terminated.
   if (end.type == NONE) {

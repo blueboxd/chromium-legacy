@@ -1820,7 +1820,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     // |webView:didCommitNavigation:| callback.
     return;
   }
-  [self updateSSLStatusForCurrentNavigationItem];
+  web::NavigationItem* item =
+      self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
+  // SSLStatus is manually set in CRWWKNavigationHandler for SSL errors, so
+  // skip calling the update method in these cases.
+  if (item && !net::IsCertStatusError(item->GetSSL().cert_status)) {
+    [self updateSSLStatusForCurrentNavigationItem];
+  }
 }
 
 // Called when WKWebView title has been changed.

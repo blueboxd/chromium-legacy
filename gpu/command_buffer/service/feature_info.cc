@@ -991,26 +991,6 @@ void FeatureInfo::InitializeFeatures() {
     validators_.capability.AddValue(GL_SAMPLE_ALPHA_TO_ONE_EXT);
   }
 
-  if (gfx::HasExtension(extensions, "GL_INTEL_framebuffer_CMAA")) {
-    feature_flags_.chromium_screen_space_antialiasing = true;
-    AddExtensionString("GL_CHROMIUM_screen_space_antialiasing");
-  } else if (gl_version_info_->IsAtLeastGLES(3, 1) ||
-             (gl_version_info_->IsAtLeastGL(3, 0) &&
-              gfx::HasExtension(extensions,
-                                "GL_ARB_shading_language_420pack") &&
-              gfx::HasExtension(extensions, "GL_ARB_texture_storage") &&
-              gfx::HasExtension(extensions, "GL_ARB_texture_gather") &&
-              gfx::HasExtension(extensions,
-                                "GL_ARB_explicit_uniform_location") &&
-              gfx::HasExtension(extensions,
-                                "GL_ARB_explicit_attrib_location") &&
-              gfx::HasExtension(extensions,
-                                "GL_ARB_shader_image_load_store"))) {
-    feature_flags_.chromium_screen_space_antialiasing = true;
-    feature_flags_.use_chromium_screen_space_antialiasing_via_shaders = true;
-    AddExtensionString("GL_CHROMIUM_screen_space_antialiasing");
-  }
-
   if (gfx::HasExtension(extensions, "GL_OES_depth24") ||
       gl::HasDesktopGLFeatures() || gl_version_info_->is_es3) {
     AddExtensionString("GL_OES_depth24");

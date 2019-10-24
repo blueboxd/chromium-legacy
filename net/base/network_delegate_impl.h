@@ -9,6 +9,7 @@
 
 #include <set>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
@@ -54,7 +55,7 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& endpoint,
-      GURL* allowed_unsafe_redirect_url) override;
+      base::Optional<GURL>* preserve_fragment_on_redirect_url) override;
 
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;
 

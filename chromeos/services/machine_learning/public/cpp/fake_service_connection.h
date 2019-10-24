@@ -13,7 +13,6 @@
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
@@ -46,7 +45,7 @@ class FakeServiceConnectionImpl : public ServiceConnection,
 
   // mojom::Model:
   void CreateGraphExecutor(
-      mojom::GraphExecutorRequest request,
+      mojo::PendingReceiver<mojom::GraphExecutor> receiver,
       mojom::Model::CreateGraphExecutorCallback callback) override;
 
   // mojom::GraphExecutor:
@@ -61,7 +60,7 @@ class FakeServiceConnectionImpl : public ServiceConnection,
 
  private:
   mojo::ReceiverSet<mojom::Model> model_receivers_;
-  mojo::BindingSet<mojom::GraphExecutor> graph_bindings_;
+  mojo::ReceiverSet<mojom::GraphExecutor> graph_receivers_;
   mojom::TensorPtr execute_result_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServiceConnectionImpl);

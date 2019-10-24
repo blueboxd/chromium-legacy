@@ -59,6 +59,7 @@ struct CC_EXPORT ScrollAndScaleSet {
   ElementId scroll_latched_element_id;
 
   float top_controls_delta;
+  float bottom_controls_delta;
 
   // Used to communicate scrollbar visibility from Impl thread to Blink.
   // Scrollbar input is handled by Blink but the compositor thread animates

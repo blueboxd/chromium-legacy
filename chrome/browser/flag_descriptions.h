@@ -2151,6 +2151,9 @@ extern const char kNewZipUnpackerDescription[];
 extern const char kPrinterProviderSearchAppName[];
 extern const char kPrinterProviderSearchAppDescription[];
 
+extern const char kPrintServerUiName[];
+extern const char kPrintServerUiDescription[];
+
 extern const char kReduceDisplayNotificationsName[];
 extern const char kReduceDisplayNotificationsDescription[];
 

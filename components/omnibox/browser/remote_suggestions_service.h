@@ -23,6 +23,13 @@ class SimpleURLLoader;
 
 class TemplateURLService;
 
+// Used by ZeroSuggestProvider only. This does duplicate some logic found in
+// SearchProvider already. As-you-type suggest does NOT use this.
+//
+// TODO(tommycli): This class used to be much larger. At this point, it may make
+// sense to to just fold it into ZeroSuggestProvider - or rename this class to
+// include ZeroSuggest in the name.
+//
 // A service to fetch suggestions from the default search provider's suggest
 // service.
 //

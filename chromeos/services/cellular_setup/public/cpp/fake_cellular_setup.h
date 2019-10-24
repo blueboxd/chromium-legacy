@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "chromeos/services/cellular_setup/cellular_setup_base.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 
@@ -23,11 +25,12 @@ class FakeCellularSetup : public CellularSetupBase {
  public:
   class StartActivationInvocation {
    public:
-    StartActivationInvocation(mojom::ActivationDelegatePtr activation_delegate,
-                              StartActivationCallback callback);
+    StartActivationInvocation(
+        mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
+        StartActivationCallback callback);
     ~StartActivationInvocation();
 
-    mojom::ActivationDelegatePtr& activation_delegate() {
+    mojo::Remote<mojom::ActivationDelegate>& activation_delegate() {
       return activation_delegate_;
     }
 
@@ -37,7 +40,7 @@ class FakeCellularSetup : public CellularSetupBase {
     FakeCarrierPortalHandler* ExecuteCallback();
 
    private:
-    mojom::ActivationDelegatePtr activation_delegate_;
+    mojo::Remote<mojom::ActivationDelegate> activation_delegate_;
     StartActivationCallback callback_;
 
     // Null until ExecuteCallback() has been invoked.
@@ -56,8 +59,9 @@ class FakeCellularSetup : public CellularSetupBase {
 
  private:
   // mojom::CellularSetup:
-  void StartActivation(mojom::ActivationDelegatePtr activation_delegate,
-                       StartActivationCallback callback) override;
+  void StartActivation(
+      mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
+      StartActivationCallback callback) override;
 
   std::vector<std::unique_ptr<StartActivationInvocation>>
       start_activation_invocations_;

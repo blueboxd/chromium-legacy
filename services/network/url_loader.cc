@@ -1213,13 +1213,14 @@ int URLLoader::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     const net::IPEndPoint& endpoint,
-    GURL* allowed_unsafe_redirect_url) {
+    base::Optional<GURL>* preserve_fragment_on_redirect_url) {
   if (header_client_) {
     header_client_->OnHeadersReceived(
         original_response_headers->raw_headers(), endpoint,
         base::BindOnce(&URLLoader::OnHeadersReceivedComplete,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       override_response_headers, allowed_unsafe_redirect_url));
+                       override_response_headers,
+                       preserve_fragment_on_redirect_url));
     return net::ERR_IO_PENDING;
   }
   return net::OK;
@@ -1516,15 +1517,15 @@ void URLLoader::OnBeforeSendHeadersComplete(
 void URLLoader::OnHeadersReceivedComplete(
     net::CompletionOnceCallback callback,
     scoped_refptr<net::HttpResponseHeaders>* out_headers,
-    GURL* out_allowed_unsafe_redirect_url,
+    base::Optional<GURL>* out_preserve_fragment_on_redirect_url,
     int result,
     const base::Optional<std::string>& headers,
-    const GURL& allowed_unsafe_redirect_url) {
+    const base::Optional<GURL>& preserve_fragment_on_redirect_url) {
   if (headers) {
     *out_headers =
         base::MakeRefCounted<net::HttpResponseHeaders>(headers.value());
   }
-  *out_allowed_unsafe_redirect_url = allowed_unsafe_redirect_url;
+  *out_preserve_fragment_on_redirect_url = preserve_fragment_on_redirect_url;
   std::move(callback).Run(result);
 }
 

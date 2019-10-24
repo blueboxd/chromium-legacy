@@ -17,6 +17,8 @@ luci.list_view(
         'try/gpu-fyi-try-win10-nvidia-rel-32',
         'try/gpu-fyi-try-win10-nvidia-rel-64',
         'try/gpu-fyi-try-win10-nvidia-skgl-64',
+        'try/gpu-try-win10-nvidia-rel',
+        'try/win-asan',
         'try/win-libfuzzer-asan-rel',
         'try/win7-rel',
         'try/win10_chromium_x64_dbg_ng',

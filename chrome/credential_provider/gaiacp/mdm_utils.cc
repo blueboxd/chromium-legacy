@@ -57,6 +57,10 @@ enum class EnrolledStatus {
 };
 EnrolledStatus g_enrolled_status = EnrolledStatus::kDontForce;
 
+// Overriden in tests to fake serial number extraction.
+bool g_use_test_serial_number = false;
+base::string16 g_test_serial_number = L"";
+
 #if !defined(GOOGLE_CHROME_BUILD)
 enum class EscrowServiceStatus {
   kDisabled,
@@ -88,6 +92,12 @@ T GetMdmFunctionPointer(const base::ScopedNativeLibrary& library,
 
 base::string16 GetMdmUrl() {
   return GetGlobalFlagOrDefault(kRegMdmUrl, kDefaultMdmUrl);
+}
+
+base::string16 GetSerialNumber() {
+  if (g_use_test_serial_number)
+    return g_test_serial_number;
+  return base::win::WmiComputerSystemInfo::Get().serial_number();
 }
 
 bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
@@ -248,22 +258,21 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   LOGFN(INFO) << "MDM_URL=" << mdm_url
               << " token=" << base::string16(id_token.c_str(), 10);
 
-  switch (g_enrollment_status) {
-    case EnrollmentStatus::kForceSuccess:
-      return S_OK;
-    case EnrollmentStatus::kForceFailure:
-      return E_FAIL;
-    case EnrollmentStatus::kDontForce:
-      break;
-  }
-
   // Add the serial number to the registration data dictionary.
-  base::string16 serial_number =
-      base::win::WmiComputerSystemInfo::Get().serial_number();
+  base::string16 serial_number = GetSerialNumber();
 
   if (serial_number.empty()) {
     LOGFN(ERROR) << "Failed to get serial number.";
     return E_FAIL;
+  }
+
+  // Add machine_guid to the registration data dictionary.
+  base::string16 machine_guid;
+  hr = GetMachineGuid(&machine_guid);
+
+  if (FAILED(hr) || machine_guid.empty()) {
+    LOGFN(ERROR) << "Failed to get machine guid.";
+    return FAILED(hr) ? hr : E_FAIL;
   }
 
   // Need localized local user group name for Administrators group
@@ -289,6 +298,7 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   registration_data.SetStringKey("username", username);
   registration_data.SetStringKey("domain", domain);
   registration_data.SetStringKey("serial_number", serial_number);
+  registration_data.SetStringKey("machine_guid", machine_guid);
   registration_data.SetStringKey("admin_local_user_group_name",
                                  local_administrators_group_name);
   registration_data.SetStringKey("builtin_administrator_name",
@@ -298,6 +308,15 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
     LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
     return E_FAIL;
+  }
+
+  switch (g_enrollment_status) {
+    case EnrollmentStatus::kForceSuccess:
+      return S_OK;
+    case EnrollmentStatus::kForceFailure:
+      return E_FAIL;
+    case EnrollmentStatus::kDontForce:
+      break;
   }
 
   base::ScopedNativeLibrary library(
@@ -374,7 +393,6 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
   HRESULT hr = RegisterWithGoogleDeviceManagement(mdm_url, properties);
   if (FAILED(hr))
     LOGFN(ERROR) << "RegisterWithGoogleDeviceManagement hr=" << putHR(hr);
-
   return hr;
 }
 
@@ -409,6 +427,21 @@ GoogleMdmEnrolledStatusForTesting::~GoogleMdmEnrolledStatusForTesting() {
 }
 
 // GoogleMdmEnrolledStatusForTesting //////////////////////////////////////////
+
+// GoogleSerialNumberForTesting //////////////////////////////////////////
+
+GoogleSerialNumberForTesting::GoogleSerialNumberForTesting(
+    base::string16 serial_number) {
+  g_use_test_serial_number = true;
+  g_test_serial_number = serial_number;
+}
+
+GoogleSerialNumberForTesting::~GoogleSerialNumberForTesting() {
+  g_use_test_serial_number = false;
+  g_test_serial_number = L"";
+}
+
+// GoogleSerialNumberForTesting //////////////////////////////////////////
 
 #if !defined(GOOGLE_CHROME_BUILD)
 GoogleMdmEscrowServiceEnablerForTesting::

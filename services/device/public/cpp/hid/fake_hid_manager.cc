@@ -101,7 +101,7 @@ void FakeHidManager::Bind(mojo::PendingReceiver<mojom::HidManager> receiver) {
 
 // mojom::HidManager implementation:
 void FakeHidManager::GetDevicesAndSetClient(
-    mojom::HidManagerClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<mojom::HidManagerClient> client,
     GetDevicesCallback callback) {
   GetDevices(std::move(callback));
 

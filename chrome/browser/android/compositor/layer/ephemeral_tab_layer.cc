@@ -85,7 +85,7 @@ void EphemeralTabLayer::SetProperties(
     bool progress_bar_visible,
     float progress_bar_height,
     float progress_bar_opacity,
-    int progress_bar_completion,
+    float progress_bar_completion,
     int separator_line_color,
     bool is_new_layout) {
   if (web_contents_ != web_contents) {

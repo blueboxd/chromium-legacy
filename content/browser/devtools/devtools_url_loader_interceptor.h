@@ -13,6 +13,8 @@
 #include "content/browser/devtools/protocol/network.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
@@ -203,7 +205,7 @@ class DevToolsURLLoaderInterceptor {
       std::unique_ptr<CreateLoaderParameters> create_params,
       network::mojom::URLLoaderRequest loader_request,
       network::mojom::URLLoaderClientPtr client,
-      network::mojom::URLLoaderFactoryPtr target_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
       mojo::PendingRemote<network::mojom::CookieManager> cookie_manager);
 
   InterceptionStage GetInterceptionStage(const GURL& url,
@@ -247,7 +249,7 @@ class DevToolsURLLoaderFactoryAdapter
  public:
   DevToolsURLLoaderFactoryAdapter() = delete;
   explicit DevToolsURLLoaderFactoryAdapter(
-      network::mojom::URLLoaderFactoryPtr factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> factory);
   ~DevToolsURLLoaderFactoryAdapter() override;
 
  private:
@@ -263,7 +265,7 @@ class DevToolsURLLoaderFactoryAdapter
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
 
-  network::mojom::URLLoaderFactoryPtr factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> factory_;
 };
 
 inline DevToolsURLLoaderInterceptor::InterceptionStage& operator|=(

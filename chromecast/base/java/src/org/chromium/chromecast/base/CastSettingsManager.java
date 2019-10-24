@@ -26,7 +26,7 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("chromecast")
 public final class CastSettingsManager {
-    private static final String TAG = "cr_CastSettingsManager";
+    private static final String TAG = "CastSettingsManager";
 
     private static final String PREFS_FILE_NAME = "CastSettings";
 

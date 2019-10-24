@@ -11,6 +11,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -28,16 +30,18 @@ GURL redirect_url = GURL("http://example.com");
 class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
                              public network::mojom::URLLoader {
  public:
-  TestURLLoaderFactory() : binding_(this), url_loader_binding_(this) {
-    binding_.Bind(mojo::MakeRequest(&factory_ptr_));
+  TestURLLoaderFactory() : url_loader_binding_(this) {
+    receiver_.Bind(factory_remote_.BindNewPipeAndPassReceiver());
     shared_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            factory_ptr_.get());
+            factory_remote_.get());
   }
 
   ~TestURLLoaderFactory() override { shared_factory_->Detach(); }
 
-  network::mojom::URLLoaderFactoryPtr& factory_ptr() { return factory_ptr_; }
+  mojo::Remote<network::mojom::URLLoaderFactory>& factory_remote() {
+    return factory_remote_;
+  }
   network::mojom::URLLoaderClientPtr& client_ptr() { return client_ptr_; }
   mojo::Binding<network::mojom::URLLoader>& url_loader_binding() {
     return url_loader_binding_;
@@ -144,9 +148,9 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   size_t pause_reading_body_from_net_called_ = 0;
   size_t resume_reading_body_from_net_called_ = 0;
 
-  mojo::Binding<network::mojom::URLLoaderFactory> binding_;
+  mojo::Receiver<network::mojom::URLLoaderFactory> receiver_{this};
   mojo::Binding<network::mojom::URLLoader> url_loader_binding_;
-  network::mojom::URLLoaderFactoryPtr factory_ptr_;
+  mojo::Remote<network::mojom::URLLoaderFactory> factory_remote_;
   network::mojom::URLLoaderClientPtr client_ptr_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory> shared_factory_;
   OnCreateLoaderAndStartCallback on_create_loader_and_start_callback_;
@@ -293,7 +297,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
   }
 
   void WillRedirectRequest(net::RedirectInfo* redirect_info,
-                           const network::ResourceResponseHead& response_head,
+                           const network::mojom::URLResponseHead& response_head,
                            bool* defer,
                            std::vector<std::string>* removed_headers,
                            net::HttpRequestHeaders* modified_headers) override {
@@ -305,7 +309,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
   }
 
   void WillProcessResponse(const GURL& response_url,
-                           network::ResourceResponseHead* response_head,
+                           network::mojom::URLResponseHead* response_head,
                            bool* defer) override {
     will_process_response_called_++;
     if (will_process_response_callback_)
@@ -315,7 +319,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
 
   void BeforeWillProcessResponse(
       const GURL& response_url,
-      const network::ResourceResponseHead& response_head,
+      const network::mojom::URLResponseHead& response_head,
       bool* defer) override {
     before_will_process_response_called_++;
     if (before_will_process_response_callback_)
@@ -370,7 +374,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
         factory_.shared_factory(), std::move(throttles_), 0, 0, options,
         &request, &client_, TRAFFIC_ANNOTATION_FOR_TESTS,
         base::ThreadTaskRunnerHandle::Get());
-    factory_.factory_ptr().FlushForTesting();
+    factory_.factory_remote().FlushForTesting();
   }
 
   void ResetThrottleRawPointer() { throttle_ = nullptr; }
@@ -449,7 +453,7 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeStart) {
   EXPECT_EQ(0u, client_.on_complete_called());
 
   throttle_->delegate()->Resume();
-  factory_.factory_ptr().FlushForTesting();
+  factory_.factory_remote().FlushForTesting();
 
   EXPECT_EQ(1u, factory_.create_loader_and_start_called());
 
@@ -1011,7 +1015,7 @@ TEST_F(ThrottlingURLLoaderTest, BlockWithOneOfMultipleThrottles) {
   EXPECT_EQ(0u, client_.on_complete_called());
 
   throttle2->delegate()->Resume();
-  factory_.factory_ptr().FlushForTesting();
+  factory_.factory_remote().FlushForTesting();
 
   EXPECT_EQ(1u, factory_.create_loader_and_start_called());
 
@@ -1083,13 +1087,13 @@ TEST_F(ThrottlingURLLoaderTest, BlockWithMultipleThrottles) {
 
   // Should still not have started because there's |throttle2| is still blocking
   // the request.
-  factory_.factory_ptr().FlushForTesting();
+  factory_.factory_remote().FlushForTesting();
   EXPECT_EQ(0u, factory_.create_loader_and_start_called());
 
   throttle2->delegate()->Resume();
 
   // Now it should have started.
-  factory_.factory_ptr().FlushForTesting();
+  factory_.factory_remote().FlushForTesting();
   EXPECT_EQ(1u, factory_.create_loader_and_start_called());
 
   factory_.NotifyClientOnReceiveResponse();
@@ -1137,7 +1141,7 @@ TEST_F(ThrottlingURLLoaderTest, PauseResumeReadingBodyFromNet) {
 
   throttle_->delegate()->Resume();
 
-  factory_.factory_ptr().FlushForTesting();
+  factory_.factory_remote().FlushForTesting();
   EXPECT_EQ(1u, factory_.create_loader_and_start_called());
 
   // Make sure all URLLoader calls before this point are delivered to the impl

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/common/buildflags.h"
@@ -30,9 +31,11 @@ class Browser;
 
 class WebUITabStripContainerView : public TabStripUI::Embedder,
                                    public views::View,
-                                   public views::ButtonListener {
+                                   public views::ButtonListener,
+                                   public views::ViewObserver {
  public:
-  explicit WebUITabStripContainerView(Browser* browser);
+  WebUITabStripContainerView(Browser* browser,
+                             views::View* tab_contents_container);
   ~WebUITabStripContainerView() override;
 
   views::NativeViewHost* GetNativeViewHost();
@@ -47,6 +50,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   void ShowContextMenuAtPoint(
       gfx::Point point,
       std::unique_ptr<ui::MenuModel> menu_model) override;
+  TabStripUILayout GetLayout() override;
 
   // views::View:
   int GetHeightForWidth(int w) const override;
@@ -54,11 +58,19 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::ViewObserver:
+  void OnViewBoundsChanged(View* observed_view) override;
+
   Browser* const browser_;
   views::WebView* const web_view_;
+  views::View* const tab_contents_container_;
+
+  int desired_height_ = 0;
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
   std::unique_ptr<ui::MenuModel> context_menu_model_;
+
+  ScopedObserver<views::View, views::ViewObserver> view_observer_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_WEBUI_TAB_STRIP_CONTAINER_VIEW_H_

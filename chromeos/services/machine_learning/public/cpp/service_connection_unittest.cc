@@ -99,9 +99,9 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
   ASSERT_TRUE(model.is_bound());
 
   callback_done = false;
-  mojom::GraphExecutorPtr graph;
+  mojo::Remote<mojom::GraphExecutor> graph;
   model->CreateGraphExecutor(
-      mojo::MakeRequest(&graph),
+      graph.BindNewPipeAndPassReceiver(),
       base::BindOnce(
           [](bool* callback_done, mojom::CreateGraphExecutorResult result) {
             EXPECT_EQ(result, mojom::CreateGraphExecutorResult::OK);
@@ -160,9 +160,9 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForFlatBufferModel) {
   ASSERT_TRUE(model.is_bound());
 
   callback_done = false;
-  mojom::GraphExecutorPtr graph;
+  mojo::Remote<mojom::GraphExecutor> graph;
   model->CreateGraphExecutor(
-      mojo::MakeRequest(&graph),
+      graph.BindNewPipeAndPassReceiver(),
       base::BindOnce(
           [](bool* callback_done, mojom::CreateGraphExecutorResult result) {
             EXPECT_EQ(result, mojom::CreateGraphExecutorResult::OK);

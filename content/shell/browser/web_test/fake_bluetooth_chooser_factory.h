@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -43,7 +44,8 @@ class FakeBluetoothChooserFactory : public mojom::FakeBluetoothChooserFactory {
   // |next_fake_bluetooth_chooser_| is not null.
   void CreateFakeBluetoothChooser(
       mojo::PendingReceiver<mojom::FakeBluetoothChooser> receiver,
-      mojom::FakeBluetoothChooserClientAssociatedPtrInfo client) override;
+      mojo::PendingAssociatedRemote<mojom::FakeBluetoothChooserClient> client)
+      override;
 
   // Transfers ownership of |next_fake_bluetooth_chooser_| to the caller.
   std::unique_ptr<FakeBluetoothChooser> GetNextFakeBluetoothChooser();

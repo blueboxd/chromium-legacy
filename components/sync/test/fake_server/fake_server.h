@@ -138,16 +138,21 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   void SetClientCommand(const sync_pb::ClientCommand& client_command);
 
   // Force the server to return |error_type| in the error_code field of
-  // ClientToServerResponse on all subsequent sync requests. This method should
-  // not be called if TriggerActionableError has previously been called. Returns
-  // true if error triggering was successfully configured.
-  bool TriggerError(const sync_pb::SyncEnums::ErrorType& error_type);
+  // ClientToServerResponse on all subsequent commit requests. If any of errors
+  // triggerings currently configured it must be called only with
+  // sync_pb::SyncEnums::SUCCESS.
+  void TriggerCommitError(const sync_pb::SyncEnums::ErrorType& error_type);
+
+  // Force the server to return |error_type| in the error_code field of
+  // ClientToServerResponse on all subsequent sync requests. If any of errors
+  // triggerings currently configured it must be called only with
+  // sync_pb::SyncEnums::SUCCESS.
+  void TriggerError(const sync_pb::SyncEnums::ErrorType& error_type);
 
   // Force the server to return the given data as part of the error field of
-  // ClientToServerResponse on all subsequent sync requests. This method should
-  // not be called if TriggerError has previously been called. Returns true if
-  // error triggering was successfully configured.
-  bool TriggerActionableError(const sync_pb::SyncEnums::ErrorType& error_type,
+  // ClientToServerResponse on all subsequent sync requests. Must not be called
+  // if any of errors triggerings currently configured.
+  void TriggerActionableError(const sync_pb::SyncEnums::ErrorType& error_type,
                               const std::string& description,
                               const std::string& url,
                               const sync_pb::SyncEnums::Action& action);
@@ -203,6 +208,7 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
  private:
   // Returns whether a triggered error should be sent for the request.
   bool ShouldSendTriggeredError() const;
+  bool HasTriggeredError() const;
   net::HttpStatusCode SendToLoopbackServer(const std::string& request,
                                            std::string* response);
   void InjectClientCommand(std::string* response);
@@ -217,8 +223,11 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // All URLs received via history sync (powered by SESSIONS).
   std::set<std::string> committed_history_urls_;
 
-  // Used as the error_code field of ClientToServerResponse on all responses
-  // except when |triggered_actionable_error_| is set.
+  // Used as the error_code field of ClientToServerResponse on all commit
+  // requests.
+  sync_pb::SyncEnums::ErrorType commit_error_type_;
+
+  // Used as the error_code field of ClientToServerResponse on all responses.
   sync_pb::SyncEnums::ErrorType error_type_;
 
   // Used as the error field of ClientToServerResponse when its pointer is not

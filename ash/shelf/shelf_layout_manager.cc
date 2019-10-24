@@ -13,6 +13,8 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/display/screen_orientation_controller.h"
+#include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -148,6 +150,51 @@ WorkspaceWindowState GetShelfWorkspaceWindowState(aura::Window* shelf_window) {
 // Returns shelf's work area inset for given |visibility_state| and |size|.
 int GetShelfInset(ShelfVisibilityState visibility_state, int size) {
   return visibility_state == SHELF_VISIBLE ? size : 0;
+}
+
+// Returns the window that can be dragged from shelf into home screen or
+// overview at |location_in_screen|. Returns nullptr if there is no such
+// window.
+aura::Window* GetWindowForDragToHomeOrOverview(
+    const gfx::Point& location_in_screen) {
+  if (!IsTabletModeEnabled())
+    return nullptr;
+
+  auto mru_windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+  if (mru_windows.empty())
+    return nullptr;
+
+  aura::Window* window = nullptr;
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  const bool is_in_splitview = split_view_controller->InSplitViewMode();
+  const bool is_in_overview =
+      Shell::Get()->overview_controller()->InOverviewSession();
+  if (!is_in_splitview && !is_in_overview) {
+    // If split view mode is not active, use the first MRU window.
+    window = mru_windows[0];
+  } else if (is_in_splitview) {
+    // If split view mode is active, use the event location to decide which
+    // window should be the dragged window.
+    aura::Window* left_window = split_view_controller->left_window();
+    aura::Window* right_window = split_view_controller->right_window();
+    const int divider_position = split_view_controller->divider_position();
+    const bool is_landscape = IsCurrentScreenOrientationLandscape();
+    const bool is_primary = IsCurrentScreenOrientationPrimary();
+    const gfx::Rect work_area =
+        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+            split_view_controller->GetDefaultSnappedWindow());
+    if (is_landscape) {
+      if (location_in_screen.x() < work_area.x() + divider_position)
+        window = is_primary ? left_window : right_window;
+      else
+        window = is_primary ? right_window : left_window;
+    } else {
+      window = is_primary ? right_window : left_window;
+    }
+  }
+  return window && window->IsVisible() ? window : nullptr;
 }
 
 // Sets the shelf opacity to 0 when the shelf is done hiding to avoid getting
@@ -1878,10 +1925,19 @@ bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
            HomeLauncherGestureHandler::Mode::kSwipeHomeToOverview;
   }
 
-  const bool up_on_extended_hotseat =
-      state_.hotseat_state == HotseatState::kExtended && scroll_y < 0;
-  if (IsHotseatEnabled() && !up_on_extended_hotseat)
-    return false;
+  if (IsHotseatEnabled()) {
+    if (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
+        state_.hotseat_state != HotseatState::kShown) {
+      // If hotseat is hidden or extended (in-app or in-overview), do not let
+      // HomeLauncherGestureHandler to handle the events.
+      return false;
+    }
+
+    const bool up_on_extended_hotseat =
+        state_.hotseat_state == HotseatState::kExtended && scroll_y < 0;
+    if (!up_on_extended_hotseat)
+      return false;
+  }
 
   // Scroll down events should never be handled, unless they are currently being
   // handled
@@ -2087,6 +2143,7 @@ bool ShelfLayoutManager::StartShelfDrag(
                               : SHELF_AUTO_HIDE_SHOWN;
   MaybeSetupHotseatDrag(event_in_screen);
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  MaybeStartDragWindowFromShelf(event_in_screen);
 
   // For the hotseat, |drag_amount_| is relative to the top of the shelf.
   // To keep the hotseat from jumping to the top of the shelf on drag, set the
@@ -2140,10 +2197,14 @@ void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
           event_in_screen.AsGestureEvent()->details().velocity_y();
     }
     LayoutShelf();
+    MaybeUpdateWindowDrag(event_in_screen, scroll_x, scroll_y);
   }
 }
 
 void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
+  // End the possible window drag before checking the shelf visibility.
+  MaybeEndWindowDrag(event_in_screen);
+
   if (!ShouldChangeVisibilityAfterDrag(event_in_screen)) {
     CancelDrag();
     return;
@@ -2211,6 +2272,7 @@ void ShelfLayoutManager::CancelDrag() {
     else
       Shell::Get()->app_list_controller()->DismissAppList();
   } else {
+    MaybeCancelWindowDrag();
     // Set |drag_status_| to kDragCancelInProgress to set the
     // auto hide state to |drag_auto_hide_state_|, which is the
     // visibility state before starting drag.
@@ -2319,6 +2381,59 @@ void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
         AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED);
   }
   previous_workspace_window_state_ = current_workspace_window_state;
+}
+
+void ShelfLayoutManager::MaybeStartDragWindowFromShelf(
+    const ui::LocatedEvent& event_in_screen) {
+  if (!features::IsDragFromShelfToHomeOrOverviewEnabled())
+    return;
+  if (!IsTabletModeEnabled())
+    return;
+  if (drag_status_ != kDragInProgress)
+    return;
+
+  aura::Window* window =
+      GetWindowForDragToHomeOrOverview(event_in_screen.location());
+  if (!window)
+    return;
+
+  window_drag_controller_ =
+      std::make_unique<DragWindowFromShelfController>(window);
+}
+
+void ShelfLayoutManager::MaybeUpdateWindowDrag(
+    const ui::LocatedEvent& event_in_screen,
+    float scroll_x,
+    float scroll_y) {
+  if (!window_drag_controller_)
+    return;
+
+  DCHECK_EQ(drag_status_, kDragInProgress);
+  window_drag_controller_->Drag(event_in_screen.location(), scroll_x, scroll_y);
+}
+
+void ShelfLayoutManager::MaybeEndWindowDrag(
+    const ui::LocatedEvent& event_in_screen) {
+  if (!window_drag_controller_)
+    return;
+
+  DCHECK_EQ(drag_status_, kDragInProgress);
+  base::Optional<float> velocity_y;
+  if (event_in_screen.type() == ui::ET_SCROLL_FLING_START) {
+    velocity_y = base::make_optional(
+        event_in_screen.AsGestureEvent()->details().velocity_y());
+  }
+  window_drag_controller_->EndDrag(event_in_screen.location(), velocity_y);
+  window_drag_controller_.reset();
+}
+
+void ShelfLayoutManager::MaybeCancelWindowDrag() {
+  if (!window_drag_controller_)
+    return;
+
+  DCHECK_EQ(drag_status_, kDragInProgress);
+  window_drag_controller_->CancelDrag();
+  window_drag_controller_.reset();
 }
 
 }  // namespace ash

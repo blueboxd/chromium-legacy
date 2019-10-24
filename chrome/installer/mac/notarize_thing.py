@@ -63,7 +63,7 @@ def main():
 
         config_class = OverrideBundleIDConfig
 
-    config = config_class('notused', 'notused', None, args.user, args.password,
+    config = config_class('notused', 'notused', args.user, args.password,
                           args.asc_provider)
 
     uuids = []

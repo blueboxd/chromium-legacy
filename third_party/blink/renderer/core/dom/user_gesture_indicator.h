@@ -28,7 +28,6 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
 
  public:
   enum Status { kNewGesture, kPossiblyExistingGesture };
-  enum TimeoutPolicy { kDefault, kHasPaused };
 
   ~UserGestureToken() = default;
 
@@ -41,7 +40,6 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
 
   void TransferGestureTo(UserGestureToken*);
   bool ConsumeGesture();
-  void SetTimeoutPolicy(TimeoutPolicy);
   void ResetTimestamp();
   bool HasGestures() const;
   bool HasTimedOut() const;
@@ -49,7 +47,6 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   size_t consumable_gestures_;
   const base::Clock* clock_;
   double timestamp_;
-  TimeoutPolicy timeout_policy_;
   DISALLOW_COPY_AND_ASSIGN(UserGestureToken);
 };
 
@@ -75,8 +72,6 @@ class CORE_EXPORT UserGestureIndicator final {
 
   static UserGestureToken* CurrentToken();
   static UserGestureToken* CurrentTokenThreadSafe();
-
-  static void SetTimeoutPolicy(UserGestureToken::TimeoutPolicy);
 
   explicit UserGestureIndicator(scoped_refptr<UserGestureToken>);
 

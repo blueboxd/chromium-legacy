@@ -65,6 +65,11 @@ const CGFloat kBadgeCornerRadius = 5.0;
         // "Save Card" on the delegate and "Save Credit Card on mocks.
         _title = @"Save Credit Card";
         break;
+      case BadgeType::kBadgeTypeTranslate:
+        _actionIdentifier = PopupMenuActionShowTranslateOptions;
+        // TODO(crbug.com/1014959): use l10n to translate string.
+        _title = @"Translate Page";
+        break;
       case BadgeType::kBadgeTypeIncognito:
         NOTREACHED() << "A BadgePopupMenuItem should not be an Incognito badge";
         break;
@@ -93,6 +98,10 @@ const CGFloat kBadgeCornerRadius = 5.0;
       break;
     case BadgeType::kBadgeTypeSaveCard:
       badgeImage = [[UIImage imageNamed:@"infobar_save_card_icon"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      break;
+    case BadgeType::kBadgeTypeTranslate:
+      badgeImage = [[UIImage imageNamed:@"infobar_translate_icon"]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       break;
     case BadgeType::kBadgeTypeIncognito:

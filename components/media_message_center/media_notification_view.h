@@ -66,7 +66,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
                         base::WeakPtr<MediaNotificationItem> item,
                         views::View* header_row_controls_view,
                         const base::string16& default_app_name,
-                        int notification_width);
+                        int notification_width,
+                        bool should_show_icon);
   ~MediaNotificationView() override;
 
   void SetExpanded(bool expanded);

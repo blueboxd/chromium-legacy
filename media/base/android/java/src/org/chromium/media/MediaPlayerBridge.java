@@ -38,8 +38,7 @@ import java.util.HashMap;
 */
 @JNINamespace("media")
 public class MediaPlayerBridge {
-
-    private static final String TAG = "cr.media";
+    private static final String TAG = "media";
 
     // Local player to forward this to. We don't initialize it here since the subclass might not
     // want it.

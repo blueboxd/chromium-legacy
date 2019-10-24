@@ -213,16 +213,39 @@ void SharedWorkerServiceImpl::NotifyClientAdded(
     const SharedWorkerInstance& instance,
     int client_process_id,
     int frame_id) {
-  for (Observer& observer : observers_)
-    observer.OnClientAdded(instance, client_process_id, frame_id);
+  auto insertion_result = shared_worker_client_counts_.insert(
+      {{instance, GlobalFrameRoutingId(client_process_id, frame_id)}, 0});
+
+  int& count = insertion_result.first->second;
+  ++count;
+
+  // Only notify if this is the first time that this frame connects to that
+  // shared worker.
+  if (insertion_result.second) {
+    for (Observer& observer : observers_)
+      observer.OnClientAdded(instance, client_process_id, frame_id);
+  }
 }
 
 void SharedWorkerServiceImpl::NotifyClientRemoved(
     const SharedWorkerInstance& instance,
     int client_process_id,
     int frame_id) {
-  for (Observer& observer : observers_)
-    observer.OnClientRemoved(instance, client_process_id, frame_id);
+  auto it = shared_worker_client_counts_.find(std::make_pair(
+      instance, GlobalFrameRoutingId(client_process_id, frame_id)));
+  DCHECK(it != shared_worker_client_counts_.end());
+
+  int& count = it->second;
+  DCHECK_GT(count, 0);
+  --count;
+
+  // Only notify if there are no longer any active connections from this frame
+  // to that shared worker.
+  if (count == 0) {
+    shared_worker_client_counts_.erase(it);
+    for (Observer& observer : observers_)
+      observer.OnClientRemoved(instance, client_process_id, frame_id);
+  }
 }
 
 void SharedWorkerServiceImpl::CreateWorker(

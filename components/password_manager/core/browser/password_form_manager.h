@@ -147,8 +147,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   void Save() override;
   void Update(const autofill::PasswordForm& credentials_to_update) override;
-  void UpdateUsername(const base::string16& new_username) override;
-  void UpdatePasswordValue(const base::string16& new_password) override;
+  void OnUpdateUsernameFromPrompt(const base::string16& new_username) override;
+  void OnUpdatePasswordFromPrompt(const base::string16& new_password) override;
 
   void OnNopeUpdateClicked() override;
   void OnNeverClicked() override;

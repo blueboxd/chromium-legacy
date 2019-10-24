@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
@@ -68,7 +69,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
                         InputController::GetTouchEventLogReply reply);
 
   void GetGesturePropertiesService(
-      ozone::mojom::GesturePropertiesServiceRequest request);
+      mojo::PendingReceiver<ozone::mojom::GesturePropertiesService> receiver);
 
   base::WeakPtr<InputDeviceFactoryEvdev> GetWeakPtr();
 

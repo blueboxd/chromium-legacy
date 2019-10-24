@@ -12,6 +12,10 @@ DeviceSyncClient::DeviceSyncClient() = default;
 
 DeviceSyncClient::~DeviceSyncClient() = default;
 
+mojom::DeviceSyncPtr* DeviceSyncClient::GetDeviceSyncPtr() {
+  return nullptr;
+}
+
 void DeviceSyncClient::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

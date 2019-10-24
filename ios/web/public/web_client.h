@@ -168,12 +168,17 @@ class WebClient {
   // when a navigation error occurs. |error| is always a valid pointer. The
   // string passed to |callback| will be nil if no error page should be
   // displayed. Otherwise, this string will contain the details of the error
-  // and maybe links to more info.
+  // and maybe links to more info. |info| will have a value for SSL cert errors
+  // and otherwise be nullopt. |navigation_id| is passed into this method so
+  // that in the case of an SSL cert error, the blocking page can be associated
+  // with the tab.
   virtual void PrepareErrorPage(WebState* web_state,
                                 const GURL& url,
                                 NSError* error,
                                 bool is_post,
                                 bool is_off_the_record,
+                                const base::Optional<net::SSLInfo>& info,
+                                int64_t navigation_id,
                                 base::OnceCallback<void(NSString*)> callback);
 
   // Allows upper layers to inject experimental flags to the web layer.

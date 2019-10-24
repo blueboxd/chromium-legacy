@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "weblayer/public/browser_observer.h"
+#include "weblayer/public/navigation_observer.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -38,10 +39,7 @@ class Profile;
 
 // This represents one window of the Web Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
-// On desktop this is used for the demo Shell application and also
-// weblayer_browsertests. On Android this is only used for
-// weblayer_browsertests.
-class Shell : public BrowserObserver {
+class Shell : public BrowserObserver, public NavigationObserver {
  public:
   ~Shell() override;
 
@@ -82,10 +80,11 @@ class Shell : public BrowserObserver {
   explicit Shell(std::unique_ptr<BrowserController> browser_controller);
 
   // BrowserObserver implementation:
-  void LoadingStateChanged(bool is_loading,
-                           bool to_different_document) override;
-  void LoadProgressChanged(double progress) override;
   void DisplayedUrlChanged(const GURL& url) override;
+
+  // NavigationObserver implementation:
+  void LoadStateChanged(bool is_loading, bool to_different_document) override;
+  void LoadProgressChanged(double progress) override;
 
   // Helper to create a new Shell.
   static Shell* CreateShell(

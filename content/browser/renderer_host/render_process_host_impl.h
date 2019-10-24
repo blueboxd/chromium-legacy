@@ -89,6 +89,10 @@ class CommandLine;
 class PersistentMemoryAllocator;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace viz {
 class GpuClient;
 }
@@ -554,7 +558,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Binds |receiver| to the PaymentManager instance owned by
   // |storage_partition_impl_|, and is used by workers via
   // BrowserInterfaceBroker.
-  void CreatePaymentManager(
+  void CreatePaymentManagerForOrigin(
+      const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) override;
 
   // Adds a CORB (Cross-Origin Read Blocking) exception for |process_id|.  The
@@ -1015,7 +1020,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojo::Remote<mojom::ChildProcess> child_process_;
   mojo::AssociatedRemote<mojom::RouteProvider> remote_route_provider_;
   mojo::AssociatedRemote<mojom::Renderer> renderer_interface_;
-  mojo::AssociatedBinding<mojom::RendererHost> renderer_host_binding_;
+  mojo::AssociatedReceiver<mojom::RendererHost> renderer_host_receiver_{this};
   mojo::Receiver<memory_instrumentation::mojom::CoordinatorConnector>
       coordinator_connector_receiver_{this};
 

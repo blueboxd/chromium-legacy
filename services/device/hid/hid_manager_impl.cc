@@ -44,7 +44,7 @@ void HidManagerImpl::AddReceiver(
 }
 
 void HidManagerImpl::GetDevicesAndSetClient(
-    mojom::HidManagerClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<mojom::HidManagerClient> client,
     GetDevicesCallback callback) {
   hid_service_->GetDevices(base::BindOnce(
       &HidManagerImpl::CreateDeviceList, weak_factory_.GetWeakPtr(),

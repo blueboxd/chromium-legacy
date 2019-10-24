@@ -130,6 +130,7 @@ class CrostiniManager::CrostiniRestarter
   }
 
   void Restart() {
+    StartStage(mojom::InstallerState::kStart);
     is_initial_install_ = crostini_manager_->GetInstallerViewStatus();
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
@@ -152,6 +153,7 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
 
+    StartStage(mojom::InstallerState::kInstallImageLoader);
     crostini_manager_->InstallTerminaComponent(base::BindOnce(
         &CrostiniRestarter::LoadComponentFinished, base::WrapRefCounted(this)));
   }
@@ -209,6 +211,12 @@ class CrostiniManager::CrostiniRestarter
       mount_manager->RemoveObserver(this);
   }
 
+  void StartStage(mojom::InstallerState stage) {
+    for (auto& observer : observer_list_) {
+      observer.OnStageStarted(stage);
+    }
+  }
+
   void ReportRestarterResult(CrostiniResult result) {
     // Do not record results if this restart was triggered by the installer. The
     // crostini installer has its own histograms that should be kept separate.
@@ -239,6 +247,7 @@ class CrostiniManager::CrostiniRestarter
     }
     // Set the pref here, after we first successfully install something
     profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
+    StartStage(mojom::InstallerState::kStartConcierge);
     crostini_manager_->StartConcierge(
         base::BindOnce(&CrostiniRestarter::ConciergeStarted, this));
   }
@@ -261,6 +270,7 @@ class CrostiniManager::CrostiniRestarter
     int64_t disk_size_available = 0;
     // If we have an already existing disk, CreateDiskImage will just return its
     // path so we can pass it to StartTerminaVm.
+    StartStage(mojom::InstallerState::kCreateDiskImage);
     crostini_manager_->CreateDiskImage(
         base::FilePath(vm_name_),
         vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
@@ -285,6 +295,7 @@ class CrostiniManager::CrostiniRestarter
       FinishRestart(CrostiniResult::CREATE_DISK_IMAGE_FAILED);
       return;
     }
+    StartStage(mojom::InstallerState::kStartTerminaVm);
     crostini_manager_->StartTerminaVm(
         vm_name_, result_path,
         base::BindOnce(&CrostiniRestarter::StartTerminaVmFinished, this));
@@ -312,6 +323,7 @@ class CrostiniManager::CrostiniRestarter
       crostini_manager_->GetTerminaVmKernelVersion(base::BindOnce(
           &CrostiniRestarter::GetTerminaVmKernelVersionFinished, this));
     }
+    StartStage(mojom::InstallerState::kCreateContainer);
     crostini_manager_->CreateLxdContainer(
         vm_name_, container_name_,
         base::BindOnce(&CrostiniRestarter::CreateLxdContainerFinished, this));
@@ -345,6 +357,7 @@ class CrostiniManager::CrostiniRestarter
       FinishRestart(result);
       return;
     }
+    StartStage(mojom::InstallerState::kSetupContainer);
     crostini_manager_->SetUpLxdContainerUser(
         vm_name_, container_name_, DefaultContainerUserNameForProfile(profile_),
         base::BindOnce(&CrostiniRestarter::SetUpLxdContainerUserFinished,
@@ -366,6 +379,7 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
 
+    StartStage(mojom::InstallerState::kStartContainer);
     crostini_manager_->StartLxdContainer(
         vm_name_, container_name_,
         base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished, this));
@@ -402,6 +416,7 @@ class CrostiniManager::CrostiniRestarter
     if (vm_name_ == kCrostiniDefaultVmName &&
         container_name_ == kCrostiniDefaultContainerName && info &&
         !info->sshfs_mounted) {
+      StartStage(mojom::InstallerState::kFetchSshKeys);
       crostini_manager_->GetContainerSshKeys(
           vm_name_, container_name_,
           base::BindOnce(&CrostiniRestarter::GetContainerSshKeysFinished, this,
@@ -436,6 +451,7 @@ class CrostiniManager::CrostiniRestarter
     // Call to sshfs to mount.
     source_path_ = base::StringPrintf(
         "sshfs://%s@%s:", container_username.c_str(), hostname.c_str());
+    StartStage(mojom::InstallerState::kMountContainer);
     dmgr->MountPath(source_path_, "",
                     file_manager::util::GetCrostiniMountPointName(profile_),
                     file_manager::util::GetCrostiniMountOptions(
@@ -456,10 +472,14 @@ class CrostiniManager::CrostiniRestarter
         mount_info.source_path != source_path_) {
       return;
     }
+    bool success = error_code == chromeos::MountError::MOUNT_ERROR_NONE;
+    for (auto& observer : observer_list_) {
+      observer.OnContainerMounted(success);
+    }
     // Remove DiskMountManager::OnMountEvent observer.
     chromeos::disks::DiskMountManager::GetInstance()->RemoveObserver(this);
 
-    if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
+    if (!success) {
       LOG(ERROR) << "Error mounting crostini container: error_code="
                  << error_code << ", source_path=" << mount_info.source_path
                  << ", mount_path=" << mount_info.mount_path

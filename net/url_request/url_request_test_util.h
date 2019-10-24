@@ -15,6 +15,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -288,8 +289,9 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
     add_header_to_first_response_ = add_header_to_first_response;
   }
 
-  void set_allowed_unsafe_redirect_url(GURL allowed_unsafe_redirect_url) {
-    allowed_unsafe_redirect_url_ = allowed_unsafe_redirect_url;
+  void set_preserve_fragment_on_redirect_url(
+      const base::Optional<GURL>& preserve_fragment_on_redirect_url) {
+    preserve_fragment_on_redirect_url_ = preserve_fragment_on_redirect_url;
   }
 
   void set_cookie_options(int o) {cookie_options_bit_mask_ = o; }
@@ -348,7 +350,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& endpoint,
-      GURL* allowed_unsafe_redirect_url) override;
+      base::Optional<GURL>* preserve_fragment_on_redirect_url) override;
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;
   void OnResponseStarted(URLRequest* request, int net_error) override;
   void OnCompleted(URLRequest* request, bool started, int net_error) override;
@@ -373,8 +375,9 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int GetRequestId(URLRequest* request);
 
   GURL redirect_on_headers_received_url_;
-  // URL marked as safe for redirection at the onHeadersReceived stage.
-  GURL allowed_unsafe_redirect_url_;
+  // URL to mark as retaining its fragment if redirected to at the
+  // OnHeadersReceived() stage.
+  base::Optional<GURL> preserve_fragment_on_redirect_url_;
 
   int last_error_;
   int error_count_;

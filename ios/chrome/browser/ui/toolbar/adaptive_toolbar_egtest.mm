@@ -202,12 +202,8 @@ UITraitCollection* RotateOrChangeTraitCollection(
             forViewController:topViewController];
   } else {
     // On iPhone rotate to test the the landscape orientation.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-#if defined(CHROME_EARL_GREY_1)
-                             errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-                                  error:nil];
-#endif
+    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                                        error:nil];
     return topViewController.traitCollection;
   }
 }
@@ -496,12 +492,8 @@ UIViewController* TopPresentedViewController() {
     }
   } else {
     // Cancel the rotation.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-#if defined(CHROME_EARL_GREY_1)
-                             errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-                                  error:nil];
-#endif
+    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                                        error:nil];
   }
 
   // Check the visiblity after a rotation.
@@ -539,12 +531,8 @@ UIViewController* TopPresentedViewController() {
     }
   } else {
     // Cancel the rotation.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-#if defined(CHROME_EARL_GREY_1)
-                             errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-                                  error:nil];
-#endif
+    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                                        error:nil];
   }
 
   // Check the visiblity after a size class change. This should let the trait
@@ -721,12 +709,8 @@ UIViewController* TopPresentedViewController() {
 - (void)testShareButton {
   if (![ChromeEarlGrey isIPadIdiom]) {
     // If this test is run on an iPhone, rotate it to have the unsplit toolbar.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-#if defined(CHROME_EARL_GREY_1)
-                             errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-                                  error:nil];
-#endif
+    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                                        error:nil];
   }
 
   // Setup the server.
@@ -742,12 +726,8 @@ UIViewController* TopPresentedViewController() {
 
   if (![ChromeEarlGrey isIPadIdiom]) {
     // Cancel rotation.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-#if defined(CHROME_EARL_GREY_1)
-                             errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-                                  error:nil];
-#endif
+    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                                        error:nil];
   }
 }
 
@@ -808,12 +788,8 @@ UIViewController* TopPresentedViewController() {
     }
   } else {
     // Cancel the rotation.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-#if defined(CHROME_EARL_GREY_1)
-                             errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-                                  error:nil];
-#endif
+    [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                                        error:nil];
   }
 }
 

@@ -6842,7 +6842,7 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     EXPECT_EQ(info_.page_scale_delta, args.page_scale_delta);
-    EXPECT_EQ(info_.top_controls_delta, args.browser_controls_delta);
+    EXPECT_EQ(info_.top_controls_delta, args.top_controls_delta);
     EXPECT_EQ(info_.browser_controls_constraint,
               args.browser_controls_constraint);
     deltas_sent_to_client_ = true;
@@ -8769,9 +8769,10 @@ class LayerTreeHostTopControlsDeltaTriggersViewportUpdate
     SetupViewport(root_layer, gfx::Size(50, 50), root_layer->bounds());
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 1.f);
     // Set browser controls to be partially shown.
-    layer_tree_host()->SetBrowserControlsHeight(kTopControlsHeight, 0.0f,
-                                                true /* shrink */);
-    layer_tree_host()->SetBrowserControlsShownRatio(kTopControlsShownRatio);
+    layer_tree_host()->SetBrowserControlsHeight(
+        kTopControlsHeight, kBottomControlsHeight, true /* shrink */);
+    layer_tree_host()->SetBrowserControlsShownRatio(kTopControlsShownRatio,
+                                                    kBottomControlsShownRatio);
   }
 
   void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
@@ -8798,6 +8799,8 @@ class LayerTreeHostTopControlsDeltaTriggersViewportUpdate
 
   static constexpr float kTopControlsHeight = 10.0f;
   static constexpr float kTopControlsShownRatio = 0.3f;
+  static constexpr float kBottomControlsHeight = 10.0f;
+  static constexpr float kBottomControlsShownRatio = 1.f;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTopControlsDeltaTriggersViewportUpdate);

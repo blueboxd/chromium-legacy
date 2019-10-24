@@ -122,7 +122,7 @@ Polymer({
               settings.routes.SYNC.path,
               loadTimeData.getBoolean('unifiedConsentEnabled') ?
                   '#sync-setup' :
-                  '#sync-status .subpage-arrow');
+                  '#sync-status');
         }
         if (settings.routes.LOCK_SCREEN) {
           map.set(

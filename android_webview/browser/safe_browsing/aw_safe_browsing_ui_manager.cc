@@ -4,6 +4,11 @@
 
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_blocking_page.h"
 #include "android_webview/common/aw_paths.h"

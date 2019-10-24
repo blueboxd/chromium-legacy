@@ -2524,12 +2524,33 @@ void BrowserView::InitViews() {
   tab_strip_region_view_->AddChildView(tabstrip_);  // Takes ownership.
   tabstrip_controller->InitFromModel(tabstrip_);
 
+  // Create WebViews early so |webui_tab_strip_| can observe their size.
+  devtools_web_view_ = new views::WebView(browser_->profile());
+  devtools_web_view_->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
+  devtools_web_view_->SetVisible(false);
+
+  contents_web_view_ = new ContentsWebView(browser_->profile());
+  contents_web_view_->SetID(VIEW_ID_TAB_CONTAINER);
+  contents_web_view_->SetEmbedFullscreenWidgetMode(true);
+
+  contents_container_ = new views::View();
+  contents_container_->AddChildView(devtools_web_view_);
+  contents_container_->AddChildView(contents_web_view_);
+  contents_container_->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
+      devtools_web_view_, contents_web_view_));
+
   views::View* webui_tab_strip_view = nullptr;
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   if (base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
+    // We use |contents_container_| here so that enabling or disabling
+    // devtools won't affect the tab sizes. We still use only
+    // |contents_web_view_| for screenshotting and will adjust the
+    // screenshot accordingly. Ideally, the thumbnails should be sized
+    // based on a typical tab size, ignoring devtools or e.g. the
+    // downloads bar.
     webui_tab_strip_ = top_container_->AddChildView(
-        std::make_unique<WebUITabStripContainerView>(browser_.get()));
-
+        std::make_unique<WebUITabStripContainerView>(browser_.get(),
+                                                     contents_container_));
     webui_tab_strip_view = webui_tab_strip_;
   }
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
@@ -2546,22 +2567,9 @@ void BrowserView::InitViews() {
   if (!toolbar_button_provider_)
     SetToolbarButtonProvider(toolbar_);
 
-  contents_web_view_ = new ContentsWebView(browser_->profile());
-  contents_web_view_->SetID(VIEW_ID_TAB_CONTAINER);
-  contents_web_view_->SetEmbedFullscreenWidgetMode(true);
-
   web_contents_close_handler_.reset(
       new WebContentsCloseHandler(contents_web_view_));
 
-  devtools_web_view_ = new views::WebView(browser_->profile());
-  devtools_web_view_->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
-  devtools_web_view_->SetVisible(false);
-
-  contents_container_ = new views::View();
-  contents_container_->AddChildView(devtools_web_view_);
-  contents_container_->AddChildView(contents_web_view_);
-  contents_container_->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
-      devtools_web_view_, contents_web_view_));
   AddChildView(contents_container_);
   set_contents_view(contents_container_);
 

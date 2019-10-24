@@ -27,6 +27,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -73,7 +74,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
-      network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory)>;
   static void SetNetworkFactory(
       const CreateNetworkFactoryCallback& url_loader_factory_callback);
 
@@ -194,7 +195,8 @@ class MockRenderProcessHost : public RenderProcessHost {
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver)
       override {}
-  void CreatePaymentManager(
+  void CreatePaymentManagerForOrigin(
+      const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver)
       override {}
   void CleanupCorbExceptionForPluginUponDestruction() override;

@@ -23,8 +23,8 @@
    by looking at the `android-binary-size` trybot result for the roll commit.
  * For V8 rolls, try checking the [V8 size graph](https://chromeperf.appspot.com/report?sid=59435a74c93b42599af4b02e2b3df765faef4685eb015f8aaaf2ecf7f4afb29c)
    to see if any jumps correspond with a CL in the roll.
- * Otherwise, use [diagnose_bloat.py](https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/README.md#diagnose_bloat_py)
-   in a [local Android checkout](https://chromium.googlesource.com/chromium/src/+/master/docs/android_build_instructions.md)
+ * Otherwise, use [diagnose_bloat.py](/tools/binary_size/README.md#diagnose_bloat_py)
+   in a [local Android checkout](/docs/android_build_instructions.md)
    to build all commits locally and find the culprit.
    * If there were multiple commits due to a build breakage, use `--apply-patch`
      with the fixing commit (last one in the range).
@@ -98,15 +98,15 @@ Figure out which file within the `.apk` increased (native library, dex, pak
 resources, etc.) by looking at the trybot results or size graphs that were
 linked from the bug (if it was not linked in the bug, see above).
 
-**See [//docs/speed/binary_size/metrics.md](https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/metrics.md)
+**See [//docs/speed/binary_size/metrics.md](/docs/speed/binary_size/metrics.md)
 for a description of high-level binary size metrics.**
 
-**See [//tools/binary_size/README.md](https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/README.md)
+**See [//tools/binary_size/README.md](/tools/binary_size/README.md)
 for a description of binary size tools.**
 
 ## Step 2: Analyze
 
-See [optimization advice](//docs/speed/binary_size/optimization_advice.md).
+See [optimization advice](/docs/speed/binary_size/optimization_advice.md).
 
 ## Step 3: Give Up :/
 

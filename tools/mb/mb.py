@@ -494,9 +494,9 @@ class MetaBuildWrapper(object):
       ('infra/tools/luci/logdog/butler/${platform}',
        'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
       ('infra/tools/luci/vpython-native/${platform}',
-       'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'),
+       'git_revision:10e1d79ac9ced2b819221e06535f457093b2a14c'),
       ('infra/tools/luci/vpython/${platform}',
-       'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'),
+       'git_revision:10e1d79ac9ced2b819221e06535f457093b2a14c'),
     ]
     for pkg, vers in cipd_packages:
       cmd.append('--cipd-package=.swarming_module:%s:%s' % (pkg, vers))
@@ -1358,6 +1358,7 @@ class MetaBuildWrapper(object):
     msan = 'is_msan=true' in vals['gn_args']
     tsan = 'is_tsan=true' in vals['gn_args']
     cfi_diag = 'use_cfi_diag=true' in vals['gn_args']
+    clang_coverage = 'use_clang_coverage=true' in vals['gn_args']
     java_coverage = 'use_jacoco_coverage=true' in vals['gn_args']
 
     test_type = isolate_map[target]['type']
@@ -1405,7 +1406,7 @@ class MetaBuildWrapper(object):
           '--target', target,
           '--logdog-bin-cmd', '../../bin/logdog_butler',
           '--store-tombstones']
-      if java_coverage:
+      if clang_coverage or java_coverage:
         cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}']
     elif is_fuchsia and test_type != 'script':
       cmdline += [

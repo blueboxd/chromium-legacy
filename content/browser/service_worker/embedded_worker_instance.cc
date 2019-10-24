@@ -1079,14 +1079,15 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
         std::move(default_header_client), std::move(default_factory_receiver));
   } else {
-    network::mojom::URLLoaderFactoryPtr original_factory;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
     rph->CreateURLLoaderFactory(
         origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(default_header_client), mojo::MakeRequest(&original_factory));
+        std::move(default_header_client),
+        original_factory.InitWithNewPipeAndPassReceiver());
     GetNetworkFactoryCallbackForTest().Run(std::move(default_factory_receiver),
                                            rph->GetID(),
-                                           original_factory.PassInterface());
+                                           std::move(original_factory));
   }
 
   factory_bundle->set_bypass_redirect_checks(bypass_redirect_checks);
@@ -1109,11 +1110,11 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
     // schemes.
     if (!base::Contains(GetServiceWorkerSchemes(), scheme))
       continue;
-    network::mojom::URLLoaderFactoryPtr factory_ptr;
-    mojo::MakeStrongBinding(std::move(factory),
-                            mojo::MakeRequest(&factory_ptr));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::move(factory), factory_remote.InitWithNewPipeAndPassReceiver());
     factory_bundle->pending_scheme_specific_factories().emplace(
-        scheme, factory_ptr.PassInterface());
+        scheme, std::move(factory_remote));
   }
   return factory_bundle;
 }

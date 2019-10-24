@@ -18,6 +18,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/features/feature_channel.h"
@@ -276,13 +277,13 @@ TEST_F(RulesetMatcherTest, RemoveHeadersMultipleRules) {
   params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   params.is_third_party = true;
 
-  RequestAction rule_1_action =
-      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  RequestAction rule_1_action = CreateRequestActionForTesting(
+      RequestAction::Type::REMOVE_HEADERS, *rule_1.id);
   rule_1_action.request_headers_to_remove.push_back(
       net::HttpRequestHeaders::kReferer);
 
-  RequestAction rule_2_action =
-      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  RequestAction rule_2_action = CreateRequestActionForTesting(
+      RequestAction::Type::REMOVE_HEADERS, *rule_2.id);
   rule_2_action.request_headers_to_remove.push_back(
       net::HttpRequestHeaders::kCookie);
 
@@ -311,7 +312,10 @@ TEST_F(RulesetMatcherTest, RedirectToExtensionPath) {
   const size_t kPriority = 1;
   const size_t kRuleCountLimit = 10;
   ASSERT_TRUE(CreateVerifiedMatcher(
-      {rule}, CreateTemporarySource(kId, kPriority, kRuleCountLimit),
+      {rule},
+      CreateTemporarySource(kId, kPriority,
+                            api::declarative_net_request::SOURCE_TYPE_MANIFEST,
+                            kRuleCountLimit),
       &matcher));
 
   GURL example_url("http://example.com");

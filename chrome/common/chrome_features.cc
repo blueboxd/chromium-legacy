@@ -218,6 +218,10 @@ const base::Feature kCupsPrintersUiOverhaul{"CupsPrintersUiOverhaul",
 // Enable support for "Plugin VMs" on Chrome OS.
 const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable adding a print server on Chrome OS.
+const base::Feature kPrintServerUi{"PrintServerUi",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allow a Wilco DTC (diagnostics and telemetry controller) on Chrome OS.
 // More info about the project may be found here:
 // https://docs.google.com/document/d/18Ijj8YlC8Q3EWRzLspIi2dGxg4vIBVe5sJgMPt9SWYo

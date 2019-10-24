@@ -2298,7 +2298,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
 
   // Create the URLLoaderFactory as needed, but make sure not to reuse a
   // previously created one if the test override has changed.
-  if (url_loader_factory && !url_loader_factory.encountered_error() &&
+  if (url_loader_factory && url_loader_factory.is_connected() &&
       is_test_url_loader_factory !=
           g_url_loader_factory_callback_for_test.Get().is_null()) {
     return url_loader_factory.get();
@@ -2314,19 +2314,19 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);
+  url_loader_factory.reset();
   if (g_url_loader_factory_callback_for_test.Get().is_null()) {
-    auto request = mojo::MakeRequest(&url_loader_factory);
-    GetNetworkContext()->CreateURLLoaderFactory(std::move(request),
-                                                std::move(params));
+    GetNetworkContext()->CreateURLLoaderFactory(
+        url_loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
     is_test_url_loader_factory = false;
     return url_loader_factory.get();
   }
 
-  network::mojom::URLLoaderFactoryPtr original_factory;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
   GetNetworkContext()->CreateURLLoaderFactory(
-      mojo::MakeRequest(&original_factory), std::move(params));
-  url_loader_factory = g_url_loader_factory_callback_for_test.Get().Run(
-      std::move(original_factory));
+      original_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
+  url_loader_factory.Bind(g_url_loader_factory_callback_for_test.Get().Run(
+      std::move(original_factory)));
   is_test_url_loader_factory = true;
   return url_loader_factory.get();
 }

@@ -130,7 +130,8 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   data->Append(ChooserResourceLoader::GetCalendarPickerStyleSheet());
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
     data->Append(ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet());
-    if (parameters_->type == input_type_names::kTime) {
+    if (parameters_->type == input_type_names::kTime ||
+        parameters_->type == input_type_names::kDatetimeLocal) {
       data->Append(ChooserResourceLoader::GetTimePickerStyleSheet());
     }
   }
@@ -227,6 +228,9 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
     data->Append(ChooserResourceLoader::GetMonthPickerJS());
     if (parameters_->type == input_type_names::kTime) {
       data->Append(ChooserResourceLoader::GetTimePickerJS());
+    } else if (parameters_->type == input_type_names::kDatetimeLocal) {
+      data->Append(ChooserResourceLoader::GetTimePickerJS());
+      data->Append(ChooserResourceLoader::GetDateTimeLocalPickerJS());
     }
   }
   data->Append(ChooserResourceLoader::GetCalendarPickerJS());

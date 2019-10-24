@@ -46,7 +46,7 @@ import java.util.TimeZone;
  */
 @JNINamespace("content")
 public class TracingControllerAndroidImpl implements TracingControllerAndroid {
-    private static final String TAG = "cr.TracingController";
+    private static final String TAG = "TracingController";
 
     private static final String ACTION_START = "GPU_PROFILER_START";
     private static final String ACTION_STOP = "GPU_PROFILER_STOP";

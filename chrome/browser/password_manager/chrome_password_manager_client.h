@@ -179,6 +179,8 @@ class ChromePasswordManagerClient
           saving_flow_recorder);
 
   void OnImeTextCommittedEvent(const base::string16& text_str) override;
+  void OnImeSetComposingTextEvent(const base::string16& text_str) override;
+  void OnImeFinishComposingTextEvent() override;
 #endif  // defined(OS_ANDROID)
 
 #if defined(ON_FOCUS_PING_ENABLED)
@@ -309,6 +311,11 @@ class ChromePasswordManagerClient
   // Controller for the Touch To Fill sheet. Created on demand during the first
   // call to GetOrCreateTouchToFillController().
   std::unique_ptr<TouchToFillController> touch_to_fill_controller_;
+
+  // Last composing text from ime, this is updated when ime set composing text
+  // event is triggered. It is sent to password reuse detection manager and
+  // reset when ime finish composing text event is triggered.
+  base::string16 last_composing_text_;
 #endif
 
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;

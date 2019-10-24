@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace message_center {
@@ -80,6 +81,17 @@ TEST_F(NotificationHeaderViewTest, UpdatesTimestampOverTime) {
   EXPECT_EQ(l10n_util::GetPluralStringFUTF16(
                 IDS_MESSAGE_NOTIFICATION_DURATION_DAYS_SHORTEST, 2),
             notification_header_view_->timestamp_for_testing());
+}
+
+TEST_F(NotificationHeaderViewTest, AllowsHidingOfAppIcon) {
+  // The icon should be shown by default.
+  EXPECT_TRUE(
+      notification_header_view_->app_icon_view_for_testing()->IsDrawn());
+
+  // Though it can be explicitly hidden.
+  notification_header_view_->HideAppIcon();
+  EXPECT_FALSE(
+      notification_header_view_->app_icon_view_for_testing()->IsDrawn());
 }
 
 }  // namespace message_center

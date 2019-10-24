@@ -1819,21 +1819,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_FALSE(observer.resource_is_associated_with_main_frame()[2]);
 }
 
-struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
-                                         public WebContentsObserver {
-  explicit LoadProgressDelegateAndObserver(Shell* shell)
+struct LoadProgressObserver : public WebContentsObserver {
+  explicit LoadProgressObserver(Shell* shell)
       : WebContentsObserver(shell->web_contents()),
         did_start_loading(false),
-        did_stop_loading(false) {
-    web_contents()->SetDelegate(this);
-  }
-
-  // WebContentsDelegate:
-  void LoadProgressChanged(WebContents* source, double progress) override {
-    EXPECT_TRUE(did_start_loading);
-    EXPECT_FALSE(did_stop_loading);
-    progresses.push_back(progress);
-  }
+        did_stop_loading(false) {}
 
   // WebContentsObserver:
   void DidStartLoading() override {
@@ -1850,6 +1840,12 @@ struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
     did_stop_loading = true;
   }
 
+  void LoadProgressChanged(double progress) override {
+    EXPECT_TRUE(did_start_loading);
+    EXPECT_FALSE(did_stop_loading);
+    progresses.push_back(progress);
+  }
+
   bool did_start_loading;
   std::vector<double> progresses;
   bool did_stop_loading;
@@ -1857,8 +1853,7 @@ struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgress) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  std::unique_ptr<LoadProgressDelegateAndObserver> delegate(
-      new LoadProgressDelegateAndObserver(shell()));
+  auto delegate = std::make_unique<LoadProgressObserver>(shell());
 
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
@@ -1880,8 +1875,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgress) {
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgressWithFrames) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  std::unique_ptr<LoadProgressDelegateAndObserver> delegate(
-      new LoadProgressDelegateAndObserver(shell()));
+  auto delegate = std::make_unique<LoadProgressObserver>(shell());
 
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("/frame_tree/top.html")));
@@ -1914,8 +1908,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Simulate a navigation that has not completed.
   const GURL kURL2 = embedded_test_server()->GetURL("/title2.html");
   TestNavigationManager navigation(shell()->web_contents(), kURL2);
-  std::unique_ptr<LoadProgressDelegateAndObserver> delegate(
-      new LoadProgressDelegateAndObserver(shell()));
+  auto delegate = std::make_unique<LoadProgressObserver>(shell());
   shell()->LoadURL(kURL2);
   EXPECT_TRUE(navigation.WaitForResponse());
   EXPECT_TRUE(delegate->did_start_loading);

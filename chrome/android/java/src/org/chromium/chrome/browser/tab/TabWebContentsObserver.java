@@ -273,6 +273,12 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
+        public void loadProgressChanged(float progress) {
+            if (!mTab.isLoading()) return;
+            mTab.notifyLoadProgress(progress);
+        }
+
+        @Override
         public void didFirstVisuallyNonEmptyPaint() {
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {

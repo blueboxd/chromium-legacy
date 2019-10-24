@@ -383,11 +383,33 @@ struct SkiaRenderer::DrawRPDQParams {
   // The content space bounds that includes any filtered extents. If empty,
   // the draw can be skipped.
   gfx::Rect filter_bounds;
+  // The additional matrix to concatenate to the SkCanvas after image filters
+  // have been configured so that the DrawQuadParams geometry is properly mapped
+  // (i.e. when set, |visible_rect| and |draw_region| must be pre-transformed by
+  // this before |content_device_transform|).
+  base::Optional<SkMatrix> bypass_transform;
+  // The pre-filter clip to apply to the bypassed content of the RenderPass.
+  // This limits the bypassed content to the output rect of the RenderPass; it
+  // is in the same space as |backdrop_filter_bounds| and |filter_bounds|.
+  base::Optional<gfx::RectF> bypass_clip;
 
   // True when there is an |image_filter| and it's not equivalent to
   // |color_filter|.
   bool has_complex_image_filter() const {
     return image_filter && !color_filter;
+  }
+
+  // True if the RenderPass's output rect would clip the visible contents that
+  // are bypassing the renderpass' offscreen buffer.
+  bool needs_bypass_clip(const gfx::RectF& content_rect) const {
+    if (bypass_clip.has_value()) {
+      DCHECK(bypass_transform.has_value());
+      SkRect content_bounds =
+          bypass_transform->mapRect(gfx::RectFToSkRect(content_rect));
+      return !bypass_clip->Contains(gfx::SkRectToRectF(content_bounds));
+    } else {
+      return false;
+    }
   }
 };
 
@@ -406,7 +428,9 @@ struct SkiaRenderer::DrawQuadParams {
                  SkFilterQuality filter_quality,
                  const gfx::QuadF* draw_region);
 
-  // window_matrix * projection_matrix * quad_to_target_transform
+  // window_matrix * projection_matrix * quad_to_target_transform normally,
+  // or quad_to_target_transform if the remaining device transform is held in
+  // the DrawRPDQParams for a bypass quad.
   gfx::Transform content_device_transform;
   // The DrawQuad's visible_rect, possibly explicitly clipped by the scissor
   gfx::RectF visible_rect;
@@ -896,7 +920,11 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   if (!current_canvas_)
     return;
   TRACE_EVENT0("viz", "SkiaRenderer::DoDrawQuad");
-  DrawQuadParams params = CalculateDrawQuadParams(quad, draw_region);
+  gfx::Transform target_to_device =
+      current_frame()->window_matrix * current_frame()->projection_matrix;
+  const gfx::Rect* scissor = is_scissor_enabled_ ? &scissor_rect_ : nullptr;
+  DrawQuadParams params =
+      CalculateDrawQuadParams(target_to_device, scissor, quad, draw_region);
   // The outer DrawQuad will never have RPDQ params
   DrawQuadInternal(quad, /* rpdq */ nullptr, &params);
 }
@@ -1023,7 +1051,9 @@ void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
     layer_paint.setImageFilter(rpdq_params.image_filter);
   }
 
-  SkRect bounds = gfx::RectFToSkRect(params->visible_rect);
+  SkRect bounds = gfx::RectFToSkRect(rpdq_params.bypass_clip.has_value()
+                                         ? *rpdq_params.bypass_clip
+                                         : params->visible_rect);
   current_canvas_->saveLayer(SkCanvas::SaveLayerRec(
       &bounds, &layer_paint, rpdq_params.backdrop_filter.get(),
       rpdq_params.mask_image.get(), &rpdq_params.mask_to_quad_matrix, 0));
@@ -1042,6 +1072,9 @@ void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
     if (params->draw_region.has_value()) {
       SkPath clipPath;
       clipPath.addPoly(params->draw_region->points, 4, true /* close */);
+      if (rpdq_params.bypass_transform.has_value()) {
+        clipPath.transform(*rpdq_params.bypass_transform);
+      }
       current_canvas_->clipPath(clipPath, SkClipOp::kDifference, aa);
     }
     current_canvas_->clear(SK_ColorTRANSPARENT);
@@ -1060,57 +1093,79 @@ void SkiaRenderer::PreparePaintOrCanvasForRPDQ(
   // 1. Backdrop filtering always requires a layer.
   // 2. A complex image filter needs a layer if there is a mask, since Skia
   // applies the mask filter before the paint's image filter.
-  bool needs_save_layer =
-      rpdq_params.backdrop_filter ||
-      (rpdq_params.has_complex_image_filter() && rpdq_params.mask_image);
+  // 3. The content bypassing the renderpass needs to be clipped before the
+  //    image filter is evaluated.
+  bool needs_bypass_clip = rpdq_params.needs_bypass_clip(params->visible_rect);
+  bool needs_save_layer = false;
+  if (rpdq_params.backdrop_filter)
+    needs_save_layer = true;
+  else if (rpdq_params.has_complex_image_filter())
+    needs_save_layer = rpdq_params.mask_image || needs_bypass_clip;
+
   if (needs_save_layer) {
     PrepareCanvasForRPDQ(rpdq_params, params);
     // Sync the content's paint with the updated |params|
     paint->setAlphaf(params->opacity);
     paint->setBlendMode(params->blend_mode);
-    return;
+  } else {
+    // At this point, the image filter and/or color filter can be set on the
+    // paint. If there is a mask image, it can be converted to a mask shader.
+    DCHECK(!rpdq_params.backdrop_filter);
+    if (rpdq_params.color_filter) {
+      // Use the color filter directly, instead of the image filter; since color
+      // filters are applied before masks, this could be combined with a mask
+      if (paint->getColorFilter()) {
+        paint->setColorFilter(
+            rpdq_params.color_filter->makeComposed(paint->refColorFilter()));
+      } else {
+        paint->setColorFilter(rpdq_params.color_filter);
+      }
+      DCHECK(paint->getColorFilter());
+    } else if (rpdq_params.image_filter) {
+      // Store the image filter on the paint, but since this effect is applied
+      // last it's not compatible with masks as a shader
+      DCHECK(!rpdq_params.mask_image);
+      if (params->opacity != 1.f) {
+        // Apply opacity as the last step of image filter so it is uniform
+        // across any overlapping content produced by the image filters.
+        paint->setImageFilter(SkColorFilterImageFilter::Make(
+            MakeOpacityFilter(params->opacity, nullptr),
+            rpdq_params.image_filter));
+        paint->setAlphaf(1.f);
+        params->opacity = 1.f;
+      } else {
+        paint->setImageFilter(rpdq_params.image_filter);
+      }
+    }
+
+    // This is not an else-if since the color filter image filter can be
+    // combined with the mask filter correctly.
+    if (rpdq_params.mask_image) {
+      // The mask shader is evaluated in the bypass'ed quad's local coordinate
+      // space, so must update the shader matrix to still sample the image in
+      // the RP coordinate space.
+      SkMatrix local_matrix = SkMatrix::I();
+      if (rpdq_params.bypass_transform.has_value()) {
+        bool inverted = rpdq_params.bypass_transform->invert(&local_matrix);
+        // Invertibility was a requirement for being bypassable.
+        DCHECK(inverted);
+      }
+      local_matrix.preConcat(rpdq_params.mask_to_quad_matrix);
+
+      auto mask_filter = SkShaderMaskFilter::Make(
+          rpdq_params.mask_image->makeShader(&local_matrix));
+      // Confirm that the paint didn't already have a mask filter, and that it's
+      // captured properly afterwards on the paint.
+      DCHECK(!paint->getMaskFilter());
+      paint->setMaskFilter(std::move(mask_filter));
+      DCHECK(paint->getMaskFilter());
+    }
   }
 
-  // At this point, the image filter and/or color filter can be set on the paint
-  // If there is a mask image, it can be converted to a mask filter shader.
-  DCHECK(!rpdq_params.backdrop_filter);
-  if (rpdq_params.color_filter) {
-    // Use the color filter directly, instead of the image filter; since color
-    // filters are applied before masks, this could be combined with a mask
-    if (paint->getColorFilter()) {
-      paint->setColorFilter(
-          rpdq_params.color_filter->makeComposed(paint->refColorFilter()));
-    } else {
-      paint->setColorFilter(rpdq_params.color_filter);
-    }
-    DCHECK(paint->getColorFilter());
-  } else if (rpdq_params.image_filter) {
-    // Store the image filter on the paint, but since this effect is applied
-    // last it's not compatible with masks as a shader
-    DCHECK(!rpdq_params.mask_image);
-    if (params->opacity != 1.f) {
-      // Apply opacity as the last step of image filter so it is uniform across
-      // any overlapping content produced by the image filters.
-      paint->setImageFilter(SkColorFilterImageFilter::Make(
-          MakeOpacityFilter(params->opacity, nullptr),
-          rpdq_params.image_filter));
-      paint->setAlphaf(1.f);
-      params->opacity = 1.f;
-    } else {
-      paint->setImageFilter(rpdq_params.image_filter);
-    }
-  }
-
-  // This is not an else-if since the color filter image filter can be combined
-  // with the mask filter correctly.
-  if (rpdq_params.mask_image) {
-    auto mask_filter = SkShaderMaskFilter::Make(
-        rpdq_params.mask_image->makeShader(&rpdq_params.mask_to_quad_matrix));
-    // Confirm that the paint didn't already have a mask filter, and that it's
-    // captured properly afterwards on the paint.
-    DCHECK(!paint->getMaskFilter());
-    paint->setMaskFilter(std::move(mask_filter));
-    DCHECK(paint->getMaskFilter());
+  // Whether or not we saved a layer, clip the bypassed RenderPass's content
+  if (needs_bypass_clip) {
+    current_canvas_->clipRect(gfx::RectFToSkRect(*rpdq_params.bypass_clip),
+                              params->aa_flags != SkCanvas::kNone_QuadAAFlags);
   }
 }
 
@@ -1125,20 +1180,26 @@ void SkiaRenderer::PrepareColorOrCanvasForRPDQ(
                           rpdq_params.backdrop_filter || rpdq_params.mask_image;
   if (needs_save_layer) {
     PrepareCanvasForRPDQ(rpdq_params, params);
-    return;
+  } else if (rpdq_params.color_filter) {
+    // At this point, the RPDQ effect is at most a color filter, so it can
+    // modify |content_color| directly.
+    *content_color = rpdq_params.color_filter->filterColor(*content_color);
   }
 
-  // At this point, the RPDQ effect is at most a color filter, so it can modify
-  // |content_color| directly.
-  if (rpdq_params.color_filter)
-    *content_color = rpdq_params.color_filter->filterColor(*content_color);
+  // Even if the color filter image filter was applied to the content color
+  // directly (so no explicit save layer), the draw may need to be clipped to
+  // the output rect of the renderpass it is bypassing.
+  if (rpdq_params.needs_bypass_clip(params->visible_rect)) {
+    current_canvas_->clipRect(gfx::RectFToSkRect(*rpdq_params.bypass_clip),
+                              params->aa_flags != SkCanvas::kNone_QuadAAFlags);
+  }
 }
 
 SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
+    const gfx::Transform& target_to_device,
+    const gfx::Rect* scissor_rect,
     const DrawQuad* quad,
     const gfx::QuadF* draw_region) {
-  gfx::Transform target_to_device =
-      current_frame()->window_matrix * current_frame()->projection_matrix;
   DrawQuadParams params(
       target_to_device * quad->shared_quad_state->quad_to_target_transform,
       gfx::RectF(quad->visible_rect), SkCanvas::kNone_QuadAAFlags,
@@ -1179,14 +1240,14 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
 
   // Applying the scissor explicitly means avoiding a clipRect() call and
   // allows more quads to be batched together in a DrawEdgeAAImageSet call
-  if (is_scissor_enabled_) {
+  if (scissor_rect) {
     if (CanExplicitlyScissor(quad, draw_region,
                              params.content_device_transform)) {
-      ApplyExplicitScissor(quad, scissor_rect_, params.content_device_transform,
+      ApplyExplicitScissor(quad, *scissor_rect, params.content_device_transform,
                            &params.aa_flags, &params.visible_rect);
       params.vis_tex_coords = params.visible_rect;
     } else {
-      params.scissor_rect = scissor_rect_;
+      params.scissor_rect = *scissor_rect;
     }
   }
 
@@ -1211,6 +1272,109 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
   }
 
   return params;
+}
+
+const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
+  // TODO(michaelludwig) - For now, this only supports opaque, src-over
+  // TileDrawQuads with invertable transforms.
+  // It will be updated to select more quad material types as their
+  // corresponding DrawXQuad() functions are updated to accept DrawRPDQParams
+  // as well.
+  // Can only collapse a single tile quad.
+  if (pass->quad_list.size() != 1)
+    return nullptr;
+
+  // If it there are supposed to be mipmaps, the renderpass must exist
+  if (pass->generate_mipmap)
+    return nullptr;
+
+  const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
+  // TODO(michaelludwig) - The set of supported material types can be expanded
+  // by passing the DrawRPDQParams to the other DrawXQuad() functions.
+  if (quad->material != DrawQuad::Material::kTiledContent)
+    return nullptr;
+
+  // In order to concatenate the bypass'ed quads transform with RP itself, it
+  // needs to be invertible.
+  if (!quad->shared_quad_state->quad_to_target_transform.IsInvertible())
+    return nullptr;
+
+  // TODO(chrishtr): support could be added for opacity, but care needs
+  // to be taken to make sure it is correct w.r.t. non-commutative filters etc.
+  if (quad->shared_quad_state->opacity != 1.0f)
+    return nullptr;
+
+  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
+    return nullptr;
+
+  // The content must not have any rrect clipping, since skia_renderer applies
+  // the rrect in device space, and in this case, the bypass quad's device space
+  // is the RP's buffer.
+  // TODO(michaelludwig) - If this becomes a bottleneck, we can track the
+  // bypass rrect separately and update PrepareCanvasForRDQP to apply the
+  // additional clip.
+  if (ShouldApplyRoundedCorner(quad))
+    return nullptr;
+
+  // The quad type knows how to apply RPDQ filters, and the quad settings can
+  // be merged into the RPDQs settings in CalculateBypassParams.
+  return quad;
+}
+
+void SkiaRenderer::CalculateBypassParams(const DrawQuad* bypass_quad,
+                                         DrawRPDQParams* rpdq_params,
+                                         DrawQuadParams* params) {
+  // The bypass quad will be drawn directly, so update |params| and
+  // |rpdq_params| to reflect the change of coordinate system and merge settings
+  // between the inner and outer quads.
+  SkMatrix rpdq_to_bypass;
+  SkMatrix bypass_to_rpdq;
+  gfx::TransformToFlattenedSkMatrix(
+      bypass_quad->shared_quad_state->quad_to_target_transform,
+      &bypass_to_rpdq);
+  bool inverted = bypass_to_rpdq.invert(&rpdq_to_bypass);
+  // Invertibility was a requirement for being bypassable.
+  DCHECK(inverted);
+
+  if (params->draw_region.has_value()) {
+    // The draw region was determined by the RPDQ's geometry, so map the
+    // quadrilateral to the bypass'ed quad's coordinate space so that BSP
+    // splitting is still respected.
+    rpdq_to_bypass.mapPoints(params->draw_region->points, 4);
+  }
+
+  // Compute draw params for the bypass quad from scratch, but since the
+  // bypass_quad would have originally been drawn into the RP, the
+  // target_to_device transform is the full transform of the RPDQ. Must also
+  // include the RP's output rect as part of the scissor rect, since it would
+  // have been clipped to the edges of the RP's offscreen buffer normally.
+  DrawQuadParams bypass_params = CalculateDrawQuadParams(
+      gfx::Transform() /* identity */, nullptr, bypass_quad, nullptr);
+
+  // |params| already holds the correct |draw_region|, but must be updated to
+  // use the bypassed transform and geometry
+  rpdq_params->bypass_transform = bypass_to_rpdq;
+  rpdq_params->bypass_clip = params->visible_rect;
+  // NOTE: params |content_device_transform| remains that of the RPDQ to prepare
+  // the canvas' CTM to match what any image filters require. The above
+  // bypass_transform is then applied when drawing so that these updated
+  // coordinates are correctly transformed to device space.
+  params->visible_rect = bypass_params.visible_rect;
+  params->vis_tex_coords = bypass_params.vis_tex_coords;
+
+  // Combine anti-aliasing policy (use AND so that any draw_region clipping
+  // is preserved).
+  params->aa_flags &= bypass_params.aa_flags;
+
+  // Take the highest quality filter, since this single draw will reflect the
+  // filtering decisions made both when drawing into the RP and when drawing the
+  // RP results itself.
+  if (bypass_params.filter_quality > params->filter_quality)
+    params->filter_quality = bypass_params.filter_quality;
+
+  // Rounded corner bounds are in device space, which gets tricky when bypassing
+  // the device that the RP would have represented
+  DCHECK(!bypass_params.rounded_corner_bounds.has_value());
 }
 
 SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(const SkImage* image,
@@ -1371,6 +1535,11 @@ void SkiaRenderer::DrawColoredQuad(SkColor color,
     // This will modify the provided content color as needed for the RP effects,
     // or it will make an explicit save layer on the current canvas
     PrepareColorOrCanvasForRPDQ(*rpdq_params, params, &color);
+    if (rpdq_params->bypass_transform.has_value()) {
+      // Concatenate the bypass'ed quad's transform after all the RPDQ state
+      // has been pushed to the canvas.
+      current_canvas_->concat(*rpdq_params->bypass_transform);
+    }
   }
 
   // PrepareCanvasForRPDQ will have updated params->opacity and blend_mode to
@@ -1396,10 +1565,22 @@ void SkiaRenderer::DrawSingleImage(const SkImage* image,
   PrepareCanvas(params->scissor_rect, params->rounded_corner_bounds,
                 &params->content_device_transform);
 
+  int matrix_index = -1;
+  const SkMatrix* bypass_transform = nullptr;
   if (rpdq_params) {
     // This will modify the provided content paint as needed for the RP effects,
     // or it will make an explicit save layer on the current canvas
     PreparePaintOrCanvasForRPDQ(*rpdq_params, params, paint);
+    if (rpdq_params->bypass_transform.has_value()) {
+      // Incorporate the bypass transform, but unlike for solid color quads, do
+      // not modify the SkCanvas's CTM. This is because the RPDQ's filters may
+      // have been optimally placed on the SkPaint of the draw, which means the
+      // canvas' transform must match that of the RenderPass. The pre-CTM matrix
+      // of the image set entry can be used instead to modify the drawn geometry
+      // without impacting the filter's coordinate space.
+      bypass_transform = &(*rpdq_params->bypass_transform);
+      matrix_index = 0;
+    }
   }
 
   // At this point, the params' opacity should be handled by |paint| (either
@@ -1412,11 +1593,11 @@ void SkiaRenderer::DrawSingleImage(const SkImage* image,
       ResolveTextureConstraints(image, valid_texel_bounds, params);
 
   // Use -1 for matrix index since the cdt is set on the canvas.
-  SkCanvas::ImageSetEntry entry = MakeEntry(image, -1, *params);
+  SkCanvas::ImageSetEntry entry = MakeEntry(image, matrix_index, *params);
   const SkPoint* draw_region =
       params->draw_region.has_value() ? params->draw_region->points : nullptr;
-  current_canvas_->experimental_DrawEdgeAAImageSet(&entry, 1, draw_region,
-                                                   nullptr, paint, constraint);
+  current_canvas_->experimental_DrawEdgeAAImageSet(
+      &entry, 1, draw_region, bypass_transform, paint, constraint);
 }
 
 void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
@@ -1946,50 +2127,6 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   return rpdq_params;
 }
 
-const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
-  // TODO(michaelludwig) - For now, this only supports layer-filling
-  // TileDrawQuads to match legacy bypass behavior. It will be updated to
-  // select more quad material types as their corresponding DrawXQuad()
-  // functions are updated to accept DrawRPDQParams as well.
-  // Can only collapse a single tile quad.
-  if (pass->quad_list.size() != 1)
-    return nullptr;
-  // If it there are supposed to be mipmaps, the renderpass must exist
-
-  if (pass->generate_mipmap)
-    return nullptr;
-
-  const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
-  // Hack: this could be supported by concatenating transforms, but
-  // in practice if there is one quad, it is at the origin of the render pass
-  // and has the same size as the pass.
-  if (!quad->shared_quad_state->quad_to_target_transform.IsIdentity() ||
-      quad->rect != pass->output_rect)
-    return nullptr;
-  // The quad is expected to be the entire layer so that AA edges are correct.
-  if (quad->shared_quad_state->quad_layer_rect != quad->rect)
-    return nullptr;
-  if (quad->material != DrawQuad::Material::kTiledContent)
-    return nullptr;
-
-  // TODO(chrishtr): support could be added for opacity, but care needs
-  // to be taken to make sure it is correct w.r.t. non-commutative filters etc.
-  if (quad->shared_quad_state->opacity != 1.0f)
-    return nullptr;
-
-  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
-    return nullptr;
-
-  const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(quad);
-  // Hack: this could be supported by passing in a subrectangle to draw
-  // render pass, although in practice if there is only one quad there
-  // will be no border texels on the input.
-  if (tile_quad->tex_coord_rect != gfx::RectF(tile_quad->rect))
-    return nullptr;
-
-  return tile_quad;
-}
-
 void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
                                       DrawQuadParams* params) {
   DrawRPDQParams rpdq_params = CalculateRPDQParams(quad, params);
@@ -1999,6 +2136,7 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   // When Render Pass has a single quad inside we would draw that directly.
   if (bypass != render_pass_bypass_quads_.end()) {
+    CalculateBypassParams(bypass->second, &rpdq_params, params);
     DrawQuadInternal(bypass->second, &rpdq_params, params);
     return;
   }

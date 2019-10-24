@@ -77,7 +77,7 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
 
   // Updates the cache with |component_data| and waits for callback indicating
   // that the update is complete.
-  void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data) {
+  void UpdateComponentHints(std::unique_ptr<StoreUpdateData> component_data) {
     are_component_hints_updated_ = false;
     hint_cache_->UpdateComponentHints(
         std::move(component_data),
@@ -147,7 +147,7 @@ TEST_F(HintCacheTest, ComponentUpdate) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("2.0.0");
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 
@@ -182,7 +182,7 @@ TEST_F(HintCacheTest, ComponentUpdateWithSameVersionIgnored) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("2.0.0");
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 
@@ -198,7 +198,7 @@ TEST_F(HintCacheTest, ComponentUpdateWithEarlierVersionIgnored) {
   base::Version version_1("1.0.0");
   base::Version version_2("2.0.0");
 
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->MaybeCreateUpdateDataForComponentHints(version_2);
   ASSERT_TRUE(update_data);
 
@@ -214,7 +214,7 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
   base::Version version_1("1.0.0");
   base::Version version_2("2.0.0");
 
-  std::unique_ptr<HintUpdateData> update_data_1 =
+  std::unique_ptr<StoreUpdateData> update_data_1 =
       hint_cache()->MaybeCreateUpdateDataForComponentHints(version_1);
   ASSERT_TRUE(update_data_1);
 
@@ -243,7 +243,7 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
   EXPECT_TRUE(hint_cache()->HasHint("host.subdomain.domain.org"));
   EXPECT_TRUE(hint_cache()->HasHint("subhost.host.subdomain.domain.org"));
 
-  std::unique_ptr<HintUpdateData> update_data_2 =
+  std::unique_ptr<StoreUpdateData> update_data_2 =
       hint_cache()->MaybeCreateUpdateDataForComponentHints(version_2);
   ASSERT_TRUE(update_data_2);
 
@@ -284,7 +284,7 @@ TEST_F(HintCacheTest, ComponentHintsAvailableAfterRestart) {
 
     base::Version version("2.0.0");
 
-    std::unique_ptr<HintUpdateData> update_data =
+    std::unique_ptr<StoreUpdateData> update_data =
         hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
     if (i == 0) {
       ASSERT_TRUE(update_data);
@@ -329,7 +329,7 @@ TEST_F(HintCacheTest, ComponentHintsUpdatableAfterRestartWithPurge) {
 
     base::Version version("2.0.0");
 
-    std::unique_ptr<HintUpdateData> update_data =
+    std::unique_ptr<StoreUpdateData> update_data =
         hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
     ASSERT_TRUE(update_data);
 
@@ -370,7 +370,7 @@ TEST_F(HintCacheTest, ComponentHintsNotRetainedAfterRestartWithPurge) {
 
     base::Version version("2.0.0");
 
-    std::unique_ptr<HintUpdateData> update_data =
+    std::unique_ptr<StoreUpdateData> update_data =
         hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
     if (i == 0) {
       ASSERT_TRUE(update_data);
@@ -416,7 +416,7 @@ TEST_F(HintCacheTest, TestMemoryCacheLeastRecentlyUsedPurge) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("1.0.0");
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 
@@ -456,7 +456,7 @@ TEST_F(HintCacheTest, TestHostNotInCache) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("1.0.0");
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 
@@ -477,7 +477,7 @@ TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   base::Version version("1.0.0");
-  std::unique_ptr<HintUpdateData> update_data =
+  std::unique_ptr<StoreUpdateData> update_data =
       hint_cache()->MaybeCreateUpdateDataForComponentHints(version);
   ASSERT_TRUE(update_data);
 

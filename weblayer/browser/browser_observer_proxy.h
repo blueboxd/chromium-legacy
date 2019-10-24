@@ -26,9 +26,6 @@ class BrowserObserverProxy : public BrowserObserver {
 
   // BrowserObserver:
   void DisplayedUrlChanged(const GURL& url) override;
-  void LoadingStateChanged(bool is_loading,
-                           bool to_different_document) override;
-  void LoadProgressChanged(double progress) override;
 
  private:
   BrowserController* browser_controller_;

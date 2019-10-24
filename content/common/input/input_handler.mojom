@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "cc/mojom/touch_action.mojom";
 import "content/common/input/synchronous_compositor.mojom";
 import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
@@ -161,7 +162,7 @@ struct Event {
 };
 
 struct TouchActionOptional {
-  TouchAction touch_action;
+  cc.mojom.TouchAction touch_action;
 };
 
 // Interface exposed by the browser to the renderer. The messages
@@ -176,7 +177,7 @@ interface WidgetInputHandlerHost {
 
   // When the renderer's main thread computes the touch action, send this to the
   // browser.
-  SetTouchActionFromMain(TouchAction touch_action);
+  SetTouchActionFromMain(cc.mojom.TouchAction touch_action);
 
   // The whitelisted touch action and the associated unique touch event id
   // for a new touch point sent by the compositor. The unique touch event id is
@@ -184,7 +185,7 @@ interface WidgetInputHandlerHost {
   // with the correct touch event. The input event ack state is needed when
   // the touchstart message was not sent to the renderer and the touch
   // actions need to be reset and the touch ack timeout needs to be started.
-  SetWhiteListedTouchAction(TouchAction touch_action,
+  SetWhiteListedTouchAction(cc.mojom.TouchAction touch_action,
                             uint32 unique_touch_event_id,
                             InputEventAckState state);
 

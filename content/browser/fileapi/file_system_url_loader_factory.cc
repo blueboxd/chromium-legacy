@@ -28,6 +28,7 @@
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
@@ -601,12 +602,6 @@ class FileSystemURLLoaderFactory : public network::mojom::URLLoaderFactory {
       : params_(std::move(params)), io_task_runner_(io_task_runner) {}
 
   ~FileSystemURLLoaderFactory() override = default;
-
-  network::mojom::URLLoaderFactoryPtr CreateBinding() {
-    network::mojom::URLLoaderFactoryPtr factory;
-    receivers_.Add(this, mojo::MakeRequest(&factory));
-    return factory;
-  }
 
  private:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,

@@ -33,6 +33,19 @@ struct CookieManagerParams {
   // access rules.
   array<content_settings.mojom.ContentSettingPatternSource>
       settings_for_legacy_cookie_access;
+
+  // The type of CookieAccessDelegate to pass to the underlying CookieStore.
+  // If these params are not present, CookieManager defaults to using
+  // USE_CONTENT_SETTINGS.
+  CookieAccessDelegateType cookie_access_delegate_type = USE_CONTENT_SETTINGS;
+};
+
+enum CookieAccessDelegateType {
+  // Decides access semantics based on the content settings it was constructed
+  // with.
+  USE_CONTENT_SETTINGS,
+  // Always returns Legacy access semantics.
+  ALWAYS_LEGACY,
 };
 
 enum CookiePriority {

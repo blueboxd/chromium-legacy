@@ -2154,10 +2154,6 @@ bool WebLocalFrameImpl::HasCommittedFirstRealLoad() {
   return GetFrame()->Loader().StateMachine()->CommittedFirstRealDocumentLoad();
 }
 
-void WebLocalFrameImpl::NotifyUserActivation() {
-  LocalFrame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
-}
-
 void WebLocalFrameImpl::BlinkFeatureUsageReport(
     const std::set<blink::mojom::WebFeature>& features) {
   DCHECK(!features.empty());

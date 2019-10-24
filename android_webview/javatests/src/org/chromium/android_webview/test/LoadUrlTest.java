@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Test suite for loadUrl().
@@ -133,6 +134,60 @@ public class LoadUrlTest {
         mActivityTestRule.loadDataSyncWithCharset(awContents,
                 contentsClient.getOnPageFinishedHelper(), data, "text/html", false, "UTF-8");
         Assert.assertEquals(expectedTitle, mActivityTestRule.getTitleOnUiThread(awContents));
+    }
+
+    private static class OnProgressChangedClient extends TestAwContentsClient {
+        List<Integer> mProgresses = new ArrayList<Integer>();
+
+        @Override
+        public void onProgressChanged(int progress) {
+            super.onProgressChanged(progress);
+            mProgresses.add(Integer.valueOf(progress));
+            if (progress == 100 && mCallbackHelper.getCallCount() == 0) {
+                mCallbackHelper.notifyCalled();
+            }
+        }
+
+        public void waitForFullLoad() throws TimeoutException {
+            mCallbackHelper.waitForFirst();
+        }
+        private CallbackHelper mCallbackHelper = new CallbackHelper();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testProgress() throws Throwable {
+        final OnProgressChangedClient contentsClient = new OnProgressChangedClient();
+        final AwTestContainerView testContainerView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final String url = webServer.setResponse("/page.html", "<html>Page</html>", null);
+
+            /* Before loading, progress is 100. */
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                    ()
+                            -> Assert.assertEquals(100,
+                                    testContainerView.getAwContents().getMostRecentProgress()));
+
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                    () -> testContainerView.getAwContents().loadUrl(url, null));
+            contentsClient.waitForFullLoad();
+            /* After loading, progress is 100. */
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                    ()
+                            -> Assert.assertEquals(100,
+                                    testContainerView.getAwContents().getMostRecentProgress()));
+
+            /* At some point during the load, progress was not 100. */
+            Assert.assertTrue(contentsClient.mProgresses.size() > 1);
+            Assert.assertFalse(contentsClient.mProgresses.get(0) == 100);
+
+        } finally {
+            webServer.shutdown();
+        }
     }
 
     /**

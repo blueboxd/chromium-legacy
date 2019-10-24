@@ -7,6 +7,8 @@
 #include "chrome/browser/ui/autofill/payments/verify_pending_dialog_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -15,6 +17,10 @@ namespace autofill {
 VerifyPendingDialogViewImpl::VerifyPendingDialogViewImpl(
     VerifyPendingDialogController* controller)
     : controller_(controller) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_VERIFY_PENDING_DIALOG_CANCEL_BUTTON_LABEL));
   // TODO(crbug.com/1014278): Should get correct width automatically when
   // snapping.
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -59,12 +65,6 @@ bool VerifyPendingDialogViewImpl::Cancel() {
 
 int VerifyPendingDialogViewImpl::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16 VerifyPendingDialogViewImpl::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-  return controller_->GetCancelButtonLabel();
 }
 
 ui::ModalType VerifyPendingDialogViewImpl::GetModalType() const {

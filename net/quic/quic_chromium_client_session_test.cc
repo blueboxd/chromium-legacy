@@ -1897,7 +1897,7 @@ TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
   CompleteCryptoHandshake();
 
   EXPECT_EQ(quic::QuicTime::Delta::FromMilliseconds(200),
-            session_->connection()->retransmittable_on_wire_timeout());
+            session_->connection()->initial_retransmittable_on_wire_timeout());
 
   // Open a stream since the connection only sends PINGs to keep a
   // retransmittable packet on the wire if there's an open stream.

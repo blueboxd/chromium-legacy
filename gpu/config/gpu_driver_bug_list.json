@@ -1596,25 +1596,6 @@
       ]
     },
     {
-      "id": 172,
-      "description": "Use GL_INTEL_framebuffer_CMAA on ChromeOS",
-      "cr_bugs": [535198],
-      "os": {
-        "type" : "chromeos"
-      },
-      "vendor_id": "0x8086",
-      "driver_vendor": "Mesa",
-      "gl_vendor": "Intel.*",
-      "gl_type": "gles",
-      "gl_version": {
-        "op": ">=",
-        "value": "3.1"
-      },
-      "features": [
-        "use_framebuffer_cmaa"
-      ]
-    },
-    {
       "id": 174,
       "description": "Adreno 4xx support for EXT_multisampled_render_to_texture is buggy on Android 7.0",
       "cr_bugs": [612474],
@@ -3361,6 +3342,40 @@
       "gl_type": "gl",
       "disabled_extensions": [
         "GL_MESA_framebuffer_flip_y"
+      ]
+    },
+    {
+      "id": 316,
+      "cr_bugs": [1003860],
+      "description": "Limit MSAA to 4x on ChromeOS for Intel",
+      "os": {
+        "type": "chromeos"
+      },
+      "intel_gpu_generation": {
+        "op": ">=",
+        "value": "9"
+      },
+      "driver_vendor": "Mesa",
+      "gl_vendor": "Intel.*",
+      "features": [
+        "max_msaa_sample_count_4"
+      ]
+    },
+    {
+      "id": 317,
+      "cr_bugs": [1003860],
+      "description": "Limit MSAA to 2x on older Intel GPU generations on ChromeOS",
+      "os": {
+        "type": "chromeos"
+      },
+      "intel_gpu_generation": {
+        "op": "<",
+        "value": "9"
+      },
+      "driver_vendor": "Mesa",
+      "gl_vendor": "Intel.*",
+      "features": [
+        "max_msaa_sample_count_2"
       ]
     }
   ]

@@ -250,7 +250,7 @@ RendererBlinkPlatformImpl::WrapURLLoaderFactory(
   return std::make_unique<WebURLLoaderFactoryImpl>(
       RenderThreadImpl::current()->resource_dispatcher()->GetWeakPtr(),
       base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-          network::mojom::URLLoaderFactoryPtrInfo(
+          mojo::PendingRemote<network::mojom::URLLoaderFactory>(
               std::move(url_loader_factory_handle),
               network::mojom::URLLoaderFactory::Version_)));
 }
@@ -270,13 +270,14 @@ RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactoryBundle() {
                      base::Unretained(this)));
 }
 
-network::mojom::URLLoaderFactoryPtr
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
 RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
-  network::mojom::URLLoaderFactoryPtr factory_ptr;
-  ChildThread::Get()->BindHostReceiver(mojo::MakeRequest(&factory_ptr));
-  return factory_ptr;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
+  ChildThread::Get()->BindHostReceiver(
+      factory_remote.InitWithNewPipeAndPassReceiver());
+  return factory_remote;
 }
 
 void RendererBlinkPlatformImpl::SetDisplayThreadPriority(

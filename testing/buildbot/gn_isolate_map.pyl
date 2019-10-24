@@ -1850,14 +1850,6 @@
     "label": "//chrome/android:monochrome_static_initializers",
     "type": "additional_compile_target",
   },
-  "motopho_latency_test": {
-    "args": [
-      "-v",
-    ],
-    "label": "//chrome/test/vr/perf:motopho_latency_test",
-    "script": "//chrome/test/vr/perf/latency/run_latency_test.py",
-    "type": "script",
-  },
   "nacl_helper": {
     "label": "//components/nacl/loader:nacl_helper",
     "skip_usage_check": True,

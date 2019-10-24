@@ -909,7 +909,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       // |URLRequestHttpJob::OnHeadersReceivedCallback()| or
       // |NetworkDelegate::URLRequestDestroyed()| has been called.
       OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_HEADERS_RECEIVED);
-      allowed_unsafe_redirect_url_ = GURL();
+      preserve_fragment_on_redirect_url_ = base::nullopt;
       IPEndPoint endpoint;
       if (transaction_)
         transaction_->GetRemoteEndpoint(&endpoint);
@@ -922,7 +922,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
           base::BindOnce(&URLRequestHttpJob::OnHeadersReceivedCallback,
                          weak_factory_.GetWeakPtr()),
           headers.get(), &override_response_headers_, endpoint,
-          &allowed_unsafe_redirect_url_);
+          &preserve_fragment_on_redirect_url_);
       if (error != OK) {
         if (error == ERR_IO_PENDING) {
           awaiting_callback_ = true;
@@ -1157,12 +1157,9 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
 
 bool URLRequestHttpJob::CopyFragmentOnRedirect(const GURL& location) const {
   // Allow modification of reference fragments by default, unless
-  // |allowed_unsafe_redirect_url_| is set and equal to the redirect URL.
-  // When this is the case, we assume that the network delegate has set the
-  // desired redirect URL (with or without fragment), so it must not be changed
-  // any more.
-  return !allowed_unsafe_redirect_url_.is_valid() ||
-       allowed_unsafe_redirect_url_ != location;
+  // |preserve_fragment_on_redirect_url_| is set and equal to the redirect URL.
+  return !preserve_fragment_on_redirect_url_.has_value() ||
+         preserve_fragment_on_redirect_url_ != location;
 }
 
 bool URLRequestHttpJob::IsSafeRedirect(const GURL& location) {
@@ -1170,11 +1167,6 @@ bool URLRequestHttpJob::IsSafeRedirect(const GURL& location) {
   // TODO(pauljensen): Remove once crbug.com/146591 is fixed.
   if (location.is_valid() &&
       (location.scheme() == "http" || location.scheme() == "https")) {
-    return true;
-  }
-  // Delegates may mark a URL as safe for redirection.
-  if (allowed_unsafe_redirect_url_.is_valid() &&
-      allowed_unsafe_redirect_url_ == location) {
     return true;
   }
   // Query URLRequestJobFactory as to whether |location| would be safe to

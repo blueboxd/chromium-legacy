@@ -1170,15 +1170,14 @@ class OrderedNamedLinesCollectorInGridLayout
  public:
   OrderedNamedLinesCollectorInGridLayout(const ComputedStyle& style,
                                          bool is_row_axis,
-                                         size_t auto_repeat_tracks_count)
+                                         size_t auto_repeat_tracks_count,
+                                         size_t auto_repeat_track_list_length)
       : OrderedNamedLinesCollector(style, is_row_axis),
         insertion_point_(is_row_axis
                              ? style.GridAutoRepeatColumnsInsertionPoint()
                              : style.GridAutoRepeatRowsInsertionPoint()),
         auto_repeat_total_tracks_(auto_repeat_tracks_count),
-        auto_repeat_track_list_length_(
-            is_row_axis ? style.GridAutoRepeatColumns().size()
-                        : style.GridAutoRepeatRows().size()) {}
+        auto_repeat_track_list_length_(auto_repeat_track_list_length) {}
   void CollectLineNamesForIndex(cssvalue::CSSGridLineNamesValue&,
                                 size_t index) const override;
 
@@ -1227,7 +1226,7 @@ void OrderedNamedLinesCollectorInGridLayout::CollectLineNamesForIndex(
     cssvalue::CSSGridLineNamesValue& line_names_value,
     size_t i) const {
   DCHECK(!IsEmpty());
-  if (ordered_named_auto_repeat_grid_lines_.IsEmpty() || i < insertion_point_) {
+  if (auto_repeat_track_list_length_ == 0LU || i < insertion_point_) {
     AppendLines(line_names_value, i, kNamedLines);
     return;
   }
@@ -1346,7 +1345,8 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   if (is_layout_grid) {
     const auto* grid = ToLayoutGrid(layout_object);
     OrderedNamedLinesCollectorInGridLayout collector(
-        style, is_row_axis, grid->AutoRepeatCountForDirection(direction));
+        style, is_row_axis, grid->AutoRepeatCountForDirection(direction),
+        auto_repeat_track_sizes.size());
     PopulateGridTrackList(
         list, collector, grid->TrackSizesForComputedStyle(direction),
         [&](const LayoutUnit& v) { return ZoomAdjustedPixelValue(v, style); });

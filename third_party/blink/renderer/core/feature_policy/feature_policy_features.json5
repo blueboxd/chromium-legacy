@@ -308,11 +308,5 @@
       feature_policy_name: "xr-spatial-tracking",
       depends_on: ["WebXR"],
     },
-    // TODO(crbug.com/960132): WebVR added manually in feature_policy_helper.cc.
-    // {
-    //   name: "WebVr",
-    //   feature_policy_name: "vr",
-    //   depends_on: ["WebVR"],
-    // },
   ],
 }

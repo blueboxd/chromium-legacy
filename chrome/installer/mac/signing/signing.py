@@ -190,8 +190,6 @@ def sign_part(paths, config, part):
     reqs = part.requirements_string(config)
     if reqs:
         command.extend(['--requirements', '=' + reqs])
-    if config.keychain:
-        command.extend(['--keychain', config.keychain])
     if part.options:
         command.extend(['--options', ','.join(part.options)])
     if part.entitlements:

@@ -21,9 +21,13 @@
 namespace extensions {
 namespace declarative_net_request {
 
+namespace dnr_api = api::declarative_net_request;
+
 RequestAction CreateRequestActionForTesting(RequestAction::Type type,
+                                            int rule_id,
+                                            dnr_api::SourceType source_type,
                                             const ExtensionId& extension_id) {
-  return RequestAction(type, extension_id);
+  return RequestAction(type, rule_id, source_type, extension_id);
 }
 
 // Note: This is not declared in the anonymous namespace so that we can use it
@@ -40,8 +44,11 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
            std::set<base::StringPiece>(b.begin(), b.end());
   };
 
+  bool are_matched_rules_equal =
+      lhs.rule_id == rhs.rule_id && lhs.source_type == rhs.source_type;
+
   return lhs.type == rhs.type && lhs.redirect_url == rhs.redirect_url &&
-         lhs.extension_id == rhs.extension_id &&
+         lhs.extension_id == rhs.extension_id && are_matched_rules_equal &&
          are_vectors_equal(lhs.request_headers_to_remove,
                            rhs.request_headers_to_remove) &&
          are_vectors_equal(lhs.response_headers_to_remove,
@@ -92,10 +99,11 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
 
 RulesetSource CreateTemporarySource(size_t id,
                                     size_t priority,
+                                    dnr_api::SourceType source_type,
                                     size_t rule_count_limit,
                                     ExtensionId extension_id) {
   std::unique_ptr<RulesetSource> source = RulesetSource::CreateTemporarySource(
-      id, priority, rule_count_limit, std::move(extension_id));
+      id, priority, source_type, rule_count_limit, std::move(extension_id));
   CHECK(source);
   return source->Clone();
 }

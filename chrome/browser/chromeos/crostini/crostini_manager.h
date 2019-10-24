@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
@@ -135,6 +136,7 @@ class CrostiniManager : public KeyedService,
   class RestartObserver {
    public:
     virtual ~RestartObserver() {}
+    virtual void OnStageStarted(mojom::InstallerState stage) = 0;
     virtual void OnComponentLoaded(CrostiniResult result) = 0;
     virtual void OnConciergeStarted(bool success) = 0;
     virtual void OnDiskImageCreated(bool success,
@@ -146,6 +148,7 @@ class CrostiniManager : public KeyedService,
     virtual void OnContainerSetup(bool success) = 0;
     virtual void OnContainerStarted(CrostiniResult result) = 0;
     virtual void OnSshKeysFetched(bool success) = 0;
+    virtual void OnContainerMounted(bool success) = 0;
   };
 
   static CrostiniManager* GetForProfile(Profile* profile);

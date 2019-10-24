@@ -444,6 +444,7 @@ std::string HttpCache::GetResourceURLFromHttpCacheKey(const std::string& key) {
   return key;
 }
 
+// static
 std::string HttpCache::GenerateCacheKeyForTest(const HttpRequestInfo* request) {
   return GenerateCacheKey(request);
 }
@@ -520,6 +521,7 @@ int HttpCache::GetBackendForTransaction(Transaction* transaction) {
   return ERR_IO_PENDING;
 }
 
+// static
 // Generate a key that can be used inside the cache.
 std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
   std::string isolation_key;
@@ -540,7 +542,6 @@ std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
   // concatenate with the network isolation key if we are splitting the cache.
   std::string url = isolation_key + HttpUtil::SpecForRequest(request->url);
 
-  DCHECK_NE(DISABLE, mode_);
   // No valid URL can begin with numerals, so we should not have to worry
   // about collisions with normal URLs.
   if (request->upload_data_stream &&

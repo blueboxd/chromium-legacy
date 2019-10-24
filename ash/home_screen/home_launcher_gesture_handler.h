@@ -49,6 +49,8 @@ class ASH_EXPORT HomeLauncherGestureHandler
     // window in splitview) around to enter either home launcher screen or to
     // overview screen. If in overview mode, this mode is a no-op. Note: This
     // mode is behind the feature flag kDragFromShelfToHomeOrOverview.
+    // TODO(crbug.com/997885): Remove this mode. The window dragging logic has
+    // been moved into shelf dragging.
     kDragWindowToHomeOrOverview,
     // Sliding down the MRU window to hide launcher.
     kSlideDownToHide,

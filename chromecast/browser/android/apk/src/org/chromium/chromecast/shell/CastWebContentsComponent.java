@@ -64,7 +64,7 @@ public class CastWebContentsComponent {
 
     @VisibleForTesting
     class ActivityDelegate implements Delegate {
-        private static final String TAG = "cr_CastWebContent_AD";
+        private static final String TAG = "CastWebContent_AD";
         private boolean mStarted;
 
         @Override
@@ -84,7 +84,7 @@ public class CastWebContentsComponent {
     }
 
     private class FragmentDelegate implements Delegate {
-        private static final String TAG = "cr_CastWebContent_FD";
+        private static final String TAG = "CastWebContent_FD";
 
         @Override
         public void start(StartParams params) {
@@ -118,7 +118,7 @@ public class CastWebContentsComponent {
     }
 
     private class ServiceDelegate implements Delegate {
-        private static final String TAG = "cr_CastWebContent_SD";
+        private static final String TAG = "CastWebContent_SD";
 
         private ServiceConnection mConnection = new ServiceConnection() {
             @Override
@@ -147,7 +147,7 @@ public class CastWebContentsComponent {
         }
     }
 
-    private static final String TAG = "cr_CastWebComponent";
+    private static final String TAG = "CastWebComponent";
     private static final boolean DEBUG = true;
 
     private final OnComponentClosedHandler mComponentClosedHandler;

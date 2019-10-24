@@ -1,5 +1,5 @@
 include_rules = [
   "+device/udev_linux",
-  "+mojo/public/cpp/bindings/binding.h",
+  "+mojo/public/cpp/bindings",
   "+ui/ozone/public",
 ]

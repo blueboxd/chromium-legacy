@@ -161,15 +161,6 @@ void WebContentsDelegateAndroid::LoadingStateChanged(
                                                       to_different_document);
 }
 
-void WebContentsDelegateAndroid::LoadProgressChanged(WebContents* source,
-                                                     double progress) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return;
-  Java_WebContentsDelegateAndroid_notifyLoadProgressChanged(env, obj, progress);
-}
-
 void WebContentsDelegateAndroid::RendererUnresponsive(
     WebContents* source,
     content::RenderWidgetHost* render_widget_host,

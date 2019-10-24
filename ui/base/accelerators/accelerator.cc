@@ -231,31 +231,31 @@ base::string16 Accelerator::GetShortcutText() const {
 base::string16 Accelerator::KeyCodeToMacSymbol() const {
   switch (key_code_) {
     case VKEY_CAPITAL:
-      return base::string16({0x21ea, 0});
+      return base::string16({0x21ea});
     case VKEY_RETURN:
-      return base::string16({0x2324, 0});
+      return base::string16({0x2324});
     case VKEY_BACK:
-      return base::string16({0x232b, 0});
+      return base::string16({0x232b});
     case VKEY_ESCAPE:
-      return base::string16({0x238b, 0});
+      return base::string16({0x238b});
     case VKEY_RIGHT:
-      return base::string16({0x2192, 0});
+      return base::string16({0x2192});
     case VKEY_LEFT:
-      return base::string16({0x2190, 0});
+      return base::string16({0x2190});
     case VKEY_UP:
-      return base::string16({0x2191, 0});
+      return base::string16({0x2191});
     case VKEY_DOWN:
-      return base::string16({0x2193, 0});
+      return base::string16({0x2193});
     case VKEY_PRIOR:
-      return base::string16({0x21de, 0});
+      return base::string16({0x21de});
     case VKEY_NEXT:
-      return base::string16({0x21df, 0});
+      return base::string16({0x21df});
     case VKEY_HOME:
-      return base::string16({0x2196, 0});
+      return base::string16({0x2196});
     case VKEY_END:
-      return base::string16({0x2198, 0});
+      return base::string16({0x2198});
     case VKEY_TAB:
-      return base::string16({0x21e5, 0});
+      return base::string16({0x21e5});
     // Mac has a shift-tab icon (0x21e4) but we don't use it.
     // "Space" and some other keys are written out; fall back to KeyCodeToName()
     // for those (and any other unhandled keys).

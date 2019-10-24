@@ -419,6 +419,8 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
 
 void TabLifecycleUnitSource::TabLifecycleUnit::UpdateOriginTrialFreezePolicy(
     performance_manager::mojom::InterventionPolicy policy) {
+  // The origin trial policy should only be updated when its value changes.
+  DCHECK_NE(policy, origin_trial_freeze_policy_);
   origin_trial_freeze_policy_ = policy;
 }
 
@@ -1028,9 +1030,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CanFreezeHeuristicsChecks(
 
   // Apply origin trial opt-in/opt-out (policy is per page).
   switch (origin_trial_freeze_policy_) {
-    case performance_manager::mojom::InterventionPolicy::kUnknown:
-      decision_details->AddReason(DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN);
-      break;
     case performance_manager::mojom::InterventionPolicy::kOptOut:
       decision_details->AddReason(DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT);
       break;

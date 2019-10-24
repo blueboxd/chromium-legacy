@@ -417,6 +417,8 @@ ProfileNetworkContextService::CreateCookieManagerParams(
       &settings_for_legacy_cookie_access);
   out->settings_for_legacy_cookie_access =
       std::move(settings_for_legacy_cookie_access);
+  out->cookie_access_delegate_type =
+      network::mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS;
   return out;
 }
 

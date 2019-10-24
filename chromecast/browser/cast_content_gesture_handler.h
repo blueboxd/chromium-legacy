@@ -12,8 +12,6 @@
 
 namespace chromecast {
 
-namespace shell {
-
 // Receives root window level gestures, interprets them, and hands them to the
 // CastContentWindow::Delegate.
 class CastContentGestureHandler : public CastGestureHandler {
@@ -47,7 +45,6 @@ class CastContentGestureHandler : public CastGestureHandler {
   base::ElapsedTimer current_swipe_time_;
 };
 
-}  // namespace shell
 }  // namespace chromecast
 
 #endif  // CHROMECAST_BROWSER_CAST_CONTENT_GESTURE_HANDLER_H_

@@ -5161,12 +5161,6 @@ error::Error GLES2DecoderPassthroughImpl::DoBlendBarrierKHR() {
   return error::kNoError;
 }
 
-error::Error
-GLES2DecoderPassthroughImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
-  NOTIMPLEMENTED();
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::DoBindFragDataLocationIndexedEXT(
     GLuint program,
     GLuint colorNumber,

@@ -1458,6 +1458,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_SETAPPWINDOWSTATE = 1395,
   AUTOTESTPRIVATE_CLOSEAPPWINDOW = 1396,
   AUTOTESTPRIVATE_REFRESHENTERPRISEPOLICIES = 1397,
+  AUTOTESTPRIVATE_INSTALLPWAFORCURRENTURL = 1398,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

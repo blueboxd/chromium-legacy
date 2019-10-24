@@ -7,6 +7,7 @@
 #include <linux/input.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -189,9 +190,9 @@ void InputControllerEvdev::GetTouchEventLog(const base::FilePath& out_dir,
 }
 
 void InputControllerEvdev::GetGesturePropertiesService(
-    ozone::mojom::GesturePropertiesServiceRequest request) {
+    mojo::PendingReceiver<ozone::mojom::GesturePropertiesService> receiver) {
   if (input_device_factory_)
-    input_device_factory_->GetGesturePropertiesService(std::move(request));
+    input_device_factory_->GetGesturePropertiesService(std::move(receiver));
 }
 
 void InputControllerEvdev::ScheduleUpdateDeviceSettings() {

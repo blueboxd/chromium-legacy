@@ -271,13 +271,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   if (GetCurrentDeviceOrientation() != _originalOrientation) {
     // Rotate the device back to the original orientation, since some tests
     // attempt to run in other orientations.
-#if defined(CHROME_EARL_GREY_1)
-    [EarlGrey rotateDeviceToOrientation:_originalOrientation errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-    [EarlGrey rotateDeviceToOrientation:_originalOrientation error:nil];
-#else
-#error Neither CHROME_EARL_GREY_1 nor CHROME_EARL_GREY_2 are defined
-#endif
+    [ChromeEarlGrey rotateDeviceToOrientation:_originalOrientation error:nil];
   }
   [super tearDown];
   _executedTestMethodSetUp = NO;

@@ -38,7 +38,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/icc_profile.h"
-#include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gfx/switches.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -161,14 +160,6 @@ gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
   return invert;
 }
 
-void WindowTreeHost::SetDisplayTransformHint(gfx::OverlayTransform transform) {
-  if (compositor()->display_transform() == transform)
-    return;
-
-  compositor()->SetDisplayTransformHint(transform);
-  UpdateCompositorScaleAndSize();
-}
-
 gfx::Transform WindowTreeHost::GetRootTransformForLocalEventCoordinates()
     const {
   return GetRootTransform();
@@ -191,20 +182,6 @@ void WindowTreeHost::UpdateRootWindowSizeInPixels() {
   gfx::Rect transformed_bounds_in_pixels =
       GetTransformedRootWindowBoundsInPixels(GetBoundsInPixels().size());
   window()->SetBounds(transformed_bounds_in_pixels);
-}
-
-void WindowTreeHost::UpdateCompositorScaleAndSize() {
-  gfx::Rect new_bounds = GetBoundsInPixels();
-  if (compositor_->display_transform() == gfx::OVERLAY_TRANSFORM_ROTATE_90 ||
-      compositor_->display_transform() == gfx::OVERLAY_TRANSFORM_ROTATE_270) {
-    new_bounds.Transpose();
-  }
-
-  // Allocate a new LocalSurfaceId for the new size or scale factor.
-  window_->AllocateLocalSurfaceId();
-  ScopedLocalSurfaceIdValidator lsi_validator(window());
-  compositor_->SetScaleAndSize(device_scale_factor_, new_bounds.size(),
-                               window_->GetLocalSurfaceIdAllocation());
 }
 
 void WindowTreeHost::ConvertDIPToScreenInPixels(gfx::Point* point) const {
@@ -480,12 +457,16 @@ void WindowTreeHost::OnHostResizedInPixels(
   // these two.
   if (!compositor_)
     return;
-
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();
   UpdateRootWindowSizeInPixels();
-  UpdateCompositorScaleAndSize();
+
+  // Allocate a new LocalSurfaceId for the new state.
+  window_->AllocateLocalSurfaceId();
+  ScopedLocalSurfaceIdValidator lsi_validator(window());
+  compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
+                               window_->GetLocalSurfaceIdAllocation());
 
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostResized(this);

@@ -4,8 +4,12 @@
 
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 
+#include <algorithm>
+#include <atomic>
+#include <functional>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -23,6 +27,22 @@ using ::testing::WithArg;
 
 namespace chromeos {
 
+namespace {
+
+class TestObserver : public DlcserviceClient::Observer {
+ public:
+  using FuncType = base::RepeatingCallback<void()>;
+  TestObserver(FuncType action) : action_(action) {}
+  void OnProgressUpdate(double progress) override { action_.Run(); }
+
+ private:
+  FuncType action_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
+}  // namespace
+
 class DlcserviceClientTest : public testing::Test {
  public:
   void SetUp() override {
@@ -36,18 +56,18 @@ class DlcserviceClientTest : public testing::Test {
         mock_bus_.get(), dlcservice::kDlcServiceServiceName,
         dbus::ObjectPath(dlcservice::kDlcServiceServicePath));
 
-    EXPECT_CALL(
+    ON_CALL(
         *mock_bus_.get(),
         GetObjectProxy(dlcservice::kDlcServiceServiceName,
                        dbus::ObjectPath(dlcservice::kDlcServiceServicePath)))
-        .WillOnce(Return(mock_proxy_.get()));
+        .WillByDefault(Return(mock_proxy_.get()));
 
-    EXPECT_CALL(*mock_proxy_.get(),
-                DoConnectToSignal(dlcservice::kDlcServiceInterface, _, _, _))
-        .WillOnce(Invoke(this, &DlcserviceClientTest::ConnectToSignal));
+    ON_CALL(*mock_proxy_.get(),
+            DoConnectToSignal(dlcservice::kDlcServiceInterface, _, _, _))
+        .WillByDefault(Invoke(this, &DlcserviceClientTest::ConnectToSignal));
 
-    EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
-        .WillOnce(
+    ON_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
+        .WillByDefault(
             Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
 
     DlcserviceClient::Initialize(mock_bus_.get());
@@ -157,6 +177,32 @@ TEST_F(DlcserviceClientTest, InstallFailureTest) {
       });
   client_->Install(dlcservice::DlcModuleList(), std::move(callback));
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DlcserviceClientTest, ObserverTest) {
+  std::atomic<size_t> counter{0};
+  TestObserver::FuncType action = base::BindRepeating(
+      [](decltype(counter)* counter) { ++*counter; }, &counter);
+  constexpr size_t kNumObs = 100;
+  std::vector<std::unique_ptr<TestObserver>> obss;
+  obss.reserve(kNumObs);
+  std::generate_n(std::back_inserter(obss), kNumObs,
+                  [action] { return std::make_unique<TestObserver>(action); });
+
+  // Phase 0: Check initial value.
+  EXPECT_EQ(0u, counter.load());
+
+  // Phase 1: Add observers and check updated value.
+  for (auto& obs : obss)
+    client_->AddObserver(obs.get());
+  client_->NotifyProgressUpdateForTest(0.);
+  EXPECT_EQ(kNumObs, counter.load());
+
+  // Phase 2: Remove observers and check unchanged value.
+  for (auto& obs : obss)
+    client_->RemoveObserver(obs.get());
+  client_->NotifyProgressUpdateForTest(0.);
+  EXPECT_EQ(kNumObs, counter.load());
 }
 
 }  // namespace chromeos

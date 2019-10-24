@@ -138,7 +138,7 @@ void HintCacheStore::Initialize(bool purge_existing_data,
                                  purge_existing_data, std::move(callback)));
 }
 
-std::unique_ptr<HintUpdateData>
+std::unique_ptr<StoreUpdateData>
 HintCacheStore::MaybeCreateUpdateDataForComponentHints(
     const base::Version& version) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -154,24 +154,25 @@ HintCacheStore::MaybeCreateUpdateDataForComponentHints(
     return nullptr;
   }
 
-  // Create and return a HintUpdateData object. This object has
+  // Create and return a StoreUpdateData object. This object has
   // hints from the component moved into it and organizes them in a format
   // usable by the store; the object will returned to the store in
   // StoreComponentHints().
-  return HintUpdateData::CreateComponentHintUpdateData(version);
+  return StoreUpdateData::CreateComponentStoreUpdateData(version);
 }
 
-std::unique_ptr<HintUpdateData> HintCacheStore::CreateUpdateDataForFetchedHints(
-    base::Time update_time,
-    base::Time expiry_time) const {
-  // Create and returns a HintUpdateData object. This object has has hints
+std::unique_ptr<StoreUpdateData>
+HintCacheStore::CreateUpdateDataForFetchedHints(base::Time update_time,
+                                                base::Time expiry_time) const {
+  // Create and returns a StoreUpdateData object. This object has has hints
   // from the GetHintsResponse moved into and organizes them in a format
   // usable by the store. The object will be store with UpdateFetchedData().
-  return HintUpdateData::CreateFetchedHintUpdateData(update_time, expiry_time);
+  return StoreUpdateData::CreateFetchedStoreUpdateData(update_time,
+                                                       expiry_time);
 }
 
 void HintCacheStore::UpdateComponentHints(
-    std::unique_ptr<HintUpdateData> component_data,
+    std::unique_ptr<StoreUpdateData> component_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(component_data);
@@ -229,7 +230,7 @@ void HintCacheStore::UpdateComponentHints(
 }
 
 void HintCacheStore::UpdateFetchedHints(
-    std::unique_ptr<HintUpdateData> fetched_hints_data,
+    std::unique_ptr<StoreUpdateData> fetched_hints_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(fetched_hints_data);

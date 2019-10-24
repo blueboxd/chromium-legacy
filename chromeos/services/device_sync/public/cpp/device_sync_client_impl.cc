@@ -40,24 +40,23 @@ void DeviceSyncClientImpl::Factory::SetInstanceForTesting(
 
 DeviceSyncClientImpl::Factory::~Factory() = default;
 
-std::unique_ptr<DeviceSyncClient> DeviceSyncClientImpl::Factory::BuildInstance(
-    mojom::DeviceSyncService* service) {
-  return base::WrapUnique(new DeviceSyncClientImpl(service));
+std::unique_ptr<DeviceSyncClient>
+DeviceSyncClientImpl::Factory::BuildInstance() {
+  return std::make_unique<DeviceSyncClientImpl>();
 }
 
-DeviceSyncClientImpl::DeviceSyncClientImpl(mojom::DeviceSyncService* service)
-    : DeviceSyncClientImpl(service, base::ThreadTaskRunnerHandle::Get()) {}
-
-DeviceSyncClientImpl::DeviceSyncClientImpl(
-    mojom::DeviceSyncService* service,
-    scoped_refptr<base::TaskRunner> task_runner)
-    : binding_(this),
+DeviceSyncClientImpl::DeviceSyncClientImpl()
+    : observer_binding_(this),
       expiring_device_cache_(
-          std::make_unique<multidevice::ExpiringRemoteDeviceCache>()) {
-  service->BindDeviceSync(mojo::MakeRequest(&device_sync_ptr_));
+          std::make_unique<multidevice::ExpiringRemoteDeviceCache>()) {}
+
+DeviceSyncClientImpl::~DeviceSyncClientImpl() = default;
+
+void DeviceSyncClientImpl::Initialize(
+    scoped_refptr<base::TaskRunner> task_runner) {
   device_sync_ptr_->AddObserver(GenerateInterfacePtr(), base::OnceClosure());
 
-  // Delay calling these until after the constructor finishes.
+  // Delay calling these until after initialization finishes.
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(&DeviceSyncClientImpl::LoadLocalDeviceMetadata,
                                 weak_ptr_factory_.GetWeakPtr()));
@@ -66,7 +65,9 @@ DeviceSyncClientImpl::DeviceSyncClientImpl(
                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
-DeviceSyncClientImpl::~DeviceSyncClientImpl() = default;
+mojom::DeviceSyncPtr* DeviceSyncClientImpl::GetDeviceSyncPtr() {
+  return &device_sync_ptr_;
+}
 
 void DeviceSyncClientImpl::OnEnrollmentFinished() {
   // Before notifying observers that enrollment has finished, sync down the
@@ -244,7 +245,7 @@ void DeviceSyncClientImpl::OnFindEligibleDevicesCompleted(
 
 mojom::DeviceSyncObserverPtr DeviceSyncClientImpl::GenerateInterfacePtr() {
   mojom::DeviceSyncObserverPtr interface_ptr;
-  binding_.Bind(mojo::MakeRequest(&interface_ptr));
+  observer_binding_.Bind(mojo::MakeRequest(&interface_ptr));
   return interface_ptr;
 }
 

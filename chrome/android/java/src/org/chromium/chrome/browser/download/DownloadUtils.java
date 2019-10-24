@@ -254,8 +254,8 @@ public class DownloadUtils {
      * @param tab The Tab containing the page being downloaded.
      */
     public static void recordDownloadPageMetrics(Tab tab) {
-        RecordHistogram.recordPercentageHistogram("OfflinePages.SavePage.PercentLoaded",
-                tab.getProgress());
+        RecordHistogram.recordPercentageHistogram(
+                "OfflinePages.SavePage.PercentLoaded", Math.round(tab.getProgress() * 100));
     }
 
     /**

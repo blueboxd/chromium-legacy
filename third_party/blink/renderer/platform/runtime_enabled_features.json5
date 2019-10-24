@@ -761,12 +761,6 @@
     {
       name: "HTMLImportsOnlyChrome",
     },
-    // TODO(937746): Web Components v0 is disabled by default, and will be
-    // removed after M87.
-    {
-      name: "HTMLImportsStyleApplication",
-      status: "test",
-    },
     {
       name: "IDBObserver",
       status: "experimental",
@@ -1774,7 +1768,6 @@
     },
     {
       name: "WebVR",
-      status: "test",
     },
     {
       name: "WebVTTRegions",

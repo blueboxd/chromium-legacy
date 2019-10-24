@@ -593,7 +593,7 @@ int main(int argc, char *argv[]) {
     fflush(stdout);
   }
 
-  if (!InitLogging()) {
+  if (!InitLogging(port)) {
     printf("Unable to initialize logging. Exiting...\n");
     return 1;
   }

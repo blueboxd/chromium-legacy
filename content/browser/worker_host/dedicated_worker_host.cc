@@ -25,7 +25,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/network_service_util.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -441,7 +440,8 @@ void DedicatedWorkerHost::CreatePaymentManager(
   RenderProcessHost* worker_process_host = GetProcessHost();
   if (!worker_process_host)
     return;
-  worker_process_host->CreatePaymentManager(std::move(receiver));
+  worker_process_host->CreatePaymentManagerForOrigin(GetOrigin(),
+                                                     std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateIDBFactory(
@@ -487,10 +487,12 @@ void DedicatedWorkerHost::ObserveNetworkServiceCrash(
     StoragePartitionImpl* storage_partition_impl) {
   auto params = network::mojom::URLLoaderFactoryParams::New();
   params->process_id = worker_process_id_;
+  network_service_connection_error_handler_holder_.reset();
   storage_partition_impl->GetNetworkContext()->CreateURLLoaderFactory(
-      mojo::MakeRequest(&network_service_connection_error_handler_holder_),
+      network_service_connection_error_handler_holder_
+          .BindNewPipeAndPassReceiver(),
       std::move(params));
-  network_service_connection_error_handler_holder_.set_connection_error_handler(
+  network_service_connection_error_handler_holder_.set_disconnect_handler(
       base::BindOnce(&DedicatedWorkerHost::UpdateSubresourceLoaderFactories,
                      weak_factory_.GetWeakPtr()));
 }
@@ -499,7 +501,7 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
   DCHECK(IsOutOfProcessNetworkService());
   DCHECK(subresource_loader_updater_.is_bound());
   DCHECK(network_service_connection_error_handler_holder_);
-  DCHECK(network_service_connection_error_handler_holder_.encountered_error());
+  DCHECK(!network_service_connection_error_handler_holder_.is_connected());
 
   // Get a storage partition.
   auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);

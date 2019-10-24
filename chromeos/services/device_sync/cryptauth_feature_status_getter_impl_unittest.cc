@@ -62,6 +62,8 @@ cryptauthv2::DeviceFeatureStatus ConvertDeviceToDeviceFeatureStatus(
     const base::flat_set<std::string>& feature_types) {
   cryptauthv2::DeviceFeatureStatus device_feature_status;
   device_feature_status.set_device_id(device.instance_id());
+
+  int64_t last_modified_time_offset_millis = 0;
   for (const std::string& feature_type : feature_types) {
     bool is_supported_feature_type =
         base::Contains(GetSupportedCryptAuthFeatureTypeStrings(), feature_type);
@@ -76,6 +78,15 @@ cryptauthv2::DeviceFeatureStatus ConvertDeviceToDeviceFeatureStatus(
 
     cryptauthv2::DeviceFeatureStatus::FeatureStatus* feature_status =
         device_feature_status.add_feature_statuses();
+
+    // The first feature type in the set will have the device.last_update_time
+    // as the last_modified_time_millis. All other feature types will have
+    // smaller last_modified_time_millis.
+    feature_status->set_last_modified_time_millis(
+        std::max(0L, device.last_update_time.ToJavaTime() -
+                         last_modified_time_offset_millis));
+    ++last_modified_time_offset_millis;
+
     feature_status->set_feature_type(feature_type);
     if (is_supported_feature_type) {
       feature_status->set_enabled(is_supported);
@@ -187,13 +198,17 @@ class DeviceSyncCryptAuthFeatureStatusGetterImplTest
       const base::flat_set<std::string>& expected_device_ids,
       CryptAuthDeviceSyncResult::ResultCode expected_result_code) {
     ASSERT_TRUE(device_sync_result_code_);
-    EXPECT_EQ(expected_device_ids.size(), id_to_feature_status_map_.size());
+    EXPECT_EQ(expected_device_ids.size(),
+              id_to_device_software_feature_info_map_.size());
     EXPECT_EQ(expected_result_code, device_sync_result_code_);
 
     for (const std::string& id : expected_device_ids) {
-      const auto it = id_to_feature_status_map_.find(id);
-      ASSERT_TRUE(it != id_to_feature_status_map_.end());
-      EXPECT_EQ(GetTestDeviceWithId(id).feature_states, it->second);
+      const auto it = id_to_device_software_feature_info_map_.find(id);
+      ASSERT_TRUE(it != id_to_device_software_feature_info_map_.end());
+      EXPECT_EQ(GetTestDeviceWithId(id).feature_states,
+                it->second.feature_state_map);
+      EXPECT_EQ(GetTestDeviceWithId(id).last_update_time,
+                it->second.last_modified_time);
     }
   }
 
@@ -214,10 +229,11 @@ class DeviceSyncCryptAuthFeatureStatusGetterImplTest
   }
 
   void OnGetFeatureStatusesComplete(
-      const CryptAuthFeatureStatusGetter::IdToFeatureStatusMap&
-          id_to_feature_status_map,
+      const CryptAuthFeatureStatusGetter::IdToDeviceSoftwareFeatureInfoMap&
+          id_to_device_software_feature_info_map,
       CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
-    id_to_feature_status_map_ = id_to_feature_status_map;
+    id_to_device_software_feature_info_map_ =
+        id_to_device_software_feature_info_map;
     device_sync_result_code_ = device_sync_result_code;
   }
 
@@ -227,7 +243,8 @@ class DeviceSyncCryptAuthFeatureStatusGetterImplTest
       batch_get_feature_statuses_success_callback_;
   CryptAuthClient::ErrorCallback batch_get_feature_statuses_failure_callback_;
 
-  CryptAuthFeatureStatusGetter::IdToFeatureStatusMap id_to_feature_status_map_;
+  CryptAuthFeatureStatusGetter::IdToDeviceSoftwareFeatureInfoMap
+      id_to_device_software_feature_info_map_;
   base::Optional<CryptAuthDeviceSyncResult::ResultCode>
       device_sync_result_code_;
 

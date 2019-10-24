@@ -4,6 +4,11 @@
 
 #include "android_webview/browser/safe_browsing/aw_url_checker_delegate_impl.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
@@ -69,9 +74,9 @@ bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(
     bool originated_from_service_worker) {
   std::unique_ptr<AwContentsIoThreadClient> client;
 
-  if (originated_from_service_worker)
+  if (originated_from_service_worker) {
     client = AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
-  else if (render_process_id == -1 || render_frame_id == -1) {
+  } else if (render_process_id == -1 || render_frame_id == -1) {
     client = AwContentsIoThreadClient::FromID(frame_tree_node_id);
   } else {
     client =

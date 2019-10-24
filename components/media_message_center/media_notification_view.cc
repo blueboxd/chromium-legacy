@@ -44,9 +44,10 @@ constexpr double kMediaImageMaxWidthExpandedPct = 0.4;
 constexpr gfx::Size kMediaButtonSize = gfx::Size(36, 36);
 constexpr int kMediaButtonRowSeparator = 8;
 constexpr gfx::Insets kMediaTitleArtistInsets = gfx::Insets(8, 8, 0, 8);
-constexpr int kMediaNotificationHeaderTopInset = 6;
-constexpr int kMediaNotificationHeaderRightInset = 6;
-constexpr int kMediaNotificationHeaderInset = 0;
+constexpr gfx::Insets kIconlessMediaNotificationHeaderInsets =
+    gfx::Insets(6, 14, 0, 6);
+constexpr gfx::Insets kIconMediaNotificationHeaderInsets =
+    gfx::Insets(6, 0, 0, 6);
 constexpr gfx::Size kMediaNotificationButtonRowSize =
     gfx::Size(124, kMediaButtonSize.height());
 
@@ -100,7 +101,8 @@ MediaNotificationView::MediaNotificationView(
     base::WeakPtr<MediaNotificationItem> item,
     views::View* header_row_controls_view,
     const base::string16& default_app_name,
-    int notification_width)
+    int notification_width,
+    bool should_show_icon)
     : container_(container),
       item_(std::move(item)),
       header_row_controls_view_(header_row_controls_view),
@@ -118,12 +120,17 @@ MediaNotificationView::MediaNotificationView(
     header_row->AddChildView(header_row_controls_view_);
 
   header_row->SetAppName(default_app_name_);
-  header_row->ClearAppIcon();
-  header_row->SetProperty(
-      views::kMarginsKey,
-      gfx::Insets(kMediaNotificationHeaderTopInset,
-                  kMediaNotificationHeaderInset, kMediaNotificationHeaderInset,
-                  kMediaNotificationHeaderRightInset));
+
+  if (should_show_icon) {
+    header_row->ClearAppIcon();
+    header_row->SetProperty(views::kMarginsKey,
+                            kIconMediaNotificationHeaderInsets);
+  } else {
+    header_row->HideAppIcon();
+    header_row->SetProperty(views::kMarginsKey,
+                            kIconlessMediaNotificationHeaderInsets);
+  }
+
   header_row_ = AddChildView(std::move(header_row));
 
   // |main_row_| holds the main content of the notification.

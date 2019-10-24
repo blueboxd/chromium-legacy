@@ -109,8 +109,8 @@ void NewDeskButton::SetLabelVisible(bool visible) {
   label()->SetVisible(visible);
 }
 
-gfx::Size NewDeskButton::CalculatePreferredSize() const {
-  if (!label()->GetVisible()) {
+gfx::Size NewDeskButton::GetMinSize(bool compact) const {
+  if (compact) {
     gfx::Size size = image()->GetPreferredSize();
     const gfx::Insets insets(GetInsets());
     size.Enlarge(insets.width(), insets.height());
@@ -122,6 +122,10 @@ gfx::Size NewDeskButton::CalculatePreferredSize() const {
   }
 
   return views::LabelButton::CalculatePreferredSize();
+}
+
+gfx::Size NewDeskButton::CalculatePreferredSize() const {
+  return GetMinSize(!label()->GetVisible());
 }
 
 void NewDeskButton::Layout() {

@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -68,6 +69,7 @@ class CrostiniInstaller : public KeyedService,
   void CancelBeforeStart() override;
 
   // CrostiniManager::RestartObserver:
+  void OnStageStarted(crostini::mojom::InstallerState stage) override;
   void OnComponentLoaded(crostini::CrostiniResult result) override;
   void OnConciergeStarted(bool success) override;
   void OnDiskImageCreated(bool success,
@@ -79,6 +81,7 @@ class CrostiniInstaller : public KeyedService,
   void OnContainerSetup(bool success) override;
   void OnContainerStarted(crostini::CrostiniResult result) override;
   void OnSshKeysFetched(bool success) override;
+  void OnContainerMounted(bool success) override;
 
   // Return true if internal state allows starting installation.
   bool CanInstall();

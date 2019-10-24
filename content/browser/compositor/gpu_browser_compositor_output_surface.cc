@@ -202,15 +202,6 @@ unsigned GpuBrowserCompositorOutputSurface::UpdateGpuFence() {
   return 0;
 }
 
-void GpuBrowserCompositorOutputSurface::SetDisplayTransformHint(
-    gfx::OverlayTransform transform) {
-  display_transform_ = transform;
-}
-
-gfx::OverlayTransform GpuBrowserCompositorOutputSurface::GetDisplayTransform() {
-  return display_transform_;
-}
-
 gpu::SurfaceHandle GpuBrowserCompositorOutputSurface::GetSurfaceHandle() const {
   return surface_handle_;
 }

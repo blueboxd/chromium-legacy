@@ -85,6 +85,27 @@ if (is_win) {
       ":chrome_initial",
     ]
   }
+
+  if (!is_multi_dll_chrome) {
+    # Remove the chrome_child.dll build artifacts from the build directory if
+    # they're not needed to avoid packaging them in the installer.
+    # TODO(sebmarchand): Remove this once the multi DLL build isn't supported.
+    action("remove_chrome_child_artifacts") {
+      script = "//build/rm.py"
+      stamp = "$target_gen_dir/chrome_child_clean_up_stamp"
+      outputs = [
+        stamp,
+      ]
+      args = [
+        "--stamp",
+        rebase_path(stamp, root_build_dir),
+        "-f",
+        "chrome_child.dll",
+        "chrome_child.dll.lib",
+        "chrome_child.dll.pdb",
+      ]
+    }
+  }
 }
 
 # This target exists above chrome and it's main components in the dependency
@@ -357,6 +378,10 @@ if (is_win) {
     ]
     if (is_multi_dll_chrome) {
       data_deps += [ ":chrome_child" ]
+    } else {
+      deps = [
+        ":remove_chrome_child_artifacts",
+      ]
     }
   }
 

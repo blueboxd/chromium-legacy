@@ -37,7 +37,6 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/overlay_transform.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -157,11 +156,6 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   virtual void AddVSyncParameterObserver(
       Compositor* compositor,
       viz::mojom::VSyncParameterObserverPtr observer) = 0;
-
-  // Set the transform/rotation info for the display output surface that this
-  // compositor represents.
-  virtual void SetDisplayTransformHint(Compositor* compositor,
-                                       gfx::OverlayTransform transform) = 0;
 };
 
 // This class abstracts the creation of the 3D context for the compositor. It is
@@ -295,10 +289,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void SetDisplayColorSpace(
       const gfx::ColorSpace& color_space,
       float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
-
-  // Set the transform/rotation info for the display output surface.
-  void SetDisplayTransformHint(gfx::OverlayTransform transform);
-  gfx::OverlayTransform display_transform() const { return display_transform_; }
 
   // Returns the size of the widget that is being drawn to in pixel coordinates.
   const gfx::Size& size() const { return size_; }
@@ -522,8 +512,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   bool disabled_swap_until_resize_ = false;
 
   const char* trace_environment_name_;
-
-  gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_{this};
 

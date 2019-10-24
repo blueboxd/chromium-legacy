@@ -26,6 +26,7 @@ const char kANGLEImplementationOpenGLName[]   = "gl";
 const char kANGLEImplementationOpenGLESName[] = "gles";
 const char kANGLEImplementationNullName[] = "null";
 const char kANGLEImplementationVulkanName[] = "vulkan";
+const char kANGLEImplementationSwiftShaderName[] = "swiftshader";
 
 // Special switches for "NULL"/stub driver implementations.
 const char kANGLEImplementationD3D11NULLName[] = "d3d11-null";

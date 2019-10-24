@@ -876,6 +876,8 @@ function openCalendarPicker() {
       return initializeMonthPicker(global.params);
     } else if (global.params.mode == 'time') {
       return initializeTimePicker(global.params);
+    } else if (global.params.mode == 'datetime-local') {
+      return initializeDateTimeLocalPicker(global.params);
     }
   }
 
@@ -4326,6 +4328,10 @@ CalendarPicker.prototype.setSelection = function(dayOrWeekOrMonth) {
   this.calendarTableView.setNeedsUpdateCells(true);
 };
 
+CalendarPicker.prototype.getSelectedValue = function() {
+  return this._selection.toString();
+};
+
 /**
  * Select the specified date, commit it, and close the popup.
  * @param {?DateType} dayOrWeekOrMonth
@@ -4335,6 +4341,12 @@ CalendarPicker.prototype.setSelectionAndCommit = function(dayOrWeekOrMonth) {
   // Redraw the widget immidiately, and wait for some time to give feedback to
   // a user.
   this.element.offsetLeft;
+
+  // CalendarPicker doesn't handle the submission when used for datetime-local.
+  if (global.params.isFormControlsRefreshEnabled &&
+      this.type == 'datetime-local')
+    return;
+
   var value = this._selection.toString();
   if (CalendarPicker.commitDelayMs == 0) {
     // For testing.
@@ -4446,14 +4458,16 @@ CalendarPicker.prototype.onCalendarTableKeyDown = function(event) {
     if (global.params.isLocaleRTL ? key == 'ArrowRight' : key == 'ArrowLeft') {
       eventHandled = this._moveHighlight(this._highlight.previous());
     } else if (key == 'ArrowUp') {
-      eventHandled = this._moveHighlight(
-          this._highlight.previous(this.type === 'date' ? DaysPerWeek : 1));
+      eventHandled = this._moveHighlight(this._highlight.previous(
+          this.type === 'date' || this.type === 'datetime-local' ? DaysPerWeek :
+                                                                   1));
     } else if (
         global.params.isLocaleRTL ? key == 'ArrowLeft' : key == 'ArrowRight') {
       eventHandled = this._moveHighlight(this._highlight.next());
     } else if (key == 'ArrowDown') {
-      eventHandled = this._moveHighlight(
-          this._highlight.next(this.type === 'date' ? DaysPerWeek : 1));
+      eventHandled = this._moveHighlight(this._highlight.next(
+          this.type === 'date' || this.type === 'datetime-local' ? DaysPerWeek :
+                                                                   1));
     } else if (key == 'Enter') {
       this.setSelectionAndCommit(this._highlight);
     }

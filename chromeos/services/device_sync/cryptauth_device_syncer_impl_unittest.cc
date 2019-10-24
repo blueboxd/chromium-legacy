@@ -260,14 +260,16 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
   void FinishFeatureStatusGetterAttempt(
       const base::flat_set<std::string>& device_ids,
       CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
-    CryptAuthFeatureStatusGetter::IdToFeatureStatusMap id_to_feature_status_map;
+    CryptAuthFeatureStatusGetter::IdToDeviceSoftwareFeatureInfoMap
+        id_to_device_software_feature_info_map;
     for (const std::string& id : device_ids) {
-      id_to_feature_status_map.insert_or_assign(
-          id, GetTestDeviceWithId(id).feature_states);
+      id_to_device_software_feature_info_map.try_emplace(
+          id, GetTestDeviceWithId(id).feature_states,
+          GetTestDeviceWithId(id).last_update_time);
     }
 
-    feature_status_getter()->FinishAttempt(id_to_feature_status_map,
-                                           device_sync_result_code);
+    feature_status_getter()->FinishAttempt(
+        id_to_device_software_feature_info_map, device_sync_result_code);
   }
 
   void RunGroupPrivateKeyDecryptor(

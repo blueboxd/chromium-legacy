@@ -35,8 +35,9 @@ class HidManagerImpl : public mojom::HidManager, public HidService::Observer {
   void AddReceiver(mojo::PendingReceiver<mojom::HidManager> receiver);
 
   // mojom::HidManager implementation:
-  void GetDevicesAndSetClient(mojom::HidManagerClientAssociatedPtrInfo client,
-                              GetDevicesCallback callback) override;
+  void GetDevicesAndSetClient(
+      mojo::PendingAssociatedRemote<mojom::HidManagerClient> client,
+      GetDevicesCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
   void Connect(
       const std::string& device_guid,

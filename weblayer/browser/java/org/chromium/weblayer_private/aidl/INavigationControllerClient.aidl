@@ -21,5 +21,9 @@ interface INavigationControllerClient {
 
   void navigationFailed(IClientNavigation navigation) = 5;
 
-  void onFirstContentfulPaint() = 6;
+  void loadStateChanged(boolean isLoading, boolean toDifferentDocument) = 6;
+
+  void loadProgressChanged(double progress) = 7;
+
+  void onFirstContentfulPaint() = 8;
 }

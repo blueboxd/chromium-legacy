@@ -3620,6 +3620,10 @@ const char kPrinterProviderSearchAppDescription[] =
     "searches Chrome Web Store for extensions that support printing to a USB "
     "printer with specific USB ID.";
 
+const char kPrintServerUiName[] = "Print Server UI";
+const char kPrintServerUiDescription[] =
+    "Enables users to add their own print server in the printer settings page.";
+
 const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
 const char kReduceDisplayNotificationsDescription[] =
     "If enabled, notifications for display rotation, display removed, display "

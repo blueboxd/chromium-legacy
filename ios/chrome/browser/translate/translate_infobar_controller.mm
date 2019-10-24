@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/translate/language_selection_context.h"
 #include "ios/chrome/browser/translate/language_selection_delegate.h"
 #include "ios/chrome/browser/translate/language_selection_handler.h"
+#import "ios/chrome/browser/translate/translate_constants.h"
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
 #include "ios/chrome/browser/translate/translate_option_selection_delegate.h"
 #include "ios/chrome/browser/translate/translate_option_selection_handler.h"
@@ -47,17 +48,6 @@ typedef NS_ENUM(NSInteger, LanguageSelectionState) {
   LanguageSelectionStateTarget,
 };
 
-// Various user actions to keep track of.
-typedef NS_OPTIONS(NSUInteger, UserAction) {
-  UserActionNone = 0,
-  UserActionTranslate = 1 << 0,
-  UserActionRevert = 1 << 1,
-  UserActionAlwaysTranslate = 1 << 2,
-  UserActionNeverTranslateLanguage = 1 << 3,
-  UserActionNeverTranslateSite = 1 << 4,
-  UserActionExpandMenu = 1 << 5,
-};
-
 // UMA histogram names.
 // Note: These string constants are repeated in TranslateCompactInfoBar.java.
 const char kLanguageHistogramTranslate[] =
@@ -73,41 +63,6 @@ const char kLanguageHistogramNeverTranslate[] =
 const char kEventHistogram[] = "Translate.CompactInfobar.Event";
 const char kTranslationCountHistogram[] =
     "Translate.CompactInfobar.TranslationsPerPage";
-
-// Enum for the Translate.CompactInfobar.Event UMA histogram.
-// Note: These values are repeated as constants in TranslateCompactInfoBar.java.
-// Note: This enum is used to back an UMA histogram, and should be treated as
-// append-only.
-// TODO(crbug.com/933371): Share these enums with Java.
-enum class InfobarEvent {
-  INFOBAR_IMPRESSION = 0,
-  INFOBAR_TARGET_TAB_TRANSLATE = 1,
-  INFOBAR_DECLINE = 2,
-  INFOBAR_OPTIONS = 3,
-  INFOBAR_MORE_LANGUAGES = 4,
-  INFOBAR_MORE_LANGUAGES_TRANSLATE = 5,
-  INFOBAR_PAGE_NOT_IN = 6,
-  INFOBAR_ALWAYS_TRANSLATE = 7,
-  INFOBAR_NEVER_TRANSLATE = 8,
-  INFOBAR_NEVER_TRANSLATE_SITE = 9,
-  INFOBAR_SCROLL_HIDE = 10,
-  INFOBAR_SCROLL_SHOW = 11,
-  INFOBAR_REVERT = 12,
-  INFOBAR_SNACKBAR_ALWAYS_TRANSLATE_IMPRESSION = 13,
-  INFOBAR_SNACKBAR_NEVER_TRANSLATE_IMPRESSION = 14,
-  INFOBAR_SNACKBAR_NEVER_TRANSLATE_SITE_IMPRESSION = 15,
-  INFOBAR_SNACKBAR_CANCEL_ALWAYS = 16,
-  INFOBAR_SNACKBAR_CANCEL_NEVER_SITE = 17,
-  INFOBAR_SNACKBAR_CANCEL_NEVER = 18,
-  INFOBAR_ALWAYS_TRANSLATE_UNDO = 19,
-  INFOBAR_CLOSE_DEPRECATED = 20,
-  INFOBAR_SNACKBAR_AUTO_ALWAYS_IMPRESSION = 21,
-  INFOBAR_SNACKBAR_AUTO_NEVER_IMPRESSION = 22,
-  INFOBAR_SNACKBAR_CANCEL_AUTO_ALWAYS = 23,
-  INFOBAR_SNACKBAR_CANCEL_AUTO_NEVER = 24,
-  INFOBAR_HISTOGRAM_BOUNDARY = 25,
-  kMaxValue = INFOBAR_HISTOGRAM_BOUNDARY,
-};
 
 }  // namespace
 

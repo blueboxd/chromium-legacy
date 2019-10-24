@@ -604,7 +604,7 @@ abstract class OverlayPanelBase {
     private float mProgressBarOpacity;
     private boolean mIsProgressBarVisible;
     private float mProgressBarHeight;
-    private int mProgressBarCompletion;
+    private float mProgressBarCompletion;
 
     /**
      * @return Whether the Progress Bar is visible.
@@ -637,14 +637,14 @@ abstract class OverlayPanelBase {
     /**
      * @return The completion percentage of the Progress Bar.
      */
-    public int getProgressBarCompletion() {
+    public float getProgressBarCompletion() {
         return mProgressBarCompletion;
     }
 
     /**
-     * @param completion The completion percentage to be set.
+     * @param completion The completion to be set.
      */
-    protected void setProgressBarCompletion(int completion) {
+    protected void setProgressBarCompletion(float completion) {
         mProgressBarCompletion = completion;
     }
 

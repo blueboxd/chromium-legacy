@@ -317,35 +317,6 @@ gfx::Insets GetGridInsets(const gfx::Rect& grid_bounds) {
                      std::max(0, horizontal_inset - kWindowMargin));
 }
 
-// Returns the desks widget bounds in root, given the screen bounds of the
-// overview grid.
-gfx::Rect GetDesksWidgetBounds(aura::Window* root,
-                               OverviewSession* overview_session,
-                               const gfx::Rect& overview_grid_screen_bounds) {
-  gfx::Rect desks_widget_root_bounds = overview_grid_screen_bounds;
-  ::wm::ConvertRectFromScreen(root, &desks_widget_root_bounds);
-  desks_widget_root_bounds.set_height(
-      DesksBarView::GetBarHeight(desks_widget_root_bounds.width()));
-
-  // Shift the widget down to make room for the splitview indicator guidance
-  // when it's shown at the top of the screen when in portrait mode and no other
-  // windows are snapped.
-  auto* split_view_drag_indicators =
-      overview_session->split_view_drag_indicators();
-  if (split_view_drag_indicators &&
-      split_view_drag_indicators->current_indicator_state() ==
-          IndicatorState::kDragArea &&
-      !IsCurrentScreenOrientationLandscape() &&
-      !SplitViewController::Get(root)->InSplitViewMode()) {
-    desks_widget_root_bounds.Offset(0,
-                                    overview_grid_screen_bounds.height() *
-                                            kHighlightScreenPrimaryAxisRatio +
-                                        2 * kHighlightScreenEdgePaddingDp);
-  }
-
-  return screen_util::SnapBoundsToDisplayEdge(desks_widget_root_bounds, root);
-}
-
 // Returns the given |widget|'s bounds in its native window's root coordinates.
 gfx::Rect GetWidgetBoundsInRoot(views::Widget* widget) {
   auto* window = widget->GetNativeWindow();
@@ -740,14 +711,16 @@ void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
   }
 }
 
-void OverviewGrid::MaybeUpdateDesksWidgetBounds() {
+bool OverviewGrid::MaybeUpdateDesksWidgetBounds() {
   if (!desks_widget_)
-    return;
+    return false;
 
-  const gfx::Rect desks_widget_bounds =
-      GetDesksWidgetBounds(root_window_, overview_session_, bounds_);
-  if (desks_widget_bounds != GetWidgetBoundsInRoot(desks_widget_.get()))
+  const gfx::Rect desks_widget_bounds = GetDesksWidgetBounds();
+  if (desks_widget_bounds != GetWidgetBoundsInRoot(desks_widget_.get())) {
     desks_widget_->SetBounds(desks_widget_bounds);
+    return true;
+  }
+  return false;
 }
 
 void OverviewGrid::UpdateDropTargetBackgroundVisibility(
@@ -1370,7 +1343,9 @@ gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
     return bounds_;
 
   gfx::Rect effective_bounds = bounds_;
-  effective_bounds.Inset(0, DesksBarView::GetBarHeight(bounds_.width()), 0, 0);
+  effective_bounds.Inset(
+      0, DesksBarView::GetBarHeightForWidth(desks_bar_view_, bounds_.width()),
+      0, 0);
   return effective_bounds;
 }
 
@@ -1544,25 +1519,32 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
     return width;
   }
 
-  const bool is_landscape = IsCurrentScreenOrientationLandscape();
+  // Perform horizontal clipping if the window's aspect ratio is wider than the
+  // split view bounds aspect ratio, and vertical clipping otherwise.
+  const float aspect_ratio =
+      target_bounds.width() /
+      (target_bounds.height() -
+       item->GetWindow()->GetProperty(aura::client::kTopViewInset));
+  const float target_aspect_ratio =
+      split_view_bounds->width() / split_view_bounds->height();
+  const bool clip_horizontally = aspect_ratio > target_aspect_ratio;
+  const int window_height = height - 2 * kWindowMargin - kHeaderHeightDp;
   gfx::Size unclipped_size;
-  if (is_landscape) {
+  if (clip_horizontally) {
     unclipped_size.set_width(width - 2 * kWindowMargin);
     unclipped_size.set_height(height - 2 * kWindowMargin);
-    // For landscape mode, shrink |width| so that the aspect ratio matches
+    // For horizontal clipping, shrink |width| so that the aspect ratio matches
     // that of |split_view_bounds|.
-    width = std::max(1, gfx::ToFlooredInt(split_view_bounds->width() * scale) +
+    width = std::max(1, gfx::ToFlooredInt(target_aspect_ratio * window_height) +
                             2 * kWindowMargin);
   } else {
-    // For portrait mode, we want |height| to stay the same, so calculate
+    // For vertical clipping, we want |height| to stay the same, so calculate
     // what the unclipped height would be based on |split_view_bounds|.
 
     // Find the width so that it matches height and matches the aspect ratio of
-    // |split_view_bounds|. |height| includes the margins and overview header,
-    // so exclude those from the calculation.
-    width = (split_view_bounds->width() *
-             (height - 2 * kWindowMargin - kHeaderHeightDp) /
-             split_view_bounds->height());
+    // |split_view_bounds|.
+    width = split_view_bounds->width() * window_height /
+            split_view_bounds->height();
     // The unclipped height is the height which matches |width| but keeps the
     // aspect ratio of |target_bounds|. Clipping takes the overview header into
     // account, so add that back in.
@@ -1580,14 +1562,20 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
   return width;
 }
 
+void OverviewGrid::OnDesksChanged() {
+  if (MaybeUpdateDesksWidgetBounds())
+    PositionWindows(/*animate=*/false, /*ignored_items=*/{});
+  else
+    desks_bar_view_->Layout();
+}
+
 void OverviewGrid::MaybeInitDesksWidget() {
   if (!desks_util::ShouldDesksBarBeCreated() || desks_widget_)
     return;
 
-  desks_widget_ = DesksBarView::CreateDesksWidget(
-      root_window_,
-      GetDesksWidgetBounds(root_window_, overview_session_, bounds_));
-  desks_bar_view_ = new DesksBarView;
+  desks_widget_ =
+      DesksBarView::CreateDesksWidget(root_window_, GetDesksWidgetBounds());
+  desks_bar_view_ = new DesksBarView(this);
 
   // The following order of function calls is significant: SetContentsView()
   // must be called before DesksBarView:: Init(). This is needed because the
@@ -1886,6 +1874,32 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
 
   overview_session_->AddItem(dragged_window, /*reposition=*/false,
                              /*animate=*/false);
+}
+
+// Returns the desks widget bounds in root, given the screen bounds of the
+// overview grid.
+gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
+  gfx::Rect desks_widget_root_bounds = bounds_;
+  ::wm::ConvertRectFromScreen(root_window_, &desks_widget_root_bounds);
+  desks_widget_root_bounds.set_height(DesksBarView::GetBarHeightForWidth(
+      desks_bar_view_, desks_widget_root_bounds.width()));
+  // Shift the widget down to make room for the splitview indicator guidance
+  // when it's shown at the top of the screen when in portrait mode and no other
+  // windows are snapped.
+  auto* split_view_drag_indicators =
+      overview_session_->split_view_drag_indicators();
+  if (split_view_drag_indicators &&
+      split_view_drag_indicators->current_indicator_state() ==
+          IndicatorState::kDragArea &&
+      !IsCurrentScreenOrientationLandscape() &&
+      !SplitViewController::Get(root_window_)->InSplitViewMode()) {
+    desks_widget_root_bounds.Offset(
+        0, bounds_.height() * kHighlightScreenPrimaryAxisRatio +
+               2 * kHighlightScreenEdgePaddingDp);
+  }
+
+  return screen_util::SnapBoundsToDisplayEdge(desks_widget_root_bounds,
+                                              root_window_);
 }
 
 }  // namespace ash

@@ -32,6 +32,7 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -439,7 +440,7 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& endpoint,
-      GURL* allowed_unsafe_redirect_url) override;
+      base::Optional<GURL>* preserve_fragment_on_redirect_url) override;
 
   // Resets the callbacks and |stage_blocked_for_callback_|.
   void Reset();
@@ -545,13 +546,13 @@ int BlockingNetworkDelegate::OnHeadersReceived(
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     const IPEndPoint& endpoint,
-    GURL* allowed_unsafe_redirect_url) {
+    base::Optional<GURL>* preserve_fragment_on_redirect_url) {
   // TestNetworkDelegate always completes synchronously.
-  CHECK_NE(
-      ERR_IO_PENDING,
-      TestNetworkDelegate::OnHeadersReceived(
-          request, base::NullCallback(), original_response_headers,
-          override_response_headers, endpoint, allowed_unsafe_redirect_url));
+  CHECK_NE(ERR_IO_PENDING,
+           TestNetworkDelegate::OnHeadersReceived(
+               request, base::NullCallback(), original_response_headers,
+               override_response_headers, endpoint,
+               preserve_fragment_on_redirect_url));
 
   return MaybeBlockStage(ON_HEADERS_RECEIVED, std::move(callback));
 }
@@ -2923,7 +2924,7 @@ class FixedDateNetworkDelegate : public TestNetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& endpoint,
-      GURL* allowed_unsafe_redirect_url) override;
+      base::Optional<GURL>* preserve_fragment_on_redirect_url) override;
 
  private:
   std::string fixed_date_;
@@ -2937,7 +2938,7 @@ int FixedDateNetworkDelegate::OnHeadersReceived(
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     const IPEndPoint& endpoint,
-    GURL* allowed_unsafe_redirect_url) {
+    base::Optional<GURL>* preserve_fragment_on_redirect_url) {
   HttpResponseHeaders* new_response_headers =
       new HttpResponseHeaders(original_response_headers->raw_headers());
 
@@ -2947,7 +2948,7 @@ int FixedDateNetworkDelegate::OnHeadersReceived(
   *override_response_headers = new_response_headers;
   return TestNetworkDelegate::OnHeadersReceived(
       request, std::move(callback), original_response_headers,
-      override_response_headers, endpoint, allowed_unsafe_redirect_url);
+      override_response_headers, endpoint, preserve_fragment_on_redirect_url);
 }
 
 // Test that cookie expiration times are adjusted for server/client clock
@@ -4345,13 +4346,13 @@ class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& endpoint,
-      GURL* allowed_unsafe_redirect_url) override {
+      base::Optional<GURL>* preserve_fragment_on_redirect_url) override {
     // TestNetworkDelegate always completes synchronously.
-    CHECK_NE(
-        ERR_IO_PENDING,
-        TestNetworkDelegate::OnHeadersReceived(
-            request, base::NullCallback(), original_response_headers,
-            override_response_headers, endpoint, allowed_unsafe_redirect_url));
+    CHECK_NE(ERR_IO_PENDING,
+             TestNetworkDelegate::OnHeadersReceived(
+                 request, base::NullCallback(), original_response_headers,
+                 override_response_headers, endpoint,
+                 preserve_fragment_on_redirect_url));
     return RunCallbackAsynchronously(request, std::move(callback));
   }
 
@@ -6256,69 +6257,46 @@ TEST_F(URLRequestTestHTTP, NoCacheOnNetworkDelegateRedirect) {
   }
 }
 
-// Tests that redirection to an unsafe URL is allowed when it has been marked as
-// safe.
-TEST_F(URLRequestTestHTTP, UnsafeRedirectToAllowedUnsafeURL) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  GURL unsafe_url("data:text/html,this-is-considered-an-unsafe-url");
-  default_network_delegate_.set_redirect_on_headers_received_url(unsafe_url);
-  default_network_delegate_.set_allowed_unsafe_redirect_url(unsafe_url);
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        http_test_server()->GetURL("/whatever"), DEFAULT_PRIORITY, &d,
-        TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    r->Start();
-    d.RunUntilComplete();
-
-    EXPECT_EQ(OK, d.request_status());
-    EXPECT_EQ(2U, r->url_chain().size());
-    EXPECT_EQ(unsafe_url, r->url());
-    EXPECT_EQ("this-is-considered-an-unsafe-url", d.data_received());
-  }
-}
-
-// Tests that a redirect to a different unsafe URL is blocked, even after adding
-// some other URL to the allowlist.
-TEST_F(URLRequestTestHTTP, UnsafeRedirectToDifferentUnsafeURL) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  GURL unsafe_url("data:text/html,something");
-  GURL different_unsafe_url("data:text/html,something-else");
-  default_network_delegate_.set_redirect_on_headers_received_url(unsafe_url);
-  default_network_delegate_.set_allowed_unsafe_redirect_url(
-      different_unsafe_url);
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        http_test_server()->GetURL("/whatever"), DEFAULT_PRIORITY, &d,
-        TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    r->Start();
-    d.RunUntilComplete();
-
-    EXPECT_EQ(ERR_UNSAFE_REDIRECT, d.request_status());
-
-    // The redirect should have been rejected before reporting it to the caller.
-    EXPECT_EQ(0, d.received_redirect_count());
-  }
-}
-
-// Redirects from an URL with fragment to an unsafe URL with fragment should
-// be allowed, and the reference fragment of the target URL should be preserved.
-TEST_F(URLRequestTestHTTP, UnsafeRedirectWithDifferentReferenceFragment) {
+// Check that |preserve_fragment_on_redirect_url| is respected.
+TEST_F(URLRequestTestHTTP, PreserveFragmentOnRedirectUrl) {
   ASSERT_TRUE(http_test_server()->Start());
 
   GURL original_url(http_test_server()->GetURL("/original#fragment1"));
-  GURL unsafe_url("data:,url-marked-safe-and-used-in-redirect#fragment2");
-  GURL expected_url("data:,url-marked-safe-and-used-in-redirect#fragment2");
+  GURL preserve_fragement_url(http_test_server()->GetURL("/echo"));
 
-  default_network_delegate_.set_redirect_on_headers_received_url(unsafe_url);
-  default_network_delegate_.set_allowed_unsafe_redirect_url(unsafe_url);
+  default_network_delegate_.set_redirect_on_headers_received_url(
+      preserve_fragement_url);
+  default_network_delegate_.set_preserve_fragment_on_redirect_url(
+      preserve_fragement_url);
+
+  TestDelegate d;
+  {
+    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+        original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    r->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(2U, r->url_chain().size());
+    EXPECT_EQ(OK, d.request_status());
+    EXPECT_EQ(original_url, r->original_url());
+    EXPECT_EQ(preserve_fragement_url, r->url());
+  }
+}
+
+// Check that |preserve_fragment_on_redirect_url| has no effect when it doesn't
+// match the URL being redirected to.
+TEST_F(URLRequestTestHTTP, PreserveFragmentOnRedirectUrlMismatch) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  GURL original_url(http_test_server()->GetURL("/original#fragment1"));
+  GURL preserve_fragement_url(http_test_server()->GetURL("/echo#fragment2"));
+  GURL redirect_url(http_test_server()->GetURL("/echo"));
+  GURL expected_url(http_test_server()->GetURL("/echo#fragment1"));
+
+  default_network_delegate_.set_redirect_on_headers_received_url(redirect_url);
+  default_network_delegate_.set_preserve_fragment_on_redirect_url(
+      preserve_fragement_url);
 
   TestDelegate d;
   {
@@ -6332,63 +6310,6 @@ TEST_F(URLRequestTestHTTP, UnsafeRedirectWithDifferentReferenceFragment) {
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(original_url, r->original_url());
     EXPECT_EQ(expected_url, r->url());
-  }
-}
-
-// When a delegate has specified a safe redirect URL, but it does not match the
-// redirect target, then do not prevent the reference fragment from being added.
-TEST_F(URLRequestTestHTTP, RedirectWithReferenceFragmentAndUnrelatedUnsafeUrl) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  GURL original_url(http_test_server()->GetURL("/original#expected-fragment"));
-  GURL unsafe_url("data:text/html,this-url-does-not-match-redirect-url");
-  GURL redirect_url(http_test_server()->GetURL("/target"));
-  GURL expected_redirect_url(
-      http_test_server()->GetURL("/target#expected-fragment"));
-
-  default_network_delegate_.set_redirect_on_headers_received_url(redirect_url);
-  default_network_delegate_.set_allowed_unsafe_redirect_url(unsafe_url);
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    r->Start();
-    d.RunUntilComplete();
-
-    EXPECT_EQ(2U, r->url_chain().size());
-    EXPECT_EQ(OK, d.request_status());
-    EXPECT_EQ(original_url, r->original_url());
-    EXPECT_EQ(expected_redirect_url, r->url());
-  }
-}
-
-// When a delegate has specified a safe redirect URL, assume that the redirect
-// URL should not be changed. In particular, the reference fragment should not
-// be modified.
-TEST_F(URLRequestTestHTTP, RedirectWithReferenceFragment) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  GURL original_url(
-      http_test_server()->GetURL("/original#should-not-be-appended"));
-  GURL redirect_url("data:text/html,expect-no-reference-fragment");
-
-  default_network_delegate_.set_redirect_on_headers_received_url(redirect_url);
-  default_network_delegate_.set_allowed_unsafe_redirect_url(redirect_url);
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    r->Start();
-    d.RunUntilComplete();
-
-    EXPECT_EQ(2U, r->url_chain().size());
-    EXPECT_EQ(OK, d.request_status());
-    EXPECT_EQ(original_url, r->original_url());
-    EXPECT_EQ(redirect_url, r->url());
   }
 }
 

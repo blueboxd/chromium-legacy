@@ -120,6 +120,14 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void loadProgressChanged(float progress) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().loadProgressChanged(progress);
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void didFailLoad(
             boolean isMainFrame, int errorCode, String description, String failingUrl) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {

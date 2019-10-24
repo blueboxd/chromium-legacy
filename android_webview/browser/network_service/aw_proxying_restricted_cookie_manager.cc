@@ -4,6 +4,11 @@
 
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"

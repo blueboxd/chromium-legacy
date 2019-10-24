@@ -433,6 +433,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                     mAccessibilityFocusId = View.NO_ID;
                     mAccessibilityFocusRect = null;
                 }
+                if (mLastHoverId == virtualViewId) {
+                    sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+                    mLastHoverId = View.NO_ID;
+                }
                 return true;
             case AccessibilityNodeInfo.ACTION_CLICK:
                 if (!mView.hasFocus()) mView.requestFocus();

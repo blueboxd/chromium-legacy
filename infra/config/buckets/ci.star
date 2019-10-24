@@ -1,27 +1,10 @@
 load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
 
-luci.bucket(
-    name = 'ci',
-    acls = [
-        acl.entry(
-            roles = acl.BUILDBUCKET_READER,
-            groups = 'all',
-        ),
-        acl.entry(
-            roles = acl.BUILDBUCKET_TRIGGERER,
-            groups = 'project-chromium-ci-schedulers',
-        ),
-        acl.entry(
-            roles = acl.BUILDBUCKET_OWNER,
-            groups = 'google/luci-task-force@google.com',
-        ),
-    ],
-)
+# Defaults that apply to all branch versions of the bucket
 
 luci.recipe.defaults.cipd_package.set(
     'infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
 
-defaults.bucket.set('ci')
 defaults.build_numbers.set(True)
 defaults.configure_kitchen.set(True)
 defaults.cores.set(8)
@@ -32,6 +15,17 @@ defaults.os.set(os.LINUX_DEFAULT)
 defaults.service_account.set(
     'chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com')
 defaults.swarming_tags.set(['vpython:native-python-wrapper'])
+
+
+# Execute the versioned files to define all of the per-branch entities
+# (bucket, builders, console, poller, etc.)
+exec('//versioned/branches/beta/buckets/ci.star')
+exec('//versioned/branches/stable/buckets/ci.star')
+exec('//versioned/trunk/buckets/ci.star')
+
+
+# *** After this point everything is trunk only ***
+defaults.bucket.set('ci')
 
 
 XCODE_IOS_11_CACHE = swarming.cache(
@@ -1220,6 +1214,9 @@ fyi_coverage_builder(
     cores = None,
     os = os.MAC_ANY,
     use_clang_coverage = True,
+    properties = {
+        'xcode_build_version': '11m382q',
+    },
 )
 
 fyi_coverage_builder(
@@ -1773,11 +1770,6 @@ gpu_builder(
 )
 
 gpu_builder(
-    name = 'GPU Linux Builder',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-gpu_builder(
     name = 'GPU Linux Builder (dbg)',
     goma_backend = goma.backend.RBE_PROD,
 )
@@ -1821,10 +1813,6 @@ def gpu_linux_ci_tester(*, name, **kwargs):
 
 gpu_linux_ci_tester(
     name = 'Linux Debug (NVIDIA)',
-)
-
-gpu_linux_ci_tester(
-    name = 'Linux Release (NVIDIA)',
 )
 
 gpu_linux_ci_tester(
@@ -1911,11 +1899,6 @@ linux_builder(
 )
 
 linux_builder(
-    name = 'Linux Builder',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-linux_builder(
     name = 'Linux Builder (dbg)',
     goma_backend = goma.backend.RBE_PROD,
 )
@@ -1923,10 +1906,6 @@ linux_builder(
 linux_builder(
     name = 'Linux Builder (dbg)(32)',
     goma_backend = goma.backend.RBE_PROD,
-)
-
-linux_builder(
-    name = 'Linux Tests',
 )
 
 linux_builder(

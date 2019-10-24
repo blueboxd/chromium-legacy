@@ -20,7 +20,7 @@ import org.chromium.content_public.browser.WebContents;
  * classes communicate with it.
  */
 public class CastWebContentsIntentUtils {
-    private static final String TAG = "cr_CastWebUtil";
+    private static final String TAG = "CastWebUtil";
 
     static final String ACTION_DATA_SCHEME = "cast";
     static final String ACTION_DATA_AUTHORITY = "webcontents";

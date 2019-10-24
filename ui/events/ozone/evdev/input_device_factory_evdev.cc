@@ -299,10 +299,10 @@ void InputDeviceFactoryEvdev::GetTouchEventLog(
 }
 
 void InputDeviceFactoryEvdev::GetGesturePropertiesService(
-    ozone::mojom::GesturePropertiesServiceRequest request) {
+    mojo::PendingReceiver<ozone::mojom::GesturePropertiesService> receiver) {
 #if defined(USE_EVDEV_GESTURES)
   gesture_properties_service_ = std::make_unique<GesturePropertiesService>(
-      gesture_property_provider_.get(), std::move(request));
+      gesture_property_provider_.get(), std::move(receiver));
 #endif
 }
 

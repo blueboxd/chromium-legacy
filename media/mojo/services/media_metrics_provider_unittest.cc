@@ -145,43 +145,6 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
   }
 }
 
-TEST_F(MediaMetricsProviderTest, TestBytesReceivedUMA) {
-  base::HistogramTester histogram_tester;
-  Initialize(false, false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
-  provider_->AddBytesReceived(1 << 10);
-  provider_.reset();
-  base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectBucketCount("Media.BytesReceived.SRC", 1, 1);
-  histogram_tester.ExpectTotalCount("Media.BytesReceived.MSE", 0);
-  histogram_tester.ExpectTotalCount("Media.BytesReceived.EME", 0);
-  histogram_tester.ExpectTotalCount("Ads.Media.BytesReceived", 0);
-
-  // EME is recorded in before MSE/SRC.
-  Initialize(true, false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
-  provider_->AddBytesReceived(1 << 10);
-  provider_->SetIsEME();
-  provider_->SetIsAdMedia();
-  provider_.reset();
-  base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectBucketCount("Media.BytesReceived.EME", 1, 1);
-  histogram_tester.ExpectTotalCount("Media.BytesReceived.MSE", 0);
-  histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived", 1, 1);
-  histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived.EME", 1, 1);
-  histogram_tester.ExpectTotalCount("Ads.Media.BytesReceived.MSE", 0);
-
-  Initialize(true, false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
-  provider_->AddBytesReceived(1 << 10);
-  provider_->SetIsAdMedia();
-  provider_.reset();
-  base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectBucketCount("Media.BytesReceived.MSE", 1, 1);
-  histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived.MSE", 1, 1);
-  histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived", 1, 2);
-}
-
 TEST_F(MediaMetricsProviderTest, TestPipelineUMA) {
   base::HistogramTester histogram_tester;
   Initialize(false, false, false, kTestOrigin, mojom::MediaURLScheme::kHttps);

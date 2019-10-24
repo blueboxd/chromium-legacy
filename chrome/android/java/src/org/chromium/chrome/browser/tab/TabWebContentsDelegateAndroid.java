@@ -99,13 +99,6 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     }
 
     @Override
-    public void onLoadProgressChanged(int progress) {
-        // TODO(jinsukkim): Move this interface to WebContentsObserver.
-        if (!mTab.isLoading()) return;
-        mTab.notifyLoadProgress(progress);
-    }
-
-    @Override
     public void loadingStateChanged(boolean toDifferentDocument) {
         boolean isLoading = mTab.getWebContents() != null && mTab.getWebContents().isLoading();
         if (isLoading) {

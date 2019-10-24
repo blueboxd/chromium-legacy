@@ -24,12 +24,19 @@ skia_support_pdf = !is_ios && enable_basic_printing
 skia_support_skottie = true
 
 declare_args() {
+  enable_skia_wuffs_gif = false
   skia_whitelist_serialized_typefaces = false
 }
 
 # External-facing config for dependent code.
 config("skia_config") {
   include_dirs = [ "//third_party/skia" ]
+
+  if (!is_ios) {
+    if (enable_skia_wuffs_gif) {
+      include_dirs += [ "//third_party/wuffs/src/release/c" ]
+    }
+  }
   if (enable_vulkan) {
     include_dirs += [
       "//third_party/vulkan/include",
@@ -47,6 +54,9 @@ config("skia_config") {
 
   if (!is_ios) {
     defines += [ "SK_HAS_JPEG_LIBRARY" ]
+    if (enable_skia_wuffs_gif) {
+      defines += [ "SK_HAS_WUFFS_LIBRARY" ]
+    }
   }
   if (enable_vulkan) {
     defines += [
@@ -307,7 +317,6 @@ component("skia") {
       "//third_party/skia/src/codec/SkCodecImageGenerator.cpp",
       "//third_party/skia/src/codec/SkColorTable.cpp",
       "//third_party/skia/src/codec/SkEncodedInfo.cpp",
-      "//third_party/skia/src/codec/SkGifCodec.cpp",
       "//third_party/skia/src/codec/SkIcoCodec.cpp",
       "//third_party/skia/src/codec/SkJpegCodec.cpp",
       "//third_party/skia/src/codec/SkJpegDecoderMgr.cpp",
@@ -324,8 +333,17 @@ component("skia") {
       "//third_party/skia/src/images/SkJPEGWriteUtility.cpp",
       "//third_party/skia/src/images/SkJpegEncoder.cpp",
       "//third_party/skia/src/ports/SkImageGenerator_skia.cpp",
-      "//third_party/skia/third_party/gif/SkGifImageReader.cpp",
     ]
+
+    if (enable_skia_wuffs_gif) {
+      deps += [ "//third_party/wuffs" ]
+      sources += [ "//third_party/skia/src/codec/SkWuffsCodec.cpp" ]
+    } else {
+      sources += [
+        "//third_party/skia/src/codec/SkGifCodec.cpp",
+        "//third_party/skia/third_party/gif/SkGifImageReader.cpp",
+      ]
+    }
   }
 
   if (current_cpu == "arm") {

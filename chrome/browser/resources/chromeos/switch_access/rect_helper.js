@@ -87,6 +87,20 @@ const RectHelper = {
   },
 
   /**
+   * Returns a string representing the given rectangle.
+   * @param {chrome.accessibilityPrivate.ScreenRect|undefined} rect
+   * @return {string}
+   */
+  toString: (rect) => {
+    let str = '';
+    if (rect) {
+      str = rect.left + ',' + rect.top + ' ';
+      str += rect.width + 'x' + rect.height;
+    }
+    return str;
+  },
+
+  /**
    * Increases the size of |outer| to entirely enclose |inner|, with |padding|
    * buffer on each side.
    * @param {number} padding

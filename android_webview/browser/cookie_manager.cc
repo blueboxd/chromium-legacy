@@ -44,6 +44,7 @@
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/cookie_access_delegate_impl.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/url_constants.h"
@@ -324,6 +325,11 @@ net::CookieStore* CookieManager::GetCookieStore() {
     }
 
     cookie_store_ = content::CreateCookieStore(cookie_config, nullptr);
+    // Use a CookieAccessDelegate that always returns Legacy mode, for
+    // compatibility reasons.
+    cookie_store_->SetCookieAccessDelegate(
+        std::make_unique<network::CookieAccessDelegateImpl>(
+            network::mojom::CookieAccessDelegateType::ALWAYS_LEGACY));
   }
 
   return cookie_store_.get();

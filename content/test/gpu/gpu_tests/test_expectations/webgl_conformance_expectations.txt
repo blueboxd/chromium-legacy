@@ -97,10 +97,13 @@ crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failur
 # TODO(crbug.com/979444): once this is passing on the passthrough
 # command decoder on Android, simplify this expectation to just not
 # declare any OS.
+# TODO(crbug.com/1017162): This test is very flaky on Win/Vulkan/Nvidia,
+# even with RetryOnFailure. Once this issue is resolved, we can probably
+# cover this with RetryOnFailure again.
 crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ mac no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/979444 [ android ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Win / AMD / Passthrough command decoder / D3D11
@@ -264,6 +267,11 @@ crbug.com/angleproject/2915 [ win nvidia vulkan passthrough ] conformance/textur
 crbug.com/angleproject/2930 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
 crbug.com/angleproject/3481 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ Failure ]
 crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/shaders/conversions.html [ Failure ]
+# Flaky since crbug.com/1017162
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/radians/radians_001_to_006.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/reflect/reflect_001_to_006.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/refract/refract_001_to_006.html [ Failure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]

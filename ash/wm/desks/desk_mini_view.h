@@ -86,6 +86,12 @@ class ASH_EXPORT DeskMiniView
 
   bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 
+  // Gets the minimum width of this view to properly lay out all its contents in
+  // default layout.
+  // The view containing this object can use the width returned from this
+  // function to decide its own proper size or layout.
+  int GetMinWidthForDefaultLayout() const;
+
   bool IsLabelVisibleForTesting() const { return label_->GetVisible(); }
   const DeskPreviewView* GetDeskPreviewForTesting() const {
     return desk_preview_.get();

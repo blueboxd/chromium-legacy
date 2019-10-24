@@ -58,7 +58,7 @@ void AwNetworkChangeNotifier::OnNetworkSoonToDisconnect(
     NetworkHandle network) {}
 void AwNetworkChangeNotifier::OnNetworkDisconnected(
     NetworkHandle network) {}
-void AwNetworkChangeNotifier::OnNetworkMadeDefault(NetworkHandle network){}
+void AwNetworkChangeNotifier::OnNetworkMadeDefault(NetworkHandle network) {}
 
 AwNetworkChangeNotifier::AwNetworkChangeNotifier(
     net::NetworkChangeNotifierDelegateAndroid* delegate)

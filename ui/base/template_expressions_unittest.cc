@@ -377,7 +377,12 @@ TEST(TemplateExpressionsTest, JSMultipleTemplates) {
        "Polymer({\n"
        "  _template: html`<div>number</div>`,\n"
        "  is: 'bar-element',\n"
-       "});"}};
+       "});"},
+      // 2 minified templates, both with substitutions.
+      {"Polymer({_template:html`<div>$i18n{test}</div>`,is:'foo-element',});\n"
+       "Polymer({_template:html`<div>$i18n{5}</div>`,is:'bar-element',});",
+       "Polymer({_template:html`<div>word</div>`,is:'foo-element',});\n"
+       "Polymer({_template:html`<div>number</div>`,is:'bar-element',});"}};
 
   std::string formatted;
   for (const TestCase test_case : kTestCases) {

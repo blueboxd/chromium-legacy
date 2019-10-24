@@ -111,8 +111,6 @@ viz_component("service") {
     "display_embedder/gl_output_surface.h",
     "display_embedder/gl_output_surface_buffer_queue.cc",
     "display_embedder/gl_output_surface_buffer_queue.h",
-    "display_embedder/gl_output_surface_chromeos.cc",
-    "display_embedder/gl_output_surface_chromeos.h",
     "display_embedder/gl_output_surface_offscreen.cc",
     "display_embedder/gl_output_surface_offscreen.h",
     "display_embedder/in_process_gpu_memory_buffer_manager.cc",

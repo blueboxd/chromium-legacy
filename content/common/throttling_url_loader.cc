@@ -12,7 +12,6 @@
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
@@ -534,7 +533,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
-      throttle->BeforeWillProcessResponse(response_url_, response_head,
+      throttle->BeforeWillProcessResponse(response_url_, *response_head,
                                           &throttle_deferred);
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
@@ -553,13 +552,12 @@ void ThrottlingURLLoader::OnReceiveResponse(
   }
 
   // Dispatch WillProcessResponse().
-  network::ResourceResponseHead response_head_copy = response_head;
   if (!throttles_.empty()) {
     bool deferred = false;
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
-      throttle->WillProcessResponse(response_url_, &response_head_copy,
+      throttle->WillProcessResponse(response_url_, response_head.get(),
                                     &throttle_deferred);
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
@@ -567,13 +565,13 @@ void ThrottlingURLLoader::OnReceiveResponse(
 
     if (deferred) {
       deferred_stage_ = DEFERRED_RESPONSE;
-      response_info_ = std::make_unique<ResponseInfo>(response_head_copy);
+      response_info_ = std::make_unique<ResponseInfo>(std::move(response_head));
       client_binding_.PauseIncomingMethodCallProcessing();
       return;
     }
   }
 
-  forwarding_client_->OnReceiveResponse(response_head_copy);
+  forwarding_client_->OnReceiveResponse(std::move(response_head));
 }
 
 void ThrottlingURLLoader::OnReceiveRedirect(
@@ -592,7 +590,7 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       std::vector<std::string> removed_headers;
       net::HttpRequestHeaders modified_headers;
       net::RedirectInfo redirect_info_copy = redirect_info;
-      throttle->WillRedirectRequest(&redirect_info_copy, response_head,
+      throttle->WillRedirectRequest(&redirect_info_copy, *response_head,
                                     &throttle_deferred, &removed_headers,
                                     &modified_headers);
       if (redirect_info_copy.new_url != redirect_info.new_url) {

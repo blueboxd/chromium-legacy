@@ -41,9 +41,13 @@ struct ApplyViewportChangesArgs {
   // subframe compositors to throttle their re-rastering during the gesture.
   bool is_pinch_gesture_active;
 
-  // How much the browser controls have been shown or hidden. The ratio runs
+  // How much the top controls have been shown or hidden. The ratio runs
   // between 0 (hidden) and 1 (full-shown). This is additive.
-  float browser_controls_delta;
+  float top_controls_delta;
+
+  // How much the bottom controls have been shown or hidden. The ratio runs
+  // between 0 (hidden) and 1 (full-shown). This is additive.
+  float bottom_controls_delta;
 
   // Whether the browser controls have been locked to fully hidden or shown or
   // whether they can be freely moved.

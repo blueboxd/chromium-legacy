@@ -23,7 +23,7 @@ class WebsiteLoginFetcher {
     Login(const Login& other);
     ~Login();
 
-    // The scheme, host, port and path of the login website.
+    // The origin of the login website.
     GURL origin;
     std::string username;
   };

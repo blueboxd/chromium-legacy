@@ -7,9 +7,9 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/store_update_data.h"
 #include "url/gurl.h"
 
 namespace optimization_guide {
@@ -43,14 +43,14 @@ void HintCache::Initialize(bool purge_existing_data,
                      std::move(callback)));
 }
 
-std::unique_ptr<HintUpdateData>
+std::unique_ptr<StoreUpdateData>
 HintCache::MaybeCreateUpdateDataForComponentHints(
     const base::Version& version) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return hint_store_->MaybeCreateUpdateDataForComponentHints(version);
 }
 
-std::unique_ptr<HintUpdateData> HintCache::CreateUpdateDataForFetchedHints(
+std::unique_ptr<StoreUpdateData> HintCache::CreateUpdateDataForFetchedHints(
     base::Time update_time,
     base::Time expiry_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -58,7 +58,7 @@ std::unique_ptr<HintUpdateData> HintCache::CreateUpdateDataForFetchedHints(
 }
 
 void HintCache::UpdateComponentHints(
-    std::unique_ptr<HintUpdateData> component_data,
+    std::unique_ptr<StoreUpdateData> component_data,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(component_data);
@@ -82,7 +82,7 @@ void HintCache::UpdateFetchedHints(
   } else {
     expiry_time += features::StoredFetchedHintsFreshnessDuration();
   }
-  std::unique_ptr<HintUpdateData> fetched_hints_update_data =
+  std::unique_ptr<StoreUpdateData> fetched_hints_update_data =
       CreateUpdateDataForFetchedHints(update_time, expiry_time);
   ProcessHints(get_hints_response.get()->mutable_hints(),
                fetched_hints_update_data.get());

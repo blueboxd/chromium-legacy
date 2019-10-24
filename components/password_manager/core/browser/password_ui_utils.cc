@@ -82,7 +82,7 @@ void UpdatePasswordFormUsernameAndPassword(
   bool username_edited = pending_credentials.username_value != username;
   bool password_changed = pending_credentials.password_value != password;
   if (username_edited) {
-    form_manager->UpdateUsername(username);
+    form_manager->OnUpdateUsernameFromPrompt(username);
     if (form_manager->GetMetricsRecorder()) {
       form_manager->GetMetricsRecorder()->RecordDetailedUserAction(
           password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
@@ -90,7 +90,7 @@ void UpdatePasswordFormUsernameAndPassword(
     }
   }
   if (password_changed) {
-    form_manager->UpdatePasswordValue(password);
+    form_manager->OnUpdatePasswordFromPrompt(password);
     if (form_manager->GetMetricsRecorder()) {
       form_manager->GetMetricsRecorder()->RecordDetailedUserAction(
           password_manager::PasswordFormMetricsRecorder::DetailedUserAction::

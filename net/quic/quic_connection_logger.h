@@ -47,7 +47,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
 
   // QuicConnectionDebugVisitorInterface
   void OnPacketSent(const quic::SerializedPacket& serialized_packet,
-                    quic::QuicPacketNumber original_packet_number,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime sent_time) override;
   void OnIncomingAck(quic::QuicPacketNumber ack_packet_number,

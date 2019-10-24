@@ -12,7 +12,7 @@ FakeBluetoothChooserFactory::~FakeBluetoothChooserFactory() {}
 
 void FakeBluetoothChooserFactory::CreateFakeBluetoothChooser(
     mojo::PendingReceiver<mojom::FakeBluetoothChooser> receiver,
-    mojom::FakeBluetoothChooserClientAssociatedPtrInfo client) {
+    mojo::PendingAssociatedRemote<mojom::FakeBluetoothChooserClient> client) {
   DCHECK(!next_fake_bluetooth_chooser_);
   next_fake_bluetooth_chooser_ = std::make_unique<FakeBluetoothChooser>(
       std::move(receiver), std::move(client));

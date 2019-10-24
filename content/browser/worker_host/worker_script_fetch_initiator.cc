@@ -40,7 +40,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/loader_util.h"
@@ -220,11 +221,11 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
     std::unique_ptr<network::mojom::URLLoaderFactory> factory =
         std::move(pair.second);
 
-    network::mojom::URLLoaderFactoryPtr factory_ptr;
-    mojo::MakeStrongBinding(std::move(factory),
-                            mojo::MakeRequest(&factory_ptr));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::move(factory), factory_remote.InitWithNewPipeAndPassReceiver());
     factory_bundle->pending_scheme_specific_factories().emplace(
-        scheme, factory_ptr.PassInterface());
+        scheme, std::move(factory_remote));
   }
 
   if (file_support) {
@@ -233,11 +234,12 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
         storage_partition->browser_context()->GetSharedCorsOriginAccessList(),
         // USER_VISIBLE because worker script fetch may affect the UI.
         base::TaskPriority::USER_VISIBLE);
-    network::mojom::URLLoaderFactoryPtr file_factory_ptr;
-    mojo::MakeStrongBinding(std::move(file_factory),
-                            mojo::MakeRequest(&file_factory_ptr));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> file_factory_remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::move(file_factory),
+        file_factory_remote.InitWithNewPipeAndPassReceiver());
     factory_bundle->pending_scheme_specific_factories().emplace(
-        url::kFileScheme, file_factory_ptr.PassInterface());
+        url::kFileScheme, std::move(file_factory_remote));
   }
 
   return factory_bundle;

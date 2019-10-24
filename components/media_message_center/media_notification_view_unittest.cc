@@ -204,8 +204,13 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
     return media_controller_.get();
   }
 
+  message_center::NotificationHeaderView* GetHeaderRow(
+      MediaNotificationView* view) const {
+    return view->header_row_;
+  }
+
   message_center::NotificationHeaderView* header_row() const {
-    return view()->header_row_;
+    return GetHeaderRow(view());
   }
 
   const base::string16& accessible_name() const {
@@ -306,7 +311,8 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
     auto view = std::make_unique<MediaNotificationView>(
         &container_, item_->GetWeakPtr(),
         nullptr /* header_row_controls_view */,
-        base::ASCIIToUTF16(kTestDefaultAppName), kViewWidth);
+        base::ASCIIToUTF16(kTestDefaultAppName), kViewWidth,
+        /*should_show_icon=*/true);
     view->SetSize(kViewSize);
     view->set_owned_by_client();
 
@@ -1280,6 +1286,20 @@ TEST_F(MAYBE_MediaNotificationViewTest, ForcedExpandedState) {
   // Clicking on the header should toggle the expanded state.
   SimulateHeaderClick();
   EXPECT_TRUE(IsActuallyExpanded());
+}
+
+TEST_F(MAYBE_MediaNotificationViewTest, AllowsHidingOfAppIcon) {
+  MediaNotificationView shows_icon(&container(), nullptr, nullptr,
+                                   base::string16(), kViewWidth,
+                                   /*should_show_icon=*/true);
+  MediaNotificationView hides_icon(&container(), nullptr, nullptr,
+                                   base::string16(), kViewWidth,
+                                   /*should_show_icon=*/false);
+
+  EXPECT_TRUE(
+      GetHeaderRow(&shows_icon)->app_icon_view_for_testing()->GetVisible());
+  EXPECT_FALSE(
+      GetHeaderRow(&hides_icon)->app_icon_view_for_testing()->GetVisible());
 }
 
 }  // namespace media_message_center

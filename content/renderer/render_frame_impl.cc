@@ -2296,7 +2296,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
     IPC_MESSAGE_HANDLER(FrameMsg_SetOverlayRoutingToken,
                         OnSetOverlayRoutingToken)
-    IPC_MESSAGE_HANDLER(FrameMsg_NotifyUserActivation, OnNotifyUserActivation)
     IPC_MESSAGE_HANDLER(FrameMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(FrameMsg_RenderFallbackContent, OnRenderFallbackContent)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -6538,10 +6537,6 @@ void RenderFrameImpl::RequestOverlayRoutingToken(
   Send(new FrameHostMsg_RequestOverlayRoutingToken(routing_id_));
 
   pending_routing_token_callbacks_.push_back(std::move(callback));
-}
-
-void RenderFrameImpl::OnNotifyUserActivation() {
-  frame_->NotifyUserActivation();
 }
 
 void RenderFrameImpl::OnMediaPlayerActionAt(

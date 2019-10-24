@@ -7,6 +7,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
@@ -199,22 +200,32 @@ class DragWindowFromShelfController::WindowsHider
 
 DragWindowFromShelfController::DragWindowFromShelfController(
     aura::Window* window)
-    : window_(window) {}
+    : window_(window) {
+  window_->AddObserver(this);
+}
 
 DragWindowFromShelfController::~DragWindowFromShelfController() {
   CancelDrag();
+  if (window_)
+    window_->RemoveObserver(this);
 }
 
 void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
                                          float scroll_x,
                                          float scroll_y) {
+  // |window_| might have been destroyed during dragging.
+  if (!window_)
+    return;
+
   if (!drag_started_) {
-    // Do not start drag until the drag goes above the shelf.
+    // Do not start drag until the drag goes above the hotseat.
     const gfx::Rect work_area =
         screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
             window_);
-    if (location_in_screen.y() > work_area.bottom())
+    if (location_in_screen.y() >
+        work_area.bottom() - ShelfConfig::Get()->hotseat_size()) {
       return;
+    }
     OnDragStarted(location_in_screen);
   }
 
@@ -323,6 +334,14 @@ void DragWindowFromShelfController::CancelDrag() {
   OnDragEnded(previous_location_in_screen_,
               /*should_drop_window_in_overview=*/false,
               /*snap_position=*/SplitViewController::NONE);
+}
+
+void DragWindowFromShelfController::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(window_, window);
+
+  CancelDrag();
+  window_->RemoveObserver(this);
+  window_ = nullptr;
 }
 
 void DragWindowFromShelfController::OnDragStarted(

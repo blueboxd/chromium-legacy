@@ -108,7 +108,7 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
                                     jboolean progress_bar_visible,
                                     jfloat progress_bar_height,
                                     jfloat progress_bar_opacity,
-                                    jint progress_bar_completion,
+                                    jfloat progress_bar_completion,
                                     jint separator_line_color) {
   // NOTE(mdjones): It is possible to render the panel before content has been
   // created. If this is the case, do not attempt to access the WebContents

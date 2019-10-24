@@ -67,10 +67,7 @@ void BlinkLeakDetector::PerformLeakDetection(
   for (auto resource_fetcher : ResourceFetcher::MainThreadFetchers())
     resource_fetcher->PrepareForLeakDetection();
 
-  // Internal settings are ScriptWrappable and thus may retain documents
-  // depending on whether the garbage collector(s) are able to find the settings
-  // object through the Page supplement.
-  InternalSettings::PrepareForLeakDetection();
+  Page::PrepareForLeakDetection();
 
   // Task queue may contain delayed object destruction tasks.
   // This method is called from navigation hook inside FrameLoader,

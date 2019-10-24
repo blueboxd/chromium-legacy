@@ -577,10 +577,10 @@ public class Tab {
     }
 
     /**
-     * @return a value between 0 and 100 reflecting what percentage of the page load is complete.
+     * @return a value between 0 and 1 reflecting what percentage of the page load is complete.
      */
-    public int getProgress() {
-        return !isLoading() ? 100 : mWebContents.getLoadProgress();
+    public float getProgress() {
+        return !isLoading() ? 1 : mWebContents.getLoadProgress();
     }
 
     void notifyThemeColorChanged(int themeColor) {
@@ -735,7 +735,7 @@ public class Tab {
 
             // If the page is still loading, update the progress bar (otherwise it would not show
             // until the renderer notifies of new progress being made).
-            if (getProgress() < 100 && !isShowingInterstitialPage()) {
+            if (getProgress() < 1 && !isShowingInterstitialPage()) {
                 notifyLoadProgress(getProgress());
             }
 
@@ -1237,9 +1237,9 @@ public class Tab {
 
     /**
      * Notify the observers that the load progress has changed.
-     * @param progress The current percentage of progress.
+     * @param progress The progress, in the range [0, 1].
      */
-    protected void notifyLoadProgress(int progress) {
+    protected void notifyLoadProgress(float progress) {
         for (TabObserver observer : mObservers) observer.onLoadProgressChanged(this, progress);
     }
 

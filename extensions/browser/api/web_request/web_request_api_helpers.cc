@@ -1306,7 +1306,7 @@ void MergeOnHeadersReceivedResponses(
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    GURL* allowed_unsafe_redirect_url,
+    GURL* preserve_fragment_on_redirect_url,
     IgnoredActions* ignored_actions,
     bool* response_headers_modified) {
   DCHECK(response_headers_modified);
@@ -1405,9 +1405,8 @@ void MergeOnHeadersReceivedResponses(
     (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
     (*override_response_headers)->RemoveHeader("location");
     (*override_response_headers)->AddHeader("Location: " + new_url.spec());
-    // Explicitly mark the URL as safe for redirection, to prevent the request
-    // from being blocked because of net::ERR_UNSAFE_REDIRECT.
-    *allowed_unsafe_redirect_url = new_url;
+    // Prevent the original URL's fragment from being added to the new URL.
+    *preserve_fragment_on_redirect_url = new_url;
   }
 
   // Record metrics.

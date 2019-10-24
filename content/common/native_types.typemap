@@ -87,7 +87,6 @@ type_mappings = [
   "content.mojom.SyntheticPinch=::content::SyntheticPinchGestureParams",
   "content.mojom.SyntheticTap=::content::SyntheticTapGestureParams",
   "content.mojom.SyntheticPointerAction=::content::SyntheticPointerActionListParams",
-  "content.mojom.TouchAction=::cc::TouchAction",
   "content.mojom.TouchActionOptional=::cc::TouchAction",
   "content.mojom.TouchState=::blink::WebTouchPoint::State",
   "content.mojom.WebCursor=::content::WebCursor",

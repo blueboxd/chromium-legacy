@@ -4,6 +4,9 @@
 
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"

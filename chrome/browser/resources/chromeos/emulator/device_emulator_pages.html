@@ -1,26 +1,9 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
-<link rel="import" href="audio_settings.html">
-<link rel="import" href="battery_settings.html">
-<link rel="import" href="bluetooth_settings.html">
-<link rel="import" href="icons.html">
-<link rel="import" href="input_device_settings.html">
-<link rel="import" href="shared_styles.html">
-
-<dom-module id="device-emulator-pages">
-  <template>
     <style include="device-emulator-shared-styles iron-flex iron-flex-alignment
         iron-positioning">
       :host {
         display: flex;
         flex-direction: column;
+        height: 100%;
       }
 
       iron-pages {
@@ -105,6 +88,3 @@
         <input-device-settings id="inputDeviceSettings"></input-device-settings>
       </iron-pages>
     </div>
-  </template>
-  <script src="device_emulator_pages.js"></script>
-</dom-module>

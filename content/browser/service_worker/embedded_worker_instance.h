@@ -212,7 +212,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
-      network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory)>;
   // Allows overriding the URLLoaderFactory creation for loading subresources
   // from service workers (i.e., fetch()) and for loading non-installed service
   // worker scripts.

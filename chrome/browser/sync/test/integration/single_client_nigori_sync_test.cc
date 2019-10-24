@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -164,6 +165,25 @@ class PageTitleChecker : public StatusChangeChecker,
   DISALLOW_COPY_AND_ASSIGN(PageTitleChecker);
 };
 
+class PasswordsDataTypeActiveChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit PasswordsDataTypeActiveChecker(syncer::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service) {}
+  ~PasswordsDataTypeActiveChecker() override {}
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override {
+    return service()->GetActiveDataTypes().Has(syncer::PASSWORDS);
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for PASSWORDS to become active";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordsDataTypeActiveChecker);
+};
+
 class SingleClientNigoriSyncTestWithUssTests
     : public SyncTest,
       public testing::WithParamInterface<bool> {
@@ -194,6 +214,23 @@ class SingleClientNigoriSyncTestWithUssTests
   base::test::ScopedFeatureList override_features_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriSyncTestWithUssTests);
+};
+
+class SingleClientNigoriSyncTestWithNotAwaitQuiescence
+    : public SingleClientNigoriSyncTestWithUssTests {
+ public:
+  SingleClientNigoriSyncTestWithNotAwaitQuiescence() = default;
+  ~SingleClientNigoriSyncTestWithNotAwaitQuiescence() = default;
+
+  bool TestUsesSelfNotifications() override {
+    // This test fixture is used with tests, which expect SetupSync() to be
+    // waiting for completion, but not for quiescense, because it can't be
+    // achieved and isn't needed.
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriSyncTestWithNotAwaitQuiescence);
 };
 
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
@@ -331,6 +368,31 @@ INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientNigoriSyncTestWithUssTests,
                          ::testing::Values(false, true));
 
+// Performs initial sync for Nigori, but doesn't allow initialized Nigori to be
+// commited.
+IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
+                       PRE_ShouldCompleteKeystoreInitializationAfterRestart) {
+  GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::THROTTLED);
+  ASSERT_TRUE(SetupSync());
+}
+
+// After browser restart the client should commit initialized Nigori.
+IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
+                       ShouldCompleteKeystoreInitializationAfterRestart) {
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), GetFakeServer(),
+                                  syncer::PassphraseType::kImplicitPassphrase)
+                  .Wait());
+  GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::SUCCESS);
+  EXPECT_TRUE(ServerNigoriChecker(GetSyncService(0), GetFakeServer(),
+                                  syncer::PassphraseType::kKeystorePassphrase)
+                  .Wait());
+}
+
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientNigoriSyncTestWithNotAwaitQuiescence,
+                         ::testing::Values(false, true));
+
 class SingleClientNigoriWithWebApiTest : public SyncTest {
  public:
   SingleClientNigoriWithWebApiTest() : SyncTest(SINGLE_CLIENT) {
@@ -379,6 +441,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   ASSERT_TRUE(TrustedVaultKeyRequiredStateChecker(GetSyncService(0),
                                                   /*desired_state=*/true)
                   .Wait());
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 
   // Mimic opening a web page where the user can interact with the retrieval
   // flow.
@@ -393,9 +456,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
       GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
   EXPECT_TRUE(title_checker.Wait());
 
-  ASSERT_TRUE(TrustedVaultKeyRequiredStateChecker(GetSyncService(0),
+  EXPECT_TRUE(TrustedVaultKeyRequiredStateChecker(GetSyncService(0),
                                                   /*desired_state=*/false)
                   .Wait());
+  EXPECT_TRUE(PasswordsDataTypeActiveChecker(GetSyncService(0)).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
@@ -436,6 +500,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   EXPECT_FALSE(GetSyncService(0)
                    ->GetUserSettings()
                    ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 }
 
 // Same as SingleClientNigoriWithWebApiTest but does NOT override

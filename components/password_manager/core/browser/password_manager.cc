@@ -59,9 +59,13 @@ namespace {
 // already.
 using Logger = autofill::SavePasswordProgressLogger;
 
-bool AreAllFieldsEmpty(const PasswordForm& form) {
-  return form.username_value.empty() && form.password_value.empty() &&
-         form.new_password_value.empty();
+bool AreAllFieldsEmpty(const FormData& form_data) {
+  for (const auto& field : form_data.fields) {
+    if (!field.value.empty())
+      return false;
+  }
+
+  return true;
 }
 
 // Returns true if the user needs to be prompted before a password can be
@@ -741,8 +745,7 @@ void PasswordManager::OnPasswordFormsRendered(
   }
 
   // Record all visible forms from the frame.
-  all_visible_forms_.insert(all_visible_forms_.end(),
-                            visible_forms.begin(),
+  all_visible_forms_.insert(all_visible_forms_.end(), visible_forms.begin(),
                             visible_forms.end());
 
   if (!did_stop_loading &&
@@ -768,7 +771,7 @@ void PasswordManager::OnPasswordFormsRendered(
     for (const PasswordForm& form : all_visible_forms_) {
       if (submitted_manager->IsEqualToSubmittedForm(form.form_data)) {
         if (submitted_manager->IsPossibleChangePasswordFormWithoutUsername() &&
-            AreAllFieldsEmpty(form)) {
+            AreAllFieldsEmpty(form.form_data)) {
           continue;
         }
         submitted_manager->GetMetricsRecorder()->LogSubmitFailed();

@@ -62,6 +62,8 @@ class PLATFORM_EXPORT PerspectiveTransformOperation final
     transform.ApplyPerspective(p_);
   }
 
+  scoped_refptr<TransformOperation> Accumulate(
+      const TransformOperation& other) override;
   scoped_refptr<TransformOperation> Blend(
       const TransformOperation* from,
       double progress,

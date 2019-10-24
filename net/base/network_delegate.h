@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/auth.h"
@@ -68,7 +69,7 @@ class NET_EXPORT NetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& remote_endpoint,
-      GURL* allowed_unsafe_redirect_url);
+      base::Optional<GURL>* preserve_fragment_on_redirect_url);
   void NotifyBeforeRedirect(URLRequest* request,
                             const GURL& new_location);
   void NotifyResponseStarted(URLRequest* request, int net_error);
@@ -169,9 +170,9 @@ class NET_EXPORT NetworkDelegate {
   // to new values, that should be considered as overriding
   // |original_response_headers|.
   // If the response is a redirect, and the Location response header value is
-  // identical to |allowed_unsafe_redirect_url|, then the redirect is never
-  // blocked and the reference fragment is not copied from the original URL
-  // to the redirection target.
+  // identical to |preserve_fragment_on_redirect_url|, then the redirect is
+  // never blocked and the reference fragment is not copied from the original
+  // URL to the redirection target.
   //
   // Returns OK to continue with the request, ERR_IO_PENDING if the result is
   // not ready yet, and any other status code to cancel the request. If
@@ -179,15 +180,15 @@ class NET_EXPORT NetworkDelegate {
   // however, that a pending operation may be cancelled by
   // OnURLRequestDestroyed. Once cancelled, |request|,
   // |original_response_headers|, |override_response_headers|, and
-  // |allowed_unsafe_redirect_url| become invalid and |callback| may not be
-  // called.
+  // |preserve_fragment_on_redirect_url| become invalid and |callback| may not
+  // be called.
   virtual int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& remote_endpoint,
-      GURL* allowed_unsafe_redirect_url) = 0;
+      base::Optional<GURL>* preserve_fragment_on_redirect_url) = 0;
 
   // Called right after a redirect response code was received. |new_location| is
   // only valid for the duration of the call.

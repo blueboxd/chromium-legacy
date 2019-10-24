@@ -77,6 +77,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::RenderWidgetSurfaceProperties)
   IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
   IPC_STRUCT_TRAITS_MEMBER(top_controls_shown_ratio)
 #ifdef OS_ANDROID
+  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_height)
+  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_shown_ratio)
   IPC_STRUCT_TRAITS_MEMBER(has_transparent_background)
 #endif
 IPC_STRUCT_TRAITS_END()

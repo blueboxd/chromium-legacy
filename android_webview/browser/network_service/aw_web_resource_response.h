@@ -25,7 +25,7 @@ class AwWebResourceResponse {
  public:
   // It is expected that |obj| is an instance of the Java-side
   // org.chromium.android_webview.AwWebResourceResponse class.
-  AwWebResourceResponse(const base::android::JavaRef<jobject>& obj);
+  explicit AwWebResourceResponse(const base::android::JavaRef<jobject>& obj);
   ~AwWebResourceResponse();
 
   bool HasInputStream(JNIEnv* env) const;
@@ -47,6 +47,6 @@ class AwWebResourceResponse {
   DISALLOW_COPY_AND_ASSIGN(AwWebResourceResponse);
 };
 
-} // namespace android_webview
+}  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_WEB_RESOURCE_RESPONSE_H_

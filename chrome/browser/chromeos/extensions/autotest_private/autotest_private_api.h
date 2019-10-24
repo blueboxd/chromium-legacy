@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -941,6 +942,31 @@ class AutotestPrivateCloseAppWindowFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateCloseAppWindowFunction() override;
   ResponseAction Run() override;
+};
+
+class AutotestPrivateInstallPWAForCurrentURLFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateInstallPWAForCurrentURLFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.installPWAForCurrentURL",
+                             AUTOTESTPRIVATE_INSTALLPWAFORCURRENTURL)
+
+ private:
+  class PWABannerObserver;
+  class PWARegistrarObserver;
+  ~AutotestPrivateInstallPWAForCurrentURLFunction() override;
+  ResponseAction Run() override;
+
+  // Called when a PWA is loaded from a URL.
+  void PWALoaded();
+  // Called when a PWA is installed.
+  void PWAInstalled(const web_app::AppId& app_id);
+  // Called when intalling a PWA times out.
+  void PWATimeout();
+
+  std::unique_ptr<PWABannerObserver> banner_observer_;
+  std::unique_ptr<PWARegistrarObserver> registrar_observer_;
+  base::OneShotTimer timeout_timer_;
 };
 
 template <>

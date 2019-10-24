@@ -18,7 +18,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
-import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.View;
@@ -106,7 +105,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
 
     private boolean mWindowisWideColorGamut;
 
-    protected SparseArray<IntentCallback> mOutstandingIntents;
     // We use a weak reference here to prevent this from leaking in WebView.
     private WeakReference<Context> mContextRef;
 
@@ -254,7 +252,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         // context does not have the same lifetime guarantees as an application context so we can't
         // hold a strong reference to it.
         mContextRef = new WeakReference<>(context);
-        mOutstandingIntents = new SparseArray<>();
         mIntentErrors = new HashMap<>();
         mDisplayAndroid = display;
         mDisplayAndroid.addObserver(this);
@@ -390,11 +387,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      * @return True if the callback was removed, false if it was not found.
     */
     public boolean removeIntentCallback(IntentCallback callback) {
-        int requestCode = mOutstandingIntents.indexOfValue(callback);
-        if (requestCode < 0) return false;
-        mOutstandingIntents.remove(requestCode);
-        mIntentErrors.remove(requestCode);
-        return true;
+        return false;
     }
 
     /**

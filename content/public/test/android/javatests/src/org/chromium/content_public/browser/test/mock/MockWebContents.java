@@ -199,7 +199,7 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
-    public int getLoadProgress() {
+    public float getLoadProgress() {
         return 0;
     }
 

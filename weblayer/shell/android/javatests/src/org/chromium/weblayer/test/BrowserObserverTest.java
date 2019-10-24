@@ -7,7 +7,6 @@ package org.chromium.weblayer.test;
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,9 +29,6 @@ import java.util.List;
 public class BrowserObserverTest {
     @Rule
     public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
-
-    // URL used for base tests.
-    private static final String URL = "data:text";
 
     private static class Observer extends BrowserObserver {
         public static class BrowserObserverValueRecorder {
@@ -62,26 +58,10 @@ public class BrowserObserverTest {
 
         public BrowserObserverValueRecorder visibleUrlChangedCallback =
                 new BrowserObserverValueRecorder();
-        public BrowserObserverValueRecorder loadingStateChangedCallback =
-                new BrowserObserverValueRecorder();
-        public BrowserObserverValueRecorder loadProgressChangedCallback =
-                new BrowserObserverValueRecorder();
 
         @Override
         public void visibleUrlChanged(Uri url) {
             visibleUrlChangedCallback.recordValue(url.toString());
-        }
-
-        @Override
-        public void loadingStateChanged(boolean isLoading, boolean toDifferentDocument) {
-            loadingStateChangedCallback.recordValue(
-                    Boolean.toString(isLoading) + " " + Boolean.toString(toDifferentDocument));
-        }
-
-        @Override
-        public void loadProgressChanged(double progress) {
-            loadProgressChangedCallback.recordValue(
-                    progress == 1 ? "load complete" : "load started");
         }
     }
 
@@ -100,29 +80,5 @@ public class BrowserObserverTest {
 
         /* Verify that the visible URL changes to the target. */
         observer.visibleUrlChangedCallback.waitUntilValueObserved(url);
-
-        /* Wait until the BrowserObserver is notified of load completion. */
-        observer.loadingStateChangedCallback.waitUntilValueObserved("false true");
-        observer.loadProgressChangedCallback.waitUntilValueObserved("load complete");
-
-        /* Verify that the BrowserObserver was notified of load progress /before/ load completion.
-         */
-        int finishStateIndex =
-                observer.loadingStateChangedCallback.getObservedValues().indexOf("false true");
-        int finishProgressIndex =
-                observer.loadProgressChangedCallback.getObservedValues().indexOf("load complete");
-        int startStateIndex =
-                observer.loadingStateChangedCallback.getObservedValues().lastIndexOf("true true");
-        int startProgressIndex =
-                observer.loadProgressChangedCallback.getObservedValues().lastIndexOf(
-                        "load started");
-
-        Assert.assertNotEquals(startStateIndex, -1);
-        Assert.assertNotEquals(startProgressIndex, -1);
-        Assert.assertNotEquals(finishStateIndex, -1);
-        Assert.assertNotEquals(finishProgressIndex, -1);
-
-        Assert.assertTrue(startStateIndex < finishStateIndex);
-        Assert.assertTrue(startProgressIndex < finishProgressIndex);
     }
 }

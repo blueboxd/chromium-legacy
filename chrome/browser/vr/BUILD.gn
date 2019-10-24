@@ -707,8 +707,6 @@ if (!is_android) {
       "test/mock_xr_session_request_consent_manager.cc",
       "test/mock_xr_session_request_consent_manager.h",
       "test/multi_class_browser_test.h",
-      "test/webvr_browser_test.cc",
-      "test/webvr_browser_test.h",
       "test/webxr_browser_test.cc",
       "test/webxr_browser_test.h",
       "test/webxr_vr_browser_test.cc",

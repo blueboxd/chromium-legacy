@@ -69,7 +69,7 @@ import java.util.List;
     @Rule
     public DownloadTestRule mDownloadTestRule = new DownloadTestRule(this);
 
-    private static final String TAG = "cr_DownloadTest";
+    private static final String TAG = "DownloadTest";
     private static final String SUPERBO_CONTENTS =
             "plain text response from a POST";
 

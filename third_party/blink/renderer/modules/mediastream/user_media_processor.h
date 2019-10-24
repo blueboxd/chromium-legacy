@@ -294,7 +294,7 @@ class MODULES_EXPORT UserMediaProcessor
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;
 
-  WeakMember<LocalFrame> frame_;
+  Member<LocalFrame> frame_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   THREAD_CHECKER(thread_checker_);

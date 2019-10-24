@@ -168,9 +168,6 @@ class WebLocalFrame : public WebFrame {
   // Sets the name of this frame.
   virtual void SetName(const WebString&) = 0;
 
-  // Notifies this frame about a user activation from the browser side.
-  virtual void NotifyUserActivation() = 0;
-
   // Hierarchy ----------------------------------------------------------
 
   // Returns true if the current frame is a local root.

@@ -239,11 +239,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnSeekBackward(double seconds) override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
-
-  // Callback for when bytes are received by |chunk_demuxer_| or the UrlData
-  // being loaded.
-  void OnBytesReceived(uint64_t data_length);
-
   void RequestRemotePlaybackDisabled(bool disabled) override;
 
 #if defined(OS_ANDROID)
@@ -611,8 +606,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Switch to SurfaceLayer, either initially or from VideoLayer.
   void ActivateSurfaceLayerForVideo();
 
-  void SendBytesReceivedUpdate();
-
   // Notifies |mb_data_source_| of playback and rate changes which may increase
   // the amount of data the DataSource buffers. Does nothing prior to reaching
   // kReadyStateHaveEnoughData for the first time.
@@ -856,16 +849,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // This flag is distinct from |using_media_player_renderer_|, because on older
   // devices we might use MediaPlayerRenderer for non HLS playback.
   bool demuxer_found_hls_ = false;
-
-  // Bytes received since the last update was sent to |media_metrics_provider_|.
-  uint64_t bytes_received_since_last_update_ = 0;
-
-  // The time that a bytes received update should be sent.
-  base::TimeTicks earliest_time_next_bytes_received_update_;
-
-  // Ensures that all bytes received will eventually be reported, even if
-  // updates stop being received.
-  base::OneShotTimer report_bytes_received_timer_;
 
   // Called sometime after the media is suspended in a playing state in
   // OnFrameHidden(), causing the state to change to paused.

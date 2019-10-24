@@ -103,6 +103,18 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.top_controls_shown_ratio;
   }
 
+#if defined(OS_ANDROID)
+  static float bottom_controls_height(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.bottom_controls_height;
+  }
+
+  static float bottom_controls_shown_ratio(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.bottom_controls_shown_ratio;
+  }
+#endif  // defined(OS_ANDROID)
+
   static base::TimeTicks local_surface_id_allocation_time(
       const viz::CompositorFrameMetadata& metadata) {
     DCHECK(!metadata.local_surface_id_allocation_time.is_null());

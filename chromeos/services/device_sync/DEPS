@@ -8,6 +8,5 @@ include_rules = [
   "+mojo/public/cpp",
   "+services/network/public",
   "+services/network/test",
-  "+services/preferences/public",
   "+components/cryptauth"
 ]

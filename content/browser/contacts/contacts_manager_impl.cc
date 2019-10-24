@@ -79,10 +79,11 @@ void ContactsManagerImpl::Select(bool multiple,
                                  bool include_names,
                                  bool include_emails,
                                  bool include_tel,
+                                 bool include_addresses,
                                  SelectCallback mojom_callback) {
   if (contacts_provider_) {
     contacts_provider_->Select(
-        multiple, include_names, include_emails, include_tel,
+        multiple, include_names, include_emails, include_tel, include_addresses,
         base::BindOnce(&OnContactsSelected, std::move(mojom_callback),
                        source_id_));
   } else {

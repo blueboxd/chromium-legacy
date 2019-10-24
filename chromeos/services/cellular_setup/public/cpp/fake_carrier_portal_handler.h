@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace chromeos {
 
@@ -21,7 +22,7 @@ class FakeCarrierPortalHandler : public mojom::CarrierPortalHandler {
   FakeCarrierPortalHandler();
   ~FakeCarrierPortalHandler() override;
 
-  mojom::CarrierPortalHandlerPtr GenerateInterfacePtr();
+  mojo::PendingRemote<mojom::CarrierPortalHandler> GenerateRemote();
 
   const std::vector<mojom::CarrierPortalStatus>& status_updates() const {
     return status_updates_;
@@ -33,7 +34,7 @@ class FakeCarrierPortalHandler : public mojom::CarrierPortalHandler {
 
  private:
   std::vector<mojom::CarrierPortalStatus> status_updates_;
-  mojo::BindingSet<mojom::CarrierPortalHandler> bindings_;
+  mojo::ReceiverSet<mojom::CarrierPortalHandler> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCarrierPortalHandler);
 };

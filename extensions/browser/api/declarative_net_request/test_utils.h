@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "extensions/browser/api/declarative_net_request/request_action.h"
+#include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension_id.h"
 
 namespace content {
@@ -35,6 +37,9 @@ enum class ExtensionLoadType {
 // optionally, an ExtensionId.
 RequestAction CreateRequestActionForTesting(
     RequestAction::Type type,
+    int rule_id = kMinValidID,
+    api::declarative_net_request::SourceType source_type =
+        api::declarative_net_request::SOURCE_TYPE_MANIFEST,
     const ExtensionId& extension_id = "extensionid");
 
 bool operator==(const RequestAction& lhs, const RequestAction& rhs);
@@ -52,10 +57,13 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
                            int* expected_checksum = nullptr);
 
 // Helper to return a RulesetSource bound to temporary files.
-RulesetSource CreateTemporarySource(size_t id = 1,
-                                    size_t priority = 1,
-                                    size_t rule_count_limit = 100,
-                                    ExtensionId extension_id = "extensionid");
+RulesetSource CreateTemporarySource(
+    size_t id = 1,
+    size_t priority = 1,
+    api::declarative_net_request::SourceType source_type =
+        api::declarative_net_request::SOURCE_TYPE_MANIFEST,
+    size_t rule_count_limit = 100,
+    ExtensionId extension_id = "extensionid");
 
 }  // namespace declarative_net_request
 }  // namespace extensions

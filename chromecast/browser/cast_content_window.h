@@ -12,13 +12,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "chromecast/graphics/cast_window_manager.h"
+#include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/graphics/gestures/cast_gesture_handler.h"
-#include "content/public/browser/web_contents.h"
+#include "chromecast/ui/mojom/media_control_ui.mojom.h"
+#include "chromecast/ui/mojom/ui_service.mojom.h"
 #include "ui/events/event.h"
 
 namespace chromecast {
-namespace shell {
 
 // Describes visual context of the window within the UI.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chromecast.shell
@@ -146,6 +146,7 @@ class CastContentWindow {
         CastGestureHandler::Priority::NONE;
 
     CreateParams();
+    CreateParams(const CreateParams& other);
   };
 
   class Observer : public base::CheckedObserver {
@@ -157,23 +158,18 @@ class CastContentWindow {
     ~Observer() override {}
   };
 
-  // Creates the platform specific CastContentWindow. |delegate| should outlive
-  // the created CastContentWindow.
-  static std::unique_ptr<CastContentWindow> Create(const CreateParams& params);
-
   CastContentWindow();
   virtual ~CastContentWindow();
 
-  // Creates a full-screen window for |web_contents| and displays it if screen
-  // access has been granted.
-  // |web_contents| should outlive this CastContentWindow.
-  // |window_manager| should outlive this CastContentWindow.
+  // Creates a full-screen window for |cast_web_contents| and displays it if
+  // screen access has been granted. |cast_web_contents| must outlive the
+  // CastContentWindow. |z_order| is provided so that windows which share the
+  // same parent have a well-defined order.
   // TODO(seantopping): This method probably shouldn't exist; this class should
   // use RAII instead.
   virtual void CreateWindowForWebContents(
-      content::WebContents* web_contents,
-      CastWindowManager* window_manager,
-      CastWindowManager::WindowId z_order,
+      CastWebContents* cast_web_contents,
+      mojom::ZOrder z_order,
       VisibilityPriority visibility_priority) = 0;
 
   // Allows the window to be shown on the screen. The window cannot be shown on
@@ -209,6 +205,9 @@ class CastContentWindow {
   // screen.
   virtual void RequestMoveOut() = 0;
 
+  // Media control interface. Non-null on Aura platforms.
+  virtual mojom::MediaControlUi* media_controls();
+
   // Observer interface:
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -217,7 +216,6 @@ class CastContentWindow {
   base::ObserverList<Observer> observer_list_;
 };
 
-}  // namespace shell
 }  // namespace chromecast
 
 #endif  // CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_H_

@@ -1364,4 +1364,94 @@ TEST_F(SharedWorkerServiceImplTest, Observer) {
   EXPECT_EQ(0u, observer.GetClientCount());
 }
 
+TEST_F(SharedWorkerServiceImplTest, CollapseDuplicateNotifications) {
+  TestSharedWorkerServiceObserver observer;
+
+  ScopedObserver<SharedWorkerService, SharedWorkerService::Observer>
+      scoped_observer(&observer);
+  scoped_observer.Add(content::BrowserContext::GetDefaultStoragePartition(
+                          browser_context_.get())
+                          ->GetSharedWorkerService());
+
+  const GURL kUrl("http://example.com/w.js");
+  const char kName[] = "name";
+
+  // The first renderer host.
+  std::unique_ptr<TestWebContents> web_contents =
+      CreateWebContents(GURL("http://example.com/"));
+  TestRenderFrameHost* render_frame_host = web_contents->GetMainFrame();
+  MockRenderProcessHost* renderer_host = render_frame_host->GetProcess();
+  const int process_id = renderer_host->GetID();
+  renderer_host->OverrideBinderForTesting(
+      blink::mojom::SharedWorkerFactory::Name_,
+      base::BindRepeating(&SharedWorkerServiceImplTest::BindSharedWorkerFactory,
+                          base::Unretained(this), process_id));
+
+  // First client, creates worker.
+
+  MockSharedWorkerClient client0;
+  MessagePortChannel local_port0;
+  ConnectToSharedWorker(MakeSharedWorkerConnector(
+                            renderer_host, render_frame_host->GetRoutingID()),
+                        kUrl, kName, &client0, &local_port0);
+  base::RunLoop().RunUntilIdle();
+
+  mojo::PendingReceiver<blink::mojom::SharedWorkerFactory> factory_receiver =
+      WaitForFactoryReceiver(process_id);
+  MockSharedWorkerFactory factory(std::move(factory_receiver));
+  base::RunLoop().RunUntilIdle();
+
+  mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
+  mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
+  EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
+      kUrl, kName, blink::mojom::ContentSecurityPolicyType::kReport,
+      &worker_host, &worker_receiver));
+  MockSharedWorker worker(std::move(worker_receiver));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(worker.CheckReceivedConnect(nullptr, nullptr));
+  EXPECT_TRUE(client0.CheckReceivedOnCreated());
+
+  // The observer now sees one worker with one client.
+  EXPECT_EQ(1u, observer.GetWorkerCount());
+  EXPECT_EQ(1u, observer.GetClientCount());
+
+  // Now the same frame connects to the same worker.
+  MockSharedWorkerClient client1;
+  MessagePortChannel local_port1;
+  ConnectToSharedWorker(MakeSharedWorkerConnector(
+                            renderer_host, render_frame_host->GetRoutingID()),
+                        kUrl, kName, &client1, &local_port1);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(CheckNotReceivedFactoryReceiver(process_id));
+
+  EXPECT_TRUE(worker.CheckReceivedConnect(nullptr, nullptr));
+  EXPECT_TRUE(client1.CheckReceivedOnCreated());
+
+  // Duplicate notification for the same client/worker pair are not sent.
+  EXPECT_EQ(1u, observer.GetWorkerCount());
+  EXPECT_EQ(1u, observer.GetClientCount());
+
+  // Cleanup
+
+  client0.Close();
+  base::RunLoop().RunUntilIdle();
+
+  // With the first connection closed, the observer is still aware of one
+  // client.
+  EXPECT_EQ(1u, observer.GetWorkerCount());
+  EXPECT_EQ(1u, observer.GetClientCount());
+
+  client1.Close();
+  base::RunLoop().RunUntilIdle();
+
+  // Both connection are closed, the worker is stopped and there's no active
+  // clients.
+  EXPECT_EQ(0u, observer.GetWorkerCount());
+  EXPECT_EQ(0u, observer.GetClientCount());
+
+  EXPECT_TRUE(worker.CheckReceivedTerminate());
+}
+
 }  // namespace content

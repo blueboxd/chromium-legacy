@@ -203,10 +203,6 @@ void CryptAuthFeatureStatusSetterImpl::ProcessRequestQueue() {
   request.mutable_context()->mutable_client_metadata()->set_invocation_reason(
       cryptauthv2::ClientMetadata::FEATURE_TOGGLED);
   request.mutable_context()->set_device_id(client_app_metadata_->instance_id());
-
-  // TODO(https://crbug.com/990430): This is the IID token for the v2 Enrollment
-  // service. A different IID token for the v2 DeviceSync service might be
-  // necessary.
   request.mutable_context()->set_device_id_token(
       client_app_metadata_->instance_id_token());
 

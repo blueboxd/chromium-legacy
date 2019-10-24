@@ -56,11 +56,6 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     }
 
     @Override
-    public void onLoadProgressChanged(int progress) {
-        mContentsClient.getCallbackHelper().postOnProgressChanged(progress);
-    }
-
-    @Override
     public void handleKeyboardEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             int direction;

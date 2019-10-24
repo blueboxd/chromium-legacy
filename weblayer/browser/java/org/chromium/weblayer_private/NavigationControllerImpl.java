@@ -122,6 +122,17 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     }
 
     @CalledByNative
+    private void loadStateChanged(boolean isLoading, boolean toDifferentDocument)
+            throws RemoteException {
+        mNavigationControllerClient.loadStateChanged(isLoading, toDifferentDocument);
+    }
+
+    @CalledByNative
+    private void loadProgressChanged(double progress) throws RemoteException {
+        mNavigationControllerClient.loadProgressChanged(progress);
+    }
+
+    @CalledByNative
     private void onFirstContentfulPaint() throws RemoteException {
         mNavigationControllerClient.onFirstContentfulPaint();
     }

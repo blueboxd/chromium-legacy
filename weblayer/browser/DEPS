@@ -1,6 +1,7 @@
 include_rules = [
   "+cc",
   "+components/embedder_support",
+  "+components/safe_browsing",
   "+content/public",
   "+mojo/public",
   "+net",

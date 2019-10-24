@@ -340,6 +340,27 @@ ModelTypeSet SyncServiceCrypto::GetEncryptedDataTypes() const {
   return state_.encrypted_types;
 }
 
+bool SyncServiceCrypto::HasCryptoError() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // This determines whether DataTypeManager should issue crypto errors for
+  // encrypted datatypes. This may differ from whether the UI represents the
+  // error state or not.
+
+  switch (state_.required_user_action) {
+    case RequiredUserAction::kNone:
+      return false;
+    case RequiredUserAction::kFetchingTrustedVaultKeys:
+    case RequiredUserAction::kTrustedVaultKeyRequired:
+    case RequiredUserAction::kPassphraseRequiredForDecryption:
+    case RequiredUserAction::kPassphraseRequiredForEncryption:
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 void SyncServiceCrypto::OnPassphraseRequired(
     PassphraseRequiredReason reason,
     const KeyDerivationParams& key_derivation_params,

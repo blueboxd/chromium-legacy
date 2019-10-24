@@ -104,9 +104,6 @@ class PrefModelAssociator : public syncer::SyncableService {
   bool CreatePrefSyncData(const std::string& name,
                           const base::Value& value,
                           syncer::SyncData* sync_data) const;
-  // Returns true if the pref under the given name is pulled down from sync.
-  // Note this does not refer to SYNCABLE_PREF.
-  bool IsPrefSynced(const std::string& name) const;
 
   // Returns true if the specified preference is registered for syncing.
   bool IsPrefRegistered(const std::string& name) const;
@@ -126,9 +123,11 @@ class PrefModelAssociator : public syncer::SyncableService {
   // Returns the PrefModelAssociatorClient for this object.
   const PrefModelAssociatorClient* client() const { return client_; }
 
- private:
-  friend class PrefServiceSyncableTest;
+  // Returns true if the pref under the given name is pulled down from sync.
+  // Note this does not refer to SYNCABLE_PREF.
+  bool IsPrefSyncedForTesting(const std::string& name) const;
 
+ private:
   // Create an association for a given preference. If |sync_pref| is valid,
   // signifying that sync has data for this preference, we reconcile their data
   // with ours and append a new UPDATE SyncChange to |sync_changes|. If

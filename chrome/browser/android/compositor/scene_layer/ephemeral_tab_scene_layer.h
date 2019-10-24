@@ -74,7 +74,7 @@ class EphemeralTabSceneLayer : public SceneLayer {
               jboolean progress_bar_visible,
               jfloat progress_bar_height,
               jfloat progress_bar_opacity,
-              jint progress_bar_completion,
+              jfloat progress_bar_completion,
               jint separator_line_color);
 
   void SetContentTree(

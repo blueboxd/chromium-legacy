@@ -15,6 +15,7 @@
 #define CONTENT_COMMON_CONTENT_PARAM_TRAITS_H_
 
 #include "base/memory/ref_counted.h"
+#include "cc/ipc/cc_param_traits_macros.h"
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/cursors/webcursor.h"
 #include "ipc/ipc_mojo_param_traits.h"

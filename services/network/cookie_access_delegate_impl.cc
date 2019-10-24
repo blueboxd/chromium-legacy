@@ -9,13 +9,20 @@
 namespace network {
 
 CookieAccessDelegateImpl::CookieAccessDelegateImpl(
+    mojom::CookieAccessDelegateType type,
     const CookieSettings* cookie_settings)
-    : cookie_settings_(cookie_settings) {}
+    : type_(type), cookie_settings_(cookie_settings) {
+  if (type == mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS) {
+    DCHECK(cookie_settings);
+  }
+}
 
 CookieAccessDelegateImpl::~CookieAccessDelegateImpl() = default;
 
 net::CookieAccessSemantics CookieAccessDelegateImpl::GetAccessSemantics(
     const net::CanonicalCookie& cookie) const {
+  if (type_ == mojom::CookieAccessDelegateType::ALWAYS_LEGACY)
+    return net::CookieAccessSemantics::LEGACY;
   return cookie_settings_->GetCookieAccessSemanticsForDomain(cookie.Domain());
 }
 

@@ -294,9 +294,12 @@ void CastWindowManagerAura::TearDown() {
   window_tree_host_.reset();
 }
 
-void CastWindowManagerAura::SetWindowId(gfx::NativeView window,
-                                        WindowId window_id) {
-  window->set_id(window_id);
+void CastWindowManagerAura::SetZOrder(gfx::NativeView window,
+                                      mojom::ZOrder z_order) {
+  // Use aura::Window ID to maintain z-order. When the window's visibility
+  // changes, we stack sibling windows based on this ID. Windows with higher
+  // IDs are stacked on top.
+  window->set_id(static_cast<int>(z_order));
 }
 
 void CastWindowManagerAura::InjectEvent(ui::Event* event) {

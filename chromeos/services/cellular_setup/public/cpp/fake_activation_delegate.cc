@@ -12,14 +12,15 @@ FakeActivationDelegate::FakeActivationDelegate() = default;
 
 FakeActivationDelegate::~FakeActivationDelegate() = default;
 
-mojom::ActivationDelegatePtr FakeActivationDelegate::GenerateInterfacePtr() {
-  mojom::ActivationDelegatePtr interface_ptr;
-  bindings_.AddBinding(this, mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::ActivationDelegate>
+FakeActivationDelegate::GenerateRemote() {
+  mojo::PendingRemote<mojom::ActivationDelegate> remote;
+  receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
-void FakeActivationDelegate::DisconnectBindings() {
-  bindings_.CloseAllBindings();
+void FakeActivationDelegate::DisconnectReceivers() {
+  receivers_.Clear();
 }
 
 void FakeActivationDelegate::OnActivationStarted(

@@ -18,7 +18,7 @@
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
-#include "components/optimization_guide/hint_update_data.h"
+#include "components/optimization_guide/store_update_data.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -97,15 +97,15 @@ class HintCacheStore {
   // When initialization completes, the provided callback is run asynchronously.
   void Initialize(bool purge_existing_data, base::OnceClosure callback);
 
-  // Creates and returns a HintUpdateData object for component hints. This
+  // Creates and returns a StoreUpdateData object for component hints. This
   // object is used to collect hints within a component in a format usable on a
   // background thread and is later returned to the store in
-  // UpdateComponentHints(). The HintUpdateData object is only created when the
+  // UpdateComponentHints(). The StoreUpdateData object is only created when the
   // provided component version is newer than the store's version, indicating
   // fresh hints. If the component's version is not newer than the store's
-  // version, then no HintUpdateData is created and nullptr is returned. This
+  // version, then no StoreUpdateData is created and nullptr is returned. This
   // prevents unnecessary processing of the component's hints by the caller.
-  std::unique_ptr<HintUpdateData> MaybeCreateUpdateDataForComponentHints(
+  std::unique_ptr<StoreUpdateData> MaybeCreateUpdateDataForComponentHints(
       const base::Version& version) const;
 
   // Creates and returns a HintsUpdateData object for Fetched Hints.
@@ -114,7 +114,7 @@ class HintCacheStore {
   // hints have been successfully fetched from the remote Optimization Guide
   // Service so the store can expire old hints, remove hints specified by the
   // server, and store the fresh hints.
-  std::unique_ptr<HintUpdateData> CreateUpdateDataForFetchedHints(
+  std::unique_ptr<StoreUpdateData> CreateUpdateDataForFetchedHints(
       base::Time update_time,
       base::Time expiry_time) const;
 
@@ -122,13 +122,13 @@ class HintCacheStore {
   // this is called, all pre-existing component hints within the store is purged
   // and only the new hints are retained. After the store is fully updated with
   // the new component hints, the callback is run asynchronously.
-  void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data,
+  void UpdateComponentHints(std::unique_ptr<StoreUpdateData> component_data,
                             base::OnceClosure callback);
 
   // Updates the fetched hints contained in the store, including the
   // metadata entry. The callback is run asynchronously after the database
   // stores the hints.
-  void UpdateFetchedHints(std::unique_ptr<HintUpdateData> fetched_hints_data,
+  void UpdateFetchedHints(std::unique_ptr<StoreUpdateData> fetched_hints_data,
                           base::OnceClosure callback);
 
   // Removes fetched hint store entries from |this|. |hint_entry_keys_| is
@@ -160,7 +160,7 @@ class HintCacheStore {
 
  private:
   friend class HintCacheStoreTest;
-  friend class HintUpdateData;
+  friend class StoreUpdateData;
 
   using EntryKeyPrefix = std::string;
   using EntryKeySet = base::flat_set<EntryKey>;

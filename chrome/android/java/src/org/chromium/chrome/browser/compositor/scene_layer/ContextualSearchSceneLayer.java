@@ -127,7 +127,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
 
         float progressBarHeight = panel.getProgressBarHeight();
         float progressBarOpacity = panel.getProgressBarOpacity();
-        int progressBarCompletion = panel.getProgressBarCompletion();
+        float progressBarCompletion = panel.getProgressBarCompletion();
 
         float dividerLineVisibilityPercentage =
                 searchBarControl.getDividerLineVisibilityPercentage();
@@ -254,7 +254,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 float customImageVisibilityPercentage, int barImageSize, int iconColor,
                 int dragHandlebarColor, float arrowIconOpacity, float arrowIconRotation,
                 float closeIconOpacity, boolean isProgressBarVisible, float progressBarHeight,
-                float progressBarOpacity, int progressBarCompletion,
+                float progressBarOpacity, float progressBarCompletion,
                 float dividerLineVisibilityPercentage, float dividerLineWidth,
                 float dividerLineHeight, int dividerLineColor, float dividerLineXOffset,
                 boolean touchHighlightVisible, float touchHighlightXOffset,

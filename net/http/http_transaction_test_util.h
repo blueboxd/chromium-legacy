@@ -122,6 +122,7 @@ struct ScopedMockTransaction : MockTransaction {
 class MockHttpRequest : public HttpRequestInfo {
  public:
   explicit MockHttpRequest(const MockTransaction& t);
+  std::string CacheKey();
 };
 
 //-----------------------------------------------------------------------------

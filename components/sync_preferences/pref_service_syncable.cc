@@ -155,20 +155,6 @@ bool PrefServiceSyncable::IsPrioritySyncing() {
   return false;
 }
 
-bool PrefServiceSyncable::IsPrefSynced(const std::string& name) const {
-  if (pref_sync_associator_.IsPrefSynced(name) ||
-      priority_pref_sync_associator_.IsPrefSynced(name)) {
-    return true;
-  }
-#if defined(OS_CHROMEOS)
-  if (os_pref_sync_associator_.IsPrefSynced(name) ||
-      os_priority_pref_sync_associator_.IsPrefSynced(name)) {
-    return true;
-  }
-#endif
-  return false;
-}
-
 void PrefServiceSyncable::AddObserver(PrefServiceSyncableObserver* observer) {
   observer_list_.AddObserver(observer);
 }

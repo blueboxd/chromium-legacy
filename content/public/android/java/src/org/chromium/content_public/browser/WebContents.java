@@ -344,9 +344,9 @@ public interface WebContents extends Parcelable {
     int getThemeColor();
 
     /**
-     * @return Current page load progress on a scale of 0 to 100.
+     * @return Current page load progress on a scale of 0 to 1.
      */
-    int getLoadProgress();
+    float getLoadProgress();
 
     /**
      * Initiate extraction of text, HTML, and other information for clipping puposes (smart clip)

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "chromecast/browser/webview/js_channel_service.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
@@ -22,6 +23,8 @@ class WebContents;
 }  // namespace content
 
 namespace chromecast {
+
+class WebContentJsChannels;
 
 // Processes proto commands to control WebContents
 class WebContentController : public exo::SurfaceObserver {
@@ -47,6 +50,7 @@ class WebContentController : public exo::SurfaceObserver {
   virtual content::WebContents* GetWebContents() = 0;
   Client* client_;  // Not owned.
   bool has_navigation_delegate_ = false;
+  std::unique_ptr<WebContentJsChannels> js_channels_;
 
  private:
   void ProcessInputEvent(const webview::InputEvent& ev);
@@ -78,6 +82,20 @@ class WebContentController : public exo::SurfaceObserver {
   base::WeakPtrFactory<WebContentController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentController);
+};
+
+class WebContentJsChannels
+    : public base::SupportsWeakPtr<WebContentJsChannels> {
+ public:
+  explicit WebContentJsChannels(WebContentController::Client* client);
+  ~WebContentJsChannels();
+
+  void SendMessage(const std::string& channel, const std::string& message);
+
+ private:
+  WebContentController::Client* client_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentJsChannels);
 };
 
 }  // namespace chromecast

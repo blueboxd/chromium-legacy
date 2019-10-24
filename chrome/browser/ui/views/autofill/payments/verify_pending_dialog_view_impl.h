@@ -30,7 +30,6 @@ class VerifyPendingDialogViewImpl : public VerifyPendingDialogView,
   void AddedToWidget() override;
   bool Cancel() override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;

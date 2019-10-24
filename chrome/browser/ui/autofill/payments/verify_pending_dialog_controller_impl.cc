@@ -44,11 +44,6 @@ base::string16 VerifyPendingDialogControllerImpl::GetDialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_VERIFY_PENDING_DIALOG_TITLE);
 }
 
-base::string16 VerifyPendingDialogControllerImpl::GetCancelButtonLabel() const {
-  return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_VERIFY_PENDING_DIALOG_CANCEL_BUTTON_LABEL);
-}
-
 void VerifyPendingDialogControllerImpl::OnCancel() {
   if (cancel_card_verification_callback_)
     std::move(cancel_card_verification_callback_).Run();

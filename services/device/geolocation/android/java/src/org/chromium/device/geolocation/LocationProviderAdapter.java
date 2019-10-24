@@ -24,7 +24,7 @@ import java.util.concurrent.FutureTask;
  */
 @VisibleForTesting
 public class LocationProviderAdapter {
-    private static final String TAG = "cr_LocationProvider";
+    private static final String TAG = "LocationProvider";
 
     // Delegate handling the real work in the main thread.
     private LocationProvider mImpl;

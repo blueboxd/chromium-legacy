@@ -10,6 +10,4 @@ package org.chromium.weblayer_private.aidl;
  */
 interface IBrowserControllerClient {
   void visibleUrlChanged(in String url) = 0;
-  void loadingStateChanged(boolean is_loading, boolean to_different_document) = 1;
-  void loadProgressChanged(double progress) = 2;
 }

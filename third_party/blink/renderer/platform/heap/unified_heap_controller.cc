@@ -50,13 +50,12 @@ void UnifiedHeapController::TracePrologue(
       BlinkGC::kConcurrentAndLazySweeping,
       thread_state_->current_gc_data_.reason);
 
-  // Reset any previously scheduled garbage collections.
   thread_state_->SetGCState(ThreadState::kNoGCScheduled);
   BlinkGC::GCReason gc_reason =
       (v8_flags & v8::EmbedderHeapTracer::TraceFlags::kReduceMemory)
           ? BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC
           : BlinkGC::GCReason::kUnifiedHeapGC;
-  thread_state_->IncrementalMarkingStart(gc_reason);
+  thread_state_->StartIncrementalMarking(gc_reason);
 
   is_tracing_done_ = false;
 }

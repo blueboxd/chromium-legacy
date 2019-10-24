@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "media/base/limits.h"
+#include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
 #include "media/base/watch_time_keys.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -263,6 +264,8 @@ void WatchTimeRecorder::UpdateSecondaryProperties(
     // capture changes in encryption schemes.
     if (last_record.secondary_properties->audio_codec == kUnknownAudioCodec ||
         last_record.secondary_properties->video_codec == kUnknownVideoCodec ||
+        last_record.secondary_properties->video_codec_profile ==
+            VIDEO_CODEC_PROFILE_UNKNOWN ||
         last_record.secondary_properties->audio_decoder_name.empty() ||
         last_record.secondary_properties->video_decoder_name.empty()) {
       auto temp_props = last_record.secondary_properties.Clone();
@@ -270,6 +273,11 @@ void WatchTimeRecorder::UpdateSecondaryProperties(
         temp_props->audio_codec = secondary_properties->audio_codec;
       if (last_record.secondary_properties->video_codec == kUnknownVideoCodec)
         temp_props->video_codec = secondary_properties->video_codec;
+      if (last_record.secondary_properties->video_codec_profile ==
+          VIDEO_CODEC_PROFILE_UNKNOWN) {
+        temp_props->video_codec_profile =
+            secondary_properties->video_codec_profile;
+      }
       if (last_record.secondary_properties->audio_decoder_name.empty()) {
         temp_props->audio_decoder_name =
             secondary_properties->audio_decoder_name;
@@ -434,6 +442,8 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
     // See note in mojom::PlaybackProperties about why we have both of these.
     builder.SetAudioCodec(ukm_record.secondary_properties->audio_codec);
     builder.SetVideoCodec(ukm_record.secondary_properties->video_codec);
+    builder.SetVideoCodecProfile(
+        ukm_record.secondary_properties->video_codec_profile);
     builder.SetHasAudio(properties_->has_audio);
     builder.SetHasVideo(properties_->has_video);
 

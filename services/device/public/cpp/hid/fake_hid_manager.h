@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -45,8 +46,9 @@ class FakeHidManager : public mojom::HidManager {
   void Bind(mojo::PendingReceiver<mojom::HidManager> receiver);
 
   // mojom::HidManager implementation:
-  void GetDevicesAndSetClient(mojom::HidManagerClientAssociatedPtrInfo client,
-                              GetDevicesCallback callback) override;
+  void GetDevicesAndSetClient(
+      mojo::PendingAssociatedRemote<mojom::HidManagerClient> client,
+      GetDevicesCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
   void Connect(
       const std::string& device_guid,

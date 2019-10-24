@@ -429,9 +429,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   // The content inset of the tab grids must be modified so that the toolbars
   // do not obscure the tabs. This may change depending on orientation.
-  CGFloat bottomInset = self.configuration == TabGridConfigurationBottomToolbar
-                            ? self.bottomToolbar.intrinsicContentSize.height
-                            : 0;
+  CGFloat bottomInset = self.bottomToolbar.intrinsicContentSize.height;
   UIEdgeInsets inset = UIEdgeInsetsMake(
       self.topToolbar.intrinsicContentSize.height, 0, bottomInset, 0);
   // Left and right side could be missing correct safe area

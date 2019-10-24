@@ -10,13 +10,13 @@
 #include "base/memory/ptr_util.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/graphics/cast_window_manager.h"
+#include "chromecast/ui/media_control_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 namespace chromecast {
-namespace shell {
 
 class TouchBlocker : public ui::EventHandler, public aura::WindowObserver {
  public:
@@ -69,15 +69,11 @@ class TouchBlocker : public ui::EventHandler, public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(TouchBlocker);
 };
 
-// static
-std::unique_ptr<CastContentWindow> CastContentWindow::Create(
-    const CastContentWindow::CreateParams& params) {
-  return base::WrapUnique(new CastContentWindowAura(params));
-}
-
 CastContentWindowAura::CastContentWindowAura(
-    const CastContentWindow::CreateParams& params)
+    const CastContentWindow::CreateParams& params,
+    CastWindowManager* window_manager)
     : delegate_(params.delegate),
+      window_manager_(window_manager),
       gesture_dispatcher_(
           std::make_unique<CastContentGestureHandler>(delegate_)),
       gesture_priority_(params.gesture_priority),
@@ -88,6 +84,7 @@ CastContentWindowAura::CastContentWindowAura(
 }
 
 CastContentWindowAura::~CastContentWindowAura() {
+  CastWebContents::Observer::Observe(nullptr);
   if (window_manager_) {
     window_manager_->RemoveGestureHandler(gesture_dispatcher_.get());
   }
@@ -97,22 +94,23 @@ CastContentWindowAura::~CastContentWindowAura() {
 }
 
 void CastContentWindowAura::CreateWindowForWebContents(
-    content::WebContents* web_contents,
-    CastWindowManager* window_manager,
-    CastWindowManager::WindowId z_order,
+    CastWebContents* cast_web_contents,
+    mojom::ZOrder z_order,
     VisibilityPriority visibility_priority) {
-  DCHECK(web_contents);
-  window_manager_ = window_manager;
-  DCHECK(window_manager_);
-  window_ = web_contents->GetNativeView();
+  DCHECK(cast_web_contents);
+  DCHECK(window_manager_) << "A CastWindowManager must be provided before "
+                          << "creating a window for WebContents.";
+  CastWebContents::Observer::Observe(cast_web_contents);
+  window_ = cast_web_contents->web_contents()->GetNativeView();
   if (!window_->HasObserver(this)) {
     window_->AddObserver(this);
   }
-  window_manager_->SetWindowId(window_, z_order);
+  window_manager_->SetZOrder(window_, z_order);
   window_manager_->AddWindow(window_);
   window_manager_->AddGestureHandler(gesture_dispatcher_.get());
 
   touch_blocker_ = std::make_unique<TouchBlocker>(window_, !is_touch_enabled_);
+  media_controls_ = std::make_unique<MediaControlUi>(window_manager_);
 
   if (has_screen_access_) {
     window_->Show();
@@ -150,6 +148,16 @@ void CastContentWindowAura::EnableTouchInput(bool enabled) {
   }
 }
 
+mojom::MediaControlUi* CastContentWindowAura::media_controls() {
+  return media_controls_.get();
+}
+
+void CastContentWindowAura::MainFrameResized(const gfx::Rect& bounds) {
+  if (media_controls_) {
+    media_controls_->SetBounds(bounds);
+  }
+}
+
 void CastContentWindowAura::RequestVisibility(
     VisibilityPriority visibility_priority) {}
 
@@ -180,5 +188,4 @@ void CastContentWindowAura::OnWindowDestroyed(aura::Window* window) {
   window_ = nullptr;
 }
 
-}  // namespace shell
 }  // namespace chromecast

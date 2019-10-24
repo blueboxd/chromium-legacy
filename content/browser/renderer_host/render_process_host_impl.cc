@@ -227,6 +227,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
@@ -1469,7 +1470,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           nullptr,
           base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
               {ServiceWorkerContext::GetCoreThreadId()}))),
-      renderer_host_binding_(this),
       instance_weak_factory_(base::in_place, this),
       frame_sink_provider_(id_),
       shutdown_exit_code_(-1) {
@@ -1942,11 +1942,12 @@ void RenderProcessHostImpl::CreatePermissionService(
                                                       std::move(receiver));
 }
 
-void RenderProcessHostImpl::CreatePaymentManager(
+void RenderProcessHostImpl::CreatePaymentManagerForOrigin(
+    const url::Origin& origin,
     mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
   static_cast<StoragePartitionImpl*>(GetStoragePartition())
       ->GetPaymentAppContext()
-      ->CreatePaymentManager(std::move(receiver));
+      ->CreatePaymentManagerForOrigin(origin, std::move(receiver));
 }
 
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {
@@ -2366,7 +2367,7 @@ void RenderProcessHostImpl::RegisterCoordinatorClient(
 
 void RenderProcessHostImpl::CreateRendererHost(
     mojo::PendingAssociatedReceiver<mojom::RendererHost> receiver) {
-  renderer_host_binding_.Bind(std::move(receiver));
+  renderer_host_receiver_.Bind(std::move(receiver));
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {
@@ -2623,10 +2624,8 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
 
   if (crash_report_mode == CrashReportMode::GENERATE_CRASH_DUMP) {
     // Set crash keys to understand renderer kills related to site isolation.
-    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-    std::string lock_url = policy->GetOriginLock(GetID()).spec();
-    base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
-                                   lock_url.empty() ? "(none)" : lock_url);
+    ChildProcessSecurityPolicyImpl::GetInstance()->LogKilledProcessOriginLock(
+        GetID());
 
     std::string site_isolation_mode;
     if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
@@ -4142,13 +4141,10 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
                                  render_process_host, browser_context,
                                  site_instance->GetIsolationContext(), site_url,
                                  site_instance->lock_url())) {
-    ChildProcessSecurityPolicyImpl* policy =
-        ChildProcessSecurityPolicyImpl::GetInstance();
     base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
                                    site_url.spec());
-    base::debug::SetCrashKeyString(
-        bad_message::GetKilledProcessOriginLockKey(),
-        policy->GetOriginLock(render_process_host->GetID()).spec());
+    ChildProcessSecurityPolicyImpl::GetInstance()->LogKilledProcessOriginLock(
+        render_process_host->GetID());
     CHECK(false) << "Unsuitable process reused for site " << site_url;
   }
 
@@ -4310,9 +4306,7 @@ void RenderProcessHostImpl::ProcessDied(
 }
 
 void RenderProcessHostImpl::ResetIPC() {
-  if (renderer_host_binding_.is_bound())
-    renderer_host_binding_.Unbind();
-
+  renderer_host_receiver_.reset();
   io_thread_host_impl_.reset();
   route_provider_receiver_.reset();
   associated_interface_provider_receivers_.Clear();

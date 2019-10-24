@@ -349,10 +349,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetImportance(ChildProcessImportance importance);
   ChildProcessImportance importance() const { return importance_; }
 
-  void OnImeTextCommittedEvent(const base::string16& text_str);
-  void AddImeTextCommittedEventObserver(
+  void AddImeInputEventObserver(
       RenderWidgetHost::InputEventObserver* observer) override;
-  void RemoveImeTextCommittedEventObserver(
+  void RemoveImeInputEventObserver(
       RenderWidgetHost::InputEventObserver* observer) override;
 #endif
 
@@ -832,6 +831,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            ShorterDelayInputEventAckTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, SynchronizeVisualProperties);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
+                           AddAndRemoveInputEventObserver);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
+                           AddAndRemoveImeInputEventObserver);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, AutoResizeWithScale);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            AutoResizeWithBrowserInitiatedResize);
@@ -1125,11 +1128,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       input_event_observers_;
 
 #if defined(OS_ANDROID)
-  // Ime Text Committed callbacks. This is separated from
-  // input_event_observers_, because text events are not triggered by input
-  // events on Android.
+  // Ime input event callbacks. This is separated from input_event_observers_,
+  // because not all text events are triggered by input events on Android.
   base::ObserverList<RenderWidgetHost::InputEventObserver>::Unchecked
-      ime_text_committed_observers_;
+      ime_input_event_observers_;
 #endif
 
   // The observers watching us.

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
@@ -30,7 +31,10 @@ struct RequestAction {
     REMOVE_HEADERS,
   };
 
-  RequestAction(Type type, const ExtensionId& extension_id);
+  RequestAction(Type type,
+                int rule_id,
+                api::declarative_net_request::SourceType source_type,
+                const ExtensionId& extension_id);
   ~RequestAction();
   RequestAction(RequestAction&&);
   RequestAction& operator=(RequestAction&&);
@@ -39,6 +43,12 @@ struct RequestAction {
 
   // Valid iff |type| is |REDIRECT|.
   base::Optional<GURL> redirect_url;
+
+  // The ID of the matching rule for this action.
+  int rule_id;
+
+  // The source type of the matching rule for this action.
+  api::declarative_net_request::SourceType source_type;
 
   // The id of the extension the action is attributed to.
   ExtensionId extension_id;

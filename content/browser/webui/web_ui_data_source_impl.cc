@@ -294,7 +294,7 @@ void WebUIDataSourceImpl::StartDataRequest(
   }
 
   int resource_id = PathToIdrOrDefault(CleanUpPath(path));
-  DCHECK_NE(resource_id, -1);
+  DCHECK_NE(resource_id, -1) << " for " << path;
   scoped_refptr<base::RefCountedMemory> response(
       GetContentClient()->GetDataResourceBytes(resource_id));
   callback.Run(response.get());

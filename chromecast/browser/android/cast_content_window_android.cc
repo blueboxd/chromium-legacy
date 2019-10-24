@@ -19,8 +19,6 @@ namespace chromecast {
 
 using base::android::ConvertUTF8ToJavaString;
 
-namespace shell {
-
 namespace {
 
 base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
@@ -38,12 +36,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
 }
 
 }  // namespace
-
-// static
-std::unique_ptr<CastContentWindow> CastContentWindow::Create(
-    const CastContentWindow::CreateParams& params) {
-  return base::WrapUnique(new CastContentWindowAndroid(params));
-}
 
 CastContentWindowAndroid::CastContentWindowAndroid(
     const CastContentWindow::CreateParams& params)
@@ -63,14 +55,13 @@ CastContentWindowAndroid::~CastContentWindowAndroid() {
 }
 
 void CastContentWindowAndroid::CreateWindowForWebContents(
-    content::WebContents* web_contents,
-    CastWindowManager* /* window_manager */,
-    CastWindowManager::WindowId /* z_order */,
+    CastWebContents* cast_web_contents,
+    mojom::ZOrder /* z_order */,
     VisibilityPriority visibility_priority) {
-  DCHECK(web_contents);
+  DCHECK(cast_web_contents);
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
-      web_contents->GetJavaWebContents();
+      cast_web_contents->web_contents()->GetJavaWebContents();
 
   Java_CastContentWindowAndroid_createWindowForWebContents(
       env, java_window_, java_web_contents,
@@ -141,5 +132,5 @@ base::android::ScopedJavaLocalRef<jstring> CastContentWindowAndroid::GetId(
     const base::android::JavaParamRef<jobject>& jcaller) {
   return ConvertUTF8ToJavaString(env, delegate_->GetId());
 }
-}  // namespace shell
+
 }  // namespace chromecast

@@ -40,7 +40,7 @@ class ServiceWorkerContextWrapper;
 //   1) Constructor
 //   2) Init()
 //   3) Can now call other public methods in this class in any order.
-//     - Can call CreatePaymentManager() on UI thread.
+//     - Can call CreatePaymentManagerForOrigin() on UI thread.
 //     - Can call GetAllPaymentApps() on UI thread.
 //     - Can call PaymentManagerHadConnectionError() on core thread.
 //     - Can call payment_app_database() on the core thread.
@@ -60,9 +60,9 @@ class CONTENT_EXPORT PaymentAppContextImpl
   // Shutdown must be called before deleting this. Call on the UI thread.
   void Shutdown();
 
-  // Create a PaymentManager that is owned by this. Call on the UI
-  // thread.
-  void CreatePaymentManager(
+  // Create a PaymentManager that is owned by this. Call on the UI thread.
+  void CreatePaymentManagerForOrigin(
+      const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
 
   // Called by PaymentManager objects so that they can
@@ -82,7 +82,8 @@ class CONTENT_EXPORT PaymentAppContextImpl
   void CreatePaymentAppDatabaseOnCoreThread(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
-  void CreatePaymentManagerOnCoreThread(
+  void CreatePaymentManagerForOriginOnCoreThread(
+      const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
 
   void ShutdownOnCoreThread();

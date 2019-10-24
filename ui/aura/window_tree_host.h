@@ -28,7 +28,6 @@
 #include "ui/events/event_source.h"
 #include "ui/events/platform_event.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/overlay_transform.h"
 
 namespace gfx {
 class Point;
@@ -101,8 +100,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual void SetRootTransform(const gfx::Transform& transform);
   virtual gfx::Transform GetInverseRootTransform() const;
 
-  void SetDisplayTransformHint(gfx::OverlayTransform transform);
-
   // These functions are used in event translation for translating the local
   // coordinates of LocatedEvents. Default implementation calls to non-local
   // ones (e.g. GetRootTransform()).
@@ -116,10 +113,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // between this call, GetBounds, and OnHostResizedInPixels is ambiguous and
   // allows for inconsistencies.
   void UpdateRootWindowSizeInPixels();
-
-  // Updates the compositor's size and scale from display size, scale and
-  // transform hint.
-  void UpdateCompositorScaleAndSize();
 
   // Converts |point| from the root window's coordinate system to native
   // screen's.

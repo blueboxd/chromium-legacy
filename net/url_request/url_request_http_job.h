@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
@@ -202,10 +203,15 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // layers of the network stack.
   scoped_refptr<HttpResponseHeaders> override_response_headers_;
 
-  // The network delegate can mark a URL as safe for redirection.
-  // The reference fragment of the original URL is not appended to the redirect
-  // URL when the redirect URL is equal to |allowed_unsafe_redirect_url_|.
-  GURL allowed_unsafe_redirect_url_;
+  // Ordinarily the original URL's fragment is copied during redirects, unless
+  // the destination URL already has one. However, the NetworkDelegate can
+  // override this behavior by setting |preserve_fragment_on_redirect_url_|:
+  // * If set to base::nullopt, the default behavior is used.
+  // * If the final URL in the redirect chain matches
+  //     |preserve_fragment_on_redirect_url_|, its fragment unchanged. So this
+  //     is basically a way for the embedder to force a redirect not to copy the
+  //     original URL's fragment when the original URL had one.
+  base::Optional<GURL> preserve_fragment_on_redirect_url_;
 
   // Flag used to verify that |this| is not deleted while we are awaiting
   // a callback from the NetworkDelegate. Used as a fail-fast mechanism.

@@ -56,16 +56,6 @@ Vector<uint8_t> UnwrapMessage(const mojom::blink::DevToolsMessagePtr& message) {
   return unwrap_message;
 }
 
-protocol::ProtocolMessage ToProtocolMessage(
-    std::unique_ptr<v8_inspector::StringBuffer> buffer) {
-  protocol::ProtocolMessage message;
-  const auto& string = buffer->string();
-  DCHECK(string.is8Bit());
-  // TODO: add StringBuffer::takeBytes().
-  message.binary = WebVector<uint8_t>(string.characters8(), string.length());
-  return message;
-}
-
 // Platform allows us to inject the string<->double conversion
 // routines from Blink into the inspector_protocol JSON parser / serializer.
 class JsonPlatform : public ::inspector_protocol_encoding::json::Platform {
@@ -91,6 +81,12 @@ IPEStatus ConvertCBORToJSON(span<uint8_t> cbor, std::vector<uint8_t>* json) {
   DCHECK(IsCBORMessage(cbor));
   JsonPlatform platform;
   return ConvertCBORToJSON(platform, cbor, json);
+}
+
+std::vector<uint8_t> Get8BitStringFrom(v8_inspector::StringBuffer* msg) {
+  const v8_inspector::StringView& s = msg->string();
+  DCHECK(s.is8Bit());
+  return std::vector<uint8_t>(s.characters8(), s.characters8() + s.length());
 }
 }  // namespace
 
@@ -285,10 +281,7 @@ void DevToolsSession::DidCommitLoad(LocalFrame* frame, DocumentLoader*) {
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponse(
-      call_id,
-      protocol::ProtocolMessage{
-          WTF::String(), WebVector<uint8_t>(message->serializeToBinary())});
+  SendProtocolResponse(call_id, message->serializeToBinary());
 }
 
 void DevToolsSession::fallThrough(int call_id,
@@ -301,15 +294,11 @@ void DevToolsSession::fallThrough(int call_id,
 void DevToolsSession::sendResponse(
     int call_id,
     std::unique_ptr<v8_inspector::StringBuffer> message) {
-  // We can potentially avoid copies if WebString would convert to utf8 right
-  // from StringView, but it uses StringImpl itself, so we don't create any
-  // extra copies here.
-  SendProtocolResponse(call_id, ToProtocolMessage(std::move(message)));
+  SendProtocolResponse(call_id, Get8BitStringFrom(message.get()));
 }
 
-void DevToolsSession::SendProtocolResponse(
-    int call_id,
-    const protocol::ProtocolMessage& message) {
+void DevToolsSession::SendProtocolResponse(int call_id,
+                                           std::vector<uint8_t> message) {
   if (IsDetached())
     return;
   flushProtocolNotifications();
@@ -320,66 +309,30 @@ void DevToolsSession::SendProtocolResponse(
   if (WebTestSupport::IsRunningWebTest())
     agent_->FlushProtocolNotifications();
 
-  host_remote_->DispatchProtocolResponse(FinalizeMessage(message), call_id,
-                                         session_state_.TakeUpdates());
+  host_remote_->DispatchProtocolResponse(FinalizeMessage(std::move(message)),
+                                         call_id, session_state_.TakeUpdates());
 }
-
-class DevToolsSession::Notification {
- public:
-  static std::unique_ptr<Notification> CreateForBlink(
-      std::unique_ptr<protocol::Serializable> notification) {
-    return std::unique_ptr<Notification>(
-        new Notification(std::move(notification)));
-  }
-
-  static std::unique_ptr<Notification> CreateForV8(
-      std::unique_ptr<v8_inspector::StringBuffer> notification) {
-    return std::unique_ptr<Notification>(
-        new Notification(std::move(notification)));
-  }
-
-  explicit Notification(std::unique_ptr<protocol::Serializable> notification)
-      : blink_notification_(std::move(notification)) {}
-
-  explicit Notification(
-      std::unique_ptr<v8_inspector::StringBuffer> notification)
-      : v8_notification_(std::move(notification)) {}
-
-  protocol::ProtocolMessage Serialize() {
-    if (blink_notification_) {
-      auto result = protocol::ProtocolMessage{
-          WTF::String(),
-          WebVector<uint8_t>(blink_notification_->serializeToBinary())};
-      blink_notification_.reset();
-      return result;
-    }
-    if (v8_notification_) {
-      auto result = ToProtocolMessage(std::move(v8_notification_));
-      v8_notification_.reset();
-      return result;
-    }
-    return protocol::ProtocolMessage();
-  }
-
- private:
-  std::unique_ptr<protocol::Serializable> blink_notification_;
-  std::unique_ptr<v8_inspector::StringBuffer> v8_notification_;
-};
 
 void DevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> notification) {
   if (IsDetached())
     return;
-  notification_queue_.push_back(
-      Notification::CreateForBlink(std::move(notification)));
+  notification_queue_.push_back(WTF::Bind(
+      [](std::unique_ptr<protocol::Serializable> notification) {
+        return notification->serializeToBinary();
+      },
+      std::move(notification)));
 }
 
 void DevToolsSession::sendNotification(
     std::unique_ptr<v8_inspector::StringBuffer> notification) {
   if (IsDetached())
     return;
-  notification_queue_.push_back(
-      Notification::CreateForV8(std::move(notification)));
+  notification_queue_.push_back(WTF::Bind(
+      [](std::unique_ptr<v8_inspector::StringBuffer> notification) {
+        return Get8BitStringFrom(notification.get());
+      },
+      std::move(notification)));
 }
 
 void DevToolsSession::flushProtocolNotifications() {
@@ -393,7 +346,7 @@ void DevToolsSession::flushProtocolNotifications() {
     v8_session_state_cbor_.Set(v8_session_->state());
   for (wtf_size_t i = 0; i < notification_queue_.size(); ++i) {
     host_remote_->DispatchProtocolNotification(
-        FinalizeMessage(notification_queue_[i]->Serialize()),
+        FinalizeMessage(std::move(notification_queue_[i]).Run()),
         session_state_.TakeUpdates());
   }
   notification_queue_.clear();
@@ -405,8 +358,8 @@ void DevToolsSession::Trace(blink::Visitor* visitor) {
 }
 
 blink::mojom::blink::DevToolsMessagePtr DevToolsSession::FinalizeMessage(
-    protocol::ProtocolMessage message) {
-  std::vector<uint8_t> message_to_send = message.binary.ReleaseVector();
+    std::vector<uint8_t> message) const {
+  std::vector<uint8_t> message_to_send = std::move(message);
   if (!client_expects_binary_responses_) {
     std::vector<uint8_t> json;
     IPEStatus status = ConvertCBORToJSON(SpanFrom(message_to_send), &json);

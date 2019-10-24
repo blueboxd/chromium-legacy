@@ -129,21 +129,19 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   DCHECK(partition);
   partition_ = partition;
 
-  // Create a URLLoaderFactoryPtr synchronously and push it to the IO thread. If
-  // the pipe errors out later due to a network service crash, the pipe is
-  // created on the IO thread, and the request send back to the UI thread.
+  // Create a mojo::PendingRemote<URLLoaderFactory> synchronously and push it to
+  // the IO thread. If the pipe errors out later due to a network service crash,
+  // the pipe is created on the IO thread, and the request send back to the UI
+  // thread.
   // TODO(mmenke):  Is one less thread hop on startup worth the extra complexity
   // of two different pipe creation paths?
-  network::mojom::URLLoaderFactoryPtr network_factory;
-  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
-      pending_network_factory_receiver = MakeRequest(&network_factory);
-
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> network_factory;
   HandleNetworkFactoryRequestOnUIThread(
-      std::move(pending_network_factory_receiver), false);
+      network_factory.InitWithNewPipeAndPassReceiver(), false);
 
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread,
-                                this, network_factory.PassInterface()));
+                                this, std::move(network_factory)));
 }
 
 void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {
@@ -179,15 +177,16 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetURLLoaderFactory(
   // This needs to be done before returning |test_factory_|, as the
   // |test_factory_| may fall back to |network_factory_|. The |is_bound()| check
   // is only needed by unit tests.
-  network::mojom::URLLoaderFactoryPtr* factory =
+  mojo::Remote<network::mojom::URLLoaderFactory>* factory =
       is_corb_enabled ? &network_factory_corb_enabled_ : &network_factory_;
-  if (factory->encountered_error() || !factory->is_bound()) {
-    network::mojom::URLLoaderFactoryPtr network_factory;
+  if (!factory->is_bound() || !factory->is_connected()) {
+    mojo::Remote<network::mojom::URLLoaderFactory> network_factory;
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread,
-            this, mojo::MakeRequest(&network_factory), is_corb_enabled));
+            this, network_factory.BindNewPipeAndPassReceiver(),
+            is_corb_enabled));
     ReinitializeOnIOThread(std::move(network_factory), is_corb_enabled);
   }
 
@@ -254,23 +253,24 @@ void URLLoaderFactoryGetter::FlushNetworkInterfaceForTesting(
 URLLoaderFactoryGetter::~URLLoaderFactoryGetter() {}
 
 void URLLoaderFactoryGetter::InitializeOnIOThread(
-    network::mojom::URLLoaderFactoryPtrInfo network_factory) {
-  ReinitializeOnIOThread(
-      network::mojom::URLLoaderFactoryPtr(std::move(network_factory)), false);
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> network_factory) {
+  ReinitializeOnIOThread(mojo::Remote<network::mojom::URLLoaderFactory>(
+                             std::move(network_factory)),
+                         false);
 }
 
 void URLLoaderFactoryGetter::ReinitializeOnIOThread(
-    network::mojom::URLLoaderFactoryPtr network_factory,
+    mojo::Remote<network::mojom::URLLoaderFactory> network_factory,
     bool is_corb_enabled) {
   DCHECK(network_factory.is_bound());
-  // Set a connection error handle so that connection errors on the pipes are
+  // Set a disconnect handler so that connection errors on the pipes are
   // noticed, but the class doesn't actually do anything when the error is
   // observed - instead, a new pipe is created in GetURLLoaderFactory() as
   // needed. This is to avoid incrementing the reference count of |this| in the
   // callback, as that could result in increasing the reference count from 0 to
   // 1 while there's a pending task to delete |this|. See
   // https://crbug.com/870942 for more details.
-  network_factory.set_connection_error_handler(base::DoNothing());
+  network_factory.set_disconnect_handler(base::DoNothing());
   if (is_corb_enabled) {
     network_factory_corb_enabled_ = std::move(network_factory);
   } else {

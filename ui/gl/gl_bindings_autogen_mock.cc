@@ -34,12 +34,6 @@ void GL_BINDING_CALL MockGLInterface::Mock_glActiveTexture(GLenum texture) {
   interface_->ActiveTexture(texture);
 }
 
-void GL_BINDING_CALL
-MockGLInterface::Mock_glApplyFramebufferAttachmentCMAAINTEL(void) {
-  MakeGlMockFunctionUnique("glApplyFramebufferAttachmentCMAAINTEL");
-  interface_->ApplyFramebufferAttachmentCMAAINTEL();
-}
-
 void GL_BINDING_CALL MockGLInterface::Mock_glAttachShader(GLuint program,
                                                           GLuint shader) {
   MakeGlMockFunctionUnique("glAttachShader");
@@ -5069,9 +5063,6 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glActiveShaderProgram);
   if (strcmp(name, "glActiveTexture") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glActiveTexture);
-  if (strcmp(name, "glApplyFramebufferAttachmentCMAAINTEL") == 0)
-    return reinterpret_cast<GLFunctionPointerType>(
-        Mock_glApplyFramebufferAttachmentCMAAINTEL);
   if (strcmp(name, "glAttachShader") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glAttachShader);
   if (strcmp(name, "glBeginQuery") == 0)

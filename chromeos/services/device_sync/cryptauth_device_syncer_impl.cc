@@ -39,16 +39,14 @@ constexpr base::TimeDelta kWaitingForEncryptedGroupPrivateKeyProcessingTimeout =
 constexpr base::TimeDelta kWaitingForEncryptedDeviceMetadataProcessingTimeout =
     kMaxAsyncExecutionTime;
 
-void RecordGroupPrivateKeyDecryptionMetrics(
-    const base::TimeDelta& execution_time) {
+void RecordGroupPrivateKeyDecryptionMetrics(base::TimeDelta execution_time) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.DeviceSyncV2.DeviceSyncer.ExecutionTime."
       "GroupPrivateKeyDecryption",
       execution_time);
 }
 
-void RecordDeviceMetadataDecryptionMetrics(
-    const base::TimeDelta& execution_time) {
+void RecordDeviceMetadataDecryptionMetrics(base::TimeDelta execution_time) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.DeviceSyncV2.DeviceSyncer.ExecutionTime."
       "DeviceMetadataDecryption",
@@ -146,10 +144,6 @@ void CryptAuthDeviceSyncerImpl::OnAttemptStarted(
       CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether));
   request_context_.mutable_client_metadata()->CopyFrom(client_metadata);
   request_context_.set_device_id(client_app_metadata.instance_id());
-
-  // TODO(https://crbug.com/990430): This is the IID token for the v2 Enrollment
-  // service. A different IID token for the v2 DeviceSync service will be
-  // necessary.
   request_context_.set_device_id_token(client_app_metadata.instance_id_token());
 
   const CryptAuthKey* user_key_pair =
@@ -345,14 +339,15 @@ void CryptAuthDeviceSyncerImpl::GetFeatureStatuses() {
 }
 
 void CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished(
-    const CryptAuthFeatureStatusGetter::IdToFeatureStatusMap&
-        id_to_feature_status_map,
+    const CryptAuthFeatureStatusGetter::IdToDeviceSoftwareFeatureInfoMap&
+        id_to_device_software_feature_info_map,
     CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK_EQ(State::kWaitingForFeatureStatuses, state_);
 
   // We require that the local device feature statuses are returned; the local
   // device is needed in the registry.
-  if (!base::Contains(id_to_feature_status_map, request_context_.device_id())) {
+  if (!base::Contains(id_to_device_software_feature_info_map,
+                      request_context_.device_id())) {
     FinishAttempt(CryptAuthDeviceSyncResult::ResultCode::
                       kErrorMissingLocalDeviceFeatureStatuses);
     return;
@@ -363,7 +358,7 @@ void CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished(
       did_non_fatal_error_occur_ = true;
       FALLTHROUGH;
     case CryptAuthDeviceSyncResult::ResultType::kSuccess:
-      BuildNewDeviceRegistry(id_to_feature_status_map);
+      BuildNewDeviceRegistry(id_to_device_software_feature_info_map);
       AttemptNextStep();
       return;
     case CryptAuthDeviceSyncResult::ResultType::kFatalError:
@@ -373,18 +368,17 @@ void CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished(
 }
 
 void CryptAuthDeviceSyncerImpl::BuildNewDeviceRegistry(
-    const CryptAuthFeatureStatusGetter::IdToFeatureStatusMap&
-        id_to_feature_status_map) {
+    const CryptAuthFeatureStatusGetter::IdToDeviceSoftwareFeatureInfoMap&
+        id_to_device_software_feature_info_map) {
   // Add all device information to the new registry except the remote device
   // BetterTogether metadata that will be decrypted and added later if possible.
   new_device_registry_map_ = CryptAuthDeviceRegistry::InstanceIdToDeviceMap();
-  for (const auto& id_feature_status_pair : id_to_feature_status_map) {
-    const std::string& id = id_feature_status_pair.first;
-    const CryptAuthFeatureStatusGetter::FeatureStatusMap& feature_status_map =
-        id_feature_status_pair.second;
+  for (const auto& id_device_software_feature_info_pair :
+       id_to_device_software_feature_info_map) {
+    const std::string& id = id_device_software_feature_info_pair.first;
 
-    // The IDs in |id_to_feature_status_map| should be a subset of those in
-    // |id_to_device_metadata_packet_map|.
+    // The IDs in |id_to_device_software_feature_info_map| should be a subset of
+    // those in |id_to_device_metadata_packet_map|.
     const auto packet_it = id_to_device_metadata_packet_map_.find(id);
     DCHECK(packet_it != id_to_device_metadata_packet_map_.end());
     const cryptauthv2::DeviceMetadataPacket& packet = packet_it->second;
@@ -394,11 +388,11 @@ void CryptAuthDeviceSyncerImpl::BuildNewDeviceRegistry(
     if (id == request_context_.device_id())
       beto_metadata = local_better_together_device_metadata_;
 
-    // TODO(https://crbug.com/990441): Add last_update_time when CryptAuth
-    // starts returning it.
     new_device_registry_map_->try_emplace(
-        id, id, packet.device_name(), packet.device_public_key(), base::Time(),
-        beto_metadata, feature_status_map);
+        id, id, packet.device_name(), packet.device_public_key(),
+        id_device_software_feature_info_pair.second.last_modified_time,
+        beto_metadata,
+        id_device_software_feature_info_pair.second.feature_state_map);
   }
 }
 

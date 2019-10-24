@@ -231,14 +231,14 @@ void OptimizationGuideHintsManager::OnHintsComponentAvailable(
     return;
   }
 
-  std::unique_ptr<optimization_guide::HintUpdateData> update_data =
+  std::unique_ptr<optimization_guide::StoreUpdateData> update_data =
       hint_cache_->MaybeCreateUpdateDataForComponentHints(info.version);
 
   // Processes the hints from the newly available component on a background
-  // thread, providing a HintUpdateData for component update from the hint
+  // thread, providing a StoreUpdateData for component update from the hint
   // cache, so that each hint within the component can be moved into it. In the
   // case where the component's version is not newer than the hint cache store's
-  // component version, HintUpdateData will be a nullptr and hint
+  // component version, StoreUpdateData will be a nullptr and hint
   // processing will be skipped. After PreviewsHints::Create() returns the newly
   // created PreviewsHints, it is initialized in UpdateHints() on the UI thread.
   base::PostTaskAndReplyWithResult(
@@ -258,12 +258,12 @@ void OptimizationGuideHintsManager::OnHintsComponentAvailable(
   }
 }
 
-std::unique_ptr<optimization_guide::HintUpdateData>
+std::unique_ptr<optimization_guide::StoreUpdateData>
 OptimizationGuideHintsManager::ProcessHintsComponent(
     const optimization_guide::HintsComponentInfo& info,
     const base::flat_set<optimization_guide::proto::OptimizationType>&
         registered_optimization_types,
-    std::unique_ptr<optimization_guide::HintUpdateData> update_data) {
+    std::unique_ptr<optimization_guide::StoreUpdateData> update_data) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
 
   optimization_guide::ProcessHintsComponentResult out_result;
@@ -355,14 +355,14 @@ void OptimizationGuideHintsManager::OnHintCacheInitialized() {
   std::unique_ptr<optimization_guide::proto::Configuration> manual_config =
       optimization_guide::switches::ParseComponentConfigFromCommandLine();
   if (manual_config) {
-    std::unique_ptr<optimization_guide::HintUpdateData> hint_update_data =
+    std::unique_ptr<optimization_guide::StoreUpdateData> update_data =
         hint_cache_->MaybeCreateUpdateDataForComponentHints(
             base::Version(kManualConfigComponentVersion));
     optimization_guide::ProcessHints(manual_config->mutable_hints(),
-                                     hint_update_data.get());
+                                     update_data.get());
     // Allow |UpdateComponentHints| to block startup so that the first
     // navigation gets the hints when a command line hint proto is provided.
-    UpdateComponentHints(base::DoNothing(), std::move(hint_update_data));
+    UpdateComponentHints(base::DoNothing(), std::move(update_data));
   }
 
   // Register as an observer regardless of hint proto override usage. This is
@@ -372,16 +372,16 @@ void OptimizationGuideHintsManager::OnHintCacheInitialized() {
 
 void OptimizationGuideHintsManager::UpdateComponentHints(
     base::OnceClosure update_closure,
-    std::unique_ptr<optimization_guide::HintUpdateData> hint_update_data) {
+    std::unique_ptr<optimization_guide::StoreUpdateData> update_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // If we get here, the hints have been processed correctly.
   pref_service_->ClearPref(
       optimization_guide::prefs::kPendingHintsProcessingVersion);
 
-  if (hint_update_data) {
+  if (update_data) {
     hint_cache_->UpdateComponentHints(
-        std::move(hint_update_data),
+        std::move(update_data),
         base::BindOnce(&OptimizationGuideHintsManager::OnComponentHintsUpdated,
                        ui_weak_ptr_factory_.GetWeakPtr(),
                        std::move(update_closure),

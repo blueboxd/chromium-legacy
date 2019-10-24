@@ -29,7 +29,7 @@ public class WebApkActivity extends WebappActivity {
     /** The start time that the activity becomes focused in milliseconds since boot. */
     private long mStartTime;
 
-    private static final String TAG = "cr_WebApkActivity";
+    private static final String TAG = "WebApkActivity";
 
     @VisibleForTesting
     public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".WebApk";

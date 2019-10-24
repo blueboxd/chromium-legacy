@@ -821,7 +821,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   connect_timing_.dns_start = dns_resolution_start_time;
   connect_timing_.dns_end = dns_resolution_end_time;
   if (!retransmittable_on_wire_timeout.IsZero()) {
-    connection->set_retransmittable_on_wire_timeout(
+    connection->set_initial_retransmittable_on_wire_timeout(
         retransmittable_on_wire_timeout);
   }
 }

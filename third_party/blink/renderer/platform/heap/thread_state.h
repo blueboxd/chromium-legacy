@@ -253,13 +253,16 @@ class PLATFORM_EXPORT ThreadState final {
   void PerformConcurrentSweep();
 
   void SchedulePreciseGC();
-  void ScheduleIncrementalGC(BlinkGC::GCReason);
   void ScheduleForcedGCForTesting();
   void ScheduleGCIfNeeded();
   void WillStartV8GC(BlinkGC::V8GCType);
   void SetGCState(GCState);
   GCState GetGCState() const { return gc_state_; }
   void SetGCPhase(GCPhase);
+
+  // Immediately starts incremental marking and schedules further steps if
+  // necessary.
+  void StartIncrementalMarking(BlinkGC::GCReason);
 
   // Returns true if marking is in progress.
   bool IsMarkingInProgress() const { return gc_phase_ == GCPhase::kMarking; }
@@ -286,9 +289,6 @@ class PLATFORM_EXPORT ThreadState final {
 
   void EnableCompactionForNextGCForTesting();
 
-  void IncrementalMarkingStart(BlinkGC::GCReason);
-  void IncrementalMarkingStep(BlinkGC::StackState);
-  void IncrementalMarkingFinalize();
   bool FinishIncrementalMarkingIfRunning(BlinkGC::StackState,
                                          BlinkGC::MarkingType,
                                          BlinkGC::SweepingType,
@@ -382,6 +382,13 @@ class PLATFORM_EXPORT ThreadState final {
   bool IsVerifyMarkingEnabled() const;
 
  private:
+  class IncrementalMarkingScheduler;
+
+  // Duration of one incremental marking step. Should be short enough that it
+  // doesn't cause jank even though it is scheduled as a normal task.
+  static constexpr base::TimeDelta kDefaultIncrementalMarkingStepDuration =
+      base::TimeDelta::FromMilliseconds(2);
+
   // Stores whether some ThreadState is currently in incremental marking.
   static AtomicEntryFlag incremental_marking_flag_;
 
@@ -482,9 +489,15 @@ class PLATFORM_EXPORT ThreadState final {
   // Visit all DOM wrappers allocatd on this thread.
   void VisitDOMWrappers(Visitor*);
 
+  // Incremental marking implementation functions.
+  void IncrementalMarkingStartForTesting();
+  void IncrementalMarkingStart(BlinkGC::GCReason);
+  void IncrementalMarkingStep(
+      BlinkGC::StackState,
+      base::TimeDelta duration = kDefaultIncrementalMarkingStepDuration);
+  void IncrementalMarkingFinalize();
+
   // Schedule helpers.
-  void ScheduleIncrementalMarkingStep();
-  void ScheduleIncrementalMarkingFinalize();
   void ScheduleIdleLazySweep();
   void ScheduleConcurrentAndLazySweep();
 
@@ -492,8 +505,6 @@ class PLATFORM_EXPORT ThreadState final {
   void RunTerminationGC();
 
   void RunScheduledGC(BlinkGC::StackState);
-
-  void UpdateIncrementalMarkingStepDuration();
 
   void SynchronizeAndFinishConcurrentSweeping();
 
@@ -540,9 +551,6 @@ class PLATFORM_EXPORT ThreadState final {
   size_t gc_forbidden_count_ = 0;
   size_t static_persistent_registration_disabled_count_ = 0;
 
-  base::TimeDelta next_incremental_marking_step_duration_;
-  base::TimeDelta previous_incremental_marking_time_left_;
-
   GCState gc_state_ = GCState::kNoGCScheduled;
   GCPhase gc_phase_ = GCPhase::kNone;
   BlinkGC::GCReason reason_for_scheduled_gc_ =
@@ -582,6 +590,8 @@ class PLATFORM_EXPORT ThreadState final {
     std::unique_ptr<MarkingVisitor> visitor;
   };
   GCData current_gc_data_;
+
+  std::unique_ptr<IncrementalMarkingScheduler> incremental_marking_scheduler_;
 
   std::unique_ptr<CancelableTaskScheduler> marker_scheduler_;
   uint8_t active_markers_ = 0;

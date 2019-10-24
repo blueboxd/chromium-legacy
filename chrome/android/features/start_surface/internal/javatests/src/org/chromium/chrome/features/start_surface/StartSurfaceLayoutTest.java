@@ -32,7 +32,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 
-import org.junit.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -100,6 +100,7 @@ public class StartSurfaceLayoutTest {
     private Callback<Bitmap> mBitmapListener =
             (bitmap) -> mAllBitmaps.add(new WeakReference<>(bitmap));
     private TabSwitcher.TabListDelegate mTabListDelegate;
+    private boolean mSkipAssertThumbnailsAreReleased;
 
     @Before
     public void setUp() {
@@ -118,7 +119,7 @@ public class StartSurfaceLayoutTest {
 
         mTabListDelegate = mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         mTabListDelegate.setBitmapCallbackForTesting(mBitmapListener);
-        Assert.assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
+        assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
 
         mActivityTestRule.getActivity().getTabContentManager().setCaptureMinRequestTimeForTesting(
                 0);
@@ -128,6 +129,15 @@ public class StartSurfaceLayoutTest {
                         .getTabModelSelector()
                         .getTabModelFilterProvider()
                         .getCurrentTabModelFilter()::isTabModelRestored));
+
+        assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
+        // Only skip thumbnail releasing assertion when "warm" (large soft-cleanup-delay).
+        mSkipAssertThumbnailsAreReleased = false;
+    }
+
+    @After
+    public void tearDown() {
+        if (!mSkipAssertThumbnailsAreReleased) assertThumbnailsAreReleased();
     }
 
     @Test
@@ -142,7 +152,6 @@ public class StartSurfaceLayoutTest {
 
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
-        assertThumbnailsAreReleased();
     }
 
     @Test
@@ -158,7 +167,6 @@ public class StartSurfaceLayoutTest {
 
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
-        assertThumbnailsAreReleased();
     }
 
     @Test
@@ -173,6 +181,7 @@ public class StartSurfaceLayoutTest {
 
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
+        mSkipAssertThumbnailsAreReleased = true;
     }
 
     @Test
@@ -185,6 +194,7 @@ public class StartSurfaceLayoutTest {
         // clang-format on
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
+        mSkipAssertThumbnailsAreReleased = true;
     }
 
     @Test
@@ -216,7 +226,6 @@ public class StartSurfaceLayoutTest {
     public void testTabToGridFromNtp() throws InterruptedException {
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(NTP_URL);
-        assertThumbnailsAreReleased();
     }
 
     /**
@@ -231,6 +240,7 @@ public class StartSurfaceLayoutTest {
         assertTrue(numTabs >= 1);
         assertTrue(numIncognitoTabs >= 0);
 
+        int oldCount = mTabListDelegate.getBitmapFetchCountForTesting();
         assertEquals(1,
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(false).getCount());
         assertEquals(
@@ -248,6 +258,7 @@ public class StartSurfaceLayoutTest {
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(false).getCount());
         assertEquals(numIncognitoTabs,
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(true).getCount());
+        assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - oldCount);
     }
 
     /**
@@ -337,18 +348,9 @@ public class StartSurfaceLayoutTest {
 
         final int initCount = getCaptureCount();
 
-        StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
         for (int i = 0; i < mRepeat; i++) {
             enterGTS();
-
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { startSurface.getController().onBackPressed(); });
-            // clang-format off
-            CriteriaHelper.pollInstrumentationThread(
-                    () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
-                    "Overview not hidden yet", DEFAULT_MAX_TIME_TO_POLL * 10,
-                    DEFAULT_POLLING_INTERVAL);
-            // clang-format on
+            leaveGTS();
         }
         checkFinalCaptureCount(false, initCount);
     }
@@ -413,7 +415,7 @@ public class StartSurfaceLayoutTest {
                     () -> mActivityTestRule.getActivity().getTabModelSelector().closeAllTabs());
             ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
             mActivityTestRule.startMainActivityOnBlankPage();
-            Assert.assertEquals(1, mActivityTestRule.tabsCount(false));
+            assertEquals(1, mActivityTestRule.tabsCount(false));
         }
 
         assertNotEquals(0,
@@ -487,7 +489,7 @@ public class StartSurfaceLayoutTest {
                         !mActivityTestRule.getActivity().getLayoutManager().overviewVisible();
                 if (!doneHiding) {
                     // Before overview hiding animation is done, the tab index should not change.
-                    Assert.assertEquals(
+                    assertEquals(
                             index, mActivityTestRule.getActivity().getCurrentTabModel().index());
                 }
                 return doneHiding;
@@ -506,7 +508,6 @@ public class StartSurfaceLayoutTest {
             checkCaptureCount(delta, count);
         }
         checkFinalCaptureCount(switchToAnotherTab, initCount);
-        assertThumbnailsAreReleased();
     }
 
     @Test
@@ -521,12 +522,12 @@ public class StartSurfaceLayoutTest {
         // the same process as this test.
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityOnBlankPage();
-        Assert.assertEquals(3, mActivityTestRule.tabsCount(false));
+        assertEquals(3, mActivityTestRule.tabsCount(false));
 
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
         mStartSurfaceLayout = (StartSurfaceLayout) layout;
-        Assert.assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - oldCount);
+        assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - oldCount);
     }
 
     @Test
@@ -534,7 +535,7 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testInvisibleTabsDontFetch() throws InterruptedException {
         // Open a few new tabs.
-        final int count = mAllBitmaps.size();
+        final int count = mTabListDelegate.getBitmapFetchCountForTesting();
         for (int i = 0; i < 3; i++) {
             MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                     mActivityTestRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
@@ -543,7 +544,7 @@ public class StartSurfaceLayoutTest {
         Thread.sleep(1000);
 
         // No fetching should happen.
-        Assert.assertEquals(0, mAllBitmaps.size() - count);
+        assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - count);
     }
 
     @Test
@@ -558,7 +559,7 @@ public class StartSurfaceLayoutTest {
         Thread.sleep(1000);
 
         // Open a few new tabs.
-        final int count = mAllBitmaps.size();
+        final int count = mTabListDelegate.getBitmapFetchCountForTesting();
         for (int i = 0; i < 3; i++) {
             MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                     mActivityTestRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
@@ -567,7 +568,8 @@ public class StartSurfaceLayoutTest {
         Thread.sleep(1000);
 
         // No fetching should happen.
-        Assert.assertEquals(0, mAllBitmaps.size() - count);
+        assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - count);
+        mSkipAssertThumbnailsAreReleased = true;
     }
 
     @Test
@@ -582,7 +584,7 @@ public class StartSurfaceLayoutTest {
         Thread.sleep(1000);
 
         // Open a few new tabs.
-        final int count = mAllBitmaps.size();
+        final int count = mTabListDelegate.getBitmapFetchCountForTesting();
         for (int i = 0; i < 3; i++) {
             MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                     mActivityTestRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
@@ -591,7 +593,7 @@ public class StartSurfaceLayoutTest {
         Thread.sleep(1000);
 
         // No fetching should happen.
-        Assert.assertEquals(0, mAllBitmaps.size() - count);
+        assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - count);
     }
 
     @Test
@@ -637,6 +639,7 @@ public class StartSurfaceLayoutTest {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .check(TabCountAssertion.havingTabCount(2));
         }
+        leaveGTS();
     }
 
     @Test
@@ -651,20 +654,21 @@ public class StartSurfaceLayoutTest {
         enterGTS();
 
         int currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
-        Assert.assertEquals(2, currentFetchCount - oldFetchCount);
+        assertEquals(2, currentFetchCount - oldFetchCount);
         oldFetchCount = currentFetchCount;
 
         for (int i = 0; i < mRepeat; i++) {
             switchTabModel(false);
             currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
-            Assert.assertEquals(1, currentFetchCount - oldFetchCount);
+            assertEquals(1, currentFetchCount - oldFetchCount);
             oldFetchCount = currentFetchCount;
 
             switchTabModel(true);
             currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
-            Assert.assertEquals(2, currentFetchCount - oldFetchCount);
+            assertEquals(2, currentFetchCount - oldFetchCount);
             oldFetchCount = currentFetchCount;
         }
+        leaveGTS();
     }
 
     private static class TabCountAssertion implements ViewAssertion {
@@ -738,6 +742,18 @@ public class StartSurfaceLayoutTest {
         if (checkThumbnail) checkThumbnailsExist(currentTab);
     }
 
+    private void leaveGTS() {
+        assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+
+        StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { startSurface.getController().onBackPressed(); });
+        CriteriaHelper.pollInstrumentationThread(
+                () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
+                "Overview not hidden yet", DEFAULT_MAX_TIME_TO_POLL * 10,
+                DEFAULT_POLLING_INTERVAL);
+    }
+
     private void checkFinalCaptureCount(boolean switchToAnotherTab, int initCount) {
         int expected;
         if (TextUtils.equals(
@@ -793,7 +809,9 @@ public class StartSurfaceLayoutTest {
 
     private boolean canAllBeGarbageCollected(List<WeakReference<Bitmap>> bitmaps) {
         for (WeakReference<Bitmap> bitmap : bitmaps) {
-            if (!GarbageCollectionTestUtils.canBeGarbageCollected(bitmap)) return false;
+            if (!GarbageCollectionTestUtils.canBeGarbageCollected(bitmap)) {
+                return false;
+            }
         }
         return true;
     }

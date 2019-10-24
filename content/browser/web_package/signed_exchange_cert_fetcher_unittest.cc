@@ -21,9 +21,9 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -45,7 +45,7 @@ class DeferringURLLoaderThrottle final : public blink::URLLoaderThrottle {
 
   void WillRedirectRequest(
       net::RedirectInfo* redirect_info,
-      const network::ResourceResponseHead& /* response_head */,
+      const network::mojom::URLResponseHead& /* response_head */,
       bool* defer,
       std::vector<std::string>* /* to_be_removed_headers */,
       net::HttpRequestHeaders* /* modified_headers */) override {
@@ -54,7 +54,7 @@ class DeferringURLLoaderThrottle final : public blink::URLLoaderThrottle {
   }
 
   void WillProcessResponse(const GURL& response_url_,
-                           network::ResourceResponseHead* response_head,
+                           network::mojom::URLResponseHead* response_head,
                            bool* defer) override {
     will_process_response_called_ = true;
     *defer = true;
@@ -222,13 +222,14 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   }
 
   void CallOnReceiveResponse() {
-    network::ResourceResponseHead resource_response;
-    resource_response.headers =
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-    resource_response.headers->AddHeader(
+    response_head->headers->AddHeader(
         "Content-Type: application/cert-chain+cbor");
-    resource_response.mime_type = "application/cert-chain+cbor";
-    mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
+    response_head->mime_type = "application/cert-chain+cbor";
+    mock_loader_factory_.client_ptr()->OnReceiveResponse(
+        std::move(response_head));
   }
 
   DeferringURLLoaderThrottle* InitializeDeferringURLLoaderThrottle() {
@@ -421,11 +422,12 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_ContentLengthCheck) {
 
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(url_, false /* force_fetch */);
-  network::ResourceResponseHead resource_response;
-  resource_response.headers =
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-  resource_response.content_length = message.size();
-  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
+  response_head->content_length = message.size();
+  mock_loader_factory_.client_ptr()->OnReceiveResponse(
+      std::move(response_head));
   mojo::DataPipe data_pipe(message.size());
   CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
   data_pipe.producer_handle.reset();
@@ -443,10 +445,9 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_ContentLengthCheck) {
 TEST_F(SignedExchangeCertFetcherTest, Abort_Redirect) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(url_, false /* force_fetch */);
-  network::ResourceResponseHead response_head;
   net::RedirectInfo redirect_info;
-  mock_loader_factory_.client_ptr()->OnReceiveRedirect(redirect_info,
-                                                       response_head);
+  mock_loader_factory_.client_ptr()->OnReceiveRedirect(
+      redirect_info, network::mojom::URLResponseHead::New());
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
@@ -457,10 +458,11 @@ TEST_F(SignedExchangeCertFetcherTest, Abort_Redirect) {
 TEST_F(SignedExchangeCertFetcherTest, Abort_404) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(url_, false /* force_fetch */);
-  network::ResourceResponseHead resource_response;
-  resource_response.headers =
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 404 Not Found");
-  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
+  mock_loader_factory_.client_ptr()->OnReceiveResponse(
+      std::move(response_head));
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
@@ -471,13 +473,13 @@ TEST_F(SignedExchangeCertFetcherTest, Abort_404) {
 TEST_F(SignedExchangeCertFetcherTest, WrongMimeType) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(url_, false /* force_fetch */);
-  network::ResourceResponseHead resource_response;
-  resource_response.headers =
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-  resource_response.headers->AddHeader(
-      "Content-Type: application/octet-stream");
-  resource_response.mime_type = "application/octet-stream";
-  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
+  response_head->headers->AddHeader("Content-Type: application/octet-stream");
+  response_head->mime_type = "application/octet-stream";
+  mock_loader_factory_.client_ptr()->OnReceiveResponse(
+      std::move(response_head));
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
@@ -589,11 +591,10 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnRedirect) {
 
   RunUntilIdle();
 
-  network::ResourceResponseHead response_head;
   net::RedirectInfo redirect_info;
 
-  mock_loader_factory_.client_ptr()->OnReceiveRedirect(redirect_info,
-                                                       response_head);
+  mock_loader_factory_.client_ptr()->OnReceiveRedirect(
+      redirect_info, network::mojom::URLResponseHead::New());
   RunUntilIdle();
 
   EXPECT_TRUE(throttle->will_redirect_request_called());

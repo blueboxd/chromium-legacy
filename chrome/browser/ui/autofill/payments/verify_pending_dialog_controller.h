@@ -18,7 +18,6 @@ class VerifyPendingDialogController {
   virtual ~VerifyPendingDialogController() = default;
 
   virtual base::string16 GetDialogTitle() const = 0;
-  virtual base::string16 GetCancelButtonLabel() const = 0;
 
   virtual void OnCancel() = 0;
   virtual void OnDialogClosed() = 0;

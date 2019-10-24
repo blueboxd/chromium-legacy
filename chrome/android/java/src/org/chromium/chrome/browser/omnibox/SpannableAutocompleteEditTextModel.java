@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  * effectively hide the existence of autocomplete text from keyboard.
  */
 public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextModelBase {
-    private static final String TAG = "cr_SpanAutocomplete";
+    private static final String TAG = "SpanAutocomplete";
 
     private static final boolean DEBUG = false;
 

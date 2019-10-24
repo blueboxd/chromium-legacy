@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_M
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VR_SETTINGS_SERVICE;
 
@@ -20,9 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
-import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.test.uiautomator.UiDevice;
 
@@ -38,7 +35,6 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -48,7 +44,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.VrSettingsFile;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
-import org.chromium.chrome.browser.vr.util.NfcSimUtils;
 import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.browser.vr.util.VrSettingsServiceUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
@@ -65,14 +60,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * End-to-end tests for transitioning between WebVR and WebXR's magic window and
+ * End-to-end tests for transitioning between WebXR's magic window and
  * presentation modes.
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
-@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR and WebXR are only supported on L+
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
+@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
 @TargetApi(Build.VERSION_CODES.KITKAT) // Necessary to allow taking screenshots with UiAutomation
 public class WebXrVrTransitionTest {
     @ClassParameter
@@ -83,7 +78,6 @@ public class WebXrVrTransitionTest {
 
     private ChromeActivityTestRule mTestRule;
     private WebXrVrTestFramework mWebXrVrTestFramework;
-    private WebVrTestFramework mWebVrTestFramework;
 
     public WebXrVrTransitionTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
@@ -93,19 +87,6 @@ public class WebXrVrTransitionTest {
     @Before
     public void setUp() {
         mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
-        mWebVrTestFramework = new WebVrTestFramework(mTestRule);
-    }
-
-    /**
-     * Tests that a successful requestPresent call actually enters VR
-     */
-    @Test
-    @MediumTest
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testRequestPresentEntersVr() {
-        testPresentationEntryImpl(
-                WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
-                mWebVrTestFramework);
     }
 
     /**
@@ -113,8 +94,6 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testRequestSessionEntersVr() {
@@ -162,22 +141,6 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that WebVR is not exposed if the flag is not on and the page does
-     * not have an origin trial token.
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Remove({"enable-blink-features=WebVR"})
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testWebVrDisabledWithoutFlagSet() {
-        // TODO(bsheedy): Remove this test once WebVR is on by default without
-        // requiring an origin trial.
-        apiDisabledWithoutFlagSetImpl(WebVrTestFramework.getFileUrlForHtmlTestFile(
-                                              "test_webvr_disabled_without_flag_set"),
-                mWebVrTestFramework);
-    }
-
-    /**
      * Tests that WebXR is not exposed if the flag is not on and the page does
      * not have an origin trial token.
      */
@@ -185,7 +148,6 @@ public class WebXrVrTransitionTest {
     @MediumTest
     @CommandLineFlags
             .Add({"disable-features=WebXR"})
-            @CommandLineFlags.Remove({"enable-blink-features=WebVR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWebXrDisabledWithoutFlagSet() {
         apiDisabledWithoutFlagSetImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
@@ -200,46 +162,6 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that scanning the Daydream View NFC tag on supported devices fires the
-     * vrdisplayactivate event and the event allows presentation without a user gesture.
-     */
-    @Test
-    @LargeTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testNfcFiresVrdisplayactivate() {
-        mWebVrTestFramework.loadUrlAndAwaitInitialization(
-                WebVrTestFramework.getFileUrlForHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
-                PAGE_LOAD_TIMEOUT_S);
-        mWebVrTestFramework.runJavaScriptOrFail("addListener()", POLL_TIMEOUT_LONG_MS);
-        NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
-        mWebVrTestFramework.waitOnJavaScriptStep();
-        mWebVrTestFramework.endTest();
-        // VrCore has a 2000 ms debounce timeout on NFC scans. When run multiple times in different
-        // activities, it is possible for a latter test to be run in the 2 seconds after the
-        // previous test's NFC scan, causing it to fail flakily. So, wait 2 seconds to ensure that
-        // can't happen.
-        SystemClock.sleep(2000);
-    }
-
-    /**
-     * Tests that the requestPresent promise doesn't resolve if the DON flow is
-     * not completed.
-     */
-    @Test
-    @MediumTest
-    @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
-    @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @DisabledTest(message = "crbug.com/972153")
-    public void testPresentationPromiseUnresolvedDuringDon() {
-        presentationPromiseUnresolvedDuringDonImpl(
-                WebVrTestFramework.getFileUrlForHtmlTestFile(
-                        "test_presentation_promise_unresolved_during_don"),
-                mWebVrTestFramework);
-    }
-
-    /**
      * Tests that the immersive session promise doesn't resolve if the DON flow is
      * not completed.
      */
@@ -247,8 +169,6 @@ public class WebXrVrTransitionTest {
     @MediumTest
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
     @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testPresentationPromiseUnresolvedDuringDon_WebXr() {
@@ -266,30 +186,12 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that the requestPresent promise is rejected if the DON flow is canceled.
-     */
-    @Test
-    @MediumTest
-    @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
-    @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @DisabledTest(message = "crbug.com/972153")
-    public void testPresentationPromiseRejectedIfDonCanceled() {
-        presentationPromiseRejectedIfDonCanceledImpl(
-                WebVrTestFramework.getFileUrlForHtmlTestFile(
-                        "test_presentation_promise_rejected_if_don_canceled"),
-                mWebVrTestFramework);
-    }
-
-    /**
      * Tests that the immersive session promise is rejected if the DON flow is canceled.
      */
     @Test
     @MediumTest
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
     @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testPresentationPromiseRejectedIfDonCanceled_WebXr() {
@@ -317,24 +219,10 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that the omnibox reappears after exiting VR.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_SVR)
-    public void testControlsVisibleAfterExitingVr() throws InterruptedException {
-        controlsVisibleAfterExitingVrImpl(
-                WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
-                mWebVrTestFramework);
-    }
-
-    /**
      * Tests that the omnibox reappears after exiting an immersive session.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_SVR)
             public void testControlsVisibleAfterExitingVr_WebXr() throws InterruptedException {
@@ -364,27 +252,11 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that window.requestAnimationFrame stops firing while in WebVR presentation, but resumes
-     * afterwards.
-     */
-    @Test
-    @MediumTest
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
-        windowRafStopsFiringWhilePresentingImpl(
-                WebVrTestFramework.getFileUrlForHtmlTestFile(
-                        "test_window_raf_stops_firing_while_presenting"),
-                mWebVrTestFramework);
-    }
-
-    /**
      * Tests that window.requestAnimationFrame stops firing while in a WebXR immersive session, but
      * resumes afterwards.
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWindowRafStopsFiringWhilePresenting_WebXr()
@@ -412,25 +284,11 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests renderer crashes while in WebVR presentation stay in VR.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    public void testRendererKilledInWebVrStaysInVr() throws IllegalArgumentException {
-        rendererKilledInVrStaysInVrImpl(
-                WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
-                mWebVrTestFramework);
-    }
-
-    /**
      * Tests renderer crashes while in WebXR presentation stay in VR.
      */
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testRendererKilledInWebXrStaysInVr() throws IllegalArgumentException {
         rendererKilledInVrStaysInVrImpl(
@@ -451,8 +309,6 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWindowRafFiresDuringNonImmersiveSession() {
@@ -470,8 +326,6 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             @DisableFeatures(ChromeFeatureList.SEND_TAB_TO_SELF)
@@ -495,8 +349,6 @@ public class WebXrVrTransitionTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
             public void testAppButtonExitToast() {
@@ -514,8 +366,6 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testConsentDialogIsDismissedWhenPageNavigatesAwayInMainFrame() {

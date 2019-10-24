@@ -373,35 +373,27 @@ void ChromeClientImpl::CloseWindowSoon() {
     web_view_->Client()->CloseWindowSoon();
 }
 
-// Although a LocalFrame is passed in, we don't actually use it, since we
-// already know our own m_webView.
 bool ChromeClientImpl::OpenJavaScriptAlertDelegate(LocalFrame* frame,
                                                    const String& message) {
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
-    if (UserGestureIndicator::ProcessingUserGesture())
-      UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
     webframe->Client()->RunModalAlertDialog(message);
     return true;
   }
   return false;
 }
 
-// See comments for openJavaScriptAlertDelegate().
 bool ChromeClientImpl::OpenJavaScriptConfirmDelegate(LocalFrame* frame,
                                                      const String& message) {
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
-    if (UserGestureIndicator::ProcessingUserGesture())
-      UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
     return webframe->Client()->RunModalConfirmDialog(message);
   }
   return false;
 }
 
-// See comments for openJavaScriptAlertDelegate().
 bool ChromeClientImpl::OpenJavaScriptPromptDelegate(LocalFrame* frame,
                                                     const String& message,
                                                     const String& default_value,
@@ -409,8 +401,6 @@ bool ChromeClientImpl::OpenJavaScriptPromptDelegate(LocalFrame* frame,
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
-    if (UserGestureIndicator::ProcessingUserGesture())
-      UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
     WebString actual_value;
     bool ok = webframe->Client()->RunModalPromptDialog(message, default_value,
                                                        &actual_value);
@@ -899,8 +889,9 @@ void ChromeClientImpl::SetBrowserControlsState(float top_height,
                                        shrinks_layout);
 }
 
-void ChromeClientImpl::SetBrowserControlsShownRatio(float ratio) {
-  web_view_->GetBrowserControls().SetShownRatio(ratio);
+void ChromeClientImpl::SetBrowserControlsShownRatio(float top_ratio,
+                                                    float bottom_ratio) {
+  web_view_->GetBrowserControls().SetShownRatio(top_ratio, bottom_ratio);
 }
 
 bool ChromeClientImpl::ShouldOpenUIElementDuringPageDismissal(

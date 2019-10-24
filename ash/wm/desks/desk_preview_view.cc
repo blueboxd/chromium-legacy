@@ -29,7 +29,7 @@ namespace {
 
 // The height of the preview view in dips.
 constexpr int kDeskPreviewHeight = 64;
-constexpr int kDeskPreviewHeightInSmallScreens = 48;
+constexpr int kDeskPreviewHeightInCompactLayout = 48;
 
 // The corner radius of the border in dips.
 constexpr int kBorderCornerRadius = 6;
@@ -241,9 +241,8 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
 DeskPreviewView::~DeskPreviewView() = default;
 
 // static
-int DeskPreviewView::GetHeight(bool for_small_screens) {
-  return for_small_screens ? kDeskPreviewHeightInSmallScreens
-                           : kDeskPreviewHeight;
+int DeskPreviewView::GetHeight(bool compact) {
+  return compact ? kDeskPreviewHeightInCompactLayout : kDeskPreviewHeight;
 }
 
 void DeskPreviewView::SetBorderColor(SkColor color) {

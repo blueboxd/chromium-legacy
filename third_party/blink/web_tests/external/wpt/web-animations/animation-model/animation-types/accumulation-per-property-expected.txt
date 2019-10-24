@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 563 tests; 533 PASS, 30 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 563 tests; 544 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -506,22 +506,22 @@ PASS touch-action: "auto" onto "none"
 PASS transform (type: transformList) has testAccumulation function
 PASS transform: translate
 PASS transform: rotate
-FAIL transform: scale assert_approx_equals: expected matrix(-2, 0, 0, -2, 0, 0) but got matrix(-6, 0, 0, -6, 0, 0): The value should be matrix(-2, 0, 0, -2, 0, 0) at 0ms but got matrix(-6, 0, 0, -6, 0, 0) expected -2 +/- 0.0001 but got -6
-FAIL transform: skew assert_approx_equals: expected matrix(1, 0.57735, -0.36397, 1, 0, 0) but got matrix(1.06418, 0.540297, -0.401023, 0.898198, 0, 0): The value should be matrix(1, 0.57735, -0.36397, 1, 0, 0) at 0ms but got matrix(1.06418, 0.540297, -0.401023, 0.898198, 0, 0) expected 1 +/- 0.0001 but got 1.06418
+PASS transform: scale
+PASS transform: skew
 PASS transform: rotate on translate
-FAIL transform: translate on rotate assert_approx_equals: expected matrix(0, 1, -1, 0, 100, 0) but got matrix(0, 1, -1, 0, 0, 100): The value should be matrix(0, 1, -1, 0, 100, 0) at 0ms but got matrix(0, 1, -1, 0, 0, 100) expected 100 +/- 0.0001 but got 0
+PASS transform: translate on rotate
 PASS transform: rotate and translate on rotate
-FAIL transform: rotate on rotate and translate assert_approx_equals: expected matrix(0, 1, -1, 0, 0, 100) but got matrix(0, 1, -1, 0, 70.7107, 70.7107): The value should be matrix(0, 1, -1, 0, 0, 100) at 0ms but got matrix(0, 1, -1, 0, 70.7107, 70.7107) expected 0 +/- 0.0001 but got 70.7107
-FAIL transform: matrix assert_approx_equals: expected matrix(0, 1, -1, 0, 100, 0) but got matrix(0, 1, -1, 0, 0, 100): The value should be matrix(0, 1, -1, 0, 100, 0) at 0ms but got matrix(0, 1, -1, 0, 0, 100) expected 100 +/- 0.0001 but got 0
+PASS transform: rotate on rotate and translate
+PASS transform: matrix
 PASS transform: rotate3d
 PASS transform: matrix3d
 PASS transform: none
-FAIL transform: non-invertible matrices (non-invertible onto invertible) assert_approx_equals: expected matrix(1, 1, 0, 0, 0, 100) but got matrix(-1, -1, 0, 0, 200, -100): The value should be matrix(1, 1, 0, 0, 0, 100) at 0ms but got matrix(-1, -1, 0, 0, 200, -100) expected 1 +/- 0.0001 but got -1
-FAIL transform: non-invertible matrices (invertible onto non-invertible) assert_approx_equals: expected matrix(-1, 0, 0, -1, 200, 0) but got matrix(-1, -1, 0, 0, 200, 300): The value should be matrix(-1, 0, 0, -1, 200, 0) at 0ms but got matrix(-1, -1, 0, 0, 200, 300) expected 0 +/- 0.0001 but got -1
-FAIL transform: non-invertible matrices in matched transform lists (non-invertible onto invertible) assert_approx_equals: expected matrix(-1, -1, 0, 0, 100, 100) but got matrix(-1, 1, 0, 0, 350, -100): The value should be matrix(-1, -1, 0, 0, 100, 100) at 0ms but got matrix(-1, 1, 0, 0, 350, -100) expected -1 +/- 0.0001 but got 1
-FAIL transform: non-invertible matrices in matched transform lists (invertible onto non-invertible) assert_approx_equals: expected matrix(0, -1, 1, 0, 250, 0) but got matrix(0, 0, -1, -1, -150, -150): The value should be matrix(0, -1, 1, 0, 250, 0) at 0ms but got matrix(0, 0, -1, -1, -150, -150) expected -1 +/- 0.0001 but got 0
-FAIL transform: non-invertible matrices in mismatched transform lists (non-invertible onto invertible) assert_approx_equals: expected matrix(1, 1, 1, 1, 100, 100) but got matrix(-2, -2, -2, -2, 50, -200): The value should be matrix(1, 1, 1, 1, 100, 100) at 0ms but got matrix(-2, -2, -2, -2, 50, -200) expected 1 +/- 0.0001 but got -2
-FAIL transform: non-invertible matrices in mismatched transform lists (invertible onto non-invertible) assert_approx_equals: expected matrix(-2, 0, 0, -2, 250, 0) but got matrix(-2, -2, -2, -2, 350, 350): The value should be matrix(-2, 0, 0, -2, 250, 0) at 0ms but got matrix(-2, -2, -2, -2, 350, 350) expected 0 +/- 0.0001 but got -2
+PASS transform: non-invertible matrices (non-invertible onto invertible)
+PASS transform: non-invertible matrices (invertible onto non-invertible)
+PASS transform: non-invertible matrices in matched transform lists (non-invertible onto invertible)
+PASS transform: non-invertible matrices in matched transform lists (invertible onto non-invertible)
+PASS transform: non-invertible matrices in mismatched transform lists (non-invertible onto invertible)
+PASS transform: non-invertible matrices in mismatched transform lists (invertible onto non-invertible)
 PASS transform-box (type: discrete) has testAccumulation function
 FAIL transform-box: "border-box" onto "fill-box" assert_equals: The value should be border-box at 0ms expected "border-box" but got "fill-box"
 PASS transform-box: "fill-box" onto "border-box"

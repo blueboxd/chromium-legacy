@@ -28,7 +28,7 @@ import java.io.File;
 
 /** An Activity base class for running browser tests against WebLayerShell. */
 public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
-    private static final String TAG = "cr.native_test";
+    private static final String TAG = "native_test";
 
     private WebLayer mWebLayer;
     private Profile mProfile;

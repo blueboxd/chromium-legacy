@@ -58,6 +58,8 @@ class PLATFORM_EXPORT ScaleTransformOperation final
   void Apply(TransformationMatrix& transform, const FloatSize&) const override {
     transform.Scale3d(x_, y_, z_);
   }
+  scoped_refptr<TransformOperation> Accumulate(
+      const TransformOperation& other) override;
   scoped_refptr<TransformOperation> Blend(
       const TransformOperation* from,
       double progress,

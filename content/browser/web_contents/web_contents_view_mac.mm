@@ -31,7 +31,8 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -92,7 +93,6 @@ WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
     : web_contents_(web_contents),
       delegate_(delegate),
       ns_view_id_(remote_cocoa::GetNewNSViewId()),
-      remote_ns_view_host_binding_(this),
       deferred_close_weak_ptr_factory_(this) {}
 
 WebContentsViewMac::~WebContentsViewMac() {
@@ -631,20 +631,22 @@ void WebContentsViewMac::ViewsHostableAttach(
   // Create an NSView in the target process, if one exists.
   auto* remote_cocoa_application = views_host_->GetRemoteCocoaApplication();
   if (remote_cocoa_application) {
-    remote_cocoa::mojom::WebContentsNSViewHostAssociatedPtr host;
-    remote_ns_view_host_binding_.Bind(mojo::MakeRequest(&host));
-    remote_cocoa::mojom::WebContentsNSViewAssociatedRequest ns_view_request =
-        mojo::MakeRequest(&remote_ns_view_);
+    mojo::PendingAssociatedRemote<remote_cocoa::mojom::WebContentsNSViewHost>
+        host;
+    remote_ns_view_host_receiver_.Bind(
+        host.InitWithNewEndpointAndPassReceiver());
+    mojo::PendingAssociatedReceiver<remote_cocoa::mojom::WebContentsNSView>
+        ns_view_receiver = remote_ns_view_.BindNewEndpointAndPassReceiver();
 
-    // Cast from mojom::WebContentsNSViewHostPtr and
-    // mojom::WebContentsNSViewBridgeRequest to the public interfaces
-    // accepted by the application.
+    // Cast from mojo::AssociatedRemote<mojom::WebContentsNSViewHost> and
+    // mojo::PendingAssociatedReceiver<remote_cocoa::mojom::WebContentsNSView>
+    // to the public interfaces accepted by the application.
     // TODO(ccameron): Remove the need for this cast.
     // https://crbug.com/888290
     mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
-        stub_host(host.PassInterface().PassHandle(), 0);
+        stub_host(host.PassHandle(), 0);
     remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_ns_view_request(
-        ns_view_request.PassHandle());
+        ns_view_receiver.PassHandle());
 
     remote_cocoa_application->CreateWebContentsNSView(
         ns_view_id_, std::move(stub_host), std::move(stub_ns_view_request));
@@ -675,7 +677,7 @@ void WebContentsViewMac::ViewsHostableDetach() {
   if (remote_ns_view_) {
     remote_ns_view_->SetVisible(false);
     remote_ns_view_->ResetParentNSView();
-    remote_ns_view_host_binding_.Close();
+    remote_ns_view_host_receiver_.reset();
     remote_ns_view_.reset();
     // Permit the in-process NSView to call back into |this| again.
     [GetInProcessNSView() setHost:this];

@@ -57,10 +57,15 @@ public class BaseSuggestionViewBinder
             final int paddingStart = res.getDimensionPixelSize(sds.isLarge
                             ? R.dimen.omnibox_suggestion_36dp_icon_margin_start
                             : R.dimen.omnibox_suggestion_24dp_icon_margin_start);
-
             final int paddingEnd = res.getDimensionPixelSize(sds.isLarge
                             ? R.dimen.omnibox_suggestion_36dp_icon_margin_end
                             : R.dimen.omnibox_suggestion_24dp_icon_margin_end);
+            final int edgeSize = res.getDimensionPixelSize(sds.isLarge
+                            ? R.dimen.omnibox_suggestion_36dp_icon_size
+                            : R.dimen.omnibox_suggestion_24dp_icon_size);
+
+            view.setPadding(paddingStart, 0, paddingEnd, 0);
+            view.setMinimumHeight(edgeSize);
 
             // TODO(ender): move logic applying corner rounding to updateIcon when action images use
             // RoundedCornerImageView too.
@@ -69,8 +74,6 @@ public class BaseSuggestionViewBinder
                     ? res.getDimensionPixelSize(R.dimen.default_rounded_corner_radius)
                     : 0;
             rciv.setRoundedCorners(radius, radius, radius, radius);
-
-            view.setPadding(paddingStart, 0, paddingEnd, 0);
         }
 
         updateIcon(view, sds, isDarkMode(model));

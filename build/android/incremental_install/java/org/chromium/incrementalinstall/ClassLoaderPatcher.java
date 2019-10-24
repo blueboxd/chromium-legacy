@@ -25,7 +25,7 @@ import java.util.Locale;
  * Tested with Jellybean MR2 - Marshmellow.
  */
 final class ClassLoaderPatcher {
-    private static final String TAG = "cr.incrementalinstall";
+    private static final String TAG = "incrementalinstall";
     private final File mAppFilesSubDir;
     private final ClassLoader mClassLoader;
     private final Object mLibcoreOs;

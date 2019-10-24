@@ -139,11 +139,9 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
 
   std::string description = "Not My Fault";
   std::string url = "www.google.com";
-  EXPECT_TRUE(GetFakeServer()->TriggerActionableError(
-      sync_pb::SyncEnums::TRANSIENT_ERROR,
-      description,
-      url,
-      sync_pb::SyncEnums::UPGRADE_CLIENT));
+  GetFakeServer()->TriggerActionableError(sync_pb::SyncEnums::TRANSIENT_ERROR,
+                                          description, url,
+                                          sync_pb::SyncEnums::UPGRADE_CLIENT);
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
@@ -181,8 +179,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, MAYBE_ErrorWhileSettingUp) {
       GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kAutofill));
 #endif
 
-  EXPECT_TRUE(GetFakeServer()->TriggerError(
-      sync_pb::SyncEnums::TRANSIENT_ERROR));
+  GetFakeServer()->TriggerError(sync_pb::SyncEnums::TRANSIENT_ERROR);
   EXPECT_TRUE(GetFakeServer()->EnableAlternatingTriggeredErrors());
 
 #if defined(OS_CHROMEOS)
@@ -206,9 +203,9 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
   // Clear the server data so that the birthday gets incremented, and also send
   // an appropriate error.
   GetFakeServer()->ClearServerData();
-  ASSERT_TRUE(GetFakeServer()->TriggerActionableError(
-      sync_pb::SyncEnums::NOT_MY_BIRTHDAY, "Not My Fault", "www.google.com",
-      sync_pb::SyncEnums::UNKNOWN_ACTION));
+  GetFakeServer()->TriggerActionableError(sync_pb::SyncEnums::NOT_MY_BIRTHDAY,
+                                          "Not My Fault", "www.google.com",
+                                          sync_pb::SyncEnums::UNKNOWN_ACTION);
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
@@ -246,8 +243,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
   GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
   std::string old_cache_guid = status.sync_id;
 
-  EXPECT_TRUE(
-      GetFakeServer()->TriggerError(sync_pb::SyncEnums::CLIENT_DATA_OBSOLETE));
+  GetFakeServer()->TriggerError(sync_pb::SyncEnums::CLIENT_DATA_OBSOLETE);
 
   // Trigger sync by making one more change.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
@@ -256,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
   ASSERT_TRUE(SyncEngineStoppedChecker(GetSyncService(0)).Wait());
 
   // Make server return SUCCESS so that sync can initialize.
-  EXPECT_TRUE(GetFakeServer()->TriggerError(sync_pb::SyncEnums::SUCCESS));
+  GetFakeServer()->TriggerError(sync_pb::SyncEnums::SUCCESS);
 
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
 

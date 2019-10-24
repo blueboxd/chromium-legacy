@@ -9,6 +9,9 @@ group("extensions") {
     ":caretbrowsing",
     ":colorenhancer",
   ]
+  if (is_chromeos) {
+    deps += [ "chromevoxclassic:chromevox" ]
+  }
 }
 
 locale_files = [

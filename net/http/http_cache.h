@@ -268,7 +268,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   static std::string GetResourceURLFromHttpCacheKey(const std::string& key);
 
   // Function to generate cache key for testing.
-  std::string GenerateCacheKeyForTest(const HttpRequestInfo* request);
+  static std::string GenerateCacheKeyForTest(const HttpRequestInfo* request);
 
  private:
   // Types --------------------------------------------------------------------
@@ -417,7 +417,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   int GetBackendForTransaction(Transaction* transaction);
 
   // Generates the cache key for this request.
-  std::string GenerateCacheKey(const HttpRequestInfo*);
+  static std::string GenerateCacheKey(const HttpRequestInfo*);
 
   // Dooms the entry selected by |key|, if it is currently in the list of active
   // entries.

@@ -204,7 +204,7 @@ Polymer({
               settings.routes.SYNC.path,
               loadTimeData.getBoolean('unifiedConsentEnabled') ?
                   '#sync-setup' :
-                  '#sync-status .subpage-arrow');
+                  '#sync-status');
         }
         // <if expr="not chromeos">
         if (settings.routes.MANAGE_PROFILE) {

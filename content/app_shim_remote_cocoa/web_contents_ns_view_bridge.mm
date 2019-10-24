@@ -13,7 +13,7 @@ namespace remote_cocoa {
 
 WebContentsNSViewBridge::WebContentsNSViewBridge(
     uint64_t view_id,
-    mojom::WebContentsNSViewHostAssociatedPtr client)
+    mojo::PendingAssociatedRemote<mojom::WebContentsNSViewHost> client)
     : host_(std::move(client)) {
   ns_view_.reset(
       [[WebContentsViewCocoa alloc] initWithViewsHostableView:nullptr]);

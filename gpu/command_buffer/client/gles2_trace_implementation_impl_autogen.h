@@ -2609,12 +2609,6 @@ void GLES2TraceImplementation::BlendBarrierKHR() {
   gl_->BlendBarrierKHR();
 }
 
-void GLES2TraceImplementation::ApplyScreenSpaceAntialiasingCHROMIUM() {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "GLES2Trace::ApplyScreenSpaceAntialiasingCHROMIUM");
-  gl_->ApplyScreenSpaceAntialiasingCHROMIUM();
-}
-
 void GLES2TraceImplementation::BindFragDataLocationIndexedEXT(
     GLuint program,
     GLuint colorNumber,

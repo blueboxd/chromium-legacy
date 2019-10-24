@@ -20,7 +20,7 @@ import java.io.IOException;
  * Javascript console messages.
  */
 abstract class ElidedLogcatProvider {
-    private static final String TAG = "cr_ElidedLogcatProv";
+    private static final String TAG = "ElidedLogcatProv";
 
     protected abstract void getRawLogcat(RawLogcatCallback rawLogcatCallback);
 

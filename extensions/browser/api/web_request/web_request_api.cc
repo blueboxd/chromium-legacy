@@ -1239,7 +1239,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    GURL* allowed_unsafe_redirect_url) {
+    GURL* preserve_fragment_on_redirect_url) {
   if (ShouldHideEvent(browser_context, *request))
     return net::OK;
 
@@ -1320,7 +1320,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   blocked_request.callback = std::move(callback);
   blocked_request.override_response_headers = override_response_headers;
   blocked_request.filtered_response_headers = filtered_response_headers;
-  blocked_request.new_url = allowed_unsafe_redirect_url;
+  blocked_request.new_url = preserve_fragment_on_redirect_url;
 
   if (blocked_request.num_handlers_blocking == 0) {
     // If there are no blocking handlers, only the declarative rules tried

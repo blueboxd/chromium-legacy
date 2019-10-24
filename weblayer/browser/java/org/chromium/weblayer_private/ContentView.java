@@ -41,7 +41,7 @@ import org.chromium.ui.base.EventOffsetHandler;
 public class ContentView extends FrameLayout
         implements ViewEventSink.InternalAccessDelegate, SmartClipProvider,
                    OnHierarchyChangeListener, OnSystemUiVisibilityChangeListener {
-    private static final String TAG = "cr.ContentView";
+    private static final String TAG = "ContentView";
 
     // Default value to signal that the ContentView's size need not be overridden.
     public static final int DEFAULT_MEASURE_SPEC =

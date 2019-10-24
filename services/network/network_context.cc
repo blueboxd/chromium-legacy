@@ -64,7 +64,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
-#include "services/network/cookie_access_delegate_impl.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/host_resolver.h"
@@ -428,12 +427,6 @@ NetworkContext::~NetworkContext() {
   // order, because any work calling into |domain_reliability_monitor_| at
   // shutdown would be unnecessary as the reports would be thrown out.
   domain_reliability_monitor_.reset();
-
-  // The cookie store's CookieAccessDelegate holds a pointer to the
-  // CookieManager's CookieSettings. Since the CookieManager is being destroyed,
-  // first destroy the CookieAccessDelegate.
-  if (url_request_context_ && url_request_context_->cookie_store())
-    url_request_context_->cookie_store()->SetCookieAccessDelegate(nullptr);
 
   if (url_request_context_ &&
       url_request_context_->transport_security_state()) {
@@ -1983,10 +1976,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
       result.url_request_context->cookie_store(),
       std::move(session_cleanup_cookie_store),
       std::move(params_->cookie_manager_params));
-
-  result.url_request_context->cookie_store()->SetCookieAccessDelegate(
-      std::make_unique<CookieAccessDelegateImpl>(
-          &cookie_manager_->cookie_settings()));
 
   if (cert_net_fetcher_)
     cert_net_fetcher_->SetURLRequestContext(result.url_request_context.get());

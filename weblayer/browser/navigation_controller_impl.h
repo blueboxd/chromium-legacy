@@ -91,9 +91,13 @@ class NavigationControllerImpl : public NavigationController,
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
+  void LoadProgressChanged(double progress) override;
   void DidFirstVisuallyNonEmptyPaint() override;
 
-  BrowserControllerImpl* browser_controller_;
+  void NotifyLoadStateChanged();
+
   base::ObserverList<NavigationObserver>::Unchecked observers_;
   std::map<content::NavigationHandle*, std::unique_ptr<NavigationImpl>>
       navigation_map_;

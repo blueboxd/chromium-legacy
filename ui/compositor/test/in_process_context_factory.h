@@ -99,8 +99,6 @@ class InProcessContextFactory : public ContextFactory,
   void AddVSyncParameterObserver(
       ui::Compositor* compositor,
       viz::mojom::VSyncParameterObserverPtr observer) override {}
-  void SetDisplayTransformHint(Compositor* compositor,
-                               gfx::OverlayTransform transform) override {}
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
   bool SyncTokensRequiredForDisplayCompositor() override;

@@ -760,8 +760,10 @@ void Internals::setBrowserControlsState(float top_height,
       top_height, bottom_height, shrinks_layout);
 }
 
-void Internals::setBrowserControlsShownRatio(float ratio) {
-  document_->GetPage()->GetChromeClient().SetBrowserControlsShownRatio(ratio);
+void Internals::setBrowserControlsShownRatio(float top_ratio,
+                                             float bottom_ratio) {
+  document_->GetPage()->GetChromeClient().SetBrowserControlsShownRatio(
+      top_ratio, bottom_ratio);
 }
 
 Node* Internals::effectiveRootScroller(Document* document) {

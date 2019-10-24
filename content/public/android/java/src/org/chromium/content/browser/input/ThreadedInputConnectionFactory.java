@@ -21,7 +21,7 @@ import org.chromium.content_public.browser.InputMethodManagerWrapper;
 // TODO(changwan): add unit tests once Robolectric supports Android API level >= 21.
 // See crbug.com/588547 for details.
 public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnection.Factory {
-    private static final String TAG = "cr_Ime";
+    private static final String TAG = "Ime";
     private static final boolean DEBUG_LOGS = false;
 
     // Most of the time we do not need to retry. But if we have lost window focus while triggering

@@ -66,6 +66,7 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED));
   EXPECT_EQ(password_manager::prefs::kPasswordManagerOnboardingState,
             GetPrefName(PASSWORD_MANAGER_ONBOARDING_STATE));
+  EXPECT_EQ(prefs::kSearchSuggestEnabled, GetPrefName(SEARCH_SUGGEST_ENABLED));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

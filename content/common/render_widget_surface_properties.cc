@@ -16,6 +16,9 @@ RenderWidgetSurfaceProperties::FromCompositorFrame(
   properties.top_controls_height = frame.metadata.top_controls_height;
   properties.top_controls_shown_ratio = frame.metadata.top_controls_shown_ratio;
 #ifdef OS_ANDROID
+  properties.bottom_controls_height = frame.metadata.bottom_controls_height;
+  properties.bottom_controls_shown_ratio =
+      frame.metadata.bottom_controls_shown_ratio;
   properties.has_transparent_background =
       frame.render_pass_list.back()->has_transparent_background;
 #endif
@@ -38,6 +41,8 @@ bool RenderWidgetSurfaceProperties::operator==(
          other.top_controls_height == top_controls_height &&
          other.top_controls_shown_ratio == top_controls_shown_ratio &&
 #ifdef OS_ANDROID
+         other.bottom_controls_height == bottom_controls_height &&
+         other.bottom_controls_shown_ratio == bottom_controls_shown_ratio &&
          other.has_transparent_background == has_transparent_background &&
 #endif
          other.size == size;
@@ -87,6 +92,22 @@ std::string RenderWidgetSurfaceProperties::ToDiffString(
   }
 
 #ifdef OS_ANDROID
+  if (bottom_controls_height != other.bottom_controls_height) {
+    if (changed_properties > 0)
+      stream << ", ";
+    stream << "bottom_controls_height(this: " << bottom_controls_height
+           << ", other: " << other.bottom_controls_height << ")";
+    ++changed_properties;
+  }
+
+  if (bottom_controls_shown_ratio != other.bottom_controls_shown_ratio) {
+    if (changed_properties > 0)
+      stream << ", ";
+    stream << "bottom_controls_shown_ratio(this: "
+           << bottom_controls_shown_ratio
+           << ", other: " << other.bottom_controls_shown_ratio << ")";
+    ++changed_properties;
+  }
   if (has_transparent_background != other.has_transparent_background) {
     if (changed_properties > 0)
       stream << ", ";

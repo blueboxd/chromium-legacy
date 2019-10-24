@@ -225,9 +225,7 @@ std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 CreateSharedURLLoaderFactoryInfo(StoragePartitionImpl* storage_partition,
                                  RenderFrameHost* rfh,
                                  bool is_download) {
-  // TODO(crbug.com/955171): Replace |proxy_factory_ptr_info| with
-  // PendingRemote.
-  network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> proxy_factory_remote;
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       proxy_factory_receiver;
   if (rfh) {
@@ -235,10 +233,11 @@ CreateSharedURLLoaderFactoryInfo(StoragePartitionImpl* storage_partition,
 
     // Create an intermediate pipe that can be used to proxy the download's
     // URLLoaderFactory.
-    network::mojom::URLLoaderFactoryPtrInfo maybe_proxy_factory_ptr_info;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        maybe_proxy_factory_remote;
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         maybe_proxy_factory_receiver =
-            MakeRequest(&maybe_proxy_factory_ptr_info);
+            maybe_proxy_factory_remote.InitWithNewPipeAndPassReceiver();
 
     // Allow DevTools to potentially inject itself into the proxy pipe.
     should_proxy = devtools_instrumentation::WillCreateURLLoaderFactory(
@@ -256,14 +255,14 @@ CreateSharedURLLoaderFactoryInfo(StoragePartitionImpl* storage_partition,
     // If anyone above indicated that they care about proxying, pass the
     // intermediate pipe along to the NetworkDownloadURLLoaderFactoryInfo.
     if (should_proxy) {
-      proxy_factory_ptr_info = std::move(maybe_proxy_factory_ptr_info);
+      proxy_factory_remote = std::move(maybe_proxy_factory_remote);
       proxy_factory_receiver = std::move(maybe_proxy_factory_receiver);
     }
   }
 
   return std::make_unique<NetworkDownloadURLLoaderFactoryInfo>(
       storage_partition->url_loader_factory_getter(),
-      std::move(proxy_factory_ptr_info), std::move(proxy_factory_receiver));
+      std::move(proxy_factory_remote), std::move(proxy_factory_receiver));
 }
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -1223,10 +1222,12 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
                 // even when there is high priority work to do.
                 base::TaskPriority::USER_VISIBLE));
   } else if (rfh && params->url().SchemeIs(content::kChromeUIScheme)) {
-    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
-    mojo::MakeStrongBinding(CreateWebUIURLLoader(rfh, params->url().scheme(),
-                                                 base::flat_set<std::string>()),
-                            MakeRequest(&url_loader_factory_ptr_info));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        url_loader_factory_remote;
+    mojo::MakeSelfOwnedReceiver(
+        CreateWebUIURLLoader(rfh, params->url().scheme(),
+                             base::flat_set<std::string>()),
+        url_loader_factory_remote.InitWithNewPipeAndPassReceiver());
     url_loader_factory_info =
         CreateSharedURLLoaderFactoryInfoFromURLLoaderFactory(
             CreateWebUIURLLoader(rfh, params->url().scheme(),

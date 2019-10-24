@@ -32,7 +32,7 @@ import org.chromium.content_public.browser.WebContents;
  * service via CastWebContentsComponent.
  */
 public class CastWebContentsService extends Service {
-    private static final String TAG = "cr_CastWebService";
+    private static final String TAG = "CastWebService";
     private static final boolean DEBUG = true;
     private static final int CAST_NOTIFICATION_ID = 100;
     private static final String NOTIFICATION_CHANNEL_ID =

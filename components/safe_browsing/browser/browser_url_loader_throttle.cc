@@ -17,7 +17,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace safe_browsing {
 
@@ -198,7 +198,7 @@ void BrowserURLLoaderThrottle::WillStartRequest(
 
 void BrowserURLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& /* response_head */,
+    const network::mojom::URLResponseHead& /* response_head */,
     bool* defer,
     std::vector<std::string>* /* to_be_removed_headers */,
     net::HttpRequestHeaders* /* modified_headers */) {
@@ -224,7 +224,7 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
 
 void BrowserURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (blocked_) {

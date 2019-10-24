@@ -409,8 +409,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_EXT_window_rectangles");
   ext.b_GL_IMG_multisampled_render_to_texture =
       gfx::HasExtension(extensions, "GL_IMG_multisampled_render_to_texture");
-  ext.b_GL_INTEL_framebuffer_CMAA =
-      gfx::HasExtension(extensions, "GL_INTEL_framebuffer_CMAA");
   ext.b_GL_KHR_blend_equation_advanced =
       gfx::HasExtension(extensions, "GL_KHR_blend_equation_advanced");
   ext.b_GL_KHR_debug = gfx::HasExtension(extensions, "GL_KHR_debug");
@@ -444,12 +442,6 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ver->IsAtLeastGL(4u, 1u) || ver->IsAtLeastGLES(3u, 1u)) {
     fn.glActiveShaderProgramFn = reinterpret_cast<glActiveShaderProgramProc>(
         GetGLProcAddress("glActiveShaderProgram"));
-  }
-
-  if (ext.b_GL_INTEL_framebuffer_CMAA) {
-    fn.glApplyFramebufferAttachmentCMAAINTELFn =
-        reinterpret_cast<glApplyFramebufferAttachmentCMAAINTELProc>(
-            GetGLProcAddress("glApplyFramebufferAttachmentCMAAINTEL"));
   }
 
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
@@ -2854,10 +2846,6 @@ void GLApiBase::glActiveShaderProgramFn(GLuint pipeline, GLuint program) {
 
 void GLApiBase::glActiveTextureFn(GLenum texture) {
   driver_->fn.glActiveTextureFn(texture);
-}
-
-void GLApiBase::glApplyFramebufferAttachmentCMAAINTELFn(void) {
-  driver_->fn.glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
 void GLApiBase::glAttachShaderFn(GLuint program, GLuint shader) {
@@ -6074,12 +6062,6 @@ void TraceGLApi::glActiveShaderProgramFn(GLuint pipeline, GLuint program) {
 void TraceGLApi::glActiveTextureFn(GLenum texture) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glActiveTexture")
   gl_api_->glActiveTextureFn(texture);
-}
-
-void TraceGLApi::glApplyFramebufferAttachmentCMAAINTELFn(void) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "TraceGLAPI::glApplyFramebufferAttachmentCMAAINTEL")
-  gl_api_->glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
 void TraceGLApi::glAttachShaderFn(GLuint program, GLuint shader) {
@@ -9859,13 +9841,6 @@ void DebugGLApi::glActiveTextureFn(GLenum texture) {
   GL_SERVICE_LOG("glActiveTexture"
                  << "(" << GLEnums::GetStringEnum(texture) << ")");
   gl_api_->glActiveTextureFn(texture);
-}
-
-void DebugGLApi::glApplyFramebufferAttachmentCMAAINTELFn(void) {
-  GL_SERVICE_LOG("glApplyFramebufferAttachmentCMAAINTEL"
-                 << "("
-                 << ")");
-  gl_api_->glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
 void DebugGLApi::glAttachShaderFn(GLuint program, GLuint shader) {
@@ -14854,10 +14829,6 @@ void NoContextGLApi::glActiveShaderProgramFn(GLuint pipeline, GLuint program) {
 
 void NoContextGLApi::glActiveTextureFn(GLenum texture) {
   NoContextHelper("glActiveTexture");
-}
-
-void NoContextGLApi::glApplyFramebufferAttachmentCMAAINTELFn(void) {
-  NoContextHelper("glApplyFramebufferAttachmentCMAAINTEL");
 }
 
 void NoContextGLApi::glAttachShaderFn(GLuint program, GLuint shader) {

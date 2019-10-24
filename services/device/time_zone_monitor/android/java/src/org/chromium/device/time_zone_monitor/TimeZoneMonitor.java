@@ -20,7 +20,7 @@ import org.chromium.base.annotations.NativeMethods;
  */
 @JNINamespace("device")
 class TimeZoneMonitor {
-    private static final String TAG = "cr_TimeZoneMonitor";
+    private static final String TAG = "TimeZoneMonitor";
 
     private final IntentFilter mFilter = new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED);
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {

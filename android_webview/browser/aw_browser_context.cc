@@ -454,6 +454,9 @@ AwBrowserContext::GetNetworkContextParams(
       network::mojom::CookieManagerParams::New();
   context_params->cookie_manager_params->allow_file_scheme_cookies =
       GetCookieManager()->AllowFileSchemeCookies();
+  // Set all cookies to Legacy on Android WebView, for compatibility reasons.
+  context_params->cookie_manager_params->cookie_access_delegate_type =
+      network::mojom::CookieAccessDelegateType::ALWAYS_LEGACY;
 
   context_params->initial_ssl_config = network::mojom::SSLConfig::New();
   // Allow SHA-1 to be used for locally-installed trust anchors, as WebView

@@ -41,7 +41,7 @@ public class NativeTest {
     public static final String EXTRA_COVERAGE_DEVICE_FILE =
             "org.chromium.native_test.NativeTest.CoverageDeviceFile";
 
-    private static final String TAG = "cr_NativeTest";
+    private static final String TAG = "NativeTest";
 
     private String mCommandLineFilePath;
     private StringBuilder mCommandLineFlags = new StringBuilder();

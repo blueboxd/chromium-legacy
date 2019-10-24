@@ -157,9 +157,7 @@ class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """Webview startup time benchmark
 
   Benchmark that measures how long WebView takes to start up
-  and load a blank page. Since thie metric only requires the trace
-  markers recorded in atrace, Chrome tracing is not enabled for this
-  benchmark.
+  and load a blank page.
   """
   options = {'pageset_repeat': 20}
   SUPPORTED_PLATFORMS = [story.expectations.ANDROID_WEBVIEW]
@@ -168,10 +166,12 @@ class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     return page_sets.SystemHealthBlankStorySet()
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
-    options = timeline_based_measurement.Options()
+    cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
+        filter_string='startup')
+    options = timeline_based_measurement.Options(cat_filter)
     options.SetTimelineBasedMetrics(['webviewStartupMetric'])
     options.config.enable_atrace_trace = True
-    options.config.enable_chrome_trace = False
+    options.config.enable_chrome_trace = True
     options.config.atrace_config.app_name = 'org.chromium.webview_shell'
     return options
 

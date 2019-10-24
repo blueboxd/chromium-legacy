@@ -39,7 +39,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_targeter.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -423,14 +422,18 @@ RootWindowController::~RootWindowController() {
                                             this));
 }
 
-void RootWindowController::CreateForPrimaryDisplay(AshWindowTreeHost* host) {
+RootWindowController* RootWindowController::CreateForPrimaryDisplay(
+    AshWindowTreeHost* host) {
   RootWindowController* controller = new RootWindowController(host, nullptr);
   controller->Init(RootWindowType::PRIMARY);
+  return controller;
 }
 
-void RootWindowController::CreateForSecondaryDisplay(AshWindowTreeHost* host) {
+RootWindowController* RootWindowController::CreateForSecondaryDisplay(
+    AshWindowTreeHost* host) {
   RootWindowController* controller = new RootWindowController(host, nullptr);
   controller->Init(RootWindowType::SECONDARY);
+  return controller;
 }
 
 // static
@@ -577,9 +580,6 @@ void RootWindowController::Shutdown() {
       std::make_unique<aura::NullWindowTargeter>());
 
   touch_exploration_manager_.reset();
-
-  ResetRootForNewWindowsIfNecessary();
-
   wallpaper_widget_controller_.reset();
 
   CloseChildWindows();
@@ -1161,21 +1161,6 @@ void RootWindowController::CreateSystemWallpaper(
     color = kChromeOsBootColor;
   system_wallpaper_.reset(
       new SystemWallpaperController(GetRootWindow(), color));
-}
-
-void RootWindowController::ResetRootForNewWindowsIfNecessary() {
-  // Change the target root window before closing child windows. If any child
-  // being removed triggers a relayout of the shelf it will try to build a
-  // window list adding windows from the target root window's containers which
-  // may have already gone away.
-  aura::Window* root = GetRootWindow();
-  if (Shell::GetRootWindowForNewWindows() == root) {
-    // The root window for new windows is being destroyed. Switch to the primary
-    // root window if possible.
-    aura::Window* primary_root = Shell::GetPrimaryRootWindow();
-    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
-        primary_root == root ? nullptr : primary_root);
-  }
 }
 
 AccessibilityPanelLayoutManager*

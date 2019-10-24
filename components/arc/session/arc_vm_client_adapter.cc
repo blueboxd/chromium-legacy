@@ -30,10 +30,10 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -418,10 +418,40 @@ class ArcVmClientAdapter : public ArcClientAdapter,
  private:
   void OnIsDevMode(chromeos::VoidDBusMethodCallback callback,
                    bool is_dev_mode) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), true));
+    // Make sure to kill a stale arcvm-server-proxy job (if any).
+    chromeos::UpstartClient::Get()->StopJob(
+        kArcVmServerProxyJobName, /*environment=*/{},
+        base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStopped,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
     is_dev_mode_ = is_dev_mode;
+  }
+
+  void OnArcVmServerProxyJobStopped(chromeos::VoidDBusMethodCallback callback,
+                                    bool result) {
+    VLOG(1) << "OnArcVmServerProxyJobStopped: job "
+            << (result ? "stopped" : "not running?");
+
     should_notify_observers_ = true;
+    // Always run the |callback| with true ignoring the |result|. |result| can
+    // be false when the proxy job has already been stopped for other reasons,
+    // but it's not considered as an error.
+    std::move(callback).Run(true);
+  }
+
+  void OnArcVmServerProxyJobStarted(UpgradeParams params,
+                                    chromeos::VoidDBusMethodCallback callback,
+                                    bool result) {
+    if (!result) {
+      LOG(ERROR) << "Failed to start arcvm-server-proxy job";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    VLOG(1) << "Starting Concierge service";
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
+        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(callback)));
   }
 
   void OnConciergeStarted(UpgradeParams params,
@@ -443,7 +473,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                        base::FilePath(kHomeDirectory)),
         base::BindOnce(&ArcVmClientAdapter::CreateDiskImageAfterSizeCheck,
-
                        weak_factory_.GetWeakPtr(), std::move(params),
                        std::move(callback)));
   }
@@ -550,8 +579,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     // implemented.
     chromeos::UpstartClient::Get()->StopJob(
         kArcVmServerProxyJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStopped,
-                       weak_factory_.GetWeakPtr()));
+        chromeos::EmptyVoidDBusMethodCallback());
 
     // If this method is called before even mini VM is started (e.g. very early
     // vm_concierge crash), or this method is called twice (e.g. crosvm crash
@@ -567,7 +595,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void OnStopVmReply(
       base::Optional<vm_tools::concierge::StopVmResponse> reply) {
     // If the reply indicates the D-Bus call is successfully done, do nothing.
-    // Concierge call OnVmStopped() eventually.
+    // Concierge will call OnVmStopped() eventually.
     if (reply.has_value() && reply.value().success())
       return;
 
@@ -575,26 +603,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     // observers.
     // TODO(yusukes): Remove the fallback once we implement mini VM.
     OnArcInstanceStopped();
-  }
-
-  void OnArcVmServerProxyJobStarted(UpgradeParams params,
-                                    chromeos::VoidDBusMethodCallback callback,
-                                    bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to start arcvm-server-proxy job";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    VLOG(1) << "Starting Concierge service";
-    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
-        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
-                       weak_factory_.GetWeakPtr(), std::move(params),
-                       std::move(callback)));
-  }
-
-  void OnArcVmServerProxyJobStopped(bool result) {
-    VLOG(1) << "OnArcVmServerProxyJobStopped result=" << result;
   }
 
   const version_info::Channel channel_;

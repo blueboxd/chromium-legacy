@@ -242,7 +242,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
     }
 
     OpenPageInfoBubble(browser);
-    auto* page_info = static_cast<SafetyTipPageInfoBubbleView*>(
+    auto* page_info = static_cast<PageInfoBubbleViewBase*>(
         PageInfoBubbleViewBase::GetPageInfoBubbleForTesting());
     ASSERT_TRUE(page_info);
 

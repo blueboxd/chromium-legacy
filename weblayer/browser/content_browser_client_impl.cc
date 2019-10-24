@@ -12,6 +12,8 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/safe_browsing/android/remote_database_manager.h"
+#include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/network_service_instance.h"
@@ -26,7 +28,10 @@
 #include "url/origin.h"
 #include "weblayer/browser/browser_controller_impl.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
+#include "weblayer/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
+#include "weblayer/common/features.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/main.h"
 
@@ -44,6 +49,19 @@
 #include "sandbox/win/src/sandbox.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #endif
+
+namespace {
+
+bool IsSafebrowsingSupported() {
+  // TODO(timvolodine): consider the non-android case, see crbug.com/1015809.
+  // TODO(timvolodine): consider refactoring this out into safe_browsing/.
+#if defined(OS_ANDROID)
+  return true;
+#endif
+  return false;
+}
+
+}  // namespace
 
 namespace weblayer {
 
@@ -141,6 +159,46 @@ void ContentBrowserClientImpl::OnNetworkServiceCreated(
   network::mojom::CryptConfigPtr config = network::mojom::CryptConfig::New();
   content::GetNetworkService()->SetCryptConfig(std::move(config));
 #endif
+}
+
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+ContentBrowserClientImpl::CreateURLLoaderThrottles(
+    const network::ResourceRequest& request,
+    content::BrowserContext* browser_context,
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+    content::NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
+
+  if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
+      IsSafebrowsingSupported()) {
+    result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
+        base::BindOnce(
+            [](ContentBrowserClientImpl* client, content::ResourceContext*) {
+              return client->GetSafeBrowsingUrlCheckerDelegate();
+            },
+            base::Unretained(this)),
+        wc_getter, frame_tree_node_id, browser_context->GetResourceContext()));
+  }
+
+  return result;
+}
+
+scoped_refptr<safe_browsing::UrlCheckerDelegate>
+ContentBrowserClientImpl::GetSafeBrowsingUrlCheckerDelegate() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+#if defined(OS_ANDROID)
+  if (!safe_browsing_url_checker_delegate_) {
+    // TODO(timvolodine): consider a better place for the database manager and
+    // the ui manager (also w.r.t. future safebrowsing init sequence).
+    safe_browsing_url_checker_delegate_ = new UrlCheckerDelegateImpl(
+        new safe_browsing::RemoteSafeBrowsingDatabaseManager(),
+        new SafeBrowsingUIManager());
+  }
+#endif
+
+  return safe_browsing_url_checker_delegate_;
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

@@ -37,17 +37,6 @@ public final class BrowserObserverProxy {
         mClient.visibleUrlChanged(string);
     }
 
-    @CalledByNative
-    private void loadingStateChanged(boolean isLoading, boolean toDifferentDocument)
-            throws RemoteException {
-        mClient.loadingStateChanged(isLoading, toDifferentDocument);
-    }
-
-    @CalledByNative
-    private void loadProgressChanged(double progress) throws RemoteException {
-        mClient.loadProgressChanged(progress);
-    }
-
     @NativeMethods
     interface Natives {
         long createBrowserObserverProxy(BrowserObserverProxy proxy, long browserController);

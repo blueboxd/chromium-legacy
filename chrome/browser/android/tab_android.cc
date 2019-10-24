@@ -234,7 +234,6 @@ void TabAndroid::InitWebContents(
   web_contents_delegate_ =
       std::make_unique<android::TabWebContentsDelegateAndroid>(
           env, jweb_contents_delegate);
-  web_contents_delegate_->LoadProgressChanged(web_contents(), 0);
   web_contents()->SetDelegate(web_contents_delegate_.get());
 
   synced_tab_delegate_->SetWebContents(web_contents(), jparent_tab_id);

@@ -209,8 +209,6 @@ def _package_and_sign_pkg(paths, dist_config):
         # Assume if the config has notary authentication information that the
         # products will be notarized, which requires a secure timestamp.
         command.append('--timestamp')
-    if dist_config.keychain:
-        command.extend(['--keychain', dist_config.keychain])
     command.append(product_pkg_path)
     commands.run_command(command)
 

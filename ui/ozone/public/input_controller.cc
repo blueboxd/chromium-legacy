@@ -59,7 +59,8 @@ class StubInputController : public InputController {
   void SetInternalKeyboardFilter(bool enable_filter,
                                  std::vector<DomCode> allowed_keys) override {}
   void GetGesturePropertiesService(
-      ui::ozone::mojom::GesturePropertiesServiceRequest request) override {}
+      mojo::PendingReceiver<ui::ozone::mojom::GesturePropertiesService>
+          receiver) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubInputController);

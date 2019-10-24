@@ -291,4 +291,16 @@ class SwitchAccess {
             .next()
             .node;
   }
+
+  /**
+   * Prints out the current Switch Access tree for debugging.
+   * @param {boolean=} wholeTree whether to print the whole tree, or the current
+   * focus.
+   * @return {SARootNode|undefined}
+   */
+  getTreeForDebugging(wholeTree = false) {
+    if (this.navigationManager_) {
+      return this.navigationManager_.getTreeForDebugging(wholeTree);
+    }
+  }
 }

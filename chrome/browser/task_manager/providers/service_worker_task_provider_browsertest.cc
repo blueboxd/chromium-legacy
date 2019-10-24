@@ -198,8 +198,16 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTaskProviderBrowserTest,
 
 // If the profile is off the record, the ServiceWorkerTaskProvider can still
 // grab the correct information and create/delete the task.
+// TODO(crbug/1016901): Flaky leaks on ASAN builds.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_CreateTasksForOffTheRecordProfile \
+  DISABLED_CreateTasksForOffTheRecordProfile
+#else
+#define MAYBE_CreateTasksForOffTheRecordProfile \
+  CreateTasksForOffTheRecordProfile
+#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTaskProviderBrowserTest,
-                       CreateTasksForOffTheRecordProfile) {
+                       MAYBE_CreateTasksForOffTheRecordProfile) {
   StartUpdating();
 
   EXPECT_TRUE(tasks().empty());

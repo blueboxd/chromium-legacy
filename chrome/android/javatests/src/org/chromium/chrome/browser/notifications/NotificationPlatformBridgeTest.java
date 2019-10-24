@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -610,7 +609,6 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     @RetryOnFailure
-    @DisableIf.Build(sdk_is_greater_than = 25, message = "https://crbug.com/999357")
     public void testShowNotificationWithoutIcon() throws Exception {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSettingValues.ALLOW, mPermissionTestRule.getOrigin());
@@ -634,8 +632,11 @@ public class NotificationPlatformBridgeTest {
 
         Bitmap generatedIcon = generator.generateIconForUrl(mPermissionTestRule.getOrigin());
         Assert.assertNotNull(generatedIcon);
-        Assert.assertTrue(generatedIcon.sameAs(
-                NotificationTestUtil.getLargeIconFromNotification(context, notification)));
+        // Starts from Android O MR1, large icon can be downscaled by Android platform code.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
+            Assert.assertTrue(generatedIcon.sameAs(
+                    NotificationTestUtil.getLargeIconFromNotification(context, notification)));
+        }
     }
 
     /*

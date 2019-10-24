@@ -15,7 +15,13 @@ bool ClearBrowsingHistory() WARN_UNUSED_RESULT;
 
 // Clears browsing data and returns whether clearing was successful or timed
 // out.
+// TODO(crbug.com/1016960): The method will time out if it's called from
+// EarlGrey2 with |off_the_record| = true.
 bool ClearAllBrowsingData(bool off_the_record) WARN_UNUSED_RESULT;
+
+// Clears all the default WKWebsiteDataStore data including the WK back/forward
+// cache.
+bool ClearAllWebStateBrowsingData() WARN_UNUSED_RESULT;
 
 // Clears user decisions cache and returns whether clearing was successful or
 // timed out.

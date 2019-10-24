@@ -105,6 +105,16 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   ~DlcserviceClientImpl() override = default;
 
+  void AddObserver(Observer* obs) override { observers_.AddObserver(obs); }
+
+  void RemoveObserver(Observer* obs) override {
+    observers_.RemoveObserver(obs);
+  }
+
+  void NotifyProgressUpdateForTest(double progress) override {
+    NotifyProgressUpdate(progress);
+  }
+
   void Install(const dlcservice::DlcModuleList& dlc_module_list,
                InstallCallback callback) override {
     if (!service_available_) {
@@ -190,6 +200,12 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
  private:
+  // Notify to observers the progress of DLC(s) download/install.
+  void NotifyProgressUpdate(double progress) {
+    for (Observer& obs : observers_)
+      obs.OnProgressUpdate(progress);
+  }
+
   void OnInstallStatus(dbus::Signal* signal) {
     if (!install_callback_holder_.has_value())
       return;
@@ -212,11 +228,18 @@ class DlcserviceClientImpl : public DlcserviceClient {
         VLOG(1) << "DLC(s) install successful.";
         SendSignal();
         break;
-      case dlcservice::Status::RUNNING:
-        VLOG(2) << "Install in progress: " << install_status.progress();
+      case dlcservice::Status::RUNNING: {
+        const double progress = install_status.progress();
+        VLOG(2) << "Install in progress: " << progress;
+        // TODO(kimjae): Currently, update_engine delegate's two actions.
+        // Specifically the Download action and Post Install Runner action,
+        // which means that progress will go from 0 -> 1 two complete cycles.
+        // This can be easily handled either here or inside dlcservice daemon.
+        NotifyProgressUpdate(progress);
         // Need to return here since we don't want to try starting another
         // pending install from the queue (would waste time checking).
         return;
+      }
       case dlcservice::Status::FAILED:
         LOG(ERROR) << "Failed to install with error code: "
                    << install_status.error_code();
@@ -307,6 +330,9 @@ class DlcserviceClientImpl : public DlcserviceClient {
   // A list of postponed calls to dlcservice to be called after it becomes
   // available.
   std::vector<base::OnceClosure> pending_tasks_;
+
+  // The list holding observers that want to listen in on certain events.
+  base::ObserverList<Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

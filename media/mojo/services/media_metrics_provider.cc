@@ -77,24 +77,6 @@ MediaMetricsProvider::~MediaMetricsProvider() {
     builder.SetTimeToPlayReady(time_to_play_ready_.InMilliseconds());
 
   builder.Record(ukm_recorder);
-
-  // Buffered bytes are reported from a different source for EME/MSE.
-  std::string suffix;
-  if (uma_info_.is_eme)
-    suffix = "EME";
-  else if (is_mse_)
-    suffix = "MSE";
-  else
-    suffix = "SRC";
-  base::UmaHistogramMemoryKB("Media.BytesReceived." + suffix,
-                             total_bytes_received_ >> 10);
-  if (is_ad_media_) {
-    base::UmaHistogramMemoryKB("Ads.Media.BytesReceived",
-                               total_bytes_received_ >> 10);
-    base::UmaHistogramMemoryKB("Ads.Media.BytesReceived." + suffix,
-                               total_bytes_received_ >> 10);
-  }
-
   ReportPipelineUMA();
 }
 
@@ -241,11 +223,6 @@ void MediaMetricsProvider::OnError(PipelineStatus status) {
   uma_info_.last_pipeline_status = status;
 }
 
-void MediaMetricsProvider::SetIsAdMedia() {
-  // This may be called before Initialize().
-  is_ad_media_ = true;
-}
-
 void MediaMetricsProvider::SetIsEME() {
   // This may be called before Initialize().
   uma_info_.is_eme = true;
@@ -330,10 +307,6 @@ void MediaMetricsProvider::AcquireLearningTaskController(
       std::make_unique<learning::MojoLearningTaskControllerService>(
           controller->GetLearningTask(), std::move(controller)),
       std::move(receiver));
-}
-
-void MediaMetricsProvider::AddBytesReceived(uint64_t bytes_received) {
-  total_bytes_received_ += bytes_received;
 }
 
 }  // namespace media

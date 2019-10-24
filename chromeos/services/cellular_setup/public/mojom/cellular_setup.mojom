@@ -82,6 +82,6 @@ interface ActivationDelegate {
 interface CellularSetup {
   // Entrypoint to the activation flow. If |delegate| becomes disconnected
   // during the activation process, activation is cancelled.
-  StartActivation(ActivationDelegate delegate)
-      => (CarrierPortalHandler observer);
+  StartActivation(pending_remote<ActivationDelegate> delegate)
+      => (pending_remote<CarrierPortalHandler> observer);
 };

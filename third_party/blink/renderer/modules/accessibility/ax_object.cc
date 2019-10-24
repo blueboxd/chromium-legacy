@@ -159,6 +159,7 @@ const RoleEntry kRoles[] = {
     {"feed", ax::mojom::Role::kFeed},
     {"figure", ax::mojom::Role::kFigure},
     {"form", ax::mojom::Role::kForm},
+    {"generic", ax::mojom::Role::kGenericContainer},
     // -------------------------------------------------
     // ARIA Graphics module roles:
     // https://rawgit.com/w3c/graphics-aam/master/

@@ -244,18 +244,16 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
   }
 
   if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
-      original_phase != PaintPhase::kSelfOutlineOnly) {
-    if ((original_phase == PaintPhase::kForeground ||
-         original_phase == PaintPhase::kFloat ||
-         original_phase == PaintPhase::kForcedColorsModeBackplate ||
-         original_phase == PaintPhase::kDescendantOutlinesOnly) &&
-        box_fragment_.GetLayoutObject()->IsBox()) {
+      original_phase != PaintPhase::kSelfOutlineOnly &&
+      original_phase != PaintPhase::kOverlayOverflowControls) {
+    if (original_phase == PaintPhase::kMask ||
+        !box_fragment_.GetLayoutObject()->IsBox()) {
+      PaintObject(info, paint_offset);
+    } else {
       ScopedBoxContentsPaintState contents_paint_state(
           paint_state, ToLayoutBox(*box_fragment_.GetLayoutObject()));
       PaintObject(contents_paint_state.GetPaintInfo(),
                   contents_paint_state.PaintOffset());
-    } else {
-      PaintObject(info, paint_offset);
     }
   }
 

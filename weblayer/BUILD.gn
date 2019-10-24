@@ -53,6 +53,10 @@ jumbo_static_library("weblayer_lib") {
     "browser/navigation_impl.h",
     "browser/profile_impl.cc",
     "browser/profile_impl.h",
+    "browser/safe_browsing/safe_browsing_ui_manager.cc",
+    "browser/safe_browsing/safe_browsing_ui_manager.h",
+    "browser/safe_browsing/url_checker_delegate_impl.cc",
+    "browser/safe_browsing/url_checker_delegate_impl.h",
     "browser/weblayer_content_browser_overlay_manifest.cc",
     "browser/weblayer_content_browser_overlay_manifest.h",
     "browser/webui/web_ui_controller_factory.cc",
@@ -61,6 +65,8 @@ jumbo_static_library("weblayer_lib") {
     "browser/webui/weblayer_internals_ui.h",
     "common/content_client_impl.cc",
     "common/content_client_impl.h",
+    "common/features.cc",
+    "common/features.h",
     "public/browser_controller.h",
     "public/browser_observer.h",
     "public/download_delegate.h",
@@ -89,6 +95,9 @@ jumbo_static_library("weblayer_lib") {
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//cc",
+    "//components/safe_browsing",
+    "//components/safe_browsing/browser",
+    "//components/safe_browsing/db:database_manager",
     "//content:resources",
     "//content/app/resources",
     "//content/public/app:both",
@@ -124,6 +133,10 @@ jumbo_static_library("weblayer_lib") {
     "//weblayer:resources",
     "//weblayer/browser/webui:mojo_bindings",
   ]
+
+  if (is_android) {
+    deps += [ "//components/safe_browsing/android:remote_database_manager" ]
+  }
 
   if (enable_vulkan) {
     deps += [ "//gpu/vulkan/init" ]

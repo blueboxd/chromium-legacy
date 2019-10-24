@@ -13,7 +13,7 @@ namespace chromeos {
 namespace cellular_setup {
 
 FakeCellularSetup::StartActivationInvocation::StartActivationInvocation(
-    mojom::ActivationDelegatePtr activation_delegate,
+    mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
     StartActivationCallback callback)
     : activation_delegate_(std::move(activation_delegate)),
       callback_(std::move(callback)) {}
@@ -27,8 +27,7 @@ FakeCellularSetup::StartActivationInvocation::ExecuteCallback() {
   DCHECK(!fake_carrier_portal_observer_);
 
   fake_carrier_portal_observer_ = std::make_unique<FakeCarrierPortalHandler>();
-  std::move(callback_).Run(
-      fake_carrier_portal_observer_->GenerateInterfacePtr());
+  std::move(callback_).Run(fake_carrier_portal_observer_->GenerateRemote());
 
   return fake_carrier_portal_observer_.get();
 }
@@ -38,7 +37,7 @@ FakeCellularSetup::FakeCellularSetup() = default;
 FakeCellularSetup::~FakeCellularSetup() = default;
 
 void FakeCellularSetup::StartActivation(
-    mojom::ActivationDelegatePtr activation_delegate,
+    mojo::PendingRemote<mojom::ActivationDelegate> activation_delegate,
     StartActivationCallback callback) {
   DCHECK(activation_delegate);
   DCHECK(callback);

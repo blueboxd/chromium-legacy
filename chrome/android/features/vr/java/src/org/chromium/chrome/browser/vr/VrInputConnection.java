@@ -22,7 +22,7 @@ import org.chromium.content_public.browser.WebContents;
  */
 @JNINamespace("vr")
 public class VrInputConnection {
-    private static final String TAG = "cr_VrIC";
+    private static final String TAG = "VrIC";
     private static final boolean DEBUG_LOGS = false;
     private static final int CHARS_AROUND_CURSOR = 100;
 

@@ -51,7 +51,8 @@ class AwNetworkChangeNotifier
  private:
   friend class AwNetworkChangeNotifierFactory;
 
-  AwNetworkChangeNotifier(net::NetworkChangeNotifierDelegateAndroid* delegate);
+  explicit AwNetworkChangeNotifier(
+      net::NetworkChangeNotifierDelegateAndroid* delegate);
 
   static NetworkChangeCalculatorParams DefaultNetworkChangeCalculatorParams();
 

@@ -29,8 +29,6 @@
 #include "remoting/host/mac/constants_mac.h"
 #include "remoting/host/username.h"
 
-using namespace remoting;
-
 namespace remoting {
 namespace {
 
@@ -325,34 +323,34 @@ int HostService::RunHostFromOldScript() {
 int main(int argc, char const* argv[]) {
   base::AtExitManager exitManager;
   base::CommandLine::Init(argc, argv);
-  InitHostLogging();
+  remoting::InitHostLogging();
 
-  HostService service;
+  remoting::HostService service;
   auto* current_cmdline = base::CommandLine::ForCurrentProcess();
   std::string pid = base::NumberToString(base::Process::Current().Pid());
-  if (current_cmdline->HasSwitch(kSwitchDisable)) {
+  if (current_cmdline->HasSwitch(remoting::kSwitchDisable)) {
     service.PrintPid();
     if (!service.Disable()) {
       LOG(ERROR) << "Failed to disable";
       return 1;
     }
-  } else if (current_cmdline->HasSwitch(kSwitchEnable)) {
+  } else if (current_cmdline->HasSwitch(remoting::kSwitchEnable)) {
     service.PrintPid();
     if (!service.Enable()) {
       LOG(ERROR) << "Failed to enable";
       return 1;
     }
-  } else if (current_cmdline->HasSwitch(kSwitchSaveConfig)) {
+  } else if (current_cmdline->HasSwitch(remoting::kSwitchSaveConfig)) {
     service.PrintPid();
     if (!service.WriteStdinToConfig()) {
       LOG(ERROR) << "Failed to save config";
       return 1;
     }
-  } else if (current_cmdline->HasSwitch(kSwitchHostVersion)) {
+  } else if (current_cmdline->HasSwitch(remoting::kSwitchHostVersion)) {
     service.PrintHostVersion();
-  } else if (current_cmdline->HasSwitch(kSwitchHostRunFromLaunchd)) {
-    RegisterSignalHandler();
-    HOST_LOG << "Host started for user " << GetUsername() << " at "
+  } else if (current_cmdline->HasSwitch(remoting::kSwitchHostRunFromLaunchd)) {
+    remoting::RegisterSignalHandler();
+    HOST_LOG << "Host started for user " << remoting::GetUsername() << " at "
              << base::Time::Now();
     return service.RunHost();
   } else {

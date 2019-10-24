@@ -16,8 +16,10 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,10 +32,13 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 
-WebUITabStripContainerView::WebUITabStripContainerView(Browser* browser)
+WebUITabStripContainerView::WebUITabStripContainerView(
+    Browser* browser,
+    views::View* tab_contents_container)
     : browser_(browser),
       web_view_(
-          AddChildView(std::make_unique<views::WebView>(browser->profile()))) {
+          AddChildView(std::make_unique<views::WebView>(browser->profile()))),
+      tab_contents_container_(tab_contents_container) {
   SetVisible(false);
   // TODO(crbug.com/1010589) WebContents are initially assumed to be visible by
   // default unless explicitly hidden. The WebContents need to be set to hidden
@@ -49,7 +54,13 @@ WebUITabStripContainerView::WebUITabStripContainerView(Browser* browser)
   task_manager::WebContentsTags::CreateForTabContents(
       web_view_->web_contents());
 
-  TabStripUI* tab_strip_ui = static_cast<TabStripUI*>(
+  DCHECK(tab_contents_container);
+  view_observer_.Add(tab_contents_container_);
+  desired_height_ = TabStripUILayout::CalculateForWebViewportSize(
+                        tab_contents_container_->size())
+                        .CalculateContainerHeight();
+
+  TabStripUI* const tab_strip_ui = static_cast<TabStripUI*>(
       web_view_->GetWebContents()->GetWebUI()->GetController());
   tab_strip_ui->Initialize(browser_, this);
 }
@@ -100,9 +111,13 @@ void WebUITabStripContainerView::ShowContextMenuAtPoint(
       views::MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_MOUSE);
 }
 
+TabStripUILayout WebUITabStripContainerView::GetLayout() {
+  return TabStripUILayout::CalculateForWebViewportSize(
+      tab_contents_container_->size());
+}
+
 int WebUITabStripContainerView::GetHeightForWidth(int w) const {
-  constexpr int kWebUITabStripHeightDp = 248;
-  return kWebUITabStripHeightDp;
+  return desired_height_;
 }
 
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
@@ -116,4 +131,16 @@ void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
   } else {
     NOTREACHED();
   }
+}
+
+void WebUITabStripContainerView::OnViewBoundsChanged(View* observed_view) {
+  DCHECK_EQ(tab_contents_container_, observed_view);
+  desired_height_ =
+      TabStripUILayout::CalculateForWebViewportSize(observed_view->size())
+          .CalculateContainerHeight();
+  InvalidateLayout();
+
+  TabStripUI* const tab_strip_ui = static_cast<TabStripUI*>(
+      web_view_->GetWebContents()->GetWebUI()->GetController());
+  tab_strip_ui->LayoutChanged();
 }

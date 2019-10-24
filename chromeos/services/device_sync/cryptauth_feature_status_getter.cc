@@ -10,6 +10,21 @@ namespace chromeos {
 
 namespace device_sync {
 
+CryptAuthFeatureStatusGetter::DeviceSoftwareFeatureInfo::
+    DeviceSoftwareFeatureInfo() = default;
+
+CryptAuthFeatureStatusGetter::DeviceSoftwareFeatureInfo::
+    DeviceSoftwareFeatureInfo(const SoftwareFeatureStateMap& feature_state_map,
+                              base::Time last_modified_time)
+    : feature_state_map(feature_state_map),
+      last_modified_time(last_modified_time) {}
+
+CryptAuthFeatureStatusGetter::DeviceSoftwareFeatureInfo::
+    DeviceSoftwareFeatureInfo(const DeviceSoftwareFeatureInfo&) = default;
+
+CryptAuthFeatureStatusGetter::DeviceSoftwareFeatureInfo::
+    ~DeviceSoftwareFeatureInfo() = default;
+
 CryptAuthFeatureStatusGetter::CryptAuthFeatureStatusGetter() = default;
 
 CryptAuthFeatureStatusGetter::~CryptAuthFeatureStatusGetter() = default;
@@ -28,10 +43,12 @@ void CryptAuthFeatureStatusGetter::GetFeatureStatuses(
 }
 
 void CryptAuthFeatureStatusGetter::OnAttemptFinished(
-    const IdToFeatureStatusMap& id_to_feature_status_map,
+    const IdToDeviceSoftwareFeatureInfoMap&
+        id_to_device_software_feature_info_map,
     CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK(callback_);
-  std::move(callback_).Run(id_to_feature_status_map, device_sync_result_code);
+  std::move(callback_).Run(id_to_device_software_feature_info_map,
+                           device_sync_result_code);
 }
 
 }  // namespace device_sync

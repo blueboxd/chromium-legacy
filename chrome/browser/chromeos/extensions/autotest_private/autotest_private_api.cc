@@ -42,8 +42,11 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/banners/app_banner_manager.h"
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -74,8 +77,18 @@
 #include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
@@ -92,6 +105,8 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
@@ -120,6 +135,7 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
+#include "url/gurl.h"
 
 namespace extensions {
 namespace {
@@ -478,6 +494,17 @@ aura::Window* FindAppWindowById(const int64_t id) {
       std::find_if(list.begin(), list.end(),
                    [id](aura::Window* window) { return window->id() == id; });
   if (iter == list.end())
+    return nullptr;
+  return *iter;
+}
+
+// Returns the first available Browser that is not a web app.
+Browser* GetFirstRegularBrowser() {
+  const BrowserList* list = BrowserList::GetInstance();
+  auto iter = std::find_if(list->begin(), list->end(), [](Browser* browser) {
+    return browser->app_controller() == nullptr;
+  });
+  if (iter == list->end())
     return nullptr;
   return *iter;
 }
@@ -2872,7 +2899,7 @@ AutotestPrivateGetAppWindowListFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateGetAppWindowListFunction::Run() {
-  // Use nagative number to avoid potential collision with normal use if any.
+  // Use negative number to avoid potential collision with normal use if any.
   static int id_count = -10000;
 
   auto window_list = ash::GetAppWindowList();
@@ -3007,6 +3034,163 @@ ExtensionFunction::ResponseAction AutotestPrivateCloseAppWindowFunction::Run() {
   auto* widget = views::Widget::GetWidgetForNativeWindow(window);
   widget->Close();
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateInstallPWAForCurrentURL
+///////////////////////////////////////////////////////////////////////////////
+
+// Used to notify when when a certain URL contains a WPA.
+class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
+    : public banners::AppBannerManager::Observer {
+ public:
+  PWABannerObserver(banners::AppBannerManager* manager,
+                    base::OnceCallback<void()> callback)
+      : callback_(std::move(callback)), app_banner_manager_(manager) {
+    DCHECK(manager);
+    observer_.Add(manager);
+
+    // If PWA is already loaded, call callback immediately.
+    Installable installable =
+        app_banner_manager_->GetInstallableWebAppCheckResultForTesting();
+    if (installable == Installable::kPromotable ||
+        installable == Installable::kByUserRequest) {
+      observer_.RemoveAll();
+      std::move(callback_).Run();
+    }
+  }
+  ~PWABannerObserver() override {}
+
+  void OnAppBannerManagerChanged(
+      banners::AppBannerManager* new_manager) override {
+    observer_.RemoveAll();
+    observer_.Add(new_manager);
+    app_banner_manager_ = new_manager;
+  }
+
+  void OnInstallableWebAppStatusUpdated() override {
+    Installable installable =
+        app_banner_manager_->GetInstallableWebAppCheckResultForTesting();
+    switch (installable) {
+      case Installable::kNo:
+        FALLTHROUGH;
+      case Installable::kUnknown:
+        DCHECK(false) << "Unexpected AppBannerManager::Installable value (kNo "
+                         "or kUnknown)";
+        break;
+
+      case Installable::kPromotable:
+        FALLTHROUGH;
+      case Installable::kByUserRequest:
+        observer_.RemoveAll();
+        std::move(callback_).Run();
+        break;
+    }
+  }
+
+ private:
+  using Installable = banners::AppBannerManager::InstallableWebAppCheckResult;
+
+  ScopedObserver<banners::AppBannerManager, banners::AppBannerManager::Observer>
+      observer_{this};
+  base::OnceCallback<void()> callback_;
+  banners::AppBannerManager* app_banner_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(PWABannerObserver);
+};
+
+// Used to notify when a WPA is installed.
+class AutotestPrivateInstallPWAForCurrentURLFunction::PWARegistrarObserver
+    : public web_app::AppRegistrarObserver {
+ public:
+  PWARegistrarObserver(Profile* profile,
+                       base::OnceCallback<void(const web_app::AppId&)> callback)
+      : callback_(std::move(callback)) {
+    observer_.Add(
+        &web_app::WebAppProviderBase::GetProviderBase(profile)->registrar());
+  }
+  ~PWARegistrarObserver() override {}
+
+  void OnWebAppInstalled(const web_app::AppId& app_id) override {
+    observer_.RemoveAll();
+    std::move(callback_).Run(app_id);
+  }
+
+ private:
+  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      observer_{this};
+  base::OnceCallback<void(const web_app::AppId&)> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(PWARegistrarObserver);
+};
+
+AutotestPrivateInstallPWAForCurrentURLFunction::
+    AutotestPrivateInstallPWAForCurrentURLFunction() = default;
+AutotestPrivateInstallPWAForCurrentURLFunction::
+    ~AutotestPrivateInstallPWAForCurrentURLFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateInstallPWAForCurrentURLFunction::Run() {
+  DVLOG(1) << "AutotestPrivateInstallPWAForCurrentURLFunction";
+
+  std::unique_ptr<api::autotest_private::InstallPWAForCurrentURL::Params>
+      params(api::autotest_private::InstallPWAForCurrentURL::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Browser* browser = GetFirstRegularBrowser();
+  if (!browser) {
+    return RespondNow(Error("Failed to find regular browser"));
+  }
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  banners::AppBannerManager* app_banner_manager =
+      banners::AppBannerManagerDesktop::FromWebContents(web_contents);
+  if (!app_banner_manager) {
+    return RespondNow(Error("Failed to create AppBannerManager"));
+  }
+
+  banner_observer_ = std::make_unique<PWABannerObserver>(
+      app_banner_manager,
+      base::BindOnce(&AutotestPrivateInstallPWAForCurrentURLFunction::PWALoaded,
+                     this));
+
+  // Adding timeout to catch:
+  // - There is no way to know whether ExecuteCommand fails.
+  // - Current URL might not have a valid PWA.
+  timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(params->timeout_ms),
+      base::BindOnce(
+          &AutotestPrivateInstallPWAForCurrentURLFunction::PWATimeout, this));
+  return RespondLater();
+}
+
+void AutotestPrivateInstallPWAForCurrentURLFunction::PWALoaded() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  Browser* browser = GetFirstRegularBrowser();
+
+  registrar_observer_ = std::make_unique<PWARegistrarObserver>(
+      profile,
+      base::BindOnce(
+          &AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstalled, this));
+
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+  if (!chrome::ExecuteCommand(browser, IDC_INSTALL_PWA)) {
+    return Respond(Error("Failed to execute INSTALL_PWA command"));
+  }
+}
+
+void AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstalled(
+    const web_app::AppId& app_id) {
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  Respond(OneArgument(std::make_unique<base::Value>(app_id)));
+  timeout_timer_.AbandonAndStop();
+}
+
+void AutotestPrivateInstallPWAForCurrentURLFunction::PWATimeout() {
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  Respond(Error("Install PWA timed out"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

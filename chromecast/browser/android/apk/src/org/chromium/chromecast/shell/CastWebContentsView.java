@@ -30,7 +30,7 @@ import org.chromium.chromecast.base.CastSwitches;
  * it is destroyed, CastContentWindowAndroid should be notified by intent.
  */
 public class CastWebContentsView extends FrameLayout {
-    private static final String TAG = "cr_CastWebContentV";
+    private static final String TAG = "CastWebContentV";
 
     private CastWebContentsSurfaceHelper mSurfaceHelper;
 

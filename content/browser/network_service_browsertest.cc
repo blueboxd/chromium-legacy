@@ -256,9 +256,9 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
-  network::mojom::URLLoaderFactoryPtr loader_factory;
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          std::move(params));
+  mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
+  network_context->CreateURLLoaderFactory(
+      loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   // Load a URL and check the cache index size.
   LoadURL(embedded_test_server()->GetURL("/cachetime"), loader_factory.get());

@@ -114,7 +114,8 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
 
     /**
      * Specify ImageFetcher instance to be used for testing purposes.
-     * TODO(ender): Create fetcher instance in AutocompleteMediator and pass it to the constructor.
+     * TODO(http://crbug.com/1015997): Create fetcher instance in AutocompleteMediator and pass it
+     * to the constructor.
      */
     void setImageFetcherForTesting(ImageFetcher fetcher) {
         mImageFetcher = fetcher;

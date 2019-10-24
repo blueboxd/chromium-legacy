@@ -36,12 +36,22 @@ luci.console_view(
         ),
         luci.console_view_entry(
             builder = 'ci/win32-archive-rel',
-            category = 'win-rel',
+            category = 'win|rel',
             short_name = '32',
         ),
         luci.console_view_entry(
             builder = 'ci/win-archive-rel',
-            category = 'win-rel',
+            category = 'win|rel',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/win32-archive-dbg',
+            category = 'win|dbg',
+            short_name = '32',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/win-archive-dbg',
+            category = 'win|dbg',
             short_name = '64',
         ),
     ],

@@ -269,8 +269,9 @@ class SQLitePersistentCookieStore::Backend
   void LoadCookiesForKey(const std::string& domain,
                          LoadedCallback loaded_callback);
 
-  // Steps through all results of |smt|, makes a cookie from each, and adds the
-  // cookie to |cookies|. Returns true if everything loaded successfully.
+  // Steps through all results of |statement|, makes a cookie from each, and
+  // adds the cookie to |cookies|. Returns true if everything loaded
+  // successfully.
   bool MakeCookiesFromSQLStatement(
       std::vector<std::unique_ptr<CanonicalCookie>>* cookies,
       sql::Statement* statement);

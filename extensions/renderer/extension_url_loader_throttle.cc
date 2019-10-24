@@ -32,7 +32,7 @@ void ExtensionURLLoaderThrottle::WillStartRequest(
 
 void ExtensionURLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& /* response_head */,
+    const network::mojom::URLResponseHead& /* response_head */,
     bool* /* defer */,
     std::vector<std::string>* /* to_be_removed_request_headers */,
     net::HttpRequestHeaders* /* modified_request_headers */) {
@@ -43,7 +43,7 @@ void ExtensionURLLoaderThrottle::WillRedirectRequest(
 
 void ExtensionURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   manager_->WillProcessResponse(response_url, *response_head);
 }

@@ -209,7 +209,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void SetBrowserControlsState(float top_height,
                                float bottom_height,
                                bool shrinks_layout) override;
-  void SetBrowserControlsShownRatio(float) override;
+  void SetBrowserControlsShownRatio(float top_ratio,
+                                    float bottom_ratio) override;
 
   bool ShouldOpenUIElementDuringPageDismissal(
       LocalFrame&,

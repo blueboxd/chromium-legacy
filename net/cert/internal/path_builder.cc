@@ -68,30 +68,23 @@ struct IssuerEntry {
   CertificateTrust trust;
 };
 
-// Simple comparator of IssuerEntry that defines the order in which issuers
-// should be explored. It puts trust anchors ahead of unknown or distrusted
-// ones.
-struct IssuerEntryComparator {
-  bool operator()(const IssuerEntry& issuer1, const IssuerEntry& issuer2) {
-    return CertificateTrustToOrder(issuer1.trust) <
-           CertificateTrustToOrder(issuer2.trust);
+// Returns an integer that represents the relative ordering of |trust| for
+// prioritizing certificates in path building. Lower return values indicate
+// higer priority.
+int CertificateTrustToOrder(const CertificateTrust& trust) {
+  switch (trust.type) {
+    case CertificateTrustType::TRUSTED_ANCHOR:
+    case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
+      return 1;
+    case CertificateTrustType::UNSPECIFIED:
+      return 2;
+    case CertificateTrustType::DISTRUSTED:
+      return 4;
   }
 
-  static int CertificateTrustToOrder(const CertificateTrust& trust) {
-    switch (trust.type) {
-      case CertificateTrustType::TRUSTED_ANCHOR:
-      case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
-        return 1;
-      case CertificateTrustType::UNSPECIFIED:
-        return 2;
-      case CertificateTrustType::DISTRUSTED:
-        return 4;
-    }
-
-    NOTREACHED();
-    return 5;
-  }
-};
+  NOTREACHED();
+  return 5;
+}
 
 // CertIssuersIter iterates through the intermediates from |cert_issuer_sources|
 // which may be issuers of |cert|.
@@ -256,16 +249,24 @@ void CertIssuersIter::DoAsyncIssuerQuery() {
 }
 
 void CertIssuersIter::SortRemainingIssuers() {
-  // TODO(mattm): sort by notbefore, etc (eg if cert issuer matches a trust
-  // anchor subject (or is a trust anchor), that should be sorted higher too.
-  // See big list of possible sorting hints in RFC 4158.)
-  // (Update PathBuilderKeyRolloverTest.TestRolloverBothRootsTrusted once that
-  // is done)
   if (!issuers_needs_sort_)
     return;
 
-  std::stable_sort(issuers_.begin() + cur_issuer_, issuers_.end(),
-                   IssuerEntryComparator());
+  std::stable_sort(
+      issuers_.begin() + cur_issuer_, issuers_.end(),
+      [](const IssuerEntry& issuer1, const IssuerEntry& issuer2) {
+        // TODO(crbug.com/635205): Add other prioritization hints. (See big list
+        // of possible sorting hints in RFC 4158.)
+        return std::make_tuple(CertificateTrustToOrder(issuer1.trust),
+                               // Newer(larger) notBefore & notAfter dates are
+                               // preferred, hence |issuer2| is on the LHS of
+                               // the comparison and |issuer1| on the RHS.
+                               issuer2.cert->tbs().validity_not_before,
+                               issuer2.cert->tbs().validity_not_after) <
+               std::make_tuple(CertificateTrustToOrder(issuer2.trust),
+                               issuer1.cert->tbs().validity_not_before,
+                               issuer1.cert->tbs().validity_not_after);
+      });
 
   issuers_needs_sort_ = false;
 }

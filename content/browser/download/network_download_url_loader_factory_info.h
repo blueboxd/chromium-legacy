@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DOWNLOAD_NETWORK_DOWNLOAD_URL_LOADER_FACTORY_INFO_H_
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -20,7 +21,8 @@ class NetworkDownloadURLLoaderFactoryInfo
  public:
   NetworkDownloadURLLoaderFactoryInfo(
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
-      network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          proxy_factory_remote,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           proxy_factory_receiver);
   ~NetworkDownloadURLLoaderFactoryInfo() override;
@@ -32,7 +34,7 @@ class NetworkDownloadURLLoaderFactoryInfo
  private:
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> lazy_factory_;
-  network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info_;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> proxy_factory_remote_;
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       proxy_factory_receiver_;
 

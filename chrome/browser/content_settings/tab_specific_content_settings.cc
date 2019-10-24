@@ -26,7 +26,7 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/content_settings_renderer.mojom.h"
+#include "chrome/common/content_settings_agent.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_configuration.mojom.h"
@@ -747,11 +747,11 @@ void TabSpecificContentSettings::RenderFrameForInterstitialPageCreated(
     content::RenderFrameHost* render_frame_host) {
   // We want to tell the renderer-side code to ignore content settings for this
   // page.
-  mojo::AssociatedRemote<chrome::mojom::ContentSettingsRenderer>
-      content_settings_renderer;
+  mojo::AssociatedRemote<chrome::mojom::ContentSettingsAgent>
+      content_settings_agent;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
-      &content_settings_renderer);
-  content_settings_renderer->SetAsInterstitial();
+      &content_settings_agent);
+  content_settings_agent->SetAsInterstitial();
 }
 
 bool TabSpecificContentSettings::OnMessageReceived(

@@ -57,7 +57,6 @@ unoptimized-lossy-images
 unsized-media
 usb
 vertical-scroll
-vr
 wake-lock
 xr-spatial-tracking
 

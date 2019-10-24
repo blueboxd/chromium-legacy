@@ -149,17 +149,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // Virtual so we can override it for testing.
   virtual ResourceMultiBuffer* multibuffer();
 
-  // Callback for reporting number of bytes received by the network.
-  using BytesReceivedCB = base::RepeatingCallback<void(uint64_t)>;
-
-  // Register a BytesReceivedCallback for this UrlData. These callbacks will be
-  // copied to another UrlData if there is a redirect.
-  void AddBytesReceivedCallback(BytesReceivedCB bytes_received_cb);
-
   void AddBytesRead(int64_t b) { bytes_read_from_cache_ += b; }
   int64_t BytesReadFromCache() const { return bytes_read_from_cache_; }
-  void AddBytesReadFromNetwork(int64_t b);
-  int64_t BytesReadFromNetwork() const { return bytes_read_from_network_; }
 
  protected:
   UrlData(const GURL& url, CorsMode cors_mode, UrlIndex* url_index);
@@ -195,9 +186,6 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // Number of bytes read from this resource.
   int64_t bytes_read_from_cache_ = 0;
 
-  // Number of bytes read from network into the cache for this resource.
-  int64_t bytes_read_from_network_ = 0;
-
   // Does the server support ranges?
   bool range_supported_;
 
@@ -227,8 +215,6 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
 
   ResourceMultiBuffer multibuffer_;
   std::vector<RedirectCB> redirect_callbacks_;
-
-  std::vector<BytesReceivedCB> bytes_received_callbacks_;
 
   std::vector<base::OnceClosure> waiting_load_callbacks_;
 

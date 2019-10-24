@@ -13,7 +13,6 @@
 #include "base/no_destructor.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/constants.mojom.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -43,7 +42,6 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability("*", "accessibility")
           .RequireCapability("*", "app")
           .RequireCapability(content::mojom::kServiceName, "navigation")
-          .RequireCapability(data_decoder::mojom::kServiceName, "image_decoder")
           .RequireCapability(device::mojom::kServiceName,
                              "device:bluetooth_system")
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")

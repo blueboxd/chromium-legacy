@@ -24,6 +24,9 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   ~FakeDlcserviceClient() override;
 
   // DlcserviceClient:
+  void AddObserver(Observer* obs) override;
+  void RemoveObserver(Observer* obs) override;
+  void NotifyProgressUpdateForTest(double progress) override;
   void Install(const dlcservice::DlcModuleList& dlc_module_list,
                InstallCallback callback) override;
   void Uninstall(const std::string& dlc_id,

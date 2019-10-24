@@ -89,10 +89,13 @@ public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogProper
         }
         mDialogModel = builder.build();
 
-        // Hitting the "submit" button on the software keyboard should submit.
+        // Hitting the "submit" button on the software keyboard should submit, unless the name field
+        // is empty.
         mUserNameInput.setOnEditorActionListener((view, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                onClick(mDialogModel, ModalDialogProperties.ButtonType.POSITIVE);
+                if (mUserNameInput.getText().toString().trim().length() != 0) {
+                    onClick(mDialogModel, ModalDialogProperties.ButtonType.POSITIVE);
+                }
                 return true;
             }
             return false;

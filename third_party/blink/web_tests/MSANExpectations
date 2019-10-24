@@ -84,6 +84,8 @@ crbug.com/902685 [ Linux ] http/tests/devtools/isolated-code-cache/same-origin-t
 crbug.com/902685 [ Linux ] http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass Timeout ]
 crbug.com/902685 [ Linux ] virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Pass Timeout ]
 crbug.com/902685 [ Linux ] virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass Timeout ]
+crbug.com/902685 [ Linux ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Pass Timeout ]
+crbug.com/902685 [ Linux ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass Timeout ]
 
 # Timing out consistenly on WebKit Linux Trusty MSAN
 crbug.com/798957 [ Linux ] http/tests/devtools/audits/audits-limited-run.js [ Skip ]

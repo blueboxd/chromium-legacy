@@ -3688,7 +3688,7 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="AudioCodec">
     <summary>
-      media::AudioCodec enum value. Can be kUnknownAudioCodec even with HasAudio
+      media::AudioCodec enum value. Can be kUnknownAudioCodec even when HasAudio
       is true because we don't always know the codec.
     </summary>
   </metric>
@@ -3783,8 +3783,14 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="VideoCodec">
     <summary>
-      media::VideoCodec enum value. Can be kUnknownVideoCodec even with HasVideo
+      media::VideoCodec enum value. Can be kUnknownVideoCodec even when HasVideo
       is true because we don't always know the codec.
+    </summary>
+  </metric>
+  <metric name="VideoCodecProfile">
+    <summary>
+      media::VideoCodecProfile enum value. Can be VIDEO_CODEC_PROFILE_UNKNOWN
+      even when HasVideo is true because we don't always know the codec profile.
     </summary>
   </metric>
   <metric name="VideoDecoderName">
@@ -4156,7 +4162,7 @@ be describing additional metrics about the same event.
   <metric name="Video.CodecProfile">
     <summary>
       media::VideoCodecProfile enum value. Can be VIDEO_CODEC_PROFILE_UNKNOWN if
-      we don't know the audio codec.
+      we don't know the video codec.
     </summary>
   </metric>
   <metric name="Video.EME.KeySystem">

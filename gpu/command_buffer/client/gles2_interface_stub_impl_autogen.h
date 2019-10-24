@@ -1243,7 +1243,6 @@ GLenum GLES2InterfaceStub::GetGraphicsResetStatusKHR() {
   return 0;
 }
 void GLES2InterfaceStub::BlendBarrierKHR() {}
-void GLES2InterfaceStub::ApplyScreenSpaceAntialiasingCHROMIUM() {}
 void GLES2InterfaceStub::BindFragDataLocationIndexedEXT(
     GLuint /* program */,
     GLuint /* colorNumber */,

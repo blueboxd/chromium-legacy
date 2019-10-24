@@ -181,7 +181,7 @@
     { "site_name": "tradesy", "expectation":"PASS" },
     { "site_name": "walmart_ca", "expectation":"PASS" },
     { "site_name": "abebooks", "expectation":"PASS" },
-    { "site_name": "bhphotovideo", "expectation":"PASS" },
+    { "site_name": "bhphotovideo", "expectation":"PASS", "disabled":true, "bug_number":1017266 },
     { "site_name": "bloomingdales", "expectation":"PASS" },
     { "site_name": "hayneedle", "expectation":"PASS" },
     { "site_name": "sears", "expectation":"PASS" },

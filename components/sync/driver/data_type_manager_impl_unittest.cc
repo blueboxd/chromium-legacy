@@ -180,27 +180,25 @@ class FakeDataTypeEncryptionHandler : public DataTypeEncryptionHandler {
   FakeDataTypeEncryptionHandler();
   ~FakeDataTypeEncryptionHandler() override;
 
-  bool IsPassphraseRequired() const override;
+  bool HasCryptoError() const override;
   ModelTypeSet GetEncryptedDataTypes() const override;
 
-  void set_passphrase_required(bool passphrase_required) {
-    passphrase_required_ = passphrase_required;
-  }
+  void set_crypto_error(bool crypto_error) { crypto_error_ = crypto_error; }
   void set_encrypted_types(ModelTypeSet encrypted_types) {
     encrypted_types_ = encrypted_types;
   }
 
  private:
-  bool passphrase_required_;
+  bool crypto_error_;
   ModelTypeSet encrypted_types_;
 };
 
 FakeDataTypeEncryptionHandler::FakeDataTypeEncryptionHandler()
-    : passphrase_required_(false) {}
+    : crypto_error_(false) {}
 FakeDataTypeEncryptionHandler::~FakeDataTypeEncryptionHandler() {}
 
-bool FakeDataTypeEncryptionHandler::IsPassphraseRequired() const {
-  return passphrase_required_;
+bool FakeDataTypeEncryptionHandler::HasCryptoError() const {
+  return crypto_error_;
 }
 
 ModelTypeSet FakeDataTypeEncryptionHandler::GetEncryptedDataTypes() const {
@@ -321,7 +319,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   }
 
   void FailEncryptionFor(ModelTypeSet encrypted_types) {
-    encryption_handler_.set_passphrase_required(true);
+    encryption_handler_.set_crypto_error(true);
     encryption_handler_.set_encrypted_types(encrypted_types);
   }
 

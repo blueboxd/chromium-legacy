@@ -223,6 +223,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void DidReceiveResponse() {}
   virtual void DidStopLoading() {}
 
+  // The page has made some progress loading. |progress| is a value between 0.0
+  // (nothing loaded) to 1.0 (page fully loaded).
+  virtual void LoadProgressChanged(double progress) {}
+
   // This method is invoked once the window.document object of the main frame
   // was created.
   virtual void DocumentAvailableInMainFrame() {}

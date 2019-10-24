@@ -20,7 +20,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
@@ -318,8 +318,11 @@ GURL GetUpgradedUrl(const GURL& url) {
 
 // Populates the list of headers corresponding to |mask|.
 RequestAction GetRemoveHeadersActionForMask(const ExtensionId& extension_id,
-                                            uint8_t mask) {
-  RequestAction action(RequestAction::Type::REMOVE_HEADERS, extension_id);
+                                            uint8_t mask,
+                                            int rule_id,
+                                            dnr_api::SourceType source_type) {
+  RequestAction action(RequestAction::Type::REMOVE_HEADERS, rule_id,
+                       source_type, extension_id);
 
   for (int i = 0; mask && i <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++i) {
     switch (i) {
@@ -391,9 +394,9 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
 
   // Using WrapUnique instead of make_unique since this class has a private
   // constructor.
-  *matcher = base::WrapUnique(new RulesetMatcher(std::move(ruleset_data),
-                                                 source.id(), source.priority(),
-                                                 source.extension_id()));
+  *matcher = base::WrapUnique(new RulesetMatcher(
+      std::move(ruleset_data), source.id(), source.priority(), source.type(),
+      source.extension_id()));
   return kLoadSuccess;
 }
 
@@ -407,8 +410,10 @@ base::Optional<RequestAction> RulesetMatcher::GetBlockOrCollapseAction(
     return base::nullopt;
 
   return ShouldCollapseResourceType(params.element_type)
-             ? RequestAction(RequestAction::Type::COLLAPSE, extension_id_)
-             : RequestAction(RequestAction::Type::BLOCK, extension_id_);
+             ? RequestAction(RequestAction::Type::COLLAPSE, rule->id(),
+                             source_type_, extension_id_)
+             : RequestAction(RequestAction::Type::BLOCK, rule->id(),
+                             source_type_, extension_id_);
 }
 
 base::Optional<RequestAction> RulesetMatcher::GetRedirectAction(
@@ -420,7 +425,9 @@ base::Optional<RequestAction> RulesetMatcher::GetRedirectAction(
   if (!redirect_rule)
     return base::nullopt;
 
-  RequestAction redirect_action(RequestAction::Type::REDIRECT, extension_id_);
+  RequestAction redirect_action(RequestAction::Type::REDIRECT,
+                                redirect_rule->id(), source_type_,
+                                extension_id_);
   redirect_action.redirect_url = std::move(redirect_rule_url);
 
   return redirect_action;
@@ -433,7 +440,8 @@ base::Optional<RequestAction> RulesetMatcher::GetUpgradeAction(
   if (!upgrade_rule)
     return base::nullopt;
 
-  RequestAction upgrade_action(RequestAction::Type::REDIRECT, extension_id_);
+  RequestAction upgrade_action(RequestAction::Type::REDIRECT,
+                               upgrade_rule->id(), source_type_, extension_id_);
   upgrade_action.redirect_url = GetUpgradedUrl(*params.url);
 
   return upgrade_action;
@@ -443,6 +451,7 @@ base::Optional<RequestAction>
 RulesetMatcher::GetRedirectOrUpgradeActionByPriority(
     const RequestParams& params) const {
   GURL redirect_rule_url;
+  int rule_id = kMinValidID - 1;
   const flat_rule::UrlRule* redirect_rule =
       GetRedirectRule(params, &redirect_rule_url);
   const flat_rule::UrlRule* upgrade_rule = GetUpgradeRule(params);
@@ -453,15 +462,25 @@ RulesetMatcher::GetRedirectOrUpgradeActionByPriority(
   GURL highest_priority_url;
   if (!upgrade_rule) {
     highest_priority_url = std::move(redirect_rule_url);
+    rule_id = redirect_rule->id();
   } else if (!redirect_rule) {
+    rule_id = upgrade_rule->id();
     highest_priority_url = GetUpgradedUrl(*params.url);
   } else {
     highest_priority_url = upgrade_rule->priority() > redirect_rule->priority()
                                ? GetUpgradedUrl(*params.url)
                                : std::move(redirect_rule_url);
+
+    rule_id = upgrade_rule->priority() > redirect_rule->priority()
+                  ? upgrade_rule->id()
+                  : redirect_rule->id();
   }
 
-  RequestAction action(RequestAction::Type::REDIRECT, extension_id_);
+  // Check that the resultant |rule_id| is valid.
+  DCHECK_GE(rule_id, kMinValidID);
+
+  RequestAction action(RequestAction::Type::REDIRECT, rule_id, source_type_,
+                       extension_id_);
   action.redirect_url = std::move(highest_priority_url);
 
   return action;
@@ -520,8 +539,9 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(
   for (auto it = rule_id_to_mask.begin(); it != rule_id_to_mask.end(); ++it) {
     uint8_t mask_for_rule = it->second;
     DCHECK(mask_for_rule);
-    remove_headers_actions->push_back(
-        GetRemoveHeadersActionForMask(extension_id_, mask_for_rule));
+
+    remove_headers_actions->push_back(GetRemoveHeadersActionForMask(
+        extension_id_, mask_for_rule, it->first /* rule_id */, source_type_));
   }
 
   DCHECK(!(mask & ignored_mask));
@@ -531,6 +551,7 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(
 RulesetMatcher::RulesetMatcher(std::string ruleset_data,
                                size_t id,
                                size_t priority,
+                               dnr_api::SourceType source_type,
                                const ExtensionId& extension_id)
     : ruleset_data_(std::move(ruleset_data)),
       root_(flat::GetExtensionIndexedRuleset(ruleset_data_.data())),
@@ -538,6 +559,7 @@ RulesetMatcher::RulesetMatcher(std::string ruleset_data,
       metadata_list_(root_->extension_metadata()),
       id_(id),
       priority_(priority),
+      source_type_(source_type),
       extension_id_(extension_id),
       is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(*root_)) {}
 

@@ -95,9 +95,6 @@ struct SyntheticTap;
 struct SyntheticPointerAction;
 
 [Native]
-enum TouchAction;
-
-[Native]
 enum PreferredColorScheme;
 
 [Native]

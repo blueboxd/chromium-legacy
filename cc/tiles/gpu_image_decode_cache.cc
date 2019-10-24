@@ -617,6 +617,11 @@ class ImageUploadTaskImpl : public TileTask {
   void RunOnWorkerThread() override {
     TRACE_EVENT2("cc", "ImageUploadTaskImpl::RunOnWorkerThread", "mode", "gpu",
                  "source_prepare_tiles_id", tracing_info_.prepare_tiles_id);
+    const auto* image_metadata = image_.paint_image().GetImageHeaderMetadata();
+    const ImageType image_type =
+        image_metadata ? image_metadata->image_type : ImageType::kInvalid;
+    devtools_instrumentation::ScopedImageUploadTask image_upload_task(
+        &image_.paint_image(), ImageDecodeCache::ToScopedImageType(image_type));
     cache_->UploadImageInTask(image_);
   }
 

@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * This is a fake View that is only exposed to InputMethodManager.
  */
 public class ThreadedInputConnectionProxyView extends View {
-    private static final String TAG = "cr_Ime";
+    private static final String TAG = "Ime";
     private static final boolean DEBUG_LOGS = false;
 
     private final Handler mImeThreadHandler;

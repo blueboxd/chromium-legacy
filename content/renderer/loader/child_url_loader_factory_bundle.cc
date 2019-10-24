@@ -133,7 +133,8 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
         pending_appcache_factory,
     SchemeMap pending_scheme_specific_factories,
     OriginMap pending_isolated_world_factories,
-    network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        direct_network_factory_remote,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_prefetch_loader_factory,
     bool bypass_redirect_checks)
@@ -141,7 +142,7 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
                                  std::move(pending_scheme_specific_factories),
                                  std::move(pending_isolated_world_factories),
                                  bypass_redirect_checks),
-      direct_network_factory_info_(std::move(direct_network_factory_info)),
+      direct_network_factory_remote_(std::move(direct_network_factory_remote)),
       pending_prefetch_loader_factory_(
           std::move(pending_prefetch_loader_factory)) {
   pending_appcache_factory_ = std::move(pending_appcache_factory);
@@ -158,7 +159,8 @@ ChildURLLoaderFactoryBundleInfo::CreateFactory() {
       std::move(pending_scheme_specific_factories_);
   other->pending_isolated_world_factories_ =
       std::move(pending_isolated_world_factories_);
-  other->direct_network_factory_info_ = std::move(direct_network_factory_info_);
+  other->direct_network_factory_remote_ =
+      std::move(direct_network_factory_remote_);
   other->pending_prefetch_loader_factory_ =
       std::move(pending_prefetch_loader_factory_);
   other->bypass_redirect_checks_ = bypass_redirect_checks_;
@@ -250,9 +252,9 @@ ChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory() {
 
 void ChildURLLoaderFactoryBundle::Update(
     std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info) {
-  if (info->direct_network_factory_info()) {
+  if (info->direct_network_factory_remote()) {
     direct_network_factory_.Bind(
-        std::move(info->direct_network_factory_info()));
+        std::move(info->direct_network_factory_remote()));
   }
   if (info->pending_prefetch_loader_factory()) {
     prefetch_loader_factory_.Bind(
@@ -282,7 +284,8 @@ void ChildURLLoaderFactoryBundle::InitDirectNetworkFactoryIfNecessary() {
     return;
 
   if (!direct_network_factory_) {
-    direct_network_factory_ = std::move(direct_network_factory_getter_).Run();
+    direct_network_factory_.Bind(
+        std::move(direct_network_factory_getter_).Run());
   } else {
     direct_network_factory_getter_.Reset();
   }
@@ -306,10 +309,11 @@ ChildURLLoaderFactoryBundle::CloneInternal(bool include_appcache) {
         appcache_factory_pending_remote.InitWithNewPipeAndPassReceiver());
   }
 
-  network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      direct_network_factory_remote;
   if (direct_network_factory_) {
     direct_network_factory_->Clone(
-        mojo::MakeRequest(&direct_network_factory_info));
+        direct_network_factory_remote.InitWithNewPipeAndPassReceiver());
   }
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -327,7 +331,7 @@ ChildURLLoaderFactoryBundle::CloneInternal(bool include_appcache) {
       std::move(appcache_factory_pending_remote),
       CloneRemoteMapToPendingRemoteMap(scheme_specific_factories_),
       CloneRemoteMapToPendingRemoteMap(isolated_world_factories_),
-      std::move(direct_network_factory_info),
+      std::move(direct_network_factory_remote),
       std::move(pending_prefetch_loader_factory), bypass_redirect_checks_);
 }
 
@@ -344,9 +348,10 @@ ChildURLLoaderFactoryBundle::PassInterface() {
   if (appcache_factory_)
     pending_appcache_factory = appcache_factory_.Unbind();
 
-  network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      direct_network_factory_remote;
   if (direct_network_factory_) {
-    direct_network_factory_info = direct_network_factory_.PassInterface();
+    direct_network_factory_remote = direct_network_factory_.Unbind();
   }
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -359,7 +364,7 @@ ChildURLLoaderFactoryBundle::PassInterface() {
       std::move(pending_default_factory), std::move(pending_appcache_factory),
       BoundRemoteMapToPendingRemoteMap(std::move(scheme_specific_factories_)),
       BoundRemoteMapToPendingRemoteMap(std::move(isolated_world_factories_)),
-      std::move(direct_network_factory_info),
+      std::move(direct_network_factory_remote),
       std::move(pending_prefetch_loader_factory), bypass_redirect_checks_);
 }
 

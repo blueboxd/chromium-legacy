@@ -92,8 +92,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 // These values come from the WhatWG spec.
@@ -109,7 +107,7 @@ constexpr int kMinimumAccelerated2dCanvasSize = 128 * 129;
 }  // namespace
 
 HTMLCanvasElement::HTMLCanvasElement(Document& document)
-    : HTMLElement(kCanvasTag, document),
+    : HTMLElement(html_names::kCanvasTag, document),
       ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
       CanvasRenderingContextHost(
@@ -171,7 +169,8 @@ void HTMLCanvasElement::Dispose() {
 
 void HTMLCanvasElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kWidthAttr || params.name == kHeightAttr)
+  if (params.name == html_names::kWidthAttr ||
+      params.name == html_names::kHeightAttr)
     Reset();
   HTMLElement::ParseAttribute(params);
 }
@@ -198,7 +197,8 @@ void HTMLCanvasElement::setHeight(unsigned value,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }
-  SetUnsignedIntegralAttribute(kHeightAttr, value, kDefaultCanvasHeight);
+  SetUnsignedIntegralAttribute(html_names::kHeightAttr, value,
+                               kDefaultCanvasHeight);
 }
 
 void HTMLCanvasElement::setWidth(unsigned value,
@@ -209,15 +209,16 @@ void HTMLCanvasElement::setWidth(unsigned value,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }
-  SetUnsignedIntegralAttribute(kWidthAttr, value, kDefaultCanvasWidth);
+  SetUnsignedIntegralAttribute(html_names::kWidthAttr, value,
+                               kDefaultCanvasWidth);
 }
 
 void HTMLCanvasElement::SetSize(const IntSize& new_size) {
   if (new_size == Size())
     return;
   ignore_reset_ = true;
-  SetIntegralAttribute(kWidthAttr, new_size.Width());
-  SetIntegralAttribute(kHeightAttr, new_size.Height());
+  SetIntegralAttribute(html_names::kWidthAttr, new_size.Width());
+  SetIntegralAttribute(html_names::kHeightAttr, new_size.Height());
   ignore_reset_ = false;
   Reset();
 }
@@ -549,14 +550,14 @@ void HTMLCanvasElement::Reset() {
   bool had_resource_provider = HasResourceProvider();
 
   unsigned w = 0;
-  AtomicString value = getAttribute(kWidthAttr);
+  AtomicString value = getAttribute(html_names::kWidthAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, w) ||
       w > 0x7fffffffu) {
     w = kDefaultCanvasWidth;
   }
 
   unsigned h = 0;
-  value = getAttribute(kHeightAttr);
+  value = getAttribute(html_names::kHeightAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, h) ||
       h > 0x7fffffffu) {
     h = kDefaultCanvasHeight;
@@ -1141,8 +1142,8 @@ void HTMLCanvasElement::SetResourceProviderForTesting(
     std::unique_ptr<Canvas2DLayerBridge> bridge,
     const IntSize& size) {
   DiscardResourceProvider();
-  SetIntegralAttribute(kWidthAttr, size.Width());
-  SetIntegralAttribute(kHeightAttr, size.Height());
+  SetIntegralAttribute(html_names::kWidthAttr, size.Width());
+  SetIntegralAttribute(html_names::kHeightAttr, size.Height());
   SetCanvas2DLayerBridgeInternal(std::move(bridge));
   ReplaceResourceProvider(std::move(resource_provider));
 }

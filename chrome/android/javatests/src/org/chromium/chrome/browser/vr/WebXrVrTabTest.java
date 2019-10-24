@@ -37,13 +37,13 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * End-to-end tests for WebVR's behavior when multiple tabs are involved.
+ * End-to-end tests for WebXR's behavior when multiple tabs are involved.
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=LogJsConsoleMessages", "enable-blink-features=WebVR"})
-@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebVR is only supported on K+
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
+@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
 public class WebXrVrTabTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
@@ -53,7 +53,6 @@ public class WebXrVrTabTest {
 
     private ChromeActivityTestRule mTestRule;
     private WebXrVrTestFramework mWebXrVrTestFramework;
-    private WebVrTestFramework mWebVrTestFramework;
 
     public WebXrVrTabTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
@@ -63,21 +62,6 @@ public class WebXrVrTabTest {
     @Before
     public void setUp() {
         mWebXrVrTestFramework = new WebXrVrTestFramework(mTestRule);
-        mWebVrTestFramework = new WebVrTestFramework(mTestRule);
-    }
-
-    /**
-     * Tests that non-focused tabs cannot get pose information. Disabled on standalones because
-     * they will always be in the VR Browser, and thus shouldn't be getting inline poses even
-     * if the tab is focused.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_SVR)
-    public void testPoseDataUnfocusedTab() {
-        testPoseDataUnfocusedTabImpl(
-                WebVrTestFramework.getFileUrlForHtmlTestFile("test_pose_data_unfocused_tab"),
-                mWebVrTestFramework);
     }
 
     /**
@@ -88,8 +72,6 @@ public class WebXrVrTabTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_SVR)
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testPoseDataUnfocusedTab_WebXr() {
         testPoseDataUnfocusedTabImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
@@ -116,8 +98,6 @@ public class WebXrVrTabTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testPermissionsInOtherTab() throws InterruptedException {
         testPermissionsInOtherTabImpl(false /* incognito */);
@@ -126,8 +106,6 @@ public class WebXrVrTabTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    @CommandLineFlags
-            .Remove({"enable-blink-features=WebVR"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testPermissionsInOtherTabIncognito() throws InterruptedException {
         testPermissionsInOtherTabImpl(true /* incognito */);

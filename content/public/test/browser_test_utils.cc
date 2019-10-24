@@ -3192,7 +3192,7 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      int process_id,
                      int render_frame_id,
                      int load_flags) {
-  network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
   network::mojom::URLLoaderFactoryParamsPtr url_loader_factory_params =
       network::mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = process_id;
@@ -3200,12 +3200,13 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   url::Origin origin = url::Origin::Create(url);
   url_loader_factory_params->network_isolation_key =
       net::NetworkIsolationKey(origin, origin);
-  network_context->CreateURLLoaderFactory(MakeRequest(&url_loader_factory),
-                                          std::move(url_loader_factory_params));
-  // |url_loader_factory| will receive error notification asynchronously if
-  // |network_context| has already encountered error. However it's still false
+  network_context->CreateURLLoaderFactory(
+      url_loader_factory.BindNewPipeAndPassReceiver(),
+      std::move(url_loader_factory_params));
+  // |url_loader_factory| will receive disconnect notification asynchronously if
+  // |network_context| is already disconnected. However it's still false
   // at this point.
-  EXPECT_FALSE(url_loader_factory.encountered_error());
+  EXPECT_TRUE(url_loader_factory.is_connected());
 
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;

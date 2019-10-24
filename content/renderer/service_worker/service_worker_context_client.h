@@ -22,6 +22,7 @@
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/shared_associated_remote.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
@@ -271,9 +272,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   // Out-of-process NetworkService:
   // Detects disconnection from the network service.
-  // TODO(crbug.com/955171): Replace this with Remote.
-  network::mojom::URLLoaderFactoryPtr
-      network_service_connection_error_handler_holder_;
+  mojo::Remote<network::mojom::URLLoaderFactory>
+      network_service_disconnect_handler_holder_;
 
   std::unique_ptr<blink::WebEmbeddedWorker> worker_;
 

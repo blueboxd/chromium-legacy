@@ -75,10 +75,13 @@ class ASH_EXPORT RootWindowController {
   ~RootWindowController();
 
   // Creates and Initialize the RootWindowController for primary display.
-  static void CreateForPrimaryDisplay(AshWindowTreeHost* host);
+  // Returns a pointer to the newly created controller.
+  static RootWindowController* CreateForPrimaryDisplay(AshWindowTreeHost* host);
 
   // Creates and Initialize the RootWindowController for secondary displays.
-  static void CreateForSecondaryDisplay(AshWindowTreeHost* host);
+  // Returns a pointer to the newly created controller.
+  static RootWindowController* CreateForSecondaryDisplay(
+      AshWindowTreeHost* host);
 
   // Returns a RootWindowController of the window's root window.
   static RootWindowController* ForWindow(const aura::Window* window);
@@ -259,11 +262,6 @@ class ASH_EXPORT RootWindowController {
   // The initial color is determined by the |root_window_type| and whether or
   // not this is the first boot.
   void CreateSystemWallpaper(RootWindowType root_window_type);
-
-  // Resets Shell::GetRootWindowForNewWindows() if appropriate. This is called
-  // during shutdown to make sure GetRootWindowForNewWindows() isn't referencing
-  // this.
-  void ResetRootForNewWindowsIfNecessary();
 
   // Callback for MenuRunner.
   void OnMenuClosed();

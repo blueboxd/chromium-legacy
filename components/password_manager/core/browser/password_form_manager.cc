@@ -127,14 +127,6 @@ uint32_t FindFormsDifferences(const FormData& lhs, const FormData& rhs) {
   return differences_bitmask;
 }
 
-// Since empty or unspecified form's action is automatically set to the page
-// origin, this function checks if a form's action is empty by comparing it to
-// its origin.
-bool HasNonEmptyAction(const FormData& form) {
-  // TODO(crbug.com/1008798): The logic isn't accurate and should be fixed.
-  return form.action != form.url;
-}
-
 bool FormContainsFieldWithName(const FormData& form,
                                const base::string16& element) {
   if (element.empty())
@@ -240,8 +232,8 @@ bool PasswordFormManager::IsEqualToSubmittedForm(
   if (IsHttpAuth())
     return false;
 
-  if (form.action.is_valid() && HasNonEmptyAction(form) &&
-      HasNonEmptyAction(submitted_form_) &&
+  if (form.action.is_valid() && !form.is_action_empty &&
+      !submitted_form_.is_action_empty &&
       submitted_form_.action == form.action) {
     return true;
   }
@@ -361,7 +353,8 @@ void PasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   client_->UpdateFormManagers();
 }
 
-void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
+void PasswordFormManager::OnUpdateUsernameFromPrompt(
+    const base::string16& new_username) {
   DCHECK(parsed_submitted_form_);
   parsed_submitted_form_->username_value = new_username;
   parsed_submitted_form_->username_element.clear();
@@ -389,7 +382,7 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
   CreatePendingCredentials();
 }
 
-void PasswordFormManager::UpdatePasswordValue(
+void PasswordFormManager::OnUpdatePasswordFromPrompt(
     const base::string16& new_password) {
   DCHECK(parsed_submitted_form_);
   parsed_submitted_form_->password_value = new_password;

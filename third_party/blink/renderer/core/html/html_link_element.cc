@@ -69,7 +69,7 @@ void HTMLLinkElement::ParseAttribute(
   if (name == html_names::kRelAttr) {
     rel_attribute_ = LinkRelAttribute(value);
     if (rel_attribute_.IsImport() &&
-        RuntimeEnabledFeatures::HTMLImportsEnabledByRuntimeFlag()) {
+        RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument())) {
       Deprecation::CountDeprecation(&GetDocument(), WebFeature::kHTMLImports);
     }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);

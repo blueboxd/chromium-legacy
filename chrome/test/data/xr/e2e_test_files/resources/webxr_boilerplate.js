@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Add additional setup steps to the object from webvr_e2e.js if it exists.
+// Add additional setup steps to the object from webxr_e2e.js if it exists.
 if (typeof initializationSteps !== 'undefined') {
   initializationSteps['magicWindowStarted'] = false;
 } else {

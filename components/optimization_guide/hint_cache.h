@@ -16,7 +16,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 
 namespace optimization_guide {
-class HintUpdateData;
+class StoreUpdateData;
 
 using HintLoadedCallback = base::OnceCallback<void(const proto::Hint*)>;
 
@@ -42,13 +42,13 @@ class HintCache {
   // pre-existing data and begin in a clean state.
   void Initialize(bool purge_existing_data, base::OnceClosure callback);
 
-  // Returns a HintUpdateData. During component processing, hints from the
-  // component are moved into the HintUpdateData. After component
+  // Returns a StoreUpdateData. During component processing, hints from the
+  // component are moved into the StoreUpdateData. After component
   // processing completes, the component update data is provided to the backing
   // store in UpdateComponentHints() and used to update its component hints. In
   // the case the provided component version is not newer than the store's
   // version, nullptr will be returned by the call.
-  std::unique_ptr<HintUpdateData> MaybeCreateUpdateDataForComponentHints(
+  std::unique_ptr<StoreUpdateData> MaybeCreateUpdateDataForComponentHints(
       const base::Version& version) const;
 
   // Returns an UpdateData created by the store to hold updates for fetched
@@ -59,13 +59,13 @@ class HintCache {
   // created update data will be scheduled to be updated. |expiry_time|
   // specifies when the hints within the created update data will be expired
   // from the store.
-  std::unique_ptr<HintUpdateData> CreateUpdateDataForFetchedHints(
+  std::unique_ptr<StoreUpdateData> CreateUpdateDataForFetchedHints(
       base::Time update_time,
       base::Time expiry_time) const;
 
-  // Updates the store's component data using the provided HintUpdateData
+  // Updates the store's component data using the provided StoreUpdateData
   // and asynchronously runs the provided callback after the update finishes.
-  void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data,
+  void UpdateComponentHints(std::unique_ptr<StoreUpdateData> component_data,
                             base::OnceClosure callback);
 
   // Process |get_hints_response| to be stored in the hint cache store.

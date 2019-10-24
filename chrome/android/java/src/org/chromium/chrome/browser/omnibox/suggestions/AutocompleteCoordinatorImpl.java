@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 import android.content.Context;
 import android.support.v4.view.ViewCompat;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
@@ -30,7 +29,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionViewBinder;
-import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionViewBinder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -135,9 +133,9 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
                 adapter.registerType(
                         OmniboxSuggestionUiType.ENTITY_SUGGESTION,
-                        () -> (EntitySuggestionView) LayoutInflater.from(mListView.getContext())
-                                .inflate(R.layout.omnibox_entity_suggestion, null),
-                        EntitySuggestionViewBinder::bind);
+                        () -> new BaseSuggestionView(mListView.getContext(),
+                                                     R.layout.omnibox_entity_suggestion),
+                        new EntitySuggestionViewBinder());
                 // clang-format on
 
                 mHolder = new SuggestionListViewHolder(container, list);

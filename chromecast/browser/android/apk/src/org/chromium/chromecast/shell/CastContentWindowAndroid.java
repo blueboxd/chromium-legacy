@@ -19,10 +19,10 @@ import org.chromium.content_public.browser.WebContents;
  * <p>
  * See chromecast/browser/cast_content_window_android.* for the native half.
  */
-@JNINamespace("chromecast::shell")
+@JNINamespace("chromecast")
 public class CastContentWindowAndroid implements CastWebContentsComponent.OnComponentClosedHandler,
                                                  CastWebContentsComponent.SurfaceEventHandler {
-    private static final String TAG = "cr_CastContentWindow";
+    private static final String TAG = "CastContentWindow";
     private static final boolean DEBUG = true;
 
     // Note: CastContentWindowAndroid may outlive the native object. The native

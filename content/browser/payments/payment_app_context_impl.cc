@@ -44,14 +44,16 @@ void PaymentAppContextImpl::Shutdown() {
       base::BindOnce(&PaymentAppContextImpl::ShutdownOnCoreThread, this));
 }
 
-void PaymentAppContextImpl::CreatePaymentManager(
+void PaymentAppContextImpl::CreatePaymentManagerForOrigin(
+    const url::Origin& origin,
     mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RunOrPostTaskOnThread(
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-      base::BindOnce(&PaymentAppContextImpl::CreatePaymentManagerOnCoreThread,
-                     this, std::move(receiver)));
+      base::BindOnce(
+          &PaymentAppContextImpl::CreatePaymentManagerForOriginOnCoreThread,
+          this, origin, std::move(receiver)));
 }
 
 void PaymentAppContextImpl::PaymentManagerHadConnectionError(
@@ -81,11 +83,12 @@ void PaymentAppContextImpl::CreatePaymentAppDatabaseOnCoreThread(
       std::make_unique<PaymentAppDatabase>(service_worker_context);
 }
 
-void PaymentAppContextImpl::CreatePaymentManagerOnCoreThread(
+void PaymentAppContextImpl::CreatePaymentManagerForOriginOnCoreThread(
+    const url::Origin& origin,
     mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   auto payment_manager =
-      std::make_unique<PaymentManager>(this, std::move(receiver));
+      std::make_unique<PaymentManager>(this, origin, std::move(receiver));
   payment_managers_[payment_manager.get()] = std::move(payment_manager);
 }
 

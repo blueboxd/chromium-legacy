@@ -5,6 +5,8 @@
 #include "android_webview/browser/network_service/aw_web_resource_response.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser_jni_headers/AwWebResourceResponse_jni.h"

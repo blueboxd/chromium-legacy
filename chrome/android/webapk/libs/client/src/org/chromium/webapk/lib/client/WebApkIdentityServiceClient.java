@@ -45,7 +45,7 @@ public class WebApkIdentityServiceClient {
     public static final int SHELL_APK_VERSION_SUPPORTING_SWITCH_RUNTIME_HOST = 6;
 
     public static final String ACTION_WEBAPK_IDENTITY_SERVICE = "org.webapk.IDENTITY_SERVICE_API";
-    private static final String TAG = "cr_WebApkIdentityService";
+    private static final String TAG = "WebApkIdentityService";
 
     private static WebApkIdentityServiceClient sInstance;
 

@@ -33,7 +33,7 @@ import java.util.Queue;
  */
 @JNINamespace("media")
 class MediaCodecBridge {
-    private static final String TAG = "cr_MediaCodecBridge";
+    private static final String TAG = "MediaCodecBridge";
 
     // After a flush(), dequeueOutputBuffer() can often produce empty presentation timestamps
     // for several frames. As a result, the player may find that the time does not increase

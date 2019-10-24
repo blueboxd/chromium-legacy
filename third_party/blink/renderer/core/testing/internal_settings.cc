@@ -115,13 +115,12 @@ InternalSettings* InternalSettings::From(Page& page) {
   }
   return supplement;
 }
-const char InternalSettings::kSupplementName[] = "InternalSettings";
 
 InternalSettings::~InternalSettings() = default;
 
 InternalSettings::InternalSettings(Page& page)
     : InternalSettingsGenerated(&page),
-      Supplement<Page>(page),
+      InternalSettingsPageSupplementBase(page),
       backup_(&page.GetSettings()) {}
 
 void InternalSettings::ResetToConsistentState() {
@@ -554,14 +553,6 @@ void InternalSettings::setUniversalAccessFromFileURLs(
     ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
   GetSettings()->SetAllowUniversalAccessFromFileURLs(enabled);
-}
-
-void InternalSettings::PrepareForLeakDetection() {
-  // Prepares for leak detection by removing all InternalSetting objects from
-  // Pages.
-  for (Page* page : Page::OrdinaryPages()) {
-    page->RemoveSupplement<InternalSettings>();
-  }
 }
 
 }  // namespace blink

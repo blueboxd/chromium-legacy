@@ -32,8 +32,13 @@ bool PathIsInProgramFiles(const std::wstring& path);
 
 // Returns the install suffix embedded in |exe_path| or an empty string if none
 // is found. |exe_path| is expected be something similar to
-// "...\[kProductName][suffix]\Application".
+// "...\[kProductPathName][suffix]\Application".
 std::wstring GetInstallSuffix(const std::wstring& exe_path);
+
+// Returns the install suffix embedded in |user_data_path| or an empty string if
+// none is found. |user_data_path| is expected be something similar to
+// "...\[kProductPathName][suffix]\User Data".
+std::wstring GetUserDataSuffix(const std::wstring& user_data_path);
 
 // Creates product details for the process at |exe_path|.
 std::unique_ptr<PrimaryInstallDetails> MakeProductDetails(

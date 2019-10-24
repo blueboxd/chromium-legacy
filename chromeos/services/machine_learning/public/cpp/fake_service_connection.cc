@@ -31,9 +31,9 @@ void FakeServiceConnectionImpl::LoadFlatBufferModel(
 }
 
 void FakeServiceConnectionImpl::CreateGraphExecutor(
-    mojom::GraphExecutorRequest request,
+    mojo::PendingReceiver<mojom::GraphExecutor> receiver,
     mojom::Model::CreateGraphExecutorCallback callback) {
-  graph_bindings_.AddBinding(this, std::move(request));
+  graph_receivers_.Add(this, std::move(receiver));
   std::move(callback).Run(mojom::CreateGraphExecutorResult::OK);
 }
 

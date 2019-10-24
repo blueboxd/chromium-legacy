@@ -136,8 +136,6 @@ target(link_target_type, "gles2_sources") {
     "gl_state_restorer_impl.h",
     "gl_utils.cc",
     "gl_utils.h",
-    "gles2_cmd_apply_framebuffer_attachment_cmaa_intel.cc",
-    "gles2_cmd_apply_framebuffer_attachment_cmaa_intel.h",
     "gles2_cmd_clear_framebuffer.cc",
     "gles2_cmd_clear_framebuffer.h",
     "gles2_cmd_copy_tex_image.cc",

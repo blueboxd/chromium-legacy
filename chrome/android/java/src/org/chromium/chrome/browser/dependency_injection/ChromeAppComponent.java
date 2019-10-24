@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.dependency_injection;
 
 import org.chromium.chrome.browser.AppHooksModule;
-import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.ClearDataDialogResultRecorder;
+import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActi
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 
 import javax.inject.Singleton;
 
@@ -31,6 +32,7 @@ public interface ChromeAppComponent {
 
     CustomTabActivityComponent createCustomTabActivityComponent(ChromeActivityCommonsModule module,
             CustomTabActivityModule customTabActivityModule);
+    WebappActivityComponent createWebappActivityComponent(ChromeActivityCommonsModule module);
 
     CustomTabsConnection resolveCustomTabsConnection();
     ChromePreferenceManager resolvePreferenceManager();

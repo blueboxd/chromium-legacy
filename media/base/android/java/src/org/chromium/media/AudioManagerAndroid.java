@@ -43,7 +43,7 @@ import java.util.Map;
 
 @JNINamespace("media")
 class AudioManagerAndroid {
-    private static final String TAG = "cr.media";
+    private static final String TAG = "media";
 
     // Set to true to enable debug logs. Avoid in production builds.
     // NOTE: always check in as false.

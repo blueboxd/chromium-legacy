@@ -32,6 +32,8 @@ cast_source_set("renderer") {
     "cast_media_playback_options.h",
     "cast_url_loader_throttle_provider.cc",
     "cast_url_loader_throttle_provider.h",
+    "js_channel_bindings.cc",
+    "js_channel_bindings.h",
     "native_bindings_helper.cc",
     "native_bindings_helper.h",
     "on_load_script_injector.cc",

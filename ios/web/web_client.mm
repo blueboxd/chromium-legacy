@@ -105,6 +105,8 @@ void WebClient::PrepareErrorPage(WebState* web_state,
                                  NSError* error,
                                  bool is_post,
                                  bool is_off_the_record,
+                                 const base::Optional<net::SSLInfo>& info,
+                                 int64_t navigation_id,
                                  base::OnceCallback<void(NSString*)> callback) {
   DCHECK(error);
   std::move(callback).Run(error.localizedDescription);

@@ -22,7 +22,7 @@ import java.util.Set;
  * This object must only be accessed from the launcher thread.
  */
 class BindingManager implements ComponentCallbacks2 {
-    private static final String TAG = "cr_BindingManager";
+    private static final String TAG = "BindingManager";
 
     // Low reduce ratio of moderate binding.
     private static final float MODERATE_BINDING_LOW_REDUCE_RATIO = 0.25f;

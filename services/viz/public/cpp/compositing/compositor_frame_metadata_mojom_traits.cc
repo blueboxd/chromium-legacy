@@ -40,6 +40,10 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   out->min_page_scale_factor = data.min_page_scale_factor();
   out->top_controls_height = data.top_controls_height();
   out->top_controls_shown_ratio = data.top_controls_shown_ratio();
+#if defined(OS_ANDROID)
+  out->bottom_controls_height = data.bottom_controls_height();
+  out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
+#endif
 
   return data.ReadLatencyInfo(&out->latency_info) &&
          data.ReadReferencedSurfaces(&out->referenced_surfaces) &&

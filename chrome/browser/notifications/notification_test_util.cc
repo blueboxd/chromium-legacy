@@ -126,11 +126,6 @@ bool StubNotificationUIManager::CancelAllBySourceOrigin(
   return true;
 }
 
-bool StubNotificationUIManager::CancelAllByProfile(ProfileID profile_id) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void StubNotificationUIManager::CancelAll() {
   for (const auto& pair : notifications_)
     pair.first.delegate()->Close(false /* by_user */);

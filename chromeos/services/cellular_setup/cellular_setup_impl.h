@@ -10,6 +10,7 @@
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "chromeos/services/cellular_setup/cellular_setup_base.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
 
@@ -27,7 +28,7 @@ class CellularSetupImpl : public CellularSetupBase {
 
  private:
   // mojom::CellularSetup:
-  void StartActivation(mojom::ActivationDelegatePtr delegate,
+  void StartActivation(mojo::PendingRemote<mojom::ActivationDelegate> delegate,
                        StartActivationCallback callback) override;
 
   void OnActivationAttemptFinished(size_t request_id);

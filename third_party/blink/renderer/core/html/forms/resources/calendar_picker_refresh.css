@@ -184,6 +184,19 @@ body {
   color: #101010;
 }
 
+.datetimelocal-picker .calendar-picker {
+  border: 0;
+  border-right: 1px solid #CECECE;
+}
+
+.datetimelocal-picker .time-picker {
+  border: 0;
+  height: 254px;
+  position: absolute;
+  right: 3px;
+  top: 12px;
+}
+
 /* These forced colors mode styles override the default styling for elements
  * when forced colors mode is enabled.
  */

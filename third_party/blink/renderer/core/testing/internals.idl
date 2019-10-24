@@ -51,7 +51,7 @@
     ShadowRoot shadowRoot(Element host);
 
     void setBrowserControlsState(float top_height, float bottom_height, boolean shrinksLayout);
-    void setBrowserControlsShownRatio(float ratio);
+    void setBrowserControlsShownRatio(float top_ratio, float bottom_ratio);
 
     Node effectiveRootScroller(Document document);
 

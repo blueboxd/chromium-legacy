@@ -25,5 +25,8 @@ specific_include_rules = {
     "media_capabilities_fuzzer.cc": [
         "+testing/libfuzzer/proto/lpm_interface.h",
         "+third_party/protobuf/src/google/protobuf/repeated_field.h",
+    ],
+    "canvas_fuzzer.cc": [
+        "+base/test/bind_test_util.h",
     ]
 }

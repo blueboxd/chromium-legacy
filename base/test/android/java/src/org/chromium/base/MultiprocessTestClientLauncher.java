@@ -36,7 +36,7 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @JNINamespace("base::android")
 public final class MultiprocessTestClientLauncher {
-    private static final String TAG = "cr_MProcTCLauncher";
+    private static final String TAG = "MProcTCLauncher";
 
     private static final int CONNECTION_TIMEOUT_MS = 10 * 1000;
 

@@ -12,11 +12,11 @@ FakeCarrierPortalHandler::FakeCarrierPortalHandler() = default;
 
 FakeCarrierPortalHandler::~FakeCarrierPortalHandler() = default;
 
-mojom::CarrierPortalHandlerPtr
-FakeCarrierPortalHandler::GenerateInterfacePtr() {
-  mojom::CarrierPortalHandlerPtr interface_ptr;
-  bindings_.AddBinding(this, mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::CarrierPortalHandler>
+FakeCarrierPortalHandler::GenerateRemote() {
+  mojo::PendingRemote<mojom::CarrierPortalHandler> remote;
+  receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 void FakeCarrierPortalHandler::OnCarrierPortalStatusChange(

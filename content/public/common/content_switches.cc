@@ -852,8 +852,7 @@ const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
 // Flag used by WebUI test runners to wait for debugger to be attached.
 const char kWaitForDebuggerWebUI[] = "wait-for-debugger-webui";
 
-// Set the antialiasing method used for webgl. (none, explicit, implicit, or
-// screenspace)
+// Set the antialiasing method used for webgl. (none, explicit, implicit)
 const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";
 
 // Set a default sample count for webgl if msaa is enabled.

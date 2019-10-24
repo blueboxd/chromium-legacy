@@ -100,6 +100,7 @@ modules_idl_files =
           "clipboard/clipboard_item.idl",
           "compression/compression_stream.idl",
           "compression/decompression_stream.idl",
+          "contacts_picker/contact_address.idl",
           "contacts_picker/contacts_manager.idl",
           "content_index/content_index.idl",
           "content_index/content_index_event.idl",

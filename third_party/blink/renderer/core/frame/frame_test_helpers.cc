@@ -730,8 +730,9 @@ void TestWebWidgetClient::DidMeaningfulLayout(
   }
 }
 
-void TestWebWidgetClient::SetBrowserControlsShownRatio(float ratio) {
-  layer_tree_host()->SetBrowserControlsShownRatio(ratio);
+void TestWebWidgetClient::SetBrowserControlsShownRatio(float top_ratio,
+                                                       float bottom_ratio) {
+  layer_tree_host()->SetBrowserControlsShownRatio(top_ratio, bottom_ratio);
 }
 
 void TestWebWidgetClient::SetBrowserControlsHeight(float top_height,

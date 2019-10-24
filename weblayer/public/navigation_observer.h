@@ -12,10 +12,14 @@ class Navigation;
 // now this only notifies for the main frame.
 //
 // The lifecycle of a navigation:
-// 1) NavigationStarted
-// 2) 0 or more NavigationRedirected
-// 3) 0 or 1 NavigationCommitted
-// 4) NavigationCompleted or NavigationFailed
+// 1) A navigation is initiated, such as by NavigationController::Navigate()
+//    or within the page
+// 2) LoadStateChanged() first invoked
+// 3) NavigationStarted
+// 4) 0 or more NavigationRedirected
+// 5) 0 or 1 NavigationCommitted
+// 6) NavigationCompleted or NavigationFailed
+// 7) Main frame completes loading, LoadStateChanged() last invoked
 class NavigationObserver {
  public:
   virtual ~NavigationObserver() {}
@@ -77,6 +81,16 @@ class NavigationObserver {
   // Note that |navigation| will be destroyed at the end of this call, so do not
   // keep a reference to it afterward.
   virtual void NavigationFailed(Navigation* navigation) {}
+
+  // Indicates that loading has started (|is_loading| is true) or is done
+  // (|is_loading| is false). |to_different_document| will be true unless the
+  // load is a fragment navigation, or triggered by
+  // history.pushState/replaceState.
+  virtual void LoadStateChanged(bool is_loading, bool to_different_document) {}
+
+  // Indicates that the load progress of the page has changed. |progress|
+  // ranges from 0.0 to 1.0.
+  virtual void LoadProgressChanged(double progress) {}
 
   // This is fired after each navigation has completed to indicate that the
   // first paint after a non-empty layout has finished.

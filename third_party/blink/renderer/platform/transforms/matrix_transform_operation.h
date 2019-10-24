@@ -77,6 +77,9 @@ class PLATFORM_EXPORT MatrixTransformOperation final
     transform.Multiply(matrix);
   }
 
+  scoped_refptr<TransformOperation> Accumulate(
+      const TransformOperation&) override;
+
   scoped_refptr<TransformOperation> Blend(
       const TransformOperation* from,
       double progress,

@@ -354,6 +354,8 @@ class FrameRemoteTester : public blink::mojom::LocalFrame {
       uint32_t max_length,
       GetTextSurroundingSelectionCallback callback) override {}
 
+  void NotifyUserActivation() override {}
+
   // Sends an empty message and waits for it to be received. Returns true if any
   // other messages were received.
   bool FlushForTesting(RenderFrameHost* render_frame_host) {

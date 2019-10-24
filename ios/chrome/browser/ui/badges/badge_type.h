@@ -21,6 +21,8 @@ enum class BadgeType {
   kBadgeTypeOverflow = 4,
   // Badge type for Save Credit Card Infobar.
   kBadgeTypeSaveCard = 5,
+  // Badge type for the Translate Infobar.
+  kBadgeTypeTranslate = 6,
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_BADGES_BADGE_TYPE_H_

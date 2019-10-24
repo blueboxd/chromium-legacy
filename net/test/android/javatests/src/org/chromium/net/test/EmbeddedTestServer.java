@@ -39,7 +39,7 @@ import javax.annotation.concurrent.GuardedBy;
  * Note that this runs net::test_server::EmbeddedTestServer in a service in a separate APK.
  */
 public class EmbeddedTestServer {
-    private static final String TAG = "cr_TestServer";
+    private static final String TAG = "TestServer";
 
     private static final String EMBEDDED_TEST_SERVER_SERVICE =
             "org.chromium.net.test.EMBEDDED_TEST_SERVER_SERVICE";

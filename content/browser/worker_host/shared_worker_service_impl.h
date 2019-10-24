@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/worker_host/shared_worker_host.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/shared_worker_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -153,6 +154,13 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override_;
+
+  // Keeps a reference count of each worker-client pair so as to not send
+  // duplicate OnClientAdded() notifications if the same frame connects multiple
+  // times to the same shared worker. Note that this is a situation unique to
+  // shared worker and cannot happen with dedicated workers and service workers.
+  base::flat_map<std::pair<SharedWorkerInstance, GlobalFrameRoutingId>, int>
+      shared_worker_client_counts_;
 
   base::ObserverList<Observer> observers_;
 

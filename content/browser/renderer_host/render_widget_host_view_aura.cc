@@ -138,6 +138,22 @@ using blink::WebTouchEvent;
 
 namespace content {
 
+namespace {
+
+mojom::FrameInputHandler* GetFrameInputHandlerForFocusedFrame(
+    RenderWidgetHostImpl* host) {
+  if (!host || !host->delegate()) {
+    return nullptr;
+  }
+  RenderFrameHostImpl* render_frame_host =
+      host->delegate()->GetFocusedFrameFromFocusedDelegate();
+  if (!render_frame_host)
+    return nullptr;
+  return render_frame_host->GetFrameInputHandler();
+}
+
+}  // namespace
+
 #if defined(OS_WIN)
 
 // This class implements the ui::InputMethodKeyboardControllerObserver interface
@@ -1485,11 +1501,7 @@ bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
 
 void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
     size_t before, size_t after) {
-  RenderFrameHostImpl* render_frame_host =
-      host()->delegate()->GetFocusedFrameFromFocusedDelegate();
-  if (!render_frame_host)
-    return;
-  auto* input_handler = render_frame_host->GetFrameInputHandler();
+  auto* input_handler = GetFrameInputHandlerForFocusedFrame(host());
   if (!input_handler)
     return;
   input_handler->ExtendSelectionAndDelete(before, after);
@@ -1541,10 +1553,7 @@ bool RenderWidgetHostViewAura::ShouldDoLearning() {
 bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  RenderFrameHostImpl* frame = GetFocusedFrame();
-  if (!frame)
-    return false;
-  auto* input_handler = frame->GetFrameInputHandler();
+  auto* input_handler = GetFrameInputHandlerForFocusedFrame(host());
   if (!input_handler)
     return false;
   input_handler->SetCompositionFromExistingText(range.start(), range.end(),

@@ -40,7 +40,7 @@ import java.util.List;
 @JNINamespace("content")
 @VisibleForTesting
 public class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.Observer {
-    private static final String TAG = "cr_BgSyncNetObserver";
+    private static final String TAG = "BgSyncNetObserver";
     private static boolean sSetConnectionTypeForTesting;
     private NetworkChangeNotifierAutoDetect mNotifier;
 

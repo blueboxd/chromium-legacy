@@ -70,10 +70,6 @@ class PrefServiceSyncable : public PrefService {
   // priority preferences.
   bool IsPrioritySyncing();
 
-  // Returns true if the pref under the given name is pulled down from sync.
-  // Note this does not refer to SYNCABLE_PREF.
-  bool IsPrefSynced(const std::string& name) const;
-
   void AddObserver(PrefServiceSyncableObserver* observer);
   void RemoveObserver(PrefServiceSyncableObserver* observer);
 

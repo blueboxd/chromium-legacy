@@ -65,8 +65,6 @@ class GpuBrowserCompositorOutputSurface
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   unsigned UpdateGpuFence() override;
-  void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
-  gfx::OverlayTransform GetDisplayTransform() override;
 
   void SetDrawRectangle(const gfx::Rect& rect) override;
 
@@ -89,7 +87,6 @@ class GpuBrowserCompositorOutputSurface
 
  private:
   const gpu::SurfaceHandle surface_handle_;
-  gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
   base::WeakPtrFactory<GpuBrowserCompositorOutputSurface> weak_ptr_factory_{
       this};
 

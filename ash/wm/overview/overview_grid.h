@@ -145,7 +145,8 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                            IndicatorState indicator_state);
 
   // Updates the desks bar widget bounds if necessary.
-  void MaybeUpdateDesksWidgetBounds();
+  // Returns true if the desks widget's bounds have been updated.
+  bool MaybeUpdateDesksWidgetBounds();
 
   // Updates the appearance of the drop target to visually indicate when the
   // dragged window is being dragged over it. For dragging from the top, pass
@@ -303,6 +304,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // splitview or entering splitview.
   int CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item, int height);
 
+  // Called when a desk is added or removed to update the bounds of the desks
+  // widget as it may need to switch between default and compact layouts.
+  void OnDesksChanged();
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
@@ -401,6 +406,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Adds the |dragged_window| into overview on drag ended. Might need to update
   // the window's bounds if it has been resized.
   void AddDraggedWindowIntoOverviewOnDragEnd(aura::Window* dragged_window);
+
+  // Returns the the bounds of the desks widget in root window.
+  gfx::Rect GetDesksWidgetBounds() const;
 
   // Root window the grid is in.
   aura::Window* root_window_;

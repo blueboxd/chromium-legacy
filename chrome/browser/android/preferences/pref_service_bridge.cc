@@ -158,6 +158,14 @@ static void JNI_PrefServiceBridge_SetInteger(JNIEnv* env,
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index), j_value);
 }
 
+static jboolean JNI_PrefServiceBridge_IsManagedPreference(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const jint j_pref_index) {
+  return GetPrefService()->IsManagedPreference(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index));
+}
+
 static jboolean JNI_PrefServiceBridge_IsContentSettingManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -402,12 +410,6 @@ static jboolean JNI_PrefServiceBridge_GetPrintingEnabled(
   return GetPrefService()->GetBoolean(prefs::kPrintingEnabled);
 }
 
-static jboolean JNI_PrefServiceBridge_GetPrintingManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(prefs::kPrintingEnabled);
-}
-
 static jboolean JNI_PrefServiceBridge_GetTranslateEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -418,18 +420,6 @@ static jboolean JNI_PrefServiceBridge_GetTranslateManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return GetPrefService()->IsManagedPreference(prefs::kOfferTranslateEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetSearchSuggestEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kSearchSuggestEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetSearchSuggestManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(prefs::kSearchSuggestEnabled);
 }
 
 static jboolean JNI_PrefServiceBridge_GetSafeBrowsingExtendedReportingEnabled(
@@ -882,13 +872,6 @@ static void JNI_PrefServiceBridge_SetDoNotTrackEnabled(
   GetPrefService()->SetBoolean(prefs::kEnableDoNotTrack, allow);
 }
 
-static ScopedJavaLocalRef<jstring> JNI_PrefServiceBridge_GetSyncLastAccountId(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kGoogleServicesLastAccountId));
-}
-
 static ScopedJavaLocalRef<jstring> JNI_PrefServiceBridge_GetSyncLastAccountName(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -967,13 +950,6 @@ static jboolean JNI_PrefServiceBridge_GetMicManagedByCustodian(
     const JavaParamRef<jobject>& obj) {
   return IsContentSettingManagedByCustodian(
              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-}
-
-static void JNI_PrefServiceBridge_SetSearchSuggestEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kSearchSuggestEnabled, enabled);
 }
 
 static ScopedJavaLocalRef<jstring>
@@ -1068,28 +1044,11 @@ static ScopedJavaLocalRef<jobject> JNI_PrefServiceBridge_GetAboutVersionStrings(
 }
 
 static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetSupervisedUserCustodianName(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kSupervisedUserCustodianName));
-}
-
-static ScopedJavaLocalRef<jstring>
 JNI_PrefServiceBridge_GetSupervisedUserCustodianEmail(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return ConvertUTF8ToJavaString(
       env, GetPrefService()->GetString(prefs::kSupervisedUserCustodianEmail));
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetSupervisedUserCustodianProfileImageURL(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(
-               prefs::kSupervisedUserCustodianProfileImageURL));
 }
 
 static ScopedJavaLocalRef<jstring>
@@ -1108,15 +1067,6 @@ JNI_PrefServiceBridge_GetSupervisedUserSecondCustodianEmail(
   return ConvertUTF8ToJavaString(
       env,
       GetPrefService()->GetString(prefs::kSupervisedUserSecondCustodianEmail));
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetSupervisedUserSecondCustodianProfileImageURL(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(
-               prefs::kSupervisedUserSecondCustodianProfileImageURL));
 }
 
 // static

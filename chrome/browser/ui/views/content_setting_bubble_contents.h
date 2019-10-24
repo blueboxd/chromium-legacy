@@ -67,7 +67,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
   // views::BubbleDialogDelegateView:
   void Init() override;
-  std::unique_ptr<View> CreateExtraView() override;
   bool Accept() override;
   bool Close() override;
   int GetDialogButtons() const override;
@@ -78,6 +77,10 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
   // Applies coloring to the learn more button.
   void StyleLearnMoreButton();
+
+  // Create the extra view for this dialog, which contains any subset of: a
+  // "learn more" button and a "manage" button.
+  std::unique_ptr<View> CreateHelpAndManageView();
 
   // content::WebContentsObserver:
   void DidFinishNavigation(

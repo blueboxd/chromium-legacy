@@ -12,10 +12,8 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace chromecast {
-namespace shell {
-class CastContentWindowAura;
-}  // namespace shell
 
+class CastContentWindowAura;
 class CastExtensionHost;
 class CastWindowManager;
 
@@ -23,10 +21,9 @@ class CastWindowManager;
 class ExtensionPage : public content::WebContentsObserver {
  public:
   ExtensionPage(const CastWebContents::InitParams& init_params,
-                const shell::CastContentWindow::CreateParams& window_params,
+                const CastContentWindow::CreateParams& window_params,
                 std::unique_ptr<CastExtensionHost> extension_host,
                 CastWindowManager* window_manager);
-
   ~ExtensionPage() override;
 
   content::WebContents* web_contents() const;
@@ -39,9 +36,8 @@ class ExtensionPage : public content::WebContentsObserver {
   // WebContentsObserver implementation:
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
-  const std::unique_ptr<shell::CastContentWindowAura> window_;
+  const std::unique_ptr<CastContentWindowAura> window_;
   const std::unique_ptr<CastExtensionHost> extension_host_;
-  CastWindowManager* window_manager_;
   CastWebContentsImpl cast_web_contents_;
   scoped_refptr<content::SiteInstance> site_instance_;
 

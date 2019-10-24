@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -150,13 +151,14 @@ class URLLoaderInterceptor {
   void CreateURLLoaderFactoryForSubresources(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
-      network::mojom::URLLoaderFactoryPtrInfo original_factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory);
 
   // Callback on UI thread whenever a
   // StoragePartition::GetURLLoaderFactoryForBrowserProcess is called on an
   // object that doesn't have a test factory set up.
-  network::mojom::URLLoaderFactoryPtr GetURLLoaderFactoryForBrowserProcess(
-      network::mojom::URLLoaderFactoryPtr original_factory);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+  GetURLLoaderFactoryForBrowserProcess(
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory);
 
   // Callback on IO thread whenever a NavigationURLLoaderImpl is loading a frame
   // request through ResourceDispatcherHost (i.e. when the network service is

@@ -19,9 +19,7 @@ NativeFileSystemDirectoryIterator::NativeFileSystemDirectoryIterator(
     NativeFileSystemDirectoryHandle* directory,
     ExecutionContext* execution_context)
     : ContextLifecycleObserver(execution_context), directory_(directory) {
-  directory_->MojoHandle()->GetEntries(
-      WTF::Bind(&NativeFileSystemDirectoryIterator::OnGotEntries,
-                WrapWeakPersistent(this)));
+  directory_->MojoHandle()->GetEntries(receiver_.BindNewPipeAndPassRemote());
 }
 
 ScriptPromise NativeFileSystemDirectoryIterator::next(
@@ -60,9 +58,10 @@ void NativeFileSystemDirectoryIterator::Trace(Visitor* visitor) {
   visitor->Trace(directory_);
 }
 
-void NativeFileSystemDirectoryIterator::OnGotEntries(
+void NativeFileSystemDirectoryIterator::DidReadDirectory(
     mojom::blink::NativeFileSystemErrorPtr result,
-    Vector<mojom::blink::NativeFileSystemEntryPtr> entries) {
+    Vector<mojom::blink::NativeFileSystemEntryPtr> entries,
+    bool has_more_entries) {
   if (!GetExecutionContext())
     return;
   if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
@@ -77,13 +76,17 @@ void NativeFileSystemDirectoryIterator::OnGotEntries(
     entries_.push_back(NativeFileSystemHandle::CreateFromMojoEntry(
         std::move(e), GetExecutionContext()));
   }
-  waiting_for_more_entries_ = false;
+  waiting_for_more_entries_ = has_more_entries;
   if (pending_next_) {
     ScriptState::Scope scope(pending_next_->GetScriptState());
     pending_next_->Resolve(
         next(pending_next_->GetScriptState()).GetScriptValue());
     pending_next_ = nullptr;
   }
+}
+
+void NativeFileSystemDirectoryIterator::Dispose() {
+  receiver_.reset();
 }
 
 }  // namespace blink

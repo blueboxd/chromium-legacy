@@ -43,12 +43,11 @@ CastServiceSimple::CastServiceSimple(content::BrowserContext* browser_context,
                                      PrefService* pref_service,
                                      CastWindowManager* window_manager)
     : CastService(browser_context, pref_service),
-      window_manager_(window_manager),
       web_view_factory_(std::make_unique<CastWebViewFactory>(browser_context)),
       web_contents_manager_(
           std::make_unique<CastWebContentsManager>(browser_context,
-                                                   web_view_factory_.get())) {
-  DCHECK(window_manager_);
+                                                   web_view_factory_.get(),
+                                                   window_manager)) {
   shell::CastBrowserProcess::GetInstance()->SetWebViewFactory(
       web_view_factory_.get());
 }
@@ -79,8 +78,8 @@ void CastServiceSimple::StartInternal() {
   cast_web_view_->LoadUrl(startup_url_);
   cast_web_view_->GrantScreenAccess();
   cast_web_view_->InitializeWindow(
-      window_manager_, CastWindowManager::APP,
-      chromecast::shell::VisibilityPriority::STICKY_ACTIVITY);
+      ::chromecast::mojom::ZOrder::APP,
+      chromecast::VisibilityPriority::STICKY_ACTIVITY);
 }
 
 void CastServiceSimple::StopInternal() {

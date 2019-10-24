@@ -5006,7 +5006,7 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
         settings, std::move(layer_tree_frame_sink));
     if (init) {
       host_impl_->active_tree()->SetTopControlsHeight(top_controls_height_);
-      host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f);
+      host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
       host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     }
     return init;
@@ -5029,7 +5029,7 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
       const gfx::Size& scroll_layer_size) {
     tree_impl->set_browser_controls_shrink_blink_size(true);
     tree_impl->SetTopControlsHeight(top_controls_height_);
-    tree_impl->SetCurrentBrowserControlsShownRatio(1.f);
+    tree_impl->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
     tree_impl->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->DidChangeBrowserControlsPosition();
 
@@ -5050,7 +5050,7 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
     auto* tree = host_impl_->active_tree();                                  \
     auto* property_trees = tree->property_trees();                           \
     EXPECT_EQ(expected_browser_controls_shown_ratio,                         \
-              tree->CurrentBrowserControlsShownRatio());                     \
+              tree->CurrentTopControlsShownRatio());                         \
     EXPECT_EQ(                                                               \
         tree->top_controls_height() * expected_browser_controls_shown_ratio, \
         host_impl_->browser_controls_manager()->ContentTopOffset());         \
@@ -5289,7 +5289,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
   // The entire scroll delta should have been used to hide the browser controls.
   // The viewport layers should be resized back to their full sizes.
-  EXPECT_EQ(0.f, host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+  EXPECT_EQ(0.f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
   EXPECT_EQ(0.f, inner_scroll->CurrentScrollOffset().y());
   EXPECT_EQ(100, inner_scroll->bounds().height());
   EXPECT_EQ(100, outer_scroll->bounds().height());
@@ -5317,7 +5317,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   // The entire scroll delta should have been used to show the browser controls.
   // The outer viewport should be resized to accomodate and scrolled to the
   // bottom of the document to keep the viewport in place.
-  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
   EXPECT_EQ(50, inner_scroll->bounds().height());
   EXPECT_EQ(100, outer_scroll->bounds().height());
   EXPECT_EQ(25.f, outer_scroll->CurrentScrollOffset().y());
@@ -5410,17 +5410,15 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, BrowserControlsPushUnsentRatio) {
   LayerImpl* outer_scroll = OuterViewportScrollLayer();
   outer_scroll->SetDrawsContent(true);
 
-  host_impl_->active_tree()->PushBrowserControlsFromMainThread(1);
-  ASSERT_EQ(1.0f,
-            host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+  host_impl_->active_tree()->PushBrowserControlsFromMainThread(1, 1);
+  ASSERT_EQ(1.0f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
 
-  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.5f);
-  ASSERT_EQ(0.5f,
-            host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.5f, 0.5f);
+  ASSERT_EQ(0.5f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
 
-  host_impl_->active_tree()->PushBrowserControlsFromMainThread(0);
+  host_impl_->active_tree()->PushBrowserControlsFromMainThread(0, 0);
 
-  ASSERT_EQ(0, host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+  ASSERT_EQ(0, host_impl_->active_tree()->CurrentTopControlsShownRatio());
 }
 
 // Test that if a scrollable sublayer doesn't consume the scroll,
@@ -5434,7 +5432,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   DrawFrame();
 
   // Show browser controls
-  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
 
   LayerImpl* outer_viewport_scroll_layer = OuterViewportScrollLayer();
   LayerImpl* child = AddLayer();
@@ -5478,7 +5476,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
       layer_size_, layer_size_, layer_size_);
   DrawFrame();
 
-  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f);
+  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f, 0.f);
   host_impl_->active_tree()->top_controls_shown_ratio()->PushMainToPending(
       30.f / top_controls_height_);
   host_impl_->active_tree()->top_controls_shown_ratio()->PushPendingToActive();
@@ -5487,7 +5485,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   EXPECT_FLOAT_EQ(-20.f,
                   host_impl_->browser_controls_manager()->ControlsTopOffset());
 
-  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f);
+  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f, 0.f);
   EXPECT_FLOAT_EQ(0.f,
                   host_impl_->browser_controls_manager()->ContentTopOffset());
   EXPECT_FLOAT_EQ(-50.f,
@@ -5511,19 +5509,19 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
   // Changing SetCurrentBrowserControlsShownRatio is one way to cause the
   // pending tree to update it's viewport.
-  host_impl_->SetCurrentBrowserControlsShownRatio(0.f);
+  host_impl_->SetCurrentBrowserControlsShownRatio(0.f, 0.f);
   EXPECT_FLOAT_EQ(top_controls_height_,
                   host_impl_->pending_tree()
                       ->property_trees()
                       ->inner_viewport_container_bounds_delta()
                       .y());
-  host_impl_->SetCurrentBrowserControlsShownRatio(0.5f);
+  host_impl_->SetCurrentBrowserControlsShownRatio(0.5f, 0.5f);
   EXPECT_FLOAT_EQ(0.5f * top_controls_height_,
                   host_impl_->pending_tree()
                       ->property_trees()
                       ->inner_viewport_container_bounds_delta()
                       .y());
-  host_impl_->SetCurrentBrowserControlsShownRatio(1.f);
+  host_impl_->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
   EXPECT_FLOAT_EQ(0.f, host_impl_->pending_tree()
                            ->property_trees()
                            ->inner_viewport_container_bounds_delta()
@@ -5531,13 +5529,13 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
   // Pushing changes from the main thread is the second way. These values are
   // added to the 1.f set above.
-  host_impl_->pending_tree()->PushBrowserControlsFromMainThread(-0.5f);
+  host_impl_->pending_tree()->PushBrowserControlsFromMainThread(-0.5f, -0.5f);
   EXPECT_FLOAT_EQ(0.5f * top_controls_height_,
                   host_impl_->pending_tree()
                       ->property_trees()
                       ->inner_viewport_container_bounds_delta()
                       .y());
-  host_impl_->pending_tree()->PushBrowserControlsFromMainThread(-1.f);
+  host_impl_->pending_tree()->PushBrowserControlsFromMainThread(-1.f, -1.f);
   EXPECT_FLOAT_EQ(top_controls_height_,
                   host_impl_->pending_tree()
                       ->property_trees()
@@ -5557,13 +5555,13 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, ApplyDeltaOnTreeActivation) {
       20.f / top_controls_height_);
   host_impl_->active_tree()->top_controls_shown_ratio()->PushPendingToActive();
   host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(
-      15.f / top_controls_height_);
+      15.f / top_controls_height_, 15.f / top_controls_height_);
   host_impl_->active_tree()
       ->top_controls_shown_ratio()
       ->PullDeltaForMainThread();
-  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f);
+  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f, 0.f);
   host_impl_->sync_tree()->PushBrowserControlsFromMainThread(
-      15.f / top_controls_height_);
+      15.f / top_controls_height_, 15.f / top_controls_height_);
 
   host_impl_->DidChangeBrowserControlsPosition();
   auto* property_trees = host_impl_->active_tree()->property_trees();
@@ -5595,12 +5593,12 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
       layer_size_, layer_size_, layer_size_);
   DrawFrame();
 
-  host_impl_->sync_tree()->PushBrowserControlsFromMainThread(1.f);
+  host_impl_->sync_tree()->PushBrowserControlsFromMainThread(1.f, 1.f);
   host_impl_->sync_tree()->set_browser_controls_shrink_blink_size(true);
 
   host_impl_->active_tree()->top_controls_shown_ratio()->PushMainToPending(1.f);
   host_impl_->active_tree()->top_controls_shown_ratio()->PushPendingToActive();
-  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f);
+  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(0.f, 0.f);
 
   host_impl_->DidChangeBrowserControlsPosition();
   auto* property_trees = host_impl_->active_tree()->property_trees();
@@ -5618,7 +5616,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   EXPECT_EQ(gfx::Vector2dF(0, 50),
             property_trees->inner_viewport_container_bounds_delta());
 
-  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f);
+  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
   host_impl_->DidChangeBrowserControlsPosition();
 
   EXPECT_EQ(1.f,
@@ -5638,7 +5636,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
       gfx::Size(100, 100), gfx::Size(200, 200), gfx::Size(200, 400));
   DrawFrame();
 
-  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
 
   LayerImpl* outer_scroll = OuterViewportScrollLayer();
   LayerImpl* inner_scroll = InnerViewportScrollLayer();
@@ -5661,7 +5659,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
 
   // scrolling down at the max extents no longer hides the browser controls
-  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
 
   // forcefully hide the browser controls by 25px
   host_impl_->browser_controls_manager()->ScrollBy(scroll_delta);
@@ -5882,7 +5880,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
     // Start off with the browser controls hidden on both main and impl.
     host_impl_->active_tree()->set_browser_controls_shrink_blink_size(false);
-    host_impl_->active_tree()->PushBrowserControlsFromMainThread(0);
+    host_impl_->active_tree()->PushBrowserControlsFromMainThread(0, 0);
 
     CreatePendingTree();
     SetupBrowserControlsAndScrollLayerWithVirtualViewport(
@@ -7613,7 +7611,7 @@ TEST_F(LayerTreeHostImplTest, ScrollFromOuterViewportSibling) {
 
   SetupViewportLayersNoScrolls(viewport_size);
   host_impl_->active_tree()->SetTopControlsHeight(10);
-  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f);
+  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
 
   LayerImpl* outer_scroll_layer = OuterViewportScrollLayer();
   LayerImpl* inner_scroll_layer = InnerViewportScrollLayer();
@@ -7639,8 +7637,7 @@ TEST_F(LayerTreeHostImplTest, ScrollFromOuterViewportSibling) {
         UpdateState(gfx::Point(0, 0), gfx::Vector2dF(1000.f, 1000.f)).get());
     host_impl_->ScrollEnd(EndState().get());
 
-    EXPECT_EQ(1.f,
-              host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+    EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
     EXPECT_VECTOR_EQ(gfx::Vector2dF(300.f, 300.f),
                      scroll_layer->CurrentScrollOffset());
     EXPECT_VECTOR_EQ(gfx::Vector2dF(),
@@ -7657,8 +7654,7 @@ TEST_F(LayerTreeHostImplTest, ScrollFromOuterViewportSibling) {
                             InputHandler::TOUCHSCREEN);
     gfx::Vector2d scroll_delta(0, 10);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
-    EXPECT_EQ(0.f,
-              host_impl_->active_tree()->CurrentBrowserControlsShownRatio());
+    EXPECT_EQ(0.f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
     EXPECT_VECTOR_EQ(gfx::Vector2dF(),
                      inner_scroll_layer->CurrentScrollOffset());
 
@@ -9735,7 +9731,7 @@ class LayerTreeHostImplWithBrowserControlsTest : public LayerTreeHostImplTest {
     settings.commit_to_active_tree = false;
     CreateHostImpl(settings, CreateLayerTreeFrameSink());
     host_impl_->active_tree()->SetTopControlsHeight(top_controls_height_);
-    host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f);
+    host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
   }
 
  protected:
@@ -10185,7 +10181,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   layer_tree_impl->SetViewportPropertyIds(viewport_property_ids);
   DrawFrame();
 
-  ASSERT_EQ(1.f, layer_tree_impl->CurrentBrowserControlsShownRatio());
+  ASSERT_EQ(1.f, layer_tree_impl->CurrentTopControlsShownRatio());
 
   // Scrolling should scroll the child content and the browser controls. The
   // original outer viewport should get no scroll.
@@ -10199,7 +10195,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
     EXPECT_VECTOR_EQ(gfx::Vector2dF(), outer_scroll->CurrentScrollOffset());
     EXPECT_VECTOR_EQ(gfx::Vector2dF(100.f, 50.f),
                      scroll_layer->CurrentScrollOffset());
-    EXPECT_EQ(0.f, layer_tree_impl->CurrentBrowserControlsShownRatio());
+    EXPECT_EQ(0.f, layer_tree_impl->CurrentTopControlsShownRatio());
   }
 }
 

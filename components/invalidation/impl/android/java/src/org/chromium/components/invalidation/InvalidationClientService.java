@@ -69,7 +69,7 @@ public class InvalidationClientService extends AndroidListener {
     @VisibleForTesting
     static final int CLIENT_TYPE = ClientType.CHROME_SYNC_ANDROID;
 
-    private static final String TAG = "cr_invalidation";
+    private static final String TAG = "invalidation";
     private static final String CLIENT_SERVICE_KEY = "ipc.invalidation.ticl.listener_service_class";
 
     protected static boolean sShouldCreateService = true;

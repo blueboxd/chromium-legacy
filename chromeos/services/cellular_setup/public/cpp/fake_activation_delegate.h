@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace chromeos {
 
@@ -21,8 +22,8 @@ class FakeActivationDelegate : public mojom::ActivationDelegate {
   FakeActivationDelegate();
   ~FakeActivationDelegate() override;
 
-  mojom::ActivationDelegatePtr GenerateInterfacePtr();
-  void DisconnectBindings();
+  mojo::PendingRemote<mojom::ActivationDelegate> GenerateRemote();
+  void DisconnectReceivers();
 
   const std::vector<mojom::CellularMetadataPtr>& cellular_metadata_list()
       const {
@@ -42,7 +43,7 @@ class FakeActivationDelegate : public mojom::ActivationDelegate {
   std::vector<mojom::CellularMetadataPtr> cellular_metadata_list_;
   std::vector<mojom::ActivationResult> activation_results_;
 
-  mojo::BindingSet<mojom::ActivationDelegate> bindings_;
+  mojo::ReceiverSet<mojom::ActivationDelegate> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeActivationDelegate);
 };

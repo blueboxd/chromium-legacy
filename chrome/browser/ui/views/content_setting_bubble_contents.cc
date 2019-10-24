@@ -414,6 +414,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text);
+  DialogDelegate::SetExtraView(CreateHelpAndManageView());
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
@@ -581,7 +582,30 @@ void ContentSettingBubbleContents::Init() {
   content_setting_bubble_model_->set_owner(this);
 }
 
-std::unique_ptr<views::View> ContentSettingBubbleContents::CreateExtraView() {
+bool ContentSettingBubbleContents::Accept() {
+  content_setting_bubble_model_->OnDoneButtonClicked();
+
+  return true;
+}
+
+bool ContentSettingBubbleContents::Close() {
+  return true;
+}
+
+int ContentSettingBubbleContents::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK;
+}
+
+void ContentSettingBubbleContents::StyleLearnMoreButton() {
+  DCHECK(learn_more_button_);
+  SkColor text_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor);
+  views::SetImageFromVectorIcon(learn_more_button_,
+                                vector_icons::kHelpOutlineIcon, text_color);
+}
+
+std::unique_ptr<views::View>
+ContentSettingBubbleContents::CreateHelpAndManageView() {
   DCHECK(content_setting_bubble_model_);
   const auto& bubble_content = content_setting_bubble_model_->bubble_content();
   const auto* layout = ChromeLayoutProvider::Get();
@@ -622,28 +646,6 @@ std::unique_ptr<views::View> ContentSettingBubbleContents::CreateExtraView() {
   for (auto& extra_view : extra_views)
     container->AddChildView(std::move(extra_view));
   return container;
-}
-
-bool ContentSettingBubbleContents::Accept() {
-  content_setting_bubble_model_->OnDoneButtonClicked();
-
-  return true;
-}
-
-bool ContentSettingBubbleContents::Close() {
-  return true;
-}
-
-int ContentSettingBubbleContents::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
-void ContentSettingBubbleContents::StyleLearnMoreButton() {
-  DCHECK(learn_more_button_);
-  SkColor text_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor);
-  views::SetImageFromVectorIcon(learn_more_button_,
-                                vector_icons::kHelpOutlineIcon, text_color);
 }
 
 void ContentSettingBubbleContents::DidFinishNavigation(

@@ -26,7 +26,6 @@ class SiteInstance;
 namespace chromecast {
 
 class CastWebContentsManager;
-class CastWindowManager;
 
 // A simplified interface for loading and displaying WebContents in cast_shell.
 class CastWebViewDefault : public CastWebView,
@@ -34,22 +33,23 @@ class CastWebViewDefault : public CastWebView,
                            content::WebContentsDelegate {
  public:
   // |web_contents_manager| and |browser_context| should outlive this object.
+  // If |cast_content_window| is not provided, an instance will be constructed
+  // from |web_contents_manager|.
   CastWebViewDefault(
       const CreateParams& params,
       CastWebContentsManager* web_contents_manager,
       content::BrowserContext* browser_context,
       scoped_refptr<content::SiteInstance> site_instance,
-      std::unique_ptr<shell::CastContentWindow> cast_content_window = nullptr);
+      std::unique_ptr<CastContentWindow> cast_content_window = nullptr);
   ~CastWebViewDefault() override;
 
   // CastWebView implementation:
-  shell::CastContentWindow* window() const override;
+  CastContentWindow* window() const override;
   content::WebContents* web_contents() const override;
   CastWebContents* cast_web_contents() override;
   void LoadUrl(GURL url) override;
   void ClosePage(const base::TimeDelta& shutdown_delay) override;
-  void InitializeWindow(CastWindowManager* window_manager,
-                        CastWindowManager::WindowId z_order,
+  void InitializeWindow(mojom::ZOrder z_order,
                         VisibilityPriority initial_priority) override;
   void GrantScreenAccess() override;
   void RevokeScreenAccess() override;
@@ -91,7 +91,7 @@ class CastWebViewDefault : public CastWebView,
 
   std::unique_ptr<content::WebContents> web_contents_;
   CastWebContentsImpl cast_web_contents_;
-  std::unique_ptr<shell::CastContentWindow> window_;
+  std::unique_ptr<CastContentWindow> window_;
   bool resize_window_when_navigation_starts_;
   base::TimeDelta shutdown_delay_;
 

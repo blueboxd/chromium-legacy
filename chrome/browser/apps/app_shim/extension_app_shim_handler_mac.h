@@ -54,12 +54,15 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
    public:
     virtual ~Delegate() {}
 
-    // Create an avatar menu (disable-able for tests).
-    virtual std::unique_ptr<AvatarMenu> CreateAvatarMenu(
-        AvatarMenuObserver* observer);
-
     // Return the profile for |path|, only if it is already loaded.
     virtual Profile* ProfileForPath(const base::FilePath& path);
+
+    // Call |callback| with the list of profiles for which this app is
+    // installed.
+    virtual void GetProfilesForAppAsync(
+        const std::string& app_id,
+        const std::vector<base::FilePath>& profile_paths_to_check,
+        base::OnceCallback<void(const std::vector<base::FilePath>&)>);
 
     // Load a profile and call |callback| when completed or failed.
     virtual void LoadProfileAsync(const base::FilePath& path,
@@ -197,6 +200,12 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   void set_delegate(Delegate* delegate);
   content::NotificationRegistrar& registrar() { return registrar_; }
 
+  // Update |profile_menu_items_| from |avatar_menu_|. Virtual for tests.
+  virtual void UpdateProfileMenuItems();
+
+  // The list of all profiles that might appear in the menu.
+  std::vector<chrome::mojom::ProfileMenuItemPtr> profile_menu_items_;
+
  private:
   // The state for an individual app, and for the profile-scoped app info.
   struct ProfileState;
@@ -234,8 +243,19 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
                     const std::string& app_id,
                     LoadProfileAppCallback callback);
 
+  // Check to see for which profile paths in |profile_menu_items_| the app with
+  // |app_id| is installed, and return them as the argument to |callback|.
+  void GetProfilesForAppAsync(
+      const std::string& app_id,
+      base::OnceCallback<void(const std::vector<base::FilePath>&)> callback);
+
+  // Callback for the call to asynchronously query which profiles have an app
+  // installed.
+  void OnGotProfilesForApp(const std::string& app_id,
+                           const std::vector<base::FilePath>& profiles);
+
   // Update the profiles menu for the specified host.
-  void UpdateHostProfileMenu(AppShimHost* host);
+  void UpdateAppProfileMenu(AppState* app_state);
 
   std::unique_ptr<Delegate> delegate_;
 

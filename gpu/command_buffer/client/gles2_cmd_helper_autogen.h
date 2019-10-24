@@ -3361,14 +3361,6 @@ void BlendBarrierKHR() {
   }
 }
 
-void ApplyScreenSpaceAntialiasingCHROMIUM() {
-  gles2::cmds::ApplyScreenSpaceAntialiasingCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::ApplyScreenSpaceAntialiasingCHROMIUM>();
-  if (c) {
-    c->Init();
-  }
-}
-
 void BindFragDataLocationIndexedEXTBucket(GLuint program,
                                           GLuint colorNumber,
                                           GLuint index,

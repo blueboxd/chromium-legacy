@@ -84,6 +84,12 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
                                     int dst_width,
                                     int dst_height);
 
+#if defined(OS_MACOSX)
+// Returns the image for the profile at |profile_path| that is suitable for use
+// in the macOS menu bar.
+gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path);
+#endif
+
 // Returns a bitmap with a couple of columns shaved off so it is more square,
 // so that when resized to a square aspect ratio it looks pretty.
 SkBitmap GetAvatarIconAsSquare(const SkBitmap& source_bitmap, int scale_factor);

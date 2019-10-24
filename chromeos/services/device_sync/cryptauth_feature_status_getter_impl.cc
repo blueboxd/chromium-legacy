@@ -69,7 +69,7 @@ BatchGetFeatureStatusesNetworkRequestErrorToResultCode(
   }
 }
 
-CryptAuthFeatureStatusGetter::FeatureStatusMap
+CryptAuthFeatureStatusGetter::SoftwareFeatureStateMap
 ConvertFeatureStatusesToSoftwareFeatureMap(
     const ::google::protobuf::RepeatedPtrField<
         cryptauthv2::DeviceFeatureStatus::FeatureStatus>& feature_statuses,
@@ -105,7 +105,7 @@ ConvertFeatureStatusesToSoftwareFeatureMap(
     }
   }
 
-  CryptAuthFeatureStatusGetter::FeatureStatusMap feature_states;
+  CryptAuthFeatureStatusGetter::SoftwareFeatureStateMap feature_states;
   for (const multidevice::SoftwareFeature& feature : kAllSoftwareFeatures) {
     bool is_marked_supported = base::Contains(marked_supported, feature);
     bool is_marked_enabled = base::Contains(marked_enabled, feature);
@@ -130,7 +130,20 @@ ConvertFeatureStatusesToSoftwareFeatureMap(
   return feature_states;
 }
 
-void RecordGetFeatureStatusesMetrics(const base::TimeDelta& execution_time) {
+base::Time GetMaxLastModifiedTimeFromFeatureStatuses(
+    const ::google::protobuf::RepeatedPtrField<
+        cryptauthv2::DeviceFeatureStatus::FeatureStatus>& feature_statuses) {
+  int64_t max_last_modified_time_millis = 0;
+  for (const cryptauthv2::DeviceFeatureStatus::FeatureStatus& status :
+       feature_statuses) {
+    max_last_modified_time_millis = std::max(status.last_modified_time_millis(),
+                                             max_last_modified_time_millis);
+  }
+
+  return base::Time::FromJavaTime(max_last_modified_time_millis);
+}
+
+void RecordGetFeatureStatusesMetrics(base::TimeDelta execution_time) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.DeviceSyncV2.FeatureStatusGetter.ExecutionTime."
       "GetFeatureStatuses",
@@ -211,7 +224,7 @@ void CryptAuthFeatureStatusGetterImpl::OnAttemptStarted(
 void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesSuccess(
     const base::flat_set<std::string>& input_device_ids,
     const cryptauthv2::BatchGetFeatureStatusesResponse& feature_response) {
-  DCHECK(id_to_feature_status_map_.empty());
+  DCHECK(id_to_device_software_feature_info_map_.empty());
 
   RecordGetFeatureStatusesMetrics(base::TimeTicks::Now() -
                                   start_get_feature_statuses_timestamp_);
@@ -232,7 +245,8 @@ void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesSuccess(
     }
 
     // TODO(https://crbug.com/936273): Log metrics for duplicate device IDs.
-    bool is_duplicate_id = base::Contains(id_to_feature_status_map_, id);
+    bool is_duplicate_id =
+        base::Contains(id_to_device_software_feature_info_map_, id);
     if (is_duplicate_id) {
       PA_LOG(ERROR) << "Duplicate device IDs (" << id
                     << ") in BatchGetFeatureStatuses response.";
@@ -240,14 +254,18 @@ void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesSuccess(
       continue;
     }
 
-    id_to_feature_status_map_[device_feature_status.device_id()] =
+    id_to_device_software_feature_info_map_.try_emplace(
+        device_feature_status.device_id(),
         ConvertFeatureStatusesToSoftwareFeatureMap(
             device_feature_status.feature_statuses(),
-            &did_non_fatal_error_occur);
+            &did_non_fatal_error_occur),
+        GetMaxLastModifiedTimeFromFeatureStatuses(
+            device_feature_status.feature_statuses()));
   }
 
   // TODO(https://crbug.com/936273): Log metrics for missing devices.
-  if (input_device_ids.size() != id_to_feature_status_map_.size()) {
+  if (input_device_ids.size() !=
+      id_to_device_software_feature_info_map_.size()) {
     PA_LOG(ERROR) << "Devices missing in BatchGetFeatureStatuses response.";
     did_non_fatal_error_occur = true;
   }
@@ -280,7 +298,7 @@ void CryptAuthFeatureStatusGetterImpl::FinishAttempt(
   cryptauth_client_.reset();
   timer_->Stop();
 
-  OnAttemptFinished(id_to_feature_status_map_, result_code);
+  OnAttemptFinished(id_to_device_software_feature_info_map_, result_code);
 }
 
 }  // namespace device_sync

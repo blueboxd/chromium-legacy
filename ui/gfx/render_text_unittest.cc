@@ -906,40 +906,59 @@ TEST_F(RenderTextTest, ObscuredEmoji) {
   render_text->Draw(canvas());
 }
 
-TEST_F(RenderTextTest, ItemizeTextToRuns) {
-  struct {
-    const wchar_t* text;
-    const char* expected_structure;
-  } cases[] = {
-      {L"abc", "[0->2]"},
-      {L"ښڛڜ", "[2<-0]"},
-      {L"abcښڛڜdef", "[0->2][5<-3][6->8]"},
-      {L"abcऔकखdefڜ", "[0->2][3->5][6->8][9]"},
-      {L"1-(800)-xxx-xxxx", "[0->1][2][3->5][6][7][8->10][11][12->15]"},
-      {L"क\u200Bख", "[0][1][2]"},
-      {L"1 2 3 4", "[0->6]"},
-      {L"1\u200C2\u200C3\u200C4", "[0][1][2][3][4][5][6]"},
-      {L"a\u0300e\u0301", "[0->3]"},
-      {L"\u0065\u0308\u0435\u0308", "[0->1][2->3]"},
-      {L"☞☛test☚☜", "[0->1][2->5][6->7]"},
-      {L"☺☺☺!", "[0->2][3]"},
-      {L"☺☺☺ښ", "[3][2<-0]"},
-      {L"(☾☹☽)", "[0][1->3][4]"},
-      {L"\U0001F6281234", "[0->1][2->5]"},      // http://crbug.com/530021
-      {L"▶Feel goods", "[0][1->4][5][6->10]"},  // http://crbug.com/278913
-      {L"ぬ「シ」ほ", "[0][1][2][3][4]"},       // http://crbug.com/396776
-      {L"國哲(c)1", "[0->1][2][3][4][5]"},      // http://crbug.com/125792
-  };
+struct RunListCase {
+  const char* test_name;
+  const wchar_t* text;
+  const char* expected;
+};
 
-  for (const auto& test : cases) {
-    SCOPED_TRACE(base::StringPrintf("Testing cases '%ls' -> '%s'", test.text,
-                                    test.expected_structure));
-    RenderTextHarfBuzz* render_text = GetRenderText();
-    render_text->SetText(WideToUTF16(test.text));
-    test_api()->EnsureLayout();
-    EXPECT_EQ(test.expected_structure, GetRunListStructureString());
+class RenderTextTestWithRunListCase
+    : public RenderTextTest,
+      public ::testing::WithParamInterface<RunListCase> {
+ public:
+  static std::string ParamInfoToString(
+      ::testing::TestParamInfo<RunListCase> param_info) {
+    return param_info.param.test_name;
   }
+};
+
+TEST_P(RenderTextTestWithRunListCase, ItemizeTextToRuns) {
+  RunListCase param = GetParam();
+  RenderTextHarfBuzz* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(param.text));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(param.expected, GetRunListStructureString());
 }
+
+const RunListCase kBasicsRunListCases[] = {
+    {"simpleLTR", L"abc", "[0->2]"},
+    {"simpleRTL", L"ښڛڜ", "[2<-0]"},
+    {"asc_arb", L"abcښڛڜdef", "[0->2][5<-3][6->8]"},
+    {"asc_dev_asc", L"abcऔकखdefڜ", "[0->2][3->5][6->8][9]"},
+    {"phone", L"1-(800)-xxx-xxxx", "[0->1][2][3->5][6][7][8->10][11][12->15]"},
+    {"dev_ZWS", L"क\u200Bख", "[0][1][2]"},
+    {"numeric", L"1 2 3 4", "[0->6]"},
+    {"joiners", L"1\u200C2\u200C3\u200C4", "[0][1][2][3][4][5][6]"},
+    {"combining_accents1", L"a\u0300e\u0301", "[0->3]"},
+    {"combining_accents2", L"\u0065\u0308\u0435\u0308", "[0->1][2->3]"},
+    {"picto_title", L"☞☛test☚☜", "[0->1][2->5][6->7]"},
+    {"picto_LTR", L"☺☺☺!", "[0->2][3]"},
+    {"picto_RTL", L"☺☺☺ښ", "[3][2<-0]"},
+    {"paren_picto", L"(☾☹☽)", "[0][1->3][4]"},
+    {"emoji_asc", L"\U0001F6281234",
+     "[0->1][2->5]"},  // http://crbug.com/530021
+    {"emoji_title", L"▶Feel goods",
+     "[0][1->4][5][6->10]"},  // http://crbug.com/278913
+    {"jap_paren1", L"ぬ「シ」ほ",
+     "[0][1][2][3][4]"},  // http://crbug.com/396776
+    {"jap_paren2", L"國哲(c)1",
+     "[0->1][2][3][4][5]"},  // http://crbug.com/125792
+};
+
+INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsBasics,
+                         RenderTextTestWithRunListCase,
+                         ::testing::ValuesIn(kBasicsRunListCases),
+                         RenderTextTestWithRunListCase::ParamInfoToString);
 
 TEST_F(RenderTextTest, ElidedText) {
   // TODO(skanuj) : Add more test cases for following

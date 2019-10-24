@@ -27,6 +27,7 @@ include_rules = [
   "+media",
   "+mojo/public",
   "+services/content/public",
+  "+services/data_decoder/public",
   "+services/media_session/public",
   "+services/preferences/public",
   "+services/service_manager/public",

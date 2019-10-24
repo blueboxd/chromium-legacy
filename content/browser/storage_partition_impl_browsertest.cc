@@ -91,11 +91,11 @@ IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest, NetworkContext) {
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
-  network::mojom::URLLoaderFactoryPtr loader_factory;
+  mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
   BrowserContext::GetDefaultStoragePartition(
       shell()->web_contents()->GetBrowserContext())
       ->GetNetworkContext()
-      ->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+      ->CreateURLLoaderFactory(loader_factory.BindNewPipeAndPassReceiver(),
                                std::move(params));
 
   network::ResourceRequest request;

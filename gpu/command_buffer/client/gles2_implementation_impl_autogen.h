@@ -3680,15 +3680,6 @@ void GLES2Implementation::BlendBarrierKHR() {
   CheckGLError();
 }
 
-void GLES2Implementation::ApplyScreenSpaceAntialiasingCHROMIUM() {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix()
-                     << "] glApplyScreenSpaceAntialiasingCHROMIUM("
-                     << ")");
-  helper_->ApplyScreenSpaceAntialiasingCHROMIUM();
-  CheckGLError();
-}
-
 void GLES2Implementation::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint location,
     GLboolean transpose,

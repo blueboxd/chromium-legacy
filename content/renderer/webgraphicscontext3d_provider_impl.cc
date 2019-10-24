@@ -69,9 +69,11 @@ WebGraphicsContext3DProviderImpl::GetWebglPreferences() const {
         base::CommandLine::ForCurrentProcess();
     auto gpu_feature_info = GetGpuFeatureInfo();
 
-    if (gpu_feature_info.IsWorkaroundEnabled(MAX_MSAA_SAMPLE_COUNT_4)) {
+    if (gpu_feature_info.IsWorkaroundEnabled(MAX_MSAA_SAMPLE_COUNT_2))
+      prefs.msaa_sample_count = 2;
+    else if (gpu_feature_info.IsWorkaroundEnabled(MAX_MSAA_SAMPLE_COUNT_4))
       prefs.msaa_sample_count = 4;
-    }
+
     if (command_line->HasSwitch(switches::kWebglMSAASampleCount)) {
       std::string sample_count =
           command_line->GetSwitchValueASCII(switches::kWebglMSAASampleCount);
@@ -90,9 +92,6 @@ WebGraphicsContext3DProviderImpl::GetWebglPreferences() const {
         prefs.anti_aliasing_mode = blink::kAntialiasingModeMSAAExplicitResolve;
       } else if (mode == "implicit") {
         prefs.anti_aliasing_mode = blink::kAntialiasingModeMSAAImplicitResolve;
-      } else if (mode == "screenspace") {
-        prefs.anti_aliasing_mode =
-            blink::kAntialiasingModeScreenSpaceAntialiasing;
       } else {
         prefs.anti_aliasing_mode = blink::kAntialiasingModeUnspecified;
       }

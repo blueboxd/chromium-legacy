@@ -341,6 +341,8 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
     return history_navigation_virtual_time_pauser_;
   }
 
+  static void PrepareForLeakDetection();
+
  private:
   friend class ScopedPagePauser;
 
@@ -457,6 +459,12 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;
+
+class CORE_EXPORT InternalSettingsPageSupplementBase : public Supplement<Page> {
+ public:
+  using Supplement<Page>::Supplement;
+  static const char kSupplementName[];
+};
 
 }  // namespace blink
 

@@ -115,7 +115,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebDocument GetDocument() const override;
   WebString AssignedName() const override;
   void SetName(const WebString&) override;
-  void NotifyUserActivation() override;
   bool IsLocalRoot() const override;
   bool IsProvisional() const override;
   WebLocalFrameImpl* LocalRoot() override;

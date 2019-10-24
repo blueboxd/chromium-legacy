@@ -21,10 +21,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/test/fake_network_url_loader_factory.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/http/http_util.h"
@@ -474,7 +471,8 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
             std::move(fake_loader_factory));
   }
 
-  network::mojom::URLLoaderFactoryPtr CreateSubresourceLoaderFactory() {
+  mojo::Remote<network::mojom::URLLoaderFactory>
+  CreateSubresourceLoaderFactory() {
     if (!connector_) {
       mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
           remote_container_host;
@@ -484,10 +482,11 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
           std::move(remote_container_host),
           mojo::NullRemote() /*remote_controller*/, "" /*client_id*/);
     }
-    network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
+    mojo::Remote<network::mojom::URLLoaderFactory>
+        service_worker_url_loader_factory;
     ServiceWorkerSubresourceLoaderFactory::Create(
         connector_, loader_factory_,
-        mojo::MakeRequest(&service_worker_url_loader_factory),
+        service_worker_url_loader_factory.BindNewPipeAndPassReceiver(),
         blink::scheduler::GetSequencedTaskRunnerForTesting());
     return service_worker_url_loader_factory;
   }
@@ -498,7 +497,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   // completion. Calling fake_controller_->RunUntilFetchEvent() also advances
   // the load to until |fake_controller_| receives the fetch event.
   void StartRequest(
-      const network::mojom::URLLoaderFactoryPtr& loader_factory,
+      const mojo::Remote<network::mojom::URLLoaderFactory>& loader_factory,
       const network::ResourceRequest& request,
       network::mojom::URLLoaderPtr* out_loader,
       std::unique_ptr<network::TestURLLoaderClient>* out_loader_client) {
@@ -545,7 +544,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   void RunFallbackWithRequestBodyTest(
       scoped_refptr<network::ResourceRequestBody> request_body,
       const std::string& expected_body) {
-    network::mojom::URLLoaderFactoryPtr factory =
+    mojo::Remote<network::mojom::URLLoaderFactory> factory =
         CreateSubresourceLoaderFactory();
 
     // Create a request with the body.
@@ -580,7 +579,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   // client after completion.
   std::unique_ptr<network::TestURLLoaderClient> DoRangeRequest(
       const std::string& range_header) {
-    network::mojom::URLLoaderFactoryPtr factory =
+    mojo::Remote<network::mojom::URLLoaderFactory> factory =
         CreateSubresourceLoaderFactory();
     network::ResourceRequest request =
         CreateRequest(GURL("https://www.example.com/big-file"));
@@ -613,7 +612,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
   base::HistogramTester histogram_tester;
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
   network::ResourceRequest request =
       CreateRequest(GURL("https://www.example.com/foo.png"));
@@ -652,7 +651,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
   fake_controller_.AbortEventWithNoResponse();
   base::HistogramTester histogram_tester;
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -677,7 +676,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
   {
     network::ResourceRequest request =
@@ -731,7 +730,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
   {
     network::ResourceRequest request =
@@ -778,7 +777,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_RestartFetchEvent) {
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   {
@@ -845,7 +844,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_TooManyRestart) {
   // Simulate the container host fails to start a service worker.
   fake_container_host_.set_fake_controller(nullptr);
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
   network::ResourceRequest request =
       CreateRequest(GURL("https://www.example.com/foo.png"));
@@ -887,7 +886,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   fake_controller_.SetResponseSource(
       network::mojom::FetchResponseSource::kNetwork);
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -946,7 +945,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
       stream_callback.BindNewPipeAndPassReceiver(),
       std::move(data_pipe.consumer_handle));
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -1002,7 +1001,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
   fake_controller_.SetResponseSource(
       network::mojom::FetchResponseSource::kCacheStorage);
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -1059,7 +1058,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
   const std::string kResponseBody = "/* Here is sample text for the Blob. */";
   fake_controller_.RespondWithBlob(base::nullopt, kResponseBody);
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -1106,7 +1105,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseNonScript) {
   fake_controller_.SetResponseSource(
       network::mojom::FetchResponseSource::kCacheStorage);
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -1147,7 +1146,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackResponse) {
   base::HistogramTester histogram_tester;
   fake_controller_.RespondWithFallback();
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -1178,7 +1177,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, ErrorResponse) {
   base::HistogramTester histogram_tester;
   fake_controller_.RespondWithError();
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -1205,7 +1204,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   base::HistogramTester histogram_tester;
   fake_controller_.RespondWithRedirect("https://www.example.com/bar.png");
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -1287,7 +1286,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
       std::string("https://www.example.com/redirect_") +
       base::NumberToString(count);
   fake_controller_.RespondWithRedirect(redirect_location);
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   // Perform the request.
@@ -1340,7 +1339,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CorsFallbackResponseWithoutOORCors) {
 
   fake_controller_.RespondWithFallback();
 
-  network::mojom::URLLoaderFactoryPtr factory =
+  mojo::Remote<network::mojom::URLLoaderFactory> factory =
       CreateSubresourceLoaderFactory();
 
   struct TestCase {

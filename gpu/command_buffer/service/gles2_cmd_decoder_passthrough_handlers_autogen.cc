@@ -4659,21 +4659,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleBlendBarrierKHR(
   return error::kNoError;
 }
 
-error::Error
-GLES2DecoderPassthroughImpl::HandleApplyScreenSpaceAntialiasingCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  if (!features().chromium_screen_space_antialiasing) {
-    return error::kUnknownCommand;
-  }
-
-  error::Error error = DoApplyScreenSpaceAntialiasingCHROMIUM();
-  if (error != error::kNoError) {
-    return error;
-  }
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::
     HandleUniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
         uint32_t immediate_data_size,

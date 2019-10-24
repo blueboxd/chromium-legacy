@@ -64,11 +64,44 @@ class CC_BASE_EXPORT ScopedLayerTask {
   const char* event_name_;
 };
 
-class CC_BASE_EXPORT ScopedImageDecodeTask {
+class CC_BASE_EXPORT ScopedImageTask {
  public:
-  enum DecodeType { kSoftware, kGpu };
-  enum TaskType { kInRaster, kOutOfRaster };
   enum ImageType { kWebP, kJpeg, kOther };
+
+  ScopedImageTask(ImageType image_type)
+      : image_type_(image_type), start_time_(base::TimeTicks::Now()) {}
+  ScopedImageTask(const ScopedImageTask&) = delete;
+  ~ScopedImageTask() = default;
+  ScopedImageTask& operator=(const ScopedImageTask&) = delete;
+
+  // Prevents logging duration metrics. Used in cases where a task performed
+  // uninteresting work or was terminated early.
+  void SuppressMetrics() { suppress_metrics_ = true; }
+
+ protected:
+  bool suppress_metrics_ = false;
+  const ImageType image_type_;
+  const base::TimeTicks start_time_;
+
+  // UMA histogram parameters
+  const uint32_t bucket_count_ = 50;
+  base::TimeDelta hist_min_ = base::TimeDelta::FromMicroseconds(1);
+  base::TimeDelta hist_max_ = base::TimeDelta::FromMilliseconds(1000);
+};
+
+class CC_BASE_EXPORT ScopedImageUploadTask : public ScopedImageTask {
+ public:
+  ScopedImageUploadTask(const void* image_ptr, ImageType image_type);
+  ScopedImageUploadTask(const ScopedImageUploadTask&) = delete;
+  ~ScopedImageUploadTask();
+
+  ScopedImageUploadTask& operator=(const ScopedImageUploadTask&) = delete;
+};
+
+class CC_BASE_EXPORT ScopedImageDecodeTask : public ScopedImageTask {
+ public:
+  enum TaskType { kInRaster, kOutOfRaster };
+  enum DecodeType { kSoftware, kGpu };
 
   ScopedImageDecodeTask(const void* image_ptr,
                         DecodeType decode_type,
@@ -79,16 +112,9 @@ class CC_BASE_EXPORT ScopedImageDecodeTask {
 
   ScopedImageDecodeTask& operator=(const ScopedImageDecodeTask&) = delete;
 
-  // Prevents logging duration metrics. Used in cases where a task performed
-  // uninteresting work or was terminated early.
-  void SuppressMetrics() { suppress_metrics_ = true; }
-
  private:
   const DecodeType decode_type_;
   const TaskType task_type_;
-  const base::TimeTicks start_time_;
-  bool suppress_metrics_ = false;
-  const ImageType image_type_;
 };
 
 class CC_BASE_EXPORT ScopedLayerTreeTask {

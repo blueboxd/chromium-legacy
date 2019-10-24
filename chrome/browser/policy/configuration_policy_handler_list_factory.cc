@@ -1218,6 +1218,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kCorsLegacyModeEnabled,
     prefs::kCorsLegacyModeEnabled,
     base::Value::Type::BOOLEAN },
+#if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
+  { key::kBlockExternalExtensions,
+    extensions::pref_names::kBlockExternalExtensions,
+    base::Value::Type::BOOLEAN },
+#endif
 };
 // clang-format on
 

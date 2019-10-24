@@ -131,9 +131,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   // Out-of-process NetworkService:
   // Detects disconnection from the default factory of the loader factory bundle
   // used by this worker (typically the network service).
-  // TODO(crbug.com/955171): Replace this with Remote.
-  network::mojom::URLLoaderFactoryPtr
-      default_factory_connection_error_handler_holder_;
+  mojo::Remote<network::mojom::URLLoaderFactory>
+      default_factory_disconnect_handler_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };

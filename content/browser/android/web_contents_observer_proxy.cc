@@ -105,6 +105,11 @@ void WebContentsObserverProxy::DidStopLoading() {
                                                jstring_url);
 }
 
+void WebContentsObserverProxy::LoadProgressChanged(double progress) {
+  Java_WebContentsObserverProxy_loadProgressChanged(
+      AttachCurrentThread(), java_observer_, static_cast<jfloat>(progress));
+}
+
 void WebContentsObserverProxy::DidFailLoad(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,

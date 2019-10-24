@@ -16,10 +16,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
+#include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/hover_button.h"
-#include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/browser/ui/views/tabs/color_picker_view.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
@@ -43,8 +42,6 @@ constexpr int TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP = 13;
 constexpr int TAB_GROUP_HEADER_CXMENU_UNGROUP = 14;
 constexpr int TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP = 15;
 
-constexpr gfx::Insets kDefaultBorderInsets = gfx::Insets(12);
-
 // Returns our hard-coded set of colors.
 const std::vector<std::pair<SkColor, base::string16>>& GetColorPickerList() {
   static const base::NoDestructor<
@@ -58,28 +55,6 @@ const std::vector<std::pair<SkColor, base::string16>>& GetColorPickerList() {
             {gfx::kGooglePurple600, base::ASCIIToUTF16("Purple")},
             {gfx::kGoogleCyan600, base::ASCIIToUTF16("Cyan")}});
   return *list;
-}
-
-std::unique_ptr<views::LabelButton> CreateMenuItem(
-    int button_id,
-    const base::string16& name,
-    views::ButtonListener* listener) {
-  auto button = std::make_unique<views::LabelButton>(
-      listener, name, views::style::CONTEXT_BUTTON);
-  button->SetID(button_id);
-  button->SetButtonController(std::make_unique<HoverButtonController>(
-      button.get(), listener,
-      std::make_unique<views::Button::DefaultButtonControllerDelegate>(
-          button.get())));
-
-  // Items within a menu should not show focus rings.
-  button->SetInstallFocusRingOnFocus(false);
-  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-
-  button->SetBorder(views::CreateEmptyBorder(kDefaultBorderInsets));
-  button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
-  button->set_ink_drop_base_color(HoverButton::GetInkDropColor(button.get()));
-  return button;
 }
 }  // namespace
 
@@ -147,7 +122,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   views::View* group_modifier_container =
       AddChildView(std::make_unique<views::View>());
   group_modifier_container->SetBorder(
-      views::CreateEmptyBorder(kDefaultBorderInsets));
+      views::CreateEmptyBorder(gfx::Insets(layout_provider->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_VERTICAL))));
   group_modifier_container->SetLayoutManager(std::move(container_layout));
 
   // Add the text field for editing the title.
@@ -173,19 +149,19 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
   AddChildView(std::make_unique<views::Separator>());
 
-  std::unique_ptr<views::LabelButton> new_tab_menu_item = CreateMenuItem(
+  std::unique_ptr<views::LabelButton> new_tab_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP),
       &menu_button_listener_);
   AddChildView(std::move(new_tab_menu_item));
 
-  std::unique_ptr<views::LabelButton> ungroup_menu_item = CreateMenuItem(
+  std::unique_ptr<views::LabelButton> ungroup_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_UNGROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_UNGROUP),
       &menu_button_listener_);
   AddChildView(std::move(ungroup_menu_item));
 
-  std::unique_ptr<views::LabelButton> close_menu_item = CreateMenuItem(
+  std::unique_ptr<views::LabelButton> close_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP),
       &menu_button_listener_);

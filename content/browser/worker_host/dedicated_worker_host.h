@@ -203,7 +203,7 @@ class DedicatedWorkerHost final
   bool is_frozen_ = false;
 
   // For observing Network Service connection errors only.
-  network::mojom::URLLoaderFactoryPtr
+  mojo::Remote<network::mojom::URLLoaderFactory>
       network_service_connection_error_handler_holder_;
   mojo::Remote<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_;

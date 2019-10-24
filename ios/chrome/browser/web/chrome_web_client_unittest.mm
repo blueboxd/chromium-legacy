@@ -202,7 +202,9 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostNonOtr) {
   web::TestWebState test_web_state;
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
-                              /*is_off_the_record=*/false, std::move(callback));
+                              /*is_off_the_record=*/false,
+                              /*info=*/base::nullopt,
+                              /*navigation_id=*/0, std::move(callback));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
     return callback_called;
@@ -226,7 +228,9 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostNonOtr) {
   web::TestWebState test_web_state;
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/true,
-                              /*is_off_the_record=*/false, std::move(callback));
+                              /*is_off_the_record=*/false,
+                              /*info=*/base::nullopt,
+                              /*navigation_id=*/0, std::move(callback));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
     return callback_called;
@@ -250,7 +254,9 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostOtr) {
   web::TestWebState test_web_state;
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
-                              /*is_off_the_record=*/true, std::move(callback));
+                              /*is_off_the_record=*/true,
+                              /*info=*/base::nullopt,
+                              /*navigation_id=*/0, std::move(callback));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
     return callback_called;
@@ -274,7 +280,9 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostOtr) {
   web::TestWebState test_web_state;
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/true,
-                              /*is_off_the_record=*/true, std::move(callback));
+                              /*is_off_the_record=*/true,
+                              /*info=*/base::nullopt,
+                              /*navigation_id=*/0, std::move(callback));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
     return callback_called;
@@ -283,3 +291,6 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostOtr) {
                            /*is_off_the_record=*/true),
               page);
 }
+
+// TODO(crbug.com/1017406): Add tests for SSL committed interstitials, where
+// an SSLInfo value is passed into PrepareErrorPage.

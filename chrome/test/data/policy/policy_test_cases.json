@@ -1288,6 +1288,18 @@
     "note": "This policy has no pref as it is only directly read by the policy system."
   },
 
+  "BlockExternalExtensions": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "BlockExternalExtensions": true },
+    "pref_mappings": [
+      { "pref": "extensions.block_external_extensions",
+        "indicator_tests": [
+          { "policy": { "BlockExternalExtensions": true } }
+        ]
+      }
+    ]
+  },
+
   "ShowHomeButton": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

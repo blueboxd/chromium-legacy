@@ -205,15 +205,15 @@ bool IsStackedBelow(aura::Window* win1, aura::Window* win2) {
 
 // Verifies DesksBarView layout under different screen sizes
 void DesksBarViewLayoutTestHelper(const DesksBarView* desks_bar_view,
-                                  bool use_small_screen_layout) {
+                                  bool use_compact_layout) {
   DCHECK(desks_bar_view);
   const NewDeskButton* button = desks_bar_view->new_desk_button();
-  EXPECT_EQ(button->IsLabelVisibleForTesting(), !use_small_screen_layout);
+  EXPECT_EQ(button->IsLabelVisibleForTesting(), !use_compact_layout);
 
   for (const auto& mini_view : desks_bar_view->mini_views()) {
     EXPECT_EQ(mini_view->GetDeskPreviewForTesting()->height(),
-              DeskPreviewView::GetHeight(use_small_screen_layout));
-    EXPECT_EQ(mini_view->IsLabelVisibleForTesting(), !use_small_screen_layout);
+              DeskPreviewView::GetHeight(use_compact_layout));
+    EXPECT_EQ(mini_view->IsLabelVisibleForTesting(), !use_compact_layout);
   }
 }
 
@@ -411,14 +411,14 @@ TEST_F(DesksTest, DesksBarViewScreenLayoutTest) {
   while (controller->CanCreateDesks()) {
     NewDesk();
     DesksBarViewLayoutTestHelper(desks_bar_view,
-                                 /*use_small_screen_layout=*/false);
+                                 /*use_compact_layout=*/false);
   };
 
   UpdateDisplay("500x480");
   ASSERT_TRUE(overview_controller->InOverviewSession());
   while (controller->CanRemoveDesks()) {
     DesksBarViewLayoutTestHelper(desks_bar_view,
-                                 /*use_small_screen_layout=*/true);
+                                 /*use_compact_layout=*/true);
     RemoveDesk(controller->desks().back().get());
   }
 
@@ -426,7 +426,7 @@ TEST_F(DesksTest, DesksBarViewScreenLayoutTest) {
   ASSERT_TRUE(overview_controller->InOverviewSession());
   while (controller->CanCreateDesks()) {
     DesksBarViewLayoutTestHelper(desks_bar_view,
-                                 /*use_small_screen_layout=*/false);
+                                 /*use_compact_layout=*/false);
     NewDesk();
   }
 }

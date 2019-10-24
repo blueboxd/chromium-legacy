@@ -85,8 +85,9 @@ class CONTENT_EXPORT StoragePartitionImpl
   // This method must be called either on the UI thread or before threads start.
   // This callback is run on the UI thread.
   using CreateNetworkFactoryCallback =
-      base::Callback<network::mojom::URLLoaderFactoryPtr(
-          network::mojom::URLLoaderFactoryPtr original_factory)>;
+      base::Callback<mojo::PendingRemote<network::mojom::URLLoaderFactory>(
+          mojo::PendingRemote<network::mojom::URLLoaderFactory>
+              original_factory)>;
   static void SetGetURLLoaderFactoryForBrowserProcessCallbackForTesting(
       const CreateNetworkFactoryCallback& url_loader_factory_callback);
 
@@ -481,9 +482,10 @@ class CONTENT_EXPORT StoragePartitionImpl
   // See the method comment for
   // StoragePartition::GetURLLoaderFactoryForBrowserProcess() for
   // more details
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_for_browser_process_;
+  mojo::Remote<network::mojom::URLLoaderFactory>
+      url_loader_factory_for_browser_process_;
   bool is_test_url_loader_factory_for_browser_process_ = false;
-  network::mojom::URLLoaderFactoryPtr
+  mojo::Remote<network::mojom::URLLoaderFactory>
       url_loader_factory_for_browser_process_with_corb_;
   bool is_test_url_loader_factory_for_browser_process_with_corb_ = false;
   mojo::Remote<network::mojom::CookieManager>

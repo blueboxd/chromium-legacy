@@ -340,6 +340,10 @@ base::string16 TitleForAutocompletion(AutocompleteMatch match) {
          base::UTF8ToUTF16(" - " + match.destination_url.spec());
 }
 
+bool WithinBounds(int value, int min, int max) {
+  return value >= min && (value < max || max == -1);
+}
+
 }  // namespace
 
 // static
@@ -454,9 +458,9 @@ void DocumentProvider::Start(const AutocompleteInput& input,
   }
 
   // Experiment: don't issue queries for inputs under some length.
-  if (input.text().length() < min_query_length_) {
+  if (!WithinBounds(input.text().length(), min_query_length_,
+                    max_query_length_))
     return;
-  }
 
   // Don't issue queries for input likely to be a URL.
   if (IsInputLikelyURL(input)) {
@@ -544,11 +548,31 @@ DocumentProvider::DocumentProvider(AutocompleteProviderClient* client,
               omnibox::kDocumentProvider,
               "DocumentProviderMinQueryLength",
               4))),
+      max_query_length_(
+          static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+              omnibox::kDocumentProvider,
+              "DocumentProviderMaxQueryLength",
+              -1))),
       min_query_show_length_(
           static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
               omnibox::kDocumentProvider,
               "DocumentProviderMinQueryShowLength",
               min_query_length_))),
+      max_query_show_length_(
+          static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+              omnibox::kDocumentProvider,
+              "DocumentProviderMaxQueryShowLength",
+              max_query_length_))),
+      min_query_log_length_(
+          static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+              omnibox::kDocumentProvider,
+              "DocumentProviderMinQueryLogLength",
+              min_query_length_))),
+      max_query_log_length_(
+          static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+              omnibox::kDocumentProvider,
+              "DocumentProviderMaxQueryLogLength",
+              max_query_length_))),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
       backoff_for_session_(false),
@@ -709,8 +733,21 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
   // - Inputs of length 5 or more will make drive requests; if drive suggestions
   // are returned, field_trial_triggered will be logged, and, if not in
   // counterfactual, the suggestions will be shown.
-  bool show_doc_suggestions = !in_counterfactual_group &&
-                              input_.text().length() >= min_query_show_length_;
+  bool show_doc_suggestions =
+      !in_counterfactual_group &&
+      WithinBounds(input_.text().length(), min_query_show_length_,
+                   max_query_show_length_);
+  // In order to compare small slices of input length while excluding noise from
+  // the larger group of all input lenghts, |min_query_log_length_| and
+  // |max_query_log_length_| specify the queries that will log
+  // field_trial_triggered. E.g., if |min_query_log_length_| is 50 and
+  // |max_query_log_length_| is -1, only inputs of length 50 or greater which
+  // return a drive suggestions will log field_trial_triggered are returned
+  // while shorter queries will continue to make requests and show suggestions.
+  // This allows an uninterrupted user experience for short queries while
+  // allowing focused analysis of long queries.
+  bool trigger_field_trial = WithinBounds(
+      input_.text().length(), min_query_log_length_, max_query_log_length_);
 
   // Ensure server's suggestions are added with monotonically decreasing scores.
   int previous_score = INT_MAX;
@@ -804,11 +841,12 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
     const std::string* snippet = result->FindStringPath("snippet.snippet");
     if (snippet)
       match.RecordAdditionalInfo("snippet", *snippet);
-    if (show_doc_suggestions) {
+    if (show_doc_suggestions)
       matches.push_back(match);
+    if (trigger_field_trial) {
+      field_trial_triggered_ = true;
+      field_trial_triggered_in_session_ = true;
     }
-    field_trial_triggered_ = true;
-    field_trial_triggered_in_session_ = true;
   }
   return matches;
 }

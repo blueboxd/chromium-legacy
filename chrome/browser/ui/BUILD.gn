@@ -2661,6 +2661,8 @@ jumbo_static_library("ui") {
       "views/browser_dialogs_views.cc",
       "views/bubble_anchor_util_views.cc",
       "views/bubble_anchor_util_views.h",
+      "views/bubble_menu_item_factory.cc",
+      "views/bubble_menu_item_factory.h",
       "views/bulleted_label_list_view.cc",
       "views/bulleted_label_list_view.h",
       "views/certificate_selector.cc",
@@ -4036,6 +4038,8 @@ jumbo_static_library("ui") {
       "views/frame/webui_tab_strip_container_view.h",
       "webui/tab_strip/tab_strip_ui.cc",
       "webui/tab_strip/tab_strip_ui.h",
+      "webui/tab_strip/tab_strip_ui_layout.cc",
+      "webui/tab_strip/tab_strip_ui_layout.h",
       "webui/tab_strip/thumbnail_tracker.cc",
       "webui/tab_strip/thumbnail_tracker.h",
     ]

@@ -115,7 +115,7 @@ InterpolationValue
 CSSTransformInterpolationType::PreInterpolationCompositeIfNeeded(
     InterpolationValue value,
     const InterpolationValue& underlying,
-    EffectModel::CompositeOperation,
+    EffectModel::CompositeOperation composite,
     ConversionCheckers& conversion_checkers) const {
   // Due to the post-interpolation composite optimization, the interpolation
   // stack aggressively caches interpolated values. When we are doing
@@ -126,8 +126,20 @@ CSSTransformInterpolationType::PreInterpolationCompositeIfNeeded(
   // caching composited values.
   conversion_checkers.push_back(std::make_unique<AlwaysInvalidateChecker>());
 
-  To<InterpolableTransformList>(*value.interpolable_value)
-      .PreConcat(To<InterpolableTransformList>(*underlying.interpolable_value));
+  InterpolableTransformList& transform_list =
+      To<InterpolableTransformList>(*value.interpolable_value);
+  const InterpolableTransformList& underlying_transform_list =
+      To<InterpolableTransformList>(*underlying.interpolable_value);
+
+  // Addition of transform lists uses concatenation, whilst accumulation
+  // performs a similar matching to interpolation but then adds the components.
+  // See https://drafts.csswg.org/css-transforms-2/#combining-transform-lists
+  if (composite == EffectModel::CompositeOperation::kCompositeAdd) {
+    transform_list.PreConcat(underlying_transform_list);
+  } else {
+    DCHECK_EQ(composite, EffectModel::CompositeOperation::kCompositeAccumulate);
+    transform_list.AccumulateOnto(underlying_transform_list);
+  }
   return value;
 }
 

@@ -15,18 +15,6 @@ class BrowserObserver {
 
   // The URL bar should be updated to |url|.
   virtual void DisplayedUrlChanged(const GURL& url) {}
-
-  // Indicates that loading has started (|is_loading| is true) or is done
-  // (|is_loading| is false). |to_different_document| will be true unless the
-  // load is a fragment navigation, or triggered by
-  // history.pushState/replaceState.
-  virtual void LoadingStateChanged(bool is_loading,
-                                   bool to_different_document) {}
-
-  // Indicates that the load progress of the WebContents has changed. This
-  // corresponds to WebContentsDelegate::LoadProgressChanged, meaning |progress|
-  // ranges from 0.0 to 1.0.
-  virtual void LoadProgressChanged(double progress) {}
 };
 
 }  // namespace weblayer

@@ -129,7 +129,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jboolean progress_bar_visible,
     jfloat progress_bar_height,
     jfloat progress_bar_opacity,
-    jint progress_bar_completion,
+    jfloat progress_bar_completion,
     jfloat divider_line_visibility_percentage,
     jfloat divider_line_width,
     jfloat divider_line_height,

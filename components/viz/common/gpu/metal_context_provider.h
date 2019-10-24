@@ -6,17 +6,10 @@
 #define COMPONENTS_VIZ_COMMON_GPU_METAL_CONTEXT_PROVIDER_H_
 
 #include <memory>
+#include "components/metal_util/types.h"
 #include "components/viz/common/viz_metal_context_provider_export.h"
 
 class GrContext;
-
-#if __OBJC__
-@protocol MTLDevice;
-using MTLDevicePtr = id<MTLDevice>;
-#else
-class MTLDeviceProtocol;
-using MTLDevicePtr = MTLDeviceProtocol*;
-#endif
 
 namespace gl {
 class ProgressReporter;
@@ -33,7 +26,7 @@ class VIZ_METAL_CONTEXT_PROVIDER_EXPORT MetalContextProvider {
   virtual ~MetalContextProvider() {}
 
   virtual GrContext* GetGrContext() = 0;
-  virtual MTLDevicePtr GetMTLDevice() = 0;
+  virtual metal::MTLDevicePtr GetMTLDevice() = 0;
 
   // Set the progress reported used to prevent watchdog timeouts during longer
   // sequences of Metal API calls. It is guaranteed that no further calls to

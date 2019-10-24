@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromecast/ui/mojom/ui_service.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -66,8 +67,9 @@ class CastWindowManager {
   // causing it to initialize.
   virtual void AddWindow(gfx::NativeView window) = 0;
 
-  // Sets a window's ID.
-  virtual void SetWindowId(gfx::NativeView window, WindowId window_id) = 0;
+  // Sets the Z order for the window. This allows windows with the same parent
+  // to stack in a well-defined order.
+  virtual void SetZOrder(gfx::NativeView window, mojom::ZOrder z_order) = 0;
 
   // Return the root window that holds all top-level windows.
   virtual gfx::NativeView GetRootWindow() = 0;

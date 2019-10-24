@@ -4,6 +4,8 @@
 
 #include "ui/events/ozone/chromeos/gesture_properties_service.h"
 
+#include <utility>
+
 namespace ui {
 
 namespace {
@@ -66,8 +68,8 @@ bool TrySetPropertyValues(GesturesProp* property,
 
 GesturePropertiesService::GesturePropertiesService(
     GesturePropertyProvider* provider,
-    ozone::mojom::GesturePropertiesServiceRequest request)
-    : prop_provider_(provider), binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<ozone::mojom::GesturePropertiesService> receiver)
+    : prop_provider_(provider), receiver_(this, std::move(receiver)) {}
 
 void GesturePropertiesService::ListDevices(ListDevicesCallback reply) {
   base::flat_map<int, std::string> response = {};

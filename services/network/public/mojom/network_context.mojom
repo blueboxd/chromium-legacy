@@ -152,10 +152,17 @@ interface TrustedHeaderClient {
 
   // Allows modifying response headers, including sensitive headers such as
   // set-cookie. This should only be used from a trusted process.
+  // If |preserve_fragment_on_redirect_url| is null, then when the headers
+  // indicate a redirect, URL fragments will be handled the standard way: the
+  // fragment of the original URL will be copied to the new URL, unless the
+  // new URL has a fragment, in which case the new URL's fragment will be
+  // used. If |preserve_fragment_on_redirect_url| is populated, and the
+  // request is redirected to exactly that URL, then the fragment of the
+  // original URL will not be copied to the redirect target URL.
   OnHeadersReceived(string headers, IPEndPoint remote_endpoint) =>
       (int32 result,
        string? headers,
-       url.mojom.Url allowed_unsafe_redirect_url);
+       url.mojom.Url? preserve_fragment_on_redirect_url);
 };
 
 // Interface to allow modifying the full request and response headers. This

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+
 import android.app.Activity;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -124,7 +126,7 @@ public class BaseSuggestionViewTest {
         Assert.assertEquals("right view edge", right, v.getRight());
         Assert.assertEquals("bottom view edge", bottom, v.getBottom());
         Assert.assertEquals("view width", right - left, v.getMeasuredWidth());
-        Assert.assertEquals("view height", bottom - top, v.getMeasuredHeight());
+        Assert.assertThat("view height", v.getMeasuredHeight(), lessThanOrEqualTo(bottom - top));
     }
 
     @Test

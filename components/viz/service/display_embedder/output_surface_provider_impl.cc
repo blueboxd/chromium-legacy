@@ -64,7 +64,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "components/viz/service/display_embedder/gl_output_surface_chromeos.h"
 #include "components/viz/service/display_embedder/output_surface_unified.h"
 #endif
 
@@ -206,9 +205,6 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
           std::move(context_provider), surface_handle);
 #elif defined(OS_ANDROID)
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
-          std::move(context_provider), surface_handle);
-#elif defined(OS_CHROMEOS)
-      output_surface = std::make_unique<GLOutputSurfaceChromeOS>(
           std::move(context_provider), surface_handle);
 #else
       output_surface = std::make_unique<GLOutputSurface>(

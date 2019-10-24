@@ -19,7 +19,7 @@ import java.io.File;
  * Android activity for running chrome browser tests.
  */
 public class ChromeBrowserTestsActivity extends ChromeTabbedActivity {
-    private static final String TAG = "cr_browser_test";
+    private static final String TAG = "browser_test";
 
     private NativeTest mTest = new NativeTest();
 

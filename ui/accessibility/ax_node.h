@@ -49,11 +49,11 @@ class AX_EXPORT AXNode final {
       ax::mojom::TextAffinity focus_affinity;
     };
 
-    // See AXTree.
+    // See AXTree::GetAXTreeID.
     virtual AXTreeID GetAXTreeID() const = 0;
-    // See AXTree.
+    // See AXTree::GetTableInfo.
     virtual AXTableInfo* GetTableInfo(const AXNode* table_node) const = 0;
-    // See AXTree.
+    // See AXTree::GetFromId.
     virtual AXNode* GetFromId(int32_t id) const = 0;
 
     virtual int32_t GetPosInSet(const AXNode& node,

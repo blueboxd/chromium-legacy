@@ -32,7 +32,8 @@ class CORE_EXPORT InterpolableTransformList final : public InterpolableValue {
   // and interpolation, to apply the results back to the style.
   TransformOperations operations() const { return operations_; }
 
-  void PreConcat(const InterpolableTransformList&);
+  void PreConcat(const InterpolableTransformList& underlying);
+  void AccumulateOnto(const InterpolableTransformList& underlying);
 
   // InterpolableValue implementation:
   void Interpolate(const InterpolableValue& to,

@@ -28,7 +28,7 @@ import java.util.List;
  * Bridge to the native AutocompleteControllerAndroid.
  */
 public class AutocompleteController {
-    private static final String TAG = "cr_Autocomplete";
+    private static final String TAG = "Autocomplete";
 
     // Maximum number of voice suggestions to show.
     private static final int MAX_VOICE_SUGGESTION_COUNT = 3;

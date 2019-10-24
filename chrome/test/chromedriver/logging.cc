@@ -276,7 +276,7 @@ Log::Level WebDriverLog::min_level() const {
   return min_level_;
 }
 
-bool InitLogging() {
+bool InitLogging(uint16_t port) {
   g_start_time = base::TimeTicks::Now().ToInternalValue();
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
@@ -348,7 +348,7 @@ bool InitLogging() {
   bool res = logging::InitLogging(logging_settings);
   if (cmd_line->HasSwitch("log-path") && res) {
     VLOG(0) << "Starting " << kChromeDriverProductFullName << " "
-            << kChromeDriverVersion;
+            << kChromeDriverVersion << " on port " << port;
     VLOG(0) << GetPortProtectionMessage();
   }
   return res;

@@ -386,7 +386,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void SetBrowserControlsState(float top_height,
                                        float bottom_height,
                                        bool shrinks_layout) {}
-  virtual void SetBrowserControlsShownRatio(float) {}
+  virtual void SetBrowserControlsShownRatio(float top_ratio,
+                                            float bottom_ratio) {}
 
   virtual String AcceptLanguages() = 0;
 

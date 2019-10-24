@@ -225,7 +225,7 @@ public class PaymentRequestImpl
     /** Limit in the number of suggested items in a section. */
     public static final int SUGGESTIONS_LIMIT = 4;
 
-    private static final String TAG = "cr_PaymentRequest";
+    private static final String TAG = "PaymentRequest";
     private static final String ANDROID_PAY_METHOD_NAME = "https://android.com/pay";
     private static final String PAY_WITH_GOOGLE_METHOD_NAME = "https://google.com/pay";
     // Reverse order of the comparator to sort in descending order of completeness scores.

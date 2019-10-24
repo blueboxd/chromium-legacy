@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/contacts_picker/contact_address.h"
 #include "third_party/blink/renderer/modules/contacts_picker/contact_info.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -29,7 +30,7 @@ TypeConverter<blink::ContactInfo*, blink::mojom::blink::ContactInfoPtr>::
     Convert(const blink::mojom::blink::ContactInfoPtr& contact) {
   blink::ContactInfo* contact_info = blink::ContactInfo::Create();
 
-  if (contact->name.has_value()) {
+  if (contact->name) {
     Vector<String> names;
     names.ReserveInitialCapacity(contact->name->size());
 
@@ -39,7 +40,7 @@ TypeConverter<blink::ContactInfo*, blink::mojom::blink::ContactInfoPtr>::
     contact_info->setName(names);
   }
 
-  if (contact->email.has_value()) {
+  if (contact->email) {
     Vector<String> emails;
     emails.ReserveInitialCapacity(contact->email->size());
 
@@ -49,7 +50,7 @@ TypeConverter<blink::ContactInfo*, blink::mojom::blink::ContactInfoPtr>::
     contact_info->setEmail(emails);
   }
 
-  if (contact->tel.has_value()) {
+  if (contact->tel) {
     Vector<String> numbers;
     numbers.ReserveInitialCapacity(contact->tel->size());
 
@@ -57,6 +58,17 @@ TypeConverter<blink::ContactInfo*, blink::mojom::blink::ContactInfoPtr>::
       numbers.push_back(number);
 
     contact_info->setTel(numbers);
+  }
+
+  if (contact->address) {
+    blink::HeapVector<blink::Member<blink::ContactAddress>> addresses;
+    for (auto& address : *contact->address) {
+      auto* blink_address = blink::MakeGarbageCollected<blink::ContactAddress>(
+          std::move(address));
+      addresses.push_back(blink_address);
+    }
+
+    contact_info->setAddress(addresses);
   }
 
   return contact_info;
@@ -132,6 +144,7 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
   bool include_names = false;
   bool include_emails = false;
   bool include_tel = false;
+  bool include_addresses = false;
 
   for (const String& property : properties) {
     if (!base::Contains(properties_, property)) {
@@ -149,6 +162,8 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
       include_emails = true;
     else if (property == kTel)
       include_tel = true;
+    else if (property == kAddress)
+      include_addresses = true;
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -157,6 +172,7 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
   contact_picker_in_use_ = true;
   GetContactsManager(script_state)
       ->Select(options->multiple(), include_names, include_emails, include_tel,
+               include_addresses,
                WTF::Bind(&ContactsManager::OnContactsSelected,
                          WrapPersistent(this), WrapPersistent(resolver)));
 

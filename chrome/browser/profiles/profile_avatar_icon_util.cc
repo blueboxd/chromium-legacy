@@ -21,6 +21,7 @@
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -391,6 +392,21 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
 
   return gfx::Image(gfx::ImageSkia(std::move(source), dst_size));
 }
+
+#if defined(OS_MACOSX)
+gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path) {
+  // Always use the low-res, small default avatars in the menu.
+  gfx::Image icon;
+  AvatarMenu::GetImageForMenuButton(profile_path, &icon);
+
+  // Shape the avatar icon into a circle for consistency with other avatar
+  // UI elements.
+  constexpr int kMenuAvatarIconSize = 38;
+  return profiles::GetSizedAvatarIcon(icon, /*is_rectangle=*/true,
+                                      kMenuAvatarIconSize, kMenuAvatarIconSize,
+                                      profiles::SHAPE_CIRCLE);
+}
+#endif
 
 SkBitmap GetAvatarIconAsSquare(const SkBitmap& source_bitmap,
                                int scale_factor) {

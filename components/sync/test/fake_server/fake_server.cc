@@ -34,7 +34,8 @@ using syncer::ModelTypeSet;
 namespace fake_server {
 
 FakeServer::FakeServer()
-    : error_type_(sync_pb::SyncEnums::SUCCESS),
+    : commit_error_type_(sync_pb::SyncEnums::SUCCESS),
+      error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
       request_counter_(0) {
   base::ThreadRestrictions::SetIOAllowed(true);
@@ -48,7 +49,8 @@ FakeServer::FakeServer()
 }
 
 FakeServer::FakeServer(const base::FilePath& user_data_dir)
-    : error_type_(sync_pb::SyncEnums::SUCCESS),
+    : commit_error_type_(sync_pb::SyncEnums::SUCCESS),
+      error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
       request_counter_(0) {
   base::ThreadRestrictions::SetIOAllowed(true);
@@ -179,18 +181,23 @@ net::HttpStatusCode FakeServer::HandleCommand(const std::string& request,
     return *http_error_status_code_;
   }
 
+  sync_pb::ClientToServerMessage message;
+  bool parsed = message.ParseFromString(request);
+  DCHECK(parsed) << "Unable to parse the ClientToServerMessage.";
+
   sync_pb::ClientToServerResponse response_proto;
-  if (error_type_ != sync_pb::SyncEnums::SUCCESS &&
+  if (message.message_contents() == sync_pb::ClientToServerMessage::COMMIT &&
+      commit_error_type_ != sync_pb::SyncEnums::SUCCESS &&
       ShouldSendTriggeredError()) {
+    response_proto.set_error_code(commit_error_type_);
+  } else if (error_type_ != sync_pb::SyncEnums::SUCCESS &&
+             ShouldSendTriggeredError()) {
     response_proto.set_error_code(error_type_);
   } else if (triggered_actionable_error_.get() && ShouldSendTriggeredError()) {
     sync_pb::ClientToServerResponse_Error* error =
         response_proto.mutable_error();
     error->CopyFrom(*(triggered_actionable_error_.get()));
   } else {
-    sync_pb::ClientToServerMessage message;
-    bool parsed = message.ParseFromString(request);
-    DCHECK(parsed) << "Unable to parse the ClientToServerMessage.";
     switch (message.message_contents()) {
       case sync_pb::ClientToServerMessage::GET_UPDATES:
         last_getupdates_message_ = message;
@@ -367,27 +374,28 @@ void FakeServer::SetClientCommand(
   client_command_ = client_command;
 }
 
-bool FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {
+void FakeServer::TriggerCommitError(
+    const sync_pb::SyncEnums::ErrorType& error_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (triggered_actionable_error_) {
-    DVLOG(1) << "Only one type of error can be triggered at any given time.";
-    return false;
-  }
+  DCHECK(error_type == sync_pb::SyncEnums::SUCCESS || !HasTriggeredError());
 
-  error_type_ = error_type;
-  return true;
+  commit_error_type_ = error_type;
 }
 
-bool FakeServer::TriggerActionableError(
+void FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(error_type == sync_pb::SyncEnums::SUCCESS || !HasTriggeredError());
+
+  error_type_ = error_type;
+}
+
+void FakeServer::TriggerActionableError(
     const sync_pb::SyncEnums::ErrorType& error_type,
     const std::string& description,
     const std::string& url,
     const sync_pb::SyncEnums::Action& action) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (error_type_ != sync_pb::SyncEnums::SUCCESS) {
-    DVLOG(1) << "Only one type of error can be triggered at any given time.";
-    return false;
-  }
+  DCHECK(!HasTriggeredError());
 
   sync_pb::ClientToServerResponse_Error* error =
       new sync_pb::ClientToServerResponse_Error();
@@ -396,7 +404,6 @@ bool FakeServer::TriggerActionableError(
   error->set_url(url);
   error->set_action(action);
   triggered_actionable_error_.reset(error);
-  return true;
 }
 
 void FakeServer::ClearActionableError() {
@@ -424,6 +431,12 @@ bool FakeServer::ShouldSendTriggeredError() const {
   // Check that the counter is odd so that we trigger an error on the first
   // request after alternating is enabled.
   return request_counter_ % 2 != 0;
+}
+
+bool FakeServer::HasTriggeredError() const {
+  return commit_error_type_ != sync_pb::SyncEnums::SUCCESS ||
+         error_type_ != sync_pb::SyncEnums::SUCCESS ||
+         triggered_actionable_error_;
 }
 
 void FakeServer::AddObserver(Observer* observer) {

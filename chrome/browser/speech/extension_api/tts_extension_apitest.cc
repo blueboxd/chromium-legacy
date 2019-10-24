@@ -27,11 +27,9 @@
 #include "extensions/browser/notification_types.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
-using ::testing::CreateFunctor;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::InSequence;
@@ -395,10 +393,10 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakError) {
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, DoSpeak(_, "first try", _, _, _))
-      .WillOnce(DoAll(InvokeWithoutArgs(CreateFunctor(
-                          &MockTtsPlatformImpl::SetErrorToEpicFail,
-                          base::Unretained(&mock_platform_impl_))),
-                      Return()));
+      .WillOnce(
+          DoAll(InvokeWithoutArgs(&mock_platform_impl_,
+                                  &MockTtsPlatformImpl::SetErrorToEpicFail),
+                Return()));
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
 

@@ -849,9 +849,7 @@ UserMediaProcessor::GetMediaStreamDeviceObserver() {
       media_stream_device_observer_for_testing_;
   if (frame_) {  // Can be null for tests.
     auto* web_frame = static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame_));
-    DCHECK(web_frame);
-
-    if (!web_frame->Client())
+    if (!web_frame || !web_frame->Client())
       return nullptr;
 
     // TODO(704136): Move ownership of |WebMediaStreamDeviceObserver| out of

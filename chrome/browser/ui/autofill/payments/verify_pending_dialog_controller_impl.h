@@ -30,7 +30,6 @@ class VerifyPendingDialogControllerImpl
 
   // VerifyPendingDialogController:
   base::string16 GetDialogTitle() const override;
-  base::string16 GetCancelButtonLabel() const override;
   void OnCancel() override;
   void OnDialogClosed() override;
 

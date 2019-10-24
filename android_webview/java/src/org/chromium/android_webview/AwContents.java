@@ -1645,12 +1645,12 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * @return load progress of the WebContents.
+     * @return load progress of the WebContents, on a scale of 0-100.
      */
     public int getMostRecentProgress() {
         if (isDestroyed(WARN)) return 0;
-        // WebContentsDelegateAndroid conveniently caches the most recent notified value for us.
-        return mWebContentsDelegate.getMostRecentProgress();
+        if (!mWebContents.isLoading()) return 100;
+        return Math.round(100 * mWebContents.getLoadProgress());
     }
 
     public Bitmap getFavicon() {

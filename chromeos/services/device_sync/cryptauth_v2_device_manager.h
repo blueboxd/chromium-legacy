@@ -56,7 +56,7 @@ class CryptAuthV2DeviceManager {
   //               by a GCM message or if no session ID was included in the GCM
   //               message.
   virtual void ForceDeviceSyncNow(
-      const cryptauthv2::ClientMetadata::InvocationReason&,
+      const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
       const base::Optional<std::string>& session_id) = 0;
 
   // Returns true if a v2 DeviceSync attempt is currently in progress.

@@ -8,16 +8,19 @@
 #include "base/component_export.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "services/network/cookie_settings.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace network {
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) CookieAccessDelegateImpl
     : public net::CookieAccessDelegate {
  public:
-  // |cookie_settings| contains the set of content settings that describes which
-  // cookies should be subject to legacy access rules.
-  // |cookie_settings| is expected to outlive this class.
-  explicit CookieAccessDelegateImpl(const CookieSettings* cookie_settings);
+  // If |type| is USE_CONTENT_SETTINGS, a non-null |cookie_settings| is
+  // expected. |cookie_settings| contains the set of content settings that
+  // describes which cookies should be subject to legacy access rules.
+  // If non-null, |cookie_settings| is expected to outlive this class.
+  CookieAccessDelegateImpl(mojom::CookieAccessDelegateType type,
+                           const CookieSettings* cookie_settings = nullptr);
 
   ~CookieAccessDelegateImpl() override;
 
@@ -26,6 +29,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieAccessDelegateImpl
       const net::CanonicalCookie& cookie) const override;
 
  private:
+  const mojom::CookieAccessDelegateType type_;
   const CookieSettings* const cookie_settings_;
 };
 

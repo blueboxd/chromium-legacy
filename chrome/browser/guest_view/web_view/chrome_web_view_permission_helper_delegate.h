@@ -44,11 +44,6 @@ class ChromeWebViewPermissionHelperDelegate
       const GURL& url,
       bool allowed_by_default,
       base::OnceCallback<void(bool)> callback) override;
-  void FileSystemAccessedAsync(int render_process_id,
-                               int render_frame_id,
-                               int request_id,
-                               const GURL& url,
-                               bool blocked_by_policy) override;
 #if BUILDFLAG(ENABLE_PLUGINS)
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message,

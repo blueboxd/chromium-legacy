@@ -69,6 +69,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/webplugininfo.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
@@ -349,23 +350,24 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     return options;
   }
 
-  void Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                 network_loader_factory_info,
-             ServiceWorkerNavigationHandle*
-                 service_worker_navigation_handle /* for UI thread only */,
-             ServiceWorkerNavigationHandleCore*
-                 service_worker_navigation_handle_core /* for IO thread only */,
-             AppCacheNavigationHandle* appcache_handle,
-             scoped_refptr<PrefetchedSignedExchangeCache>
-                 prefetched_signed_exchange_cache,
-             scoped_refptr<SignedExchangePrefetchMetricRecorder>
-                 signed_exchange_prefetch_metric_recorder,
-             std::unique_ptr<NavigationRequestInfo> request_info,
-             std::unique_ptr<NavigationUIData> navigation_ui_data,
-             network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
-             bool needs_loader_factory_interceptor,
-             base::Time ui_post_time,
-             std::string accept_langs) {
+  void Start(
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          network_loader_factory_info,
+      ServiceWorkerNavigationHandle*
+          service_worker_navigation_handle /* for UI thread only */,
+      ServiceWorkerNavigationHandleCore*
+          service_worker_navigation_handle_core /* for IO thread only */,
+      AppCacheNavigationHandle* appcache_handle,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder>
+          signed_exchange_prefetch_metric_recorder,
+      std::unique_ptr<NavigationRequestInfo> request_info,
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_for_webui,
+      bool needs_loader_factory_interceptor,
+      base::Time ui_post_time,
+      std::string accept_langs) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!started_);
     ui_to_io_time_ += (base::Time::Now() - ui_post_time);
@@ -676,12 +678,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               base::BindOnce(UnknownSchemeCallback, handled));
         }
       } else {
-        network::mojom::URLLoaderFactoryPtr& non_network_factory =
+        mojo::Remote<network::mojom::URLLoaderFactory>& non_network_factory =
             non_network_url_loader_factories_[resource_request_->url.scheme()];
         if (!non_network_factory.is_bound()) {
           owner_->BindNonNetworkURLLoaderFactoryReceiver(
               frame_tree_node_id_, resource_request_->url,
-              mojo::MakeRequest(&non_network_factory));
+              non_network_factory.BindNewPipeAndPassReceiver());
         }
         factory =
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -1163,7 +1165,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   // Lazily initialized and used in the case of non-network resource
   // navigations. Keyed by URL scheme.
-  std::map<std::string, network::mojom::URLLoaderFactoryPtr>
+  std::map<std::string, mojo::Remote<network::mojom::URLLoaderFactory>>
       non_network_url_loader_factories_;
 
   // Non-NetworkService:

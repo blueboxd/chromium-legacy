@@ -17,6 +17,7 @@
 #include "chromecast/public/media/media_capabilities_shlib.h"
 #include "chromecast/renderer/cast_media_playback_options.h"
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
+#include "chromecast/renderer/js_channel_bindings.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
 #include "chromecast/renderer/on_load_script_injector.h"
@@ -193,6 +194,11 @@ void CastContentRendererClient::RenderFrameCreated(
   new extensions::ExtensionFrameHelper(render_frame, dispatcher);
 
   dispatcher->OnRenderFrameCreated(render_frame);
+#endif
+
+#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+  // JsChannelBindings destroys itself when the RenderFrame is destroyed.
+  JsChannelBindings::Create(render_frame);
 #endif
 }
 

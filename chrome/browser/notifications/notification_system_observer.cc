@@ -21,8 +21,6 @@ NotificationSystemObserver::NotificationSystemObserver(
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllSources());
   for (auto* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
     extension_registry_observer_.Add(
@@ -52,12 +50,6 @@ void NotificationSystemObserver::Observe(
         extension_registry_observer_.Add(registry);
       break;
     }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED:
-      // We only want to remove the incognito notifications.
-      if (content::Source<Profile>(source)->IsOffTheRecord())
-        ui_manager_->CancelAllByProfile(NotificationUIManager::GetProfileID(
-            content::Source<Profile>(source).ptr()));
-      break;
     default:
       NOTREACHED();
   }

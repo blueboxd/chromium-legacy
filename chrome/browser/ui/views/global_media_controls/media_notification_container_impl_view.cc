@@ -93,7 +93,7 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
 
   view_ = std::make_unique<media_message_center::MediaNotificationView>(
       this, std::move(item), dismiss_button_container_.get(), base::string16(),
-      kWidth);
+      kWidth, /*should_show_icon=*/false);
   view_->set_owned_by_client();
   ForceExpandedState();
 

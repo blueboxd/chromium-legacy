@@ -34,8 +34,7 @@ TEST_F(CastViewsTest, ProgressBar) {
   widget->Init(std::move(params));
   widget->SetOpacity(0.6);
   widget->SetContentsView(progress_bar);
-  window_manager->SetWindowId(widget->GetNativeView(),
-                              CastWindowManager::VOLUME);
+  window_manager->SetZOrder(widget->GetNativeView(), mojom::ZOrder::VOLUME);
   widget->Show();
 
   EXPECT_TRUE(progress_bar->GetWidget());

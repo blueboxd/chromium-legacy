@@ -21,6 +21,15 @@ struct NativeFileSystemEntry {
   string name;
 };
 
+interface NativeFileSystemDirectoryEntriesListener {
+  // Called by NativeFileSystemDirectoryHandle.GetEntries when some entries
+  // have been obtained. |has_more_entries| is false when all the entries have
+  // been obtained, and  indicates that the callback will not be called again.
+  DidReadDirectory(NativeFileSystemError result,
+                   array<NativeFileSystemEntry> entries,
+                   bool has_more_entries);
+};
+
 // This interface represents a handle to a directory in the Native File System
 // API.
 //
@@ -55,9 +64,7 @@ interface NativeFileSystemDirectoryHandle {
        pending_remote<NativeFileSystemDirectoryHandle>? directory);
 
   // Returns all the direct children of this directory.
-  // TODO(mek): Change this API to stream results in chunks rather than block
-  // until all entries have been retrieved.
-  GetEntries() => (NativeFileSystemError result, array<NativeFileSystemEntry> entries);
+  GetEntries(pending_remote<NativeFileSystemDirectoryEntriesListener> listener);
 
   // Deletes an entry which is a child of this directory.
   // To delete recursively, set |recurse| to true.

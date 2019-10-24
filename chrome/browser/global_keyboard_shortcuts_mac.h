@@ -35,9 +35,6 @@ struct CommandForKeyEventResult {
   // The command to execute. -1 if none was found.
   int chrome_command;
 
-  // The action, if any, which the key event would trigger.
-  SEL action;
-
   // Whether the command was from a mapping in the main menu. Only relevant if
   // command != -1.
   bool from_main_menu;

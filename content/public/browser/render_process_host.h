@@ -538,7 +538,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Binds |receiver| to an instance of PaymentManager. This is for internal
   // use only, and is only exposed here to support MockRenderProcessHost usage
   // in tests.
-  virtual void CreatePaymentManager(
+  virtual void CreatePaymentManagerForOrigin(
+      const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) = 0;
 
   // Returns the current number of active views in this process.  Excludes

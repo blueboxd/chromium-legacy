@@ -719,18 +719,11 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   bool supports_implicit_resolve =
       !UsingSwapChain() && extensions_util_->SupportsExtension(
                                "GL_EXT_multisampled_render_to_texture");
-  bool supports_screen_space_aa =
-      !UsingSwapChain() && extensions_util_->SupportsExtension(
-                               "GL_CHROMIUM_screen_space_antialiasing");
   if (webgl_preferences.anti_aliasing_mode == kAntialiasingModeUnspecified) {
     if (use_multisampling) {
       anti_aliasing_mode_ = kAntialiasingModeMSAAExplicitResolve;
       if (supports_implicit_resolve) {
         anti_aliasing_mode_ = kAntialiasingModeMSAAImplicitResolve;
-      } else if (supports_screen_space_aa &&
-                 ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
-                     gpu::USE_FRAMEBUFFER_CMAA)) {
-        anti_aliasing_mode_ = kAntialiasingModeScreenSpaceAntialiasing;
       }
     } else {
       anti_aliasing_mode_ = kAntialiasingModeNone;
@@ -738,25 +731,12 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   } else {
     bool prefer_implicit_resolve = (webgl_preferences.anti_aliasing_mode ==
                                     kAntialiasingModeMSAAImplicitResolve);
-    bool prefer_screen_space_aa = (webgl_preferences.anti_aliasing_mode ==
-                                   kAntialiasingModeScreenSpaceAntialiasing);
-    if ((prefer_implicit_resolve && !supports_implicit_resolve) ||
-        (prefer_screen_space_aa && !supports_screen_space_aa)) {
+    if (prefer_implicit_resolve && !supports_implicit_resolve) {
       DLOG(ERROR) << "Invalid anti-aliasing mode specified.";
       return false;
     }
     anti_aliasing_mode_ = webgl_preferences.anti_aliasing_mode;
   }
-
-  // TODO(dshwang): Enable storage textures on all platforms. crbug.com/557848
-  // The Linux ATI bot fails
-  // WebglConformance.conformance_textures_misc_tex_image_webgl, so use storage
-  // textures only if ScreenSpaceAntialiasing is enabled, because
-  // ScreenSpaceAntialiasing is much faster with storage textures.
-  storage_texture_supported_ =
-      (webgl_version_ > kWebGL1 ||
-       extensions_util_->SupportsExtension("GL_EXT_texture_storage")) &&
-      anti_aliasing_mode_ == kAntialiasingModeScreenSpaceAntialiasing;
 
   sample_count_ = std::min(
       static_cast<int>(webgl_preferences.msaa_sample_count), max_sample_count);
@@ -1235,8 +1215,6 @@ void DrawingBuffer::ResolveMultisampleFramebufferInternal() {
   }
 
   gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-  if (anti_aliasing_mode_ == kAntialiasingModeScreenSpaceAntialiasing)
-    gl_->ApplyScreenSpaceAntialiasingCHROMIUM();
 }
 
 void DrawingBuffer::ResolveIfNeeded() {

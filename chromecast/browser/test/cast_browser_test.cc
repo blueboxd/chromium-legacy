@@ -49,7 +49,7 @@ void CastBrowserTest::PreRunTestOnMainThread() {
       CastBrowserProcess::GetInstance()->browser_context());
   web_contents_manager_ = std::make_unique<CastWebContentsManager>(
       CastBrowserProcess::GetInstance()->browser_context(),
-      web_view_factory_.get());
+      web_view_factory_.get(), nullptr /* window_manager */);
 }
 
 void CastBrowserTest::PostRunTestOnMainThread() {

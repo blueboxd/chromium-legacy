@@ -3683,8 +3683,9 @@ int RenderWidget::GetLayerTreeId() const {
   return layer_tree_host_->GetId();
 }
 
-void RenderWidget::SetBrowserControlsShownRatio(float ratio) {
-  layer_tree_host_->SetBrowserControlsShownRatio(ratio);
+void RenderWidget::SetBrowserControlsShownRatio(float top_ratio,
+                                                float bottom_ratio) {
+  layer_tree_host_->SetBrowserControlsShownRatio(top_ratio, bottom_ratio);
 }
 
 void RenderWidget::SetBrowserControlsHeight(float top_height,

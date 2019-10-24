@@ -236,7 +236,8 @@ class TestWebWidgetClient : public WebWidgetClient {
   void StartDeferringCommits(base::TimeDelta timeout) override;
   void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void DidMeaningfulLayout(WebMeaningfulLayout) override;
-  void SetBrowserControlsShownRatio(float) override;
+  void SetBrowserControlsShownRatio(float top_ratio,
+                                    float bottom_ratio) override;
   void SetBrowserControlsHeight(float top_height,
                                 float bottom_height,
                                 bool shrink_viewport) override;

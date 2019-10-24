@@ -387,8 +387,6 @@ void ResourceMultiBufferDataProvider::DidReceiveData(const char* data,
   DCHECK(active_loader_);
   DCHECK_GT(data_length, 0);
 
-  url_data_->AddBytesReadFromNetwork(data_length);
-
   if (bytes_to_discard_) {
     uint64_t tmp = std::min<uint64_t>(bytes_to_discard_, data_length);
     data_length -= tmp;

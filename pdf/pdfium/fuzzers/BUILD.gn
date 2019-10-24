@@ -27,6 +27,7 @@ group("pdf_fuzzers") {
     ":pdf_hint_table_fuzzer",
     ":pdf_jpx_fuzzer",
     ":pdf_psengine_fuzzer",
+    ":pdf_scanlinecompositor_fuzzer",
     ":pdf_streamparser_fuzzer",
     ":pdf_xml_fuzzer",
     ":pdfium_fuzzer",
@@ -65,6 +66,9 @@ group("pdf_fuzzers") {
         deps += [ ":pdf_codec_tiff_fuzzer" ]
       }
     }
+  }
+  if (is_clang) {
+    deps += [ ":pdf_nametree_fuzzer" ]
   }
 }
 
@@ -146,6 +150,13 @@ fuzzer_test("pdf_psengine_fuzzer") {
   sources = []
   deps = [
     "//third_party/pdfium/testing/fuzzers:pdf_psengine_fuzzer_src",
+  ]
+}
+
+fuzzer_test("pdf_scanlinecompositor_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/fuzzers:pdf_scanlinecompositor_fuzzer_src",
   ]
 }
 
@@ -355,6 +366,15 @@ if (pdf_enable_v8) {
         "//testing/gtest",
       ]
     }
+  }
+}
+
+if (is_clang) {
+  fuzzer_test("pdf_nametree_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/fuzzers:pdf_nametree_fuzzer_src",
+    ]
   }
 }
 

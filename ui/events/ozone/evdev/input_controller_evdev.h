@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/input_device_settings_evdev.h"
 #include "ui/ozone/public/input_controller.h"
@@ -70,7 +71,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void SetInternalKeyboardFilter(bool enable_filter,
                                  std::vector<DomCode> allowed_keys) override;
   void GetGesturePropertiesService(
-      ozone::mojom::GesturePropertiesServiceRequest request) override;
+      mojo::PendingReceiver<ozone::mojom::GesturePropertiesService> receiver)
+      override;
 
  private:
   // Post task to update settings.

@@ -1036,7 +1036,6 @@ if (enable_vr || enable_arcore) {
         "javatests/src/org/chromium/chrome/browser/vr/VrBrowserTestFramework.java",
         "javatests/src/org/chromium/chrome/browser/vr/VrBrowserTransitionTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/VrBrowserWebInputEditingTest.java",
-        "javatests/src/org/chromium/chrome/browser/vr/WebVrTestFramework.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrVrConsentTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrVrConsentTestFramework.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrVrDeviceTest.java",

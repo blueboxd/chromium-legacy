@@ -14,7 +14,6 @@
 
 MOCK_METHOD2(ActiveShaderProgram, void(GLuint pipeline, GLuint program));
 MOCK_METHOD1(ActiveTexture, void(GLenum texture));
-MOCK_METHOD0(ApplyFramebufferAttachmentCMAAINTEL, void());
 MOCK_METHOD2(AttachShader, void(GLuint program, GLuint shader));
 MOCK_METHOD2(BeginQuery, void(GLenum target, GLuint id));
 MOCK_METHOD1(BeginTransformFeedback, void(GLenum primitiveMode));

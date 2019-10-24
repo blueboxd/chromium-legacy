@@ -79,6 +79,10 @@ interface LocalFrame {
   // intervention that occurred. |message| is a human-readable string that
   // can provide additional context to the cause of the intervention.
   SendInterventionReport(string id, string message);
+
+  // Notifies the RenderFrame about a user activation detected in the browser side
+  // (e.g. during Android voice search).
+  NotifyUserActivation();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

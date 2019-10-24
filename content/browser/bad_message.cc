@@ -76,12 +76,6 @@ base::debug::CrashKeyString* GetMojoErrorCrashKey() {
   return crash_key;
 }
 
-base::debug::CrashKeyString* GetKilledProcessOriginLockKey() {
-  static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "killed_process_origin_lock", base::debug::CrashKeySize::Size64);
-  return crash_key;
-}
-
 base::debug::CrashKeyString* GetRequestedSiteURLKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
       "requested_site_url", base::debug::CrashKeySize::Size64);

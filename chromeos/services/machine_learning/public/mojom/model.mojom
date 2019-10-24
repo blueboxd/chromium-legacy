@@ -78,6 +78,6 @@ struct FlatBufferModelSpec {
 // interface pipe. The Model interface pipe can be used to acquire multiple
 // separate GraphExecutor instances.
 interface Model {
-  CreateGraphExecutor(GraphExecutor& request) =>
+  CreateGraphExecutor(pending_receiver<GraphExecutor> receiver) =>
       (CreateGraphExecutorResult result);
 };

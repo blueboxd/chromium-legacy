@@ -138,6 +138,7 @@ void CreatePermissionServiceImpl(
 }
 
 void CreatePaymentManagerImpl(
+    const url::Origin& origin,
     int process_id,
     mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -145,7 +146,7 @@ void CreatePaymentManagerImpl(
   if (!process)
     return;
 
-  process->CreatePaymentManager(std::move(receiver));
+  process->CreatePaymentManagerForOrigin(origin, std::move(receiver));
 }
 
 ServiceWorkerMetrics::EventType PurposeToEventType(
@@ -1503,8 +1504,9 @@ void ServiceWorkerProviderHost::CreatePaymentManager(
   DCHECK(IsProviderForServiceWorker());
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&CreatePaymentManagerImpl, render_process_id_,
-                     std::move(receiver)));
+      base::BindOnce(&CreatePaymentManagerImpl,
+                     running_hosted_version_->script_origin(),
+                     render_process_id_, std::move(receiver)));
 }
 
 void ServiceWorkerProviderHost::SetExecutionReady() {

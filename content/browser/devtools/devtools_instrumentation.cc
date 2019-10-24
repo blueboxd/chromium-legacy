@@ -19,6 +19,7 @@
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/file_select_listener.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -380,15 +381,14 @@ bool WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     std::unique_ptr<network::mojom::URLLoaderFactory>* factory) {
-  // TODO(crbug.com/955171): Replace this with PendingRemote.
-  network::mojom::URLLoaderFactoryPtrInfo proxied_factory;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> proxied_factory;
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
-      mojo::MakeRequest(&proxied_factory);
+      proxied_factory.InitWithNewPipeAndPassReceiver();
   if (!WillCreateURLLoaderFactory(rfh, is_navigation, is_download, &receiver))
     return false;
   mojo::MakeSelfOwnedReceiver(std::move(*factory), std::move(receiver));
   *factory = std::make_unique<DevToolsURLLoaderFactoryAdapter>(
-      mojo::MakeProxy(std::move(proxied_factory)));
+      std::move(proxied_factory));
   return true;
 }
 

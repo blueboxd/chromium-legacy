@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 
 namespace base {
@@ -137,6 +138,7 @@ class RulesetSource {
   static std::unique_ptr<RulesetSource> CreateTemporarySource(
       size_t id,
       size_t priority,
+      api::declarative_net_request::SourceType type,
       size_t rule_count_limit,
       ExtensionId extension_id);
 
@@ -144,6 +146,7 @@ class RulesetSource {
                 base::FilePath indexed_path,
                 size_t id,
                 size_t priority,
+                api::declarative_net_request::SourceType type,
                 size_t rule_count_limit,
                 ExtensionId extension_id);
   ~RulesetSource();
@@ -161,6 +164,9 @@ class RulesetSource {
   // Each ruleset source within an extension has a distinct ID and priority.
   size_t id() const { return id_; }
   size_t priority() const { return priority_; }
+
+  // The origin type for this ruleset. Can be from the manifest or dynamic.
+  api::declarative_net_request::SourceType type() const { return type_; }
 
   // The maximum number of rules that will be indexed from this source.
   size_t rule_count_limit() const { return rule_count_limit_; }
@@ -207,6 +213,7 @@ class RulesetSource {
   base::FilePath indexed_path_;
   size_t id_;
   size_t priority_;
+  api::declarative_net_request::SourceType type_;
   size_t rule_count_limit_;
   ExtensionId extension_id_;
 

@@ -210,6 +210,7 @@ cast_source_set("browser") {
       "android/cast_content_window_android.cc",
       "android/cast_content_window_android.h",
       "android/cast_metrics_helper_android.cc",
+      "android/cast_web_contents_manager_android.cc",
     ]
     deps += [
       ":jni_headers",
@@ -245,9 +246,13 @@ cast_source_set("browser") {
     sources += [
       "cast_content_window_aura.cc",
       "cast_content_window_aura.h",
+      "cast_web_contents_manager_aura.cc",
     ]
 
-    deps += [ "//ui/views:views" ]
+    deps += [
+      "//chromecast/ui:media_control_ui",
+      "//ui/views:views",
+    ]
   }
 
   if (!is_fuchsia) {
@@ -382,6 +387,8 @@ cast_source_set("browser") {
       "exo/cast_wm_helper.h",
       "exo/wayland_server_controller.cc",
       "exo/wayland_server_controller.h",
+      "webview/js_channel_service.cc",
+      "webview/js_channel_service.h",
       "webview/platform_views_rpc_instance.cc",
       "webview/platform_views_rpc_instance.h",
       "webview/web_content_controller.cc",
@@ -443,6 +450,7 @@ cast_source_set("public") {
   deps = [
     "//base",
     "//chromecast/graphics",
+    "//chromecast/ui/mojom",
     "//content/public/common",
     "//ui/events",
     "//url",

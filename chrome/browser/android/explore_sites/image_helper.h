@@ -11,7 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/data_decoder/public/mojom/data_decoder_service.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace explore_sites {
@@ -31,7 +32,7 @@ class ImageHelper {
   void ComposeSiteImage(
       BitmapCallback callback,
       EncodedImageList images,
-      std::unique_ptr<service_manager::Connector> connector = nullptr);
+      data_decoder::mojom::DataDecoderService* service_override = nullptr);
 
   // Compose a category icon containing [1 - 4] site icons and return via
   // |callback|.
@@ -39,7 +40,7 @@ class ImageHelper {
       BitmapCallback callback,
       int pixel_size,
       EncodedImageList images,
-      std::unique_ptr<service_manager::Connector> connector = nullptr);
+      data_decoder::mojom::DataDecoderService* service_override = nullptr);
 
  private:
   class Job;
@@ -49,10 +50,13 @@ class ImageHelper {
               BitmapCallback bitmap_callback,
               EncodedImageList images,
               int pixel_size,
-              std::unique_ptr<service_manager::Connector> connector);
+              data_decoder::mojom::DataDecoderService* service_override);
 
   void OnJobFinished(int job_id);
 
+  data_decoder::mojom::DataDecoderService* GetDataDecoder();
+
+  mojo::Remote<data_decoder::mojom::DataDecoderService> data_decoder_;
   std::map<int, std::unique_ptr<Job>> id_to_job_;
   int last_used_job_id_;
 

@@ -142,10 +142,6 @@ void CryptAuthDeviceActivityGetterImpl::OnClientAppMetadataFetched(
           CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether));
   request.mutable_context()->set_device_id(
       client_app_metadata.value().instance_id());
-
-  // TODO(https://crbug.com/990430): This is the IID token for the v2 Enrollment
-  // service. A different IID token for the v2 DeviceSync service will be
-  // necessary.
   request.mutable_context()->set_device_id_token(
       client_app_metadata.value().instance_id_token());
 

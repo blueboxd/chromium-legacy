@@ -55,7 +55,7 @@ CastWebViewDefault::CastWebViewDefault(
     CastWebContentsManager* web_contents_manager,
     content::BrowserContext* browser_context,
     scoped_refptr<content::SiteInstance> site_instance,
-    std::unique_ptr<shell::CastContentWindow> cast_content_window)
+    std::unique_ptr<CastContentWindow> cast_content_window)
     : web_contents_manager_(web_contents_manager),
       browser_context_(browser_context),
       site_instance_(std::move(site_instance)),
@@ -66,7 +66,7 @@ CastWebViewDefault::CastWebViewDefault(
       cast_web_contents_(web_contents_.get(), params.web_contents_params),
       window_(cast_content_window
                   ? std::move(cast_content_window)
-                  : shell::CastContentWindow::Create(params.window_params)),
+                  : web_contents_manager->CreateWindow(params.window_params)),
       resize_window_when_navigation_starts_(true) {
   DCHECK(delegate_);
   DCHECK(web_contents_manager_);
@@ -90,7 +90,7 @@ CastWebViewDefault::CastWebViewDefault(
 
 CastWebViewDefault::~CastWebViewDefault() {}
 
-shell::CastContentWindow* CastWebViewDefault::window() const {
+CastContentWindow* CastWebViewDefault::window() const {
   return window_.get();
 }
 
@@ -127,13 +127,11 @@ void CastWebViewDefault::CloseContents(content::WebContents* source) {
   cast_web_contents_.Stop(net::OK);
 }
 
-void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
-                                          CastWindowManager::WindowId z_order,
+void CastWebViewDefault::InitializeWindow(mojom::ZOrder z_order,
                                           VisibilityPriority initial_priority) {
-  DCHECK(window_manager);
   DCHECK(window_);
-  window_->CreateWindowForWebContents(web_contents_.get(), window_manager,
-                                      z_order, initial_priority);
+  window_->CreateWindowForWebContents(&cast_web_contents_, z_order,
+                                      initial_priority);
   web_contents_->Focus();
 }
 

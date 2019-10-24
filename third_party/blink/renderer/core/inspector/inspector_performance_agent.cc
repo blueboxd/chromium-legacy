@@ -95,11 +95,11 @@ Response InspectorPerformanceAgent::setTimeDomain(const String& time_domain) {
         " is enabled.");
   }
 
-  using namespace protocol::Performance::SetTimeDomain;
-
-  if (time_domain == TimeDomainEnum::TimeTicks) {
+  if (time_domain ==
+      protocol::Performance::SetTimeDomain::TimeDomainEnum::TimeTicks) {
     use_thread_ticks_.Clear();
-  } else if (time_domain == TimeDomainEnum::ThreadTicks) {
+  } else if (time_domain == protocol::Performance::SetTimeDomain::
+                                TimeDomainEnum::ThreadTicks) {
     if (!base::ThreadTicks::IsSupported()) {
       return Response::Error("Thread time is not supported on this platform.");
     }

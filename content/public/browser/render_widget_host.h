@@ -241,10 +241,20 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
     virtual void OnInputEventAck(InputEventAckSource source,
                                  InputEventAckState state,
                                  const blink::WebInputEvent&) {}
-    // Key events are not triggered through InputEvent on Android.
-    // This function is triggered by IME commitText.
+
 #if defined(OS_ANDROID)
+    // Not all key events are triggered through InputEvent on Android.
+    // InputEvents are only triggered when user typed in through number bar on
+    // Android keyboard. This function is triggered when text is committed in
+    // input form.
     virtual void OnImeTextCommittedEvent(const base::string16& text_str) {}
+    // This function is triggered when composing text is updated. Note that
+    // text_str contains all text that is currently under composition rather
+    // than updated text only.
+    virtual void OnImeSetComposingTextEvent(const base::string16& text_str) {}
+    // This function is triggered when composing text is filled into the input
+    // form.
+    virtual void OnImeFinishComposingTextEvent() {}
 #endif
   };
 
@@ -253,11 +263,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void RemoveInputEventObserver(InputEventObserver* observer) = 0;
 
 #if defined(OS_ANDROID)
-  // Add/remove an Ime text committed event observer.
-  virtual void AddImeTextCommittedEventObserver(
-      RenderWidgetHost::InputEventObserver* observer) = 0;
-  virtual void RemoveImeTextCommittedEventObserver(
-      InputEventObserver* observer) = 0;
+  // Add/remove an Ime input event observer.
+  virtual void AddImeInputEventObserver(InputEventObserver* observer) = 0;
+  virtual void RemoveImeInputEventObserver(InputEventObserver* observer) = 0;
 #endif
 
   // Add and remove observers for widget host events. The order in which

@@ -303,7 +303,6 @@ jumbo_static_library("content_shell_lib") {
     "//content/shell/test_runner:test_runner",
     "//content/test:content_test_mojo_bindings",
     "//content/test:mojo_web_test_bindings",
-    "//content/test:mojo_web_test_old_names_bindings",
     "//content/test:test_support",
     "//content/test:web_test_support",
     "//device/bluetooth",
@@ -477,6 +476,10 @@ jumbo_static_library("content_shell_lib") {
       "browser/shell_plugin_service_filter.cc",
       "browser/shell_plugin_service_filter.h",
     ]
+  }
+
+  if (enable_cast_renderer) {
+    deps += [ "//media/mojo/mojom:constants" ]
   }
 }
 

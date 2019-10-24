@@ -969,7 +969,6 @@ virtual void ContextVisibilityHintCHROMIUM(GLboolean visibility) = 0;
 virtual void CoverageModulationCHROMIUM(GLenum components) = 0;
 virtual GLenum GetGraphicsResetStatusKHR() = 0;
 virtual void BlendBarrierKHR() = 0;
-virtual void ApplyScreenSpaceAntialiasingCHROMIUM() = 0;
 virtual void BindFragDataLocationIndexedEXT(GLuint program,
                                             GLuint colorNumber,
                                             GLuint index,

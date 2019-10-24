@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
@@ -19,9 +19,17 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace explore_sites {
+
 namespace {
+
 // Ratio of icon size to the amount of padding between the icons.
 const int kIconPaddingScale = 8;
+
+// How long to let our Data Decoder service instance hang around unused before
+// terminating it.
+constexpr base::TimeDelta kDataDecoderInstanceTimeout{
+    base::TimeDelta::FromSeconds(5)};
+
 }  // namespace
 
 // Class Job is used to manage multiple calls to the ImageHelper. Each request
@@ -31,26 +39,26 @@ class ImageHelper::Job {
  public:
   // WARNING: When ImageJobFinishedCallback is called, |this| may be deleted.
   // So nothing can be called after this callback.
-  Job(ImageJobType job_type,
+  Job(ImageHelper* image_helper,
+      ImageJobType job_type,
       ImageJobFinishedCallback job_finished_callback,
       BitmapCallback bitmap_callback,
       EncodedImageList images,
-      int pixel_size,
-      std::unique_ptr<service_manager::Connector> connector);
+      int pixel_size);
   ~Job();
 
   // Start begins the work that a Job performs (decoding and composition).
-  void Start();
+  void Start(data_decoder::mojom::DataDecoderService* service_override);
 
-  void DecodeImageBytes(std::unique_ptr<EncodedImageBytes> image_bytes);
+  void DecodeImageBytes(
+      std::unique_ptr<EncodedImageBytes> image_bytes,
+      data_decoder::mojom::DataDecoderService* service_override);
   void OnDecodeSiteImageDone(const SkBitmap& decoded_image);
   void OnDecodeCategoryImageDone(const SkBitmap& decoded_image);
   std::unique_ptr<SkBitmap> CombineImages();
 
  private:
-  // Used to inject connector in tests.
-  void SetupConnector();
-
+  ImageHelper* const image_helper_;
   const ImageJobType job_type_;
   ImageJobFinishedCallback job_finished_callback_;
   BitmapCallback bitmap_callback_;
@@ -59,50 +67,42 @@ class ImageHelper::Job {
   int num_icons_, pixel_size_;
   std::vector<SkBitmap> bitmaps_;
 
-  std::unique_ptr<service_manager::Connector> connector_;
-
   base::WeakPtrFactory<Job> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
-ImageHelper::Job::Job(ImageJobType job_type,
+ImageHelper::Job::Job(ImageHelper* image_helper,
+                      ImageJobType job_type,
                       ImageJobFinishedCallback job_finished_callback,
                       BitmapCallback bitmap_callback,
                       EncodedImageList images,
-                      int pixel_size,
-                      std::unique_ptr<service_manager::Connector> connector)
-    : job_type_(job_type),
+                      int pixel_size)
+    : image_helper_(image_helper),
+      job_type_(job_type),
       job_finished_callback_(std::move(job_finished_callback)),
       bitmap_callback_(std::move(bitmap_callback)),
       images_(std::move(images)),
-      pixel_size_(pixel_size),
-      connector_(std::move(connector)) {
+      pixel_size_(pixel_size) {
   num_icons_ = (images_.size() < kFaviconsPerCategoryImage)
                    ? images_.size()
                    : kFaviconsPerCategoryImage;
 }
 
-ImageHelper::Job::~Job() {}
+ImageHelper::Job::~Job() = default;
 
-void ImageHelper::Job::Start() {
+void ImageHelper::Job::Start(
+    data_decoder::mojom::DataDecoderService* service_override) {
   for (int i = 0; i < num_icons_; i++) {
     // TODO(freedjm): preserve order of images.
     DVLOG(1) << "Decoding image " << i + 1 << " of " << images_.size();
-    DecodeImageBytes(std::move(images_[i]));
+    DecodeImageBytes(std::move(images_[i]), service_override);
   }
-}
-
-void ImageHelper::Job::SetupConnector() {
-  connector_ = content::GetSystemConnector()->Clone();
 }
 
 void ImageHelper::Job::DecodeImageBytes(
-    std::unique_ptr<EncodedImageBytes> image_bytes) {
-  if (!connector_) {
-    SetupConnector();
-  }
-
+    std::unique_ptr<EncodedImageBytes> image_bytes,
+    data_decoder::mojom::DataDecoderService* service_override) {
   data_decoder::mojom::ImageDecoder::DecodeImageCallback callback;
   if (job_type_ == ImageJobType::kSiteIcon) {
     callback = base::BindOnce(&ImageHelper::Job::OnDecodeSiteImageDone,
@@ -112,7 +112,16 @@ void ImageHelper::Job::DecodeImageBytes(
                               weak_ptr_factory_.GetWeakPtr());
   }
 
-  data_decoder::DecodeImage(connector_.get(), *image_bytes,
+  mojo::PendingRemote<data_decoder::mojom::ImageDecoder> decoder;
+  if (service_override) {
+    service_override->BindImageDecoder(
+        decoder.InitWithNewPipeAndPassReceiver());
+  } else {
+    image_helper_->GetDataDecoder()->BindImageDecoder(
+        decoder.InitWithNewPipeAndPassReceiver());
+  }
+
+  data_decoder::DecodeImage(std::move(decoder), *image_bytes,
                             data_decoder::mojom::ImageCodec::DEFAULT, false,
                             data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
                             std::move(callback));
@@ -285,12 +294,12 @@ void ImageHelper::NewJob(
     BitmapCallback bitmap_callback,
     EncodedImageList images,
     int pixel_size,
-    std::unique_ptr<service_manager::Connector> connector) {
+    data_decoder::mojom::DataDecoderService* service_override) {
   auto job = std::make_unique<Job>(
-      job_type, std::move(job_finished_callback), std::move(bitmap_callback),
-      std::move(images), pixel_size, std::move(connector));
+      this, job_type, std::move(job_finished_callback),
+      std::move(bitmap_callback), std::move(images), pixel_size);
   id_to_job_[last_used_job_id_] = std::move(job);
-  id_to_job_[last_used_job_id_]->Start();
+  id_to_job_[last_used_job_id_]->Start(service_override);
 }
 
 void ImageHelper::OnJobFinished(int job_id) {
@@ -301,7 +310,7 @@ void ImageHelper::OnJobFinished(int job_id) {
 void ImageHelper::ComposeSiteImage(
     BitmapCallback callback,
     EncodedImageList images,
-    std::unique_ptr<service_manager::Connector> connector) {
+    data_decoder::mojom::DataDecoderService* service_override) {
   DVLOG(1) << "Requested decoding for site image";
   if (images.size() == 0) {
     std::move(callback).Run(nullptr);
@@ -311,14 +320,14 @@ void ImageHelper::ComposeSiteImage(
   NewJob(ImageJobType::kSiteIcon,
          base::BindOnce(&ImageHelper::OnJobFinished, weak_factory_.GetWeakPtr(),
                         ++last_used_job_id_),
-         std::move(callback), std::move(images), -1, std::move(connector));
+         std::move(callback), std::move(images), -1, service_override);
 }
 
 void ImageHelper::ComposeCategoryImage(
     BitmapCallback callback,
     int pixel_size,
     EncodedImageList images,
-    std::unique_ptr<service_manager::Connector> connector) {
+    data_decoder::mojom::DataDecoderService* service_override) {
   DVLOG(1) << "Requested decoding " << images.size()
            << " images for category image";
 
@@ -330,7 +339,17 @@ void ImageHelper::ComposeCategoryImage(
   NewJob(ImageJobType::kCategoryImage,
          base::BindOnce(&ImageHelper::OnJobFinished, weak_factory_.GetWeakPtr(),
                         ++last_used_job_id_),
-         std::move(callback), std::move(images), pixel_size,
-         std::move(connector));
+         std::move(callback), std::move(images), pixel_size, service_override);
 }
+
+data_decoder::mojom::DataDecoderService* ImageHelper::GetDataDecoder() {
+  if (!data_decoder_) {
+    data_decoder_ = content::LaunchDataDecoder();
+    data_decoder_.reset_on_disconnect();
+    data_decoder_.reset_on_idle_timeout(kDataDecoderInstanceTimeout);
+  }
+
+  return data_decoder_.get();
+}
+
 }  // namespace explore_sites

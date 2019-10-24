@@ -13,7 +13,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "net/base/load_flags.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -105,7 +105,7 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
 
 void DataReductionProxyURLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
     net::HttpRequestHeaders* modified_request_headers) {
@@ -117,7 +117,7 @@ void DataReductionProxyURLLoaderThrottle::WillRedirectRequest(
 
 void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -185,7 +185,7 @@ void DataReductionProxyURLLoaderThrottle::MaybeRetry(
 
 void DataReductionProxyURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

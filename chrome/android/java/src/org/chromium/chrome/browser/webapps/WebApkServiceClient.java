@@ -59,7 +59,7 @@ public class WebApkServiceClient {
     public static final String CHANNEL_ID_WEBAPKS = "default_channel_id";
 
     private static final String CATEGORY_WEBAPK_API = "android.intent.category.WEBAPK_API";
-    private static final String TAG = "cr_WebApk";
+    private static final String TAG = "WebApk";
 
     private static WebApkServiceClient sInstance;
 

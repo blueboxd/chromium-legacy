@@ -106,7 +106,7 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
         boolean isProgressBarVisible = panel.isProgressBarVisible();
         float progressBarHeight = panel.getProgressBarHeight();
         float progressBarOpacity = panel.getProgressBarOpacity();
-        int progressBarCompletion = panel.getProgressBarCompletion();
+        float progressBarCompletion = panel.getProgressBarCompletion();
         int separatorLineColor = panel.getSeparatorLineColor();
 
         WebContents panelWebContents = panel.getWebContents();
@@ -181,6 +181,6 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
                 boolean barBorderVisible, float barBorderHeight, boolean barShadowVisible,
                 int iconColor, int dragHandlebarColor, float faviconOpacity,
                 boolean isProgressBarVisible, float progressBarHeight, float progressBarOpacity,
-                int progressBarCompletion, int separatorLineColor);
+                float progressBarCompletion, int separatorLineColor);
     }
 }

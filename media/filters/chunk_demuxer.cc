@@ -828,10 +828,6 @@ bool ChunkDemuxer::EvictCodedFrames(const std::string& id,
   return itr->second->EvictCodedFrames(currentMediaTime, newDataSize);
 }
 
-void ChunkDemuxer::AddBytesReceivedCallback(BytesReceivedCB bytes_received_cb) {
-  bytes_received_cb_ = bytes_received_cb;
-}
-
 bool ChunkDemuxer::AppendData(const std::string& id,
                               const uint8_t* data,
                               size_t length,
@@ -855,9 +851,6 @@ bool ChunkDemuxer::AppendData(const std::string& id,
 
     if (length == 0u)
       return true;
-
-    if (bytes_received_cb_)
-      bytes_received_cb_.Run(length);
 
     DCHECK(data);
 

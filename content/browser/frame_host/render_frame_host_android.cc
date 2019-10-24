@@ -106,7 +106,7 @@ RenderFrameHostAndroid::GetAndroidOverlayRoutingToken(
 void RenderFrameHostAndroid::NotifyUserActivation(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&) {
-  render_frame_host_->NotifyUserActivation();
+  render_frame_host_->GetAssociatedLocalFrame()->NotifyUserActivation();
 }
 
 jboolean RenderFrameHostAndroid::IsRenderFrameCreated(

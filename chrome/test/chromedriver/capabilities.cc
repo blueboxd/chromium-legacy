@@ -404,8 +404,9 @@ Status ParseExcludeSwitches(const base::Value& option,
   return Status(kOk);
 }
 
-Status ParseUseRemoteBrowser(const base::Value& option,
-                               Capabilities* capabilities) {
+Status ParseNetAddress(NetAddress* to_set,
+                       const base::Value& option,
+                       Capabilities* capabilities) {
   std::string server_addr;
   if (!option.GetAsString(&server_addr))
     return Status(kInvalidArgument, "must be 'host:port'");
@@ -420,7 +421,7 @@ Status ParseUseRemoteBrowser(const base::Value& option,
   if (port <= 0)
     return Status(kInvalidArgument, "port must be > 0");
 
-  capabilities->debugger_address = NetAddress(values[0], port);
+  *to_set = NetAddress(values[0], port);
   return Status(kOk);
 }
 
@@ -563,7 +564,8 @@ Status ParseChromeOptions(
     parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
     parser_map["loadAsync"] = base::Bind(&IgnoreDeprecatedOption, "loadAsync");
   } else if (is_remote) {
-    parser_map["debuggerAddress"] = base::Bind(&ParseUseRemoteBrowser);
+    parser_map["debuggerAddress"] =
+        base::Bind(&ParseNetAddress, &capabilities->debugger_address);
   } else {
     parser_map["args"] = base::Bind(&ParseSwitches);
     parser_map["binary"] = base::Bind(&ParseFilePath, &capabilities->binary);

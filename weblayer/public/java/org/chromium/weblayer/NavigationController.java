@@ -170,6 +170,20 @@ public final class NavigationController {
         }
 
         @Override
+        public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
+            for (NavigationObserver observer : mObservers) {
+                observer.loadStateChanged(isLoading, toDifferentDocument);
+            }
+        }
+
+        @Override
+        public void loadProgressChanged(double progress) {
+            for (NavigationObserver observer : mObservers) {
+                observer.loadProgressChanged(progress);
+            }
+        }
+
+        @Override
         public void onFirstContentfulPaint() {
             for (NavigationObserver observer : mObservers) {
                 observer.onFirstContentfulPaint();

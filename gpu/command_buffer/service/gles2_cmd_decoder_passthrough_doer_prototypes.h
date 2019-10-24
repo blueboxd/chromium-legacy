@@ -1050,7 +1050,6 @@ error::Error DoProgramPathFragmentInputGenCHROMIUM(GLuint program,
                                                    GLsizei coeffsBufsize);
 error::Error DoCoverageModulationCHROMIUM(GLenum components);
 error::Error DoBlendBarrierKHR();
-error::Error DoApplyScreenSpaceAntialiasingCHROMIUM();
 error::Error DoBindFragDataLocationIndexedEXT(GLuint program,
                                               GLuint colorNumber,
                                               GLuint index,

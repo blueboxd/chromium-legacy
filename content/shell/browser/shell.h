@@ -147,7 +147,6 @@ class Shell : public WebContentsDelegate,
   void LoadingStateChanged(WebContents* source,
                            bool to_different_document) override;
 #if defined(OS_ANDROID)
-  void LoadProgressChanged(WebContents* source, double progress) override;
   void SetOverlayMode(bool use_overlay_mode) override;
 #endif
   void EnterFullscreenModeForTab(
@@ -269,6 +268,9 @@ class Shell : public WebContentsDelegate,
   void ToggleFullscreenModeForTab(WebContents* web_contents,
                                   bool enter_fullscreen);
   // WebContentsObserver
+#if defined(OS_ANDROID)
+  void LoadProgressChanged(double progress) override;
+#endif
   void TitleWasSet(NavigationEntry* entry) override;
 
   void OnDevToolsWebContentsDestroyed();

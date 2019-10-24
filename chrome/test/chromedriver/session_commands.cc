@@ -179,9 +179,9 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   caps->SetString(chromedriverVersionKey, kChromeDriverVersion);
   const std::string debuggerAddressKey =
       base::StringPrintf("%s.debuggerAddress", kChromeDriverOptionsKeyPrefixed);
-  caps->SetString(
-      debuggerAddressKey,
-      session->chrome->GetBrowserInfo()->debugger_address.ToString());
+  caps->SetString(debuggerAddressKey, session->chrome->GetBrowserInfo()
+                                          ->debugger_endpoint.Address()
+                                          .ToString());
   ChromeDesktopImpl* desktop = NULL;
   Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsOk()) {

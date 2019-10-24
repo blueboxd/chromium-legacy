@@ -98,11 +98,6 @@ uint8_t ThreadState::main_thread_state_storage_[sizeof(ThreadState)];
 
 namespace {
 
-// Duration of one incremental marking step. Should be short enough that it
-// doesn't cause jank even though it is scheduled as a normal task.
-constexpr base::TimeDelta kDefaultIncrementalMarkingStepDuration =
-    base::TimeDelta::FromMilliseconds(2);
-
 // Concurrent marking should stop every once in a while to flush private
 // segments to v8 marking worklist. It should also stop to avoid priority
 // inversion.
@@ -133,6 +128,122 @@ class WorkerPoolTaskRunner : public base::TaskRunner {
 
 }  // namespace
 
+constexpr base::TimeDelta ThreadState::kDefaultIncrementalMarkingStepDuration;
+
+class ThreadState::IncrementalMarkingScheduler {
+ public:
+  explicit IncrementalMarkingScheduler(ThreadState* thread_state)
+      : thread_state_(thread_state) {}
+
+  // Starts incremental marking with further scheduled steps.
+  void Start(BlinkGC::GCReason reason) {
+    Init(reason);
+    thread_state_->IncrementalMarkingStart(reason_);
+    ScheduleTask();
+  }
+
+  // Cancels incremental marking task in case there is any pending.
+  void Cancel() {
+    if (!pending_task_) {
+      return;
+    }
+    pending_task_->Cancel();
+  }
+
+ private:
+  void Init(BlinkGC::GCReason reason) {
+    DCHECK(!pending_task_);
+    reason_ = reason;
+    next_incremental_marking_step_duration_ =
+        kDefaultIncrementalMarkingStepDuration;
+    previous_incremental_marking_time_left_ = base::TimeDelta::Max();
+  }
+
+  void ScheduleTask() {
+    if (pending_task_) {
+      return;
+    }
+    auto task = std::make_unique<Task>(this);
+    pending_task_ = task.get();
+    ThreadScheduler::Current()->V8TaskRunner()->PostNonNestableTask(
+        FROM_HERE, WTF::Bind(&Task::Run, std::move(task)));
+  }
+
+  // TODO(bikineev): Replace with PostNonNestableCancelableTask when
+  // implemented.
+  class Task {
+   public:
+    explicit Task(IncrementalMarkingScheduler* scheduler)
+        : scheduler_(scheduler) {}
+    ~Task() {
+      if (cancelled_) {
+        return;
+      }
+      Cancel();
+    }
+
+    void Run() {
+      // Bail out if the ThreadState has been cancelled/destroyed.
+      if (cancelled_) {
+        return;
+      }
+      Cancel();
+      scheduler_->Dispatch();
+    }
+
+    void Cancel() {
+      cancelled_ = true;
+      scheduler_->pending_task_ = nullptr;
+    }
+
+   private:
+    IncrementalMarkingScheduler* scheduler_;
+    bool cancelled_ = false;
+  };
+
+  void Dispatch() {
+    switch (thread_state_->GetGCState()) {
+      case ThreadState::kIncrementalGCScheduled:
+        thread_state_->IncrementalMarkingStart(reason_);
+        ScheduleTask();
+        break;
+      case ThreadState::kIncrementalMarkingStepScheduled:
+        thread_state_->IncrementalMarkingStep(
+            BlinkGC::kNoHeapPointersOnStack,
+            next_incremental_marking_step_duration_);
+        UpdateIncrementalMarkingStepDuration();
+        ScheduleTask();
+        break;
+      case ThreadState::kIncrementalMarkingFinalizeScheduled:
+        thread_state_->IncrementalMarkingFinalize();
+        break;
+      default:
+        break;
+    }
+  }
+
+  void UpdateIncrementalMarkingStepDuration() {
+    const ThreadHeap& heap = thread_state_->Heap();
+    base::TimeDelta time_left =
+        heap.stats_collector()->estimated_marking_time() -
+        heap.stats_collector()->marking_time_so_far();
+    // Increase step size if estimated time left is increasing.
+    if (previous_incremental_marking_time_left_ < time_left) {
+      constexpr double ratio = 2.0;
+      next_incremental_marking_step_duration_ *= ratio;
+    }
+    previous_incremental_marking_time_left_ = time_left;
+  }
+
+  ThreadState* thread_state_;
+  BlinkGC::GCReason reason_;
+  base::TimeDelta next_incremental_marking_step_duration_ =
+      kDefaultIncrementalMarkingStepDuration;
+  base::TimeDelta previous_incremental_marking_time_left_ =
+      base::TimeDelta::Max();
+  Task* pending_task_ = nullptr;
+};
+
 ThreadState::ThreadState()
     : thread_(CurrentThread()),
       persistent_region_(std::make_unique<PersistentRegion>()),
@@ -141,6 +252,8 @@ ThreadState::ThreadState()
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
+      incremental_marking_scheduler_(
+          std::make_unique<IncrementalMarkingScheduler>(this)),
       marker_scheduler_(std::make_unique<CancelableTaskScheduler>(
           base::MakeRefCounted<WorkerPoolTaskRunner>())),
       sweeper_scheduler_(std::make_unique<CancelableTaskScheduler>(
@@ -367,8 +480,6 @@ void ThreadState::ScheduleGCIfNeeded() {
   VLOG(2) << "[state:" << this << "] ScheduleGCIfNeeded";
   DCHECK(CheckThread());
 
-  UpdateIncrementalMarkingStepDuration();
-
   // Allocation is allowed during sweeping, but those allocations should not
   // trigger nested GCs.
   if (IsGCForbidden() || SweepForbidden())
@@ -389,7 +500,7 @@ void ThreadState::ScheduleGCIfNeeded() {
           blink::features::kBlinkHeapIncrementalMarkingStress)) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleGCIfNeeded: Scheduled incremental marking for testing";
-    IncrementalMarkingStart(BlinkGC::GCReason::kForcedGCForTesting);
+    StartIncrementalMarking(BlinkGC::GCReason::kForcedGCForTesting);
     return;
   }
 }
@@ -466,14 +577,17 @@ void ThreadState::PerformConcurrentSweep() {
   }
 }
 
-void ThreadState::ScheduleIncrementalMarkingStep() {
-  CHECK(!IsSweepingInProgress());
-  SetGCState(kIncrementalMarkingStepScheduled);
-}
-
-void ThreadState::ScheduleIncrementalMarkingFinalize() {
-  CHECK(!IsSweepingInProgress());
-  SetGCState(kIncrementalMarkingFinalizeScheduled);
+void ThreadState::StartIncrementalMarking(BlinkGC::GCReason reason) {
+  DCHECK(CheckThread());
+  // Schedule an incremental GC only when no GC is scheduled. Otherwise, already
+  // scheduled GCs should be prioritized.
+  if (GetGCState() != kNoGCScheduled) {
+    return;
+  }
+  CompleteSweep();
+  reason_for_scheduled_gc_ = reason;
+  SetGCState(kIncrementalGCScheduled);
+  incremental_marking_scheduler_->Start(reason);
 }
 
 void ThreadState::ScheduleIdleLazySweep() {
@@ -503,17 +617,6 @@ void ThreadState::SchedulePreciseGC() {
   DCHECK(CheckThread());
   CompleteSweep();
   SetGCState(kPreciseGCScheduled);
-}
-
-void ThreadState::ScheduleIncrementalGC(BlinkGC::GCReason reason) {
-  DCHECK(CheckThread());
-  // Schedule an incremental GC only when no GC is scheduled. Otherwise, already
-  // scheduled GCs should be prioritized.
-  if (GetGCState() == kNoGCScheduled) {
-    CompleteSweep();
-    reason_for_scheduled_gc_ = reason;
-    SetGCState(kIncrementalGCScheduled);
-  }
 }
 
 namespace {
@@ -635,15 +738,6 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
                      BlinkGC::kConcurrentAndLazySweeping,
                      BlinkGC::GCReason::kPreciseGC);
       break;
-    case kIncrementalMarkingStepScheduled:
-      IncrementalMarkingStep(stack_state);
-      break;
-    case kIncrementalMarkingFinalizeScheduled:
-      IncrementalMarkingFinalize();
-      break;
-    case kIncrementalGCScheduled:
-      IncrementalMarkingStart(reason_for_scheduled_gc_);
-      break;
     default:
       break;
   }
@@ -689,6 +783,7 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
   DCHECK(InAtomicMarkingPause());
   Heap().MakeConsistentForGC();
   Heap().ClearArenaAges();
+
   // AtomicPauseMarkPrologue is the common entry point for marking. The
   // requirement is to lock from roots marking to weakness processing which is
   // why the lock is taken at the end of the prologue.
@@ -1054,11 +1149,21 @@ void ThreadState::DisableIncrementalMarkingBarrier() {
   SetIncrementalMarking(false);
 }
 
+void ThreadState::IncrementalMarkingStartForTesting() {
+  // kIncrementalGCScheduled state requires sweeping to not be in progress.
+  CompleteSweep();
+  SetGCState(kIncrementalGCScheduled);
+  IncrementalMarkingStart(BlinkGC::GCReason::kForcedGCForTesting);
+}
+
 void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
+  DCHECK(!IsGCForbidden());
+  DCHECK_EQ(kIncrementalGCScheduled, GetGCState());
+
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Start";
   DCHECK(!IsMarkingInProgress());
-  CompleteSweep();
+  // Sweeping is performed in driver functions.
   DCHECK(!IsSweepingInProgress());
   Heap().stats_collector()->NotifyMarkingStarted(reason);
   {
@@ -1068,9 +1173,6 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
         BlinkGC::ToString(reason));
     AtomicPauseScope atomic_pause_scope(this);
     ScriptForbiddenScope script_forbidden_scope;
-    next_incremental_marking_step_duration_ =
-        kDefaultIncrementalMarkingStepDuration;
-    previous_incremental_marking_time_left_ = base::TimeDelta::Max();
     MarkPhasePrologue(BlinkGC::kNoHeapPointersOnStack,
                       BlinkGC::kIncrementalAndConcurrentMarking, reason);
     {
@@ -1087,13 +1189,15 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
       current_gc_data_.visitor->FlushMarkingWorklist();
       ScheduleConcurrentMarking();
     }
-    ScheduleIncrementalMarkingStep();
+    SetGCState(kIncrementalMarkingStepScheduled);
     DCHECK(IsMarkingInProgress());
   }
 }
 
-void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
+void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state,
+                                         base::TimeDelta duration) {
   DCHECK(IsMarkingInProgress());
+  DCHECK_EQ(kIncrementalMarkingStepScheduled, GetGCState());
 
   ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(),
@@ -1107,8 +1211,7 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
     Heap().FlushNotFullyConstructedObjects();
   }
 
-  bool complete = MarkPhaseAdvanceMarking(
-      base::TimeTicks::Now() + next_incremental_marking_step_duration_);
+  bool complete = MarkPhaseAdvanceMarking(base::TimeTicks::Now() + duration);
 
   if (base::FeatureList::IsEnabled(
           blink::features::kBlinkHeapConcurrentMarking)) {
@@ -1124,10 +1227,10 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
       DCHECK(IsUnifiedGCMarkingInProgress());
       SetGCState(kIncrementalMarkingStepPaused);
     } else {
-      ScheduleIncrementalMarkingFinalize();
+      SetGCState(kIncrementalMarkingFinalizeScheduled);
     }
   } else {
-    ScheduleIncrementalMarkingStep();
+    SetGCState(kIncrementalMarkingStepScheduled);
   }
   DCHECK(IsMarkingInProgress());
 }
@@ -1145,6 +1248,7 @@ bool ThreadState::ConcurrentMarkingStep() {
 void ThreadState::IncrementalMarkingFinalize() {
   DCHECK(IsMarkingInProgress());
   DCHECK(!IsUnifiedGCMarkingInProgress());
+  DCHECK_EQ(kIncrementalMarkingFinalizeScheduled, GetGCState());
 
   ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(),
@@ -1573,6 +1677,8 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   }
   Heap().DestroyMarkingWorklists(current_gc_data_.stack_state);
 
+  incremental_marking_scheduler_->Cancel();
+
   size_t marked_bytes = concurrently_marked_bytes_;
 
   current_gc_data_.visitor->FlushCompactionWorklists();
@@ -1615,20 +1721,6 @@ void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
 
 void ThreadState::EnableCompactionForNextGCForTesting() {
   Heap().Compaction()->EnableCompactionForNextGCForTesting();
-}
-
-void ThreadState::UpdateIncrementalMarkingStepDuration() {
-  if (!IsIncrementalMarking())
-    return;
-  base::TimeDelta time_left =
-      Heap().stats_collector()->estimated_marking_time() -
-      Heap().stats_collector()->marking_time_so_far();
-  // Increase step size if estimated time left is increasing.
-  if (previous_incremental_marking_time_left_ < time_left) {
-    constexpr double ratio = 2.0;
-    next_incremental_marking_step_duration_ *= ratio;
-  }
-  previous_incremental_marking_time_left_ = time_left;
 }
 
 void ThreadState::ScheduleConcurrentMarking() {

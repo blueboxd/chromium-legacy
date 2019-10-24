@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEVTOOLS_SESSION_H_
 
 #include <memory>
-
+#include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -90,12 +90,11 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
 
   bool IsDetached();
-  void SendProtocolResponse(int call_id,
-                            const protocol::ProtocolMessage& message);
+  void SendProtocolResponse(int call_id, std::vector<uint8_t> message);
 
   // Converts to JSON if requested by the client.
   blink::mojom::blink::DevToolsMessagePtr FinalizeMessage(
-      protocol::ProtocolMessage message);
+      std::vector<uint8_t> message) const;
 
   Member<DevToolsAgent> agent_;
   mojo::AssociatedReceiver<mojom::blink::DevToolsSession> receiver_;
@@ -105,8 +104,10 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
   std::unique_ptr<protocol::UberDispatcher> inspector_backend_dispatcher_;
   InspectorSessionState session_state_;
   HeapVector<Member<InspectorAgent>> agents_;
-  class Notification;
-  Vector<std::unique_ptr<Notification>> notification_queue_;
+  // Notifications are lazily serialized to shift the overhead we spend away
+  // from Javascript code that generates many events (e.g., a loop logging to
+  // console on every iteration).
+  Vector<base::OnceCallback<std::vector<uint8_t>()>> notification_queue_;
   const bool client_expects_binary_responses_;
   InspectorAgentState v8_session_state_;
   InspectorAgentState::Bytes v8_session_state_cbor_;

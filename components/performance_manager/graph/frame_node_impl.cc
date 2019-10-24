@@ -481,7 +481,7 @@ void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
   // Network is busy on navigation.
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
   origin_trial_freeze_policy.SetAndMaybeNotify(
-      frame_node, mojom::InterventionPolicy::kUnknown);
+      frame_node, mojom::InterventionPolicy::kDefault);
 }
 
 }  // namespace performance_manager

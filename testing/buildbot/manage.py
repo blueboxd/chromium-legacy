@@ -129,7 +129,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'media_router_e2e_tests',
   'media_router_junit_tests',
   'media_router_perf_tests',
-  'motopho_latency_test',
   'net_junit_tests',
   'net_junit_tests',
   'service_junit_tests',

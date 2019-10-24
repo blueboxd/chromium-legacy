@@ -9,6 +9,7 @@ import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("run_jsbundler.gni")
+import("strings/chromevox_strings.gni")
 
 assert(is_chromeos || is_chromecast)
 
@@ -230,8 +231,8 @@ group("chromevox") {
     ":chromevox_copied_files",
     ":chromevox_guest_manifest",
     ":chromevox_manifest",
+    ":chromevox_strings",
     "//chrome/browser/resources/chromeos/braille_ime:braille_ime_manifest",
-    "//chrome/browser/resources/chromeos/chromevox/strings:chromevox_strings",
     "//third_party/chromevox:chromevox_third_party_resources",
     "//third_party/liblouis",
   ]
@@ -388,6 +389,10 @@ manifest("chromevox_guest_manifest") {
   is_guest_manifest = true
 }
 
+chromevox_strings("chromevox_strings") {
+  out_dir = chromevox_out_dir
+}
+
 template("generate_deps_js") {
   if (defined(invoker.rewrite_rules)) {
     rewrite_rules = invoker.rewrite_rules
@@ -533,7 +538,7 @@ action("chromevox_test_messages_js") {
     output_file,
   ]
   deps = [
-    "strings:chromevox_strings",
+    ":chromevox_strings",
   ]
   args = [
            "-o",

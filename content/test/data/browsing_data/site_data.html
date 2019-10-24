@@ -9,8 +9,13 @@
     domAutomationController.send(false);
   }
 
+  function isHttps_() {
+    return location.protocol === 'https:';
+  }
+
   function setCookie() {
-    document.cookie = 'foo=bar; Max-Age=1000';
+    const samesite_none_secure = '; SameSite=None; Secure';
+    document.cookie = 'foo=bar; Max-Age=1000' + (isHttps_() ? samesite_none_secure : '');
     success_();
   }
 
@@ -19,7 +24,8 @@
   }
 
   function setSessionCookie() {
-    document.cookie = 'bar=session';
+    const samesite_none_secure = '; SameSite=None; Secure';
+    document.cookie = 'bar=session' + (isHttps_() ? samesite_none_secure : '');
     success_();
   }
 

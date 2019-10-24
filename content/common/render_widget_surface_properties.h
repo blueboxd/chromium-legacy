@@ -33,6 +33,8 @@ struct CONTENT_EXPORT RenderWidgetSurfaceProperties {
   float top_controls_height = 0;
   float top_controls_shown_ratio = 0;
 #ifdef OS_ANDROID
+  float bottom_controls_height = 0;
+  float bottom_controls_shown_ratio = 0;
   bool has_transparent_background = false;
 #endif
 };

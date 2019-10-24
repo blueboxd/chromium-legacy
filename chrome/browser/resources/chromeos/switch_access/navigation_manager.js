@@ -74,6 +74,23 @@ class NavigationManager {
   }
 
   /**
+   * Returns the current Switch Access tree, for debugging purposes.
+   * @param {boolean} wholeTree Whether to print the whole tree, or just the
+   * current focus.
+   * @return {!SARootNode}
+   */
+  getTreeForDebugging(wholeTree) {
+    if (!wholeTree) {
+      console.log(this.group_.debugString(wholeTree));
+      return this.group_;
+    }
+
+    const desktopRoot = RootNodeWrapper.buildDesktopTree(this.desktop_);
+    console.log(desktopRoot.debugString(wholeTree, '', this.node_));
+    return desktopRoot;
+  }
+
+  /**
    * Move to the previous interesting node.
    */
   moveBackward() {

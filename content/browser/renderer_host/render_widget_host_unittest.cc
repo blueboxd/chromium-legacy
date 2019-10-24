@@ -68,6 +68,7 @@
 #include "ui/gfx/canvas.h"
 
 #if defined(OS_ANDROID)
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "ui/android/screen_android.h"
 #endif
@@ -295,6 +296,18 @@ FakeRenderFrameMetadataObserver::FakeRenderFrameMetadataObserver(
     mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient> client_remote)
     : receiver_(std::move(receiver)),
       client_remote_(std::move(client_remote)) {}
+
+// MockInputEventObserver -------------------------------------------------
+class MockInputEventObserver : public RenderWidgetHost::InputEventObserver {
+ public:
+  MOCK_METHOD1(OnInputEvent, void(const blink::WebInputEvent&));
+#if defined(OS_ANDROID)
+  MOCK_METHOD1(OnImeTextCommittedEvent, void(const base::string16& text_str));
+  MOCK_METHOD1(OnImeSetComposingTextEvent,
+               void(const base::string16& text_str));
+  MOCK_METHOD0(OnImeFinishComposingTextEvent, void());
+#endif
+};
 
 // MockRenderWidgetHostDelegate --------------------------------------------
 
@@ -2124,5 +2137,47 @@ TEST_F(RenderWidgetHostTest, FlingEventsWhenSomeScrollEventsConsumed) {
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
   EXPECT_NE(0u, dispatched_events.size());
 }
+
+TEST_F(RenderWidgetHostTest, AddAndRemoveInputEventObserver) {
+  MockInputEventObserver observer;
+
+  // Add InputEventObserver.
+  host_->AddInputEventObserver(&observer);
+
+  // Confirm OnInputEvent is triggered.
+  NativeWebKeyboardEvent native_event(WebInputEvent::Type::kChar, 0,
+                                      GetNextSimulatedEventTime());
+  ui::LatencyInfo latency_info = ui::LatencyInfo();
+  EXPECT_CALL(observer, OnInputEvent(_)).Times(1);
+  host_->DispatchInputEventWithLatencyInfo(native_event, &latency_info);
+
+  // Remove InputEventObserver.
+  host_->RemoveInputEventObserver(&observer);
+
+  // Confirm InputEventObserver is removed.
+  EXPECT_CALL(observer, OnInputEvent(_)).Times(0);
+  latency_info = ui::LatencyInfo();
+  host_->DispatchInputEventWithLatencyInfo(native_event, &latency_info);
+}
+
+#if defined(OS_ANDROID)
+TEST_F(RenderWidgetHostTest, AddAndRemoveImeInputEventObserver) {
+  MockInputEventObserver observer;
+
+  // Add ImeInputEventObserver.
+  host_->AddImeInputEventObserver(&observer);
+
+  // Confirm ImeFinishComposingTextEvent is triggered.
+  EXPECT_CALL(observer, OnImeFinishComposingTextEvent()).Times(1);
+  host_->ImeFinishComposingText(true);
+
+  // Remove ImeInputEventObserver.
+  host_->RemoveImeInputEventObserver(&observer);
+
+  // Confirm ImeInputEventObserver is removed.
+  EXPECT_CALL(observer, OnImeFinishComposingTextEvent()).Times(0);
+  host_->ImeFinishComposingText(true);
+}
+#endif
 
 }  // namespace content

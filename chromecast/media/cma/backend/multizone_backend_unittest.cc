@@ -152,7 +152,7 @@ class MultizoneBackendTest : public testing::TestWithParam<TestParams> {
   void OnEndOfStream();
 
  private:
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::vector<std::unique_ptr<BufferFeeder>> effects_feeders_;
   std::unique_ptr<BufferFeeder> audio_feeder_;
 

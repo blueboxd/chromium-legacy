@@ -15,7 +15,6 @@
 static void GL_BINDING_CALL Mock_glActiveShaderProgram(GLuint pipeline,
                                                        GLuint program);
 static void GL_BINDING_CALL Mock_glActiveTexture(GLenum texture);
-static void GL_BINDING_CALL Mock_glApplyFramebufferAttachmentCMAAINTEL(void);
 static void GL_BINDING_CALL Mock_glAttachShader(GLuint program, GLuint shader);
 static void GL_BINDING_CALL Mock_glBeginQuery(GLenum target, GLuint id);
 static void GL_BINDING_CALL Mock_glBeginQueryARB(GLenum target, GLuint id);

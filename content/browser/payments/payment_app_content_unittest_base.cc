@@ -25,6 +25,7 @@
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -221,8 +222,8 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
 
   // Create a new payment manager.
   mojo::Remote<payments::mojom::PaymentManager> manager;
-  payment_app_context()->CreatePaymentManager(
-      manager.BindNewPipeAndPassReceiver());
+  payment_app_context()->CreatePaymentManagerForOrigin(
+      url::Origin::Create(scope_url), manager.BindNewPipeAndPassReceiver());
   payment_managers_.push_back(std::move(manager));
   base::RunLoop().RunUntilIdle();
 

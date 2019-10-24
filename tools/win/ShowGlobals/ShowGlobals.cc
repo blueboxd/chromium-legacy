@@ -24,6 +24,7 @@
 #include <stdio.h>
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "base/win/atl.h"

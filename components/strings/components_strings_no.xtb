@@ -619,7 +619,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> har slått på beskyttelsesfunksjoner for bedrifter i Chrome-nettleseren din. Beskyttelsesfunksjoner for bedrifter i Chrome har tilgang til noen av dataene dine.</translation>
 <translation id="3987405730340719549">Chrome har funnet ut at dette nettstedet kan være falskt eller prøve å svindle deg.
 
-    Hvis du mener at dette er en feil, kan du besøke https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
+    Hvis du mener at dette er en feil, kan du gå til https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Under 1 MB</translation>
 <translation id="3990250421422698716">Støtforskyvning</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Like ved-nettside}other{# Like ved-nettsider}}</translation>
@@ -999,7 +999,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5838278095973806738">Du bør ikke oppgi sensitiv informasjon på dette nettstedet (for eksempel passord eller kredittkort) fordi den kan bli stjålet av angripere.</translation>
 <translation id="5855253129151731373">Vertsnavnet til dette nettstedet ligner på <ph name="LOOKALIKE_DOMAIN" />. Noen ganger etterligner angripere nettsteder ved å gjøre små endringer i domenenavnet som er vanskelige å se.
 
-    Hvis du mener at dette er en feil, kan du besøke https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
+    Hvis du mener at dette er en feil, kan du gå til https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5863847714970149516">Den neste siden kan prøve å belaste deg for penger</translation>
 <translation id="5866257070973731571">Legg til telefonnummer</translation>

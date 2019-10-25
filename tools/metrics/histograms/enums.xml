@@ -4789,10 +4789,22 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReason">
+  <int value="-1859200986" label="WebUSB"/>
+  <int value="-1521338555" label="OfflinePage"/>
   <int value="-1449100855" label="safe_browsing::ThreatDetails"/>
+  <int value="-1442160010" label="Serial"/>
   <int value="-1314032804" label="MediaSessionImpl::OnServiceCreated"/>
+  <int value="-1303768664" label="PopupBlockerTabHelper"/>
   <int value="-866479064" label="content::protocol::SecurityHandler"/>
+  <int value="-684843031" label="SafeBrowsingTriggeredPopupBlocker"/>
+  <int value="-438850149" label="PermissionRequestManager"/>
+  <int value="72716222" label="WebBluetooth"/>
   <int value="671363579" label="banners::AppBannerManager"/>
+  <int value="990438262" label="MediaWebContentsObserver::OnMediaPlaying"/>
+  <int value="1683256665" label="NativeFileSystem"/>
+  <int value="2013040510" label="RenderFrameDevToolsAgentHost"/>
+  <int value="2024383223"
+      label="ChromePasswordManagerClient::BindCredentialManager"/>
 </enum>
 
 <enum name="BackForwardCacheEvictedAfterDocumentRestoredReason">
@@ -18320,7 +18332,7 @@ Called by update_net_error_codes.py.-->
   <int value="457" label="OverrideSecurityRestrictionsOnInsecureOrigin"/>
   <int value="458" label="DeviceUpdateStagingSchedule"/>
   <int value="459" label="AutofillAddressEnabled"/>
-  <int value="460" label="TabLifecyclesEnabled"/>
+  <int value="460" label="TabFreezingEnabled"/>
   <int value="461" label="UrlKeyedAnonymizedDataCollectionEnabled"/>
   <int value="462" label="NetworkFileSharesAllowed"/>
   <int value="463" label="DeviceLocalAccountManagedSessionEnabled"/>
@@ -18484,7 +18496,7 @@ Called by update_net_error_codes.py.-->
   <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
   <int value="625" label="PrintJobHistoryExpirationPeriod"/>
   <int value="626" label="TLS13HardeningForLocalAnchorsEnabled"/>
-  <int value="627" label="ForceDisableAudioSandbox"/>
+  <int value="627" label="AudioSandboxEnabled"/>
   <int value="628" label="DeviceLoginScreenScreenMagnifierType"/>
   <int value="629" label="CorsMitigationList"/>
   <int value="630" label="CorsLegacyModeEnabled"/>
@@ -18495,6 +18507,7 @@ Called by update_net_error_codes.py.-->
   <int value="635" label="InsecureContentBlockedForUrls"/>
   <int value="636" label="DeviceWebBasedAttestationAllowedUrls"/>
   <int value="637" label="BlockExternalExtensions"/>
+  <int value="638" label="DeviceShowNumericKeyboardForPassword"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -25173,6 +25186,7 @@ Called by update_net_error_codes.py.-->
   <int value="3063" label="V8RTCRtpReceiver_PlayoutDelayHint_AttributeSetter"/>
   <int value="3064" label="V8RegExpExecCalledOnSlowRegExp"/>
   <int value="3065" label="V8RegExpReplaceCalledOnSlowRegExp"/>
+  <int value="3066" label="HasMarkerPseudoElement"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

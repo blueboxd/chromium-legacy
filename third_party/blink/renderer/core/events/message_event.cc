@@ -39,7 +39,7 @@
 namespace blink {
 
 static inline bool IsValidSource(EventTarget* source) {
-  return !source || source->ToLocalDOMWindow() || source->ToMessagePort() ||
+  return !source || source->ToDOMWindow() || source->ToMessagePort() ||
          source->ToServiceWorker() || source->ToPortalHost() ||
          IsA<HTMLPortalElement>(source->ToNode());
 }
@@ -317,6 +317,13 @@ MessagePortArray MessageEvent::ports() {
   // modify the content.
   is_ports_dirty_ = false;
   return ports_ ? *ports_ : MessagePortArray();
+}
+
+bool MessageEvent::IsOriginCheckRequiredToAccessData() const {
+  if (data_type_ != kDataTypeSerializedScriptValue) {
+    return false;
+  }
+  return data_as_serialized_script_value_->Value()->IsOriginCheckRequired();
 }
 
 void MessageEvent::EntangleMessagePorts(ExecutionContext* context) {

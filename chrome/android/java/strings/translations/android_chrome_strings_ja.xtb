@@ -262,6 +262,7 @@
 <translation id="2913331724188855103">サイトに Cookie データの保存と読み取りを許可する（推奨）</translation>
 <translation id="2923908459366352541">名前が無効です</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> ストレージ</translation>
+<translation id="2942036813789421260">[プレビュー] タブは閉じられています</translation>
 <translation id="2956410042958133412">このアカウントは <ph name="PARENT_NAME_1" /> と <ph name="PARENT_NAME_2" /> によって管理されています。</translation>
 <translation id="2962095958535813455">シークレット タブに切り替えました</translation>
 <translation id="2968755619301702150">証明書ビューア</translation>
@@ -387,6 +388,7 @@
 <translation id="3988466920954086464">このパネルにインスタント検索の結果が表示されます</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ？</translation>
 <translation id="3997476611815694295">重要度の低いストレージ</translation>
+<translation id="4000212216660919741">オフライン ホーム</translation>
 <translation id="4002066346123236978">タイトル</translation>
 <translation id="4008040567710660924">特定のサイトの Cookie を許可します。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 時間}other{# 時間}}</translation>
@@ -766,6 +768,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6697947395630195233">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります。</translation>
 <translation id="6698801883190606802">同期データを管理</translation>
 <translation id="6699370405921460408">アクセスするページを Google のサーバーで最適化します。</translation>
+<translation id="6706288973712894588">現在オフラインです。\n<ph name="BEGIN_LINK" />オフライン フィードを確認<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">ニュース</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="671481426037969117"><ph name="FQDN" /> のタイマーが切れました。タイマーはまた明日開始されます。</translation>
@@ -865,6 +868,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7475688122056506577">SD カードが見つかりません。一部のファイルが欠落している可能性があります。</translation>
 <translation id="7479104141328977413">タブの管理</translation>
 <translation id="7481312909269577407">進む</translation>
+<translation id="7482656565088326534">[プレビュー] タブ</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（<ph name="TIME_SINCE_UPDATE" />に更新）</translation>
 <translation id="7494974237137038751">データ削減量</translation>
 <translation id="7498271377022651285">お待ちください…</translation>
@@ -994,6 +998,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8380167699614421159">このサイトでは煩わしい広告や誤解を招く広告が表示されます</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>
 <translation id="8413126021676339697">全履歴を表示</translation>
+<translation id="8427875596167638501">[プレビュー] タブが半分開いています</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8438566539970814960">検索とブラウジングを改善する</translation>
 <translation id="8441146129660941386">後方にシーク再生</translation>
@@ -1084,7 +1089,9 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="9086455579313502267">ネットワークにアクセスできません</translation>
 <translation id="9100505651305367705">記事の簡易表示がサポートされている場合、簡易表示を提案します</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
+<translation id="9102803872260866941">[プレビュー] タブが開いています</translation>
 <translation id="9104217018994036254">タブを共有するデバイスのリストです。</translation>
+<translation id="9133397713400217035">オフライン コンテンツ</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />（<ph name="ITEM_ID" />）</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>

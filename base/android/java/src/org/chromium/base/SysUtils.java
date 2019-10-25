@@ -16,6 +16,7 @@ import android.util.Log;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.CachedMetrics;
 
@@ -28,6 +29,7 @@ import java.util.regex.Pattern;
  * Exposes system related information about the current device.
  */
 @JNINamespace("base::android")
+@MainDex
 public class SysUtils {
     // A device reporting strictly more total memory in megabytes cannot be considered 'low-end'.
     private static final int ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB = 512;

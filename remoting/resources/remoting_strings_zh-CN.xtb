@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">主机进程</translation>
 <translation id="20876857123010370">触控板模式</translation>
 <translation id="2089514346391228378">此计算机的远程连接已启用。</translation>
+<translation id="2198363917176605566">若想使用 <ph name="PRODUCT_NAME" />，您需要授予“屏幕录制”权限，以便将此 Mac 上的屏幕内容发送到远程计算机。
+
+要授予此权限，请点击下面的“<ph name="BUTTON_NAME" />”以打开“屏幕录制”偏好设置窗格，然后勾选“<ph name="SERVICE_SCRIPT_NAME" />”旁边的复选框。
+
+如果“<ph name="SERVICE_SCRIPT_NAME" />”已处于选中状态，请先取消选中，然后再次勾选。</translation>
 <translation id="2208514473086078157">策略设置不允许以 Chrome 远程桌面主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
 <translation id="2220529011494928058">报告问题</translation>
 <translation id="2221097377466213233">使用右侧的 Ctrl 键执行 Win 键功能（在 Mac 上则使用 ⌘ 键）</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次在线时间：<ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2405928220797050937">此应用已不再受支持。为确保您能获得最新的功能和安全更新，请使用新版<ph name="LINK_BEGIN" />“Chrome 远程桌面”网络应用<ph name="LINK_END" />。</translation>
 <translation id="2499160551253595098">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
+<translation id="2504109125669302160">向 <ph name="PRODUCT_NAME" />授予“无障碍”权限</translation>
 <translation id="2509394361235492552">已连接到“<ph name="HOSTNAME" />”</translation>
 <translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
 <translation id="2540992418118313681">您要与其他用户共享此计算机的查看和控制权限吗？</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">核心数据库</translation>
 <translation id="4430435636878359009">停用与此计算机的远程连接</translation>
 <translation id="4430915108080446161">正在生成访问代码…</translation>
+<translation id="443560535555262820">打开“无障碍”偏好设置</translation>
 <translation id="4450893287417543264">不再显示</translation>
 <translation id="4472575034687746823">开始使用</translation>
 <translation id="4481276415609939789">您未注册任何计算机。要启用到某台计算机的远程连接，请在该计算机上安装 Chrome 远程访问并点击“<ph name="BUTTON_NAME" />”。</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">更改 PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" />（已过期）</translation>
 <translation id="6221358653751391898">您尚未登录 Chrome。请登录，然后重试。</translation>
+<translation id="6223301979382383752">打开“屏幕录制”偏好设置</translation>
 <translation id="6227369581881558336">Chrome 远程桌面现已推出网页版，这款应用包含一些新功能（包括文件传输）！查看我们的这款<ph name="LINK_BEGIN" />网络应用<ph name="LINK_END" />。</translation>
 <translation id="6284412385303060032">在控制台逻辑屏幕运行的主机已关闭。这是为了切换到在用户特定会话中运行的主机，以便为 Curtain 模式提供支持。</translation>
 <translation id="629730747756840877">帐号</translation>
 <translation id="6304318647555713317">客户端</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全屏模式</translation>
+<translation id="6411861157501911556">若想使用 <ph name="PRODUCT_NAME" />，您需要授予“无障碍”权限，以便将远程计算机上输入的内容注入到此 Mac 上。
+
+要授予此权限，请点击下面的“<ph name="BUTTON_NAME" />”以打开“无障碍”偏好设置窗格，然后勾选“<ph name="SERVICE_SCRIPT_NAME" />”旁边的复选框。
+
+如果“<ph name="SERVICE_SCRIPT_NAME" />”已处于选中状态，请先取消选中，然后再次勾选。</translation>
 <translation id="6441316101718669559">该平台不支持桌面集成。您仍可以使用该应用，但用户体验将会受到影响。</translation>
 <translation id="652218476070540101">正在更新此计算机的 PIN…</translation>
 <translation id="6527303717912515753">分享</translation>
@@ -327,6 +340,7 @@
 <translation id="9149580767411232853">使整个远程桌面都可见</translation>
 <translation id="9149992051684092333">要开始共享您的桌面，请将下面的访问代码提供给协助您的人员。</translation>
 <translation id="916856682307586697">启动默认的 XSession</translation>
+<translation id="9187628920394877737">向 <ph name="PRODUCT_NAME" />授予“屏幕录制”权限</translation>
 <translation id="9188433529406846933">授权</translation>
 <translation id="9213184081240281106">主机配置无效。</translation>
 <translation id="951991426597076286">拒绝</translation>

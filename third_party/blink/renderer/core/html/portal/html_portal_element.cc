@@ -147,6 +147,8 @@ BlinkTransferableMessage ActivateDataAsMessage(
   if (exception_state.HadException())
     return {};
 
+  msg.sender_origin = execution_context->GetSecurityOrigin()->IsolatedCopy();
+
   // msg.user_activation is left out; we will probably handle user activation
   // explicitly for activate data.
   // TODO(crbug.com/936184): Answer this for good.

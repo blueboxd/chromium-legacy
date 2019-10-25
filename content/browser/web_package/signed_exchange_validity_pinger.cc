@@ -10,13 +10,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
@@ -98,7 +98,7 @@ void SignedExchangeValidityPinger::Start(
   resource_request->render_frame_id = MSG_ROUTING_NONE;
   resource_request->throttling_profile_id = throttling_profile_id;
 
-  url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+  url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(url_loader_factory), std::move(throttles), 0 /* routing_id */,
       signed_exchange_utils::MakeRequestID() /* request_id */,
       network::mojom::kURLLoadOptionNone, resource_request.get(), this,

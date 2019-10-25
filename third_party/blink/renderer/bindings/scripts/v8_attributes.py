@@ -278,7 +278,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
 
 
 def create_private_property_key_name(attribute):
-    return NameStyleConverter(attribute.name + '_private_property_key').to_snake_case()
+    return NameStyleConverter(attribute.name + '_key').to_snake_case()
 
 
 def runtime_call_stats_context(interface, attribute, context):

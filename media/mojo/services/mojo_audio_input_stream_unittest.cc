@@ -12,7 +12,7 @@
 #include "base/sync_socket.h"
 #include "base/test/task_environment.h"
 #include "media/audio/audio_input_controller.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -145,13 +145,14 @@ class MojoAudioInputStreamTest : public Test {
  public:
   MojoAudioInputStreamTest()
       : foreign_socket_(std::make_unique<TestCancelableSyncSocket>()),
-        client_binding_(&client_, mojo::MakeRequest(&client_ptr_)) {}
+        client_receiver_(&client_) {}
 
   mojo::Remote<mojom::AudioInputStream> CreateAudioInput() {
     mojo::Remote<mojom::AudioInputStream> stream;
     ExpectDelegateCreation();
     impl_ = std::make_unique<MojoAudioInputStream>(
-        stream.BindNewPipeAndPassReceiver(), std::move(client_ptr_),
+        stream.BindNewPipeAndPassReceiver(),
+        client_receiver_.BindNewPipeAndPassRemote(),
         base::BindOnce(&MockDelegateFactory::CreateDelegate,
                        base::Unretained(&mock_delegate_factory_)),
         base::BindOnce(&MockClient::Initialized, base::Unretained(&client_)),
@@ -182,8 +183,7 @@ class MojoAudioInputStreamTest : public Test {
   StrictMock<MockDelegateFactory> mock_delegate_factory_;
   StrictMock<MockDeleter> deleter_;
   StrictMock<MockClient> client_;
-  media::mojom::AudioInputStreamClientPtr client_ptr_;
-  mojo::Binding<media::mojom::AudioInputStreamClient> client_binding_;
+  mojo::Receiver<media::mojom::AudioInputStreamClient> client_receiver_;
   std::unique_ptr<MojoAudioInputStream> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioInputStreamTest);
@@ -194,7 +194,8 @@ TEST_F(MojoAudioInputStreamTest, NoDelegate_SignalsError) {
   EXPECT_CALL(client_, OnError());
   mojo::Remote<mojom::AudioInputStream> stream_remote;
   MojoAudioInputStream stream(
-      stream_remote.BindNewPipeAndPassReceiver(), std::move(client_ptr_),
+      stream_remote.BindNewPipeAndPassReceiver(),
+      client_receiver_.BindNewPipeAndPassRemote(),
       base::BindOnce(&CreateNoDelegate), base::BindOnce(&NotCalled),
       base::BindOnce([](bool* p) { *p = true; }, &deleter_called));
   EXPECT_FALSE(deleter_called)

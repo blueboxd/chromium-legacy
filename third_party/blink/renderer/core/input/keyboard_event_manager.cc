@@ -273,6 +273,11 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
 
   keydown->SetStopPropagation(!send_key_event);
 
+  // If this keydown did not involve a meta-key press, update the keyboard event
+  // state and trigger :focus-visible matching if necessary.
+  if (!keydown->ctrlKey() && !keydown->altKey() && !keydown->metaKey())
+    node->UpdateHadKeyboardEvent(*keydown);
+
   DispatchEventResult dispatch_result = node->DispatchEvent(*keydown);
   if (dispatch_result != DispatchEventResult::kNotCanceled)
     return event_handling_util::ToWebInputEventResult(dispatch_result);

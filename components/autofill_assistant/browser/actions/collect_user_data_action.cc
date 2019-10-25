@@ -539,6 +539,13 @@ CollectUserDataAction::CreateOptionsFromProto() {
         contact_details.request_payer_phone();
   }
 
+  for (const auto& network :
+       collect_user_data.supported_basic_card_networks()) {
+    if (!autofill::data_util::IsValidBasicCardIssuerNetwork(network)) {
+      DVLOG(1) << "Invalid basic card network: " << network;
+      return nullptr;
+    }
+  }
   std::copy(collect_user_data.supported_basic_card_networks().begin(),
             collect_user_data.supported_basic_card_networks().end(),
             std::back_inserter(

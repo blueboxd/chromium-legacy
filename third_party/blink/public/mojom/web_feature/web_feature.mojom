@@ -2447,6 +2447,7 @@ enum WebFeature {
   kV8RTCRtpReceiver_PlayoutDelayHint_AttributeSetter = 3063,
   kV8RegExpExecCalledOnSlowRegExp = 3064,
   kV8RegExpReplaceCalledOnSlowRegExp = 3065,
+  kHasMarkerPseudoElement = 3066,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

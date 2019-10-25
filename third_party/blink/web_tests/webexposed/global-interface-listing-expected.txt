@@ -1957,7 +1957,6 @@ interface Element : Node
     attribute @@toStringTag
     attribute @@unscopables
     getter accessibleNode
-    getter ariaActiveDescendant
     getter ariaActiveDescendantElement
     getter ariaAtomic
     getter ariaAutoComplete
@@ -1966,24 +1965,18 @@ interface Element : Node
     getter ariaColCount
     getter ariaColIndex
     getter ariaColSpan
-    getter ariaControls
     getter ariaControlsElements
     getter ariaCurrent
-    getter ariaDescribedBy
     getter ariaDescribedByElements
-    getter ariaDetails
     getter ariaDetailsElement
     getter ariaDisabled
-    getter ariaErrorMessage
     getter ariaErrorMessageElement
     getter ariaExpanded
-    getter ariaFlowTo
     getter ariaFlowToElements
     getter ariaHasPopup
     getter ariaHidden
     getter ariaKeyShortcuts
     getter ariaLabel
-    getter ariaLabelledBy
     getter ariaLabelledByElements
     getter ariaLevel
     getter ariaLive
@@ -1991,7 +1984,6 @@ interface Element : Node
     getter ariaMultiLine
     getter ariaMultiSelectable
     getter ariaOrientation
-    getter ariaOwns
     getter ariaOwnsElements
     getter ariaPlaceholder
     getter ariaPosInSet
@@ -2107,7 +2099,6 @@ interface Element : Node
     method webkitMatchesSelector
     method webkitRequestFullScreen
     method webkitRequestFullscreen
-    setter ariaActiveDescendant
     setter ariaActiveDescendantElement
     setter ariaAtomic
     setter ariaAutoComplete
@@ -2116,24 +2107,18 @@ interface Element : Node
     setter ariaColCount
     setter ariaColIndex
     setter ariaColSpan
-    setter ariaControls
     setter ariaControlsElements
     setter ariaCurrent
-    setter ariaDescribedBy
     setter ariaDescribedByElements
-    setter ariaDetails
     setter ariaDetailsElement
     setter ariaDisabled
-    setter ariaErrorMessage
     setter ariaErrorMessageElement
     setter ariaExpanded
-    setter ariaFlowTo
     setter ariaFlowToElements
     setter ariaHasPopup
     setter ariaHidden
     setter ariaKeyShortcuts
     setter ariaLabel
-    setter ariaLabelledBy
     setter ariaLabelledByElements
     setter ariaLevel
     setter ariaLive
@@ -2141,7 +2126,6 @@ interface Element : Node
     setter ariaMultiLine
     setter ariaMultiSelectable
     setter ariaOrientation
-    setter ariaOwns
     setter ariaOwnsElements
     setter ariaPlaceholder
     setter ariaPosInSet
@@ -2182,7 +2166,6 @@ interface Element : Node
     setter slot
 interface ElementInternals
     attribute @@toStringTag
-    getter ariaActiveDescendant
     getter ariaActiveDescendantElement
     getter ariaAtomic
     getter ariaAutoComplete
@@ -2191,24 +2174,18 @@ interface ElementInternals
     getter ariaColCount
     getter ariaColIndex
     getter ariaColSpan
-    getter ariaControls
     getter ariaControlsElements
     getter ariaCurrent
-    getter ariaDescribedBy
     getter ariaDescribedByElements
-    getter ariaDetails
     getter ariaDetailsElement
     getter ariaDisabled
-    getter ariaErrorMessage
     getter ariaErrorMessageElement
     getter ariaExpanded
-    getter ariaFlowTo
     getter ariaFlowToElements
     getter ariaHasPopup
     getter ariaHidden
     getter ariaKeyShortcuts
     getter ariaLabel
-    getter ariaLabelledBy
     getter ariaLabelledByElements
     getter ariaLevel
     getter ariaLive
@@ -2216,7 +2193,6 @@ interface ElementInternals
     getter ariaMultiLine
     getter ariaMultiSelectable
     getter ariaOrientation
-    getter ariaOwns
     getter ariaOwnsElements
     getter ariaPlaceholder
     getter ariaPosInSet
@@ -2246,7 +2222,6 @@ interface ElementInternals
     method reportValidity
     method setFormValue
     method setValidity
-    setter ariaActiveDescendant
     setter ariaActiveDescendantElement
     setter ariaAtomic
     setter ariaAutoComplete
@@ -2255,24 +2230,18 @@ interface ElementInternals
     setter ariaColCount
     setter ariaColIndex
     setter ariaColSpan
-    setter ariaControls
     setter ariaControlsElements
     setter ariaCurrent
-    setter ariaDescribedBy
     setter ariaDescribedByElements
-    setter ariaDetails
     setter ariaDetailsElement
     setter ariaDisabled
-    setter ariaErrorMessage
     setter ariaErrorMessageElement
     setter ariaExpanded
-    setter ariaFlowTo
     setter ariaFlowToElements
     setter ariaHasPopup
     setter ariaHidden
     setter ariaKeyShortcuts
     setter ariaLabel
-    setter ariaLabelledBy
     setter ariaLabelledByElements
     setter ariaLevel
     setter ariaLive
@@ -2280,7 +2249,6 @@ interface ElementInternals
     setter ariaMultiLine
     setter ariaMultiSelectable
     setter ariaOrientation
-    setter ariaOwns
     setter ariaOwnsElements
     setter ariaPlaceholder
     setter ariaPosInSet
@@ -5955,6 +5923,9 @@ interface PushSubscriptionOptions
     getter applicationServerKey
     getter userVisibleOnly
     method constructor
+interface QuicTransport
+    attribute @@toStringTag
+    method constructor
 interface RTCCertificate
     attribute @@toStringTag
     getter expires
@@ -7960,6 +7931,15 @@ interface TextEvent : UIEvent
     getter data
     method constructor
     method initTextEvent
+interface TextFormatUpdateEvent : Event
+    attribute @@toStringTag
+    getter backgroundColor
+    getter formatRangeEnd
+    getter formatRangeStart
+    getter textDecorationColor
+    getter textUnderlineStyle
+    getter underlineColor
+    method constructor
 interface TextMetrics
     attribute @@toStringTag
     getter actualBoundingBoxAscent
@@ -8023,6 +8003,14 @@ interface TextTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
+interface TextUpdateEvent : Event
+    attribute @@toStringTag
+    getter newSelectionEnd
+    getter newSelectionStart
+    getter updateRangeEnd
+    getter updateRangeStart
+    getter updateText
+    method constructor
 interface TimeRanges
     attribute @@toStringTag
     getter length

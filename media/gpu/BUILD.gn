@@ -84,7 +84,6 @@ component("gpu") {
   # TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
   if (use_v4l2_codec || use_vaapi) {
     public_deps += [
-      ":image_processor",
       ":video_frame_mapper",
       "//media/gpu/chromeos",
       "//media/gpu/linux:common",
@@ -257,8 +256,6 @@ source_set("common") {
     "h264_dpb.cc",
     "h264_dpb.h",
     "macros.h",
-    "video_frame_converter.cc",
-    "video_frame_converter.h",
     "vp9_decoder.cc",
     "vp9_decoder.h",
     "vp9_picture.cc",
@@ -313,51 +310,6 @@ source_set("command_buffer_helper") {
 
 # TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
 if (use_v4l2_codec || use_vaapi) {
-  source_set("image_processor") {
-    defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-    sources = [
-      "image_processor_factory.cc",
-      "libyuv_image_processor.cc",
-      "libyuv_image_processor.h",
-    ]
-
-    public_deps = [
-      ":image_processor_common",
-    ]
-
-    deps = [
-      ":video_frame_mapper",
-      "//third_party/libyuv",
-      "//ui/gl",
-    ]
-
-    if (use_v4l2_codec) {
-      deps += [ "//media/gpu/v4l2" ]
-    }
-
-    if (use_vaapi) {
-      deps += [ "//media/gpu/vaapi" ]
-    }
-  }
-
-  source_set("image_processor_common") {
-    defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-    sources = [
-      "image_processor.cc",
-      "image_processor.h",
-      "image_processor_factory.h",
-    ]
-
-    public_deps = [
-      ":buildflags",
-      ":common",
-      "//base",
-      "//media",
-      "//media/gpu/chromeos:fourcc",
-      "//ui/gfx/geometry",
-    ]
-  }
-
   source_set("video_frame_mapper") {
     defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
     sources = [
@@ -603,25 +555,6 @@ if (use_v4l2_codec || use_vaapi) {
       "test:video_player",
       "test:video_player_test_environment",
       "//media:test_support",
-      "//testing/gtest",
-    ]
-  }
-
-  test("image_processor_test") {
-    sources = [
-      "image_processor_test.cc",
-    ]
-    deps = [
-      ":buildflags",
-      ":gpu",
-      "test:frame_file_writer",
-      "test:frame_validator",
-      "test:helpers",
-      "test:image_processor",
-      "//base/test:test_support",
-      "//media:test_support",
-      "//media/gpu/chromeos:fourcc",
-      "//mojo/core/embedder",
       "//testing/gtest",
     ]
   }

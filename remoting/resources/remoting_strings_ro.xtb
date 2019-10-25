@@ -229,7 +229,7 @@ Dacă opțiunea „<ph name="SERVICE_SCRIPT_NAME" />” este deja bifată, debif
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Altă problemă.</translation>
 <translation id="6398765197997659313">Ieși din ecranul complet</translation>
-<translation id="6411861157501911556">Ca să folosești <ph name="PRODUCT_NAME" />, trebuie să acorzi permisiunea „Accesibilitate”, astfel încât intrările de la dispozitivul la distanță să poată fi injectate pe acest computer Mac.
+<translation id="6411861157501911556">Ca să folosești <ph name="PRODUCT_NAME" />, trebuie să acorzi permisiunea „Accesibilitate”, astfel încât intrările de la dispozitivul la distanță să poată fi introduse pe acest computer Mac.
 
 Ca să acorzi această permisiune, dă clic pe butonul „<ph name="BUTTON_NAME" />” de mai jos pentru a deschide panoul de preferințe pentru „Accesibilitate”, apoi bifează caseta de lângă „<ph name="SERVICE_SCRIPT_NAME" />”.
 

@@ -153,6 +153,21 @@ bool NGInlineCursor::IsGeneratedText() const {
   return false;
 }
 
+bool NGInlineCursor::IsGeneratedTextType() const {
+  if (current_paint_fragment_) {
+    if (auto* text_fragment = DynamicTo<NGPhysicalTextFragment>(
+            current_paint_fragment_->PhysicalFragment())) {
+      return text_fragment->TextType() ==
+             NGPhysicalTextFragment::kGeneratedText;
+    }
+    return false;
+  }
+  if (current_item_)
+    return current_item_->Type() == NGFragmentItem::kGeneratedText;
+  NOTREACHED();
+  return false;
+}
+
 bool NGInlineCursor::IsHiddenForPaint() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->PhysicalFragment().IsHiddenForPaint();
@@ -160,6 +175,10 @@ bool NGInlineCursor::IsHiddenForPaint() const {
     return current_item_->IsHiddenForPaint();
   NOTREACHED();
   return false;
+}
+
+bool NGInlineCursor::IsInlineLeaf() const {
+  return IsText() || IsAtomicInline();
 }
 
 bool NGInlineCursor::IsInclusiveDescendantOf(
@@ -192,6 +211,15 @@ bool NGInlineCursor::IsLineBreak() const {
   }
   if (current_item_)
     return current_item_->IsLineBreak();
+  NOTREACHED();
+  return false;
+}
+
+bool NGInlineCursor::IsListMarker() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->PhysicalFragment().IsListMarker();
+  if (current_item_)
+    return current_item_->IsListMarker();
   NOTREACHED();
   return false;
 }
@@ -242,6 +270,19 @@ bool NGInlineCursor::CanHaveChildren() const {
            (current_item_->Type() == NGFragmentItem::kBox &&
             !current_item_->IsAtomicInline());
   }
+  NOTREACHED();
+  return false;
+}
+
+bool NGInlineCursor::IsEmptyLineBox() const {
+  DCHECK(IsLineBox());
+  if (current_paint_fragment_) {
+    return To<NGPhysicalLineBoxFragment>(
+               current_paint_fragment_->PhysicalFragment())
+        .IsEmptyLineBox();
+  }
+  if (current_item_)
+    return current_item_->IsEmptyLineBox();
   NOTREACHED();
   return false;
 }
@@ -365,6 +406,22 @@ unsigned NGInlineCursor::CurrentTextEndOffset() const {
     return current_item_->EndOffset();
   NOTREACHED();
   return 0u;
+}
+
+PhysicalRect NGInlineCursor::CurrentLocalRect(unsigned start_offset,
+                                              unsigned end_offset) const {
+  DCHECK(IsText());
+  if (current_paint_fragment_) {
+    return To<NGPhysicalTextFragment>(
+               current_paint_fragment_->PhysicalFragment())
+        .LocalRect(start_offset, end_offset);
+  }
+  if (current_item_) {
+    return current_item_->LocalRect(current_item_->Text(*fragment_items_),
+                                    start_offset, end_offset);
+  }
+  NOTREACHED();
+  return PhysicalRect();
 }
 
 void NGInlineCursor::MakeNull() {
@@ -527,6 +584,22 @@ void NGInlineCursor::MoveToNextForSameLayoutObject() {
     } while (current_item_ && CurrentLayoutObject() != layout_object);
     return;
   }
+}
+
+void NGInlineCursor::MoveToNextLine() {
+  DCHECK(IsLineBox());
+  if (current_paint_fragment_) {
+    if (auto* paint_fragment = current_paint_fragment_->NextSibling())
+      return MoveTo(*paint_fragment);
+    return MakeNull();
+  }
+  if (current_item_) {
+    do {
+      MoveToNextItem();
+    } while (IsNotNull() && !IsLineBox());
+    return;
+  }
+  NOTREACHED();
 }
 
 void NGInlineCursor::MoveToNextSibling() {

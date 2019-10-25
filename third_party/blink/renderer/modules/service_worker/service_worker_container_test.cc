@@ -162,6 +162,7 @@ class NotReachedWebServiceWorkerProvider : public WebServiceWorkerProvider {
       const WebURL& script_url,
       blink::mojom::ScriptType script_type,
       mojom::ServiceWorkerUpdateViaCache update_via_cache,
+      const WebFetchClientSettingsObject& fetch_client_settings_object,
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks)
       override {
     ADD_FAILURE()
@@ -313,6 +314,7 @@ class StubWebServiceWorkerProvider {
         const WebURL& script_url,
         blink::mojom::ScriptType script_type,
         mojom::ServiceWorkerUpdateViaCache update_via_cache,
+        const WebFetchClientSettingsObject& fetch_client_settings_object,
         std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks)
         override {
       owner_.register_call_count_++;

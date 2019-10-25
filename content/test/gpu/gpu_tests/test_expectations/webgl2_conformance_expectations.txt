@@ -116,10 +116,6 @@ crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textures
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
 crbug.com/angleproject/2994 [ opengl win passthrough intel ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
 
-# Intel driver issues
-crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
-crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
-
 # Passthrough command decoder / Windows / OpenGL / Intel
 # This case causes no-over-optimization-on-uniform-array fail.
 crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
@@ -298,7 +294,6 @@ crbug.com/905003 [ sierra intel-0xa2e ] conformance2/textures/misc/integer-cubem
 
 # Fails on multiple GPU types.
 crbug.com/844311 [ mac ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Failure ]
-crbug.com/709351 [ mac ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/630800 [ intel mac ] conformance2/rendering/framebuffer-completeness-unaffected.html [ Failure ]
 crbug.com/630800 [ nvidia mac ] conformance2/rendering/framebuffer-completeness-unaffected.html [ Failure ]
 crbug.com/965209 [ mac ] conformance2/textures/canvas/tex-2d-rgb16f-rgb-half_float.html [ RetryOnFailure ]
@@ -699,8 +694,6 @@ crbug.com/809237 [ linux amd-0x6613 ] conformance2/uniforms/incompatible-texture
 [ android qualcomm ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 [ android qualcomm ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 
-# Basic failures that need to be investigated on multiple devices
-crbug.com/709351 [ android ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 
 # Video tests are flaky. Sometimes the video is black.
 crbug.com/948894 [ android ] conformance/textures/video/* [ RetryOnFailure ]

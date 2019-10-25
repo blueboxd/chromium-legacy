@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">Ρύθμιση της γλώσσας σας</translation>
 <translation id="1962969542251276847">Οθόνη κλειδώματος</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">Γεια σας, <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">Εισαγωγή κειμένου</translation>
 <translation id="1993072747612765854">Μάθετε περισσότερα σχετικά με την πιο πρόσφατη ενημέρωση της εφαρμογής <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Απενεργοποίηση</translation>
@@ -420,7 +421,7 @@
 <translation id="7067196344162293536">Αυτόματη περιστροφή</translation>
 <translation id="7068360136237591149">Άνοιγμα αρχείων</translation>
 <translation id="7076293881109082629">Σύνδεση</translation>
-<translation id="7088960765736518739">Αλλαγή πρόσβασης</translation>
+<translation id="7088960765736518739">Πρόσβαση με διακόπτη</translation>
 <translation id="7092922358121866860">Εμφάνιση ρυθμίσεων Νυχτερινού φωτισμού</translation>
 <translation id="7098389117866926363">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="7131634465328662194">Θα αποσυνδεθείτε αυτόματα.</translation>

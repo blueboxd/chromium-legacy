@@ -148,7 +148,7 @@ if (use_vaapi || use_v4l2_codec) {
       ":helpers",
       "//media:test_support",
       "//media/gpu",
-      "//media/gpu/chromeos:fourcc",
+      "//media/gpu/chromeos",
       "//testing/gtest",
       "//third_party/libyuv",
     ]

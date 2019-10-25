@@ -18,7 +18,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
@@ -110,7 +110,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
 
   bool is_shutting_down_;
 
-  mojo::Binding<viz::mojom::VideoDetectorObserver> binding_{this};
+  mojo::Receiver<viz::mojom::VideoDetectorObserver> receiver_{this};
 
   base::WeakPtrFactory<VideoDetector> weak_factory_{this};
 

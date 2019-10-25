@@ -22,7 +22,9 @@ bool StructTraits<blink::mojom::CloneableMessage::DataView,
   mojo_base::BigBufferView message_view;
   base::Optional<base::UnguessableToken> locked_agent_cluster_id;
   if (!data.ReadEncodedMessage(&message_view) || !data.ReadBlobs(&out->blobs) ||
-      !data.ReadLockedAgentClusterId(&locked_agent_cluster_id)) {
+      !data.ReadLockedAgentClusterId(&locked_agent_cluster_id) ||
+      !data.ReadSenderOrigin(&out->sender_origin) ||
+      !data.ReadNativeFileSystemTokens(&out->native_file_system_tokens)) {
     return false;
   }
 

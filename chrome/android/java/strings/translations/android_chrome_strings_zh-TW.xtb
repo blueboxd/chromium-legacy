@@ -262,6 +262,7 @@
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
 <translation id="2923908459366352541">名稱無效</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 儲存資料量</translation>
+<translation id="2942036813789421260">預覽分頁已關閉</translation>
 <translation id="2956410042958133412">這個帳戶受 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2962095958535813455">已切換成無痕式分頁</translation>
 <translation id="2968755619301702150">憑證檢視器</translation>
@@ -387,6 +388,7 @@
 <translation id="3988466920954086464">你可以在這個面板中查看即時搜尋結果</translation>
 <translation id="3991845972263764475">已下載：<ph name="BYTES_DOWNLOADED_WITH_UNITS" />，總大小：不明</translation>
 <translation id="3997476611815694295">不重要網站的儲存資料量</translation>
+<translation id="4000212216660919741">離線首頁</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4008040567710660924">允許特定網站的 Cookie。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 小時}other{# 小時}}</translation>
@@ -766,6 +768,7 @@
 <translation id="6697947395630195233">Chrome 需要位置資訊存取權，才能與這個網站分享你的位置資訊。</translation>
 <translation id="6698801883190606802">管理同步資料</translation>
 <translation id="6699370405921460408">Google 伺服器會針對你造訪的網頁進行最佳化處理。</translation>
+<translation id="6706288973712894588">你目前已離線。\n<ph name="BEGIN_LINK" />瀏覽離線動態消息。<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">新聞內容</translation>
 <translation id="6710213216561001401">返回</translation>
 <translation id="671481426037969117">「<ph name="FQDN" />」計時器已結束計時，將於明天重新開始。</translation>
@@ -865,6 +868,7 @@
 <translation id="7475688122056506577">找不到 SD 卡。部分檔案可能會遺失。</translation>
 <translation id="7479104141328977413">分頁管理</translation>
 <translation id="7481312909269577407">往前</translation>
+<translation id="7482656565088326534">預覽分頁</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (上次更新時間：<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">(已節省的數據量)</translation>
 <translation id="7498271377022651285">請稍候…</translation>
@@ -994,6 +998,7 @@
 <translation id="8380167699614421159">這個網站會顯示干擾性或誤導性的廣告</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
 <translation id="8413126021676339697">顯示完整記錄</translation>
+<translation id="8427875596167638501">已在畫面下半部顯示預覽分頁</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8438566539970814960">改善搜尋和瀏覽體驗</translation>
 <translation id="8441146129660941386">倒轉到特定的播放時間點</translation>
@@ -1084,7 +1089,9 @@
 <translation id="9086455579313502267">無法存取網路</translation>
 <translation id="9100505651305367705">詢問是否以簡易模式顯示支援這項功能的文章</translation>
 <translation id="9100610230175265781">請提供通關密語</translation>
+<translation id="9102803872260866941">預覽分頁已開啟</translation>
 <translation id="9104217018994036254">要共用分頁的裝置清單。</translation>
+<translation id="9133397713400217035">離線探索</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9139068048179869749">允許網站傳送通知前，必須先詢問你 (建議)</translation>

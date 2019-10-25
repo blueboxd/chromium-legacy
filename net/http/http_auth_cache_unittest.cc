@@ -837,49 +837,52 @@ TEST(HttpAuthCacheTest, UpdateStaleChallenge) {
   EXPECT_FALSE(update_failure);
 }
 
-TEST(HttpAuthCacheTest, UpdateAllFrom) {
+TEST(HttpAuthCacheTest, CopyProxyEntriesFrom) {
   GURL origin("http://example.com");
   std::string path("/some/path");
   std::string another_path("/another/path");
 
   HttpAuthCache first_cache(false /* key_entries_by_network_isolation_key */);
-  ;
   HttpAuthCache::Entry* entry;
 
-  first_cache.Add(origin, HttpAuth::AUTH_SERVER, kRealm1,
+  first_cache.Add(origin, HttpAuth::AUTH_PROXY, kRealm1,
                   HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
                   "basic realm=Realm1", AuthCredentials(kAlice, k123), path);
-  first_cache.Add(origin, HttpAuth::AUTH_SERVER, kRealm2,
+  first_cache.Add(origin, HttpAuth::AUTH_PROXY, kRealm2,
                   HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
                   "basic realm=Realm2", AuthCredentials(kAlice2, k1234), path);
-  first_cache.Add(origin, HttpAuth::AUTH_SERVER, kRealm3,
+  first_cache.Add(origin, HttpAuth::AUTH_PROXY, kRealm3,
                   HttpAuth::AUTH_SCHEME_DIGEST, NetworkIsolationKey(),
                   "digest realm=Realm3", AuthCredentials(kRoot, kWileCoyote),
                   path);
-  entry = first_cache.Add(origin, HttpAuth::AUTH_SERVER, kRealm3,
+  entry = first_cache.Add(origin, HttpAuth::AUTH_PROXY, kRealm3,
                           HttpAuth::AUTH_SCHEME_DIGEST, NetworkIsolationKey(),
                           "digest realm=Realm3",
                           AuthCredentials(kRoot, kWileCoyote), another_path);
 
   EXPECT_EQ(2, entry->IncrementNonceCount());
 
+  // Server entry, which should not be copied.
+  first_cache.Add(origin, HttpAuth::AUTH_SERVER, kRealm1,
+                  HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
+                  "basic realm=Realm1", AuthCredentials(kAlice, k123), path);
+
   HttpAuthCache second_cache(false /* key_entries_by_network_isolation_key */);
-  ;
   // Will be overwritten by kRoot:kWileCoyote.
-  second_cache.Add(origin, HttpAuth::AUTH_SERVER, kRealm3,
+  second_cache.Add(origin, HttpAuth::AUTH_PROXY, kRealm3,
                    HttpAuth::AUTH_SCHEME_DIGEST, NetworkIsolationKey(),
                    "digest realm=Realm3", AuthCredentials(kAlice2, k1234),
                    path);
   // Should be left intact.
-  second_cache.Add(origin, HttpAuth::AUTH_SERVER, kRealm4,
+  second_cache.Add(origin, HttpAuth::AUTH_PROXY, kRealm4,
                    HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
                    "basic realm=Realm4", AuthCredentials(kAdmin, kRoot), path);
 
-  second_cache.UpdateAllFrom(first_cache);
+  second_cache.CopyProxyEntriesFrom(first_cache);
 
   // Copied from first_cache.
   entry =
-      second_cache.Lookup(origin, HttpAuth::AUTH_SERVER, kRealm1,
+      second_cache.Lookup(origin, HttpAuth::AUTH_PROXY, kRealm1,
                           HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey());
   EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kAlice, entry->credentials().username());
@@ -887,7 +890,7 @@ TEST(HttpAuthCacheTest, UpdateAllFrom) {
 
   // Copied from first_cache.
   entry =
-      second_cache.Lookup(origin, HttpAuth::AUTH_SERVER, kRealm2,
+      second_cache.Lookup(origin, HttpAuth::AUTH_PROXY, kRealm2,
                           HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey());
   EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kAlice2, entry->credentials().username());
@@ -895,7 +898,7 @@ TEST(HttpAuthCacheTest, UpdateAllFrom) {
 
   // Overwritten from first_cache.
   entry =
-      second_cache.Lookup(origin, HttpAuth::AUTH_SERVER, kRealm3,
+      second_cache.Lookup(origin, HttpAuth::AUTH_PROXY, kRealm3,
                           HttpAuth::AUTH_SCHEME_DIGEST, NetworkIsolationKey());
   EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kRoot, entry->credentials().username());
@@ -904,7 +907,7 @@ TEST(HttpAuthCacheTest, UpdateAllFrom) {
   EXPECT_EQ(3, entry->IncrementNonceCount());
 
   // All paths should get copied.
-  entry = second_cache.LookupByPath(origin, HttpAuth::AUTH_SERVER,
+  entry = second_cache.LookupByPath(origin, HttpAuth::AUTH_PROXY,
                                     NetworkIsolationKey(), another_path);
   EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kRoot, entry->credentials().username());
@@ -912,11 +915,19 @@ TEST(HttpAuthCacheTest, UpdateAllFrom) {
 
   // Left intact in second_cache.
   entry =
-      second_cache.Lookup(origin, HttpAuth::AUTH_SERVER, kRealm4,
+      second_cache.Lookup(origin, HttpAuth::AUTH_PROXY, kRealm4,
                           HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey());
   EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kAdmin, entry->credentials().username());
   EXPECT_EQ(kRoot, entry->credentials().password());
+
+  // AUTH_SERVER entry should not have been copied from first_cache.
+  EXPECT_TRUE(first_cache.Lookup(origin, HttpAuth::AUTH_SERVER, kRealm1,
+                                 HttpAuth::AUTH_SCHEME_BASIC,
+                                 NetworkIsolationKey()));
+  EXPECT_FALSE(second_cache.Lookup(origin, HttpAuth::AUTH_SERVER, kRealm1,
+                                   HttpAuth::AUTH_SCHEME_BASIC,
+                                   NetworkIsolationKey()));
 }
 
 // Test fixture class for eviction tests (contains helpers for bulk

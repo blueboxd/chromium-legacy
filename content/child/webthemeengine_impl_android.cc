@@ -161,7 +161,7 @@ void WebThemeEngineAndroid::Paint(
       native_theme_extra_params, NativeColorScheme(color_scheme));
 }
 
-blink::ForcedColors WebThemeEngineAndroid::ForcedColors() const {
+blink::ForcedColors WebThemeEngineAndroid::GetForcedColors() const {
   return ui::NativeTheme::GetInstanceForWeb()->UsesHighContrastColors()
              ? blink::ForcedColors::kActive
              : blink::ForcedColors::kNone;

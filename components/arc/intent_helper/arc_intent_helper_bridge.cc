@@ -242,6 +242,12 @@ void ArcIntentHelperBridge::LaunchCameraApp(uint32_t intent_id,
   ash::NewWindowDelegate::GetInstance()->LaunchCameraApp(queries.str());
 }
 
+void ArcIntentHelperBridge::CloseCameraApp() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  ash::NewWindowDelegate::GetInstance()->CloseCameraApp();
+}
+
 void ArcIntentHelperBridge::HandleCameraResult(
     uint32_t intent_id,
     arc::mojom::CameraIntentAction action,

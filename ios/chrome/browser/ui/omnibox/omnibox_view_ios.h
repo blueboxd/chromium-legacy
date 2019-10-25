@@ -98,6 +98,7 @@ class OmniboxViewIOS : public OmniboxView,
   bool OnWillChange(NSRange range, NSString* new_text) override;
   void OnDidChange(bool processing_user_input) override;
   void OnWillEndEditing() override;
+  void EndEditing() override;
   void OnAccept() override;
   void OnCopy() override;
   void ClearText() override;
@@ -128,10 +129,6 @@ class OmniboxViewIOS : public OmniboxView,
   void UpdatePopupAppearance();
 
   void OnClear();
-
-  // Hide keyboard and call OnDidEndEditing.  This dismisses the keyboard and
-  // also finalizes the editing state of the omnibox.
-  void EndEditing();
 
   // Hide keyboard only.  Used when omnibox popups grab focus but editing isn't
   // complete.
@@ -204,11 +201,6 @@ class OmniboxViewIOS : public OmniboxView,
   NSMutableAttributedString* attributing_display_string_;
 
   OmniboxPopupProvider* popup_provider_;  // weak
-
-  // A flag that is set whenever any input or copy/paste event happened in the
-  // omnibox while it was focused. Used to count event "user focuses the omnibox
-  // to view the complete URL and immediately defocuses it".
-  BOOL omnibox_interacted_while_focused_;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_IOS_H_

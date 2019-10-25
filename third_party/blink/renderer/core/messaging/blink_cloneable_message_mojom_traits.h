@@ -10,10 +10,12 @@
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "third_party/blink/public/mojom/messaging/cloneable_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/blink_cloneable_message.h"
 #include "third_party/blink/renderer/platform/blob/serialized_blob_mojom_traits.h"
+#include "third_party/blink/renderer/platform/mojo/security_origin_mojom_traits.h"
 
 namespace mojo {
 
@@ -27,6 +29,11 @@ struct CORE_EXPORT StructTraits<blink::mojom::blink::CloneableMessage::DataView,
 
   static Vector<scoped_refptr<blink::BlobDataHandle>> blobs(
       blink::BlinkCloneableMessage& input);
+
+  static const scoped_refptr<const blink::SecurityOrigin>& sender_origin(
+      blink::BlinkCloneableMessage& input) {
+    return input.sender_origin;
+  }
 
   static uint64_t stack_trace_id(const blink::BlinkCloneableMessage& input) {
     return static_cast<uint64_t>(input.sender_stack_trace_id.id);
@@ -50,6 +57,12 @@ struct CORE_EXPORT StructTraits<blink::mojom::blink::CloneableMessage::DataView,
   static const base::Optional<base::UnguessableToken>& locked_agent_cluster_id(
       const blink::BlinkCloneableMessage& input) {
     return input.locked_agent_cluster_id;
+  }
+
+  static Vector<
+      mojo::PendingRemote<blink::mojom::blink::NativeFileSystemTransferToken>>
+  native_file_system_tokens(blink::BlinkCloneableMessage& input) {
+    return std::move(input.message->NativeFileSystemTokens());
   }
 
   static bool Read(blink::mojom::blink::CloneableMessage::DataView,

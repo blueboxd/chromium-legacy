@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">Proceso de host</translation>
 <translation id="20876857123010370">Modo de panel táctil</translation>
 <translation id="2089514346391228378">Se habilitaron las conexiones remotas con esta computadora.</translation>
+<translation id="2198363917176605566">Para usar <ph name="PRODUCT_NAME" />, debes otorgar el permiso de "Grabación de pantalla", lo que te permitirá enviar el contenido de la pantalla de esta Mac a la máquina remota.
+
+Para otorgarlo, haz clic en "<ph name="BUTTON_NAME" />" que se encuentra a continuación a fin de abrir el panel de preferencias de "Grabación de pantalla" y, luego, marca la casilla junto a "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Si ya está marcada la casilla "<ph name="SERVICE_SCRIPT_NAME" />", desmárcala y vuelve a marcarla.</translation>
 <translation id="2208514473086078157">La configuración de la política no permite compartir esta computadora como host de Escritorio remoto de Chrome. Comunícate con el administrador de tu sistema para obtener ayuda.</translation>
 <translation id="2220529011494928058">Informar un problema</translation>
 <translation id="2221097377466213233">Usar Ctrl derecho para tecla de Windows (⌘ en Mac)</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Última vez en línea <ph name="RELATIVE_TIMESTAMP" /></translation>
 <translation id="2405928220797050937">Esta app ya no es compatible. Para asegurarte de que recibes las actualizaciones de seguridad y las funciones más recientes, usa la <ph name="LINK_BEGIN" />app web de Escritorio remoto de Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio remoto de Chrome permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
+<translation id="2504109125669302160">Otorga permiso de "Accesibilidad" a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Conectado a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Para asegurarte de que todas las combinaciones de teclas para acceso directo estén disponibles, puedes configurar Escritorio remoto de Chrome en "Abrir como ventana".</translation>
 <translation id="2540992418118313681">¿Quieres compartir esta computadora con otro usuario para que la vea y la controle?</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">Biblioteca principal</translation>
 <translation id="4430435636878359009">Inhabilitar conexiones remotas con esta computadora</translation>
 <translation id="4430915108080446161">Generando el código de acceso...</translation>
+<translation id="443560535555262820">Abrir las preferencias de Accesibilidad</translation>
 <translation id="4450893287417543264">No volver a mostrar</translation>
 <translation id="4472575034687746823">Comenzar</translation>
 <translation id="4481276415609939789">No tienes ninguna computadora registrada. Para habilitar conexiones remotas con una computadora, instala allí Chromoting y haz clic en "<ph name="BUTTON_NAME" />".</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (desactualizado)</translation>
 <translation id="6221358653751391898">No accediste a Chrome. Accede y vuelve a intentarlo.</translation>
+<translation id="6223301979382383752">Abrir preferencias de grabación de pantalla</translation>
 <translation id="6227369581881558336">Escritorio remoto de Chrome ahora está disponible en la Web, con nuevas funciones, como la transferencia de archivos. Échale un vistazo a nuestra <ph name="LINK_BEGIN" />aplicación web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Se cerró el host que se ejecuta en la pantalla de acceso de la consola para poder admitir el modo de cortina. Por lo tanto, se cambió a un host que se ejecuta en una sesión específica de usuario.</translation>
 <translation id="629730747756840877">Cuenta</translation>
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Tengo otro problema.</translation>
 <translation id="6398765197997659313">Salir de pantalla completa</translation>
+<translation id="6411861157501911556">Para usar <ph name="PRODUCT_NAME" />, debes otorgar el permiso de "Accesibilidad", lo que te permitirá aplicar la entrada de la máquina remota en esta Mac.
+
+Para otorgarlo, haz clic en "<ph name="BUTTON_NAME" />" que se encuentra a continuación a fin de abrir el panel de preferencias de "Accesibilidad" y, luego, marca la casilla junto a "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Si ya está marcada la casilla "<ph name="SERVICE_SCRIPT_NAME" />", desmárcala y vuelve a marcarla.</translation>
 <translation id="6441316101718669559">Esta plataforma no admite la integración de escritorio. Puedes usar la aplicación, pero se verá afectada la experiencia del usuario.</translation>
 <translation id="652218476070540101">Se está actualizando el PIN para esta computadora…</translation>
 <translation id="6527303717912515753">Compartir</translation>
@@ -327,6 +340,7 @@
 <translation id="9149580767411232853">Mantiene todo el escritorio remoto visible</translation>
 <translation id="9149992051684092333">Para comenzar a compartir tu escritorio, proporciona el código de acceso que aparece a continuación a la persona que te asistirá.</translation>
 <translation id="916856682307586697">Iniciar la sesión predeterminada de Xsession</translation>
+<translation id="9187628920394877737">Otorga el permiso de "Grabación de pantalla" a <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="9213184081240281106">Configuración del host no válida</translation>
 <translation id="951991426597076286">Rechazar</translation>

@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">主機處理序</translation>
 <translation id="20876857123010370">觸控板模式</translation>
 <translation id="2089514346391228378">這台電腦的遠端連線已啟用。</translation>
+<translation id="2198363917176605566">如要使用 <ph name="PRODUCT_NAME" />，你必須授予「螢幕畫面錄製」權限，才能將這部 Mac 的畫面內容傳送給遠端電腦。
+
+如要授予這項權限，請點擊下方的 [<ph name="BUTTON_NAME" />] 以開啟「螢幕畫面錄製」偏好設定窗格，然後勾選 [<ph name="SERVICE_SCRIPT_NAME" />] 旁邊的方塊。
+
+如果 [<ph name="SERVICE_SCRIPT_NAME" />] 已勾選，請先取消勾選，然後再次勾選。</translation>
 <translation id="2208514473086078157">政策設定不允許以 Chrome 遠端桌面主機的形式共用這台電腦。如需協助，請與你的系統管理員聯絡。</translation>
 <translation id="2220529011494928058">回報問題</translation>
 <translation id="2221097377466213233">使用右邊的 Ctrl 做為 Windows 鍵 (Mac 上為 ⌘ 鍵)</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次上線時間：<ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2405928220797050937">我們已不再支援這個應用程式。為確保你取得最新功能和安全性更新，請使用 <ph name="LINK_BEGIN" />Chrome 遠端桌面網路應用程式<ph name="LINK_END" />。</translation>
 <translation id="2499160551253595098">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
+<translation id="2504109125669302160">將「無障礙功能」權限授予 <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">已連線至「<ph name="HOSTNAME" />」</translation>
 <translation id="2512228156274966424">注意：如要確保所有鍵盤快捷鍵都能正常使用，請將 Chrome 遠端桌面設定為 [在視窗中開啟]。</translation>
 <translation id="2540992418118313681">您要與其他使用者分享這台電腦的瀏覽及控制權限嗎？</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">核心資料庫</translation>
 <translation id="4430435636878359009">停用與這台電腦的遠端連線</translation>
 <translation id="4430915108080446161">正在產生存取碼...</translation>
+<translation id="443560535555262820">開啟無障礙功能偏好設定</translation>
 <translation id="4450893287417543264">不要再顯示</translation>
 <translation id="4472575034687746823">開始使用</translation>
 <translation id="4481276415609939789">你尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chromoting，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">變更 PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (版本過舊)</translation>
 <translation id="6221358653751391898">您尚未登入 Chrome，請登入並再試一次。</translation>
+<translation id="6223301979382383752">開啟螢幕畫面錄製偏好設定</translation>
 <translation id="6227369581881558336">Chrome 遠端桌面現已推出網路版，並增加了檔案傳輸等新功能！歡迎試試我們的<ph name="LINK_BEGIN" />網路應用程式<ph name="LINK_END" />。</translation>
 <translation id="6284412385303060032">在控制台登入畫面執行的主機已關閉。這樣才能切換成在個別使用者工作階段中執行的主機，以支援帷幕模式。</translation>
 <translation id="629730747756840877">帳戶</translation>
 <translation id="6304318647555713317">用戶端</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
+<translation id="6411861157501911556">如要使用 <ph name="PRODUCT_NAME" />，你必須授予「無障礙功能」權限，才能將遠端電腦上的輸入內容插入這部 Mac。
+
+如要授予這項權限，請點擊下方的 [<ph name="BUTTON_NAME" />] 以開啟「無障礙功能」偏好設定窗格，然後勾選 [<ph name="SERVICE_SCRIPT_NAME" />] 旁邊的方塊。
+
+如果 [<ph name="SERVICE_SCRIPT_NAME" />] 已勾選，請先取消勾選，然後再次勾選。</translation>
 <translation id="6441316101718669559">這個平台不支援桌面整合。您仍然可以使用該應用程式，但使用者體驗可能不如預期。</translation>
 <translation id="652218476070540101">正在更新這台電腦的 PIN...</translation>
 <translation id="6527303717912515753">分享</translation>
@@ -327,6 +340,7 @@
 <translation id="9149580767411232853">一律顯示整個遠端桌面</translation>
 <translation id="9149992051684092333">如要開始共用你的電腦，請將下方的存取碼告知要協助你的人員。</translation>
 <translation id="916856682307586697">啟動預設的 XSession</translation>
+<translation id="9187628920394877737">將「螢幕畫面錄製」權限授予 <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">授權</translation>
 <translation id="9213184081240281106">主機設定無效。</translation>
 <translation id="951991426597076286">拒絕</translation>

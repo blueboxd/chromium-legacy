@@ -7867,7 +7867,11 @@ void Document::FlushAutofocusCandidates() {
 
     // 9. If element is a focusable area, then:
     element.GetDocument().UpdateStyleAndLayoutTree();
-    if (element.IsFocusable()) {
+    if (element.IsFocusable() ||
+        // TODO(tkent): Standardize delegatesFocus handling.
+        // https://github.com/whatwg/html/issues/5027
+        (element.AuthorShadowRoot() &&
+         element.AuthorShadowRoot()->delegatesFocus())) {
       // 9.1. Empty candidates.
       autofocus_candidates_.clear();
       // 9.2. Set topDocument's autofocus processed flag to true.
@@ -8621,7 +8625,7 @@ void Document::ColorSchemeChanged() {
 bool Document::InForcedColorsMode() const {
   return RuntimeEnabledFeatures::ForcedColorsEnabled() && Platform::Current() &&
          Platform::Current()->ThemeEngine() &&
-         Platform::Current()->ThemeEngine()->ForcedColors() !=
+         Platform::Current()->ThemeEngine()->GetForcedColors() !=
              ForcedColors::kNone;
 }
 

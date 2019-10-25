@@ -38,7 +38,7 @@ cca.bg.TOPBAR_COLOR = '#000000';
 /**
  * It's used in test to ensure that we won't connect to the main.html target
  * before the window is created, otherwise the window might disappear.
- * @type {?function(*): undefined}
+ * @type {?function(string): undefined}
  */
 cca.bg.onAppWindowCreatedForTesting = null;
 
@@ -192,7 +192,7 @@ cca.bg.Window = class {
             this.onSuspended_(this);
           };
           if (cca.bg.onAppWindowCreatedForTesting !== null) {
-            cca.bg.onAppWindowCreatedForTesting(null);
+            cca.bg.onAppWindowCreatedForTesting(windowUrl);
           }
         });
   }
@@ -457,7 +457,9 @@ cca.bg.Background = class {
  * Handles messages from the test extension used in Tast.
  * @param {*} message The message sent by the calling script.
  * @param {!MessageSender} sender
- * @param {function(*): void} sendResponse
+ * @param {function(string): undefined} sendResponse The callback function which
+ *     expects to receive the url of the window when the window is successfully
+ *     created.
  * @return {boolean|undefined} True to indicate the response is sent
  *     asynchronously.
  */

@@ -355,7 +355,8 @@ TEST_F(ServiceWorkerContextTest, RegistrationCompletedObserver) {
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
   context()->RegisterServiceWorker(
-      script_url, options, MakeRegisteredCallback(&called, &registration_id));
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
+      MakeRegisteredCallback(&called, &registration_id));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(called);
@@ -488,7 +489,7 @@ TEST_F(ServiceWorkerContextTest, OnVersionRunningStatusChangedObserver) {
   TestServiceWorkerContextObserver observer(context_wrapper());
   base::RunLoop run_loop;
   context()->RegisterServiceWorker(
-      script_url, options,
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
       base::BindOnce(&RegisteredCallback, run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -544,7 +545,8 @@ TEST_F(ServiceWorkerContextTest, Register) {
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
   context()->RegisterServiceWorker(
-      script_url, options, MakeRegisteredCallback(&called, &registration_id));
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
+      MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -595,7 +597,8 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
   context()->RegisterServiceWorker(
-      script_url, options, MakeRegisteredCallback(&called, &registration_id));
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
+      MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -643,7 +646,8 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
   context()->RegisterServiceWorker(
-      script_url, options, MakeRegisteredCallback(&called, &registration_id));
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
+      MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -684,6 +688,7 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   context()->RegisterServiceWorker(
       GURL("https://www.example.com/service_worker.js"), options,
+      /*outside_fetch_client_settings_object=*/nullptr,
       MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
@@ -734,6 +739,7 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
     options.scope = origin1_s1;
     context()->RegisterServiceWorker(
         GURL("https://www.example.com/service_worker.js"), options,
+        /*outside_fetch_client_settings_object=*/nullptr,
         MakeRegisteredCallback(&called, &registration_id1));
     ASSERT_FALSE(called);
     base::RunLoop().RunUntilIdle();
@@ -746,6 +752,7 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
     options.scope = origin1_s2;
     context()->RegisterServiceWorker(
         GURL("https://www.example.com/service_worker2.js"), options,
+        /*outside_fetch_client_settings_object=*/nullptr,
         MakeRegisteredCallback(&called, &registration_id2));
     ASSERT_FALSE(called);
     base::RunLoop().RunUntilIdle();
@@ -758,6 +765,7 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
     options.scope = origin2_s1;
     context()->RegisterServiceWorker(
         GURL("https://www.example.com:8080/service_worker3.js"), options,
+        /*outside_fetch_client_settings_object=*/nullptr,
         MakeRegisteredCallback(&called, &registration_id3));
     ASSERT_FALSE(called);
     base::RunLoop().RunUntilIdle();
@@ -770,6 +778,7 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
     options.scope = origin3_s1;
     context()->RegisterServiceWorker(
         GURL("https://www.other.com/service_worker4.js"), options,
+        /*outside_fetch_client_settings_object=*/nullptr,
         MakeRegisteredCallback(&called, &registration_id4));
     ASSERT_FALSE(called);
     base::RunLoop().RunUntilIdle();
@@ -861,6 +870,7 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
       blink::mojom::kInvalidServiceWorkerRegistrationId;
   context()->RegisterServiceWorker(
       GURL("https://www.example.com/service_worker.js"), options,
+      /*outside_fetch_client_settings_object=*/nullptr,
       MakeRegisteredCallback(&called, &old_registration_id));
 
   ASSERT_FALSE(called);
@@ -874,6 +884,7 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
       blink::mojom::kInvalidServiceWorkerRegistrationId;
   context()->RegisterServiceWorker(
       GURL("https://www.example.com/service_worker_new.js"), options,
+      /*outside_fetch_client_settings_object=*/nullptr,
       MakeRegisteredCallback(&called, &new_registration_id));
 
   ASSERT_FALSE(called);
@@ -911,7 +922,7 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   int64_t old_registration_id =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
   context()->RegisterServiceWorker(
-      script_url, options,
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
       MakeRegisteredCallback(&called, &old_registration_id));
 
   ASSERT_FALSE(called);
@@ -924,7 +935,7 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   int64_t new_registration_id =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
   context()->RegisterServiceWorker(
-      script_url, options,
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
       MakeRegisteredCallback(&called, &new_registration_id));
 
   ASSERT_FALSE(called);
@@ -1057,7 +1068,8 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
   context()->RegisterServiceWorker(
-      script_url, options, MakeRegisteredCallback(&called, &registration_id));
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
+      MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
   content::RunAllTasksUntilIdle();
@@ -1092,7 +1104,8 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
 
   called = false;
   context()->RegisterServiceWorker(
-      script_url, options, MakeRegisteredCallback(&called, &registration_id));
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
+      MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
   content::RunAllTasksUntilIdle();

@@ -19,7 +19,9 @@
 namespace {
 
 using bookmarks_helper::AddURL;
+using bookmarks_helper::BookmarksTitleChecker;
 using bookmarks_helper::CreateBookmarkServerEntity;
+using bookmarks_helper::ServerBookmarksEqualityChecker;
 using encryption_helper::CreateCustomPassphraseNigori;
 using encryption_helper::GetEncryptedBookmarkEntitySpecifics;
 using encryption_helper::GetServerNigori;

@@ -36,11 +36,14 @@ class NativeFileSystemTransferTokenImpl
   ~NativeFileSystemTransferTokenImpl() override;
 
   const base::UnguessableToken& token() const { return token_; }
+  const SharedHandleState& shared_handle_state() const { return handle_state_; }
   const storage::FileSystemURL& url() const { return url_; }
   HandleType type() const { return type_; }
 
   // blink::mojom::NativeFileSystemTransferToken:
   void GetInternalID(GetInternalIDCallback callback) override;
+  void Clone(mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+                 clone_receiver) override;
 
  private:
   void OnMojoDisconnect();
@@ -51,7 +54,12 @@ class NativeFileSystemTransferTokenImpl
   const HandleType type_;
   // Raw pointer since NativeFileSystemManagerImpl owns |this|.
   NativeFileSystemManagerImpl* const manager_;
-  mojo::Receiver<blink::mojom::NativeFileSystemTransferToken> receiver_;
+
+  // This token may contain multiple receivers, which includes a receiver for
+  // the originally constructed instance and then additional receivers for
+  // each clone. |manager_| must not remove this token until |receivers_| is
+  // empty.
+  mojo::ReceiverSet<blink::mojom::NativeFileSystemTransferToken> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemTransferTokenImpl);
 };

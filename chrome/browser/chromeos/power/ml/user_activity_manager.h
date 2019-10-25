@@ -23,6 +23,8 @@
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/window.h"
@@ -77,13 +79,14 @@ class UserActivityManager : public ui::UserActivityObserver,
                             public viz::mojom::VideoDetectorObserver,
                             public session_manager::SessionManagerObserver {
  public:
-  UserActivityManager(UserActivityUkmLogger* ukm_logger,
-                      ui::UserActivityDetector* detector,
-                      chromeos::PowerManagerClient* power_manager_client,
-                      session_manager::SessionManager* session_manager,
-                      viz::mojom::VideoDetectorObserverRequest request,
-                      const chromeos::ChromeUserManager* user_manager,
-                      SmartDimModel* smart_dim_model);
+  UserActivityManager(
+      UserActivityUkmLogger* ukm_logger,
+      ui::UserActivityDetector* detector,
+      chromeos::PowerManagerClient* power_manager_client,
+      session_manager::SessionManager* session_manager,
+      mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver,
+      const chromeos::ChromeUserManager* user_manager,
+      SmartDimModel* smart_dim_model);
   ~UserActivityManager() override;
 
   // ui::UserActivityObserver overrides.
@@ -197,7 +200,7 @@ class UserActivityManager : public ui::UserActivityObserver,
 
   session_manager::SessionManager* const session_manager_;
 
-  mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
+  mojo::Receiver<viz::mojom::VideoDetectorObserver> receiver_;
 
   const chromeos::ChromeUserManager* const user_manager_;
 

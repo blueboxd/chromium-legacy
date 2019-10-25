@@ -18,7 +18,6 @@
 #include "media/audio/audio_source_parameters.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "media/webrtc/audio_processor_controls.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -77,7 +76,8 @@ class CONTENT_EXPORT MojoAudioInputIPC
  private:
   void StreamCreated(
       mojo::PendingRemote<media::mojom::AudioInputStream> stream,
-      media::mojom::AudioInputStreamClientRequest stream_client_request,
+      mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+          stream_client_receiver,
       media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
       const base::Optional<base::UnguessableToken>& stream_id) override;
@@ -95,7 +95,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
   mojo::Remote<audio::mojom::AudioProcessorControls> processor_controls_;
   // Initialized on StreamCreated.
   base::Optional<base::UnguessableToken> stream_id_;
-  mojo::Binding<AudioInputStreamClient> stream_client_binding_;
+  mojo::Receiver<AudioInputStreamClient> stream_client_receiver_{this};
   mojo::Receiver<RendererAudioInputStreamFactoryClient>
       factory_client_receiver_{this};
   media::AudioInputIPCDelegate* delegate_ = nullptr;

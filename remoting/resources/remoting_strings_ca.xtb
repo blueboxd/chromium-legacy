@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">Procés de l'amfitrió</translation>
 <translation id="20876857123010370">Mode de ratolí tàctil</translation>
 <translation id="2089514346391228378">S'han activat les connexions remotes en aquest ordinador.</translation>
+<translation id="2198363917176605566">Per poder utilitzar <ph name="PRODUCT_NAME" />, has de concedir el permís Gravació de la pantalla, que permet enviar el contingut de la pantalla d'aquest Mac a l'ordinador remot.
+
+Per concedir el permís, fes clic a <ph name="BUTTON_NAME" /> més avall per obrir el tauler de preferències Gravació de la pantalla. Tot seguit, marca la casella corresponent a <ph name="SERVICE_SCRIPT_NAME" />.
+
+Si la casella <ph name="SERVICE_SCRIPT_NAME" /> ja està marcada, desmarca-la i torna-la a marcar.</translation>
 <translation id="2208514473086078157">La configuració de la política no permet compartir aquest ordinador com a amfitrió de l'escriptori remot de Chrome. Contacteu amb l'administrador del sistema per obtenir assistència.</translation>
 <translation id="2220529011494928058">Informa d'un problema</translation>
 <translation id="2221097377466213233">Utilitza la tecla de Ctrl dreta com a tecla de Windows (⌘ a Mac)</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> L'última connexió va ser <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Aquesta aplicació ja no s'admet. Per garantir que tens les funcions i actualitzacions de seguretat més recents, fes servir l'<ph name="LINK_BEGIN" />aplicació web Escriptori remot de Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
+<translation id="2504109125669302160">Concedeix a <ph name="PRODUCT_NAME" /> el permís Accessibilitat</translation>
 <translation id="2509394361235492552">Connectat a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Per assegurar-vos que totes les tecles de drecera estiguin disponibles, podeu configurar l'escriptori remot de Chrome amb l'opció "Obre com a finestra".</translation>
 <translation id="2540992418118313681">Voleu compartir aquest ordinador perquè un altre usuari el pugui veure i controlar?</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">Biblioteca principal</translation>
 <translation id="4430435636878359009">Desactiva les connexions remotes a aquest ordinador</translation>
 <translation id="4430915108080446161">S'està generant el codi d'accés...</translation>
+<translation id="443560535555262820">Obre el tauler de preferències Accessibilitat</translation>
 <translation id="4450893287417543264">No ho tornis a mostrar</translation>
 <translation id="4472575034687746823">Comença</translation>
 <translation id="4481276415609939789">No teniu cap ordinador registrat. Per activar les connexions remotes a un ordinador, instal·leu-hi Chromoting i feu clic a <ph name="BUTTON_NAME" />.</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">Canvia el PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (obsolet)</translation>
 <translation id="6221358653751391898">No heu iniciat la sessió a Chrome. Inicieu-hi la sessió i torneu-ho a provar.</translation>
+<translation id="6223301979382383752">Obre el tauler de preferències Gravació de la pantalla</translation>
 <translation id="6227369581881558336">Ara Escriptori remot de Chrome és al web, amb funcions noves com la transferència de fitxers. Dona un cop d'ull a l'<ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">L'amfitrió que s'executa a la pantalla d'inici de la consola s'ha aturat per admetre el mode Curtain, i fa servir un amfitrió que s'executa en una sessió específica de l'usuari.</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Altres motius.</translation>
 <translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
+<translation id="6411861157501911556">Per poder utilitzar <ph name="PRODUCT_NAME" />, has de concedir el permís Accessibilitat, que permet inserir dades de l'ordinador remot en aquest Mac.
+
+Per concedir el permís, fes clic a <ph name="BUTTON_NAME" /> més avall per obrir el tauler de preferències Accessibilitat. Tot seguit, marca la casella corresponent a <ph name="SERVICE_SCRIPT_NAME" />.
+
+Si la casella <ph name="SERVICE_SCRIPT_NAME" /> ja està marcada, desmarca-la i torna-la a marcar.</translation>
 <translation id="6441316101718669559">Aquesta plataforma no admet la integració de l'escriptori. Podeu continuar utilitzant l'aplicació, però l'experiència de l'usuari no serà tan bona.</translation>
 <translation id="652218476070540101">S'està actualitzant el PIN d'aquest ordinador...</translation>
 <translation id="6527303717912515753">Comparteix</translation>
@@ -301,6 +314,7 @@
 <translation id="837021510621780684">Des d'aquest ordinador</translation>
 <translation id="8383794970363966105">Per utilitzar Chromoting, haureu d'afegir un compte de Google al dispositiu.</translation>
 <translation id="8386846956409881180">L'amfitrió està configurat amb unes credencials d'OAuth no vàlides.</translation>
+<translation id="8397385476380433240">Concedeix permís a <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Selecciona la sessió que vols iniciar a l'entorn d'Escriptori remot de Chrome. Tingues en compte que pot ser que alguns tipus de sessió no es puguin executar a Escriptori remot de Chrome i a la consola local simultàniament.</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8445362773033888690">Mostra a Google Play Store</translation>
@@ -327,6 +341,7 @@
 <translation id="9149580767411232853">Mantén tot l'escriptori remot visible</translation>
 <translation id="9149992051684092333">Per començar a compartir l'escriptori, proporcioneu el codi d'accés següent a la persona que us oferirà assistència.</translation>
 <translation id="916856682307586697">Inicia la sessió X predeterminada</translation>
+<translation id="9187628920394877737">Concedeix a <ph name="PRODUCT_NAME" /> el permís Gravació de la pantalla</translation>
 <translation id="9188433529406846933">Autoritza</translation>
 <translation id="9213184081240281106">La configuració de l'amfitrió no és vàlida.</translation>
 <translation id="951991426597076286">Rebutja</translation>

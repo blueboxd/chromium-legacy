@@ -123,7 +123,9 @@ def Preprocess(rc_file_data, flags):
   # Closing temp_handle immediately defeats the purpose of mkstemp(), but I
   # can't figure out how to let write to the temp file on Windows otherwise.
   os.close(temp_handle)
-  clang_cmd = [clang, '/P', '/X', '/DRC_INVOKED', '/TC', '-', '/Fi' + temp_file]
+  clang_cmd = [clang, '/P', '/DRC_INVOKED', '/TC', '-', '/Fi' + temp_file]
+  if flags.imsvcs:
+    clang_cmd += ['/X']
   if os.path.dirname(flags.input):
     # This must precede flags.includes.
     clang_cmd.append('-I' + os.path.dirname(flags.input))

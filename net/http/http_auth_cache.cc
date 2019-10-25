@@ -317,13 +317,18 @@ bool HttpAuthCache::UpdateStaleChallenge(
   return true;
 }
 
-void HttpAuthCache::UpdateAllFrom(const HttpAuthCache& other) {
-  DCHECK_EQ(key_server_entries_by_network_isolation_key_,
-            other.key_server_entries_by_network_isolation_key());
-
+void HttpAuthCache::CopyProxyEntriesFrom(const HttpAuthCache& other) {
   for (auto it = other.entries_.begin(); it != other.entries_.end(); ++it) {
-    // Add an Entry with one of the original entry's paths.
     const Entry& e = it->second;
+
+    // Skip non-proxy entries.
+    if (it->first.target != HttpAuth::AUTH_PROXY)
+      continue;
+
+    // Sanity check - proxy entries should have an empty NetworkIsolationKey.
+    DCHECK_EQ(NetworkIsolationKey(), it->first.network_isolation_key);
+
+    // Add an Entry with one of the original entry's paths.
     DCHECK(e.paths_.size() > 0);
     Entry* entry = Add(e.origin(), it->first.target, e.realm(), e.scheme(),
                        it->first.network_isolation_key, e.auth_challenge(),

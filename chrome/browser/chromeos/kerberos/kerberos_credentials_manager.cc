@@ -467,17 +467,14 @@ void KerberosCredentialsManager::OnAddAccountRunnerDone(
       SetActivePrincipalName(updated_principal);
     else if (GetActivePrincipalName() == updated_principal)
       GetKerberosFiles();
-
-    // Observers should be notified if at least one of the additions succeed.
-    should_notify_accounts_changes_ = true;
   }
 
   // Bring the merry news to the observers, but only if there is no outstanding
-  // query, so we don't spam observers.
-  if (add_account_runners_.empty() && should_notify_accounts_changes_) {
-    should_notify_accounts_changes_ = false;
+  // query, so we don't spam observers. We want to notify observers even if the
+  // additions result in error, because the account might actually have been
+  // added, in case of a managed account.
+  if (add_account_runners_.empty())
     NotifyAccountsChanged();
-  }
 
   std::move(callback).Run(error);
 }

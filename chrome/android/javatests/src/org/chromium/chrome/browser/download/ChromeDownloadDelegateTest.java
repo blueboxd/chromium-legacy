@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -45,8 +43,8 @@ public class ChromeDownloadDelegateTest {
      * Mock class for test.
      */
     static class MockChromeDownloadDelegate extends ChromeDownloadDelegate {
-        public MockChromeDownloadDelegate(Context context, Tab tab) {
-            super(context, tab);
+        public MockChromeDownloadDelegate(Tab tab) {
+            super(tab);
         }
 
         @Override
@@ -66,9 +64,7 @@ public class ChromeDownloadDelegateTest {
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         mActivityTestRule.loadUrl("about:blank");
         ChromeDownloadDelegate delegate = TestThreadUtils.runOnUiThreadBlockingNoException(
-                (Callable<ChromeDownloadDelegate>) ()
-                        -> new MockChromeDownloadDelegate(
-                                InstrumentationRegistry.getTargetContext(), tab));
+                (Callable<ChromeDownloadDelegate>) () -> new MockChromeDownloadDelegate(tab));
         Assert.assertFalse(delegate.shouldInterceptContextMenuDownload("file://test/test.html"));
         Assert.assertFalse(delegate.shouldInterceptContextMenuDownload("http://test/test.html"));
         Assert.assertFalse(delegate.shouldInterceptContextMenuDownload("ftp://test/test.dm"));

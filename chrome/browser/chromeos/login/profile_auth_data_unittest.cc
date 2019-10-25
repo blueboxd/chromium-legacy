@@ -107,7 +107,7 @@ class ProfileAuthDataTest : public testing::Test {
                               const std::string& proxy_auth_password,
                               const std::string& cookie_value);
 
-  net::HttpAuthCache* GetProxyAuth(network::NetworkContext* network_context);
+  net::HttpAuthCache* GetAuthCache(network::NetworkContext* network_context);
   network::mojom::CookieManager* GetCookies(
       content::BrowserContext* browser_context);
 
@@ -169,8 +169,8 @@ net::CookieList ProfileAuthDataTest::GetUserCookies() {
 
 void ProfileAuthDataTest::VerifyTransferredUserProxyAuthEntry() {
   net::HttpAuthCache::Entry* entry =
-      GetProxyAuth(user_browser_context_.network_context())
-          ->Lookup(GURL(kProxyAuthURL), net::HttpAuth::AUTH_SERVER,
+      GetAuthCache(user_browser_context_.network_context())
+          ->Lookup(GURL(kProxyAuthURL), net::HttpAuth::AUTH_PROXY,
                    kProxyAuthRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
                    net::NetworkIsolationKey());
   ASSERT_TRUE(entry);
@@ -205,8 +205,8 @@ void ProfileAuthDataTest::PopulateBrowserContext(
     TestingProfileWithNetworkContext* browser_context,
     const std::string& proxy_auth_password,
     const std::string& cookie_value) {
-  GetProxyAuth(browser_context->network_context())
-      ->Add(GURL(kProxyAuthURL), net::HttpAuth::AUTH_SERVER, kProxyAuthRealm,
+  GetAuthCache(browser_context->network_context())
+      ->Add(GURL(kProxyAuthURL), net::HttpAuth::AUTH_PROXY, kProxyAuthRealm,
             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
             kProxyAuthChallenge,
             net::AuthCredentials(base::string16(),
@@ -245,7 +245,7 @@ void ProfileAuthDataTest::PopulateBrowserContext(
       "https", options, base::DoNothing());
 }
 
-net::HttpAuthCache* ProfileAuthDataTest::GetProxyAuth(
+net::HttpAuthCache* ProfileAuthDataTest::GetAuthCache(
     network::NetworkContext* network_context) {
   return network_context->url_request_context()
       ->http_transaction_factory()

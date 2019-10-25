@@ -12,7 +12,7 @@
 #include "components/mirroring/mojom/resource_provider.mojom.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -46,7 +46,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) CapturedAudioInput final
 
   // mojom::AudioStreamCreatorClient implementation
   void StreamCreated(mojo::PendingRemote<media::mojom::AudioInputStream> stream,
-                     media::mojom::AudioInputStreamClientRequest client_request,
+                     mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+                         client_receiver,
                      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
                      bool initially_muted) override;
 
@@ -57,7 +58,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) CapturedAudioInput final
   SEQUENCE_CHECKER(sequence_checker_);
 
   const StreamCreatorCallback stream_creator_callback_;
-  mojo::Binding<media::mojom::AudioInputStreamClient> stream_client_binding_;
+  mojo::Receiver<media::mojom::AudioInputStreamClient> stream_client_receiver_{
+      this};
   mojo::Receiver<mojom::AudioStreamCreatorClient>
       stream_creator_client_receiver_{this};
   media::AudioInputIPCDelegate* delegate_ = nullptr;

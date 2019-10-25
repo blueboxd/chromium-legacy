@@ -193,6 +193,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoTarget,
     kPseudoBefore,
     kPseudoAfter,
+    kPseudoMarker,
     kPseudoBackdrop,
     kPseudoLang,
     kPseudoNot,

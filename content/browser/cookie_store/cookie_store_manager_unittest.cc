@@ -326,6 +326,7 @@ class CookieStoreManagerTest
     base::RunLoop run_loop;
     worker_test_helper_->context()->RegisterServiceWorker(
         GURL(script_url), options,
+        /*outside_fetch_client_settings_object=*/nullptr,
         base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status,
                                        const std::string& status_message,
                                        int64_t service_worker_registration_id) {

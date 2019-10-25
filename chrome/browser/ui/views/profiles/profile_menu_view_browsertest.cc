@@ -789,6 +789,29 @@ class ProfileMenuClickTest : public SyncTest,
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
 constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SingleProfileWithCustomName[] = {
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSigninButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+
+PROFILE_MENU_CLICK_TEST(kActionableItems_SingleProfileWithCustomName,
+                        ProfileMenuClickTest_SingleProfileWithCustomName) {
+  profiles::UpdateProfileName(browser()->profile(),
+                              base::UTF8ToUTF16("Custom name"));
+  RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu.
+// If a new button is added to the menu, it should also be added to this list.
+constexpr ProfileMenuViewBase::ActionableItem
     kActionableItems_MultipleProfiles[] = {
         ProfileMenuViewBase::ActionableItem::kEditProfileButton,
         ProfileMenuViewBase::ActionableItem::kPasswordsButton,
@@ -820,7 +843,6 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_MultipleProfiles,
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
 constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncEnabled[] = {
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton,
     ProfileMenuViewBase::ActionableItem::kPasswordsButton,
     ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
     ProfileMenuViewBase::ActionableItem::kAddressesButton,
@@ -831,7 +853,7 @@ constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncEnabled[] = {
     ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
     // The first button is added again to finish the cycle and test that
     // there are no other buttons at the end.
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+    ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
 PROFILE_MENU_CLICK_TEST(kActionableItems_SyncEnabled,
                         ProfileMenuClickTest_SyncEnabled) {
@@ -846,7 +868,6 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncEnabled,
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
 constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncError[] = {
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton,
     ProfileMenuViewBase::ActionableItem::kPasswordsButton,
     ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
     ProfileMenuViewBase::ActionableItem::kAddressesButton,
@@ -857,7 +878,7 @@ constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncError[] = {
     ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
     // The first button is added again to finish the cycle and test that
     // there are no other buttons at the end.
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+    ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
 PROFILE_MENU_CLICK_TEST(kActionableItems_SyncError,
                         ProfileMenuClickTest_SyncError) {
@@ -873,7 +894,6 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncError,
 // If a new button is added to the menu, it should also be added to this list.
 constexpr ProfileMenuViewBase::ActionableItem
     kActionableItems_WithUnconsentedPrimaryAccount[] = {
-        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
         ProfileMenuViewBase::ActionableItem::kPasswordsButton,
         ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
         ProfileMenuViewBase::ActionableItem::kAddressesButton,
@@ -885,7 +905,7 @@ constexpr ProfileMenuViewBase::ActionableItem
         ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
         // The first button is added again to finish the cycle and test that
         // there are no other buttons at the end.
-        ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
 // TODO(crbug.com/1015429): Failing on Mac 10.12.
 PROFILE_MENU_CLICK_TEST(

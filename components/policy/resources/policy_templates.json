@@ -826,6 +826,7 @@
         'DeviceLoginScreenIsolateOrigins',
         'DeviceLoginScreenSitePerProcess',
         'DeviceLoginScreenAutoSelectCertificateForUrls',
+        'DeviceShowNumericKeyboardForPassword',
       ],
     },
     {
@@ -18629,7 +18630,7 @@
 
           This policy can be overridden for specific URL patterns using the 'InsecureContentAllowedForUrls' and 'InsecureContentBlockedForUrls' policies.
 
-          If this policy is left not set, users will be allowed to add exceptions to allow blockable mixed content"''',
+          If this policy is left not set, users will be allowed to add exceptions to allow blockable mixed content''',
     },
     {
       'name': 'InsecureContentAllowedForUrls',
@@ -18696,6 +18697,24 @@
       Specifically, if a URL matches one of the patterns provided through this policy, it will be allowed to receive a HTTP header containing a response to a remote attestation challenge, attesting device identity and device state.
 
       If this policy is not set or is set to an empty list, no URL is allowed to use remote attestation on the sign-in screen.'''
+    },
+    {
+      'name': 'DeviceShowNumericKeyboardForPassword',
+      'owners': ['raleksandrov@google.com', 'file://chrome/browser/chromeos/login/OWNERS'],
+      'type' : 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:80-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 638,
+      'caption': '''Show numeric keyboard for password''',
+      'tags': [],
+      'desc': '''Setting the policy to true displays numeric keyboard by default for entering password on the login screen. Users still could switch to the normal keyboard.
+
+      If you set the policy, users can't change it. If not set or set to false, it has no effect.'''
     },
   ],
 
@@ -18945,6 +18964,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenLocales': 'login_screen_locales.login_screen_locales',
     'DeviceLoginScreenInputMethods': 'login_screen_input_methods.login_screen_input_methods',
     'DeviceLoginScreenSystemInfoEnforced': 'device_login_screen_system_info_enforced.enabled',
+    'DeviceShowNumericKeyboardForPassword' : 'device_show_numeric_keyboard_for_password.value',
     'DeviceSamlLoginAuthenticationType': 'saml_login_authentication_type.saml_login_authentication_type',
     'DeviceDataRoamingEnabled': 'data_roaming_enabled.data_roaming_enabled',
     'AllowKioskAppControlChromeVersion': 'allow_kiosk_app_control_chrome_version.allow_kiosk_app_control_chrome_version',
@@ -19519,6 +19539,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 637,
+  'highest_id_currently_used': 638,
   'highest_atomic_group_id_currently_used': 38
 }

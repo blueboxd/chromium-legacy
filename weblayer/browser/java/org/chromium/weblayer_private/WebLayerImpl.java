@@ -104,6 +104,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
 
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBLAYER);
+        GmsBridge.getInstance().setSafeBrowsingHandler();
 
         final ValueCallback<Boolean> loadedCallback = (ValueCallback<Boolean>) ObjectWrapper.unwrap(
                 loadedCallbackWrapper, ValueCallback.class);

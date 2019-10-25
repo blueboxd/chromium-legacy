@@ -13,7 +13,8 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/viz_service_export.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 
 namespace viz {
@@ -38,7 +39,8 @@ class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
 
   // Adds an observer. The observer can be removed by closing the mojo
   // connection.
-  void AddObserver(mojom::VideoDetectorObserverPtr observer);
+  void AddObserver(
+      mojo::PendingRemote<mojom::VideoDetectorObserver> pending_observer);
 
   // When a FrameSinkId is registered/invalidated, we need to insert/delete the
   // corresponding entry in client_infos_.
@@ -99,7 +101,7 @@ class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
 
   // Observers that are interested to know about video activity. We only detect
   // video activity if there is at least one client.
-  mojo::InterfacePtrSet<mojom::VideoDetectorObserver> observers_;
+  mojo::RemoteSet<mojom::VideoDetectorObserver> observers_;
 
   SurfaceManager* const surface_manager_;
 

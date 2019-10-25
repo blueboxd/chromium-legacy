@@ -284,6 +284,11 @@ const char kDeviceLoginScreenInputMethods[] =
 const char kDeviceLoginScreenSystemInfoEnforced[] =
     "cros.device_login_screen_system_info_enforced";
 
+// A boolean pref that indicates whether to show numeric keyboard for entering
+// password or not.
+const char kDeviceShowNumericKeyboardForPassword[] =
+    "cros.device_show_numeric_keyboard_for_password";
+
 // A boolean pref that matches enable-per-user-time-zone chrome://flags value.
 const char kPerUserTimezoneEnabled[] = "cros.flags.per_user_timezone_enabled";
 

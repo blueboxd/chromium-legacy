@@ -21,6 +21,7 @@
 ../../build/scripts/blinkbuild/name_style_converter.py
 bind_gen/__init__.py
 bind_gen/clang_format.py
+bind_gen/code_generation_context.py
 bind_gen/code_node.py
 bind_gen/example.py
 bind_gen/mako_renderer.py

@@ -30,6 +30,7 @@ class SimpleWatcher;
 }  // namespace mojo
 
 namespace blink {
+class ThrottlingURLLoader;
 class URLLoaderThrottle;
 }  // namespace blink
 
@@ -37,7 +38,6 @@ namespace content {
 
 class SignedExchangeDevToolsProxy;
 class SignedExchangeReporter;
-class ThrottlingURLLoader;
 
 class CONTENT_EXPORT SignedExchangeCertFetcher
     : public network::mojom::URLLoaderClient {
@@ -115,7 +115,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
   std::unique_ptr<network::ResourceRequest> resource_request_;
   CertificateCallback callback_;
 
-  std::unique_ptr<ThrottlingURLLoader> url_loader_;
+  std::unique_ptr<blink::ThrottlingURLLoader> url_loader_;
   mojo::ScopedDataPipeConsumerHandle body_;
   std::unique_ptr<mojo::SimpleWatcher> handle_watcher_;
   std::string body_string_;

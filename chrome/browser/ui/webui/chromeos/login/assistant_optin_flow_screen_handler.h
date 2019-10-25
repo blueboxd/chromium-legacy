@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 
@@ -163,7 +164,7 @@ class AssistantOptInFlowScreenHandler
   bool initialized_ = false;
 
   mojo::Binding<assistant::mojom::SpeakerIdEnrollmentClient> client_binding_;
-  assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
+  mojo::Remote<assistant::mojom::AssistantSettingsManager> settings_manager_;
   base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreenHandler);

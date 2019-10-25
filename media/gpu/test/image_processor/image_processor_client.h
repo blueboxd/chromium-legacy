@@ -17,7 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
-#include "media/gpu/image_processor.h"
+#include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/test/video_frame_helpers.h"
 
 namespace base {

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.gesturenav;
 import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -29,7 +30,7 @@ class GestureNavMetrics {
     private GestureNavMetrics() {}
 
     /**
-     * Records UMA histogram for various gesturen navigation events.
+     * Records UMA histogram for various gesture navigation events.
      * @param name Event name.
      * @param forward {@code true} if navigating forward; otherwise {@code false}.
      */
@@ -37,5 +38,13 @@ class GestureNavMetrics {
         RecordHistogram.recordEnumeratedHistogram(name,
                 forward ? GestureNavigationDirection.FORWARD : GestureNavigationDirection.BACK,
                 GestureNavigationDirection.NUM_ENTRIES);
+    }
+
+    /**
+     * Records UMA user action for navigation popup events.
+     * @param name Event name.
+     */
+    static void recordUserAction(String name) {
+        RecordUserAction.record("BackMenu_" + name);
     }
 }

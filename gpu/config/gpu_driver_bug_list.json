@@ -3390,6 +3390,28 @@
       "features": [
         "disable_direct_composition"
       ]
+    },
+    {
+      "id": 319,
+      "cr_bugs": [709351],
+      "description": "Remove dynamic indexing for swizzled vectors on Mac",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "remove_dynamic_indexing_of_swizzled_vector"
+      ]
+    },
+    {
+      "id": 320,
+      "cr_bugs": [709351],
+      "description": "Remove dynamic indexing for swizzled vectors on Android",
+      "os": {
+        "type": "android"
+      },
+      "features": [
+        "remove_dynamic_indexing_of_swizzled_vector"
+      ]
     }
   ]
 }

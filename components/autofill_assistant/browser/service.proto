@@ -910,6 +910,7 @@ message UseCreditCardProto {
       CREDIT_CARD_EXP_4_DIGIT_YEAR = 4;
       CREDIT_CARD_CARD_HOLDER_NAME = 5;
       CREDIT_CARD_NUMBER = 6;
+      CREDIT_CARD_EXP_MM_YY = 7;
     }
 
     optional CardField card_field = 1;

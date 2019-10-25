@@ -232,7 +232,7 @@ void WebThemeEngineDefault::cacheScrollBarMetrics(
 }
 #endif
 
-blink::ForcedColors WebThemeEngineDefault::ForcedColors() const {
+blink::ForcedColors WebThemeEngineDefault::GetForcedColors() const {
   return ui::NativeTheme::GetInstanceForWeb()->UsesHighContrastColors()
              ? blink::ForcedColors::kActive
              : blink::ForcedColors::kNone;

@@ -101,7 +101,7 @@ class FakeStreamCreator {
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
     factory_client_->StreamCreated(
         receiver_.BindNewPipeAndPassRemote(),
-        mojo::MakeRequest(&stream_client_),
+        stream_client_.BindNewPipeAndPassReceiver(),
         {base::in_place,
          base::ReadOnlySharedMemoryRegion::Create(kMemoryLength).region,
          mojo::WrapPlatformFile(foreign_socket.Release())},
@@ -114,6 +114,7 @@ class FakeStreamCreator {
   }
 
   void Rearm() {
+    stream_client_.reset();
     receiver_.reset();
     socket_.Close();
   }
@@ -125,7 +126,7 @@ class FakeStreamCreator {
 
  private:
   media::mojom::AudioInputStream* stream_;
-  media::mojom::AudioInputStreamClientPtr stream_client_;
+  mojo::Remote<media::mojom::AudioInputStreamClient> stream_client_;
   mojo::Remote<mojom::RendererAudioInputStreamFactoryClient> factory_client_;
   mojo::Receiver<media::mojom::AudioInputStream> receiver_;
   bool initially_muted_;

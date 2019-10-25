@@ -192,6 +192,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Typed getters and setters for language bindings.
   int GetIntegralAttribute(const QualifiedName& attribute_name) const;
+  int GetIntegralAttribute(const QualifiedName& attribute_name,
+                           int default_value) const;
   void SetIntegralAttribute(const QualifiedName& attribute_name, int value);
   void SetUnsignedIntegralAttribute(const QualifiedName& attribute_name,
                                     unsigned value,

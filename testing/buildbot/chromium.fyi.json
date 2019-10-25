@@ -10759,7 +10759,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter"
         ],
         "merge": {
@@ -10780,7 +10780,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_browsertests.filter"
         ],
         "merge": {
@@ -10801,7 +10801,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_unittests.filter"
         ],
         "merge": {
@@ -10822,7 +10822,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction",
+          "--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter"
         ],
         "merge": {

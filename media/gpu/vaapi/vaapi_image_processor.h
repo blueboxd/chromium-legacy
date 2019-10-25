@@ -13,7 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
-#include "media/gpu/image_processor.h"
+#include "media/gpu/chromeos/image_processor.h"
 
 namespace media {
 

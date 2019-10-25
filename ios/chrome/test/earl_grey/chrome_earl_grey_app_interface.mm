@@ -376,17 +376,6 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
       web::GetDisplayTitleForUrl(GURL(base::SysNSStringToUTF8(URL))));
 }
 
-#pragma mark - Autofill Utilities (EG2)
-
-+ (void)clearCreditCards {
-  autofill::PersonalDataManager* personalDataManager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-  for (const auto* creditCard : personalDataManager->GetCreditCards()) {
-    personalDataManager->RemoveByGUID(creditCard->guid());
-  }
-}
-
 #pragma mark - Sync Utilities (EG2)
 
 + (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {

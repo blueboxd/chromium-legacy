@@ -471,6 +471,10 @@ id<GREYMatcher> SettingsProfileMatcher() {
   return [ChromeMatchersAppInterface settingsProfileMatcher];
 }
 
+id<GREYMatcher> SettingsCreditCardMatcher() {
+  return [ChromeMatchersAppInterface settingsCreditCardMatcher];
+}
+
 id<GREYMatcher> AutofillSuggestionViewMatcher() {
   return [ChromeMatchersAppInterface autofillSuggestionViewMatcher];
 }
@@ -534,6 +538,29 @@ id<GREYMatcher> ManualFallbackManageProfilesMatcher() {
 id<GREYMatcher> ManualFallbackProfileTableViewWindowMatcher() {
   return
       [ChromeMatchersAppInterface manualFallbackProfileTableViewWindowMatcher];
+}
+
+id<GREYMatcher> ManualFallbackCreditCardIconMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackCreditCardIconMatcher];
+}
+
+id<GREYMatcher> ManualFallbackCreditCardTableViewMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackCreditCardTableViewMatcher];
+}
+
+// Returns a matcher for the button to open password settings in manual
+id<GREYMatcher> ManualFallbackManageCreditCardsMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackManageCreditCardsMatcher];
+}
+
+// Returns a matcher for the button to add credit cards settings in manual
+id<GREYMatcher> ManualFallbackAddCreditCardsMatcher() {
+  return [ChromeMatchersAppInterface manualFallbackAddCreditCardsMatcher];
+}
+
+id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher() {
+  return [ChromeMatchersAppInterface
+      manualFallbackCreditCardTableViewWindowMatcher];
 }
 
 }  // namespace chrome_test_util

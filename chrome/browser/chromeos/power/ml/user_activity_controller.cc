@@ -10,6 +10,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/compositor.h"
@@ -34,19 +35,22 @@ UserActivityController::UserActivityController() {
   // TODO(jiameng): both IdleEventNotifier and UserActivityManager implement
   // viz::mojom::VideoDetectorObserver. We should refactor the code to create
   // one shared video detector observer class.
-  viz::mojom::VideoDetectorObserverPtr video_observer_idle_notifier;
+  mojo::PendingRemote<viz::mojom::VideoDetectorObserver>
+      video_observer_idle_notifier;
   idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
       power_manager_client, detector,
-      mojo::MakeRequest(&video_observer_idle_notifier));
+      video_observer_idle_notifier.InitWithNewPipeAndPassReceiver());
   aura::Env::GetInstance()
       ->context_factory_private()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(std::move(video_observer_idle_notifier));
 
-  viz::mojom::VideoDetectorObserverPtr video_observer_user_logger;
+  mojo::PendingRemote<viz::mojom::VideoDetectorObserver>
+      video_observer_user_logger;
   user_activity_manager_ = std::make_unique<UserActivityManager>(
       &user_activity_ukm_logger_, detector, power_manager_client,
-      session_manager, mojo::MakeRequest(&video_observer_user_logger),
+      session_manager,
+      video_observer_user_logger.InitWithNewPipeAndPassReceiver(),
       chromeos::ChromeUserManager::Get(), &smart_dim_model_);
   aura::Env::GetInstance()
       ->context_factory_private()

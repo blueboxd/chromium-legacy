@@ -18,6 +18,10 @@
 
 class SharingDialog;
 
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
+
 // All data required to display a SharingDialog.
 struct SharingDialogData {
  public:
@@ -36,8 +40,8 @@ struct SharingDialogData {
   base::string16 error_text;
   int help_text_id = 0;
   int help_link_text_id = 0;
-  int header_image_light = 0;
-  int header_image_dark = 0;
+  const gfx::VectorIcon* header_image_light = nullptr;
+  const gfx::VectorIcon* header_image_dark = nullptr;
   int origin_text_id = 0;
   base::Optional<url::Origin> initiating_origin;
 

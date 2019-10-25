@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "third_party/blink/public/common/messaging/cloneable_message.h"
 #include "third_party/blink/public/mojom/messaging/cloneable_message.mojom.h"
+#include "url/mojom/origin_mojom_traits.h"
 
 namespace mojo {
 
@@ -22,6 +23,11 @@ struct BLINK_COMMON_EXPORT
   static std::vector<blink::mojom::SerializedBlobPtr>& blobs(
       blink::CloneableMessage& input) {
     return input.blobs;
+  }
+
+  static const base::Optional<url::Origin>& sender_origin(
+      const blink::CloneableMessage& input) {
+    return input.sender_origin;
   }
 
   static uint64_t stack_trace_id(const blink::CloneableMessage& input) {
@@ -49,6 +55,12 @@ struct BLINK_COMMON_EXPORT
 
   static bool Read(blink::mojom::CloneableMessage::DataView data,
                    blink::CloneableMessage* out);
+
+  static std::vector<
+      mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>>&
+  native_file_system_tokens(blink::CloneableMessage& input) {
+    return input.native_file_system_tokens;
+  }
 };
 
 }  // namespace mojo

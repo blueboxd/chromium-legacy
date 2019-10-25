@@ -349,8 +349,7 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
   std::string jpeg_data;
   ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
       << "failed to read input data from " << input_file.value();
-  const auto encoded_image = base::make_span<const uint8_t>(
-      reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
+  const auto encoded_image = base::as_bytes(base::make_span(jpeg_data));
 
   // Skip the image if the VAAPI driver doesn't claim to support its chroma
   // subsampling format. However, we expect at least 4:2:0 and 4:2:2 support.
@@ -468,8 +467,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
                                              {max_width, max_height}};
   for (const auto& test_size : test_sizes) {
     const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
-    auto jpeg_data_span = base::make_span<const uint8_t>(
-        reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
+    auto jpeg_data_span = base::as_bytes(base::make_span(jpeg_data));
     ASSERT_FALSE(jpeg_data.empty());
     std::unique_ptr<ScopedVAImage> scoped_image = Decode(jpeg_data_span);
     ASSERT_TRUE(scoped_image)
@@ -513,8 +511,7 @@ TEST_P(VaapiJpegDecoderWithDmaBufsTest, DecodeSucceeds) {
   std::string jpeg_data;
   ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
       << "failed to read input data from " << input_file.value();
-  const auto encoded_image = base::make_span<const uint8_t>(
-      reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
+  const auto encoded_image = base::as_bytes(base::make_span(jpeg_data));
 
   // Decode into a VAAPI-allocated surface.
   const VaapiImageDecodeStatus decode_status = decoder_.Decode(encoded_image);
@@ -667,10 +664,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
     const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
     ASSERT_FALSE(jpeg_data.empty());
     VaapiImageDecodeStatus status = VaapiImageDecodeStatus::kSuccess;
-    ASSERT_FALSE(Decode(base::make_span<const uint8_t>(
-                            reinterpret_cast<const uint8_t*>(jpeg_data.data()),
-                            jpeg_data.size()),
-                        &status))
+    ASSERT_FALSE(Decode(base::as_bytes(base::make_span(jpeg_data)), &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
     EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
     EXPECT_FALSE(decoder_.GetScopedVASurface());
@@ -717,10 +711,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
     const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
     ASSERT_FALSE(jpeg_data.empty());
     VaapiImageDecodeStatus status = VaapiImageDecodeStatus::kSuccess;
-    ASSERT_FALSE(Decode(base::make_span<const uint8_t>(
-                            reinterpret_cast<const uint8_t*>(jpeg_data.data()),
-                            jpeg_data.size()),
-                        &status))
+    ASSERT_FALSE(Decode(base::as_bytes(base::make_span(jpeg_data)), &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
     EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
     EXPECT_FALSE(decoder_.GetScopedVASurface());
@@ -734,10 +725,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFails) {
   ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
       << "failed to read input data from " << input_file.value();
   VaapiImageDecodeStatus status = VaapiImageDecodeStatus::kSuccess;
-  ASSERT_FALSE(Decode(
-      base::make_span<const uint8_t>(
-          reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size()),
-      &status));
+  ASSERT_FALSE(Decode(base::as_bytes(base::make_span(jpeg_data)), &status));
   EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedSubsampling, status);
   EXPECT_FALSE(decoder_.GetScopedVASurface());
 }

@@ -9,7 +9,7 @@
 
 namespace content {
 
-blink::ForcedColors WebThemeEngineMac::ForcedColors() const {
+blink::ForcedColors WebThemeEngineMac::GetForcedColors() const {
   return ui::NativeTheme::GetInstanceForWeb()->UsesHighContrastColors()
              ? blink::ForcedColors::kActive
              : blink::ForcedColors::kNone;

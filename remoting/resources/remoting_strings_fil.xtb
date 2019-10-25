@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">Proseso ng Host</translation>
 <translation id="20876857123010370">Trackpad mode</translation>
 <translation id="2089514346391228378">Pinagana na ang mga malayuang koneksyon para sa computer na ito.</translation>
+<translation id="2198363917176605566">Para magamit ang <ph name="PRODUCT_NAME" />, kailangan mong ibigay ang pahintulot sa 'Pag-record ng Screen' para maipadala sa malayuang machine ang mga content ng screen sa Mac na ito.
+
+Para ibigay ang pahintulot na ito, i-click ang '<ph name="BUTTON_NAME" />' sa ibaba para buksan ang pane ng mga kagustuhan sa 'Pag-record ng Screen' at pagkatapos ay lagyan ng check ang kahon sa tabi ng '<ph name="SERVICE_SCRIPT_NAME" />.'
+
+Kung mayroon nang check ang '<ph name="SERVICE_SCRIPT_NAME" />,' i-uncheck ito at pagkatapos ay lagyan ulit ito ng check.</translation>
 <translation id="2208514473086078157">Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Remote na Desktop ng Chrome. Makipag-ugnay sa iyong system administrator para sa tulong.</translation>
 <translation id="2220529011494928058">Mag-ulat ng isyu</translation>
 <translation id="2221097377466213233">Gamitin ang Ctrl sa kanan para sa Win key (⌘ sa Mac)</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Huling nakitang naka-online noong <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Hindi na sinusuportahan ang app na ito. Upang matiyak na makukuha mo ang mga pinakabagong feature at update sa seguridad, pakigamit ang <ph name="LINK_BEGIN" />web app na Remote na Desktop ng Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Tumulong sa amin na pahusayin ang Remote na Desktop ng Chrome sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
+<translation id="2504109125669302160">Magbigay ng pahintulot sa 'Accessibility' sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Nakakonekta sa <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">TANDAAN: Upang matiyak na available ang lahat ng keyboard shortcut, maaari mong i-configure ang Remote na Desktop ng Chrome sa ‘Buksan bilang window’.</translation>
 <translation id="2540992418118313681">Gusto mo bang ibahagi ang computer na ito upang makita at makontrol ng ibang user?</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">Pangunahing Library</translation>
 <translation id="4430435636878359009">Huwag paganahin ang mga malayuang koneksyon sa computer na ito</translation>
 <translation id="4430915108080446161">Bumubuo ng access code…</translation>
+<translation id="443560535555262820">Buksan ang Mga Kagustuhan sa Accessibility</translation>
 <translation id="4450893287417543264">Huwag ipakitang muli</translation>
 <translation id="4472575034687746823">Magsimula</translation>
 <translation id="4481276415609939789">Wala kang mga nakarehistrong computer. Upang paganahin ang mga malayuang koneksyon sa isang computer, i-install ang Chromoting doon at i-click ang “<ph name="BUTTON_NAME" />”.</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">Palitan ang PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (luma)</translation>
 <translation id="6221358653751391898">Hindi ka naka-sign in sa Chrome. Mangyaring mag-sign in at subukang muli.</translation>
+<translation id="6223301979382383752">Buksan ang Mga Kagustuhan sa Pag-record ng Screen</translation>
 <translation id="6227369581881558336">Nasa web na ang Remote na Desktop ng Chrome at may mga bago itong feature kasama na ang paglilipat ng file! Tingnan ang aming <ph name="LINK_BEGIN" />web app<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Nag-shutdown ang host na tumatakbo sa console logic screen upang masuportahan ang curtain mode sa pamamagitan ng paglipat sa isang host na tumatakbo sa isang user-specific session.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Iba pang bagay.</translation>
 <translation id="6398765197997659313">Lumabas sa buong screen</translation>
+<translation id="6411861157501911556">Para magamit ang <ph name="PRODUCT_NAME" />, kailangan mong ibigay ang pahintulot sa 'Accessibility' para mailagay sa Mac na ito ang input mula sa malayuang machine.
+
+Para ibigay ang pahintulot na ito, i-click ang '<ph name="BUTTON_NAME" />' sa ibaba para buksan ang pane ng mga kagustuhan sa 'Accessibility' at pagkatapos ay lagyan ng check ang kahon sa tabi ng '<ph name="SERVICE_SCRIPT_NAME" />.'
+
+Kung mayroon nang check ang '<ph name="SERVICE_SCRIPT_NAME" />,' i-uncheck ito at pagkatapos ay lagyan ulit ito ng check.</translation>
 <translation id="6441316101718669559">Hindi sinusuportahan sa platform na ito ang pagsasama sa desktop. Maaari mo pa ring gamitin ang application, ngunit hindi magiging maganda ang karanasan ng user.</translation>
 <translation id="652218476070540101">Ina-update ang PIN para sa computer na ito…</translation>
 <translation id="6527303717912515753">Ibahagi</translation>
@@ -327,6 +340,7 @@
 <translation id="9149580767411232853">Panatilihing nakikita ang buong remote na desktop</translation>
 <translation id="9149992051684092333">Upang simulang ibahagi ang iyong desktop, ibigay ang access code sa ibaba sa taong tutulong sa iyo.</translation>
 <translation id="916856682307586697">Ilunsad ang default na XSession</translation>
+<translation id="9187628920394877737">Magbigay ng pahintulot sa 'Pag-record ng Screen' sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Pahintulutan</translation>
 <translation id="9213184081240281106">Di-wastong configuration ng host.</translation>
 <translation id="951991426597076286">Tanggihan</translation>

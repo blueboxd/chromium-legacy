@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Atlikusi 1 sekunde}zero{Atlikušas # sekundes}one{Atlikusi # sekunde}other{Atlikušas # sekundes}}</translation>
 <translation id="5941711191222866238">Minimizēt</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 stunda}zero{# stundas}one{# stunda}other{# stundas}}</translation>
-<translation id="5946629889255121107">Numurs uzsākts no <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />. lapa no <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Notīrīt meklēšanas lodziņa tekstu</translation>
 <translation id="6040143037577758943">Aizvērt</translation>

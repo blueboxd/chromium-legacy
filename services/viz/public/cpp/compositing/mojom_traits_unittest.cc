@@ -25,7 +25,7 @@
 #include "gpu/ipc/common/sync_token_mojom_traits.h"
 #include "ipc/ipc_message_utils.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/viz/public/cpp/compositing/begin_frame_args_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_metadata_mojom_traits.h"
@@ -366,14 +366,17 @@ TEST_F(StructTraitsTest, CopyOutputRequest_CallbackRunsOnce) {
             ++*n_called;
           },
           base::Unretained(&n_called)));
-  auto result_sender = mojo::StructTraits<
+  auto result_sender_pending_remote = mojo::StructTraits<
       mojom::CopyOutputRequestDataView,
       std::unique_ptr<CopyOutputRequest>>::result_sender(request);
+
+  mojo::Remote<mojom::CopyOutputResultSender> result_sender_remote(
+      std::move(result_sender_pending_remote));
   for (int i = 0; i < 10; i++)
-    result_sender->SendResult(std::make_unique<CopyOutputResult>(
+    result_sender_remote->SendResult(std::make_unique<CopyOutputResult>(
         request->result_format(), gfx::Rect()));
   EXPECT_EQ(0, n_called);
-  result_sender.FlushForTesting();
+  result_sender_remote.FlushForTesting();
   EXPECT_EQ(1, n_called);
 }
 

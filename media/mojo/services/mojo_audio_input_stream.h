@@ -14,7 +14,9 @@
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
@@ -35,11 +37,12 @@ class MEDIA_MOJO_EXPORT MojoAudioInputStream
   // stream has been initialized. |deleter_callback| is called when this class
   // should be removed (stream ended/error). |deleter_callback| is required to
   // destroy |this| synchronously.
-  MojoAudioInputStream(mojo::PendingReceiver<mojom::AudioInputStream> receiver,
-                       mojom::AudioInputStreamClientPtr client,
-                       CreateDelegateCallback create_delegate_callback,
-                       StreamCreatedCallback stream_created_callback,
-                       base::OnceClosure deleter_callback);
+  MojoAudioInputStream(
+      mojo::PendingReceiver<mojom::AudioInputStream> receiver,
+      mojo::PendingRemote<mojom::AudioInputStreamClient> client,
+      CreateDelegateCallback create_delegate_callback,
+      StreamCreatedCallback stream_created_callback,
+      base::OnceClosure deleter_callback);
 
   ~MojoAudioInputStream() override;
 
@@ -67,7 +70,7 @@ class MEDIA_MOJO_EXPORT MojoAudioInputStream
   StreamCreatedCallback stream_created_callback_;
   base::OnceClosure deleter_callback_;
   mojo::Receiver<AudioInputStream> receiver_;
-  mojom::AudioInputStreamClientPtr client_;
+  mojo::Remote<mojom::AudioInputStreamClient> client_;
   std::unique_ptr<AudioInputDelegate> delegate_;
   base::WeakPtrFactory<MojoAudioInputStream> weak_factory_{this};
 

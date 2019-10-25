@@ -103,7 +103,7 @@ UserActivityManager::UserActivityManager(
     ui::UserActivityDetector* detector,
     chromeos::PowerManagerClient* power_manager_client,
     session_manager::SessionManager* session_manager,
-    viz::mojom::VideoDetectorObserverRequest request,
+    mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver,
     const chromeos::ChromeUserManager* user_manager,
     SmartDimModel* smart_dim_model)
     : ukm_logger_(ukm_logger),
@@ -112,7 +112,7 @@ UserActivityManager::UserActivityManager(
       power_manager_client_observer_(this),
       session_manager_observer_(this),
       session_manager_(session_manager),
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       user_manager_(user_manager),
       power_manager_client_(power_manager_client) {
   DCHECK(ukm_logger_);

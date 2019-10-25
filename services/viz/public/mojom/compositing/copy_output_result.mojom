@@ -33,5 +33,5 @@ struct CopyOutputResult {
   gpu.mojom.SyncToken? sync_token;
   gfx.mojom.ColorSpace? color_space;
   // Present when the format is RGBA_TEXTURE and |mailbox| is non-empty.
-  TextureReleaser? releaser;
+  pending_remote<TextureReleaser>? releaser;
 };

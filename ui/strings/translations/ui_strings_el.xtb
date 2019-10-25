@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>
 <translation id="5941711191222866238">Ελαχιστοποίηση</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ώρα}other{# ώρες}}</translation>
-<translation id="5946629889255121107">Ο αριθμός προέρχεται από <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Σελίδα <ph name="SELECTED_PAGE" /> από <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Διαγραφή κειμένου πλαισίου αναζήτησης</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
@@ -199,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Περισσότερες από 1 μη αναγνωσμένες ειδοποιήσεις}other{Περισσότερες από # μη αναγνωσμένες ειδοποιήσεις}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{σε 1 λ.}other{σε # λ.}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568">Αριθμός από <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Πριν από 1 ώρα}other{Πριν από # ώρες}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>
 <translation id="8134065097954893699">Επαναφόρτωση αυτής της σελίδας</translation>

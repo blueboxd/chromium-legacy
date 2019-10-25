@@ -138,19 +138,6 @@
       Xác định khoảng thời gian trước khi trình bảo vệ màn hình hiển thị trên màn hình đăng nhập của các thiết bị ở chế độ bán lẻ.
 
       Giá trị của chính sách phải được chỉ định theo mili giây.</translation>
-<translation id="1141767714195601945">Chính sách này kiểm soát các tham số dòng lệnh dành cho Chrome từ Internet Explorer.
-
-      Nếu bạn chưa cài đặt tiện ích bổ trợ 'Hỗ trợ trình duyệt cũ' cho Internet Explorer, thì chính sách này sẽ không có hiệu lực.
-
-      Khi bạn không đặt chính sách này, thì Internet Explorer chỉ chuyển URL dưới dạng một tham số dòng lệnh tới Chrome.
-
-      Khi bạn đặt chính sách này là một danh sách các chuỗi, thì các chuỗi đó được nối với nhau bằng dấu cách và được chuyển tới Chrome dưới dạng một tham số dòng lệnh.
-
-      Phần ${url} trong một phần tử sẽ được thay thế bằng URL của trang cần mở.
-
-      Nếu không có phần tử nào chứa ${url}, thì URL này sẽ được thêm vào cuối dòng lệnh.
-
-      Các biến môi trường được mở rộng. Trên Windows, %ABC% được thay thế bằng giá trị của biến môi trường ABC.</translation>
 <translation id="1151353063931113432">Cho phép hình ảnh trên các trang web này</translation>
 <translation id="1152117524387175066">Báo cáo trạng thái của bộ chuyển đổi dành cho nhà phát triển của thiết bị lúc khởi động.
 
@@ -302,17 +289,6 @@
       Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng đến trang web https://myaccount.google.com để thay đổi mật khẩu của họ.
       Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="1456822151187621582">Windows (ứng dụng <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1458547592473993238">Chính sách này không còn dùng nữa. Vui lòng sử dụng <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> để kiểm soát tính sẵn có của plugin Flash và <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> để kiểm soát xem có phải dùng trình xem PDF tích hợp để mở tệp PDF hay không.
-
-      Chỉ định một danh sách plugin bị tắt trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn cài đặt này.
-
-      Ký tự đại diện '*' và '?' có thể dùng để khớp với chuỗi các ký tự bất kỳ. '*' khớp với số lượng ký tự bất kỳ trong khi '?' chỉ định một ký tự đơn tùy chọn, tức là khớp các ký tự 0 hoặc 1. Ký tự thoát là '\', do vậy, để khớp với ký tự '*', '?' hoặc '\' thực sự, bạn có thể đặt một ký tự '\' ở trước các ký tự đó.
-
-      Nếu bạn bật tùy chọn cài đặt này, danh sách plugin đã chỉ định sẽ không bao giờ được sử dụng trong <ph name="PRODUCT_NAME" />. Các plugin này được đánh dấu là đã tắt trong 'about:plugins' và người dùng không thể bật các plugin này.
-
-      Xin lưu ý rằng EnabledPlugins và DisabledPluginsExceptions có thể ghi đè chính sách này.
-
-      Nếu bạn không đặt chính sách này, người dùng có thể sử dụng bất kỳ plugin nào được cài đặt trên hệ thống, ngoại trừ các plugin không tương thích, lỗi thời hoặc nguy hiểm đã được mã hóa cứng.</translation>
 <translation id="1464848559468748897">Kiểm soát hành vi người dùng trong phiên có nhiều cấu hình trên thiết bị <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt thành 'MultiProfileUserBehaviorUnrestricted', người dùng có thể là người dùng chính hoặc phụ trong phiên có nhiều cấu hình.
@@ -430,13 +406,13 @@
       Nếu chính sách không được định cấu hình hoặc được đặt thành false, khóa tệp kê khai required_platform_version bị bỏ qua và cập nhật tự động tiến hành như bình thường.
 
       Cảnh báo: Không nên ủy quyền kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> cho ứng dụng kiosk vì điều này có thể khiến thiết bị không thể nhận được các bản cập nhật phần mềm và các bản vá bảo mật tối quan trọng. Việc ủy quyền kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> có thể khiến người dùng gặp rủi ro.</translation>
-<translation id="1669584285557771729">Nếu bạn đặt chính sách này, chính sách sẽ kiểm soát loại kính lúp được bật.
+<translation id="1669584285557771729">Nếu bạn đặt chính sách này, thì chính sách sẽ kiểm soát loại kính lúp được bật.
 
           Nếu bạn đặt chính sách này thành "Toàn màn hình", thì kính lúp sẽ luôn bật ở chế độ phóng to toàn màn hình trên màn hình đăng nhập.
 
           Nếu bạn đặt chính sách này thành "Đã gắn vào đế sạc", thì kính lúp sẽ luôn bật ở chế độ phóng to ở vị trí cố định trên màn hình đăng nhập.
 
-          Nếu bạn đặt chính sách này thành "None", thì kính lúp sẽ luôn tắt trên màn hình đăng nhập.
+          Nếu bạn đặt chính sách này thành "Không có", thì kính lúp sẽ luôn tắt trên màn hình đăng nhập.
 
           Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách này.
 
@@ -479,12 +455,6 @@
       Phải đặt chính sách thành một URL nơi <ph name="PRODUCT_OS_NAME" /> có thể tải xuống Điều khoản dịch vụ. Điều khoản dịch vụ phải là văn bản thuần túy, được phân phối dưới dạng văn bản/thuần túy loại MIME. Không cho phép đánh dấu.</translation>
 <translation id="1750315445671978749">Chặn tất cả các mục tải xuống</translation>
 <translation id="1767673020408652620">Bật Ứng dụng đề xuất khi hộp tìm kiếm ở trạng thái 0</translation>
-<translation id="17719159826324007">
-      Khi bạn đặt chính sách này thành ArcSession, nếu Android đã khởi động, thì chính sách này sẽ buộc thiết bị khởi động lại khi người dùng đăng xuất.
-      Khi bạn đặt chính sách này thành Luôn luôn, chính sách này sẽ buộc thiết bị khởi động lại mỗi khi người dùng đăng xuất.
-      Nếu bạn không đặt chính sách này, thì chính sách sẽ không có hiệu lực và không buộc thiết bị khởi động lại khi người dùng đăng xuất. Điều này cũng áp dụng nếu bạn đặt chính sách này thành Không bao giờ.
-      Chính sách này chỉ có hiệu lực đối với người dùng chưa liên kết.
-      </translation>
 <translation id="1781356041596378058">Chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành true, người dùng sẽ không thể truy cập vào Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành false hoặc không đặt chính sách này thì người dùng có thể truy cập Tùy chọn của nhà phát triển bằng cách nhấn bảy lần trên số bản dựng trong ứng dụng cài đặt Android.</translation>
 <translation id="1793346220873697538">Tắt tính năng in mã PIN theo mặc định</translation>
 <translation id="1797233582739332495">Hiển thị lời nhắc định kỳ cho người dùng cho biết bắt buộc phải chạy lại</translation>
@@ -844,11 +814,11 @@
       Khi chưa định cấu hình chính sách này hoặc khi đặt chính sách thành True, người dùng sẽ có thể sử dụng tính năng Chia sẻ tệp trong mạng.
 
       Khi đặt chính sách này thành False, người dùng sẽ không thể sử dụng tính năng Chia sẻ tệp trong mạng.</translation>
-<translation id="2437706973218087361">Chính sách này kiểm soát một tính năng bảo mật trong TLS 1.3 giúp bảo vệ các đường kết nối khỏi cuộc tấn công hạ cấp. Tính năng này có khả năng tương thích ngược và sẽ không ảnh hưởng đến các kết nối tới proxy hoặc máy chủ TLS 1.2 tuân thủ. Tuy nhiên, các phiên bản cũ của một số proxy chặn TLS hiện có một lỗi triển khai gây tình trạng không tương thích.
+<translation id="2437706973218087361">Chính sách này kiểm soát một tính năng bảo mật trong TLS 1.3 giúp bảo vệ các đường kết nối khỏi các cuộc tấn công hạ cấp. Tính năng này có khả năng tương thích ngược và sẽ không ảnh hưởng đến các kết nối tới proxy hoặc máy chủ TLS 1.2 tuân thủ. Tuy nhiên, các phiên bản cũ của một số proxy chặn TLS hiện có một lỗi triển khai gây ra tình trạng không tương thích.
 
-      Nếu bạn đặt chính sách này thành True, thì <ph name="PRODUCT_NAME" /> sẽ bật các biện pháp bảo mật này cho mọi đường kết nối.
+      Nếu bạn đặt chính sách này thành True, thì <ph name="PRODUCT_NAME" /> sẽ bật các biện pháp bảo vệ an ninh này cho mọi đường kết nối.
 
-      Nếu bạn đặt thành False hoặc không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ tắt các biện pháp bảo mật này đối với những đường kết nối được xác thực bằng chứng chỉ CA đã cài đặt trên máy. Các biện pháp bảo vệ này luôn bật đối với những đường kết nối được xác thực bằng chứng chỉ CA được tin cậy công khai.
+      Nếu bạn đặt thành False hoặc không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ tắt các biện pháp bảo vệ an ninh này đối với những đường kết nối được xác thực bằng chứng chỉ CA đã cài đặt trên máy. Các biện pháp bảo vệ này luôn bật đối với những đường kết nối được xác thực bằng chứng chỉ CA được tin cậy công khai.
 
       Chính sách này có thể dùng để kiểm tra xem có proxy nào bị ảnh hưởng không và nâng cấp các proxy đó. Theo dự kiến, các proxy bị ảnh hưởng sẽ khiến kết nối không thành công với mã lỗi là ERR_TLS13_DOWNGRADE_DETECTED. Một phiên bản <ph name="PRODUCT_NAME" /> mới hơn sẽ bật tùy chọn này theo mặc định.
 
@@ -1282,30 +1252,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3038323923255997294">Tiếp tục chạy các ứng dụng dưới nền khi <ph name="PRODUCT_NAME" /> bị đóng</translation>
 <translation id="3046192273793919231">Gửi gói mạng tới máy chủ quản lý để theo dõi trạng thái trực tuyến</translation>
 <translation id="3047732214002457234">Kiểm soát cách tính năng Làm sạch Chrome báo cáo dữ liệu cho Google</translation>
-<translation id="304775240152542058">Chính sách này kiểm soát các tham số dòng lệnh để chạy trình duyệt thay thế.
-
-      Khi bạn không đặt chính sách này thì chỉ URL được chuyển dưới dạng tham số dòng lệnh.
-
-      Khi bạn đặt chính sách này thành một danh sách chuỗi, thì mỗi chuỗi sẽ được chuyển tới trình duyệt thay thế dưới dạng một tham số dòng lệnh. Trên Windows, các tham số được liên kết bằng dấu cách. Trên Mac OS X và Linux, một tham số có thể chứa các dấu cách nhưng vẫn bị coi là một tham số đơn lẻ.
-
-      Nếu một thành phần chứa ${url} thì thành phần này sẽ được thay thế bằng URL của trang cần mở.
-      Nếu không có thành phần nào chứa ${url} thì URL sẽ được thêm vào cuối dòng lệnh.
-
-      Các biến môi trường được mở rộng. Trên Windows, %ABC% được thay thế bằng giá trị của biến môi trường ABC. Trên Mac OS X và Linux, ${ABC} được thay thế bằng giá trị của biến môi trường ABC.</translation>
 <translation id="3048744057455266684">Nếu chính sách này được đặt và URL tìm kiếm được đề xuất từ thanh địa chỉ có chứa tham số này trong chuỗi truy vấn hoặc trong số nhận dạng phân đoạn, thì đề xuất sẽ hiển thị cụm từ tìm kiếm và nhà cung cấp dịch vụ tìm kiếm thay vì URL tìm kiếm thô.
           Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có thay thế cụm từ tìm kiếm nào được thực hiện.
 
           Chính sách này chỉ được lưu tâm nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="306887062252197004">Chính sách này cho phép người dùng tính năng WebDriver ghi đè
-      các chính sách có thể can thiệp vào hoạt động của chính sách đó.
-
-      Hiện chính sách này tắt chính sách SitePerProcess và IsolateOrigins.
-
-      Nếu bạn bật chính sách, WebDriver sẽ có thể ghi đè các chính sách
-      không tương thích.
-      Nếu bạn tắt hay chưa định cấu hình chính sách, WebDriver sẽ không được phép
-      ghi đè các chính sách không tương thích.</translation>
 <translation id="3069958900488014740">Cho phép tắt tối ưu hóa WPAD (Tự động phát hiện proxy web) trong <ph name="PRODUCT_NAME" />.
 
       Nếu bạn đặt chính sách này thành false, tối ưu hóa WPAD sẽ bị tắt, điều này khiến <ph name="PRODUCT_NAME" /> phải đợi trong khoảng thời gian lâu hơn đối với máy chủ WPAD dựa trên DNS. Nếu bạn không đặt hoặc nếu bạn bật chính sách này, tối ưu hóa WPAD sẽ được bật.
@@ -2092,13 +2043,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4347908978527632940">Nếu đúng và người dùng là người dùng được giám sát thì các ứng dụng Android khác có thể truy vấn các giới hạn web của người dùng thông qua nhà cung cấp nội dung.
 
           Nếu sai hoặc chưa đặt thì nhà cung cấp nội dung sẽ không trả về thông tin nào.</translation>
-<translation id="435461861920493948">Có chứa danh sách các mẫu dùng để kiểm soát khả năng hiển thị của tài khoản trong <ph name="PRODUCT_NAME" />.
-
-      Từng tài khoản Google trên thiết bị sẽ được so sánh với các mẫu lưu trữ trong chính sách này để xác định mức hiển thị của tài khoản trong <ph name="PRODUCT_NAME" />. Tài khoản sẽ hiển thị nếu tên của tài khoản khớp với bất kỳ mẫu nào trong danh sách. Nếu không, tài khoản sẽ bị ẩn.
-
-      Hãy sử dụng ký tự đại diện '*' để khớp ký tự không hoặc các ký tự ngẫu nhiên khác. Ký tự thoát là '\', vì vậy, để khớp ký tự '*' hoặc '\' thực, hãy đặt '\' trước các ký tự đó.
-
-      Nếu bạn không đặt chính sách này, thì tất cả các tài khoản Google trên thiết bị sẽ hiển thị trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4360826270668210664">Nếu bạn đặt chính sách này, máy chủ truy cập từ xa sẽ yêu cầu xác thực ứng dụng để lấy mã xác thực từ URL này để kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenValidationUrl.
 
           Tính năng này hiện bị tắt phía máy chủ.</translation>
@@ -2558,17 +2502,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5236882091572996759">Nếu bạn không đặt chính sách này hoặc đặt thành True, người dùng sẽ không được coi là không sử dụng khi âm thanh đang phát. Điều này ngăn đạt tới thời gian chờ khi không sử dụng và việc thực hiện hành động khi không sử dụng. Tuy nhiên, việc làm mờ màn hình, tắt màn hình và khóa màn hình sẽ vẫn được thực hiện sau khoảng thời gian chờ đã định cấu hình, bất kể hoạt động âm thanh.
 
           Nếu bạn đặt chính sách này thành False, hoạt động âm thanh sẽ không ngăn việc coi người dùng là không sử dụng.</translation>
-<translation id="5246700266104954355">Chính sách này không còn dùng nữa. Vui lòng sử dụng <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> để kiểm soát tính sẵn có của plugin Flash và <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> để kiểm soát xem có phải dùng trình xem PDF tích hợp để mở tệp PDF hay không.
-
-      Chỉ định danh sách các plugin được bật trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn cài đặt này.
-
-      Ký tự đại diện '*' và '?' có thể dùng để khớp với chuỗi các ký tự bất kỳ. '*' khớp với số lượng ký tự bất kỳ trong khi '?' chỉ định một ký tự đơn tùy chọn, tức là khớp các ký tự 0 hoặc 1. Ký tự thoát là '\', do vậy, để khớp với ký tự '*', '?' hoặc '\' thực sự, bạn có thể đặt một ký tự '\' ở trước các ký tự đó.
-
-      Luôn sử dụng danh sách plugin được chỉ định trong <ph name="PRODUCT_NAME" /> nếu đã cài đặt các plugin này. Các plugin này được đánh dấu là đã bật trong 'about:plugins' và người dùng không thể tắt các plugin này.
-
-      Lưu ý rằng chính sách này ghi đè cả DisabledPlugins và DisabledPluginsExceptions.
-
-      Nếu bạn không đặt chính sách này, người dùng có thể tắt bất kỳ plugin nào đã cài đặt trên hệ thống.</translation>
 <translation id="5247006254130721952">Chặn các mục tải xuống nguy hiểm</translation>
 <translation id="5248863213023520115">Đặt các loại mã hóa được phép khi yêu cầu vé Kerberos từ một máy chủ <ph name="MS_AD_NAME" />.
 
@@ -2629,11 +2562,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5362531528507578966">Ghi đè chế độ in đồ họa nền mặc định.</translation>
 <translation id="5365476955714838841">Các tham số dòng lệnh cho trình duyệt thay thế.</translation>
 <translation id="5365946944967967336">Hiển thị nút Trang chủ trên thanh công cụ</translation>
-<translation id="5366745336748853475">Cho phép bạn chỉ định danh sách mẫu url. Những mẫu url này chỉ định các trang web có chứng chỉ ứng dụng được chọn tự động trên màn hình đăng nhập trong khung lưu trữ luồng SAML nếu trang web yêu cầu chứng chỉ. Việc sử dụng mẫu là để định cấu hình chứng chỉ sẽ được hiển thị cho SAML IdP cho toàn bộ thiết bị.
-
-      Giá trị phải là một dãy từ điển JSON dạng chuỗi. Mỗi từ điển phải có dạng { "pattern": "$URL_PATTERN", "filter" : $FILTER }, trong đó $URL_PATTERN là mẫu cài đặt nội dung. $FILTER giới hạn các chứng chỉ ứng dụng mà trình duyệt sẽ tự động chọn. Bất kể bộ lọc là gì, chỉ các chứng chỉ khớp với yêu cầu chứng chỉ của máy chủ mới được chọn. Nếu $FILTER có dạng { "ISSUER": { "CN": "$ISSUER_CN" } }, thì ngoài ra, chỉ các chứng chỉ ứng dụng do chứng chỉ có CommonName $ISSUER_CN cấp mới được chọn. Nếu $FILTER là từ điển trống {}, thì việc chọn chứng chỉ ứng dụng sẽ không có các hạn chế bổ sung.
-
-      Nếu bạn không đặt chính sách này thì sẽ không có thao tác tự động chọn nào được thực hiện cho bất kỳ trang web nào.</translation>
 <translation id="5366977351895725771">Nếu đặt thành sai, tác vụ tạo tài khoản người dùng bị giám sát của người dùng này sẽ bị tắt. Mọi tài khoản người dùng bị giám sát hiện có sẽ vẫn khả dụng.
 
           Nếu đặt thành đúng hoặc không định cấu hình, người dùng này có thể tạo và quản lý tài khoản người dùng bị giám sát.</translation>
@@ -2745,11 +2673,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn không đặt chính sách này, các cookie của bên thứ ba sẽ được bật nhưng người dùng có thể thay đổi tùy chọn cài đặt đó.</translation>
 <translation id="5442026853063570579">Chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2), người dùng sẽ không thể truy cập vào Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành một giá trị khác hoặc không đặt chính sách này thì người dùng có thể truy cập vào Tùy chọn của nhà phát triển bằng cách nhấn bảy lần vào số bản dựng trong ứng dụng cài đặt Android.</translation>
-<translation id="544342220587994947">Cho phép bạn chỉ định danh sách các mẫu url. Những mẫu url này chỉ định các trang web mà <ph name="PRODUCT_NAME" /> sẽ tự động chọn một chứng chỉ ứng dụng khách, nếu trang web yêu cầu chứng chỉ.
-
-          Giá trị phải là một mảng từ điển JSON dạng chuỗi. Mỗi từ điển phải có dạng { "pattern": "$URL_PATTERN", "filter" : $FILTER }, trong đó $URL_PATTERN là mẫu cài đặt nội dung. $FILTER giới hạn các chứng chỉ ứng dụng khách mà trình duyệt sẽ tự động chọn. Bất kể bộ lọc là gì, chỉ các chứng chỉ khớp với yêu cầu chứng chỉ của máy chủ mới được chọn. Chẳng hạn, nếu $FILTER có dạng { "ISSUER": { "CN": "$ISSUER_CN" } }, thì ngoài ra, chỉ các chứng chỉ ứng dụng khách do chứng chỉ có CommonName $ISSUER_CN cấp mới được chọn. Nếu $FILTER chứa phần "ISSUER" và "SUBJECT", thì chứng chỉ ứng dụng khách phải thỏa mãn cả hai điều kiện để được chọn. Nếu $FILTER chỉ định một tổ chức ("O"), thì chứng chỉ phải có ít nhất một tổ chức khớp với giá trị đã chỉ định để được chọn. Nếu $FILTER chỉ định một đơn vị tổ chức ("OU"), thì chứng chỉ phải có ít nhất một đơn vị tổ chức khớp với giá trị đã chỉ định để được chọn. Nếu $FILTER là từ điển trống {}, thì việc chọn chứng chỉ ứng dụng khách sẽ không có các hạn chế bổ sung.
-
-          Nếu bạn không đặt chính sách này, thì sẽ không có thao tác tự động chọn nào được thực hiện cho bất kỳ trang web nào.</translation>
 <translation id="5447306928176905178">Bật báo cáo thông tin bộ nhớ (kích thước khối xếp JS) tới trang (không dùng nữa)</translation>
 <translation id="5457065417344056871">Bật chế độ khách trong trình duyệt</translation>
 <translation id="5457924070961220141">Cho phép bạn định cấu hình trình kết xuất HTML mặc định khi  <ph name="PRODUCT_FRAME_NAME" /> được cài đặt.
@@ -2772,19 +2695,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5475361623548884387">Bật tính năng in</translation>
 <translation id="547601067149622666">Không cho phép quảng cáo trên các trang web chứa quảng cáo xâm nhập</translation>
 <translation id="5483065054530244863">Cho phép các chứng chỉ SHA-1 có chữ ký do neo tin cậy cục bộ phát hành</translation>
-<translation id="5483777239978559943">Chính sách này không còn dùng nữa. Vui lòng sử dụng <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> để kiểm soát tính sẵn có của plugin Flash và <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> để kiểm soát xem có phải dùng trình xem PDF tích hợp để mở tệp PDF hay không.
-
-      Chỉ định danh sách các plugin mà người dùng có thể bật hoặc tắt trong <ph name="PRODUCT_NAME" />.
-
-      Các ký tự đại diện '*' và '?' có thể dùng để khớp với chuỗi các ký tự bất kỳ. '*' khớp với số lượng ký tự bất kỳ trong khi '?' chỉ định một ký tự đơn tùy chọn, tức là khớp các ký tự 0 hoặc 1. Ký tự thoát là '\', do vậy, để khớp với ký tự '*', '?' hoặc '\' thực sự, bạn có thể đặt một ký tự '\' ở trước các ký tự đó.
-
-      Nếu bạn bật tùy chọn cài đặt này, người dùng có thể sử dụng danh sách plugin đã chỉ định trong <ph name="PRODUCT_NAME" />. Người dùng có thể bật hoặc tắt plugin trong 'about:plugins', ngay cả khi plugin đó cũng khớp với một mẫu trong DisabledPlugins. Người dùng cũng có thể bật và tắt các plugin không khớp với bất kỳ mẫu nào trong DisabledPlugins, DisabledPluginsExceptions và EnabledPlugins.
-
-      Chính sách này nhằm cho phép plugin bị đưa vào danh sách nghiêm cấm, trong đó danh sách 'DisabledPlugins' chứa các mục có ký tự đại diện như tắt tất cả các plugin '*' hoặc tắt tất cả các plugin Java '*Java*' nhưng quản trị viên lại muốn bật một phiên bản cụ thể như 'IcedTea Java 2.3'. Có thể chỉ định phiên bản cụ thể này trong chính sách này.
-
-      Lưu ý rằng cả tên plugin và tên nhóm của plugin đều phải được miễn. Mỗi nhóm plugin được hiển thị ở một phần riêng trong about:plugins; mỗi phần có thể có một hoặc nhiều plugin. Ví dụ: plugin "Shockwave Flash" thuộc về nhóm "Adobe Flash Player" và cả hai tên đều phải có tên trùng khớp trong danh sách ngoại lệ nếu plugin đó được miễn khỏi danh sách cấm.
-
-      Nếu bạn không đặt chính sách này, bất kỳ plugin nào khớp với mẫu trong 'DisabledPlugins' sẽ bị khóa ở trạng thái tắt và người dùng sẽ không thể bật chúng.</translation>
 <translation id="5498045818698736356">Chỉ định danh sách các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
 
       Mỗi mục trong danh sách của chính sách này là một đối tượng chứa một thành phần bắt buộc: "url" và hai thành phần không bắt buộc: "default_launch_container" và "create_desktop_shortcut". "url" phải là URL của ứng dụng web cần cài đặt, "launch_container" phải là "window" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt và "create_desktop_shortcut" phải có giá trị true nếu lối tắt trên màn hình được tạo trên Linux và Windows. Nếu bỏ qua mục "default_launch_container", thì ứng dụng sẽ mở trong tab theo mặc định. Người dùng có thể thay đổi vùng chứa dùng để mở ứng dụng bất kể giá trị của "default_launch_container". Nếu bỏ qua mục "create_desktop_shortcuts", thì sẽ không có lối tắt trên màn hình nào được tạo. Xem chính sách <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> về việc ghim ứng dụng vào giá ChromeOS.</translation>
@@ -3395,13 +3305,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="6813263547126514821">Bật và tắt nguồn</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
-<translation id="6816212867679667972">Xác định tên máy chủ của thiết bị dùng trong các yêu cầu DHCP.
-
-      Nếu bạn đặt chính sách này thành một chuỗi có nội dung thì chuỗi đó sẽ được dùng làm tên máy chủ của thiết bị trong quá trình yêu cầu DHCP.
-
-      Chuỗi này có thể chứa các biến ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} mà sẽ được thay thế bằng các giá trị trên thiết bị trước khi sử dụng làm tên máy chủ. Giá trị thay thế thu được sẽ là tên máy chủ hợp lệ (theo RFC 1035, mục 3.1).
-
-      Nếu bạn không đặt chính sách này hoặc giá trị sau khi thay thế không phải là tên máy chủ hợp lệ thì tên máy chủ sẽ không được đặt trong yêu cầu DHCP. </translation>
 <translation id="6833988859168635883">Trang Khởi động, Trang chủ và trang Tab mới</translation>
 <translation id="6835883744948188639">Nên hiển thị lời nhắc định kỳ cho người dùng cho biết cần chạy lại</translation>
 <translation id="683688607121170501">Tùy chọn cài đặt này cho phép người dùng chuyển đổi giữa các Tài khoản Google trong vùng nội dung của cửa sổ trình duyệt và trong các ứng dụng Android sau khi họ đăng nhập vào thiết bị <ph name="PRODUCT_OS_NAME" />.
@@ -3661,17 +3564,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Trên <ph name="ANDROID_VERSION" /> trở lên, nếu DNS qua TLS đang hoạt động, thì <ph name="PRODUCT_NAME" /> sẽ không gửi các yêu cầu DNS không an toàn.
 
       Nếu bạn không đặt chính sách này, thì trình duyệt có thể gửi các yêu cầu DNS qua HTTPS đến trình phân giải liên kết với trình phân giải hệ thống đã định cấu hình của người dùng.</translation>
-<translation id="7158064522994309072">Chính sách này sẽ kiểm soát lệnh nào dùng để mở URL trên một trình duyệt thay thế.
-
-      Khi bạn không đặt chính sách này thì một giá trị mặc định dành riêng cho nền tảng sẽ được dùng: Internet Explorer dành cho Windows hoặc Safari dành cho Mac OS X. Trên Linux, bạn sẽ không chạy được trình duyệt thay thế khi chưa đặt chính sách này.
-
-      Khi bạn đặt chính sách này thành một trong các trình duyệt như ${ie}, ${firefox}, ${safari} hoặc
-      ${opera}, thì trình duyệt đó sẽ chạy nếu đã được cài đặt. ${ie} chỉ
-      có trên Windows, còn ${safari} chỉ có trên Windows và Mac
-      OS X.
-
-      Khi bạn đặt chính sách này thành đường dẫn tệp, thì tệp đó sẽ được dùng làm
-      tệp thực thi.</translation>
 <translation id="7167436895080860385">Cho phép người dùng hiển thị mật khẩu trong Trình quản lý mật khẩu (không dùng nữa)</translation>
 <translation id="7173856672248996428">Cấu hình tạm thời</translation>
 <translation id="717630378807352957">Cho phép tất cả các máy in của tệp cấu hình.</translation>
@@ -3852,11 +3744,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7434202861148928348">Định cấu hình tên miền bắt buộc cho ứng dụng truy cập từ xa</translation>
 <translation id="7443616896860707393">Lời nhắc xác thực cơ bản HTTP giữa các gốc</translation>
 <translation id="7448430478749155471">Bật tính năng chọn để nói trên màn hình đăng nhập</translation>
-<translation id="7454519673779830548">Thêm các tài khoản Kerberos đã điền trước. Nếu thông tin xác thực Kerberos khớp với thông tin đăng nhập, thì bạn có thể định cấu hình một tài khoản để sử dụng lại thông tin đăng nhập bằng cách chỉ định '${{LOGIN_EMAIL}}' và '${{PASSWORD}}' tương ứng với tài khoản chính và mật khẩu. Nhờ vậy, hệ thống có thể tự động truy xuất các phiếu Kerberos, trừ khi bạn định cấu hình tính năng xác thực hai yếu tố. Người dùng không thể sửa đổi các tài khoản đã thêm thông qua chính sách này.
-
-          Nếu bạn bật chính sách này, thì danh sách các tài khoản do chính sách xác định sẽ được thêm vào phần cài đặt của Tài khoản Kerberos.
-
-          Nếu bạn tắt hoặc không đặt chính sách này, thì sẽ không có tài khoản nào được thêm vào phần cài đặt của Tài khoản Kerberos. Đồng thời mọi tài khoản mà người dùng đã thêm trước đây bằng chính sách này đều bị xóa. Người dùng vẫn có thể thêm tài khoản theo cách thủ công nếu bạn bật chính sách 'Người dùng có thể thêm các tài khoản Kerberos'.</translation>
 <translation id="7458437477941640506">Không thể khôi phục về phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Các bản cập nhật cũng sẽ bị tắt.</translation>
 <translation id="7464991223784276288">Hạn chế cookie so khớp các URL với phiên hiện tại</translation>
 <translation id="7469554574977894907">Bật đề xuất tìm kiếm</translation>
@@ -4835,15 +4722,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9217154963008402249">Tần suất theo dõi gói mạng</translation>
 <translation id="922540222991413931">Định cấu hình nguồn cài đặt tiện ích, ứng dụng và tập lệnh người dùng</translation>
 <translation id="924557436754151212">Nhập mật khẩu đã lưu từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
-<translation id="926146562923985266">Chính sách này kiểm soát lệnh cần dùng để mở URL trong <ph name="PRODUCT_NAME" /> khi chuyển sang từ Internet Explorer.
-
-      Nếu bạn chưa cài đặt tiện ích bổ trợ 'Hỗ trợ trình duyệt cũ' cho Internet Explorer, thì chính sách này sẽ không có hiệu lực.
-
-      Khi bạn không đặt chính sách này, Internet Explorer sẽ tự động phát hiện đường dẫn thực thi của <ph name="PRODUCT_NAME" /> khi chạy <ph name="PRODUCT_NAME" /> từ Internet Explorer.
-
-      Khi bạn đặt chính sách này, chính sách sẽ dùng để chạy <ph name="PRODUCT_NAME" /> khi chạy <ph name="PRODUCT_NAME" /> từ Internet Explorer.
-
-      Bạn có thể đặt chính sách này thành một đường dẫn tệp thực thi hay ${chrome} để tự động phát hiện vị trí cài đặt của Chrome.</translation>
 <translation id="930930237275114205">Thiết lập thư mục dữ liệu người dùng <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="943865157632139008">Cho phép bạn định cấu hình trình hiển thị HTML mặc định khi <ph name="PRODUCT_FRAME_NAME" /> được cài đặt.
       Tùy chọn cài đặt mặc định này cho phép trình duyệt máy chủ thực hiện chức năng hiển thị nhưng bạn có thể tùy ý ghi đè tùy chọn cài đặt này và yêu cầu <ph name="PRODUCT_FRAME_NAME" /> hiển thị các trang HTML theo mặc định.</translation>

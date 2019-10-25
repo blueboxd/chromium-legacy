@@ -239,14 +239,14 @@
     'bfcache_android_specific_gtests': {
       'bf_cache_android_browsertests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction',
+          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.android_browsertests.filter'
         ],
         'test': 'android_browsertests',
       },
       'bf_cache_content_shell_test_apk': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction',
+          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_shell_test_apk.filter'
         ],
         'swarming': {
@@ -256,7 +256,7 @@
       },
       'bf_cache_chrome_public_test_apk': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction',
+          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_public_test_apk.filter'
         ],
         'swarming': {
@@ -269,7 +269,7 @@
     'bfcache_generic_gtests': {
       'bf_cache_content_unittests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction',
+          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_unittests.filter'
         ],
         'swarming': {
@@ -279,7 +279,7 @@
       },
       'bf_cache_unit_tests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction',
+          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter'
         ],
         'swarming': {
@@ -289,7 +289,7 @@
       },
       'bf_cache_content_browsertests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction',
+          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_browsertests.filter'
         ],
         'swarming': {
@@ -302,7 +302,7 @@
     'bfcache_linux_specific_gtests': {
       'bf_cache_browser_tests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction',
+          '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter'
         ],
         'swarming': {

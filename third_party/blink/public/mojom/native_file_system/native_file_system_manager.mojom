@@ -49,7 +49,20 @@ interface NativeFileSystemManager {
       (NativeFileSystemError result,
        array<NativeFileSystemEntry> entries);
 
-  // TODO(mek): Add this method when it is needed for transferability of handles.
-  // GetHandleFromToken(pending_remote<NativeFileSystemTransferToken> token) =>
-  //     (NativeFileSystemError result, NativeFileSystemHandle? entry_handle);
+  // Used to redeem tokens received by a postMessage() target. Clones
+  // FileSystemFileHandles. Token redemption should never fail. The
+  // postMessage() target should perform an origin check before
+  // redeeming tokens. Origin check failures must dispatch a messageerror
+  // event instead of cloning the objects. NativeFileSystemManager will also
+  // validate the redeemed token, including the token's origin, before binding the
+  // FileSystemHandle.
+  GetFileHandleFromToken(
+    pending_remote<NativeFileSystemTransferToken> token,
+    pending_receiver<NativeFileSystemFileHandle> file_handle);
+
+  // Same as GetFileHandleFromToken(), but for FileSystemDirectoryHandles.
+  // See GetFileHandleFromToken() comment above for details.
+  GetDirectoryHandleFromToken(
+    pending_remote<NativeFileSystemTransferToken> token,
+    pending_receiver<NativeFileSystemDirectoryHandle> directory_handle);
 };

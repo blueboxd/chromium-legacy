@@ -576,7 +576,7 @@ void LocalDOMWindow::DispatchPostMessage(
 
 void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     const SecurityOrigin* intended_target_origin,
-    Event* event,
+    MessageEvent* event,
     std::unique_ptr<SourceLocation> location) {
   if (intended_target_origin) {
     // Check target origin now since the target document may have changed since
@@ -599,7 +599,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     }
   }
 
-  KURL sender(static_cast<MessageEvent*>(event)->origin());
+  KURL sender(event->origin());
   if (!document()->GetContentSecurityPolicy()->AllowConnectToSource(
           sender, RedirectStatus::kNoRedirect,
           SecurityViolationReportingPolicy::kSuppressReporting)) {
@@ -607,6 +607,17 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
         document(), WebFeature::kPostMessageIncomingWouldBeBlockedByConnectSrc);
   }
 
+  if (event->IsOriginCheckRequiredToAccessData()) {
+    scoped_refptr<SecurityOrigin> sender_security_origin =
+        SecurityOrigin::Create(sender);
+
+    const SecurityOrigin* target_security_origin =
+        document()->GetSecurityOrigin();
+
+    if (!sender_security_origin->IsSameSchemeHostPort(target_security_origin)) {
+      event = MessageEvent::CreateError(event->origin(), event->source());
+    }
+  }
   DispatchEvent(*event);
 }
 

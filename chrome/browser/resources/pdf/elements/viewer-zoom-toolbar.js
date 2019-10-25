@@ -7,7 +7,6 @@ import './icons.js';
 import './viewer-zoom-button.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {isRTL} from 'chrome://resources/js/util.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {FittingType} from '../pdf_fitting_type.js';
 
@@ -28,21 +27,12 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
-    isPrintPreview: {
-      type: Boolean,
-      reflectToAttribute: true,
-    },
+    isPrintPreview: Boolean,
 
     /** @private */
     keyboardNavigationActive_: {
       type: Boolean,
       value: false,
-    },
-
-    /** @private */
-    showOnLeft_: {
-      type: Boolean,
-      reflectToAttribute: true,
     },
   },
 
@@ -99,7 +89,6 @@ Polymer({
         [strings.tooltipFitToPage, strings.tooltipFitToWidth];
     this.$['zoom-in-button'].tooltips = [strings.tooltipZoomIn];
     this.$['zoom-out-button'].tooltips = [strings.tooltipZoomOut];
-    this.showOnLeft_ = isRTL() !== this.isPrintPreview;
   },
 
   /** Handle clicks of the fit-button. */

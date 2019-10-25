@@ -112,7 +112,7 @@ int64_t BackgroundFetchTestBase::RegisterServiceWorkerForOrigin(
     options.scope = GetScopeForId(origin.GetURL().spec(), next_pattern_id_++);
     base::RunLoop run_loop;
     embedded_worker_test_helper_.context()->RegisterServiceWorker(
-        script_url, options,
+        script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
         base::BindOnce(&DidRegisterServiceWorker,
                        &service_worker_registration_id,
                        run_loop.QuitClosure()));

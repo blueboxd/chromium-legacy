@@ -73,8 +73,9 @@ class CapturedAudioInputTest : public ::testing::Test {
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
     mojo::Remote<mojom::AudioStreamCreatorClient> audio_client(
         std::move(client));
+    stream_client_.reset();
     audio_client->StreamCreated(
-        std::move(pending_stream), mojo::MakeRequest(&stream_client_),
+        std::move(pending_stream), stream_client_.BindNewPipeAndPassReceiver(),
         {base::in_place, base::ReadOnlySharedMemoryRegion::Create(1024).region,
          mojo::WrapPlatformFile(foreign_socket.Release())},
         initially_muted);
@@ -142,7 +143,7 @@ class CapturedAudioInputTest : public ::testing::Test {
   std::unique_ptr<media::AudioInputIPC> audio_input_;
   MockDelegate delegate_;
   MockStream* stream_ = nullptr;
-  media::mojom::AudioInputStreamClientPtr stream_client_;
+  mojo::Remote<media::mojom::AudioInputStreamClient> stream_client_;
   base::CancelableSyncSocket socket_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturedAudioInputTest);

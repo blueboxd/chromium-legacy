@@ -6,6 +6,7 @@
 [
     Exposed=(Window,Worker),
     SecureContext,
+    Serializable,
     RuntimeEnabled=NativeFileSystem,
     ImplementedAs=NativeFileSystemFileHandle
 ] interface FileSystemFileHandle : FileSystemHandle {

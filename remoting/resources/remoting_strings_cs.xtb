@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">Proces hostitele</translation>
 <translation id="20876857123010370">Režim trackpadu</translation>
 <translation id="2089514346391228378">Vzdálená připojení k tomuto počítači byla povolena.</translation>
+<translation id="2198363917176605566">Chcete-li používat službu <ph name="PRODUCT_NAME" />, musíte udělit oprávnění Nahrávání obrazovky, aby obsah obrazovky na tomto počítači Mac bylo možné odeslat do vzdáleného počítače.
+
+Toto oprávnění udělíte tak, že kliknutím na tlačítko <ph name="BUTTON_NAME" /> níže otevřete nastavení Nahrávání obrazovky a poté zaškrtnete políčko vedle položky <ph name="SERVICE_SCRIPT_NAME" />.
+
+Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již zaškrtnutá, zrušte její zaškrtnutí a poté ji zaškrtněte znovu.</translation>
 <translation id="2208514473086078157">Nastavení zásad neumožňuje sdílet tento počítač jako hostitel Vzdálené plochy Chrome. Kontaktujte administrátora systému a požádejte ho o pomoc.</translation>
 <translation id="2220529011494928058">Nahlásit problém</translation>
 <translation id="2221097377466213233">Použít pravou klávesu CTRL místo klávesy Windows (v počítači Mac klávesu ⌘)</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Naposledy online: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Tato aplikace již není podporována. Chcete-li dostávat nejnovější funkce a aktualizace zabezpečení, používejte <ph name="LINK_BEGIN" />webovou aplikaci Vzdálená plocha Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Pomozte nám Vzdálenou plochu Chrome vylepšit tím, že nám povolíte shromažďovat statistiky o využívání a zprávy o selhání.</translation>
+<translation id="2504109125669302160">Udělte službě <ph name="PRODUCT_NAME" /> oprávnění Přístupnost</translation>
 <translation id="2509394361235492552">Připojeno k zařízení <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">POZNÁMKA: Pokud chcete mít k dispozici všechny klávesové zkratky, povolte v konfiguraci Vzdálené plochy Google možnost Otevřít jako okno.</translation>
 <translation id="2540992418118313681">Chcete tento počítač sdílet s dalším uživatelem, aby jej mohl zobrazit a ovládat?</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">Základní knihovna</translation>
 <translation id="4430435636878359009">Zakázat vzdálená připojení k tomuto počítači</translation>
 <translation id="4430915108080446161">Vytváření přístupového kódu...</translation>
+<translation id="443560535555262820">Otevřít nastavení přístupnosti</translation>
 <translation id="4450893287417543264">Tuto zprávu již nezobrazovat</translation>
 <translation id="4472575034687746823">Začít</translation>
 <translation id="4481276415609939789">Nemáte zaregistrované žádné počítače. Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj aplikaci Chromoting a klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">Změnit kód PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (zastaralé)</translation>
 <translation id="6221358653751391898">Nejste do prohlížeče Chrome přihlášeni. Přihlaste se a zkuste to znovu.</translation>
+<translation id="6223301979382383752">Otevřít nastavení nahrávání obrazovky</translation>
 <translation id="6227369581881558336">Na webu je teď Vzdálená plocha Chrome s novými funkcemi, včetně přenosu souborů. Vyzkoušejte naši <ph name="LINK_BEGIN" />webovou aplikaci<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Hostitel spuštěný na obrazovce logiky konzole byl ukončen za účelem zajištění podpory režimu opony prostřednictvím přepnutí na hostitele spuštěného v relaci specifické pro uživatele.</translation>
 <translation id="629730747756840877">Účet</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Něco jiného</translation>
 <translation id="6398765197997659313">Ukončit režim celé obrazovky</translation>
+<translation id="6411861157501911556">Chcete-li používat službu <ph name="PRODUCT_NAME" />, musíte jí udělit oprávnění Přístupnost, aby do tohoto počítače Mac bylo možné vkládat obsah ze vzdáleného počítače.
+
+Toto oprávnění udělíte tak, že kliknutím na tlačítko <ph name="BUTTON_NAME" /> níže otevřete panel nastavení Přístupnost a poté zaškrtnete políčko vedle položky <ph name="SERVICE_SCRIPT_NAME" />.
+
+Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již zaškrtnutá, zrušte její zaškrtnutí a poté ji zaškrtněte znovu.</translation>
 <translation id="6441316101718669559">Integrace počítače na této platformě není podporována. Aplikaci můžete nadále používat, ale uživatelský dojem bude horší.</translation>
 <translation id="652218476070540101">Aktualizace kódu PIN pro tento počítač…</translation>
 <translation id="6527303717912515753">Sdílet</translation>
@@ -301,6 +314,7 @@
 <translation id="837021510621780684">Z tohoto počítače</translation>
 <translation id="8383794970363966105">Chcete-li používat Chromoting, budete do zařízení muset přidat účet Google.</translation>
 <translation id="8386846956409881180">Hostitel je nakonfigurován s neplatnými identifikačními údaji OAuth.</translation>
+<translation id="8397385476380433240">Udělte aplikaci <ph name="PRODUCT_NAME" /> oprávnění</translation>
 <translation id="8406498562923498210">Vyberte relaci, kterou v prostředí vzdálené plochy Chrome chcete spustit. (Upozorňujeme, že některé typy relací nelze spustit na vzdálené ploše Chrome a v místní konzole zároveň.)</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8445362773033888690">Zobrazit v Obchodě Google Play</translation>
@@ -327,6 +341,7 @@
 <translation id="9149580767411232853">Zajistit, aby byla vidět celá plocha</translation>
 <translation id="9149992051684092333">Chcete-li začít sdílet svoji plochu, poskytněte níže uvedený přístupový kód osobě, která vám bude pomáhat.</translation>
 <translation id="916856682307586697">Spustit výchozí relaci XSession</translation>
+<translation id="9187628920394877737">Udělte službě <ph name="PRODUCT_NAME" /> oprávnění Nahrávání obrazovky</translation>
 <translation id="9188433529406846933">Autorizovat</translation>
 <translation id="9213184081240281106">Neplatná konfigurace hostitele.</translation>
 <translation id="951991426597076286">Odmítnout</translation>

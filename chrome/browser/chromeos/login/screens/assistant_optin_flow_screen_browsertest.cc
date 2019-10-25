@@ -34,7 +34,8 @@
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "chromeos/services/assistant/service.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -141,12 +142,13 @@ class FakeAssistantSettings
     speaker_id_enrollment_state_ = SpeakerIdEnrollmentState::IDLE;
   }
 
-  void Flush() { bindings_.FlushForTesting(); }
+  void Flush() { receivers_.FlushForTesting(); }
 
   // chromeos::assistant::AssistantSettingsManager:
-  void BindRequest(chromeos::assistant::mojom::AssistantSettingsManagerRequest
-                       request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void BindReceiver(mojo::PendingReceiver<
+                    chromeos::assistant::mojom::AssistantSettingsManager>
+                        receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // chromeos::assistant::mojom::AssistantSettingsManager:
@@ -292,8 +294,8 @@ class FakeAssistantSettings
     PROCESSING
   };
 
-  mojo::BindingSet<chromeos::assistant::mojom::AssistantSettingsManager>
-      bindings_;
+  mojo::ReceiverSet<chromeos::assistant::mojom::AssistantSettingsManager>
+      receivers_;
 
   // The service test config:
   int consent_ui_flags_ = CONSENT_UI_FLAGS_NONE;

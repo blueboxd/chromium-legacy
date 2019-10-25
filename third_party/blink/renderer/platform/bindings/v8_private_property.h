@@ -41,18 +41,6 @@ class ScriptWrappable;
   X(MessageEvent, CachedData)                           \
   X(NamedConstructor, Initialized)                      \
   X(PopStateEvent, State)                               \
-  X(SameObject, DetectedBarcodeCornerPoints)            \
-  X(SameObject, DetectedFaceLandmarks)                  \
-  X(SameObject, NotificationActions)                    \
-  X(SameObject, NotificationData)                       \
-  X(SameObject, NotificationVibrate)                    \
-  X(SameObject, PerformanceLongTaskTimingAttribution)   \
-  X(SameObject, PerformanceObserverSupportedEntryTypes) \
-  X(SameObject, PushManagerSupportedContentEncodings)   \
-  X(SameObject, XRInputSourceProfiles)                  \
-  X(SameObject, XRInputSourcesChangeEventAdded)         \
-  X(SameObject, XRInputSourcesChangeEventRemoved)       \
-  X(SameObject, XRViewerPoseViews)                      \
   SCRIPT_PROMISE_PROPERTIES(X, Promise)                 \
   SCRIPT_PROMISE_PROPERTIES(X, Resolver)
 

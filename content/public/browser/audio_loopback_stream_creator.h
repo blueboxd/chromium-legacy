@@ -32,7 +32,8 @@ class CONTENT_EXPORT AudioLoopbackStreamCreator {
   // The callback that is called when the requested stream is created.
   using StreamCreatedCallback = base::RepeatingCallback<void(
       mojo::PendingRemote<media::mojom::AudioInputStream> stream,
-      media::mojom::AudioInputStreamClientRequest client_request,
+      mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+          client_receiver,
       media::mojom::ReadOnlyAudioDataPipePtr data_pipe)>;
 
   // Creates an InProcessAudioLoopbackStreamCreator that handles creating audio

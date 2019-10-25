@@ -149,7 +149,8 @@ group("gn_all") {
       "//tools/polymer:polymer_tools_python_unittests",
       "//ui/accessibility:accessibility_perftests",
       "//ui/accessibility:accessibility_unittests",
-      "//ui/accessibility/extensions",
+      "//ui/accessibility/extensions:extension_tests",
+      "//ui/accessibility/extensions:extensions",
     ]
   }
 

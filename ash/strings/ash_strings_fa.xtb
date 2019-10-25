@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> اضافه شد</translation>
 <translation id="1056775291175587022">شبکه‌ای وجود ندارد</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />:‏ <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">دستگاه تلفن همراه: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">‏I’m bored (حوصله‌ام سر رفته)</translation>
 <translation id="1104084341931202936">نشان دادن تنظیمات دسترس‌پذیری</translation>
 <translation id="1104621072296271835">دستگاه‌هایتان باهم به‌مراتب بهتر کار می‌کنند</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">بزرگتر از صفحه</translation>
 <translation id="119944043368869598">پاک کردن همه</translation>
 <translation id="1247372569136754018">میکروفون (داخلی)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> این تنظیم توسط سرپرست شما اجباری شده است.</translation>
 <translation id="1252999807265626933">در حال شارژ شدن از <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">‏?‎What's the weather (آب‌وهوا چطور است؟)</translation>
 <translation id="1267032506238418139">تغییر میان‌بر</translation>
 <translation id="1270290102613614947">صفحه‌کلید روی صفحه غیرفعال شد</translation>
 <translation id="1272079795634619415">توقف</translation>
+<translation id="1275285675049378717">درحال تأمین برق <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> ساعت <ph name="COME_BACK_TIME" /> برگردید.</translation>
 <translation id="1290331692326790741">سیگنال ضعیف</translation>
@@ -76,6 +79,7 @@
 <translation id="1957958912175573503">تنظیم زبان</translation>
 <translation id="1962969542251276847">صفحه قفل</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
+<translation id="1972950159383891558">سلام، <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">ورودی نوشتار</translation>
 <translation id="1993072747612765854">درباره جدیدترین به‌روزرسانی‌ <ph name="SYSTEM_APP_NAME" /> بیشتر بدانید.</translation>
 <translation id="1995660704900986789">خاموش کردن</translation>
@@ -116,6 +120,7 @@
 <translation id="2532589005999780174">حالت کنتراست بالا</translation>
 <translation id="2542089167727451762">روی تصویر نمایه ضربه بزنید</translation>
 <translation id="255671100581129685">‏«دستیار Google» در جلسه عمومی در دسترس نیست.</translation>
+<translation id="256712445991462162">ذره‌بین متصل</translation>
 <translation id="2575685495496069081">ورود چندگانه به سیستم غیرفعال شده است</translation>
 <translation id="2582112259361606227">بازراه‌اندازی برای به‌روزرسانی</translation>
 <translation id="2617342710774726426">سیم‌کارت قفل است</translation>
@@ -172,6 +177,7 @@
 <translation id="3364721542077212959">ابزارهای قلم</translation>
 <translation id="3368922792935385530">متصل</translation>
 <translation id="3371140690572404006">‏دستگاه USB-C (درگاه جلوی سمت راست)</translation>
+<translation id="3386978599540877378">ذره‌بین تمام‌صفحه</translation>
 <translation id="3400357268283240774">تنظیمات بیشتر</translation>
 <translation id="3413817803639110246">هنوز چیزی برای دیدن وجود ندارد</translation>
 <translation id="343571671045587506">ویرایش یادآوری</translation>
@@ -236,8 +242,10 @@
 <translation id="4331809312908958774">‏سیستم عامل Chrome</translation>
 <translation id="4338109981321384717">ذره‌بین</translation>
 <translation id="4351433414020964307">دستیار درحال بار کردن است...</translation>
+<translation id="4356930093361201197">حالت تضاد بالا</translation>
 <translation id="4378551569595875038">در حال اتصال...</translation>
 <translation id="4379531060876907730">این‌ها ابزارهای قلم شما هستند</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">میان‌بر صفحه‌کلید مربوط به ذره‌بین متصل را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
 <translation id="4421231901400348175">هم‌رسانی کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی ازراه‌دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
@@ -268,6 +276,7 @@
 <translation id="4831034276697007977">مطمئنید می‌خواهید کلیک‌های خودکار را خاموش کنید؟</translation>
 <translation id="4849058404725798627">برجسته کردن شیء با فوکوس صفحه‌کلید</translation>
 <translation id="485592688953820832">بی‌حرکت (مکث)</translation>
+<translation id="4868492592575313542">فعال شد</translation>
 <translation id="4872237917498892622">‏Alt+جستجو یا Shift</translation>
 <translation id="4890187583552566966">‏سرپرستتان «دستیار Google» را غیرفعال کرده است.</translation>
 <translation id="4895488851634969361">باتری پر است.</translation>
@@ -391,6 +400,7 @@
 <translation id="6727969043791803658">متصل، <ph name="BATTERY_PERCENTAGE" />٪ باتری</translation>
 <translation id="6751826523481687655">ردیابی عملکرد روشن است</translation>
 <translation id="6752912906630585008">میز <ph name="REMOVED_DESK" /> برداشته شد و با میز <ph name="RECEIVE_DESK" /> ادغام شد</translation>
+<translation id="6777216307882431711">‏درحال تأمین برق دستگاه‌های USB-C متصل</translation>
 <translation id="6790428901817661496">پخش</translation>
 <translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>
 <translation id="6820676911989879663">استراحت کنید!</translation>
@@ -442,6 +452,7 @@
 <translation id="7568294522609223312">خاموش کردن کلیک‌های خودکار</translation>
 <translation id="7569509451529460200">‏بریل و ChromeVox فعال هستند</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
+<translation id="7600875258240007829">دیدن همه اعلان‌ها</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (مالک)</translation>
 <translation id="7647488630410863958">برای مشاهده اعلان‌هایتان، قفل دستگاه را باز کنید</translation>
 <translation id="7649070708921625228">راهنما</translation>
@@ -506,6 +517,7 @@
 <translation id="8452135315243592079">سیم‌کارت وجود ندارد</translation>
 <translation id="8454013096329229812">‏Wi-Fi روشن است.</translation>
 <translation id="847056008324733326">تنظیمات مقیاس نمایش</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" /> دارد.</translation>
 <translation id="8477270416194247200">‏برای لغو کردن Alt+Search یا Shift را فشار دهید.</translation>
 <translation id="8513108775083588393">چرخش خودکار</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
@@ -534,6 +546,7 @@
 <translation id="8909138438987180327">شارژ باتری <ph name="PERCENTAGE" /> درصد است.</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏«دستیار Google» به این زبان صحبت نمی‌کند.</translation>
+<translation id="8936501819958976551">غیرفعال</translation>
 <translation id="8938800817013097409">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="8940956008527784070">باتری ضعیف است (<ph name="PERCENTAGE" />٪)</translation>
 <translation id="8983038754672563810">HSPA</translation>

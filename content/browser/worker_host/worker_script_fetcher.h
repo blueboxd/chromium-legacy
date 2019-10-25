@@ -20,12 +20,12 @@ struct ResourceRequest;
 }  // namespace network
 
 namespace blink {
+class ThrottlingURLLoader;
 class URLLoaderThrottle;
 }  // namespace blink
 
 namespace content {
 
-class ThrottlingURLLoader;
 class WorkerScriptLoaderFactory;
 
 // NetworkService (PlzWorker):
@@ -82,7 +82,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
 
   // URLLoader instance backed by a request interceptor (e.g.,
   // AppCacheRequestHandler) or the network service.
-  std::unique_ptr<ThrottlingURLLoader> url_loader_;
+  std::unique_ptr<blink::ThrottlingURLLoader> url_loader_;
 
   // URLLoader instance for handling a response received from the default
   // network loader. This can be provided by an interceptor. For example,

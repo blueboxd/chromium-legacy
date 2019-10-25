@@ -49,8 +49,8 @@
 #if defined(OS_CHROMEOS)
 #include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
 #if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
-#include "media/gpu/linux/mailbox_video_frame_converter.h"
-#include "media/gpu/linux/platform_video_frame_pool.h"
+#include "media/gpu/chromeos/mailbox_video_frame_converter.h"
+#include "media/gpu/chromeos/platform_video_frame_pool.h"
 #endif  // BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
 #endif  // defined(OS_CHROMEOS)
 

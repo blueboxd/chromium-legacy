@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> が追加されました</translation>
 <translation id="1056775291175587022">ネットワークが見つかりません</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">携帯電話: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">退屈だな</translation>
 <translation id="1104084341931202936">ユーザー補助機能の設定を表示</translation>
 <translation id="1104621072296271835">デバイスを連携させると活用の幅が広がります</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">オーバースキャン</translation>
 <translation id="119944043368869598">すべて削除</translation>
 <translation id="1247372569136754018">マイク（内蔵）</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" />: この設定は管理者によって制御されています。</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> から充電しています</translation>
 <translation id="1255033239764210633">今日の天気は？</translation>
 <translation id="1267032506238418139">ショートカットの変更</translation>
 <translation id="1270290102613614947">画面キーボードは無効です</translation>
 <translation id="1272079795634619415">中止</translation>
+<translation id="1275285675049378717"><ph name="POWER_SOURCE" />を充電中</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />（<ph name="ANNOTATION" />）</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" />の <ph name="COME_BACK_TIME" /> になったら利用を再開できます。</translation>
 <translation id="1290331692326790741">電波: 弱い</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
 <translation id="2542089167727451762">プロフィール画像をタップしてください</translation>
 <translation id="255671100581129685">Google アシスタントは、公開セッションではご利用いただけません。</translation>
+<translation id="256712445991462162">拡大鏡（ドッキング）</translation>
 <translation id="2575685495496069081">マルチログインは無効にされています</translation>
 <translation id="2582112259361606227">再起動して更新</translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">タッチペン ツール</translation>
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="3371140690572404006">USB-C デバイス（右手前のポート）</translation>
+<translation id="3386978599540877378">拡大鏡（全画面）</translation>
 <translation id="3400357268283240774">その他の設定</translation>
 <translation id="3413817803639110246">通知はありません</translation>
 <translation id="343571671045587506">リマインダーの編集</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">虫メガネ</translation>
 <translation id="4351433414020964307">アシスタントを読み込んでいます...</translation>
+<translation id="4356930093361201197">ハイ コントラスト モード</translation>
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">拡大鏡（ドッキング）のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">自動クリックをオフにしてもよろしいですか？</translation>
 <translation id="4849058404725798627">キーボードのフォーカスがある項目をハイライト表示する</translation>
 <translation id="485592688953820832">なし（一時停止）</translation>
+<translation id="4868492592575313542">有効</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="4890187583552566966">Google アシスタントは管理者によって無効にされています。</translation>
 <translation id="4895488851634969361">バッテリー残量: 満。</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">接続済み、<ph name="BATTERY_PERCENTAGE" />% のバッテリー残量</translation>
 <translation id="6751826523481687655">パフォーマンス追跡機能が有効になっています</translation>
 <translation id="6752912906630585008">デスク <ph name="REMOVED_DESK" /> が削除されデスク <ph name="RECEIVE_DESK" /> に統合されました</translation>
+<translation id="6777216307882431711">接続された USB-C デバイスを充電中</translation>
 <translation id="6790428901817661496">再生</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="6820676911989879663">休憩の時間です！</translation>
@@ -443,6 +452,7 @@
 <translation id="7568294522609223312">自動クリックをオフにする</translation>
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
+<translation id="7600875258240007829">通知をすべて表示</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">デバイスのロックを解除して通知を確認してください</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
@@ -507,6 +517,7 @@
 <translation id="8452135315243592079">SIM カードがありません</translation>
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="847056008324733326">表示スケールの設定</translation>
+<translation id="8473301994082929012"><ph name="FEATURE_NAME" />は <ph name="ORGANIZATION_NAME" /> により<ph name="FEATURE_STATE" />に設定されています。</translation>
 <translation id="8477270416194247200">キャンセルするには Alt+ 検索キーまたは Shift キーを押します。</translation>
 <translation id="8513108775083588393">自動回転</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンのままでは充電できない可能性があります。</translation>
@@ -535,6 +546,7 @@
 <translation id="8909138438987180327">電池残量は <ph name="PERCENTAGE" />% です。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google アシスタントはこの言語に対応していません。</translation>
+<translation id="8936501819958976551">無効</translation>
 <translation id="8938800817013097409">USB-C デバイス（背面右のポート）</translation>
 <translation id="8940956008527784070">バッテリー残量: 少（<ph name="PERCENTAGE" />%）</translation>
 <translation id="8983038754672563810">HSPA</translation>

@@ -28,6 +28,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "caret_down.icon",
     "caret_up.icon",
     "certificate.icon",
+    "click_to_call_illustration.icon",
+    "click_to_call_illustration_dark.icon",
     "close_all.icon",
     "code.icon",
 

@@ -202,6 +202,7 @@
 <translation id="3783017676699494206">画像を保存</translation>
 <translation id="3789841737615482174">インストール</translation>
 <translation id="385051799172605136">戻る</translation>
+<translation id="3886946236301294521">使用しているパスワードがデータ侵害を受けた場合に警告を表示します。</translation>
 <translation id="3897092660631435901">メニュー</translation>
 <translation id="3915450441834151894">サイト情報</translation>
 <translation id="3922310737605261887">コピーしたテキストを検索</translation>
@@ -332,6 +333,7 @@
 <translation id="5854790677617711513">30 日以上経過</translation>
 <translation id="5857090052475505287">新しいフォルダ</translation>
 <translation id="5857770089550859117">同期を開始するにはパスフレーズが必要です。</translation>
+<translation id="5859444426865731878">Google ではお使いのパスワードがデータ侵害の対象になっていたかを確認できます。</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1件の項目を移動しました</translation>
@@ -411,6 +413,7 @@
 <translation id="6797885426782475225">音声検索</translation>
 <translation id="6807889908376551050">すべて表示...</translation>
 <translation id="681368974849482173">作成済みのアイテム</translation>
+<translation id="6831043979455480757">翻訳</translation>
 <translation id="6851516051005285358">PC 版サイトを見る</translation>
 <translation id="6858855187367714033">スキャンされました</translation>
 <translation id="6859944681507688231">QR コードまたはクレジット カードをスキャンするには、設定でカメラを有効にしてください。</translation>

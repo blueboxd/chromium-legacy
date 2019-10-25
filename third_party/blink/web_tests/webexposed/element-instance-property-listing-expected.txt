@@ -30,7 +30,6 @@ namespace http://www.w3.org/1999/xhtml
     property animate
     property append
     property appendChild
-    property ariaActiveDescendant
     property ariaActiveDescendantElement
     property ariaAtomic
     property ariaAutoComplete
@@ -39,24 +38,18 @@ namespace http://www.w3.org/1999/xhtml
     property ariaColCount
     property ariaColIndex
     property ariaColSpan
-    property ariaControls
     property ariaControlsElements
     property ariaCurrent
-    property ariaDescribedBy
     property ariaDescribedByElements
-    property ariaDetails
     property ariaDetailsElement
     property ariaDisabled
-    property ariaErrorMessage
     property ariaErrorMessageElement
     property ariaExpanded
-    property ariaFlowTo
     property ariaFlowToElements
     property ariaHasPopup
     property ariaHidden
     property ariaKeyShortcuts
     property ariaLabel
-    property ariaLabelledBy
     property ariaLabelledByElements
     property ariaLevel
     property ariaLive
@@ -64,7 +57,6 @@ namespace http://www.w3.org/1999/xhtml
     property ariaMultiLine
     property ariaMultiSelectable
     property ariaOrientation
-    property ariaOwns
     property ariaOwnsElements
     property ariaPlaceholder
     property ariaPosInSet
@@ -1232,7 +1224,6 @@ namespace http://www.w3.org/2000/svg
     property animate
     property append
     property appendChild
-    property ariaActiveDescendant
     property ariaActiveDescendantElement
     property ariaAtomic
     property ariaAutoComplete
@@ -1241,24 +1232,18 @@ namespace http://www.w3.org/2000/svg
     property ariaColCount
     property ariaColIndex
     property ariaColSpan
-    property ariaControls
     property ariaControlsElements
     property ariaCurrent
-    property ariaDescribedBy
     property ariaDescribedByElements
-    property ariaDetails
     property ariaDetailsElement
     property ariaDisabled
-    property ariaErrorMessage
     property ariaErrorMessageElement
     property ariaExpanded
-    property ariaFlowTo
     property ariaFlowToElements
     property ariaHasPopup
     property ariaHidden
     property ariaKeyShortcuts
     property ariaLabel
-    property ariaLabelledBy
     property ariaLabelledByElements
     property ariaLevel
     property ariaLive
@@ -1266,7 +1251,6 @@ namespace http://www.w3.org/2000/svg
     property ariaMultiLine
     property ariaMultiSelectable
     property ariaOrientation
-    property ariaOwns
     property ariaOwnsElements
     property ariaPlaceholder
     property ariaPosInSet

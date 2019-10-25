@@ -8,13 +8,13 @@
 
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -37,6 +37,9 @@ void ClickToCallUiController::ShowDialog(
     const base::Optional<url::Origin>& initiating_origin,
     const GURL& url,
     bool hide_default_handler) {
+  LogClickToCallPhoneNumberSize(GetUnescapedURLContent(url),
+                                SharingClickToCallEntryPoint::kLeftClickLink,
+                                /*send_to_device=*/false);
   auto* controller = GetOrCreateFromWebContents(web_contents);
   controller->phone_url_ = url;
   controller->hide_default_handler_ = hide_default_handler;
@@ -58,7 +61,7 @@ void ClickToCallUiController::OnDeviceSelected(
                     /*has_devices=*/true, /*has_apps=*/false,
                     SharingClickToCallSelection::kDevice);
 
-  SendNumberToDevice(device, phone_number);
+  SendNumberToDevice(device, phone_number, entry_point);
 }
 
 void ClickToCallUiController::OnDialogClosed(SharingDialog* dialog) {
@@ -113,12 +116,17 @@ void ClickToCallUiController::OnDeviceChosen(const syncer::DeviceInfo& device) {
   if (ukm_recorder_)
     std::move(ukm_recorder_).Run(SharingClickToCallSelection::kDevice);
 
-  SendNumberToDevice(device, GetUnescapedURLContent(phone_url_));
+  SendNumberToDevice(device, GetUnescapedURLContent(phone_url_),
+                     SharingClickToCallEntryPoint::kLeftClickLink);
 }
 
 void ClickToCallUiController::SendNumberToDevice(
     const syncer::DeviceInfo& device,
-    const std::string& phone_number) {
+    const std::string& phone_number,
+    SharingClickToCallEntryPoint entry_point) {
+  LogClickToCallPhoneNumberSize(phone_number, entry_point,
+                                /*send_to_device=*/true);
+
   SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       phone_number);
@@ -173,8 +181,8 @@ SharingDialogData ClickToCallUiController::CreateDialogData(
 
   // Do not add the header image for error dialogs.
   if (dialog_type != SharingDialogType::kErrorDialog) {
-    data.header_image_light = IDR_CLICK_TO_CALL_ILLUSTRATION_LIGHT;
-    data.header_image_dark = IDR_CLICK_TO_CALL_ILLUSTRATION_DARK;
+    data.header_image_light = &kClickToCallIllustrationIcon;
+    data.header_image_dark = &kClickToCallIllustrationDarkIcon;
   }
 
   data.help_text_id =

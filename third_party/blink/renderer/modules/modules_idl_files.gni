@@ -490,6 +490,7 @@ modules_idl_files =
           "websockets/close_event.idl",
           "websockets/websocket.idl",
           "websockets/websocket_stream.idl",
+          "webtransport/quic_transport.idl",
           "webusb/usb.idl",
           "webusb/usb_alternate_interface.idl",
           "webusb/usb_configuration.idl",

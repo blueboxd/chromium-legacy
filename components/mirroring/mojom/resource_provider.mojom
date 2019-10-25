@@ -18,7 +18,7 @@ import "services/viz/public/mojom/gpu.mojom";
 interface AudioStreamCreatorClient {
   StreamCreated(
       pending_remote<media.mojom.AudioInputStream> stream,
-      media.mojom.AudioInputStreamClient& client_request,
+      pending_receiver<media.mojom.AudioInputStreamClient> client_receiver,
       media.mojom.ReadOnlyAudioDataPipe data_pipe,
       bool initially_muted);
 };

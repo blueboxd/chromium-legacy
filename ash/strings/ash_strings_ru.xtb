@@ -24,7 +24,7 @@
 <translation id="1267032506238418139">Изменение сочетания клавиш</translation>
 <translation id="1270290102613614947">Экранная клавиатура отключена</translation>
 <translation id="1272079795634619415">Остановить</translation>
-<translation id="1275285675049378717">Включена подача питания для внешнего устройства (<ph name="POWER_SOURCE" />)</translation>
+<translation id="1275285675049378717">Питание устройства: <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">Устройство станет доступно в <ph name="COME_BACK_TIME" /> (<ph name="COME_BACK_DAY_OF_WEEK" />).</translation>
 <translation id="1290331692326790741">слабый сигнал</translation>
@@ -399,7 +399,7 @@
 <translation id="6727969043791803658">Подключено, батарея заряжена на <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Отслеживание эффективности включено.</translation>
 <translation id="6752912906630585008">Рабочий стол "<ph name="REMOVED_DESK" />" удален и объединен с рабочим столом "<ph name="RECEIVE_DESK" />".</translation>
-<translation id="6777216307882431711">Включена подача питания для устройств USB-C</translation>
+<translation id="6777216307882431711">Питание подключенных устройств USB-C</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
 <translation id="6803622936009808957">Не удалось дублировать изображение экрана, т. к. указанное разрешение не поддерживается. Включен режим расширенного рабочего стола.</translation>
 <translation id="6820676911989879663">Пора отдохнуть!</translation>

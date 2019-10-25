@@ -275,6 +275,7 @@
 <translation id="2257315177824333709">За съжаление, картата ви не може да бъде запазена в момента</translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
 <translation id="2263079731045660823">Актуализирайте данните за автоматично попълване на кредитни карти от настройките на Chrome</translation>
+<translation id="2267047181501709434">Самоличността ви се потвърждава...</translation>
 <translation id="2270484714375784793">Телефонен номер</translation>
 <translation id="2277103315734023688">Придвижване напред</translation>
 <translation id="2283340219607151381">Запазване и попълване на адреси</translation>
@@ -282,6 +283,7 @@
 <translation id="2292556288342944218">Достъпът ви до интернет е блокиран</translation>
 <translation id="2297722699537546652">B5 (плик)</translation>
 <translation id="2310021320168182093">Chou2 (плик)</translation>
+<translation id="2315864634253056100">Името на този сайт наподобява това на <ph name="LOOKALIKE_DOMAIN" />. Понякога извършителите на атаки имитират сайтове, като правят труднозабележими промени в уеб адреса.</translation>
 <translation id="2316887270356262533">Ще освободите по-малко от 1 МБ. Някои сайтове може да се заредят по-бавно при следващото ви посещение.</translation>
 <translation id="2317259163369394535">Изискват се потребителско име и парола за <ph name="DOMAIN" />.</translation>
 <translation id="2317583587496011522">Приемат се дебитни карти.</translation>
@@ -474,6 +476,7 @@
 <translation id="3229041911291329567">Информацията за версията на устройството и браузъра</translation>
 <translation id="323107829343500871">Въведете кода за проверка за <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Важното съдържание на този сайт да се открива винаги</translation>
+<translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> наподобява <ph name="SUGGESTED_DOMAIN" />. Понякога извършителите на атаки имитират сайтове, като използват подобни URL адреси.</translation>
 <translation id="3270847123878663523">&amp;Отмяна на пренареждането</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3281668902344226640">Използване на Touch ID за потвърждаване на запазените от вас начини на плащане.</translation>
@@ -679,6 +682,7 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Опитайте да стартирате мрежова диагностика<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Продължаване към <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Валиден сертификат</translation>
+<translation id="4248776159690739358">Споделяне с администратора ви на данни за събития, свързани със сигурността, за които е сигнализирано от функцията на Chrome Enterprise за защита срещу заплахи. Данните могат да включват URL адресите на посещаваните от вас страници, имената или метаданните на файлове и потребителското име, с което влизате в профила си на устройството си и в Chrome.</translation>
 <translation id="4250431568374086873">Връзката ви с този сайт не е напълно защитена</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="425582637250725228">Направените от вас промени може да не се запазят.</translation>
@@ -1490,6 +1494,7 @@
 <translation id="830498451218851433">Сгъване в средата</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">Преводът не бе успешен поради проблем с връзката към мрежата.</translation>
+<translation id="831207732689920588">Тази страница е подозрителна (означена от Chrome).</translation>
 <translation id="8332188693563227489">Достъпът до <ph name="HOST_NAME" /> бе отказан</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ако разбирате рисковете за сигурността си, може <ph name="BEGIN_LINK" />да посетите този сайт<ph name="END_LINK" /> преди премахването на опасните програми.</translation>
@@ -1579,6 +1584,7 @@
 <translation id="8903921497873541725">Увеличаване на мащаба</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="8912362522468806198">Профил в Google</translation>
+<translation id="8918231688545606538">Тази страница е подозрителна</translation>
 <translation id="892588693504540538">Перфориране горе вдясно</translation>
 <translation id="8931333241327730545">Искате ли да запазите тази карта в профила си в Google?</translation>
 <translation id="8932102934695377596">Часовникът ви е назад</translation>

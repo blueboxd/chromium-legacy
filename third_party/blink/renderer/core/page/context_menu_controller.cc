@@ -188,6 +188,20 @@ static WebRect ComputeSelectionRect(LocalFrame* selected_frame) {
   int right = std::max(focus.X() + focus.Width(), anchor.X() + anchor.Width());
   int bottom =
       std::max(focus.Y() + focus.Height(), anchor.Y() + anchor.Height());
+  // Intersect the selection rect and the visible bounds of the focused_element
+  // to ensure the selection rect is visible.
+  Document* doc = selected_frame->GetDocument();
+  if (doc) {
+    Element* focused_element = doc->FocusedElement();
+    if (focused_element) {
+      IntRect visible_bound = focused_element->VisibleBoundsInVisualViewport();
+      left = std::max(visible_bound.X(), left);
+      top = std::max(visible_bound.Y(), top);
+      right = std::min(visible_bound.MaxX(), right);
+      bottom = std::min(visible_bound.MaxY(), bottom);
+    }
+  }
+
   return WebRect(left, top, right - left, bottom - top);
 }
 

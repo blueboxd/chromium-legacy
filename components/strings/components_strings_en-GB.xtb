@@ -275,6 +275,7 @@
 <translation id="2257315177824333709">Sorry, your card can't be saved at the moment</translation>
 <translation id="2262243747453050782">HTTP error</translation>
 <translation id="2263079731045660823">Update credit card auto-fill info in Chrome settings</translation>
+<translation id="2267047181501709434">Verifying your identity...</translation>
 <translation id="2270484714375784793">Phone number</translation>
 <translation id="2277103315734023688">Seek forwards</translation>
 <translation id="2283340219607151381">Save and fill addresses</translation>
@@ -282,6 +283,7 @@
 <translation id="2292556288342944218">Your Internet access is blocked</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
+<translation id="2315864634253056100">This site's name looks similar to <ph name="LOOKALIKE_DOMAIN" />. Attackers sometimes mimic sites by making hard-to-see changes to the web address.</translation>
 <translation id="2316887270356262533">Frees up less than 1 MB. Some sites may load more slowly on your next visit.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requires a username and password.</translation>
 <translation id="2317583587496011522">Debit cards are accepted.</translation>
@@ -468,6 +470,7 @@
 <translation id="3229041911291329567">Version information about your device and browser</translation>
 <translation id="323107829343500871">Enter the CVC for <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Always detect important content on this site</translation>
+<translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> looks similar to <ph name="SUGGESTED_DOMAIN" />. Attackers sometimes mimic sites by using similar URLs.</translation>
 <translation id="3270847123878663523">&amp;Undo Reorder</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3281668902344226640">Use Touch ID to verify your saved payment methods.</translation>
@@ -668,6 +671,7 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Try running Network Diagnostics<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Proceed to <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Valid</translation>
+<translation id="4248776159690739358">Share data about security events that have been flagged by Chrome Enterprise Threat Protection with your Administrator. This may include URLs of pages that you visit, file names or metadata, and the username that you use to sign in to your device and Chrome.</translation>
 <translation id="4250431568374086873">Your connection to this site is not fully secure</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="425582637250725228">Changes that you made may not be saved.</translation>
@@ -1478,6 +1482,7 @@ Additional details:
 <translation id="830498451218851433">Fold half</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">The translation failed because of a problem with the network connection.</translation>
+<translation id="831207732689920588">This page is suspicious (flagged by Chrome).</translation>
 <translation id="8332188693563227489">Access to <ph name="HOST_NAME" /> was denied</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this site<ph name="END_LINK" /> before the harmful programs have been removed.</translation>
@@ -1567,6 +1572,7 @@ Additional details:
 <translation id="8903921497873541725">Zoom in</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="8912362522468806198">Google Account</translation>
+<translation id="8918231688545606538">This page is suspicious</translation>
 <translation id="892588693504540538">Punch top right</translation>
 <translation id="8931333241327730545">Do you want to save this card to your Google Account?</translation>
 <translation id="8932102934695377596">Your clock is behind</translation>

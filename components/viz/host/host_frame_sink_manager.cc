@@ -277,7 +277,7 @@ base::Optional<FrameSinkId> HostFrameSinkManager::FindRootFrameSinkId(
 }
 
 void HostFrameSinkManager::AddVideoDetectorObserver(
-    mojom::VideoDetectorObserverPtr observer) {
+    mojo::PendingRemote<mojom::VideoDetectorObserver> observer) {
   frame_sink_manager_->AddVideoDetectorObserver(std::move(observer));
 }
 

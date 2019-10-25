@@ -69,6 +69,12 @@ class CORE_EXPORT V8ScriptValueSerializer
     WriteUint32(static_cast<uint32_t>(value));
   }
 
+  SerializedScriptValue* GetSerializedScriptValue() {
+    return serialized_script_value_.get();
+  }
+
+  bool IsForStorage() const { return for_storage_; }
+
  private:
   // Transfer is split into two phases: scanning the transferables so that we
   // don't have to serialize the data (just an index), and finalizing (to

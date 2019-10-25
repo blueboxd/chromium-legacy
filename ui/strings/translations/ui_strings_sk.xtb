@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Zostáva 1 sekunda}few{Zostávajú # sekundy}many{Zostáva # sekundy}other{Zostáva # sekúnd}}</translation>
 <translation id="5941711191222866238">Minimalizovať</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hodina}few{# hodiny}many{# hodiny}other{# hodín}}</translation>
-<translation id="5946629889255121107">Číslo bolo spustené zo zdroja <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Stránka <ph name="SELECTED_PAGE" /> z <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Vymazať text vo vyhľadávacom poli</translation>
 <translation id="6040143037577758943">Zavrieť</translation>

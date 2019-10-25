@@ -22,7 +22,7 @@ struct CopyOutputRequest {
   gfx.mojom.Rect? area;
   gfx.mojom.Rect? result_selection;
 
-  CopyOutputResultSender result_sender;
+  pending_remote<CopyOutputResultSender> result_sender;
 };
 
 // When the display compositor is ready to respond to the CopyOutputRequest,

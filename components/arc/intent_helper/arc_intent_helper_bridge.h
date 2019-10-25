@@ -84,6 +84,7 @@ class ArcIntentHelperBridge : public KeyedService,
                        bool should_handle_result,
                        bool should_down_scale,
                        bool is_secure) override;
+  void CloseCameraApp() override;
   void HandleCameraResult(
       uint32_t intent_id,
       arc::mojom::CameraIntentAction action,

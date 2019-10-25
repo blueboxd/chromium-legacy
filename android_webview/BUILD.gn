@@ -98,8 +98,20 @@ jinja_template("trichrome_webview_manifest") {
   input = "apk/java/AndroidManifest.xml"
   output = trichrome_webview_android_manifest
   variables = trichrome_jinja_variables + [
+                "trichrome_version=$trichrome_version_code",
                 "manifest_package=$system_webview_package_name",
                 "library=libmonochrome.so",
+              ]
+}
+
+jinja_template("trichrome_webview_64_32_manifest") {
+  input = "apk/java/AndroidManifest.xml"
+  output = trichrome_webview_64_32_android_manifest
+  variables = trichrome_jinja_variables + [
+                "use32bitAbi=",
+                "trichrome_version=$trichrome_64_32_version_code",
+                "manifest_package=$system_webview_package_name",
+                "library=libmonochrome_64.so",
               ]
 }
 
@@ -409,17 +421,17 @@ if (android_64bit_target_cpu) {
   }
 }
 
-if (defined(android_secondary_abi_toolchain)) {
-  template("webview_library") {
-    chrome_common_shared_library(target_name) {
-      forward_variables_from(invoker, "*")
-      deps = [
-        ":webview_entry_point",
-      ]
-      is_webview = true
-    }
+template("webview_library") {
+  chrome_common_shared_library(target_name) {
+    forward_variables_from(invoker, "*")
+    deps = [
+      ":webview_entry_point",
+    ]
+    is_webview = true
   }
+}
 
+if (defined(android_secondary_abi_toolchain)) {
   # Note here that on a given system, the webview-only library needs the same
   # library name as the browser library, since the system webview factory will
   # differentiate only by ABI.
@@ -433,6 +445,10 @@ if (defined(android_secondary_abi_toolchain)) {
     # Inverse of above, for the original 32-bit case.
     webview_library("monochrome") {
     }
+  }
+} else {
+  # 32-bit WebView library used in 32-bit only builds of 64/32 targets.
+  webview_library("monochrome_64") {
   }
 }
 
@@ -827,6 +843,23 @@ if (public_android_sdk) {
 
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebView"
+    use_trichrome_library = true
+    uncompress_dex = use_uncompressed_dex
+    if (trichrome_synchronized_proguard) {
+      static_library_provider = "//chrome/android:trichrome_library_apk"
+    }
+  }
+
+  system_webview_apk_tmpl("trichrome_webview_64_32_apk") {
+    android_manifest = trichrome_webview_64_32_android_manifest
+    android_manifest_dep = ":trichrome_webview_64_32_manifest"
+    is_64_bit_browser = true
+
+    # TODO(torne): make minsdk=Q once we no longer build hacky P version
+    min_sdk_version = android_sdk_version
+
+    deps = upstream_only_webview_deps
+    apk_name = "TrichromeWebView6432"
     use_trichrome_library = true
     uncompress_dex = use_uncompressed_dex
     if (trichrome_synchronized_proguard) {

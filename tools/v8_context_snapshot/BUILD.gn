@@ -67,12 +67,23 @@ if (use_v8_context_snapshot) {
       "--output_file=$output_path",
     ]
 
-    outputs = [
-      output_file,
-    ]
-
     deps = [
       ":v8_context_snapshot_generator($v8_snapshot_toolchain)",
+    ]
+
+    if (is_component_build) {
+      # In component builds, this forces the generator to rerun whenever the v8
+      # shared library is rebuilt. Without it would only regenerate if the
+      # generator itself was rebuilt.
+      inputs = [
+        "$root_out_dir/${shlib_prefix}v8${shlib_extension}",
+      ]
+
+      deps += [ "//v8" ]
+    }
+
+    outputs = [
+      output_file,
     ]
   }
 

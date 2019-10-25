@@ -50,5 +50,7 @@ void ShellNewWindowDelegate::OpenFeedbackPage(bool from_assistant) {}
 
 void ShellNewWindowDelegate::LaunchCameraApp(const std::string& queries) {}
 
+void ShellNewWindowDelegate::CloseCameraApp() {}
+
 }  // namespace shell
 }  // namespace ash

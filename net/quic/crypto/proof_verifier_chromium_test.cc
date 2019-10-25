@@ -447,7 +447,7 @@ HashValueVector MakeHashValueVector(uint8_t tag) {
 }
 
 TEST_F(ProofVerifierChromiumTest, IsFatalErrorNotSetForNonFatalError) {
-  dummy_result_.cert_status = MapNetErrorToCertStatus(ERR_CERT_DATE_INVALID);
+  dummy_result_.cert_status = CERT_STATUS_DATE_INVALID;
 
   MockCertVerifier dummy_verifier;
   dummy_verifier.AddResultForCert(test_cert_.get(), dummy_result_,
@@ -471,7 +471,7 @@ TEST_F(ProofVerifierChromiumTest, IsFatalErrorNotSetForNonFatalError) {
 }
 
 TEST_F(ProofVerifierChromiumTest, IsFatalErrorSetForFatalError) {
-  dummy_result_.cert_status = MapNetErrorToCertStatus(ERR_CERT_DATE_INVALID);
+  dummy_result_.cert_status = CERT_STATUS_DATE_INVALID;
 
   MockCertVerifier dummy_verifier;
   dummy_verifier.AddResultForCert(test_cert_.get(), dummy_result_,

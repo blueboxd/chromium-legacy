@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -117,6 +118,9 @@ bool MaybeAddDevicesAndShowPicker(
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
 
   if (ShouldOfferClickToCallForURL(web_contents->GetBrowserContext(), url)) {
+    LogClickToCallPhoneNumberSize(GetUnescapedURLContent(url),
+                                  SharingClickToCallEntryPoint::kLeftClickLink,
+                                  /*send_to_device=*/false);
     icon_type = PageActionIconType::kClickToCall;
     controller =
         ClickToCallUiController::GetOrCreateFromWebContents(web_contents);

@@ -202,6 +202,7 @@
 <translation id="3783017676699494206">Desa la imatge</translation>
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="385051799172605136">Enrere</translation>
+<translation id="3886946236301294521">T'avisa si una contrasenya que utilitzes s'ha vist afectada per una violació de les dades.</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3915450441834151894">Informació del lloc web</translation>
 <translation id="3922310737605261887">Cerca el text copiat</translation>
@@ -233,7 +234,7 @@
 <translation id="4281844954008187215">Termes i condicions</translation>
 <translation id="430793432425771671">Sincronitza-ho tot</translation>
 <translation id="430967081421617822">Tot el període</translation>
-<translation id="4334428914252001502">1 article no llegit.</translation>
+<translation id="4334428914252001502">Un article no llegit.</translation>
 <translation id="4338650699862464074">Envia a Google els URL de les pàgines que visites.</translation>
 <translation id="4359125752503270327">Aquesta pàgina s'obrirà en una altra aplicació.</translation>
 <translation id="4375040482473363939">Cerca mitjançant un codi QR</translation>
@@ -332,6 +333,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5854790677617711513">Anterior a 30 dies</translation>
 <translation id="5857090052475505287">Carpeta nova</translation>
 <translation id="5857770089550859117">Cal una frase de contrasenya per iniciar la sincronització.</translation>
+<translation id="5859444426865731878">Google pot comprovar si les teves contrasenyes s'han vist afectades per una violació de les dades.</translation>
 <translation id="5860033963881614850">Desactivat</translation>
 <translation id="5869029295770560994">D'acord</translation>
 <translation id="5871497086027727873">1 element desplaçat</translation>
@@ -411,6 +413,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6797885426782475225">Cerca per veu</translation>
 <translation id="6807889908376551050">Mostra-ho tot...</translation>
 <translation id="681368974849482173">S'ha creat un element.</translation>
+<translation id="6831043979455480757">Tradueix</translation>
 <translation id="6851516051005285358">Sol·licita el lloc web per a ordinadors</translation>
 <translation id="6858855187367714033">S'ha escanejat</translation>
 <translation id="6859944681507688231">Per escanejar un codi QR o una targeta de crèdit, activa la càmera des de Configuració.</translation>

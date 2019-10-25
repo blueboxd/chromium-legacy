@@ -150,6 +150,14 @@ without specifying <code>'extraHeaders'</code> in
 </p>
 
 <p>
+<span class="availability">Starting from Chrome 72</span>, if you need to
+modify responses before
+<a href="https://chromium.googlesource.com/chromium/src/+/master/services/network/cross_origin_read_blocking_explainer.md">Cross Origin Read Blocking (CORB)</a>
+can block the response, you need to specify <code>'extraHeaders'</code> in
+<code>opt_extraInfpSpec</code>.
+</p>
+
+<p>
 <span class="availability">Starting from Chrome 72</span>, the following request
 headers are <strong>not provided</strong> and cannot be modified or removed
 without specifying <code>'extraHeaders'</code> in

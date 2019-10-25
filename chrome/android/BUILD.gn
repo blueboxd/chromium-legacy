@@ -46,6 +46,8 @@ chrome_modern_public_android_manifest =
     "$target_gen_dir/chrome_modern_public_apk/AndroidManifest.xml"
 trichrome_library_android_manifest =
     "$target_gen_dir/trichrome_library_apk/AndroidManifest.xml"
+trichrome_library_64_32_android_manifest =
+    "$target_gen_dir/trichrome_library_64_32_apk/AndroidManifest.xml"
 
 app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
 _chrome_version_java_file = "$target_gen_dir/templates/org/chromium/chrome/browser/ChromeVersionConstants.java"
@@ -82,8 +84,19 @@ jinja_template("chrome_modern_public_android_manifest") {
 jinja_template("trichrome_library_android_manifest") {
   input = "java/AndroidManifest_trichrome_library.xml"
   output = trichrome_library_android_manifest
-  variables = trichrome_jinja_variables +
-              [ "manifest_package=$trichrome_library_package" ]
+  variables = trichrome_jinja_variables + [
+                "trichrome_version=$trichrome_version_code",
+                "manifest_package=$trichrome_library_package",
+              ]
+}
+
+jinja_template("trichrome_library_64_32_android_manifest") {
+  input = "java/AndroidManifest_trichrome_library.xml"
+  output = trichrome_library_64_32_android_manifest
+  variables = trichrome_jinja_variables + [
+                "trichrome_version=$trichrome_64_32_version_code",
+                "manifest_package=$trichrome_library_package",
+              ]
 }
 
 generate_ui_locale_resources("ui_locale_string_resources") {
@@ -1706,6 +1719,11 @@ template("monochrome_public_apk_or_module_tmpl") {
     if (_is_trichrome) {
       input = "java/AndroidManifest_trichrome_chrome.xml"
       variables += trichrome_jinja_variables
+      if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+        variables += [ "trichrome_version=$trichrome_64_32_version_code" ]
+      } else {
+        variables += [ "trichrome_version=$trichrome_version_code" ]
+      }
     } else {
       _arch = ""
       if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
@@ -1796,6 +1814,28 @@ if (public_android_sdk) {
         },
         {
           name = ":trichrome_chrome_apk"
+          is_resource_ids_provider = false
+        },
+      ]
+    }
+  }
+
+  trichrome_library_apk_tmpl("trichrome_library_64_32_apk") {
+    apk_name = "TrichromeLibrary6432"
+    android_manifest = trichrome_library_64_32_android_manifest
+    android_manifest_dep = ":trichrome_library_64_32_android_manifest"
+    is_64_bit_browser = true
+
+    if (trichrome_synchronized_proguard) {
+      shared_resources_whitelist_target = "//android_webview:system_webview_apk"
+      shared_resources_whitelist_locales = locales
+      static_library_dependent_targets = [
+        {
+          name = "//android_webview:trichrome_webview_64_32_apk"
+          is_resource_ids_provider = true
+        },
+        {
+          name = ":trichrome_chrome_64_32_bundle"
           is_resource_ids_provider = false
         },
       ]

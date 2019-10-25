@@ -3,7 +3,7 @@
         --translate-x-distance: 132px;
       }
 
-      :host([is-print-preview]) {
+      :host-context([is-print-preview]) {
         --translate-x-distance: 96px;
       }
 
@@ -19,13 +19,22 @@
         transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
       }
 
-      :host([show-on-left][closed_]) #wrapper {
+      :host-context([is-print-preview][dir='ltr']):host([closed_]) #wrapper {
         transform: translateX(calc(-1 * var(--translate-x-distance)));
+      }
+
+      :host-context([dir='rtl']):host([closed_]) #wrapper {
+        transform: translateX(calc(-1 * var(--translate-x-distance)));
+      }
+
+      :host-context([is-print-preview][dir='rtl']):host([closed_]) #wrapper {
+        transform: translateX(var(--translate-x-distance));
       }
 
       cr-icon-button {
         --cr-icon-button-size: 36px;
         --cr-icon-button-icon-size: 20px;
+        --cr-icon-button-ripple-opacity: .4;
         background-color: rgb(242, 242, 242);
         border-radius: 50%;
         color: var(--paper-grey-700);
@@ -33,28 +42,24 @@
         @apply --shadow-elevation-2dp;
       }
 
-      :host(:not([is-print-preview])) cr-icon-button {
-        --cr-icon-button-ripple-opacity: .4;
-      }
-
       cr-icon-button([disabled]) {
         box-shadow: none;
       }
 
-      :host([is-print-preview]) cr-icon-button {
+      :host-context([is-print-preview]) cr-icon-button {
         --cr-icon-button-size: 32px;
         background-color: var(--google-grey-600);
         color: white;
       }
 
       @media (prefers-color-scheme: light) {
-        :host([is-print-preview]) cr-icon-button {
+        :host-context([is-print-preview]) cr-icon-button {
           --cr-icon-button-ripple-opacity: .5;
         }
       }
 
       @media (prefers-color-scheme: dark) {
-        :host([is-print-preview]) cr-icon-button {
+        :host-context([is-print-preview]) cr-icon-button {
           background-color: var(--google-grey-900);
           color: var(--google-grey-200);
         }

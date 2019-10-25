@@ -9,6 +9,7 @@
 <translation id="10614374240317010">Zaporke se nikad ne spremaju</translation>
 <translation id="1067922213147265141">Ostale Googleove usluge</translation>
 <translation id="1068672505746868501">Nikad ne prevodi <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="107147699690128016">Ako promijenite datotečni nastavak, datoteka bi se mogla otvoriti u nekoj drugoj aplikaciji i mogla bi izložiti vaš uređaj opasnosti.</translation>
 <translation id="1100066534610197918">Otvori novu karticu u grupi</translation>
 <translation id="1105960400813249514">Snimka zaslona</translation>
 <translation id="1111673857033749125">Ovdje će se prikazivati oznake koje ste spremili na drugim uređajima.</translation>
@@ -168,6 +169,7 @@
 <translation id="2156074688469523661">Preostale web-lokacije (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Da biste dijelili sadržaj s telefona s nekim drugim uređajem, uključite sinkronizaciju u Chromeovim postavkama na oba uređaja</translation>
 <translation id="2170088579611075216">Dopusti i unesi VR</translation>
+<translation id="2175927920773552910">QR kôd</translation>
 <translation id="218608176142494674">Dijeljenje</translation>
 <translation id="2227444325776770048">Nastavite kao <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sinkronizacija i Googleove usluge</translation>
@@ -258,6 +260,7 @@
 <translation id="2900528713135656174">Stvori događaj</translation>
 <translation id="290376772003165898">Ovo nije <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Popis za odabir uređaja s kojim će se dijeliti kartica otvoren punom visinom.</translation>
+<translation id="2909615210195135082">Googleova platforma za obavijesti</translation>
 <translation id="2910701580606108292">Web-lokacije moraju tražiti dopuštenje za reprodukciju zaštićenog sadržaja</translation>
 <translation id="2913331724188855103">Dopusti web-lokacijama da spremaju i čitaju podatke kolačića (preporučeno)</translation>
 <translation id="2923908459366352541">Naziv nije važeći</translation>
@@ -313,6 +316,7 @@
 <translation id="3315103659806849044">Trenutačno prilagođavate postavke sinkronizacije i Googleovih usluga. Da biste dovršili uključivanje sinkronizacije, dodirnite gumb Potvrdi pri dnu zaslona. Natrag</translation>
 <translation id="3328801116991980348">Informacije o web-lokaciji</translation>
 <translation id="3333961966071413176">Svi kontakti</translation>
+<translation id="3334729583274622784">Promijeniti datotečni nastavak?</translation>
 <translation id="3341058695485821946">Pogledajte količinu ušteđenih podataka</translation>
 <translation id="3350687908700087792">Zatvori sve anonimne kartice</translation>
 <translation id="3353615205017136254">Jednostavnu stranicu pruža Google. Dodirnite gumb Učitaj izvornu stranicu da biste učitali izvornu stranicu.</translation>
@@ -670,6 +674,7 @@ Prije nego što uđete u VR, provjerite je li ta web-lokacija pouzdana.</transla
 <translation id="5962718611393537961">Dodirnite da biste saželi</translation>
 <translation id="6000066717592683814">Zadrži Google</translation>
 <translation id="6005538289190791541">Predložena zaporka</translation>
+<translation id="6019358956729171834">Učitaj više…</translation>
 <translation id="6036057147555329831">Dodatni ICU</translation>
 <translation id="6039379616847168523">Preskakanje na sljedeću karticu</translation>
 <translation id="6040143037577758943">Zatvori</translation>

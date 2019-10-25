@@ -248,6 +248,10 @@ public class VariationsSeedLoader {
             }
             return info;
         }
+
+        public boolean isLoadedSeedFresh() {
+            return mSeedRequestState == AppSeedRequestState.SEED_FRESH;
+        }
     }
 
     // Connects to VariationsSeedServer service. Sends a file descriptor for our local copy of the
@@ -309,6 +313,10 @@ public class VariationsSeedLoader {
         return null;
     }
 
+    private boolean isLoadedSeedFresh() {
+        return mRunnable.isLoadedSeedFresh();
+    }
+
     @VisibleForTesting // Overridden by tests to wait until all work is done.
     protected void onBackgroundWorkFinished() {}
 
@@ -363,6 +371,9 @@ public class VariationsSeedLoader {
     // variations.
     public void finishVariationsInit() {
         SeedInfo seed = getSeedBlockingAndLog();
-        if (seed != null) AwVariationsSeedBridge.setSeed(seed);
+        if (seed != null) {
+            AwVariationsSeedBridge.setSeed(seed);
+            AwVariationsSeedBridge.setLoadedSeedFresh(isLoadedSeedFresh());
+        }
     }
 }

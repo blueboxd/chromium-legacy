@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
 
@@ -45,7 +45,7 @@ class GoogleAssistantHandler : public ::settings::SettingsPageUIHandler,
 
   Profile* const profile_;
 
-  assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
+  mojo::Remote<assistant::mojom::AssistantSettingsManager> settings_manager_;
 
   bool pending_hotword_update_ = false;
 

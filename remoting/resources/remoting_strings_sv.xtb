@@ -314,6 +314,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="837021510621780684">Från den här datorn</translation>
 <translation id="8383794970363966105">Om du vill använda Chromoting måste du lägga till ett Google-konto på enheten.</translation>
 <translation id="8386846956409881180">Värden konfigurerades med ogiltiga användaruppgifter för OAuth.</translation>
+<translation id="8397385476380433240">Bevilja behörighet åt <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Välj vilken session du vill starta i Chrome Remote Desktop-miljön. (Observera att vissa sessionstyper kanske inte har stöd för att köras i Chrome Remote Desktop och på den lokala konsolen samtidigt.)</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8445362773033888690">Visa i Google Play Butik</translation>

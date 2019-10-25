@@ -314,6 +314,7 @@ Jeśli opcja „<ph name="SERVICE_SCRIPT_NAME" />” jest już zaznaczona, odzna
 <translation id="837021510621780684">Z tego komputera</translation>
 <translation id="8383794970363966105">Aby użyć funkcji Chromoting, musisz dodać do urządzenia konto Google.</translation>
 <translation id="8386846956409881180">Host został skonfigurowany z nieprawidłowymi danymi logowania protokołu OAuth.</translation>
+<translation id="8397385476380433240">Przyznaj uprawnienia usłudze <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Wybierz sesję, którą chcesz uruchomić w środowisku Pulpitu zdalnego Chrome. Uwaga: niektóre typy sesji nie mogą działać jednocześnie w Pulpicie zdalnym Chrome i na konsoli lokalnej.</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8445362773033888690">Wyświetl w Sklepie Google Play</translation>

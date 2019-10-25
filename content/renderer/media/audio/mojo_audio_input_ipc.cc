@@ -21,8 +21,7 @@ MojoAudioInputIPC::MojoAudioInputIPC(
     StreamAssociatorCB stream_associator)
     : source_params_(source_params),
       stream_creator_(std::move(stream_creator)),
-      stream_associator_(std::move(stream_associator)),
-      stream_client_binding_(this) {
+      stream_associator_(std::move(stream_associator)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(stream_creator_);
   DCHECK(stream_associator_);
@@ -82,10 +81,8 @@ media::AudioProcessorControls* MojoAudioInputIPC::GetProcessorControls() {
 void MojoAudioInputIPC::CloseStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_ = nullptr;
-  if (factory_client_receiver_.is_bound())
-    factory_client_receiver_.reset();
-  if (stream_client_binding_.is_bound())
-    stream_client_binding_.Unbind();
+  factory_client_receiver_.reset();
+  stream_client_receiver_.reset();
   stream_.reset();
   processor_controls_.reset();
 }
@@ -110,20 +107,21 @@ void MojoAudioInputIPC::StopEchoCancellationDump() {
 
 void MojoAudioInputIPC::StreamCreated(
     mojo::PendingRemote<media::mojom::AudioInputStream> stream,
-    media::mojom::AudioInputStreamClientRequest stream_client_request,
+    mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+        stream_client_receiver,
     media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
     bool initially_muted,
     const base::Optional<base::UnguessableToken>& stream_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_);
   DCHECK(!stream_);
-  DCHECK(!stream_client_binding_.is_bound());
+  DCHECK(!stream_client_receiver_.is_bound());
 
   UMA_HISTOGRAM_TIMES("Media.Audio.Render.InputDeviceStreamCreationTime",
                       base::TimeTicks::Now() - stream_creation_start_time_);
 
   stream_.Bind(std::move(stream));
-  stream_client_binding_.Bind(std::move(stream_client_request));
+  stream_client_receiver_.Bind(std::move(stream_client_receiver));
 
   // Keep the stream_id, if we get one. Regular input stream have stream ids,
   // but Loopback streams do not.

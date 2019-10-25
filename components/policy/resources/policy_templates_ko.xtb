@@ -137,19 +137,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       판매 모드의 로그인 화면에 화면 보호기가 표시되기 전에 비활성화 상태의 지속 시간을 결정합니다.
 
       이 정책 값은 밀리초 단위로 지정되어야 합니다.</translation>
-<translation id="1141767714195601945">이 정책은 Internet Explorer에서 Chrome 명령줄 매개변수를 제어합니다.
-
-      Internet Explorer용 '이전 브라우저 지원' 추가 기능이 설치되지 않았으면 이 정책은 적용되지 않습니다.
-
-      이 정책이 설정되어 있지 않으면 Internet Explorer는 URL만 명령줄 매개변수로 Chrome에 전달합니다.
-
-      이 정책이 문자열 목록으로 설정되어 있으면 문자열이 공백으로 이어져 결합된 후 Chrome에 명령줄 매개변수로 전달됩니다.
-
-      구성요소에 ${url}이 있으면 열릴 페이지의 URL로 대체됩니다.
-
-      구성요소에 ${url}이 없으면 URL이 명령줄 끝에 추가됩니다.
-
-      환경 변수는 확장됩니다. Windows의 경우 %ABC%가 ABC 환경 변수의 값으로 대체됩니다.</translation>
 <translation id="1151353063931113432">이 사이트에서 이미지 허용</translation>
 <translation id="1152117524387175066">부팅 시 기기의 개발자 스위치 상태를 보고합니다.
 
@@ -301,17 +288,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       설정이 사용 중지되거나 설정되지 않으면 사용자가 비밀번호를 변경하도록 비밀번호 보호 서비스에서 사용자를 https://myaccount.google.com 페이지로 안내합니다.
       이 정책은 <ph name="MS_AD_NAME" /> 도메인에 연결된 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴스에서만 사용할 수 있습니다.</translation>
 <translation id="1456822151187621582">Windows(<ph name="PRODUCT_OS_NAME" /> 클라이언트):</translation>
-<translation id="1458547592473993238">이 정책은 지원 중단되었습니다. <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />을(를) 사용하여 Flash 플러그인의 사용 가능 여부를 제어하고 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" />을(를) 사용하여 PDF 파일을 열 때 통합 PDF 뷰어를 사용할지 여부를 제어하시기 바랍니다.
-
-      <ph name="PRODUCT_NAME" />에서 사용 중지할 플러그인 목록을 지정하고 사용자가 이 설정을 변경하지 못하게 합니다.
-
-      와일드 카드 문자 '*'와 '?'는 임의의 문자 시퀀스를 매칭하는 데 사용됩니다. '*'는 임의 개수의 문자와 매칭하며 '?'는 선택적 단일 문자(즉, 0이나 하나의 문자)와 매칭합니다. 이스케이프 문자는 '\'이며 실제 '*', '?', 또는'\'를 의미하려는 경우 앞에 '\'를 넣으면 됩니다.
-
-      이 설정을 사용하면 지정된 플러그인 목록이 <ph name="PRODUCT_NAME" />에서 사용되지 않습니다. 플러그인은 'about:plugins'에서 사용 안함으로 표시되며 사용자가 이를 사용 설정할 수 없습니다.
-
-      이 정책은 EnabledPlugins 및 DisabledPluginsExceptions를 무시합니다.
-
-      이 정책이 설정되어 있지 않은 경우 사용자는 하드 코딩되었으며 호환되지 않는 위험한 구식 플러그인을 제외한 시스템에 설치된 모든 플러그인을 사용할 수 있습니다.</translation>
 <translation id="1464848559468748897"><ph name="PRODUCT_OS_NAME" /> 기기에서 멀티프로필 세션의 사용자 동작을 제어합니다.
 
       이 정책을 'MultiProfileUserBehaviorUnrestricted'로 설정한 경우 사용자는 멀티프로필 세션에서 기본 또는 보조 사용자가 될 수 있습니다.
@@ -478,12 +454,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       정책은 <ph name="PRODUCT_OS_NAME" />에서 서비스 약관을 다운로드할 수 있는 URL로 설정되어야 합니다. 서비스 약관은 일반 텍스트여야 하며 MIME 유형 text/plain으로 제공됩니다. 마크업은 허용되지 않습니다.</translation>
 <translation id="1750315445671978749">모든 다운로드 차단</translation>
 <translation id="1767673020408652620">검색창이 0 상태일 때 앱 추천을 사용 설정합니다.</translation>
-<translation id="17719159826324007">
-      이 정책을 ArcSession으로 설정하면 Android 시작 후 사용자가 로그아웃한 경우 기기가 강제로 재부팅됩니다.
-      '항상'으로 설정하면 사용자가 로그아웃할 때마다 기기가 강제로 재부팅됩니다.
-      정책을 설정하지 않으면 정책이 적용되지 않아 사용자가 로그아웃해도 강제로 재부팅하지 않습니다. 이는 '사용 안함'으로 설정했을 때도 마찬가지입니다.
-      이 정책은 연결되지 않은 사용자에게만 영향을 미칩니다.
-      </translation>
 <translation id="1781356041596378058">이 정책은 Android 개발자 옵션 액세스 권한도 제어합니다. 이 정책을 true로 설정하는 경우 사용자는 개발자 옵션에 액세스할 수 없습니다. 이 정책을 false로 설정하거나 설정하지 않은 채로 두는 경우 Android 설정 앱에서 빌드 번호를 7번 탭하면 개발자 옵션에 액세스할 수 있습니다.</translation>
 <translation id="1793346220873697538">기본적으로 PIN 인쇄를 사용하지 않습니다.</translation>
 <translation id="1797233582739332495">사용자에게 재실행이 필요하다는 메시지를 반복하여 표시</translation>
@@ -1287,32 +1257,12 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="3038323923255997294"><ph name="PRODUCT_NAME" /> 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="3046192273793919231">온라인 상태를 모니터링하기 위해 관리 서버에 네트워크 패킷을 전송합니다.</translation>
 <translation id="3047732214002457234">Chrome 정리도구가 Google에 데이터를 보고하는 방식 관리</translation>
-<translation id="304775240152542058">대체 브라우저로 실행될 명령줄 매개변수를 제어하는 정책입니다.
-
-      이 정책이 설정되어 있지 않으면 URL만 명령줄 매개변수로 전달됩니다.
-
-      이 정책이 문자열 목록으로 설정되어 있으면 각 문자열이 대체 브라우저에 별도의 명령줄 매개변수로 전달됩니다. Windows의 경우 매개변수는 공백과 합쳐집니다. Mac OS X 및 Linux의 경우 매개변수에 공백이 포함될 수 있으며 하나의 매개변수로 처리됩니다.
-
-      구성요소에 ${url}이 포함되어 있으면 열릴 페이지의 URL로 대체됩니다.
-
-      ${url}이 포함된 구성요소가 없으면 URL이 명령줄 마지막에 추가됩니다.
-
-      환경 변수는 확장됩니다. Windows의 경우 %ABC%가 ABC 환경 변수의 값으로 대체됩니다. Mac OS X 및 Linux의 경우 ${ABC}는 ABC 환경 변수의 값으로 대체됩니다.</translation>
 <translation id="3048744057455266684">이 정책이 설정되어 있고 검색주소창에서 제안된 검색 URL의 검색 문자열 또는 일부 식별자에 이 매개변수가 포함되어 있으면 추천 검색어가 원시 검색 URL 대신 검색어 및 검색 공급자를 표시합니다.
 
           이 정책은 선택사항입니다. 설정하지 않으면 검색어가 대체됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="306887062252197004">이 정책은 WebDriver 기능 사용자가 작업을 방해할 수 있는 정책을
-      재정의할 수 있도록 해 줍니다.
-
-      현재 이 정책을 적용하면 SitePerProcess 및 IsolateOrigins 정책이 사용 중지됩니다.
-
-      정책을 사용 설정하면 WebDriver가 호환되지 않는 정책을 재정의할 수
-      있습니다.
-      정책을 사용 중지하거나 설정하지 않으면 WebDriver가 호환되지 않는
-      정책을 재정의할 수 없습니다.</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" />에서 WPAD(Web Proxy Auto-Discovery) 최적화를 사용 중지하도록 허용합니다.
 
       이 정책이 false로 설정된 경우 WPAD 최적화가 사용 중지되어 <ph name="PRODUCT_NAME" />이(가) DNS 기반 WPAD 서버를 더 오래 기다리게 됩니다. 이 정책이 설정되지 않았거나 사용 설정된 경우 WPAD 최적화가 사용 설정됩니다.
@@ -2100,13 +2050,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="4347908978527632940">true로 설정되어 있고 사용자가 관리 대상 사용자인 경우 다른 Android 앱에서 콘텐츠 제공업체를 통해 사용자의 웹 제한사항을 검색할 수 있습니다.
 
           false로 설정되어 있거나 설정되어 있지 않은 경우 콘텐츠 제공업체에서 정보를 제공하지 않습니다.</translation>
-<translation id="435461861920493948"><ph name="PRODUCT_NAME" />에서 계정 공개 상태를 관리하는 데 사용되는 패턴 목록이 포함되어 있습니다.
-
-      <ph name="PRODUCT_NAME" />에서의 계정 공개 상태를 결정하기 위해 기기에 있는 모든 Google 계정을 이 정책에 저장되어 있는 패턴과 비교합니다. 계정 이름이 목록에 있는 패턴과 일치하면 계정이 표시됩니다. 그렇지 않으면 계정이 표시되지 않습니다.
-
-      와일드 카드 문자 '*'는 0개 이상의 임의의 문자를 비교하는 데 사용됩니다. 이스케이프 문자는 '\'이며 실제 '*' 또는 '\' 문자를 비교하려면 이 문자 앞에 '\'를 넣을 수 있습니다.
-
-      이 정책이 설정되어 있지 않으면 기기에 있는 모든 Google 계정이 <ph name="PRODUCT_NAME" />에 표시됩니다.</translation>
 <translation id="4360826270668210664">이 정책을 설정하면 원격 액세스 호스트에서 연결을 위해 인증 클라이언트에 이 URL로부터 인증 토큰을 받을 것을 요구합니다. RemoteAccessHostTokenValidationUrl과 함께 사용되어야 합니다.
 
           이 기능은 현재 서버 측에서 사용 중지되어 있습니다.</translation>
@@ -2550,7 +2493,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5219844027738217407">Android 앱의 경우 이 정책은 마이크에만 영향을 줍니다. 이 정책이 true로 설정되면 마이크는 모든 앱에서 음소거되며 예외는 없습니다.</translation>
 <translation id="5220124265517241823">업로드한 파일, 클립보드에서 붙여넣은 데이터 또는 드래그 앤 드롭한 데이터가 민감한 정보 보호 규칙을 위반하는지 검사하지 않아도 되는 URL 패턴의 목록입니다.  이 정책은 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />이(가) 사용 설정된 경우에만 사용됩니다.
 
-      정책이 설정되지 않거나 빈 URL 패턴 목록으로 설정되면 모든 콘텐츠가 민감한 정보 보호 규칙을 위반하는지 검사합니다.
+      정책이 설정되지 않거나 빈 URL 패턴 목록으로 설정되면 모든 콘텐츠에 대해 민감한 정보 보호 규칙을 위반하는지 검사합니다.
 
       URL 패턴의 형식은 https://www.chromium.org/administrators/url-blacklist-filter-format에 설명되어 있는 'URLBlacklist' 정책과 동일합니다.
       </translation>
@@ -2567,17 +2510,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5236882091572996759">이 정책이 True로 설정되어 있거나 설정되어 있지 않으면 오디오가 재생되는 동안 사용자가 유휴 상태인 것으로 간주되지 않습니다. 이로 인해 유휴 시간제한에 도달하거나 유휴 작업이 실행되지 않습니다. 하지만 설정된 시간제한 이후에는 오디오 활동과 관계없이 화면 어둡게 하기, 화면 꺼짐 및 화면 잠금이 실행됩니다.
 
           이 정책이 False로 설정되어 있으면 오디오가 활동해도 사용자가 유휴 상태인 것으로 간주됩니다.</translation>
-<translation id="5246700266104954355">이 정책은 지원이 중단되었습니다. <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />을(를) 사용하여 Flash 플러그인의 사용 가능 여부를 제어하고 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" />을(를) 사용하여 PDF 파일을 열 때 통합 PDF 뷰어를 사용할지 여부를 제어하시기 바랍니다.
-
-      <ph name="PRODUCT_NAME" />에서 사용할 플러그인 목록을 지정하고 사용자가 이 설정을 변경하지 못하게 합니다.
-
-      와일드 카드 문자 '*'와 '?'는 임의의 문자 시퀀스를 매칭하는 데 사용됩니다. '*'는 임의 개수의 문자와 매칭하며 '?'는 선택적 단일 문자(즉, 0이나 하나의 문자)와 매칭합니다. 이스케이프 문자는 '\'이며 실제 '*', '?', 또는'\'를 의미하려는 경우 앞에 '\'를 넣으면 됩니다.
-
-      지정된 플러그인 목록은 설치하는 경우 <ph name="PRODUCT_NAME" />에서 항상 사용됩니다. 플러그인은 'about:plugins'에서 사용으로 표시되며 사용자가 이를 사용 중지할 수 없습니다.
-
-      이 정책은 DisabledPlugins 및 DisabledPluginsExceptions를 무시합니다.
-
-      이 정책을 설정하지 않으면 사용자가 시스템에 설치된 모든 플러그인을 사용 중지할 수 있습니다.</translation>
 <translation id="5247006254130721952">위험한 다운로드 차단</translation>
 <translation id="5248863213023520115"><ph name="MS_AD_NAME" /> 서버에서 Kerberos 티켓을 요청할 때 허용되는 암호화 유형을 설정합니다.
 
@@ -2638,11 +2570,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5362531528507578966">기본 배경 그래픽 인쇄 모드를 재정의합니다.</translation>
 <translation id="5365476955714838841">대체 브라우저의 명령줄 매개변수입니다.</translation>
 <translation id="5365946944967967336">툴바에 홈 버튼 표시</translation>
-<translation id="5366745336748853475">사이트에서 인증서를 요청하는 경우 SAML 플로를 호스팅하는 프레임의 로그인 화면에서 자동으로 클라이언트 인증서가 선택된 사이트를 지정하는 URL 패턴 목록을 지정하게 합니다. 사용 사례는 SAMP IdP로 기기 전체 인증서가 제출되게 설정하는 것입니다.
-
-      이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 { "pattern": "$URL_PATTERN", "filter" : $FILTER }형태여야 하며, 여기에서 $URL_PATTERN은 콘텐츠 설정 패턴입니다. $FILTER에서는 브라우저에서 자동으로 선택될 클라이언트 인증서가 제한됩니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. $FILTER의 형태가 { "ISSUER": { "CN": "$ISSUER_CN" } }인 경우 추가로 CommonName $ISSUER_CN으로 된 인증서에서 발행된 클라이언트 인증서만 선택됩니다. $FILTER가 빈 사전 {}인 경우 클라이언트 인증서 선택에 추가 제한은 없습니다.
-
-      이 정책이 설정되지 않으면 어떠한 사이트에서도 자동으로 선택되지 않습니다.</translation>
 <translation id="5366977351895725771">false로 설정하면 이 사용자에 의한 관리 대상 사용자 생성이 사용 중지됩니다. 기존 관리 대상 사용자는 계속 사용할 수 있습니다.
 
           true로 설정하거나 설정하지 않으면 이 사용자가 관리 대상 사용자를 생성하고 관리할 수 있습니다.</translation>
@@ -2754,11 +2681,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책을 설정하지 않은 경우 타사 쿠키가 사용하도록 설정되지만 사용자가 설정을 변경할 수 있습니다.</translation>
 <translation id="5442026853063570579">이 정책은 Android 개발자 옵션 액세스 권한도 제어합니다. 이 정책을 'DeveloperToolsDisallowed'(값 2)로 설정하는 경우 사용자는 개발자 옵션에 액세스할 수 없습니다. 이 정책을 다른 값으로 설정하거나 설정하지 않은 채로 두는 경우 사용자는 Android 설정 앱에서 빌드 번호를 7번 탭하여 개발자 옵션에 액세스할 수 있습니다.</translation>
-<translation id="544342220587994947">사이트에서 인증서를 요청하는 경우 <ph name="PRODUCT_NAME" />에서 자동으로 클라이언트 인증서를 선택해야 하는 사이트를 지정하는 URL 패턴 목록을 지정하도록 합니다.
-
-          이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 { "pattern": "$URL_PATTERN", "filter" : $FILTER } 형태여야 하며, 여기에서 $URL_PATTERN은 콘텐츠 설정 패턴입니다. $FILTER에서는 브라우저에서 자동으로 선택될 클라이언트 인증서가 제한됩니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. 예를 들어 $FILTER 형태가 { "ISSUER": { "CN": "$ISSUER_CN" } }인 경우 추가로 CommonName $ISSUER_CN으로 된 인증서에서 발행된 클라이언트 인증서만 선택됩니다. $FILTER가 'ISSUER' 및 'SUBJECT' 섹션을 포함하는 경우 클라이언트 인증서가 선택되려면 모든 조건을 충족해야 합니다. $FILTER가 조직('O')을 지정하는 경우 인증서가 선택되려면 지정된 값과 일치하는 조직이 인증서에 하나 이상 있어야 합니다. $FILTER가 조직 단위('OU')를 지정하는 경우 인증서가 선택되려면 지정된 값과 일치하는 조직 단위가 인증서에 하나 이상 있어야 합니다. $FILTER가 빈 사전 {}인 경우 클라이언트 인증서 선택에 추가 제한은 없습니다.
-
-          이 정책이 설정되지 않으면 어떠한 사이트에서도 자동으로 선택되지 않습니다.</translation>
 <translation id="5447306928176905178">메모리 정보(JS 더미 크기)를 페이지로 보고하기 사용(지원 중단됨)</translation>
 <translation id="5457065417344056871">브라우저에서 게스트 모드 사용</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" />이(가) 설치되면 기본 HTML 렌더러를 설정할 수 있습니다.
@@ -2781,19 +2703,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5475361623548884387">인쇄 사용</translation>
 <translation id="547601067149622666">방해가 되는 광고가 포함된 사이트에서 광고 허용 안 함</translation>
 <translation id="5483065054530244863">로컬 트러스트 앵커에서 발행된 SHA-1 서명 인증서를 허용합니다.</translation>
-<translation id="5483777239978559943">이 정책은 지원 중단되었습니다. <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />을(를) 사용하여 플래시 플러그인의 사용 가능 여부를 제어하고 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" />을(를) 사용하여 PDF 파일을 열 때 통합 PDF 뷰어를 사용할지 여부를 제어하시기 바랍니다.
-
-      <ph name="PRODUCT_NAME" />에서 사용자가 사용 또는 사용 중지할 수 있는 플러그인 목록을 지정합니다.
-
-      와일드 카드 문자 '*'와 '?'는 임의의 문자 시퀀스를 매칭하는 데 사용됩니다. '*'는 임의 개수의 문자와 매칭하며 '?'는 선택적 단일 문자(즉, 0이나 하나의 문자)와 매칭합니다. 이스케이프 문자는 '\'이며 실제 '*', '?', 또는'\'를 의미하려는 경우 앞에 '\'를 넣으면 됩니다.
-
-      이 설정을 사용하면 지정된 플러그인 목록이 <ph name="PRODUCT_NAME" />에서 사용됩니다. 사용자는 플러그인이 DisabledPlugins의 패턴과 일치하더라도 'about:plugins'에서 플러그인을 사용하거나 사용 중지할 수 있습니다. 또한 DisabledPlugins, DisabledPluginsExceptions, EnabledPlugins의 모든 패턴과 일치하지 않는 경우에도 해당 플러그인을 사용하거나 사용 중지할 수 있습니다.
-
-      이 정책은 'DisabledPlugins' 목록에 모든 플러그인을 사용 중지하는 '*' 또는 모든 자바 플러그인을 사용 중지하는 '*Java*'와 같은 와일드 카드 항목을 포함하지만 관리자가 'IcedTea Java 2.3'과 같은 특정 버전을 사용하도록 설정할 수 있게 하는 엄격한 플러그인 차단을 위한 것입니다. 특정 버전은 이 정책에 지정할 수 있습니다.
-
-      플러그인 이름 및 플러그인의 그룹명은 모두 제외해야 합니다. 각 플러그인 그룹은 about:plugins의 별도 섹션에 표시되며 각 섹션에는 하나 이상의 플러그인이 포함될 수 있습니다. 예를 들어 'Shockwave Flash' 플러그인은 'Adobe Flash Player' 그룹에 포함되며 해당 플러그인이 블랙리스트에서 제외되어야 하는 경우 두 이름이 모두 예외 목록에 포함되어 있어야 합니다.
-
-      이 정책을 설정하지 않으면 'DisabledPlugins'의 패턴과 일치하는 모든 플러그인이 잠겨 사용 중지되며 사용자가 다시 사용할 수 없습니다.</translation>
 <translation id="5498045818698736356">사용자가 개입하지 않아도 자동 설치되며 사용자가 제거하거나 사용 중지할 수 없는 웹사이트의 목록을 지정합니다.
 
       정책 목록의 각 항목은 필수 구성요소 'url'과 두 개의 선택적 구성요소인 'default_launch_container' 및 'create_desktop_shortcut'으로 구성된 개체입니다. 'url'은 설치할 웹 앱의 URL이어야 하며 'launch_container'는 웹 앱이 설치된 뒤 어떻게 열릴지 표시하는 'window' 또는 'tab'이어야 합니다. 바탕화면 바로가기가 Linux 및 Windows에서 만들어져야 하는 경우 'create_desktop_shortcut'이 true여야 합니다. 'default_launch_container'가 생략된 경우, 앱이 기본적으로 탭에서 열립니다. 'default_launch_container'의 값과 관계없이 사용자는 앱이 어떤 컨테이너에서 열릴지 변경할 수 있습니다. 'create_desktop_shortcuts'가 생략된 경우 바탕화면 바로가기가 생성되지 않습니다. Chrome OS 런처에 앱 고정하기와 관련된 <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> 정책을 참조하세요.</translation>
@@ -3407,13 +3316,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6810445994095397827">이 사이트에서 자바스크립트 차단</translation>
 <translation id="6813263547126514821">전원 및 종료</translation>
 <translation id="681446116407619279">지원되는 인증 스키마</translation>
-<translation id="6816212867679667972">DHCP 요청에서 사용된 기기의 호스트 이름을 결정합니다.
-
-      정책이 비어있지 않은 문자열로 설정된 경우 해당 문자열이 DHCP 요청 중에 기기 호스트 이름으로 사용됩니다.
-
-      문자열에는 변수 ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME}이 포함될 수 있으며, 이는 호스트 이름으로 사용되기 전에 기기의 값으로 대체됩니다. 그 결과로 나오는 대체값은 유효한 호스트 이름이어여 합니다(RFC 1035, 섹션 3.1 준수).
-
-      이 정책이 설정되어 있지 않거나 대체 후 값이 유효한 호스트 이름이 아닌 경우 DHCP 요청에서 어떠한 호스트 이름도 설정되지 않습니다. </translation>
 <translation id="6833988859168635883">시작, 홈페이지, 새 탭 페이지</translation>
 <translation id="6835883744948188639">사용자에게 재실행하는 것이 좋다는 메시지를 반복하여 표시</translation>
 <translation id="683688607121170501">이 설정은 사용자가 <ph name="PRODUCT_OS_NAME" /> 기기에 로그인한 후 브라우저 창의 콘텐츠 영역 및 Android 애플리케이션에서 Google 계정 간에 전환하도록 허용합니다.
@@ -3674,17 +3576,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       <ph name="ANDROID_VERSION" /> 이상에서는 DNS-over-TLS가 활성화된 경우 <ph name="PRODUCT_NAME" />에서 안전하지 않은 DNS 요청을 전송하지 않습니다.
 
       정책이 설정되지 않으면 브라우저에서 사용자의 구성된 시스템 리졸버와 연결된 리졸버로 DNS-over-HTTPS 요청을 전송할 수 있습니다.</translation>
-<translation id="7158064522994309072">대체 브라우저에서 URL을 열 때 사용하는 명령어를 제어하는 정책입니다.
-
-      이 정책이 설정되어 있지 않으면 Windows에서는 Internet Explorer 또는 Mac OS X에서 Safari 등 플랫폼별 기본값이 사용됩니다. Linux에서는 이 정책이 설정되어 있지 않으면 대체 브라우저가 실행되지 않습니다.
-
-      이 정책이 ${ie}, ${firefox}, ${safari}, ${opera} 중 하나로 설정되어 있으면
-      정책에서 설정한 브라우저가 실행됩니다(설치되어 있는 경우). ${ie}는 Windows에서,
-      ${safari}는 Windows 및 Mac OS X에서만 사용할 수
-      있습니다.
-
-      이 정책이 파일 경로로 설정되어 있으면 설정된 파일이 실행 파일로
-      사용됩니다.</translation>
 <translation id="7167436895080860385">사용자가 비밀번호 관리자에 비밀번호를 표시할 수 있도록 허용(지원 중단됨)</translation>
 <translation id="7173856672248996428">임시 프로필</translation>
 <translation id="717630378807352957">설정 파일의 모든 프린터 허용</translation>
@@ -3866,11 +3757,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="7434202861148928348">원격 액세스 클라이언트에 필요한 도메인 이름을 설정합니다.</translation>
 <translation id="7443616896860707393">교차 도메인 HTTP 기본 인증 프롬프트</translation>
 <translation id="7448430478749155471">로그인 화면에서 텍스트 읽어주기 사용</translation>
-<translation id="7454519673779830548">사전 완성된 Kerberos 계정을 추가합니다. Kerberos 사용자 인증 정보가 로그인 사용자 인증 정보와 일치하는 경우, '${{LOGIN_EMAIL}}' 및 '${{PASSWORD}}'를 주 구성원 및 비밀번호로 지정하여 로그인 사용자 인증 정보를 재사용하도록 계정을 구성할 수 있습니다. 이렇게 하면 2단계 인증이 구성된 경우가 아닌 이상 Kerberos 티켓을 자동으로 가져올 수 있습니다. 이 정책을 통해 추가된 계정은 사용자가 수정할 수 없습니다.
-
-          이 정책이 사용 설정되면 정책에서 정의된 계정 목록에 Kerberos 계정 설정에 추가됩니다.
-
-          이 정책이 사용 중지되거나 설정되지 않으면 Kerberos 계정 설정에 계정이 추가되지 않으며 이전에 정책을 통해 추가된 모든 계정이 삭제됩니다. '사용자가 Kerberos 계정을 추가할 수 있음' 정책이 사용 설정되어 있으면 사용자가 계정을 직접 추가할 수 있습니다.</translation>
 <translation id="7458437477941640506">OS 버전이 대상 버전보다 높은 경우 대상 버전으로 롤백하지 않습니다. 이 경우 업데이트도 사용 중지됩니다.</translation>
 <translation id="7464991223784276288">일치하는 URL의 쿠키를 현재 세션으로 제한</translation>
 <translation id="7469554574977894907">추천 검색어 사용</translation>
@@ -4859,15 +4745,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="9217154963008402249">네트워크 패킷 모니터링 빈도</translation>
 <translation id="922540222991413931">확장 프로그램, 앱, 사용자 스크립트 설치 소스 등 설정</translation>
 <translation id="924557436754151212">처음 실행 시 기본 브라우저에서 저장된 비밀번호 가져오기</translation>
-<translation id="926146562923985266">이 정책은 Internet Explorer로부터 전환할 때 <ph name="PRODUCT_NAME" />에서 URL을 여는 데 사용되는 명령을 제어합니다.
-
-      Internet Explorer용 '이전 브라우저 지원' 추가 기능이 설치되지 않았으면 이 정책은 적용되지 않습니다.
-
-      이 정책이 설정되어 있지 않으면 Internet Explorer에서 <ph name="PRODUCT_NAME" />을(를) 실행할 때 Internet Explorer에서 <ph name="PRODUCT_NAME" />의 자체 실행 경로를 자동으로 감지합니다.
-
-      이 정책이 설정되어 있으면 Internet Explorer에서 <ph name="PRODUCT_NAME" />으로 전환 및 실행 시 <ph name="PRODUCT_NAME" />을(를) 실행하는 데 이 정책이 사용됩니다.
-
-      이 정책은 실행 파일 경로로 설정하거나 ${chrome}으로 설정하여 Chrome의 설치 위치를 자동으로 감지하게 할 수 있습니다.</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> 사용자 데이터 디렉터리 설정</translation>
 <translation id="943865157632139008"><ph name="PRODUCT_FRAME_NAME" />이(가) 설치될 때 기본 HTML 렌더러를 설정할 수 있습니다.
       기본 설정은 호스트 브라우저가 렌더링을 실행하도록 허용하지만 원하는 경우 기본 설정을 무시하고 <ph name="PRODUCT_FRAME_NAME" />이(가) HTML 페이지를 기본적으로 렌더링하도록 할 수 있습니다.</translation>

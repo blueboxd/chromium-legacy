@@ -320,6 +320,14 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  void SetShowNumericKeyboardForPassword(bool show_numeric_keyboard) {
+    em::BooleanPolicyProto* proto =
+        device_policy_->payload()
+            .mutable_device_show_numeric_keyboard_for_password();
+    proto->set_value(show_numeric_keyboard);
+    BuildAndInstallDevicePolicy();
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -863,6 +871,19 @@ TEST_F(DeviceSettingsProviderTest, DeviceLoginScreenSystemInfoEnforced) {
   SetSystemInfoEnforced(false);
   EXPECT_EQ(base::Value(false),
             *provider_->Get(kDeviceLoginScreenSystemInfoEnforced));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceShowNumericKeyboardForPassword) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceShowNumericKeyboardForPassword, nullptr);
+
+  SetShowNumericKeyboardForPassword(true);
+  EXPECT_EQ(base::Value(true),
+            *provider_->Get(kDeviceShowNumericKeyboardForPassword));
+
+  SetShowNumericKeyboardForPassword(false);
+  EXPECT_EQ(base::Value(false),
+            *provider_->Get(kDeviceShowNumericKeyboardForPassword));
 }
 
 }  // namespace chromeos

@@ -669,12 +669,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface displayTitleForURL:spec];
 }
 
-#pragma mark - Autofill Utilities (EG2)
-
-- (void)clearCreditCards {
-  [ChromeEarlGreyAppInterface clearCreditCards];
-}
-
 #pragma mark - Accessibility Utilities (EG2)
 
 - (void)verifyAccessibilityForCurrentScreen {

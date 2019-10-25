@@ -12,9 +12,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "media/base/video_util.h"
+#include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
-#include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_video_decoder_backend_stateless.h"
 

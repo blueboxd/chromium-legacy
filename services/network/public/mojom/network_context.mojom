@@ -1175,20 +1175,23 @@ interface NetworkContext {
   // See net::TransportSecurityState::DeleteDynamicDataForHost for more detail.
   DeleteDynamicDataForHost(string host) => (bool result);
 
-  // Copies the contents of this NetworkContext's HttpAuthCache and returns a
-  // key that can be used by LoadHttpAuthCache to restore the contents.
-  // The data referenced by the returned key is not associated with this
-  // NetworkContext, and can be loaded by any NetworkContext.
-  // If there is no corresponding LoadHttpAuthCache call, the saved
-  // HttpAuthCache data will leak.
+  // Copies the proxy entries of this NetworkContext's auth cache and
+  // returns a key that can be used by LoadHttpAuthCache to load them into
+  // another NetworkContext's auth cache. The data referenced by the
+  // returned key is not associated with this NetworkContext, so will outlast
+  // its destruction. If there is no corresponding LoadHttpAuthCache call, the
+  // saved HttpAuthCache data will leak.
   //
   // TODO(crbug.com/914082): Return a scoped handle that can automatically free
   // the cache when it goes out of scope.
-  SaveHttpAuthCache() => (mojo_base.mojom.UnguessableToken cache_key);
+  SaveHttpAuthCacheProxyEntries()
+      => (mojo_base.mojom.UnguessableToken cache_key);
 
-  // Loads an HttpAuthCache previously saved by SaveHttpAuthCache, and
-  // copies its contents into this NetworkContext's HttpAuthCache.
-  LoadHttpAuthCache(mojo_base.mojom.UnguessableToken cache_key) => ();
+  // Loads auth cache entries previously saved by SaveHttpAuthCacheProxyEntries,
+  // and copies them into this NetworkContext's HttpAuthCache. This may only be
+  // called once for each token returned by SaveHttpAuthCacheProxyEntries().
+  LoadHttpAuthCacheProxyEntries(mojo_base.mojom.UnguessableToken cache_key)
+      => ();
 
   // Adds an entry to the HttpAuthCache or FtpAuthCache (determined by whether
   // the |challenger| field within |challenge| is an ftp:// URL).

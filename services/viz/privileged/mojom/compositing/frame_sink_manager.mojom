@@ -119,7 +119,7 @@ interface FrameSinkManager {
 
   // Requests viz to notify |observer| whenever video activity is detected in
   // one of the clients. See viz::VideoDetector.
-  AddVideoDetectorObserver(VideoDetectorObserver observer);
+  AddVideoDetectorObserver(pending_remote<VideoDetectorObserver> observer);
 
   // Creates a FrameSinkVideoCapturer instance.
   CreateVideoCapturer(pending_receiver<FrameSinkVideoCapturer> receiver);

@@ -1872,7 +1872,6 @@ test("content_unittests") {
     "../common/service_manager/service_manager_connection_impl_unittest.cc",
     "../common/service_worker/service_worker_utils_unittest.cc",
     "../common/tab_switch_time_recorder_unittest.cc",
-    "../common/throttling_url_loader_unittest.cc",
     "../common/unique_name_helper_unittest.cc",
     "../common/webplugininfo_unittest.cc",
     "../public/browser/site_isolation_policy_unittest.cc",

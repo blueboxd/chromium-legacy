@@ -5,15 +5,16 @@
 #include "services/viz/public/cpp/compositing/copy_output_result_mojom_traits.h"
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace {
 
 // This class retains the SingleReleaseCallback of the CopyOutputResult that is
-// being sent over mojo. A TextureReleaserPtr that talks to this impl
-// object will be sent over mojo instead of the release_callback_ (which is not
-// serializable). Once the client calls Release, the release_callback_ will be
-// called. An object of this class will remain alive until the MessagePipe
+// being sent over mojo. A PendingRemote<TextureReleaser> that talks to this
+// impl object will be sent over mojo instead of the release_callback_ (which is
+// not serializable). Once the client calls Release, the release_callback_ will
+// be called. An object of this class will remain alive until the MessagePipe
 // attached to it goes away (i.e. StrongBinding is used).
 class TextureReleaserImpl : public viz::mojom::TextureReleaser {
  public:
@@ -30,10 +31,11 @@ class TextureReleaserImpl : public viz::mojom::TextureReleaser {
   std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
 };
 
-void Release(viz::mojom::TextureReleaserPtr ptr,
+void Release(mojo::PendingRemote<viz::mojom::TextureReleaser> pending_remote,
              const gpu::SyncToken& sync_token,
              bool is_lost) {
-  ptr->Release(sync_token, is_lost);
+  mojo::Remote<viz::mojom::TextureReleaser> remote(std::move(pending_remote));
+  remote->Release(sync_token, is_lost);
 }
 
 }  // namespace
@@ -133,17 +135,17 @@ StructTraits<viz::mojom::CopyOutputResultDataView,
 }
 
 // static
-viz::mojom::TextureReleaserPtr
+mojo::PendingRemote<viz::mojom::TextureReleaser>
 StructTraits<viz::mojom::CopyOutputResultDataView,
              std::unique_ptr<viz::CopyOutputResult>>::
     releaser(const std::unique_ptr<viz::CopyOutputResult>& result) {
   if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE)
-    return nullptr;
+    return mojo::NullRemote();
 
-  viz::mojom::TextureReleaserPtr releaser;
-  MakeStrongBinding(
+  mojo::PendingRemote<viz::mojom::TextureReleaser> releaser;
+  MakeSelfOwnedReceiver(
       std::make_unique<TextureReleaserImpl>(result->TakeTextureOwnership()),
-      MakeRequest(&releaser));
+      releaser.InitWithNewPipeAndPassReceiver());
   return releaser;
 }
 
@@ -195,14 +197,14 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
         return true;
       }
 
-      viz::mojom::TextureReleaserPtr releaser =
-          data.TakeReleaser<viz::mojom::TextureReleaserPtr>();
+      auto releaser =
+          data.TakeReleaser<mojo::PendingRemote<viz::mojom::TextureReleaser>>();
       if (!releaser)
         return false;  // Illegal to provide texture without Releaser.
 
       // Returns a result with a SingleReleaseCallback that will return
       // here and proxy the callback over mojo to the CopyOutputResult's
-      // origin via the TextureReleaserPtr.
+      // origin via a mojo::Remote<viz::mojom::TextureReleaser> remote.
       *out_p = std::make_unique<viz::CopyOutputTextureResult>(
           rect, *mailbox, *sync_token, *color_space,
           viz::SingleReleaseCallback::Create(

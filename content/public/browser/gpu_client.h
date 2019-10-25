@@ -9,13 +9,14 @@
 
 #include "components/viz/host/gpu_client.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/viz/public/mojom/gpu.mojom.h"
 
 namespace content {
 
 CONTENT_EXPORT
 std::unique_ptr<viz::GpuClient, base::OnTaskRunnerDeleter> CreateGpuClient(
-    viz::mojom::GpuRequest request,
+    mojo::PendingReceiver<viz::mojom::Gpu> receiver,
     viz::GpuClient::ConnectionErrorHandlerClosure connection_error_handler,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 

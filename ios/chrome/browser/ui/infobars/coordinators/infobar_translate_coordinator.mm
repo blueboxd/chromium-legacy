@@ -65,7 +65,8 @@
 - (void)translateInfoBarDelegate:(translate::TranslateInfoBarDelegate*)delegate
           didChangeTranslateStep:(translate::TranslateStep)step
                    withErrorType:(translate::TranslateErrors::Type)errorType {
-  // TODO(crbug.com/1014959): implement
+  // TODO(crbug.com/1014959): Update currentStep and call
+  // infobarWasAccepted:forWebState: if translate finished.
 }
 
 - (BOOL)translateInfoBarDelegateDidDismissWithoutInteraction:

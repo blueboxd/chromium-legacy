@@ -18,11 +18,14 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
+namespace blink {
+class ThrottlingURLLoader;
+}  // namespace blink
+
 namespace content {
 
 class BrowserContext;
 class ServiceWorkerVersion;
-class ThrottlingURLLoader;
 struct HttpResponseInfoIOBuffer;
 
 // Used only for ServiceWorkerImportedScriptUpdateCheck.
@@ -104,7 +107,7 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
       LoaderOnUI();
       ~LoaderOnUI();
 
-      std::unique_ptr<ThrottlingURLLoader> loader;
+      std::unique_ptr<blink::ThrottlingURLLoader> loader;
       network::mojom::URLLoaderClientPtr client;
     };
 

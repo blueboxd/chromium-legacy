@@ -377,6 +377,9 @@ id<GREYMatcher> SettingsPasswordSearchMatcher();
 // Returns a matcher for the profiles settings collection view.
 id<GREYMatcher> SettingsProfileMatcher();
 
+// Returns a matcher for the credit card settings collection view.
+id<GREYMatcher> SettingsCreditCardMatcher();
+
 // Returns a matcher for an autofill suggestion view.
 id<GREYMatcher> AutofillSuggestionViewMatcher();
 
@@ -427,6 +430,23 @@ id<GREYMatcher> SettingsProfileMatcher();
 
 // Returns a matcher for the ProfileTableView window.
 id<GREYMatcher> ManualFallbackProfileTableViewWindowMatcher();
+
+// Returns a matcher for the credit card icon in the keyboard accessory bar.
+id<GREYMatcher> ManualFallbackCreditCardIconMatcher();
+
+// Returns a matcher for the credit card table view in manual fallback.
+id<GREYMatcher> ManualFallbackCreditCardTableViewMatcher();
+
+// Returns a matcher for the button to open password settings in manual
+// fallback.
+id<GREYMatcher> ManualFallbackManageCreditCardsMatcher();
+
+// Returns a matcher for the button to add credit cards settings in manual
+// fallback.
+id<GREYMatcher> ManualFallbackAddCreditCardsMatcher();
+
+// Returns a matcher for the CreditCardTableView window.
+id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher();
 
 }  // namespace chrome_test_util
 

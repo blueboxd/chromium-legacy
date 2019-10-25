@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SHARING_SHARING_METRICS_H_
 #define CHROME_BROWSER_SHARING_SHARING_METRICS_H_
 
+#include <string>
+
 #include "base/time/time.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
@@ -162,5 +164,10 @@ void LogClickToCallUKM(content::WebContents* web_contents,
 
 // Records the size of the selected text in Shared Clipboard.
 void LogSharedClipboardSelectedTextSize(int text_size);
+
+// Logs the raw phone number length and the number of digits in it.
+void LogClickToCallPhoneNumberSize(const std::string& number,
+                                   SharingClickToCallEntryPoint entry_point,
+                                   bool send_to_device);
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

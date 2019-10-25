@@ -66,14 +66,14 @@ void AudioLoopbackStreamBroker::CreateStream(
     audio::mojom::StreamFactory* factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!observer_binding_.is_bound());
-  DCHECK(!client_request_);
+  DCHECK(!client_receiver_);
   DCHECK(source_);
 
   if (muter_)  // Mute the source.
     muter_->Connect(factory);
 
-  media::mojom::AudioInputStreamClientPtr client;
-  client_request_ = mojo::MakeRequest(&client);
+  mojo::PendingRemote<media::mojom::AudioInputStreamClient> client;
+  client_receiver_ = client.InitWithNewPipeAndPassReceiver();
 
   mojo::PendingRemote<media::mojom::AudioInputStream> stream;
   mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver =
@@ -87,7 +87,7 @@ void AudioLoopbackStreamBroker::CreateStream(
       &AudioLoopbackStreamBroker::Cleanup, base::Unretained(this)));
 
   factory->CreateLoopbackStream(
-      std::move(stream_receiver), client.PassInterface(),
+      std::move(stream_receiver), std::move(client),
       observer_ptr.PassInterface(), params_, shared_memory_count_,
       source_->GetGroupID(),
       base::BindOnce(&AudioLoopbackStreamBroker::StreamCreated,
@@ -117,7 +117,7 @@ void AudioLoopbackStreamBroker::StreamCreated(
 
   DCHECK(renderer_factory_client_);
   renderer_factory_client_->StreamCreated(
-      std::move(stream), std::move(client_request_), std::move(data_pipe),
+      std::move(stream), std::move(client_receiver_), std::move(data_pipe),
       false /* |initially_muted|: Loopback streams are never muted. */,
       base::nullopt /* |stream_id|: Loopback streams don't have ids */);
 }

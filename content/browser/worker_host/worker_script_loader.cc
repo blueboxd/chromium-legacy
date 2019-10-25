@@ -282,7 +282,7 @@ bool WorkerScriptLoader::MaybeCreateLoaderForResponse(
     mojo::ScopedDataPipeConsumerHandle* response_body,
     network::mojom::URLLoaderPtr* response_url_loader,
     network::mojom::URLLoaderClientRequest* response_client_request,
-    ThrottlingURLLoader* url_loader) {
+    blink::ThrottlingURLLoader* url_loader) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(crbug/898755): This is odd that NavigationLoaderInterceptor::

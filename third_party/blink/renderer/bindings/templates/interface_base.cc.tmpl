@@ -92,7 +92,8 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% for world_suffix in attribute.world_suffixes %}
 {% if attribute.private_property_is_shared_between_getter_and_setter %}
 // Define a private property key shared between getter and setter.
-static int {{attribute.private_property_key_name}};
+static const V8PrivateProperty::SymbolKey
+    {{attribute.private_property_key_name}}("{{cpp_class}}#{{attribute.camel_case_name}}");
 {% endif %}
 
 {% if attribute.does_generate_getter %}

@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Twoje konto zostało zablokowane. Skontaktuj się z administratorem systemu.</translation>
 <translation id="2844349213149998955">Logowanie się na to urządzenie za pomocą konta osobistego jest niedozwolone. Zaloguj się za pomocą konta do pracy.</translation>
 <translation id="3306357053520292004">Inny użytkownik komputera został już dodany za pomocą tego konta. Zaloguj się, używając innego konta.</translation>
+<translation id="3926852373333893095">Logować się mogą tylko użytkownicy korzystający z G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Wystąpił błąd wewnętrzny.</translation>
 <translation id="4267670563222825190">Z tym kontem nie jest powiązany żaden użytkownik w domenie. Skontaktuj się z administratorem.</translation>
 <translation id="4300229033992784001">Zmieniło się hasło do Twojego konta. Aby zsynchronizować konto Windows z kontem do pracy, wpisz swoje aktualne hasło do systemu Windows.</translation>
 <translation id="4706454071748629324">Nie udało się dodać nowego użytkownika. Ten komputer zezwala na utworzenie tylko jednego użytkownika za pomocą konta do pracy.</translation>
 <translation id="6033715878377252112">Konto pomocnicze dostawcy danych uwierzytelniających Google do systemów Windows</translation>
 <translation id="6149399665202317746">Dostawca danych uwierzytelniających Google do systemów Windows</translation>
+<translation id="6239180560789153226">Na Twoim urządzeniu brakuje danych odzyskiwania. Zaloguj się, używając swojego konta Google do pracy.</translation>
 <translation id="6312494990035843744">Logowanie się w tej domenie za pomocą konta do pracy jest niedozwolone. Użyj innego konta.</translation>
 <translation id="6463752215771576050">Nie udało się zarejestrować tego komputera na potrzeby zarządzania w firmie.  Zaloguj się, używając innego konta do pracy.</translation>
 <translation id="6657585470893396449">Hasło</translation>
+<translation id="6937049691815837345">Twoje urządzenie wymaga zarejestrowania w Zarządzaniu urządzeniami. Zaloguj się, używając swojego konta Google do pracy.</translation>
 <translation id="7209941495304122410">Wpisz hasło do Windows</translation>
 <translation id="7357241217513796177">Upewnij się, że masz połączenie sieciowe, i spróbuj ponownie.</translation>
 <translation id="7536769223115622137">Dodaj konto do pracy</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Sesja wygasła. Zaloguj się, używając swojego konta Google do pracy.</translation>
 <translation id="9055998212250844221">Konto użytkownika utworzone przez dostawcę danych uwierzytelniających Google do systemów Windows</translation>
 <translation id="9135619837062629367">Logowanie się za pomocą tego konta jest niedozwolone. Użyj innego konta.</translation>
+<translation id="998002716857524853">Zaloguj się, używając swojego konta do pracy w G Suite.</translation>
 </translationbundle>

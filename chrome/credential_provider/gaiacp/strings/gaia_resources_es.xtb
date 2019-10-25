@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Parece que se ha bloqueado tu cuenta. Ponte en contacto con el administrador del sistema.</translation>
 <translation id="2844349213149998955">No se permite iniciar sesión con una cuenta personal en este dispositivo. Inicia sesión con una cuenta de trabajo.</translation>
 <translation id="3306357053520292004">Ya se ha registrado otro usuario en este ordenador con esta cuenta. Inicia sesión con otra cuenta.</translation>
+<translation id="3926852373333893095">Solo pueden iniciar sesión los usuarios de GSuite Enterprise.</translation>
 <translation id="4057329986137569701">Se ha producido un error interno.</translation>
 <translation id="4267670563222825190">No se ha encontrado ningún usuario de dominio para tu cuenta. Ponte en contacto con tu administrador.</translation>
 <translation id="4300229033992784001">La contraseña de tu cuenta ha cambiado. Introduce tu contraseña de Windows actual para sincronizar tu cuenta de Windows con la de trabajo.</translation>
 <translation id="4706454071748629324">No se ha podido añadir un nuevo usuario. En este ordenador solo se pueden crear usuarios con una cuenta de trabajo.</translation>
 <translation id="6033715878377252112">Asistente del proveedor de credenciales de Google para Windows</translation>
 <translation id="6149399665202317746">Proveedor de credenciales de Google para Windows</translation>
+<translation id="6239180560789153226">Falta información de recuperación en tu dispositivo. Inicia sesión con tu cuenta de trabajo de Google.</translation>
 <translation id="6312494990035843744">No se permite iniciar sesión con cuentas de trabajo en este dominio. Prueba con otra cuenta.</translation>
 <translation id="6463752215771576050">No se puede registrar este ordenador para que lo gestione la empresa.  Inicia sesión con otra cuenta de trabajo.</translation>
 <translation id="6657585470893396449">Contraseña</translation>
+<translation id="6937049691815837345">Debes registrar el dispositivo con la administración de dispositivos. Inicia sesión con tu cuenta de trabajo de Google.</translation>
 <translation id="7209941495304122410">Introduce la contraseña de Windows</translation>
 <translation id="7357241217513796177">Comprueba que tengas una conexión de red y vuelve a intentarlo.</translation>
 <translation id="7536769223115622137">Añadir cuenta de trabajo</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Tu sesión ha caducado. Inicia sesión con tu cuenta de trabajo de Google.</translation>
 <translation id="9055998212250844221">El proveedor de credenciales de Google para Windows ha creado esta cuenta de usuario</translation>
 <translation id="9135619837062629367">No se permite iniciar sesión con esta cuenta. Prueba con otra.</translation>
+<translation id="998002716857524853">Inicia sesión con tu cuenta de trabajo de GSuite.</translation>
 </translationbundle>

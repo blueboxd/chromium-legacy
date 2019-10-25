@@ -9,13 +9,19 @@
         z-index: 3;
       }
 
-      :host([is-print-preview]) {
+      :host-context([is-print-preview]) {
         --button-position-offset: 24px;
       }
 
-      :host([show-on-left_]) {
+      :host-context([is-print-preview][dir='ltr']),
+      :host-context([dir='rtl']) {
         left: 0;
         right: auto;
+      }
+
+      :host-context([is-print-preview][dir='rtl']) {
+        left: auto;
+        right: 0;
       }
 
       #zoom-buttons {
@@ -23,9 +29,15 @@
         right: var(--button-position-offset);
       }
 
-      :host([show-on-left_]) #zoom-buttons {
+      :host-context([is-print-preview][dir='ltr']) #zoom-buttons,
+      :host-context([dir='rtl']) #zoom-buttons {
         left: var(--button-position-offset);
         right: auto;
+      }
+
+      :host-context([is-print-preview][dir='rtl']) #zoom-buttons {
+        left: auto;
+        right: var(--button-position-offset);
       }
 
       viewer-zoom-button {
@@ -44,19 +56,13 @@
     </style>
     <div id="zoom-buttons">
       <viewer-zoom-button id="fit-button" on-fabclick="fitToggle" delay="100"
-          is-print-preview="[[isPrintPreview]]"
-          show-on-left="[[showOnLeft_]]"
           keyboard-navigation-active="[[keyboardNavigationActive_]]"
           icons="pdf:fullscreen-exit cr:fullscreen">
       </viewer-zoom-button>
       <viewer-zoom-button id="zoom-in-button" icons="pdf:add"
-          is-print-preview="[[isPrintPreview]]"
-          show-on-left="[[showOnLeft_]]"
           keyboard-navigation-active="[[keyboardNavigationActive_]]"
           on-fabclick="zoomIn" delay="50"></viewer-zoom-button>
       <viewer-zoom-button id="zoom-out-button" icons="pdf:remove"
-          is-print-preview="[[isPrintPreview]]"
-          show-on-left="[[showOnLeft_]]"
           keyboard-navigation-active="[[keyboardNavigationActive_]]"
           on-fabclick="zoomOut" delay="0"></viewer-zoom-button>
     </div>

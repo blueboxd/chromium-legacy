@@ -36,6 +36,9 @@ bool StructTraits<blink::mojom::blink::CloneableMessage::DataView,
   for (auto& blob : blobs) {
     out->message->BlobDataHandles().Set(blob->Uuid(), blob);
   }
+  if (!data.ReadSenderOrigin(&out->sender_origin)) {
+    return false;
+  }
   out->sender_stack_trace_id = v8_inspector::V8StackTraceId(
       static_cast<uintptr_t>(data.stack_trace_id()),
       std::make_pair(data.stack_trace_debugger_id_first(),
@@ -46,6 +49,12 @@ bool StructTraits<blink::mojom::blink::CloneableMessage::DataView,
   if (!data.ReadLockedAgentClusterId(&locked_agent_cluster_id))
     return false;
   out->locked_agent_cluster_id = locked_agent_cluster_id;
+
+  Vector<PendingRemote<blink::mojom::blink::NativeFileSystemTransferToken>>&
+      tokens = out->message->NativeFileSystemTokens();
+  if (!data.ReadNativeFileSystemTokens(&tokens)) {
+    return false;
+  }
   return true;
 }
 

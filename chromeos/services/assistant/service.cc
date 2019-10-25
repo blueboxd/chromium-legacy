@@ -216,12 +216,12 @@ void Service::BindSettingsManager(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (g_settings_manager_override) {
-    g_settings_manager_override->BindRequest(std::move(receiver));
+    g_settings_manager_override->BindReceiver(std::move(receiver));
     return;
   }
 
   DCHECK(assistant_manager_service_);
-  assistant_manager_service_->GetAssistantSettingsManager()->BindRequest(
+  assistant_manager_service_->GetAssistantSettingsManager()->BindReceiver(
       std::move(receiver));
 }
 

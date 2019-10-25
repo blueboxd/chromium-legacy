@@ -42,13 +42,17 @@ typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     ServiceWorkerContextCore* context,
     const GURL& script_url,
-    const blink::mojom::ServiceWorkerRegistrationOptions& options)
+    const blink::mojom::ServiceWorkerRegistrationOptions& options,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object)
     : context_(context),
       job_type_(REGISTRATION_JOB),
       scope_(options.scope),
       script_url_(script_url),
       worker_script_type_(options.type),
       update_via_cache_(options.update_via_cache),
+      outside_fetch_client_settings_object_(
+          std::move(outside_fetch_client_settings_object)),
       phase_(INITIAL),
       is_shutting_down_(false),
       is_promise_resolved_(false),
@@ -500,6 +504,9 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
                                     update_checker_->updated_script_url());
     update_checker_.reset();
   }
+
+  new_version()->set_outside_fetch_client_settings_object(
+      std::move(outside_fetch_client_settings_object_));
 
   new_version()->StartWorker(
       ServiceWorkerMetrics::EventType::INSTALL,

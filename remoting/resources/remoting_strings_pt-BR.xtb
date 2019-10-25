@@ -314,6 +314,7 @@ Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-a e marque
 <translation id="837021510621780684">Deste computador</translation>
 <translation id="8383794970363966105">Para usar o Chromoting, adicione uma Conta do Google a seu dispositivo.</translation>
 <translation id="8386846956409881180">O host está configurado com credenciais de OAuth inválidas.</translation>
+<translation id="8397385476380433240">Conceder permissão à <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Selecione uma sessão para ser iniciada no seu ambiente da Área de trabalho remota do Google Chrome. Alguns tipos de sessão podem não ser compatíveis com a execução simultânea na Área de trabalho remota do Google Chrome e no console local.</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8445362773033888690">Ver na Google Play Store</translation>

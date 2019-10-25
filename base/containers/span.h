@@ -468,32 +468,33 @@ constexpr void swap(span<T, X>& lhs, span<T, X>& rhs) noexcept {
 }
 
 // Type-deducing helpers for constructing a span.
-template <typename T>
+template <int&... ExplicitArgumentBarrier, typename T>
 constexpr span<T> make_span(T* data, size_t size) noexcept {
   return {data, size};
 }
 
-template <typename T>
+template <int&... ExplicitArgumentBarrier, typename T>
 constexpr span<T> make_span(T* begin, T* end) noexcept {
   return {begin, end};
 }
 
-template <typename T, size_t N>
+template <int&... ExplicitArgumentBarrier, typename T, size_t N>
 constexpr span<T, N> make_span(T (&array)[N]) noexcept {
   return array;
 }
 
-template <typename T, size_t N>
+template <int&... ExplicitArgumentBarrier, typename T, size_t N>
 constexpr span<T, N> make_span(std::array<T, N>& array) noexcept {
   return array;
 }
 
-template <typename T, size_t N>
+template <int&... ExplicitArgumentBarrier, typename T, size_t N>
 constexpr span<const T, N> make_span(const std::array<T, N>& array) noexcept {
   return array;
 }
 
-template <typename Container,
+template <int&... ExplicitArgumentBarrier,
+          typename Container,
           typename T = std::remove_pointer_t<
               decltype(base::data(std::declval<Container&>()))>,
           typename = internal::EnableIfSpanCompatibleContainer<Container&, T>>
@@ -502,6 +503,7 @@ constexpr span<T> make_span(Container& container) noexcept {
 }
 
 template <
+    int&... ExplicitArgumentBarrier,
     typename Container,
     typename T = std::remove_pointer_t<
         decltype(base::data(std::declval<const Container&>()))>,
@@ -511,6 +513,7 @@ constexpr span<T> make_span(const Container& container) noexcept {
 }
 
 template <size_t N,
+          int&... ExplicitArgumentBarrier,
           typename Container,
           typename T = std::remove_pointer_t<
               decltype(base::data(std::declval<Container&>()))>,
@@ -521,6 +524,7 @@ constexpr span<T, N> make_span(Container& container) noexcept {
 
 template <
     size_t N,
+    int&... ExplicitArgumentBarrier,
     typename Container,
     typename T = std::remove_pointer_t<
         decltype(base::data(std::declval<const Container&>()))>,
@@ -529,7 +533,7 @@ constexpr span<T, N> make_span(const Container& container) noexcept {
   return span<T, N>(container);
 }
 
-template <typename T, size_t X>
+template <int&... ExplicitArgumentBarrier, typename T, size_t X>
 constexpr span<T, X> make_span(const span<T, X>& span) noexcept {
   return span;
 }

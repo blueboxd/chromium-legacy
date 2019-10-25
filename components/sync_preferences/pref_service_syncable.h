@@ -13,11 +13,12 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/pref_value_store.h"
 #include "components/sync_preferences/pref_model_associator.h"
-#include "components/sync_preferences/synced_pref_observer.h"
+
+class PrefValueStore;
 
 namespace syncer {
 class SyncableService;
@@ -27,6 +28,7 @@ namespace sync_preferences {
 
 class PrefModelAssociatorClient;
 class PrefServiceSyncableObserver;
+class SyncedPrefObserver;
 
 // A PrefService that can be synced. Users are forced to declare
 // whether preferences are syncable or not when registering them to

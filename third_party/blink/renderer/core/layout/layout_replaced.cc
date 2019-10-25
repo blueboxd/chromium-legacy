@@ -929,11 +929,10 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
   const std::pair<LayoutUnit, LayoutUnit> fallback(
       layout_replaced.LogicalTop(), layout_replaced.LogicalBottom());
 
-  const NGPaintFragment* inline_container =
-      layout_replaced.IsInline()
-          ? NGPaintFragment::GetForInlineContainer(&layout_replaced)
-          : nullptr;
-  if (inline_container) {
+  const NGPhysicalBoxFragment* fragmentainer =
+      layout_replaced.IsInline() ? layout_replaced.ContainingBlockFlowFragment()
+                                 : nullptr;
+  if (fragmentainer) {
     // Step 1: Find the line box containing |layout_replaced|.
     const NGPaintFragment* inline_fragment =
         *NGPaintFragment::InlineFragmentsFor(&layout_replaced).begin();
@@ -954,7 +953,7 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
         line_box_container->InlineOffsetToContainerBox();
     const PhysicalSize line_box_size = line_box_container->Size();
     const LogicalOffset logical_offset = line_box_offset.ConvertToLogical(
-        writing_mode, text_direction, inline_container->Size(),
+        writing_mode, text_direction, fragmentainer->Size(),
         line_box_container->Size());
     const LogicalSize logical_size =
         line_box_size.ConvertToLogical(writing_mode);

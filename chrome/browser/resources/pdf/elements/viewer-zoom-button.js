@@ -40,16 +40,6 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    isPrintPreview: {
-      type: Boolean,
-      reflectToAttribute: true,
-    },
-
-    showOnLeft: {
-      type: Boolean,
-      reflectToAttribute: true,
-    },
-
     /** @type {?Array<string>} */
     tooltips: Array,
 

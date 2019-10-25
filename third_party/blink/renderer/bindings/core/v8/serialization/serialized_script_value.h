@@ -35,7 +35,9 @@
 
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -76,6 +78,8 @@ class CORE_EXPORT SerializedScriptValue
   using ImageBitmapContentsArray = Vector<scoped_refptr<StaticBitmapImage>, 1>;
   using TransferredWasmModulesArray = WTF::Vector<v8::CompiledWasmModule>;
   using MessagePortChannelArray = Vector<MessagePortChannel>;
+  using NativeFileSystemTokensArray =
+      Vector<mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>>;
 
   // Increment this for each incompatible change to the wire format.
   // Version 2: Added StringUCharTag for UChar v8 strings.
@@ -246,6 +250,9 @@ class CORE_EXPORT SerializedScriptValue
     return shared_array_buffers_contents_;
   }
   BlobDataHandleMap& BlobDataHandles() { return blob_data_handles_; }
+  NativeFileSystemTokensArray& NativeFileSystemTokens() {
+    return native_file_system_tokens_;
+  }
   MojoScopedHandleArray& MojoHandles() { return mojo_handles_; }
   ArrayBufferContentsArray& GetArrayBufferContentsArray() {
     return array_buffer_contents_array_;
@@ -264,6 +271,10 @@ class CORE_EXPORT SerializedScriptValue
     return !wasm_modules_.IsEmpty() ||
            !shared_array_buffers_contents_.IsEmpty();
   }
+
+  // Returns true after serializing script values that remote origins cannot
+  // access.
+  bool IsOriginCheckRequired() const;
 
  private:
   friend class ScriptValueSerializer;
@@ -331,6 +342,7 @@ class CORE_EXPORT SerializedScriptValue
   BlobDataHandleMap blob_data_handles_;
   MojoScopedHandleArray mojo_handles_;
   SharedArrayBufferContentsArray shared_array_buffers_contents_;
+  NativeFileSystemTokensArray native_file_system_tokens_;
 
   bool has_registered_external_allocation_;
 #if DCHECK_IS_ON()

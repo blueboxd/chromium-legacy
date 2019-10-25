@@ -37,11 +37,11 @@ struct WebFetchClientSettingsObject {
 
 #if INSIDE_BLINK
   explicit WebFetchClientSettingsObject(
-      const FetchClientSettingsObjectSnapshot& snapshot)
-      : referrer_policy(snapshot.GetReferrerPolicy()),
-        outgoing_referrer(KURL(snapshot.GetOutgoingReferrer())),
+      const FetchClientSettingsObject& settings_object)
+      : referrer_policy(settings_object.GetReferrerPolicy()),
+        outgoing_referrer(KURL(settings_object.GetOutgoingReferrer())),
         insecure_requests_policy(
-            snapshot.GetInsecureRequestsPolicy() &
+            settings_object.GetInsecureRequestsPolicy() &
                     blink::kUpgradeInsecureRequests
                 ? blink::mojom::InsecureRequestsPolicy::kUpgrade
                 : blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade) {}

@@ -22,6 +22,9 @@ class OmniboxTextChangeDelegate {
   virtual void OnDidChange(bool processing_user_input) = 0;
   // Called before the Omnibox text field finishes editing.
   virtual void OnWillEndEditing() = 0;
+  // Hide keyboard and call OnDidEndEditing.  This dismisses the keyboard and
+  // also finalizes the editing state of the omnibox.
+  virtual void EndEditing() = 0;
   // Called when the Omnibox text field returns. (The "go" button is tapped.)
   virtual void OnAccept() = 0;
   // Called when the Omnibox text field should copy.

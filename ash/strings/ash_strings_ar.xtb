@@ -24,7 +24,7 @@
 <translation id="1267032506238418139">تغيير الاختصار</translation>
 <translation id="1270290102613614947">تم إيقاف لوحة المفاتيح على الشاشة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
-<translation id="1275285675049378717">تشغيل <ph name="POWER_SOURCE" /></translation>
+<translation id="1275285675049378717">شحن <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437">يمكنك العودة يوم <ph name="COME_BACK_DAY_OF_WEEK" /> في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">إشارة ضعيفة</translation>
@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">تعيين اللغة</translation>
 <translation id="1962969542251276847">قفل الشاشة</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">مرحبًا، <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">إدخال نصي</translation>
 <translation id="1993072747612765854">مزيد من المعلومات حول آخر تحديث لتطبيق <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">إيقاف التشغيل</translation>
@@ -400,7 +401,7 @@
 <translation id="6727969043791803658">البلوتوث متصل، ومستوى شحن البطارية: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">تتبّع الأداء قيْد التفعيل</translation>
 <translation id="6752912906630585008">تمت إزالة سطح المكتب <ph name="REMOVED_DESK" /> ودمجه مع سطح المكتب <ph name="RECEIVE_DESK" />.</translation>
-<translation id="6777216307882431711">‏تشغيل أجهزة USB-C المتصلة</translation>
+<translation id="6777216307882431711">‏شحن أجهزة USB-C المتصلة</translation>
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
 <translation id="6820676911989879663">حان وقت الاستراحة</translation>
@@ -517,7 +518,7 @@
 <translation id="8452135315243592079">‏شريحة SIM مفقودة</translation>
 <translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
 <translation id="847056008324733326">عرض إعدادات المقياس</translation>
-<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> لديه <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
+<translation id="8473301994082929012">الميزة <ph name="FEATURE_NAME" /> حالتها <ph name="FEATURE_STATE" /> في <ph name="ORGANIZATION_NAME" />.</translation>
 <translation id="8477270416194247200">‏اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift للإلغاء.</translation>
 <translation id="8513108775083588393">التدوير تلقائي</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>
@@ -546,7 +547,7 @@
 <translation id="8909138438987180327">مستوى طاقة البطارية عند <ph name="PERCENTAGE" /> في المئة.</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏لا يتحدث مساعد Google هذه اللغة.</translation>
-<translation id="8936501819958976551">غير مفعّل</translation>
+<translation id="8936501819958976551">غير مفعّلة</translation>
 <translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
 <translation id="8940956008527784070">طاقة البطارية منخفضة (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>

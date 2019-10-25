@@ -15,11 +15,13 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
-#include "components/autofill_assistant/browser/batch_element_checker.h"
+#include "components/autofill_assistant/browser/actions/required_fields_fallback_handler.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/client_status.h"
 
 namespace autofill_assistant {
+using RequiredField = RequiredFieldsFallbackHandler::RequiredField;
+using FallbackData = RequiredFieldsFallbackHandler::FallbackData;
 
 UseAddressAction::UseAddressAction(ActionDelegate* delegate,
                                    const ActionProto& proto)
@@ -27,10 +29,11 @@ UseAddressAction::UseAddressAction(ActionDelegate* delegate,
   DCHECK(proto.has_use_address());
   prompt_ = proto.use_address().prompt();
   name_ = proto.use_address().name();
+  std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto :
        proto_.use_address().required_fields()) {
-    required_fields_.emplace_back();
-    RequiredField& required_field = required_fields_.back();
+    required_fields.emplace_back();
+    RequiredField& required_field = required_fields.back();
     required_field.address_field = required_field_proto.address_field();
     required_field.selector = Selector(required_field_proto.element());
     required_field.simulate_key_presses =
@@ -40,6 +43,13 @@ UseAddressAction::UseAddressAction(ActionDelegate* delegate,
     required_field.forced = required_field_proto.forced();
   }
 
+  required_fields_fallback_handler_ =
+      std::make_unique<RequiredFieldsFallbackHandler>(
+          required_fields,
+          base::BindRepeating(&UseAddressAction::GetFallbackValue,
+                              base::Unretained(this)),
+          base::BindOnce(&UseAddressAction::EndAction, base::Unretained(this)),
+          delegate);
   selector_ = Selector(proto.use_address().form_field_element());
   selector_.MustBeVisible();
   DCHECK(!selector_.empty());
@@ -62,15 +72,11 @@ void UseAddressAction::InternalProcessAction(
     error_info->set_address_pointee_was_null(
         !client_memory->has_selected_address(name_) ||
         !client_memory->selected_address(name_));
-    EndAction(PRECONDITION_FAILED);
+    EndAction(ClientStatus(PRECONDITION_FAILED));
     return;
   }
 
   FillFormWithData();
-}
-
-void UseAddressAction::EndAction(ProcessedActionStatusProto status) {
-  EndAction(ClientStatus(status));
 }
 
 void UseAddressAction::EndAction(const ClientStatus& status) {
@@ -86,7 +92,7 @@ void UseAddressAction::FillFormWithData() {
 
 void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
   if (!element_status.ok()) {
-    EndAction(element_status.proto_status());
+    EndAction(ClientStatus(element_status.proto_status()));
     return;
   }
 
@@ -110,154 +116,19 @@ void UseAddressAction::OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
     EndAction(status);
     return;
   }
-  CheckRequiredFields(std::move(fallback_data));
-}
 
-void UseAddressAction::CheckRequiredFields(
-    std::unique_ptr<FallbackData> fallback_data) {
-  // If there are no required fields, finish the action successfully.
-  if (required_fields_.empty()) {
-    EndAction(ACTION_APPLIED);
-    return;
-  }
-
-  DCHECK(!batch_element_checker_);
-  batch_element_checker_ = std::make_unique<BatchElementChecker>();
-  for (size_t i = 0; i < required_fields_.size(); i++) {
-    if (required_fields_[i].forced)
-      continue;
-
-    batch_element_checker_->AddFieldValueCheck(
-        required_fields_[i].selector,
-        base::BindOnce(&UseAddressAction::OnGetRequiredFieldValue,
-                       weak_ptr_factory_.GetWeakPtr(), i));
-  }
-  batch_element_checker_->AddAllDoneCallback(
-      base::BindOnce(&UseAddressAction::OnCheckRequiredFieldsDone,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(fallback_data)));
-  delegate_->RunElementChecks(batch_element_checker_.get());
-}
-
-void UseAddressAction::OnGetRequiredFieldValue(
-    size_t required_fields_index,
-    const ClientStatus& element_status,
-    const std::string& value) {
-  required_fields_[required_fields_index].status =
-      value.empty() ? EMPTY : NOT_EMPTY;
-}
-
-void UseAddressAction::OnCheckRequiredFieldsDone(
-    std::unique_ptr<FallbackData> fallback_data) {
-  batch_element_checker_.reset();
-
-  // We process all fields with an empty value in order to perform the fallback
-  // on all those fields, if any.
-  bool should_fallback = false;
-  for (const RequiredField& required_field : required_fields_) {
-    if (required_field.ShouldFallback(fallback_data != nullptr)) {
-      should_fallback = true;
-      break;
-    }
-  }
-
-  if (!should_fallback) {
-    EndAction(ACTION_APPLIED);
-    return;
-  }
-
-  if (!fallback_data) {
-    // Validation failed and we don't want to try the fallback.
-    EndAction(MANUAL_FALLBACK);
-    return;
-  }
-
-  // If there are any fallbacks for the empty fields, set them, otherwise fail
-  // immediately.
-  bool has_fallbacks = false;
-  for (const RequiredField& required_field : required_fields_) {
-    if (!required_field.ShouldFallback(/* has_fallback_data= */ true))
-      continue;
-
-    if (!GetFallbackValue(required_field, *fallback_data).empty()) {
-      has_fallbacks = true;
-    }
-  }
-  if (!has_fallbacks) {
-    EndAction(MANUAL_FALLBACK);
-    return;
-  }
-
-  // Set the fallback values and check again.
-  SetFallbackFieldValuesSequentially(0, std::move(fallback_data));
-}
-
-void UseAddressAction::SetFallbackFieldValuesSequentially(
-    size_t required_fields_index,
-    std::unique_ptr<FallbackData> fallback_data) {
-  // Skip non-empty fields.
-  while (required_fields_index < required_fields_.size() &&
-         !required_fields_[required_fields_index].ShouldFallback(
-             fallback_data != nullptr)) {
-    required_fields_index++;
-  }
-
-  // If there are no more fields to set, check the required fields again,
-  // but this time we don't want to try the fallback in case of failure.
-  if (required_fields_index >= required_fields_.size()) {
-    DCHECK_EQ(required_fields_index, required_fields_.size());
-
-    CheckRequiredFields(/* fallback_data= */ nullptr);
-    return;
-  }
-
-  // Set the next field to its fallback value.
-  const RequiredField& required_field = required_fields_[required_fields_index];
-  std::string fallback_value = GetFallbackValue(required_field, *fallback_data);
-  if (fallback_value.empty()) {
-    DVLOG(3) << "No fallback for " << required_field.selector;
-    // If there is no fallback value, we skip this failed field.
-    SetFallbackFieldValuesSequentially(++required_fields_index,
-                                       std::move(fallback_data));
-    return;
-  }
-  DVLOG(3) << "Setting fallback value for " << required_field.selector;
-
-  delegate_->SetFieldValue(
-      required_field.selector, fallback_value,
-      required_field.simulate_key_presses, required_field.delay_in_millisecond,
-      base::BindOnce(&UseAddressAction::OnSetFallbackFieldValue,
-                     weak_ptr_factory_.GetWeakPtr(), required_fields_index,
-                     std::move(fallback_data)));
-}
-
-void UseAddressAction::OnSetFallbackFieldValue(
-    size_t required_fields_index,
-    std::unique_ptr<FallbackData> fallback_data,
-    const ClientStatus& status) {
-  if (!status.ok()) {
-    // Fallback failed: we stop the script without checking the fields.
-    EndAction(MANUAL_FALLBACK);
-    return;
-  }
-  SetFallbackFieldValuesSequentially(++required_fields_index,
-                                     std::move(fallback_data));
+  required_fields_fallback_handler_->CheckAndFallbackRequiredFields(
+      std::move(fallback_data));
 }
 
 std::string UseAddressAction::GetFallbackValue(
     const RequiredField& required_field,
     const FallbackData& fallback_data) {
-  if (required_field.address_field !=
-          UseAddressProto::RequiredField::UNDEFINED &&
-      fallback_data.profile) {
-    return base::UTF16ToUTF8(GetAddressFieldValue(
-        fallback_data.profile, required_field.address_field));
-  }
-
-  NOTREACHED() << "Unsupported field type for " << required_field.selector;
-  return "";
+  return base::UTF16ToUTF8(
+      GetFieldValue(fallback_data.profile, required_field.address_field));
 }
 
-base::string16 UseAddressAction::GetAddressFieldValue(
+base::string16 UseAddressAction::GetFieldValue(
     const autofill::AutofillProfile* profile,
     const UseAddressProto::RequiredField::AddressField& address_field) {
   // TODO(crbug.com/806868): Get the actual application locale.

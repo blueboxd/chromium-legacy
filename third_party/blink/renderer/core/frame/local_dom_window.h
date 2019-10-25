@@ -280,7 +280,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void DispatchMessageEventWithOriginCheck(
       const SecurityOrigin* intended_target_origin,
-      Event*,
+      MessageEvent*,
       std::unique_ptr<SourceLocation>);
 
   // Events

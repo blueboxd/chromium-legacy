@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">የእርስዎ መለያ ተቆልፎ ወጥቷል። እባክዎ የእርስዎን የሥርዓት አስተዳዳሪ ያነጋግሩ።</translation>
 <translation id="2844349213149998955">በዚህ መሣሪያ ላይ የግል መለያ ጋር በመለያ መግባት አይፈቀድም። እባክዎ በሥራ መለያ ይግቡ።</translation>
 <translation id="3306357053520292004">በዚህ ኮምፒውተር ላይ ያለ ተጠቃሚ አስቀድሞ ይህን መለያ በመጠቀም ታክሏል። እባክዎ በተለየ መለያ ይግቡ።</translation>
+<translation id="3926852373333893095">GSuite Enterprise ተጠቃሚዎች ብቻ በመለያ እንዲገቡ ይፈቀድላቸዋል።</translation>
 <translation id="4057329986137569701">አንድ ውስጣዊ ስህተት ተከስቷል።</translation>
 <translation id="4267670563222825190">ምንም የጎራ ተጠቃሚ ለእርስዎ መለያ ሊገኝ አልተቻለም። እባክዎ አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="4300229033992784001">የመለያዎ ይለፍ ቅቃል ተቀይሯል። የWindows መለያዎን ከስራ መለያዎ ጋር ለማሳመር እባክዎ የአሁኑ የWindows ይለፍ ቃልዎን ያስገቡ።</translation>
 <translation id="4706454071748629324">አዲስ ተጠቃሚን ማከል አልተቻለም። ይህ ኮምፒውተር የስራ መለያን በመጠቀም አንድ ተጠቃሚ ብቻ እንዲፈጠር ነው የሚፈቅደው።</translation>
 <translation id="6033715878377252112">Google ምስክርነት አቅራቢ ለ Windows አጋዥ</translation>
 <translation id="6149399665202317746">Google ምስክርነት አቅራቢ ለ Windows</translation>
+<translation id="6239180560789153226">መሣሪያዎ የመልሶ ማግኛ መረጃ ይጎድለዋል። የGoogle ሥራ መለያዎን በመጠቀም በመለያ ይግቡ።</translation>
 <translation id="6312494990035843744">በዚህ ጎራ ላይ በስራ መለያ መግባት አይፈቀድም። የተለየ መለያ ይሞክሩ።</translation>
 <translation id="6463752215771576050">ይህን ኮምፒውተር ለድርጅት አስተዳደር ማስመዝገብ አልተቻለም።  እባክዎ በተለየ የስራ መለያ ይግቡ።</translation>
 <translation id="6657585470893396449">የይለፍ ቃል፦</translation>
+<translation id="6937049691815837345">መሣሪያዎ በመሣሪያ አስተዳደር መመዝገብ አለበት። የGoogle ሥራ መለያዎን በመጠቀም በመለያ ይግቡ።</translation>
 <translation id="7209941495304122410">የ Windows ን የይለፍ ቃል ያስገቡ</translation>
 <translation id="7357241217513796177">የአውታረ መረብ ግንኙነት እንዳለዎት ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="7536769223115622137">የስራ መለያን አክል</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">ከፍለ ጊዜዎ ጊዜው አልፎበታል። የGoogle ሥራ መለያዎን በመጠቀም በመለያ ይግቡ።</translation>
 <translation id="9055998212250844221">በ Google ምስክርነት አቅራቢ ለ Windows የተፈጠረ የተጠቃሚ መለያ</translation>
 <translation id="9135619837062629367">በዚህ መለያ መግባት አይፈቀድም። የተለየ መለያ ይሞክሩ።</translation>
+<translation id="998002716857524853">የGSuite ስራ መለያዎን በመጠቀም በመለያ ይግቡ።</translation>
 </translationbundle>

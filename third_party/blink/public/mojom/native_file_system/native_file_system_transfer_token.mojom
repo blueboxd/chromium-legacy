@@ -11,4 +11,8 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 // the handle over postMessage style APIs.
 interface NativeFileSystemTransferToken {
   GetInternalID() => (mojo_base.mojom.UnguessableToken id);
+
+  // Used by BroadcastChannels to clone multiple FileSystemHandles from a
+  // single serialized FileSystemHandle.
+  Clone(pending_receiver<NativeFileSystemTransferToken> token_clone);
 };

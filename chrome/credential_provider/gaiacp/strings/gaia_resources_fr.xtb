@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Votre compte a été verrouillé. Contactez votre administrateur système.</translation>
 <translation id="2844349213149998955">Vous n'êtes pas autorisé à vous connecter avec un compte personnel sur cet appareil. Veuillez vous connecter avec un compte professionnel.</translation>
 <translation id="3306357053520292004">Un utilisateur de cet ordinateur a déjà été ajouté à l'aide de ce compte. Veuillez vous connecter avec un autre compte.</translation>
+<translation id="3926852373333893095">Seuls les utilisateurs de G Suite Enterprise sont autorisés à se connecter.</translation>
 <translation id="4057329986137569701">Une erreur interne s'est produite.</translation>
 <translation id="4267670563222825190">Impossible de trouver un utilisateur du domaine pour votre compte. Veuillez contacter votre administrateur.</translation>
 <translation id="4300229033992784001">Le mot de passe de votre compte a été modifié. Veuillez saisir votre mot de passe Windows actuel afin de synchroniser votre compte Windows avec votre compte professionnel.</translation>
 <translation id="4706454071748629324">Échec de l'ajout d'un nouvel utilisateur. Ce ordinateur n'autorise que la création d'un utilisateur avec un compte professionnel.</translation>
 <translation id="6033715878377252112">Outil d'aide du fournisseur d'informations d'identification Google pour Windows</translation>
 <translation id="6149399665202317746">Fournisseur d'informations d'identification Google pour Windows</translation>
+<translation id="6239180560789153226">Votre appareil présente des informations de récupération manquantes. Connectez-vous avec votre compte professionnel Google.</translation>
 <translation id="6312494990035843744">La connexion avec un compte professionnel n'est pas autorisée sur ce domaine. Utilisez un autre compte.</translation>
 <translation id="6463752215771576050">Impossible d'enregistrer cet ordinateur pour bénéficier de la gestion d'entreprise.  Veuillez vous connecter avec un autre compte professionnel.</translation>
 <translation id="6657585470893396449">Mot de passe</translation>
+<translation id="6937049691815837345">Votre appareil doit être un appareil géré. Connectez-vous avec votre compte professionnel Google.</translation>
 <translation id="7209941495304122410">Saisissez votre mot de passe Windows</translation>
 <translation id="7357241217513796177">Vérifiez que vous disposez bien d'une connexion réseau, puis réessayez.</translation>
 <translation id="7536769223115622137">Ajouter un compte professionnel</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Votre session est arrivée à expiration. Connectez-vous avec votre compte professionnel Google.</translation>
 <translation id="9055998212250844221">Compte utilisateur créé par le fournisseur d'informations d'identification Google pour Windows</translation>
 <translation id="9135619837062629367">La connexion avec ce compte n'est pas autorisée. Utilisez un autre compte.</translation>
+<translation id="998002716857524853">Connectez-vous avec votre compte professionnel G Suite.</translation>
 </translationbundle>

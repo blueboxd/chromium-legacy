@@ -370,11 +370,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // doesn't specify a title.
 - (NSString*)displayTitleForURL:(const GURL&)URL;
 
-#pragma mark - Autofill Utilities (EG2)
-
-// Removes the stored credit cards.
-- (void)clearCreditCards;
-
 #pragma mark - JavaScript Utilities (EG2)
 
 // Executes JavaScript on current WebState, and waits for either the completion

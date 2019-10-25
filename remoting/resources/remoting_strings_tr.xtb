@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">Ana Makine İşlemi</translation>
 <translation id="20876857123010370">Dokunmatik yüzey modu</translation>
 <translation id="2089514346391228378">Bu bilgisayar için uzaktan bağlantılar etkinleştirildi.</translation>
+<translation id="2198363917176605566"><ph name="PRODUCT_NAME" /> ürününü kullanmak üzere bu Mac'teki ekran içeriklerinin uzak makineye gönderilebilmesi için "Ekran Kaydı" iznini vermeniz gerekir.
+
+Bu izni vermek için aşağıdaki "<ph name="BUTTON_NAME" />" düğmesini tıklayarak "Ekran Kaydı" tercihleri bölmesini açın ve ardından, "<ph name="SERVICE_SCRIPT_NAME" />" öğesinin yanındaki kutuyu işaretleyin.
+
+"<ph name="SERVICE_SCRIPT_NAME" />" zaten işaretliyse işaretini kaldırıp yeniden işaretleyin.</translation>
 <translation id="2208514473086078157">Politika ayarları bu bilgisayarın bir Chrome Uzaktan Masaüstü ana bilgisayarı olarak paylaşılmasına izin vermiyor. Yardım için sistem yöneticinizle iletişim kurun.</translation>
 <translation id="2220529011494928058">Sorun bildir</translation>
 <translation id="2221097377466213233">Win tuşu (Mac'te ⌘) için sağ Ctrl tuşunu kullan</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Çevrimiçi olarak son görüldüğü zaman: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Bu uygulama artık desteklenmiyor. En yeni özellikleri ve güvenlik güncellemelerini aldığınızdan emin olmak için lütfen <ph name="LINK_BEGIN" />Chrome Uzaktan Masaüstü web uygulamasını<ph name="LINK_END" /> kullanın.</translation>
 <translation id="2499160551253595098">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chrome Uzaktan Masaüstü'nü daha iyi hale getirmemize yardımcı olun.</translation>
+<translation id="2504109125669302160"><ph name="PRODUCT_NAME" /> için "Erişilebilirlik" izni verin</translation>
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> adlı ana makineye bağlandı</translation>
 <translation id="2512228156274966424">NOT: Tüm klavye kısayollarının kullanılabilir olmasını sağlamak için Chrome Uzaktan Masaüstü'nü 'Pencere olarak aç' modunda yapılandırabilirsiniz.</translation>
 <translation id="2540992418118313681">Bu bilgisayarı başka bir kullanıcının görmesi ve kontrol etmesi için paylaşmak istiyor musunuz?</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">Çekirdek Kitaplığı</translation>
 <translation id="4430435636878359009">Bu bilgisayara uzaktan bağlantıları devre dışı bırak</translation>
 <translation id="4430915108080446161">Erişim kodu oluşturuluyor...</translation>
+<translation id="443560535555262820">Erişilebilirlik Tercihlerini Aç</translation>
 <translation id="4450893287417543264">Bir daha gösterme</translation>
 <translation id="4472575034687746823">Başlayın</translation>
 <translation id="4481276415609939789">Kayıtlı hiç bilgisayarınız yok. Bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chromoting'i o bilgisayara yükleyin ve “<ph name="BUTTON_NAME" />” düğmesini tıklayın.</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">PIN'i değiştir</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (eski)</translation>
 <translation id="6221358653751391898">Chrome'da oturum açmadınız. Lütfen oturum açın ve tekrar deneyin.</translation>
+<translation id="6223301979382383752">Ekran Kaydı Tercihlerini Aç</translation>
 <translation id="6227369581881558336">Chrome Uzaktan Masaüstü, dosya aktarımı gibi yeni özelliklerle artık web'de de kullanılabiliyor. <ph name="LINK_BEGIN" />Web uygulamamıza<ph name="LINK_END" /> göz atın.</translation>
 <translation id="6284412385303060032">Konsol mantık ekranında çalışan ana makine, kullanıcı tanımlı oturumda çalışan bir ana makineye geçerek perde modunu desteklemek için kapandı.</translation>
 <translation id="629730747756840877">Hesap</translation>
 <translation id="6304318647555713317">İstemci</translation>
 <translation id="6381670701864002291">Başka bir şey.</translation>
 <translation id="6398765197997659313">Tam ekrandan çık</translation>
+<translation id="6411861157501911556"><ph name="PRODUCT_NAME" /> ürününü kullanmak üzere uzak makinedeki girişin bu Mac'e aktarılabilmesi için "Erişilebilirlik" iznini vermeniz gerekir.
+
+Bu izni vermek için aşağıdaki "<ph name="BUTTON_NAME" />" düğmesine tıklayarak "Erişilebilirlik" tercihleri bölmesini açın ve ardından, "<ph name="SERVICE_SCRIPT_NAME" />" öğesinin yanındaki kutuyu işaretleyin.
+
+"<ph name="SERVICE_SCRIPT_NAME" />" zaten işaretliyse işaretini kaldırıp yeniden işaretleyin.</translation>
 <translation id="6441316101718669559">Masaüstü entegrasyonu bu platformda desteklenmiyor. Uygulamayı kullanmaya devam edebilirsiniz, ancak kullanıcı deneyimi olumsuz etkilenecektir.</translation>
 <translation id="652218476070540101">Bu bilgisayarın PIN'i güncelleniyor…</translation>
 <translation id="6527303717912515753">Paylaş</translation>
@@ -327,6 +340,7 @@
 <translation id="9149580767411232853">Uzak masaüstünün tamamının görünür olmasını sağla</translation>
 <translation id="9149992051684092333">Masaüstünüzü paylaşmaya başlamak için, size yardımcı olacak kişiye aşağıdaki erişim kodunu verin.</translation>
 <translation id="916856682307586697">Varsayılan XSession'ı başlat</translation>
+<translation id="9187628920394877737"><ph name="PRODUCT_NAME" /> için "Ekran Kaydı" izni verin</translation>
 <translation id="9188433529406846933">Yetkilendir</translation>
 <translation id="9213184081240281106">Ana makinenin yapılandırması geçersiz.</translation>
 <translation id="951991426597076286">Reddet</translation>

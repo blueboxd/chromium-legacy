@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/value_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -17,13 +16,10 @@
 #include "components/prefs/overlay_user_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry.h"
+#include "components/prefs/pref_value_store.h"
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
-#include "services/preferences/public/cpp/in_process_service_factory.h"
-#include "services/preferences/public/cpp/persistent_pref_store_client.h"
-#include "services/preferences/public/cpp/pref_registry_serializer.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "components/sync_preferences/synced_pref_observer.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/chromeos_features.h"

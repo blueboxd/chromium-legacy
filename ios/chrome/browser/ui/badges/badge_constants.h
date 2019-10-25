@@ -9,16 +9,11 @@
 
 // A11y identifiers so that automation can tap on BadgeButtons
 extern NSString* const kBadgeButtonSavePasswordAccessibilityIdentifier;
-extern NSString* const kBadgeButtonSavePasswordAcceptedAccessibilityIdentifier;
 extern NSString* const kBadgeButtonUpdatePasswordAccessibilityIdentifier;
-extern NSString* const
-    kBadgeButtonUpdatePasswordAccpetedAccessibilityIdentifier;
 extern NSString* const kBadgeButtonIncognitoAccessibilityIdentifier;
 extern NSString* const kBadgeButtonOverflowAccessibilityIdentifier;
 extern NSString* const kBadgeButtonSaveCardAccessibilityIdentifier;
-extern NSString* const kBadgeButtonSaveCardAcceptedAccessibilityIdentifier;
 extern NSString* const kBadgeButtonTranslateAccessibilityIdentifier;
-extern NSString* const kBadgeButtonTranslateAcceptedAccessibilityIdentifier;
 
 // A11y identifier for the Badge Popup Menu Table View.
 extern NSString* const kBadgePopupMenuTableViewAccessibilityIdentifier;

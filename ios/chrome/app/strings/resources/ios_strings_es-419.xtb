@@ -202,6 +202,7 @@
 <translation id="3783017676699494206">Guardar imagen</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="385051799172605136">Atrás</translation>
+<translation id="3886946236301294521">Te avisa si una contraseña que usas formó parte de un incumplimiento de datos.</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3915450441834151894">Información del sitio</translation>
 <translation id="3922310737605261887">Buscar el texto copiado</translation>
@@ -332,6 +333,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5854790677617711513">Hace más de 30 días</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere la frase de contraseña para comenzar la sincronización.</translation>
+<translation id="5859444426865731878">Google puede determinar si tus contraseñas formaron parte de un incumplimiento de datos.</translation>
 <translation id="5860033963881614850">No</translation>
 <translation id="5869029295770560994">Entendido</translation>
 <translation id="5871497086027727873">1 artículo movido</translation>
@@ -411,6 +413,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6797885426782475225">Búsqueda por voz</translation>
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Elemento creado</translation>
+<translation id="6831043979455480757">Traducir</translation>
 <translation id="6851516051005285358">Solicitar versión de escritorio</translation>
 <translation id="6858855187367714033">Escaneado</translation>
 <translation id="6859944681507688231">Para escanear un código QR o una tarjeta de crédito, habilita la cámara desde la configuración.</translation>

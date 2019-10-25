@@ -57,6 +57,9 @@ class ASH_PUBLIC_EXPORT NewWindowDelegate {
   // information as url |queries|.
   virtual void LaunchCameraApp(const std::string& queries) = 0;
 
+  // Closes the camera app.
+  virtual void CloseCameraApp() = 0;
+
  protected:
   NewWindowDelegate();
   virtual ~NewWindowDelegate();

@@ -90,19 +90,34 @@ class CORE_EXPORT NGInlineCursor {
   // True if the current position is an ellipsis. It is error to call at end.
   bool IsEllipsis() const;
 
+  // True if the current position is an empty line box. It is error to call
+  // other then line box.
+  bool IsEmptyLineBox() const;
+
   // True if the current position is a generatd text. It is error to call at
   // end.
   bool IsGeneratedText() const;
 
+  // True if fragment is |NGFragmentItem::kGeneratedText| or
+  // |NGPhysicalTextFragment::kGeneratedText|.
+  // TODO(yosin): We should rename |IsGeneratedTextType()| to another name.
+  bool IsGeneratedTextType() const;
+
   // True if the current position is hidden for paint. It is error to call at
   // end.
   bool IsHiddenForPaint() const;
+
+  // True if the current position is text or atomic inline box.
+  bool IsInlineLeaf() const;
 
   // True if the current position is a line box. It is error to call at end.
   bool IsLineBox() const;
 
   // True if the current position is a line break. It is error to call at end.
   bool IsLineBreak() const;
+
+  // True if the current position is a list marker.
+  bool IsListMarker() const;
 
   // True if the current position is a text. It is error to call at end.
   bool IsText() const;
@@ -133,6 +148,12 @@ class CORE_EXPORT NGInlineCursor {
   // It is error when this cursor doesn't point to text fragment.
   unsigned CurrentTextStartOffset() const;
   unsigned CurrentTextEndOffset() const;
+
+  // The layout box of text in (start, end) range in local coordinate.
+  // Start and end offsets must be between |CurrentTextStartOffset()| and
+  // |CurrentTextEndOffset()|. It is error to call other than text.
+  PhysicalRect CurrentLocalRect(unsigned start_offset,
+                                unsigned end_offset) const;
 
   //
   // Functions to move the current position.
@@ -173,6 +194,10 @@ class CORE_EXPORT NGInlineCursor {
 
   // Move the current position to next fragment on same layout object.
   void MoveToNextForSameLayoutObject();
+
+  // Move the current position to next line. It is error to call other than line
+  // box.
+  void MoveToNextLine();
 
   // Move the current position to next sibling fragment.
   void MoveToNextSibling();

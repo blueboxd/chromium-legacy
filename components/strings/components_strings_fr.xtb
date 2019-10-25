@@ -275,6 +275,7 @@
 <translation id="2257315177824333709">Désolé, votre carte ne peut pas être enregistrée pour le moment</translation>
 <translation id="2262243747453050782">Erreur HTTP.</translation>
 <translation id="2263079731045660823">Mettre à jour la saisie automatique des informations de paiement dans les paramètres de Chrome</translation>
+<translation id="2267047181501709434">Vérification de votre identité…</translation>
 <translation id="2270484714375784793">N° de téléphone</translation>
 <translation id="2277103315734023688">Avance rapide</translation>
 <translation id="2283340219607151381">Enregistrer et renseigner les adresses</translation>
@@ -282,6 +283,7 @@
 <translation id="2292556288342944218">Votre accès à Internet est bloqué</translation>
 <translation id="2297722699537546652">B5 (enveloppe)</translation>
 <translation id="2310021320168182093">Chou2 (enveloppe)</translation>
+<translation id="2315864634253056100">Le nom de ce site ressemble à <ph name="LOOKALIKE_DOMAIN" />. Les pirates informatiques tentent parfois d'imiter des sites Web en modifiant leur adresse de façon subtile pour que le changement passe inaperçu.</translation>
 <translation id="2316887270356262533">Libère moins de 1 Mo. Le chargement de certains sites risque d'être plus lent lors de votre prochaine visite.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> nécessite un nom d'utilisateur et un mot de passe.</translation>
 <translation id="2317583587496011522">Les cartes de débit sont acceptées.</translation>
@@ -466,6 +468,7 @@
 <translation id="3229041911291329567">Informations sur la version de l'appareil et du navigateur</translation>
 <translation id="323107829343500871">Saisir le code CVC de la carte <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Toujours détecter du contenu important sur ce site</translation>
+<translation id="3262069459091978471">L'URL <ph name="LOOKALIKE_DOMAIN" /> est semblable à <ph name="SUGGESTED_DOMAIN" />. Les pirates informatiques tentent parfois d'imiter des sites Web en utilisant des URL similaires.</translation>
 <translation id="3270847123878663523">&amp;Annuler la réorganisation</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3281668902344226640">Utilisez Touch ID pour valider vos modes de paiement enregistrés.</translation>
@@ -666,6 +669,7 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Essayez d'exécuter les diagnostics réseau<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Accéder au site <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Valide</translation>
+<translation id="4248776159690739358">Transmettez à votre administrateur les données sur les événements liés à la sécurité signalés par la Protection contre les menaces de Chrome Enterprise. Ces données peuvent inclure les URL de pages que vous consultez, les noms ou les métadonnées de fichiers, ainsi que le nom d'utilisateur avec lequel vous vous connectez à votre appareil et à Chrome.</translation>
 <translation id="4250431568374086873">Votre connexion à ce site n'est pas totalement sécurisée.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="425582637250725228">Les modifications que vous avez apportées ne seront peut-être pas enregistrées.</translation>
@@ -1476,6 +1480,7 @@ Informations supplémentaires :
 <translation id="830498451218851433">Plier en deux</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">Échec de la traduction en raison d'un problème de connexion réseau</translation>
+<translation id="831207732689920588">Cette page est suspecte (signalée par Chrome)</translation>
 <translation id="8332188693563227489">L'accès à <ph name="HOST_NAME" /> a été refusé</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Si vous êtes conscient des risques auxquels vous vous exposez, vous pouvez <ph name="BEGIN_LINK" />consulter ce site<ph name="END_LINK" /> avant que les programmes dangereux aient été supprimés.</translation>
@@ -1565,6 +1570,7 @@ Informations supplémentaires :
 <translation id="8903921497873541725">Zoom avant</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="8912362522468806198">Compte Google</translation>
+<translation id="8918231688545606538">Cette page est suspecte</translation>
 <translation id="892588693504540538">Perforation en haut à droite</translation>
 <translation id="8931333241327730545">Voulez-vous enregistrer cette carte dans votre compte Google ?</translation>
 <translation id="8932102934695377596">Votre horloge est en retard</translation>

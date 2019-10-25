@@ -92,6 +92,14 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
       bool include_accepts_all,
       ChooseEntriesCallback callback) override;
+  void GetFileHandleFromToken(
+      mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemFileHandle>
+          file_handle_receiver) override;
+  void GetDirectoryHandleFromToken(
+      mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemDirectoryHandle>
+          directory_handle_receiver) override;
 
   // NativeFileSystemEntryFactory:
   blink::mojom::NativeFileSystemEntryPtr CreateFileEntryFromPath(
@@ -148,6 +156,17 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   void ResolveTransferToken(
       mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
       ResolvedTokenCallback callback);
+
+  void DidResolveTransferTokenForFileHandle(
+      const BindingContext& binding_context,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemFileHandle>
+          file_handle_receiver,
+      NativeFileSystemTransferTokenImpl* resolved_token);
+  void DidResolveTransferTokenForDirectoryHandle(
+      const BindingContext& binding_context,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemDirectoryHandle>
+          directory_handle_receiver,
+      NativeFileSystemTransferTokenImpl* resolved_token);
 
   storage::FileSystemContext* context() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -245,9 +264,9 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   base::SequenceBound<storage::FileSystemOperationRunner> operation_runner_;
   NativeFileSystemPermissionContext* permission_context_;
 
-  // All the mojo receivers for this NativeFileSystemManager itself. Keeps track
-  // of associated origin and other state as well to not have to rely on the
-  // renderer passing that in, and to be able to do security checks around
+  // All the mojo receivers for this NativeFileSystemManager itself. Keeps
+  // track of associated origin and other state as well to not have to rely on
+  // the renderer passing that in, and to be able to do security checks around
   // transferability etc.
   mojo::ReceiverSet<blink::mojom::NativeFileSystemManager, BindingContext>
       receivers_;

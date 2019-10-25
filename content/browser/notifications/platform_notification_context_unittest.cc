@@ -556,7 +556,7 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = origin;
   embedded_worker_test_helper->context()->RegisterServiceWorker(
-      script_url, options,
+      script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
       base::BindOnce(&PlatformNotificationContextTest::DidRegisterServiceWorker,
                      base::Unretained(this), &service_worker_registration_id));
 

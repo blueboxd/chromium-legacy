@@ -45,6 +45,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
@@ -413,6 +414,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
   void SetToPauseAfterDownload(base::OnceClosure callback);
   void SetToNotPauseAfterDownload();
+
+  void set_outside_fetch_client_settings_object(
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object) {
+    DCHECK(!outside_fetch_client_settings_object_);
+    outside_fetch_client_settings_object_ =
+        std::move(outside_fetch_client_settings_object);
+  }
 
   // For use by EmbeddedWorkerInstance. Called when the main script loaded.
   // This is only called for new (non-installed) workers. It's used for resuming
@@ -983,6 +992,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // InitializeGlobalScope() is called.
   mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>
       service_worker_host_;
+
+  blink::mojom::FetchClientSettingsObjectPtr
+      outside_fetch_client_settings_object_;
 
   // TODO(crbug.com/951571): Remove once the bug is debugged.
   // This is set when this service worker becomes redundant.

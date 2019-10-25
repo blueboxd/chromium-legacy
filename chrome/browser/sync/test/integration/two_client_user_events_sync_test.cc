@@ -39,7 +39,7 @@ class TwoClientUserEventsSyncTest : public SyncTest {
   }
 
   bool WaitForBookmarksToMatchVerifier() {
-    return BookmarksMatchVerifierChecker().Wait();
+    return bookmarks_helper::BookmarksMatchVerifierChecker().Wait();
   }
 
   void AddTestBookmarksToClient(int index) {

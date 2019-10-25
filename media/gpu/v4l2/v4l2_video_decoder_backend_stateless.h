@@ -12,7 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_decoder.h"
-#include "media/gpu/linux/dmabuf_video_frame_pool.h"
+#include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
 #include "media/gpu/v4l2/v4l2_video_decoder_backend.h"
 
@@ -117,8 +117,6 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // Setup the format of V4L2 output buffer, and allocate new buffer set.
   bool ChangeResolution();
 
-  // Check whether request api is supported or not.
-  bool CheckRequestAPISupport();
   // Allocate necessary request buffers is request api is supported.
   bool AllocateRequests();
 
@@ -158,8 +156,6 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // Callbacks of EOS buffer passed from Decode().
   VideoDecoder::DecodeCB flush_cb_;
 
-  // Set to true during Initialize() if the codec driver supports request API.
-  bool supports_requests_ = false;
   // FIFO queue of requests, only used if supports_requests_ is true.
   base::queue<base::ScopedFD> requests_;
   // Stores the media file descriptor, only used if supports_requests_ is true.

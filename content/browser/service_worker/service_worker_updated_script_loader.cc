@@ -21,7 +21,6 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -30,6 +29,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
@@ -104,7 +104,7 @@ void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
           /*navigation_ui_data=*/nullptr, RenderFrameHost::kNoFrameTreeNodeId);
 
   network::mojom::URLLoaderClientPtr client(std::move(client_info));
-  auto loader = ThrottlingURLLoader::CreateLoaderAndStart(
+  auto loader = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       network::SharedURLLoaderFactory::Create(std::move(loader_factory_info)),
       std::move(throttles), routing_id, request_id, options, &resource_request,
       client.get(), traffic_annotation, base::ThreadTaskRunnerHandle::Get());

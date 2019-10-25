@@ -20,13 +20,10 @@
 #include "media/gpu/test/video_player/video.h"
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-#include "media/gpu/linux/platform_video_frame_pool.h"
-#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-
-#if defined(OS_CHROMEOS)
 #include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
-#include "media/gpu/video_frame_converter.h"
-#endif  // defined(OS_CHROMEOS)
+#include "media/gpu/chromeos/platform_video_frame_pool.h"
+#include "media/gpu/chromeos/video_frame_converter.h"
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 namespace media {
 namespace test {
@@ -180,7 +177,7 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
   LOG_ASSERT(!decoder_) << "Can't create decoder: already created";
 
   if (decoder_client_config_.use_vd) {
-#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
       decoder_ = ChromeosVideoDecoderFactory::Create(
           base::ThreadTaskRunnerHandle::Get(),
@@ -189,7 +186,7 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
     } else {
       LOG(ERROR) << "VD-based video decoders only support import mode";
     }
-#endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   } else {
     // The video decoder client expects decoders to use the VD interface. We
     // can use the TestVDAVideoDecoder wrapper here to test VDA-based video

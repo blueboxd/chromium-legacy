@@ -121,6 +121,7 @@
 <translation id="1501859676467574491">Hiển thị các thẻ trong Tài khoản Google của bạn</translation>
 <translation id="1507202001669085618">&lt;p&gt;Bạn sẽ gặp lỗi này nếu đang sử dụng cổng Wi-Fi yêu cầu bạn đăng nhập để có thể vào mạng.&lt;/p&gt;
     &lt;p&gt;Để khắc phục lỗi này, hãy nhấp vào &lt;strong&gt;Kết nối&lt;/strong&gt; trên trang mà bạn đang cố mở.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Danh sách các mục lịch sử</translation>
 <translation id="1517433312004943670">Phải có số điện thoại</translation>
 <translation id="1517500485252541695">Thẻ tín dụng và thẻ ghi nợ được chấp nhận</translation>
 <translation id="1519264250979466059">Ngày tạo</translation>
@@ -306,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị thu hồi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="2438874542388153331">Đục 4 lỗ bên phải</translation>
+<translation id="245044156129055925">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên đổi mật khẩu ngay.</translation>
 <translation id="2463193859425327265">Thay đổi trang chủ</translation>
 <translation id="2463739503403862330">Điền</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -615,6 +617,9 @@
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> bị chặn</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> đã bật tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise trên trình duyệt. Tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise có quyền truy cập vào một số dữ liệu của bạn.</translation>
+<translation id="3987405730340719549">Chrome đã xác định được rằng đây có thể là trang web giả mạo hoặc lừa đảo.
+
+    Nếu bạn cho rằng thông báo này hiển thị do lỗi, vui lòng truy cập vào https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Dưới 1 MB</translation>
 <translation id="3990250421422698716">Bù dịch chuyển</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 trang web lân cận}other{# trang web lân cận}}</translation>
@@ -992,6 +997,9 @@
 <translation id="5813119285467412249">&amp;Làm lại thêm</translation>
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5838278095973806738">Bạn không nên nhập bất kỳ thông tin nhạy cảm nào trên trang web này (ví dụ: mật khẩu hoặc thẻ tín dụng), vì những kẻ tấn công có thể đánh cắp thông tin đó.</translation>
+<translation id="5855253129151731373">Tên máy chủ của trang web này giống với miền <ph name="LOOKALIKE_DOMAIN" />. Kẻ tấn công đôi khi bắt chước các trang web bằng cách thực hiện các thay đổi nhỏ đối với tên miền mà bạn khó phát hiện ra.
+
+    Nếu bạn cho rằng thông báo này hiển thị do lỗi, vui lòng truy cập vào https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5863847714970149516">Trang phía trước có thể tìm cách tính phí bạn</translation>
 <translation id="5866257070973731571">Thêm số điện thoại</translation>
@@ -1102,6 +1110,7 @@
 <translation id="6401136357288658127">Chính sách này không còn dùng nữa. Thay vào đó, bạn nên sử dụng chính sách <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Chỉnh sửa dấu trang</translation>
 <translation id="6406765186087300643">C0 (Phong bì)</translation>
+<translation id="6409754798200046165">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên đổi mật khẩu ngay.</translation>
 <translation id="6410264514553301377">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium có thể giúp bạn bảo vệ Tài khoản Google của mình và đổi mật khẩu.</translation>
 <translation id="6427730057873428458">Gấp dạng cửa</translation>
@@ -1398,6 +1407,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7932579305932748336">Phủ</translation>
 <translation id="79338296614623784">Nhập số điện thoại hợp lệ</translation>
 <translation id="7934052535022478634">Thanh toán hoàn tất</translation>
+<translation id="7935031712718413217">URL này có khả năng là giả mạo</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Hết hạn vào <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Chứng chỉ của máy chủ chưa hợp lệ.</translation>

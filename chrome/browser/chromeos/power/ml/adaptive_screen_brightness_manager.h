@@ -16,7 +16,8 @@
 #include "chrome/browser/chromeos/power/ml/screen_brightness_event.pb.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
@@ -57,7 +58,7 @@ class AdaptiveScreenBrightnessManager
       chromeos::PowerManagerClient* power_manager_client,
       AccessibilityManager* accessibility_manager,
       MagnificationManager* magnification_manager,
-      viz::mojom::VideoDetectorObserverRequest request,
+      mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver,
       std::unique_ptr<base::RepeatingTimer> periodic_timer);
 
   ~AdaptiveScreenBrightnessManager() override;
@@ -117,7 +118,7 @@ class AdaptiveScreenBrightnessManager
   AccessibilityManager* const accessibility_manager_;
   MagnificationManager* const magnification_manager_;
 
-  const mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
+  const mojo::Receiver<viz::mojom::VideoDetectorObserver> receiver_;
 
   // Counters for user events.
   const std::unique_ptr<RecentEventsCounter> mouse_counter_;

@@ -955,4 +955,33 @@ TEST_F(TabLifecycleUnitTest, TabUnfreezeOnIndexedDBLockAcquisition) {
   tab_lifecycle_unit.SetIsHoldingIndexedDBLock(false);
 }
 
+TEST_F(TabLifecycleUnitTest, TabUnfreezeOnOriginTrialOptOut) {
+  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  DecisionDetails decision_details;
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+
+  // Freeze the tab.
+  EXPECT_CALL(observer_, OnFrozenStateChange(web_contents_, true));
+  tab_lifecycle_unit.Freeze();
+  ::testing::Mock::VerifyAndClear(&observer_);
+  EXPECT_EQ(LifecycleUnitState::PENDING_FREEZE, tab_lifecycle_unit.GetState());
+
+  // Indicates that the tab opted out from the Freeze policy via Origin Trial,
+  // this should unfreeze it.
+  EXPECT_CALL(observer_, OnFrozenStateChange(web_contents_, false));
+  tab_lifecycle_unit.UpdateOriginTrialFreezePolicy(
+      performance_manager::mojom::InterventionPolicy::kOptOut);
+  ::testing::Mock::VerifyAndClear(&observer_);
+  EXPECT_EQ(LifecycleUnitState::PENDING_UNFREEZE,
+            tab_lifecycle_unit.GetState());
+}
+
 }  // namespace resource_coordinator

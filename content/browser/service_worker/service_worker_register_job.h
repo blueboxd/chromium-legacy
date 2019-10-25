@@ -53,7 +53,9 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   CONTENT_EXPORT ServiceWorkerRegisterJob(
       ServiceWorkerContextCore* context,
       const GURL& script_url,
-      const blink::mojom::ServiceWorkerRegistrationOptions& options);
+      const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object);
 
   // For update jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
@@ -189,6 +191,11 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   blink::mojom::ScriptType worker_script_type_ =
       blink::mojom::ScriptType::kClassic;
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
+  // "A job has a client (a service worker client). It is initially null."
+  // https://w3c.github.io/ServiceWorker/#dfn-job-client
+  // This fetch client settings object roughly corresponds to the job's client.
+  blink::mojom::FetchClientSettingsObjectPtr
+      outside_fetch_client_settings_object_;
   std::vector<RegistrationCallback> callbacks_;
   Phase phase_;
   bool is_shutting_down_;

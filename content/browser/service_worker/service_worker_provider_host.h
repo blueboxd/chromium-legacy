@@ -540,6 +540,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
                 blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
+                blink::mojom::FetchClientSettingsObjectPtr
+                    outside_fetch_client_settings_object,
                 RegisterCallback callback) override;
   void GetRegistration(const GURL& client_url,
                        GetRegistrationCallback callback) override;

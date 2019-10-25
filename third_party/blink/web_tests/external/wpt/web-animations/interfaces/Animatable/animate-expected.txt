@@ -135,8 +135,8 @@ PASS Element.animate() correctly sets the Animation's timeline when triggered on
 PASS Element.animate() calls play on the Animation
 PASS Element.animate() does NOT trigger a style change event
 PASS CSSPseudoElement.animate() creates an Animation object
-FAIL CSSPseudoElement.animate() creates an Animation object for ::marker Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule '.pseudo::marker{animation: anim 10s; content: '';}'.
+FAIL CSSPseudoElement.animate() creates an Animation object for ::marker assert_true: expected true got false
 PASS CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object
-FAIL CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object for ::marker Failed to execute 'insertRule' on 'CSSStyleSheet': Failed to parse the rule '.pseudo::marker{animation: anim 10s; content: '';}'.
+FAIL CSSPseudoElement.animate() creates an Animation object targeting to the correct CSSPseudoElement object for ::marker assert_true: expected true got false
 Harness: the test ran to completion.
 

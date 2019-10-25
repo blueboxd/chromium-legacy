@@ -23,7 +23,7 @@
 }
 
 #oobe-title {
-  min-height: calc(64px + var(--title-font-distance-to-baseline));
+  padding-top: 20px;
 }
 
 #oobe-title ::slotted(h1) {
@@ -33,18 +33,13 @@
 }
 
 #oobe-subtitle {
-  min-height: calc(64px - var(--title-font-distance-to-baseline));
+  padding-top: 8px;
 }
 
 #oobe-subtitle ::slotted(*) {
   color: var(--oobe-subheader-text-color);
   line-height: var(--subtitle-line-height);
-  /* margin 12px = 32 - line-height
-                   - 5 (line height - font size)
-                   + 3 (distance to baseline 13px) */
-  margin: calc(32px - var(--subtitle-line-height)
-               - (var(--subtitle-line-height) - var(--subtitle-font-size))
-               + var(--subtitle-font-distance-to-baseline)) 0 0 0;
+  margin: 0;
 }
 
 #oobe-progress ::slotted(paper-progress) {
@@ -56,7 +51,12 @@
 
 #footer-container {
   overflow-y: auto;
-  padding: 0 var(--oobe-dialog-content-padding);
+  padding-bottom: 0;
+  padding-inline-end: var(--oobe-dialog-content-padding);
+  padding-inline-start: var(--oobe-dialog-content-padding);
+
+  /* TODO(https://crbug.com/1017173) Make it adaptive. */
+  padding-top: 20px;
 }
 
 #footer-container[noFooterPadding] {

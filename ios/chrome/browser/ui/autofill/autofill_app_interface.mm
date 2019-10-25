@@ -189,6 +189,41 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
   return base::SysUTF16ToNSString(name);
 }
 
++ (void)clearCreditCardStore {
+  autofill::PersonalDataManager* personalDataManager =
+      [self personalDataManager];
+  for (const auto* creditCard : personalDataManager->GetCreditCards()) {
+    personalDataManager->RemoveByGUID(creditCard->guid());
+  }
+}
+
++ (void)saveLocalCreditCard {
+  autofill::PersonalDataManager* personalDataManager =
+      [self personalDataManager];
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  size_t card_count = personalDataManager->GetCreditCards().size();
+  personalDataManager->AddCreditCard(card);
+  ConditionBlock conditionBlock = ^bool {
+    return card_count < personalDataManager->GetCreditCards().size();
+  };
+  base::test::ios::TimeUntilCondition(
+      nil, conditionBlock, false,
+      base::TimeDelta::FromSeconds(
+          base::test::ios::kWaitForFileOperationTimeout));
+  personalDataManager->NotifyPersonalDataObserver();
+}
+
++ (void)saveMaskedCreditCard {
+  autofill::PersonalDataManager* personalDataManager =
+      [self personalDataManager];
+  autofill::CreditCard card = autofill::test::GetMaskedServerCard();
+  DCHECK(card.record_type() != autofill::CreditCard::LOCAL_CARD);
+
+  personalDataManager->AddServerCreditCardForTest(
+      std::make_unique<autofill::CreditCard>(card));
+  personalDataManager->NotifyPersonalDataObserver();
+}
+
 #pragma mark - Private
 
 // The PersonalDataManager instance for the current browser state.

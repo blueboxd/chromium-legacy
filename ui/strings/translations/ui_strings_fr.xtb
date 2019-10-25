@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 seconde restante}one{# seconde restante}other{# secondes restantes}}</translation>
 <translation id="5941711191222866238">Réduire</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 heure}one{# heure}other{# heures}}</translation>
-<translation id="5946629889255121107">Numéro initié à partir de <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> sur <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Effacer le texte de la zone de recherche</translation>
 <translation id="6040143037577758943">Fermer</translation>
@@ -199,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Plus de 1 notification non lue}one{Plus de # notification non lue}other{Plus de # notifications non lues}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{dans 1 m}one{dans # m}other{dans # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568">Numéro issu de <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Il y a 1 heure}one{Il y a # heure}other{Il y a # heures}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s restante}one{# s restante}other{# s restantes}}</translation>
 <translation id="8134065097954893699">Actualiser cette page</translation>

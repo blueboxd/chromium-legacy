@@ -54,6 +54,8 @@ void ClickToCallContextMenuObserver::BuildMenu(
     const std::string& phone_number,
     SharingClickToCallEntryPoint entry_point) {
   DCHECK(!phone_number.empty());
+  LogClickToCallPhoneNumberSize(phone_number, entry_point,
+                                /*send_to_device=*/false);
 
   phone_number_ = phone_number;
   entry_point_ = entry_point;

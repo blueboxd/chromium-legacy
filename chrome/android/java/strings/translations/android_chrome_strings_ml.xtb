@@ -262,6 +262,7 @@
 <translation id="2913331724188855103">കുക്കി ഡാറ്റ സംരക്ഷിക്കുന്നതിനും വായിക്കുന്നതിനും സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തത്)</translation>
 <translation id="2923908459366352541">പേര് അസാധുവാണ്</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> സ്‌റ്റോറേജ്</translation>
+<translation id="2942036813789421260">പ്രിവ്യു ടാബ് അടച്ചു</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />, <ph name="PARENT_NAME_2" /> എന്നിവരാണ് ഈ അക്കൗണ്ട് നിയന്ത്രിക്കുന്നത്.</translation>
 <translation id="2962095958535813455">ആൾമാറാട്ട ടാബുകളിലേക്ക് മാറി</translation>
 <translation id="2968755619301702150">സർട്ടിഫിക്കറ്റ് വ്യൂവർ</translation>
@@ -387,6 +388,7 @@
 <translation id="3988466920954086464">വേഗത്തിലുള്ള തിരയൽ ഫലങ്ങൾ ഈ പാനലിൽ കാണുക</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3997476611815694295">പ്രധാനമല്ലാത്ത സ്‌റ്റോറേജ്</translation>
+<translation id="4000212216660919741">ഓഫ്‌ലൈൻ ഹോം</translation>
 <translation id="4002066346123236978">ശീർഷകം</translation>
 <translation id="4008040567710660924">ഒരു പ്രത്യേക സൈറ്റിനായി കുക്കികൾ അനുവദിക്കുക.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# മണിക്കൂർ}other{# മണിക്കൂർ}}</translation>
@@ -766,6 +768,7 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="6697947395630195233">Chrome-ന് ഈ സൈറ്റുമായി ലൊക്കേഷൻ പങ്കിടാൻ നിങ്ങളുടെ ലൊക്കേഷനിലേക്കുള്ള ആക്‌സസ് ആവശ്യമാണ്.</translation>
 <translation id="6698801883190606802">സമന്വിത ഡാറ്റ നിയന്ത്രിക്കുക</translation>
 <translation id="6699370405921460408">നിങ്ങള്‍ സന്ദര്‍ശിക്കുന്ന പേജുകള്‍ Google സെര്‍‌വറുകള്‍ ഒപ്‌റ്റിമൈസ് ചെയ്യും.</translation>
+<translation id="6706288973712894588">നിങ്ങൾ നിലവിൽ ഓഫ്‍ലൈനാണ്.\n<ph name="BEGIN_LINK" />നിങ്ങളുടെ ഓഫ്‍ലൈൻ ഫീഡ് അടുത്തറിയൂ.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">വാർത്ത</translation>
 <translation id="6710213216561001401">കഴിഞ്ഞ</translation>
 <translation id="671481426037969117">നിങ്ങളുടെ <ph name="FQDN" /> ടൈമർ അവസാനിച്ചു. ഇത് നാളെ വീണ്ടും ആരംഭിക്കും.</translation>
@@ -865,6 +868,7 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="7475688122056506577">SD കാർഡ് കണ്ടെത്തിയില്ല. നിങ്ങളുടെ ചില ഫയലുകൾ നഷ്‌ടപ്പെട്ടേക്കാം.</translation>
 <translation id="7479104141328977413">ടാബ് മാനേജ്മെൻ്റ്</translation>
 <translation id="7481312909269577407">മുന്നോട്ട്</translation>
+<translation id="7482656565088326534">പ്രിവ്യു ടാബ്</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (അപ്‌ഡേറ്റുചെയ്‌തു, <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">ലാഭിച്ച ഡാറ്റ</translation>
 <translation id="7498271377022651285">കാത്തിരിക്കുക...</translation>
@@ -994,6 +998,7 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="8380167699614421159">ഈ സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നു</translation>
 <translation id="8393700583063109961">സന്ദേശം അയയ്ക്കുക</translation>
 <translation id="8413126021676339697">മുഴുവന്‍ ചരിത്രവും കാണിക്കുക</translation>
+<translation id="8427875596167638501">പ്രിവ്യു ടാബ് പാതി തുറന്നിരിക്കുന്നു</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8438566539970814960">തിരയലുകളും ബ്രൗസിംഗും മികച്ചതാക്കുക</translation>
 <translation id="8441146129660941386">പുറകിലേക്ക് സീക്കുചെയ്യുക</translation>
@@ -1084,7 +1089,9 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="9086455579313502267">നെറ്റ്‌വർക്ക് ആക്സസ് ചെയ്യാനാകുന്നില്ല</translation>
 <translation id="9100505651305367705">പിന്തുണയുള്ളപ്പോൾ, ലളിതമാക്കിയ കാഴ്ചയിൽ ലേഖനങ്ങൾ കാണിക്കുന്ന സൗകര്യം നൽകുക</translation>
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
+<translation id="9102803872260866941">പ്രിവ്യു ടാബ് തുറന്നു</translation>
 <translation id="9104217018994036254">ടാബ് പങ്കിടാനാകുന്ന ഉപകരണങ്ങളുടെ ലിസ്‌റ്റ്.</translation>
+<translation id="9133397713400217035">ഓഫ്‍ലൈൻ ഉള്ളടക്കങ്ങൾ അടുത്തറിയൂ</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">യഥാര്‍ത്ഥമായത് കാണിക്കുക</translation>
 <translation id="9139068048179869749">അറിയിപ്പുകൾ അയയ്‌ക്കാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>

@@ -12,6 +12,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_process.h"
+#include "android_webview/browser/aw_pref_names.h"
 #include "android_webview/browser/aw_variations_seed_bridge.h"
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
 #include "base/base_switches.h"
@@ -19,6 +20,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
@@ -61,6 +63,9 @@ const char* const kPersistentPrefsWhitelist[] = {
     // determine if the seed is expired.
     variations::prefs::kVariationsLastFetchTime,
     variations::prefs::kVariationsSeedDate,
+    // Number of consecutive WebView browser process initializations with a
+    // stale variations seed.
+    prefs::kRestartsWithStaleSeed,
 };
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
@@ -78,6 +83,7 @@ std::unique_ptr<PrefService> CreatePrefService() {
 
   metrics::MetricsService::RegisterPrefs(pref_registry.get());
   variations::VariationsService::RegisterPrefs(pref_registry.get());
+  pref_registry->RegisterIntegerPref(prefs::kRestartsWithStaleSeed, 0);
 
   AwBrowserProcess::RegisterNetworkContextLocalStatePrefs(pref_registry.get());
 
@@ -99,6 +105,20 @@ std::unique_ptr<PrefService> CreatePrefService() {
       base::BindRepeating(&HandleReadError));
 
   return pref_service_factory.Create(pref_registry);
+}
+
+void CountOrRecordRestartsWithStaleSeed(PrefService* local_state,
+                                        bool is_loaded_seed_fresh) {
+  int restarts = local_state->GetInteger(prefs::kRestartsWithStaleSeed);
+  if (!is_loaded_seed_fresh) {
+    // If the seed isn't fresh, increase the restart count pref.
+    local_state->SetInteger(prefs::kRestartsWithStaleSeed, restarts + 1);
+  } else if (restarts > 0) {
+    // If the seed is fresh and the last restart had a stale seed, record and
+    // reset the restart count.
+    local_state->SetInteger(prefs::kRestartsWithStaleSeed, 0);
+    UMA_HISTOGRAM_COUNTS_100("Variations.RestartsWithStaleSeed", restarts);
+  }
 }
 
 }  // namespace
@@ -169,6 +189,8 @@ void AwFeatureListCreator::SetUpFieldTrials() {
           *base::CommandLine::ForCurrentProcess()),
       /*low_entropy_provider=*/nullptr, std::make_unique<base::FeatureList>(),
       aw_field_trials_.get(), &ignored_safe_seed_manager);
+
+  CountOrRecordRestartsWithStaleSeed(local_state_.get(), IsSeedFresh());
 }
 
 void AwFeatureListCreator::CreateLocalState() {

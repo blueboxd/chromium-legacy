@@ -1622,6 +1622,10 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->scope = scope_;
   params->script_url = script_url_;
   params->script_type = script_type_;
+  // Need to clone this object because StartWorkerInternal() can/ be called
+  // more than once.
+  params->outside_fetch_client_settings_object =
+      outside_fetch_client_settings_object_.Clone();
   params->user_agent = GetContentClient()->browser()->GetUserAgent();
   params->is_installed = IsInstalled(status_);
   params->pause_after_download = pause_after_download();

@@ -124,19 +124,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
       Menentukan durasi sebelum tirai layar ditampilkan di layar masuk dalam mode eceran.
 
       Nilai kebijakan harus ditentukan dalam milidetik.</translation>
-<translation id="1141767714195601945">Kebijakan ini mengontrol parameter baris perintah untuk Chrome dari Internet Explorer.
-
-      Jika add-in 'Dukungan Browser Lama' untuk Internet Explorer tidak diinstal, kebijakan ini tidak akan berpengaruh.
-
-      Jika kebijakan ini dibiarkan tidak disetel, Internet Explorer hanya meneruskan URL ke Chrome sebagai parameter baris perintah.
-
-      Jika kebijakan ini disetel ke daftar string, string tersebut akan digabungkan dengan spasi dan diteruskan ke Chrome sebagai parameter baris perintah.
-
-      Jika suatu elemen berisi ${url}, elemen tersebut akan diganti dengan URL halaman yang akan dibuka.
-
-      Jika tidak ada elemen yang berisi $ {url}, URL akan ditambahkan di akhir baris perintah.
-
-      Variabel lingkungan diperluas. Pada Windows, %ABC% diganti dengan nilai variabel lingkungan ABC.</translation>
 <translation id="1151353063931113432">Izinkan gambar di situs ini</translation>
 <translation id="1152117524387175066">Laporkan status pengalih dev perangkat ketika boot.
 
@@ -282,17 +269,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi akan mengarahkan pengguna ke https://myaccount.google.com untuk mengubah sandinya.
       Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="1456822151187621582">Windows (klien <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1458547592473993238">Kebijakan ini tidak digunakan lagi. Gunakan kebijakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> untuk mengontrol ketersediaan plugin Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> untuk mengontrol apakah penampil PDF terintegrasi akan digunakan untuk membuka file PDF atau tidak.
-
-      Menentukan daftar plugin yang dinonaktifkan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
-
-      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter sembarang. Karakter '*' mencocokkan sembarang jumlah karakter, sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter escape adalah '\', jadi untuk mencocokkan karakter '*', '?', atau '\' yang sebenarnya, Anda dapat menempatkan '\' di depannya.
-
-      Jika setelan ini diaktifkan, daftar plugin yang ditentukan tidak akan digunakan di <ph name="PRODUCT_NAME" />. Plugin ditandai nonaktif pada 'about:plugins' dan pengguna tidak dapat mengaktifkannya.
-
-      Perhatikan bahwa kebijakan ini dapat digantikan oleh EnabledPlugins dan DisabledPluginsExceptions.
-
-      Jika kebijakan ini tidak ditetapkan, pengguna dapat menggunakan plugin apa pun yang diinstal pada sistem kecuali plugin berbahaya, tidak berlaku, atau tidak kompatibel yang sulit dikodekan.</translation>
 <translation id="1464848559468748897">Mengontrol perilaku pengguna di sesi multi profil di perangkat <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel ke 'MultiProfileUserBehaviorUnrestricted', pengguna dapat menjadi pengguna utama atau sekunder di sesi multi profil.
@@ -459,12 +435,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Kebijakan ini harus disetel ke URL di tempat <ph name="PRODUCT_OS_NAME" /> dapat mendownload Persyaratan Layanan tersebut. Persyaratan Layanan ini harus dalam teks biasa, yang disajikan sebagai teks/biasa jenis MIME. Tidak ada markup yang diizinkan.</translation>
 <translation id="1750315445671978749">Blokir semua download</translation>
 <translation id="1767673020408652620">Aktifkan fitur Rekomendasi Aplikasi pada Status Kosong Kotak Penelusuran</translation>
-<translation id="17719159826324007">
-      Kebijakan ini, saat disetel ke ArcSession, akan memaksa perangkat untuk reboot saat pengguna logout jika Android telah dimulai.
-      Saat disetel ke Selalu, kebijakan ini akan memaksa perangkat untuk reboot setiap kali pengguna logout.
-      Jika tidak disetel, kebijakan ini tidak berpengaruh dan reboot paksa tidak akan dilakukan saat pengguna logout. Hal yang sama berlaku jika kebijakan disetel ke Jangan pernah.
-      Kebijakan ini hanya memengaruhi pengguna yang tidak berafiliasi.
-      </translation>
 <translation id="1781356041596378058">Kebijakan ini juga mengontrol akses ke Opsi Developer Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Developer. Jika Anda menyetel kebijakan ini ke false atau tidak menyetel kebijakan ini, pengguna dapat mengakses Opsi Developer dengan mengetuk tujuh kali nomor versi di aplikasi setelan Android.</translation>
 <translation id="1793346220873697538">Nonaktifkan pencetakan PIN secara default</translation>
 <translation id="1797233582739332495">Tampilkan permintaan berulang kepada pengguna yang menunjukkan bahwa peluncuran ulang diperlukan</translation>
@@ -759,7 +729,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Buka https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Aktifkan menampilkan Izin Sinkronisasi saat login</translation>
-<translation id="2270747976331889601">Mengaktifkan fitur keamanan TLS 1.3 untuk sumber tepercaya setempat.</translation>
+<translation id="2270747976331889601">Mengaktifkan fitur keamanan TLS 1.3 untuk penanda kepercayaan lokal.</translation>
 <translation id="2274864612594831715">Kebijakan ini mengonfigurasi pengaktifkan keyboard virtual sebagai perangkat masukan di ChromeOS. Pengguna tidak dapat mengganti kebijakan ini.
 
       Jika kebijakan ini disetel ke true, keyboard virtual di layar akan selalu diaktifkan.
@@ -959,9 +929,9 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika setelan ini dinonaktifkan, <ph name="PRODUCT_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat lama yang disediakan oleh platform.
       Jika setelan ini tidak ditetapkan, pemverifikasi sertifikat yang lama atau bawaan dapat digunakan.
 
-      Kebijakan ini akan dihapus dari <ph name="PRODUCT_OS_NAME" /> versi 81, jika dukungan untuk pemverifikasi sertifikat yang lama di <ph name="PRODUCT_OS_NAME" /> akan dihapus.
+      Kebijakan ini akan dihapus dari <ph name="PRODUCT_OS_NAME" /> versi 81, saat dukungan untuk pemverifikasi sertifikat yang lama di <ph name="PRODUCT_OS_NAME" /> dihapus.
 
-      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Linux versi 83, jika dukungan untuk pemverifikasi sertifikat yang lama di Linux akan dihapus.
+      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Linux versi 83, saat dukungan untuk pemverifikasi sertifikat yang lama di Linux dihapus.
       </translation>
 <translation id="2586162458524426376">
       Kebijakan ini berlaku untuk layar login. Baca juga kebijakan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> yang berlaku untuk sesi pengguna.
@@ -1243,32 +1213,12 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="3038323923255997294">Terus jalankan aplikasi latar belakang saat <ph name="PRODUCT_NAME" /> ditutup</translation>
 <translation id="3046192273793919231">Kirim paket jaringan ke server pengelolaan untuk memantau status online</translation>
 <translation id="3047732214002457234">Mengontrol cara Pembersih Chrome melaporkan data ke Google</translation>
-<translation id="304775240152542058">Kebijakan ini mengontrol parameter baris perintah untuk membuka browser alternatif.
-
-      Jika kebijakan ini tidak disetel, hanya URL yang diteruskan sebagai parameter baris perintah.
-
-      Jika kebijakan ini disetel ke daftar string, setiap string diteruskan ke browser alternatif sebagai parameter baris perintah terpisah. Di Windows, parameter digabungkan dengan spasi. Pada Mac OS X dan Linux, parameter mungkin berisi spasi, dan masih diperlakukan sebagai parameter tunggal.
-
-      Jika elemen berisi ${url}, elemen tersebut akan diganti dengan URL halaman yang akan dibuka.
-
-      Jika tidak ada elemen yang berisi ${url}, URL akan ditambahkan di akhir baris perintah.
-
-      Variabel lingkungan diperluas. Di Windows, %ABC% diganti dengan nilai variabel lingkungan ABC. Di Mac OS X dan Linux, ${ABC} diganti dengan nilai variabel lingkungan ABC.</translation>
 <translation id="3048744057455266684">Jika kebijakan ini disetel dan URL penelusuran yang disarankan dari omnibox berisi parameter ini dalam string kueri atau dalam pengenal fragmen, maka saran akan menampilkan istilah penelusuran dan penyedia penelusuran dan bukan URL penelusuran mentah.
 
           Kebijakan ini adalah opsional. Jika tidak disetel, penggantian istilah penelusuran tidak akan dilakukan.
 
           Kebijakan ini hanya akan ditaati jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="306887062252197004">Kebijakan ini memungkinkan pengguna fitur WebDriver mengganti kebijakan
-      yang dapat mengganggu pengoperasiannya.
-
-      Saat ini, kebijakan ini menonaktifkan kebijakan SitePerProcess dan IsolateOrigins.
-
-      Jika kebijakan ini diaktifkan, WebDriver akan dapat mengganti kebijakan
-      yang tidak kompatibel.
-      Jika kebijakan ini dinonaktifkan atau tidak dikonfigurasi, WebDriver tidak akan diizinkan
-      untuk mengganti kebijakan yang tidak kompatibel.</translation>
 <translation id="3069958900488014740">Memungkinkan penonaktifan pengoptimalan WPAD (Web Proxy Auto-Discovery) di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini disetel ke false, pengoptimalan WPAD akan dinonaktifkan sehingga menyebabkan <ph name="PRODUCT_NAME" /> menunggu server WPAD berbasis DNS dalam waktu yang lebih lama. Jika kebijakan diaktifkan atau tidak disetel, pengoptimalan WPAD akan diaktifkan.
@@ -2046,13 +1996,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4347908978527632940">Jika nilai disetel ke "true" dan pengguna adalah pengguna yang dilindungi, aplikasi Android lainnya dapat mengajukan kueri batasan web pengguna melalui penyedia konten.
 
           Jika nilai disetel ke "false" atau tidak disetel, penyedia konten tidak mengembalikan informasi apa pun.</translation>
-<translation id="435461861920493948">Berisi daftar pola yang digunakan untuk mengontrol visibilitas akun di <ph name="PRODUCT_NAME" />.
-
-      Tiap akun Google di perangkat akan dibandingkan dengan pola yang disimpan di kebijakan ini untuk menentukan visibilitas akun di <ph name="PRODUCT_NAME" />. Akun akan terlihat jika namanya cocok dengan pola yang ada di daftar. Jika tidak, akun akan disembunyikan.
-
-      Gunakan karakter pengganti '*' untuk mencocokkan nol atau lebih karakter arbitrer. Karakter escape adalah '\', jadi untuk mencocokkan karakter '*' atau '\' yang sebenarnya, tempatkan '\' di depannya.
-
-      Jika kebijakan ini tidak disetel, semua akun Google di perangkat akan terlihat di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4360826270668210664">Jika kebijakan ini ditetapkan, host akses jarak jauh akan mewajibkan autentikasi klien untuk memperoleh token autentikasi dari URL ini agar dapat tersambung. Harus digunakan bersama RemoteAccessHostTokenValidationUrl.
 
           Fitur ini saat ini dinonaktifkan pada sistem server.</translation>
@@ -2487,17 +2430,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5236882091572996759">Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, pengguna tidak dianggap menganggur selama audio diputar. Hal ini mencegah tercapainya waktu tunggu menganggur dan mencegah diambilnya tindakan menganggur. Namun, peredupan layar, penonaktifan layar, dan penguncian layar akan dilakukan setelah waktu tunggu yang dikonfigurasi tercapai, tanpa mempertimbangkan aktivitas audio.
 
           Jika kebijakan ini ditetapkan ke False, aktivitas audio tidak mencegah pengguna untuk dianggap menganggur.</translation>
-<translation id="5246700266104954355">Kebijakan ini tidak digunakan lagi. Gunakan kebijakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> untuk mengontrol ketersediaan plugin Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> untuk mengontrol apakah penampil PDF terintegrasi akan digunakan untuk membuka file PDF atau tidak.
-
-      Menentukan daftar plugin yang diaktifkan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
-
-      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. Karakter '*' mencocokkan sembarang jumlah karakter, sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter escape adalah '\', jadi untuk mencocokkan karakter '*', '?', atau '\' yang sebenarnya, Anda dapat menempatkan '\' di depannya.
-
-      Daftar plugin yang ditentukan akan selalu digunakan di <ph name="PRODUCT_NAME" /> jika plugin tersebut diinstal. Plugin ditandai aktif pada 'about:plugins' dan pengguna tidak dapat menonaktifkannya.
-
-      Perhatikan bahwa kebijakan ini mengganti DisabledPlugins dan DisabledPluginsExceptions.
-
-      Jika kebijakan ini tidak ditetapkan, pengguna dapat menonaktifkan plugin apa pun yang diinstal pada sistem.</translation>
 <translation id="5247006254130721952">Blokir download berbahaya</translation>
 <translation id="5248863213023520115">Menyetel jenis enkripsi yang diizinkan saat meminta tiket Kerberos dari server <ph name="MS_AD_NAME" />.
 
@@ -2558,11 +2490,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5362531528507578966">Mengganti mode pencetakan grafis latar belakang default.</translation>
 <translation id="5365476955714838841">Parameter baris perintah untuk browser alternatif.</translation>
 <translation id="5365946944967967336">Tampilkan tombol Layar Utama di toolbar</translation>
-<translation id="5366745336748853475">Memungkinkan Anda menentukan daftar pola URL yang menetapkan situs tempat sertifikat klien dipilih otomatis pada layar login dalam bingkai yang menjadi host alur SAML, jika situs meminta sertifikat. Contoh penggunaan adalah mengonfigurasi sertifikat tingkat perangkat untuk dimunculkan ke SAML IdP.
-
-      Nilai harus berupa rangkaian kamus dengan string JSON. Tiap kamus harus memiliki bentuk { "pattern": "$URL_PATTERN", "filter" : $FILTER }, dengan $URL_PATTERN sebagai pola setelan konten. $FILTER membatasi asal sertifikat klien yang akan dipilih otomatis oleh browser. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Jika $FILTER memiliki bentuk { "ISSUER": { "CN": "$ISSUER_CN" } }, hanya sertifikat klein yang diterbitkan oleh sertifikat dengan CommonName $ISSUER_CN yang akan dipilih. Jika $FILTER berupa kamus kosong {}, pemilihan sertifikat klien tidak lagi dibatasi.
-
-      Jika kebijakan ini tidak disetel, tidak ada pemilihan otomatis untuk situs.</translation>
 <translation id="5366977351895725771">Jika disetel ke false, pembuatan pengguna yang dilindungi oleh pengguna ini akan dinonaktifkan. Pengguna diawasi mana pun yang sudah ada akan tetap tersedia.
 
           Jika disetel ke true atau tidak dikonfigurasi, pengguna yang dilindungi dapat dibuat dan dikelola oleh pengguna ini.</translation>
@@ -2665,11 +2592,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini tidak ditetapkan, cookie pihak ketiga akan diaktifkan, tetapi pengguna dapat mengubahnya.</translation>
 <translation id="5442026853063570579">Kebijakan ini juga mengontrol akses ke Opsi Developer Android. Jika Anda menetapkan kebijakan ini ke 'DeveloperToolsDisallowed' (nilai 2), pengguna tidak dapat mengakses Opsi Developer. Jika Anda menetapkan kebijakan ini ke nilai lain atau tidak menetapkannya, pengguna dapat mengakses Opsi Developer dengan mengetuk nomor build di aplikasi setelan Android sebanyak 7 kali.</translation>
-<translation id="544342220587994947">Mengizinkan Anda menentukan daftar pola URL yang menetapkan situs tempat <ph name="PRODUCT_NAME" /> akan memilih sertifikat klien secara otomatis, jika situs meminta sertifikat.
-
-          Nilai harus berupa array kamus dengan string JSON. Tiap kamus harus memiliki bentuk { "pattern": "$URL_PATTERN", "filter" : $FILTER }, dengan $URL_PATTERN sebagai pola setelan konten. $FILTER membatasi asal sertifikat klien yang akan dipilih otomatis oleh browser. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Selain itu, misalnya jika $FILTER memiliki bentuk { "ISSUER": { "CN": "$ISSUER_CN" } }, hanya sertifikat klien yang diterbitkan oleh sertifikat dengan CommonName $ISSUER_CN yang akan dipilih. Jika $FILTER berisi bagian "ISSUER" dan "SUBJECT", sertifikat klien harus memenuhi kedua ketentuan untuk dipilih. Jika $FILTER menentukan organisasi ("O"), sertifikat harus memiliki minimal satu organisasi yang cocok dengan nilai yang ditentukan untuk dipilih. Jika $FILTER menentukan unit organisasi ("OU"), sertifikat harus memiliki minimal satu unit organisasi yang cocok dengan nilai yang ditentukan untuk dipilih. Jika $FILTER berupa kamus kosong {}, pemilihan sertifikat klien tidak dibatasi lagi.
-
-          Jika kebijakan ini tidak disetel, pemilihan otomatis tidak akan dilakukan untuk situs.</translation>
 <translation id="5447306928176905178">Aktifkan pelaporan info memori (JS heap size) ke halaman (dipensiunkan)</translation>
 <translation id="5457065417344056871">Mengaktifkan mode tamu dalam browser</translation>
 <translation id="5457924070961220141">Memungkinkan Anda mengonfigurasi perender HTML default saat <ph name="PRODUCT_FRAME_NAME" /> dipasang. Setelan default yang digunakan ketika kebijakan ini tidak disetel adalah mengizinkan browser host melakukan rendering, tetapi Anda dapat menimpanya secara opsional dan membiarkan <ph name="PRODUCT_FRAME_NAME" /> merender halaman HTML secara default.</translation>
@@ -2691,19 +2613,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5475361623548884387">Aktifkan pencetakan</translation>
 <translation id="547601067149622666">Jangan izinkan iklan di situs yang menayangkan iklan mengganggu</translation>
 <translation id="5483065054530244863">Mengizinkan sertifikat bertanda tangan SHA-1 yang dikeluarkan oleh sumber tepercaya setempat</translation>
-<translation id="5483777239978559943">Kebijakan ini tidak digunakan lagi. Gunakan kebijakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> untuk mengontrol ketersediaan plugin Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> untuk mengontrol apakah penampil PDF terintegrasi akan digunakan untuk membuka file PDF atau tidak.
-
-      Menentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna di <ph name="PRODUCT_NAME" />.
-
-      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter sembarang. Karakter '*' mencocokkan sembarang jumlah karakter, sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter escape adalah '\', jadi untuk mencocokkan karakter '*', '?', atau '\' yang sebenarnya, Anda dapat menempatkan '\' di depannya.
-
-      Jika setelan ini diaktifkan, daftar plugin yang ditentukan akan dapat digunakan di <ph name="PRODUCT_NAME" />. Pengguna dapat mengaktifkan atau menonaktifkannya pada 'about:plugins', meskipun plugin tersebut juga cocok dengan pola pada DisabledPlugins. Pengguna juga dapat mengaktifkan dan menonaktifkan plugin yang tidak cocok dengan pola apa pun pada DisabledPlugins, DisabledPluginsExceptions, dan EnabledPlugins.
-
-      Kebijakan ini dimaksudkan untuk memungkinkan penyusunan daftar plugin tidak diizinkan yang ketat, di mana daftar 'DisabledPlugins' memuat entri berkarakter pengganti seperti nonaktifkan semua plugin '*' atau nonaktifkan semua plugin Java '*Java*', tetapi administrator ingin mengaktifkan beberapa versi tertentu seperti 'IcedTea Java 2.3'. Versi tertentu ini dapat ditetapkan dalam kebijakan ini.
-
-      Perhatikan bahwa baik nama plugin maupun nama grup plugin harus dikecualikan. Setiap grup plugin ditampilkan di bagian terpisah pada about:plugins; setiap bagian dapat memiliki satu atau beberapa plugin. Misalnya, plugin "Shockwave Flash" termasuk dalam grup "Adobe Flash Player", dan kedua nama tersebut perlu memiliki kecocokan dalam daftar pengecualian agar plugin tersebut dapat dikecualikan dari daftar tidak diizinkan.
-
-      Jika kebijakan ini tidak ditetapkan, semua plugin yang cocok dengan pola pada 'DisabledPlugins' akan dikunci sebagai nonaktif dan pengguna tidak akan dapat mengaktifkannya.</translation>
 <translation id="5498045818698736356">Menetapkan daftar situs yang diinstal otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna.
 
       Setiap item daftar kebijakan adalah objek dengan satu anggota wajib: "url" dan dua anggota opsional: "default_launch_container" dan "create_desktop_shortcut". "url" harus berupa URL aplikasi web untuk menginstal, "launch_container" harus berupa "window" atau "tab" untuk menunjukkan cara Aplikasi Web dibuka setelah diinstal, dan "create_desktop_shortcut" harus memiliki nilai True jika pintasan desktop harus dibuat di Linux dan Windows. Jika "default_launch_container" dihilangkan, aplikasi akan terbuka di tab secara default. Terlepas dari nilai "default_launch_container", pengguna dapat mengubah penampung tempat aplikasi akan terbuka. Jika "create_desktop_shortcuts" dihilangkan, tidak akan ada pintasan desktop yang dibuat. Lihat kebijakan <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> untuk memasang pin pada aplikasi ke rak ChromeOS.</translation>
@@ -3289,13 +3198,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
 <translation id="6813263547126514821">Daya dan penonaktifan</translation>
 <translation id="681446116407619279">Skema autentikasi yang didukung</translation>
-<translation id="6816212867679667972">Menentukan hostname perangkat yang digunakan dalam permintaan DHCP.
-
-      Jika kebijakan ini ditetapkan ke string yang tidak kosong, string tersebut akan digunakan sebagai hostname perangkat selama proses permintaan DHCP.
-
-      String dapat memuat variabel ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} yang akan diganti dengan nilai pada perangkat sebelum digunakan sebagai hostname. Substitusi yang dihasilkan akan menjadi hostname yang valid (menurut RFC 1035, bagian 3.1).
-
-      Jika kebijakan ini tidak ditetapkan, atau nilai setelah substitusi bukan merupakan hostname yang valid, tidak ada hostname yang akan ditetapkan di permintaan DHCP. </translation>
 <translation id="6833988859168635883">Halaman Awal, Halaman Beranda, dan halaman Tab Baru</translation>
 <translation id="6835883744948188639">Tampilkan permintaan berulang kepada pengguna yang menunjukkan bahwa peluncuran ulang direkomendasikan</translation>
 <translation id="683688607121170501">Setelan ini memungkinkan pengguna beralih ke Akun Google lain di dalam area konten jendela browser dan aplikasi Android setelah mereka login ke perangkat <ph name="PRODUCT_OS_NAME" />.
@@ -3540,17 +3442,6 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Di <ph name="ANDROID_VERSION" /> dan yang lebih tinggi, jika DNS-over-TLS aktif, <ph name="PRODUCT_NAME" /> tidak akan mengirim permintaan DNS yang tidak aman.
 
       Jika kebijakan ini tidak ditetapkan, browser mungkin akan mengirim permintaan DNS-over-HTTPS kepada resolver yang terkait dengan resolver sistem terkonfigurasi milik pengguna.</translation>
-<translation id="7158064522994309072">Kebijakan ini mengontrol perintah mana yang akan digunakan untuk membuka URL di browser alternatif.
-
-      Jika kebijakan ini tidak disetel, kebijakan default yang spesifik untuk platform akan digunakan: Internet Explorer untuk Windows, atau Safari untuk Mac OS X. Di Linux, browser alternatif tidak akan dapat dibuka jika kebijakan ini tidak disetel.
-
-      Jika kebijakan ini disetel ke salah satu dari ${ie}, ${firefox}, ${safari}, atau 
-      ${opera}, browser tersebut akan dibuka jika sudah diinstal. ${ie} hanya
-      tersedia di Windows, dan ${safari} hanya tersedia di Windows dan Mac
-      OS X.
-
-      Jika kebijakan ini disetel ke lokasi file, file tersebut akan digunakan sebagai
-      file yang dapat dijalankan.</translation>
 <translation id="7167436895080860385">Mengizinkan pengguna menampilkan sandi di Pengelola Sandi (tak lagi digunakan)</translation>
 <translation id="7173856672248996428">Profil singkat</translation>
 <translation id="717630378807352957">Izinkan semua printer dari file konfigurasi.</translation>
@@ -3729,11 +3620,6 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 <translation id="7434202861148928348">Mengonfigurasi nama domain wajib untuk klien akses jarak jauh</translation>
 <translation id="7443616896860707393">Permintaan Autentikasi Dasar HTTP lintas asal</translation>
 <translation id="7448430478749155471">Mengaktifkan fitur klik untuk diucapkan di layar login</translation>
-<translation id="7454519673779830548">Menambahkan akun Kerberos yang telah diisi. Jika kredensial Kerberos cocok dengan kredensial login, akun dapat dikonfigurasi untuk menggunakan kembali kredensial login dengan menentukan '${{LOGIN_EMAIL}}' dan '${{PASSWORD}}', masing-masing untuk principal dan sandi, sehingga tiket Kerberos dapat diambil secara otomatis kecuali autentikasi 2 langkah dikonfigurasi. Pengguna tidak dapat memodifikasi akun yang ditambahkan dengan kebijakan ini.
-
-          Jika kebijakan ini diaktifkan, daftar akun yang ditentukan oleh kebijakan akan ditambahkan ke Setelan akun Kerberos.
-
-          Jika kebijakan ini dinonaktifkan atau tidak disetel, tidak ada akun yang ditambahkan ke Setelan akun Kerberos dan semua akun yang sebelumnya ditambahkan dengan kebijakan ini akan dihapus. Pengguna masih dapat menambahkan akun secara manual jika kebijakan 'Pengguna dapat menambahkan akun Kerberos' diaktifkan.</translation>
 <translation id="7458437477941640506">Jangan kembalikan ke versi target jika versi OS lebih baru daripada target. Update juga dinonaktifkan.</translation>
 <translation id="7464991223784276288">Membatasi cookie dari URL yang cocok ke sesi saat ini</translation>
 <translation id="7469554574977894907">Aktifkan saran penelusuran</translation>
@@ -4665,15 +4551,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="9217154963008402249">Frekuensi paket jaringan pemantauan</translation>
 <translation id="922540222991413931">Konfigurasi sumber pemasangan skrip pengguna, aplikasi, dan ekstensi</translation>
 <translation id="924557436754151212">Impor sandi yang disimpan dari browser default saat pertama kali dijalankan</translation>
-<translation id="926146562923985266">Kebijakan ini mengontrol perintah yang akan digunakan untuk membuka URL di <ph name="PRODUCT_NAME" /> saat beralih dari Internet Explorer.
-
-      Jika add-in 'Dukungan Browser Lama' untuk Internet Explorer tidak diinstal, kebijakan ini tidak akan berpengaruh.
-
-      Jika kebijakan ini tidak ditetapkan, Internet Explorer akan otomatis mendeteksi jalur executable <ph name="PRODUCT_NAME" /> sendiri saat <ph name="PRODUCT_NAME" /> diluncurkan dari Internet Explorer.
-
-      Jika ditetapkan, kebijakan ini akan digunakan untuk meluncurkan <ph name="PRODUCT_NAME" /> saat <ph name="PRODUCT_NAME" /> diluncurkan dari Internet Explorer.
-
-      Kebijakan ini dapat ditetapkan ke jalur file executable, atau ${chrome} untuk otomatis mendeteksi lokasi penginstalan Chrome.</translation>
 <translation id="930930237275114205">Setel direktori data pengguna <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="943865157632139008">Memungkinkan Anda mengonfigurasi perender HTML default jika <ph name="PRODUCT_FRAME_NAME" /> diinstal. Setelan defaultnya adalah mengizinkan browser host melakukan rendering, tetapi Anda dapat mengganti ini secara opsional dan memerintahkan <ph name="PRODUCT_FRAME_NAME" /> me-render halaman HTML secara default.</translation>
 <translation id="944817693306670849">Setel ukuran cache disk</translation>

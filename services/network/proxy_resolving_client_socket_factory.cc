@@ -93,7 +93,7 @@ ProxyResolvingClientSocketFactory::CreateSocket(
       request_context_->http_transaction_factory()
           ->GetSession()
           ->http_auth_cache();
-  network_session_->http_auth_cache()->UpdateAllFrom(*other_auth_cache);
+  network_session_->http_auth_cache()->CopyProxyEntriesFrom(*other_auth_cache);
   return std::make_unique<ProxyResolvingClientSocket>(
       network_session_.get(), common_connect_job_params_.get(), url, use_tls);
 }

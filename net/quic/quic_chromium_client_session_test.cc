@@ -305,8 +305,7 @@ TEST_P(QuicChromiumClientSessionTest, IsFatalErrorNotSetForNonFatalError) {
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  details.cert_verify_result.cert_status =
-      MapNetErrorToCertStatus(ERR_CERT_DATE_INVALID);
+  details.cert_verify_result.cert_status = CERT_STATUS_DATE_INVALID;
   details.is_fatal_cert_error = false;
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
@@ -328,8 +327,7 @@ TEST_P(QuicChromiumClientSessionTest, IsFatalErrorSetForFatalError) {
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  details.cert_verify_result.cert_status =
-      MapNetErrorToCertStatus(ERR_CERT_DATE_INVALID);
+  details.cert_verify_result.cert_status = CERT_STATUS_DATE_INVALID;
   details.is_fatal_cert_error = true;
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);

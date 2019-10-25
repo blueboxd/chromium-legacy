@@ -221,7 +221,7 @@ bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {
 
 ForcedColors MediaValues::CalculateForcedColors() {
   if (Platform::Current() && Platform::Current()->ThemeEngine())
-    return Platform::Current()->ThemeEngine()->ForcedColors();
+    return Platform::Current()->ThemeEngine()->GetForcedColors();
   else
     return ForcedColors::kNone;
 }

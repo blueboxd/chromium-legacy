@@ -202,6 +202,7 @@
 <translation id="3783017676699494206">이미지 저장</translation>
 <translation id="3789841737615482174">설치</translation>
 <translation id="385051799172605136">뒤로</translation>
+<translation id="3886946236301294521">사용 중인 비밀번호가 정보 유출 대상일 경우 경고를 표시합니다.</translation>
 <translation id="3897092660631435901">메뉴</translation>
 <translation id="3915450441834151894">사이트 정보</translation>
 <translation id="3922310737605261887">복사한 텍스트 검색</translation>
@@ -332,6 +333,7 @@
 <translation id="5854790677617711513">30일 이상 전</translation>
 <translation id="5857090052475505287">새 폴더</translation>
 <translation id="5857770089550859117">동기화를 시작하려면 암호가 필요합니다.</translation>
+<translation id="5859444426865731878">비밀번호가 정보 유출 대상인지 Google에서 확인해 드립니다.</translation>
 <translation id="5860033963881614850">사용 안함</translation>
 <translation id="5869029295770560994">확인</translation>
 <translation id="5871497086027727873">1개 항목 이동함</translation>
@@ -411,6 +413,7 @@
 <translation id="6797885426782475225">음성검색</translation>
 <translation id="6807889908376551050">모두 표시...</translation>
 <translation id="681368974849482173">북마크가 생성되었습니다.</translation>
+<translation id="6831043979455480757">번역</translation>
 <translation id="6851516051005285358">데스크톱 버전으로 보기</translation>
 <translation id="6858855187367714033">스캔됨</translation>
 <translation id="6859944681507688231">QR 코드 또는 신용카드를 스캔하려면 설정에서 카메라를 사용 설정하세요.</translation>

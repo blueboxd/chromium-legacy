@@ -180,7 +180,8 @@ void TransferHttpAuthCacheToSystemNetworkContext(
     const base::UnguessableToken& cache_key) {
   network::mojom::NetworkContext* system_network_context =
       g_browser_process->system_network_context_manager()->GetContext();
-  system_network_context->LoadHttpAuthCache(cache_key, completion_callback);
+  system_network_context->LoadHttpAuthCacheProxyEntries(cache_key,
+                                                        completion_callback);
 }
 
 // Copies any authentication details that were entered in the login profile to
@@ -193,16 +194,16 @@ void TransferHttpAuthCaches() {
       base::BarrierClosure(webview_storage_partition ? 2 : 1,
                            base::BindOnce(&OnTranferredHttpAuthCaches));
   if (webview_storage_partition) {
-    webview_storage_partition->GetNetworkContext()->SaveHttpAuthCache(
-        base::BindOnce(&TransferHttpAuthCacheToSystemNetworkContext,
-                       completion_callback));
+    webview_storage_partition->GetNetworkContext()
+        ->SaveHttpAuthCacheProxyEntries(base::BindOnce(
+            &TransferHttpAuthCacheToSystemNetworkContext, completion_callback));
   }
 
   network::mojom::NetworkContext* default_network_context =
       content::BrowserContext::GetDefaultStoragePartition(
           ProfileHelper::GetSigninProfile())
           ->GetNetworkContext();
-  default_network_context->SaveHttpAuthCache(base::BindOnce(
+  default_network_context->SaveHttpAuthCacheProxyEntries(base::BindOnce(
       &TransferHttpAuthCacheToSystemNetworkContext, completion_callback));
 }
 

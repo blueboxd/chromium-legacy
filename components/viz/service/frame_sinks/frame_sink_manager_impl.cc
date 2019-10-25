@@ -269,7 +269,7 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
 }
 
 void FrameSinkManagerImpl::AddVideoDetectorObserver(
-    mojom::VideoDetectorObserverPtr observer) {
+    mojo::PendingRemote<mojom::VideoDetectorObserver> observer) {
   if (!video_detector_) {
     video_detector_ = std::make_unique<VideoDetector>(
         GetRegisteredFrameSinkIds(), &surface_manager_);

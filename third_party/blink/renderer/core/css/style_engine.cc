@@ -106,7 +106,7 @@ StyleEngine::StyleEngine(Document& document)
   if (Platform::Current() && Platform::Current()->ThemeEngine()) {
     preferred_color_scheme_ =
         Platform::Current()->ThemeEngine()->PreferredColorScheme();
-    forced_colors_ = Platform::Current()->ThemeEngine()->ForcedColors();
+    forced_colors_ = Platform::Current()->ThemeEngine()->GetForcedColors();
   }
 }
 
@@ -1937,7 +1937,7 @@ void StyleEngine::UpdateColorScheme() {
     return;
 
   ForcedColors old_forced_colors = forced_colors_;
-  forced_colors_ = web_theme_engine->ForcedColors();
+  forced_colors_ = web_theme_engine->GetForcedColors();
 
   PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
   preferred_color_scheme_ = web_theme_engine->PreferredColorScheme();

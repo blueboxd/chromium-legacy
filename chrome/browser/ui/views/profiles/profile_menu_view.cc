@@ -436,11 +436,15 @@ void ProfileMenuView::BuildIdentity() {
           account);
   ProfileAttributesEntry* profile_attributes =
       GetProfileAttributesEntry(profile);
+  size_t num_of_profiles =
+      g_browser_process->profile_manager()->GetNumberOfProfiles();
 
-  SetHeading(profile_attributes->GetLocalProfileName(),
-             l10n_util::GetStringUTF16(IDS_SETTINGS_EDIT_PERSON),
-             base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
-                                 base::Unretained(this)));
+  if (num_of_profiles > 1 || !profile_attributes->IsUsingDefaultName()) {
+    SetHeading(profile_attributes->GetLocalProfileName(),
+               l10n_util::GetStringUTF16(IDS_SETTINGS_EDIT_PERSON),
+               base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
+                                   base::Unretained(this)));
+  }
 
   if (account_info.has_value()) {
     SetIdentityInfo(account_info.value().account_image.AsImageSkia(),

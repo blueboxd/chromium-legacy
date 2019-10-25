@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_LAUNCH_SERVICE_LAUNCH_MANAGER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 

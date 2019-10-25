@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/ios/ios_util.h"
+#import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -107,7 +108,7 @@ id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
 }
 
 - (void)tearDown {
-  [ChromeEarlGrey clearCreditCards];
+  [AutofillAppInterface clearCreditCardStore];
   [super tearDown];
 }
 
@@ -230,7 +231,7 @@ id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
 // and the new card number appears on the Autofill Credit Card 'Payment Methods'
 // screen.
 - (void)testAddButtonOnValidNumber {
-  [ChromeEarlGrey clearCreditCards];
+  [AutofillAppInterface clearCreditCardStore];
   [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
       performAction:grey_typeText(@"4111111111111111")];
   [[EarlGrey selectElementWithMatcher:MonthOfExpiryTextField()]

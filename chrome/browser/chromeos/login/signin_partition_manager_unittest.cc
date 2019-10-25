@@ -52,7 +52,7 @@ void AddEntryToHttpAuthCache(network::NetworkContext* network_context) {
                                             ->http_transaction_factory()
                                             ->GetSession()
                                             ->http_auth_cache();
-  http_auth_cache->Add(GURL(kEmbedderUrl), net::HttpAuth::AUTH_SERVER, "",
+  http_auth_cache->Add(GURL(kEmbedderUrl), net::HttpAuth::AUTH_PROXY, "",
                        net::HttpAuth::AUTH_SCHEME_BASIC,
                        net::NetworkIsolationKey(), "", net::AuthCredentials(),
                        "");
@@ -65,8 +65,8 @@ void IsEntryInHttpAuthCache(network::NetworkContext* network_context,
                                             ->GetSession()
                                             ->http_auth_cache();
   *out_entry_found =
-      http_auth_cache->Lookup(GURL(kEmbedderUrl), net::HttpAuth::AUTH_SERVER,
-                              "", net::HttpAuth::AUTH_SCHEME_BASIC,
+      http_auth_cache->Lookup(GURL(kEmbedderUrl), net::HttpAuth::AUTH_PROXY, "",
+                              net::HttpAuth::AUTH_SCHEME_BASIC,
                               net::NetworkIsolationKey()) != nullptr;
 }
 

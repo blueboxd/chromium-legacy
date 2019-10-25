@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">תהליך מארח</translation>
 <translation id="20876857123010370">מצב משטח מגע</translation>
 <translation id="2089514346391228378">הופעלו חיבורים מרוחקים למחשב זה.</translation>
+<translation id="2198363917176605566">‏על מנת להשתמש ב-<ph name="PRODUCT_NAME" />, יש להעניק את ההרשאה 'הקלטת מסך' כדי שניתן יהיה לשלוח את תוכן המסך במחשב ה-Mac הזה אל המחשב המרוחק.
+
+על מנת להעניק את ההרשאה הזו, יש ללחוץ על '<ph name="BUTTON_NAME" />' למטה כדי לפתוח את חלונית ההעדפות של 'הקלטת מסך', ולסמן את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+אם האפשרות '<ph name="SERVICE_SCRIPT_NAME" />' כבר מסומנת, יש להסיר את הסימון ואז לסמן מחדש.</translation>
 <translation id="2208514473086078157">‏הגדרות המדיניות אינן מאפשרות שיתוף של מחשב זה כמארח Chrome Remote Desktop. יש לפנות למנהל המערכת שלך לקבלת סיוע.</translation>
 <translation id="2220529011494928058">דיווח על בעיה</translation>
 <translation id="2221097377466213233">‏השתמש במקש Ctrl למקש Win (⌘ ב-Mac)</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852">המארח <ph name="OPTIONAL_OFFLINE_REASON" />  נראה לאחרונה במצב מקוון <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">‏האפליקציה הזו כבר לא נתמכת. כדי לוודא שיש לך גישה לתכונות ולעדכוני האבטחה העדכניים ביותר, יש להשתמש ב<ph name="LINK_BEGIN" />אפליקציית האינטרנט Chrome Remote Desktop<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">‏רוצה לעזור לנו לשפר את Chrome Remote Desktop? אנחנו זקוקים לאישורך כדי לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
+<translation id="2504109125669302160">מתן הרשאת 'נגישות' ל-<ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">בוצעה התחברות אל <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏הערה: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את Chrome Remote Desktop ל'פתח כחלון'.</translation>
 <translation id="2540992418118313681">האם ברצונך לשתף מחשב זה כך שמשתמש אחר יראה אותו וישלוט בו?</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">ספריית ליבה</translation>
 <translation id="4430435636878359009">השבת חיבורים מרוחקים למחשב זה</translation>
 <translation id="4430915108080446161">יוצר קוד גישה...</translation>
+<translation id="443560535555262820">פתיחת העדפות הנגישות</translation>
 <translation id="4450893287417543264">אין להציג שוב</translation>
 <translation id="4472575034687746823">תחילת העבודה</translation>
 <translation id="4481276415609939789">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, התקן את Chromoting במחשב היעד ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">‏שנה PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (לא עדכני)</translation>
 <translation id="6221358653751391898">‏אתה לא מחובר ל-Chrome. היכנס ונסה שוב.</translation>
+<translation id="6223301979382383752">פתיחת ההעדפות להקלטת מסך</translation>
 <translation id="6227369581881558336">‏Chrome Remote Desktop זמין עכשיו באינטרנט, עם יותר תכונות - כולל העברת קבצים! אפשר להתנסות ב<ph name="LINK_BEGIN" />אפליקציית האינטרנט<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">המארח הפועל במסך הכניסה למסוף כבה כדי לתמוך במצב הסתרה על ידי מעבר אל מארח הרץ בפעילות באתר שהיא ספציפית למשתמש.</translation>
 <translation id="629730747756840877">חשבון</translation>
 <translation id="6304318647555713317">לקוח</translation>
 <translation id="6381670701864002291">משהו אחר.</translation>
 <translation id="6398765197997659313">צא ממסך מלא</translation>
+<translation id="6411861157501911556">‏כדי להשתמש ב-<ph name="PRODUCT_NAME" />, יש להעניק הרשאת 'נגישות' על מנת שניתן יהיה להעביר את התוכן מהמחשב המרוחק אל מחשב ה-Mac הזה.
+
+כדי להעניק את ההרשאה הזו, צריך ללחוץ על '<ph name="BUTTON_NAME" />' למטה כדי לפתוח את חלונית ההעדפות 'נגישות' ולסמן את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+אם האפשרות '<ph name="SERVICE_SCRIPT_NAME" />' כבר מסומנת, יש לבטל את הסימון ואז לסמן מחדש.</translation>
 <translation id="6441316101718669559">שילוב של שולחן עבודה אינו נתמך בפלטפורמה זו. תוכל עדיין להשתמש ביישום, אבל תהיה לכך השפעה שלילית על חוויית המשתמש.</translation>
 <translation id="652218476070540101">‏ה-PIN של מחשב זה מתעדכן...</translation>
 <translation id="6527303717912515753">שיתוף</translation>
@@ -327,6 +340,7 @@
 <translation id="9149580767411232853">הצגה של כל שולחן העבודה המרוחק במסך</translation>
 <translation id="9149992051684092333">כדי להתחיל לשתף את שולחן העבודה שלך, תן את קוד הגישה שלמטה לאדם שיסייע לך.</translation>
 <translation id="916856682307586697">‏הפעלת ה-XSession שמוגדר כברירת מחדל</translation>
+<translation id="9187628920394877737">מתן הרשאת 'הקלטת מסך' ל-<ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">מתן הרשאה</translation>
 <translation id="9213184081240281106">תצורה לא חוקית של המארח.</translation>
 <translation id="951991426597076286">דחה</translation>

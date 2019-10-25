@@ -39,9 +39,9 @@
 <translation id="2078880767960296260">Hostproces</translation>
 <translation id="20876857123010370">Trackpadmodus</translation>
 <translation id="2089514346391228378">Externe verbindingen voor deze computer zijn ingeschakeld.</translation>
-<translation id="2198363917176605566">Als je <ph name="PRODUCT_NAME" /> wilt gebruiken, moet je het recht Schermopname verlenen, zodat de scherminhoud van deze Mac naar het externe systeem kan worden gestuurd.
+<translation id="2198363917176605566">Als je <ph name="PRODUCT_NAME" /> wilt gebruiken, moet je schermopnamerechten verlenen, zodat de scherminhoud van deze Mac naar het externe systeem kan worden gestuurd.
 
-Als je rechten wilt verlenen, ga je hieronder naar <ph name="BUTTON_NAME" /> om het voorkeurenvenster Schermopname te openen. Vink daarna <ph name="SERVICE_SCRIPT_NAME" /> aan.
+Als je rechten wilt verlenen, ga je hieronder naar <ph name="BUTTON_NAME" /> om het voorkeurenvenster voor Schermopname te openen. Vink daarna <ph name="SERVICE_SCRIPT_NAME" /> aan.
 
 Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en daarna weer opnieuw aan.</translation>
 <translation id="2208514473086078157">De beleidsinstellingen staan het delen van deze computer als host voor Chrome Remote Desktop niet toe. Neem contact op met je systeembeheerder voor hulp.</translation>
@@ -61,7 +61,7 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Laatst online gezien: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Deze app wordt niet meer ondersteund. Gebruik de <ph name="LINK_BEGIN" />Chrome Remote Desktop-webapp<ph name="LINK_END" /> om er zeker van te zijn dat je de nieuwste functies en beveiligingsupdates ontvangt.</translation>
 <translation id="2499160551253595098">Help ons Chrome Remote Desktop te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen.</translation>
-<translation id="2504109125669302160">Het recht Toegankelijkheid verlenen aan <ph name="PRODUCT_NAME" /></translation>
+<translation id="2504109125669302160">Toegangsrechten verlenen aan <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Verbonden met <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Opmerking: als je er zeker van wilt zijn dat alle sneltoetsen beschikbaar zijn, kun je Chrome Remote Desktop configureren om de modus 'Openen als venster' te gebruiken.</translation>
 <translation id="2540992418118313681">Wil je deze computer delen zodat een andere gebruiker deze kan bekijken en bedienen?</translation>
@@ -229,7 +229,7 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Iets anders.</translation>
 <translation id="6398765197997659313">Volledig scherm sluiten</translation>
-<translation id="6411861157501911556">Als je <ph name="PRODUCT_NAME" /> wilt gebruiken, moet je het recht Toegankelijkheid verlenen, zodat de invoer van dat externe systeem op deze Mac kan worden ingevoegd.
+<translation id="6411861157501911556">Als je <ph name="PRODUCT_NAME" /> wilt gebruiken, moet je toegangsrechten verlenen, zodat de invoer van dat externe systeem op deze Mac kan worden ingevoegd.
 
 Als je dit recht wilt verlenen, klik je hieronder op <ph name="BUTTON_NAME" /> om het voorkeurenvenster voor toegankelijkheid te openen. Vink daarna <ph name="SERVICE_SCRIPT_NAME" /> aan.
 
@@ -314,6 +314,7 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, moet je dit uitvinken en
 <translation id="837021510621780684">Vanaf deze computer</translation>
 <translation id="8383794970363966105">Als je Chromoting wilt gebruiken, moet je een Google-account aan je apparaat toevoegen</translation>
 <translation id="8386846956409881180">Host is geconfigureerd met ongeldige OAuth-inloggegevens.</translation>
+<translation id="8397385476380433240">Verleen rechten aan <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Selecteer een sessie om te starten in je Chrome Remote Desktop-omgeving. (Houd er rekening mee dat sommige sessies niet tegelijkertijd in Chrome Remote Desktop en op de lokale console kunnen worden uitgevoerd.)</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8445362773033888690">Bekijken in de Google Play Store</translation>
@@ -340,7 +341,7 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, moet je dit uitvinken en
 <translation id="9149580767411232853">Volledig extern bureaublad zichtbaar houden</translation>
 <translation id="9149992051684092333">Om je bureaublad te delen, geef je de onderstaande toegangscode aan de persoon die je gaat helpen.</translation>
 <translation id="916856682307586697">De standaard XSession starten</translation>
-<translation id="9187628920394877737">Het recht Schermopname verlenen aan <ph name="PRODUCT_NAME" /></translation>
+<translation id="9187628920394877737">Schermopnamerechten verlenen aan <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Autoriseren</translation>
 <translation id="9213184081240281106">Ongeldige hostconfiguratie.</translation>
 <translation id="951991426597076286">Afwijzen</translation>

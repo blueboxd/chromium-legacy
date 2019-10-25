@@ -262,6 +262,7 @@
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2923908459366352541">名称无效</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 存储数据</translation>
+<translation id="2942036813789421260">预览标签页已关闭</translation>
 <translation id="2956410042958133412">该帐号由 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2962095958535813455">已切换到隐身标签页</translation>
 <translation id="2968755619301702150">证书查看器</translation>
@@ -387,6 +388,7 @@
 <translation id="3988466920954086464">您可以在此面板查看即时搜索结果</translation>
 <translation id="3991845972263764475">已下载 <ph name="BYTES_DOWNLOADED_WITH_UNITS" />，总大小不明</translation>
 <translation id="3997476611815694295">不重要网站的存储数据</translation>
+<translation id="4000212216660919741">离线版首页</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4008040567710660924">允许特定网站使用 Cookie。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 小时}other{# 小时}}</translation>
@@ -766,6 +768,7 @@
 <translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
 <translation id="6699370405921460408">Google 服务器会优化您访问的网页。</translation>
+<translation id="6706288973712894588">您目前处于离线状态。\n<ph name="BEGIN_LINK" />浏览您的离线版 Feed。<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">资讯</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="671481426037969117">您的 <ph name="FQDN" /> 计时器已结束计时。它将于明天重新开始。</translation>
@@ -865,6 +868,7 @@
 <translation id="7475688122056506577">找不到 SD 卡。您的某些文件可能会丢失。</translation>
 <translation id="7479104141328977413">标签页管理</translation>
 <translation id="7481312909269577407">前进</translation>
+<translation id="7482656565088326534">预览标签页</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7494974237137038751">已节省的流量</translation>
 <translation id="7498271377022651285">请稍候…</translation>
@@ -994,6 +998,7 @@
 <translation id="8380167699614421159">此网站会展示侵扰性或误导性广告</translation>
 <translation id="8393700583063109961">发送消息</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
+<translation id="8427875596167638501">预览标签页已在下半屏中打开</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8441146129660941386">后退</translation>
@@ -1084,7 +1089,9 @@
 <translation id="9086455579313502267">无法访问网络</translation>
 <translation id="9100505651305367705">询问是否使用简化版视图显示支持这一功能的文章</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
+<translation id="9102803872260866941">预览标签页已打开</translation>
 <translation id="9104217018994036254">要与之分享标签页的设备的列表。</translation>
+<translation id="9133397713400217035">离线浏览</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9139068048179869749">网站发送通知前需先询问并获得许可（推荐）</translation>

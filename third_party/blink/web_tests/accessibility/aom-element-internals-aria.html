@@ -33,34 +33,6 @@ function axElementById(id) {
 }
 
 test(function() {
-  const element = createTestElement("ariaActiveDescendant");
-  element.role = "radiogroup"
-  const descendant = document.createElement("div");
-  descendant.id = "descendant";
-  descendant.role = "radio";
-  element.appendChild(descendant);
-  element.internals.ariaActiveDescendant = descendant.id;
-
-  const axElement = axElementById(element.id);
-  assert_equals(axElement.activeDescendant, axElementById(descendant.id),
-    "ariaActiveDescendant can be set through ElementInternals");
-
-  const descendant2 = document.createElement("div");
-  descendant2.id = "descendant2";
-  descendant2.role = "radio";
-  element.appendChild(descendant2);
-
-  element.internals.ariaActiveDescendant = descendant2.id;
-  assert_equals(axElement.activeDescendant, axElementById(descendant2.id),
-    "ariaActiveDescendant can change through ElementInternals");
-
-  element.ariaActiveDescendant = descendant.id;
-  assert_equals(axElement.activeDescendant, axElementById(descendant.id),
-    "ariaActiveDescendant value set on Element overrides value from ElementInternals");
-  element.remove();
-}, "aria-activedescendant");
-
-test(function() {
   const element = createTestElement("ariaAtomic");
   element.role = "status";
   const axElement = axElementById(element.id);

@@ -66,7 +66,7 @@ class Gpu : public gpu::GpuChannelEstablishFactory {
   class GpuPtrIO;
   class EstablishRequest;
 
-  Gpu(mojom::GpuPtr gpu_ptr,
+  Gpu(mojo::PendingRemote<mojom::Gpu> gpu_remote,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Sends a request to establish a gpu channel. If a request is currently

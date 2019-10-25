@@ -42,9 +42,9 @@ void FakeAssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
   std::move(callback).Run();
 }
 
-void FakeAssistantSettingsManagerImpl::BindRequest(
-    mojom::AssistantSettingsManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void FakeAssistantSettingsManagerImpl::BindReceiver(
+    mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 }  // namespace assistant

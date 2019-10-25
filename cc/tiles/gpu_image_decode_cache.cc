@@ -2026,8 +2026,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
           ClientImageTransferCacheEntry::GetNextId();
       const gpu::SyncToken decode_sync_token =
           context_->RasterInterface()->ScheduleImageDecode(
-              base::make_span<const uint8_t>(encoded_data->bytes(),
-                                             encoded_data->size()),
+              base::make_span(encoded_data->bytes(), encoded_data->size()),
               output_size, transfer_cache_id,
               color_space ? gfx::ColorSpace(*color_space) : gfx::ColorSpace(),
               image_data->needs_mips);

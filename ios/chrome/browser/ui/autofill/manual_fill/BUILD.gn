@@ -236,6 +236,7 @@ source_set("eg2_tests") {
   ]
   testonly = true
   sources = [
+    "card_view_controller_egtest.mm",
     "fallback_coordinator_egtest.mm",
     "password_view_controller_egtest.mm",
   ]
@@ -244,6 +245,7 @@ source_set("eg2_tests") {
     "//base/test:test_support",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/ui/autofill:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/settings/autofill:feature_flags",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",

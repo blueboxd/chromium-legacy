@@ -7,6 +7,7 @@
 
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/public/cpp/compositing/copy_output_result_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/copy_output_request.mojom.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
@@ -46,7 +47,7 @@ struct StructTraits<viz::mojom::CopyOutputRequestDataView,
     return request->result_selection_;
   }
 
-  static viz::mojom::CopyOutputResultSenderPtr result_sender(
+  static mojo::PendingRemote<viz::mojom::CopyOutputResultSender> result_sender(
       const std::unique_ptr<viz::CopyOutputRequest>& request);
 
   static bool Read(viz::mojom::CopyOutputRequestDataView data,

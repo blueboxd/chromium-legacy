@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 secondo rimanente}other{# secondi rimanenti}}</translation>
 <translation id="5941711191222866238">Riduci a icona</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ora}other{# ore}}</translation>
-<translation id="5946629889255121107">Numero inizializzato da <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Pagina <ph name="SELECTED_PAGE" /> di <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Cancella testo dalla casella di ricerca</translation>
 <translation id="6040143037577758943">Chiudi</translation>
@@ -199,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Più di 1 notifica da leggere}other{Più di # notifiche da leggere}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{tra 1 m}other{tra # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568">Numero da <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ora fa}other{# ore fa}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec rimanente}other{# sec rimanenti}}</translation>
 <translation id="8134065097954893699">Ricaricamento di questa pagina</translation>

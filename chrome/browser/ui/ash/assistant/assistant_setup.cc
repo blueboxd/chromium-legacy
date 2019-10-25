@@ -54,7 +54,7 @@ void AssistantSetup::OnAssistantStatusChanged(
 
 void AssistantSetup::SyncSettingsState() {
   // Set up settings mojom.
-  service_->BindSettingsManager(mojo::MakeRequest(&settings_manager_));
+  service_->BindSettingsManager(settings_manager_.BindNewPipeAndPassReceiver());
 
   chromeos::assistant::SettingsUiSelector selector;
   chromeos::assistant::ConsentFlowUiSelector* consent_flow_ui =

@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">Host Process</translation>
 <translation id="20876857123010370">โหมดแทร็กแพด</translation>
 <translation id="2089514346391228378">การเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้ถูกเปิดใช้งานแล้ว</translation>
+<translation id="2198363917176605566">หากต้องการใช้ <ph name="PRODUCT_NAME" /> คุณต้องให้สิทธิ์ "การบันทึกหน้าจอ" เพื่อให้ระบบส่งเนื้อหาบนหน้าจอของ Mac เครื่องนี้ไปยังเครื่องระยะไกลได้
+
+หากต้องการให้สิทธิ์ ให้คลิกปุ่ม "<ph name="BUTTON_NAME" />" ด้านล่างเพื่อเปิดแผงค่ากำหนด "การบันทึกหน้าจอ" จากนั้นเลือกช่องข้าง "<ph name="SERVICE_SCRIPT_NAME" />"
+
+หากมีการเลือก "<ph name="SERVICE_SCRIPT_NAME" />" ไว้แล้ว ให้ยกเลิกการเลือกแล้วเลือกอีกครั้ง</translation>
 <translation id="2208514473086078157">การตั้งค่านโยบายไม่อนุญาตให้แชร์คอมพิวเตอร์นี้เป็นโฮสต์ Chrome Remote Desktop โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="2220529011494928058">รายงานปัญหา</translation>
 <translation id="2221097377466213233">ใช้ Ctrl ขวาสำหรับแป้น Win (⌘ สำหรับ Mac)</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  ออนไลน์ล่าสุด<ph name="RELATIVE_TIMESTAMP" /></translation>
 <translation id="2405928220797050937">แอปนี้ใช้งานไม่ได้อีกต่อไป โปรดใช้<ph name="LINK_BEGIN" />เว็บแอป Chrome Remote Desktop<ph name="LINK_END" /> เพื่อให้คุณได้รับฟีเจอร์และการอัปเดตความปลอดภัยล่าสุดอยู่เสมอ</translation>
 <translation id="2499160551253595098">ช่วยเราปรับปรุง Chrome Remote Desktop ให้ดีขึ้นด้วยการอนุญาตให้เรารวบรวมสถิติการใช้งานและรายงานข้อขัดข้อง</translation>
+<translation id="2504109125669302160">ให้สิทธิ์ "การเข้าถึง" กับ <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">เชื่อมต่อกับ <ph name="HOSTNAME" /> แล้ว</translation>
 <translation id="2512228156274966424">หมายเหตุ: เพื่อให้มั่นใจว่าทุกแป้นพิมพ์ลัดพร้อมใช้งาน คุณสามารถกำหนดค่า Chrome Remote Desktop เป็น "เปิดเป็นหน้าต่าง"</translation>
 <translation id="2540992418118313681">คุณต้องการจะแชร์คอมพิวเตอร์เครื่องนี้เพื่อให้ผู้ใช้อื่นเห็นและควบคุมไหม</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">Core Library</translation>
 <translation id="4430435636878359009">ปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="4430915108080446161">กำลังสร้างรหัสการเข้าถึง...</translation>
+<translation id="443560535555262820">เปิดค่ากำหนดการเข้าถึง</translation>
 <translation id="4450893287417543264">ไม่ต้องแสดงอีก</translation>
 <translation id="4472575034687746823">เริ่มต้น</translation>
 <translation id="4481276415609939789">คุณไม่มีคอมพิวเตอร์ที่ได้ลงทะเบียนไว้ หากต้องการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์ ให้ติดตั้ง Chromoting ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก "<ph name="BUTTON_NAME" />"</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">เปลี่ยน PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (ล้าสมัย)</translation>
 <translation id="6221358653751391898">คุณยังไม่ได้ลงชื่อเข้าใช้ Chrome โปรดลงชื่อเข้าใช้และลองอีกครั้ง</translation>
+<translation id="6223301979382383752">เปิดค่ากำหนดการบันทึกหน้าจอ</translation>
 <translation id="6227369581881558336">Chrome Remote Desktop ใช้งานในเว็บได้แล้ว พร้อมด้วยฟีเจอร์ใหม่ๆ รวมถึงการโอนไฟล์! ลองใช้<ph name="LINK_BEGIN" />เว็บแอป<ph name="LINK_END" />ของเราเลย</translation>
 <translation id="6284412385303060032">โฮสต์ที่ทำงานที่หน้าจอตรรกะของคอนโซลได้ปิดตัวลงเพื่อสนับสนุนโหมด Curtain โดยการเปลี่ยนไปเป็นโฮสต์ที่ทำงานในเซสชันเฉพาะผู้ใช้</translation>
 <translation id="629730747756840877">บัญชี</translation>
 <translation id="6304318647555713317">ไคลเอ็นต์</translation>
 <translation id="6381670701864002291">มีปัญหาอื่น</translation>
 <translation id="6398765197997659313">ออกจากการแสดงแบบเต็มหน้าจอ</translation>
+<translation id="6411861157501911556">หากต้องการใช้ <ph name="PRODUCT_NAME" /> คุณต้องให้สิทธิ์ "การเข้าถึง" เพื่อให้ข้อมูลอินพุตจากเครื่องระยะไกลส่งถึง Mac เครื่องนี้ได้
+
+หากต้องการให้สิทธิ์ ให้คลิกปุ่ม "<ph name="BUTTON_NAME" />" ด้านล่างเพื่อเปิดแผงค่ากำหนด "การเข้าถึง" จากนั้นเลือกช่องข้าง "<ph name="SERVICE_SCRIPT_NAME" />"
+
+หากมีการเลือก "<ph name="SERVICE_SCRIPT_NAME" />" ไว้แล้ว ให้ยกเลิกการเลือกแล้วเลือกอีกครั้ง</translation>
 <translation id="6441316101718669559">การรวมระบบเดสก์ท็อปไม่ได้รับการสนับสนุนบนแพลตฟอร์มนี้ คุณยังคงสามารถใช้แอปพลิเคชันนี้ได้ แต่ประสบการณ์ของผู้ใช้จะมีคุณภาพลดลง</translation>
 <translation id="652218476070540101">กำลังอัปเดต PIN สำหรับคอมพิวเตอร์เครื่องนี้…</translation>
 <translation id="6527303717912515753">แชร์</translation>
@@ -327,6 +340,7 @@
 <translation id="9149580767411232853">แสดงเดสก์ท็อประยะไกลทั้งหมด</translation>
 <translation id="9149992051684092333">หากต้องการเริ่มการแชร์เดสก์ท็อปของคุณ โปรดให้รหัสการเข้าถึงที่ด้านล่างนี้แก่บุคคลที่จะให้ความช่วยเหลือคุณ</translation>
 <translation id="916856682307586697">เปิด XSession เริ่มต้น</translation>
+<translation id="9187628920394877737">ให้สิทธิ์ "การบันทึกหน้าจอ" กับ <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">ให้สิทธิ์</translation>
 <translation id="9213184081240281106">การกำหนดค่าโฮสต์ไม่ถูกต้อง</translation>
 <translation id="951991426597076286">ปฏิเสธ</translation>

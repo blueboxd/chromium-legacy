@@ -293,7 +293,7 @@ void AssistantOptInFlowScreenHandler::BindAssistantSettingsManager() {
   AssistantServiceConnection::GetForProfile(
       ProfileManager::GetActiveUserProfile())
       ->service()
-      ->BindSettingsManager(mojo::MakeRequest(&settings_manager_));
+      ->BindSettingsManager(settings_manager_.BindNewPipeAndPassReceiver());
 
   if (initialized_) {
     SendGetSettingsRequest();

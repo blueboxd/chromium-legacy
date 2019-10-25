@@ -701,6 +701,7 @@ crbug.com/591099 external/wpt/css/css-text/shaping/shaping-011.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/word-break/word-break-break-all-inline-006.html [ Failure ]
 crbug.com/1002815 external/wpt/css/cssom-view/offsetTopLeft-trailing-space-inline.html [ Failure ]
 crbug.com/1012294 external/wpt/css/css-lists/list-style-type-string-003.html [ Failure ]
+crbug.com/1012294 external/wpt/css/css-lists/list-style-type-string-007.html [ Failure ]
 crbug.com/591099 fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failure ]
 crbug.com/591099 fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/835484 fast/css/outline-narrowLine.html [ Failure ]
@@ -5474,7 +5475,6 @@ crbug.com/988432 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpReceiver-ge
 
 # Sheriff 2019-07-29
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure Timeout ]
-crbug.com/988074 [ Linux ] virtual/cors-rfc1918/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
 
 # Pending enabling navigation feature
 crbug.com/705583 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigate_history_go_back.html [ Skip ]
@@ -5499,7 +5499,6 @@ crbug.com/989860 [ Mac10.13 ] http/tests/devtools/indexeddb/live-update-indexedd
 crbug.com/989860 [ Linux ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
 crbug.com/989860 [ Win ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
 crbug.com/989717 [ Fuchsia ] http/tests/preload/avoid_delaying_onload_link_preload.html [ Pass Failure ]
-crbug.com/988074 [ Linux ] virtual/omt-worker-fetch-cors-rfc1918/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
 
 # Sheriff 2019-08-05
 crbug.com/991243 [ Linux ] external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
@@ -5567,6 +5566,10 @@ crbug.com/1015130 virtual/scalefactor200/external/wpt/largest-contentful-paint/f
 crbug.com/1015130 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/first-paint-equals-lcp-text.html [ Failure Pass ]
 
 # These tests are missing test automation
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemBaseHandle-postMessage-BroadcastChannel.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemBaseHandle-postMessage-Error.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemBaseHandle-postMessage-MessagePort.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemBaseHandle-postMessage.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getDirectory.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getEntries.tentative.https.manual.window.html [ Skip ]
 crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getFile.tentative.https.manual.window.html [ Skip ]
@@ -5722,3 +5725,10 @@ crbug.com/925325 [ Win ] storage/indexeddb/index-population.html [ Pass Timeout 
 
 # DevTools Security Panel (disabled temporarily as part of workflow)
 crbug.com/1008218 http/tests/devtools/security/security-state-comparator.js [ Failure ]
+
+# Sheriff 2019-10-25
+crbug.com/1018027 [ Mac ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-unregistered.html [ Pass Crash ]
+crbug.com/1018027 [ Mac ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-fallback.html [ Pass Crash ]
+crbug.com/1018027 [ Mac ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-registered-animating.html [ Pass Crash ]
+crbug.com/1018027 [ Mac ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-unregistered-animating.html [ Pass Crash ]
+crbug.com/1018064 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]

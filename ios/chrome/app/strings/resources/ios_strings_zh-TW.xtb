@@ -202,6 +202,7 @@
 <translation id="3783017676699494206">儲存圖片</translation>
 <translation id="3789841737615482174">安裝</translation>
 <translation id="385051799172605136">返回</translation>
+<translation id="3886946236301294521">如果你使用的密碼曾外洩，系統會顯示警告訊息。</translation>
 <translation id="3897092660631435901">選單</translation>
 <translation id="3915450441834151894">網站資訊</translation>
 <translation id="3922310737605261887">搜尋複製的文字</translation>
@@ -332,6 +333,7 @@
 <translation id="5854790677617711513">超過 30 天前</translation>
 <translation id="5857090052475505287">新資料夾</translation>
 <translation id="5857770089550859117">必須輸入通關密語，才能開始進行同步處理。</translation>
+<translation id="5859444426865731878">Google 可以檢查你的密碼資料是否外洩。</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5869029295770560994">好，我知道了</translation>
 <translation id="5871497086027727873">已移動 1 個項目</translation>
@@ -411,6 +413,7 @@
 <translation id="6797885426782475225">語音搜尋</translation>
 <translation id="6807889908376551050">全部顯示...</translation>
 <translation id="681368974849482173">項目已建立</translation>
+<translation id="6831043979455480757">翻譯</translation>
 <translation id="6851516051005285358">切換為電腦版網站</translation>
 <translation id="6858855187367714033">已掃描</translation>
 <translation id="6859944681507688231">如要掃描 QR 圖碼或信用卡，請在設定中啟用相機。</translation>

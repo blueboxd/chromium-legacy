@@ -9,6 +9,7 @@
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
@@ -112,11 +113,11 @@ void VideoDetector::OnVideoActivityEnded() {
 }
 
 void VideoDetector::EstablishConnectionToViz() {
-  viz::mojom::VideoDetectorObserverPtr observer;
-  if (binding_.is_bound())
-    binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&observer));
-  binding_.set_connection_error_handler(base::BindOnce(
+  if (receiver_.is_bound())
+    receiver_.reset();
+  mojo::PendingRemote<viz::mojom::VideoDetectorObserver> observer =
+      receiver_.BindNewPipeAndPassRemote();
+  receiver_.set_disconnect_handler(base::BindOnce(
       &VideoDetector::OnConnectionError, base::Unretained(this)));
   aura::Env::GetInstance()
       ->context_factory_private()

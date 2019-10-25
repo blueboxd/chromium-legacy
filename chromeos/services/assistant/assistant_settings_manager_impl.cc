@@ -45,9 +45,9 @@ AssistantSettingsManagerImpl::AssistantSettingsManagerImpl(
 
 AssistantSettingsManagerImpl::~AssistantSettingsManagerImpl() = default;
 
-void AssistantSettingsManagerImpl::BindRequest(
-    mojom::AssistantSettingsManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void AssistantSettingsManagerImpl::BindReceiver(
+    mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void AssistantSettingsManagerImpl::GetSettings(const std::string& selector,

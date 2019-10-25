@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_type.h"
@@ -46,6 +45,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 
 namespace content {
 
@@ -93,7 +93,7 @@ int GetInitialRequestID() {
 }
 
 // Determines if the loader should be restarted on a redirect using
-// ThrottlingURLLoader::FollowRedirectForcingRestart.
+// blink::ThrottlingURLLoader::FollowRedirectForcingRestart.
 bool RedirectRequiresLoaderRestart(const GURL& original_url,
                                    const GURL& redirect_url) {
   // Restart is needed if the URL is no longer handled by network service.
@@ -557,8 +557,8 @@ int ResourceDispatcher::StartAsync(
     request->load_flags |= net::LOAD_IGNORE_LIMITS;
   }
 
-  std::unique_ptr<ThrottlingURLLoader> url_loader =
-      ThrottlingURLLoader::CreateLoaderAndStart(
+  std::unique_ptr<blink::ThrottlingURLLoader> url_loader =
+      blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(url_loader_factory), std::move(throttles), routing_id,
           request_id, options, request.get(), client.get(), traffic_annotation,
           std::move(loading_task_runner));

@@ -177,6 +177,9 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
   AddRequiredField(&action,
                    UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER,
                    "#card_number");
+  AddRequiredField(&action,
+                   UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MM_YY,
+                   "#exp_month_year2");
 
   // First validation fails.
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
@@ -192,6 +195,9 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   EXPECT_CALL(mock_web_controller_,
               OnGetFieldValue(Selector({"#card_number"}), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Selector({"#exp_month_year2"}), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
 
   // Expect fields to be filled
@@ -220,6 +226,10 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
           mock_action_delegate_,
           OnSetFieldValue(Selector({"#card_number"}), "4111111111111111", _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  Expectation set_exp_month_year2 =
+      EXPECT_CALL(mock_action_delegate_,
+                  OnSetFieldValue(Selector({"#exp_month_year2"}), "09/24", _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // After fallback, second validation succeeds.
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
@@ -240,6 +250,10 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   EXPECT_CALL(mock_web_controller_,
               OnGetFieldValue(Selector({"#card_number"}), _))
+      .After(set_expyear4)
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Selector({"#exp_month_year2"}), _))
       .After(set_expyear4)
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 

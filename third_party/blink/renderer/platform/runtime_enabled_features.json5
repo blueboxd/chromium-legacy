@@ -139,7 +139,11 @@
       status: "experimental",
     },
     {
-      name: "AOMPhase1",
+      name: "AOMAriaProperties",
+      status: "experimental",
+    },
+    {
+      name: "AOMAriaRelationshipProperties",
       status: "experimental",
     },
     {
@@ -298,6 +302,13 @@
       status: "experimental",
     },
     {
+      name: "CloneableNativeFileSystemHandles",
+      status: "experimental",
+      // NativeFileSystem is in Origin Trial, which doesn't support having
+      // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
+      // depends_on: ["NativeFileSystem"]
+    },
+    {
       name: "CompositeAfterPaint",
     },
     {
@@ -432,6 +443,10 @@
       status: "test",
     },
     {
+      name: "CSSMarkerPseudoElement",
+      status: "experimental",
+    },
+    {
       name: "CSSMaskSourceType",
       status: "experimental",
     },
@@ -559,6 +574,11 @@
     },
     {
       name: "DocumentWrite",
+    },
+    {
+      name: "EditContext",
+      settable_from_internals: true,
+      status: "test",
     },
     {
       // http://crbug.com/707656 content editable in LayoutNG.
@@ -1320,6 +1340,10 @@
     },
     {
       name: "PushMessagingSubscriptionChange",
+      status: "experimental",
+    },
+    {
+      name: "QuicTransport",
       status: "experimental",
     },
     {

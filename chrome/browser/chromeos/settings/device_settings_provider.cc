@@ -81,6 +81,7 @@ const char* const kKnownSettings[] = {
     kDeviceLoginScreenInputMethods,
     kDeviceLoginScreenLocales,
     kDeviceLoginScreenSystemInfoEnforced,
+    kDeviceShowNumericKeyboardForPassword,
     kDeviceOffHours,
     kDeviceOwner,
     kDeviceNativePrintersAccessMode,
@@ -402,6 +403,13 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetBoolean(
         kDeviceLoginScreenSystemInfoEnforced,
         policy.device_login_screen_system_info_enforced().value());
+  }
+
+  if (policy.has_device_show_numeric_keyboard_for_password() &&
+      policy.device_show_numeric_keyboard_for_password().has_value()) {
+    new_values_cache->SetBoolean(
+        kDeviceShowNumericKeyboardForPassword,
+        policy.device_show_numeric_keyboard_for_password().value());
   }
 
   if (policy.has_saml_login_authentication_type() &&

@@ -137,19 +137,6 @@
        Détermine pour les appareils en mode Point de vente la durée d'inactivité préalable à l'affichage de l'économiseur d'écran sur l'écran de connexion.
 
        La valeur de cette règle est définie en millisecondes.</translation>
-<translation id="1141767714195601945">Cette règle contrôle les paramètres de ligne de commande pour basculer vers Chrome à partir d'Internet Explorer.
-
-      Si le module complémentaire "Legacy Browser Support" pour Internet Explorer n'est pas installé, cette règle n'a aucun effet.
-
-      Si cette règle n'est pas définie, Internet Explorer transmet seulement l'URL à Chrome comme paramètre de ligne de commande.
-
-      Si cette règle est définie sur une liste de chaînes, les chaînes sont reliées par des espaces avant d'être transmises à Chrome comme paramètres de ligne de commande.
-
-      Si un élément contient ${url}, il est remplacé par l'URL de la page à ouvrir.
-
-      Si aucun élément ne contient ${url}, l'URL est ajoutée à la fin de la ligne de commande.
-
-      Les variables d'environnement sont développées. Sous Windows, la variable %ABC% est remplacée par la valeur de la variable d'environnement ABC.</translation>
 <translation id="1151353063931113432">Autoriser les images sur ces sites</translation>
 <translation id="1152117524387175066">Indiquer l'état de l'interrupteur du mode développeur au moment du démarrage.
 
@@ -298,17 +285,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si ce paramètre est désactivé ou n'est pas défini, le service de protection par mot de passe dirige les utilisateurs vers la page https://myaccount.google.com afin que ces derniers modifient leur mot de passe.
       Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows 10 Entreprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="1456822151187621582">Windows (clients <ph name="PRODUCT_OS_NAME" />) :</translation>
-<translation id="1458547592473993238">Cette règle est obsolète. Veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> pour contrôler la disponibilité du plug-in Flash et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
-
-      Cette règle définit une liste des plug-ins désactivés dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
-
-      Les caractères génériques "*" et "?" peuvent être utilisés pour représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" représente un caractère unique facultatif. C'est-à-dire qu'il correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
-
-      Si vous activez ce paramètre, la liste des plug-ins définie n'est jamais utilisée dans <ph name="PRODUCT_NAME" />. Les plug-ins sont marqués comme désactivés dans "about:plugins", et les utilisateurs ne peuvent pas les activer.
-
-      Cette règle peut être ignorée par EnabledPlugins et DisabledPluginsExceptions.
-
-      Si cette règle n'est pas configurée, l'utilisateur peut utiliser n'importe quel plug-in installé sur le système, à l'exception des plug-ins codés en dur incompatibles, et des plug-ins obsolètes ou dangereux.</translation>
 <translation id="1464848559468748897">Contrôle le comportement des utilisateurs dans une session multiprofil sur des appareils <ph name="PRODUCT_OS_NAME" />.
 
      Si cette règle est définie sur "MultiProfileUserBehaviorUnrestricted", l'utilisateur peut être utilisateur principal ou secondaire dans une session multiprofil.
@@ -438,7 +414,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
 
-          Si cette règle n'est pas configurée, la dictée est initialement désactivée sur l'écran de connexion, mais les utilisateurs peuvent l'activer à tout moment.</translation>
+          Si cette règle n'est pas configurée, la loupe est initialement désactivée sur l'écran de connexion, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
 <translation id="1695708467571967752">Cette règle détermine si les utilisateurs peuvent ou non lire des contenus multimédias lorsque l'appareil est verrouillé.
 
@@ -477,12 +453,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       La règle doit être définie sur une URL à partir de laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger les conditions d'utilisation. Ces conditions doivent être en texte brut, et proposées au format texte/brut au type MIME. Aucun balisage n'est autorisé.</translation>
 <translation id="1750315445671978749">Bloquer tous les téléchargements</translation>
 <translation id="1767673020408652620">Activer les recommandations d'applications dans le champ de recherche vide</translation>
-<translation id="17719159826324007">
-      Lorsque l'option "ArcSession" est activée, cette règle contraint l'appareil à redémarrer lorsqu'un utilisateur se déconnecte si Android est en cours d'exécution.
-      Si l'option "Always" est sélectionnée, la règle imposera un redémarrage de l'appareil à chaque déconnexion d'utilisateur.
-      Si aucun paramètre n'est défini, la règle est sans effet, et aucun redémarrage n'est imposé en cas de déconnexion de l'utilisateur. Il en va de même lorsqu'elle est définie sur "Never".
-      Cette règle n'a d'incidence que sur les utilisateurs non affiliés.
-      </translation>
 <translation id="1781356041596378058">Cette règle permet également de contrôler l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "True", les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur "False" ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant sept fois sur le numéro de version dans l'application des paramètres Android.</translation>
 <translation id="1793346220873697538">Désactiver l'impression par code définie par défaut</translation>
 <translation id="1797233582739332495">Afficher une invite récurrente indiquant qu'un redémarrage est nécessaire</translation>
@@ -793,7 +763,7 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
 
       Pour en savoir plus, consultez l'article https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Activer l'affichage de l'autorisation de synchronisation lors de la connexion</translation>
-<translation id="2270747976331889601">Activer une fonctionnalité de sécurité TLS 1.3 pour les autorités de confiance locales.</translation>
+<translation id="2270747976331889601">Activer une fonctionnalité de sécurité TLS 1.3 pour les ancres d'approbation locales.</translation>
 <translation id="2274864612594831715">Cette règle configure l'activation du clavier virtuel en tant que périphérique d'entrée sur Chrome OS. Les utilisateurs ne peuvent pas la modifier.
 
       Si la règle est définie sur la valeur "true", le clavier virtuel à l'écran est toujours activé.
@@ -852,15 +822,15 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas configurée ou définie sur "True", les utilisateurs peuvent utiliser la fonctionnalité Partages de fichiers en réseau.
 
       Si cette règle est définie sur "False", les utilisateurs ne peuvent pas utiliser la fonctionnalité Partages de fichiers en réseau.</translation>
-<translation id="2437706973218087361">Cette règle contrôle une fonctionnalité de sécurité dans TLS 1.3 qui protège les connexions contre les attaques par déclassement. Elle est rétrocompatible et n'affecte pas les connexions à des serveurs ou proxy TLS 1.2 conformes. Toutefois, les défauts d'intégration touchant les anciennes versions de certains proxy interceptant les protocoles TLS rendent ces proxy incompatibles.
+<translation id="2437706973218087361">Cette règle contrôle une fonctionnalité de sécurité TLS 1.3 qui protège les connexions contre les attaques par déclassement. Elle est rétrocompatible et n'affecte pas les connexions à des serveurs ou proxys conformes aux normes TLS 1.2. Toutefois, les versions plus anciennes de certains proxys interceptant les paramètres TLS sont incompatibles en raison de défauts d'intégration.
 
       Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> active ces protections de sécurité pour toutes les connexions.
 
       Si elle est définie sur "False" ou n'est pas définie, <ph name="PRODUCT_NAME" /> désactive ces protections de sécurité pour les connexions authentifiées par des certificats CA installés localement. Ces protections sont toujours activées pour les connexions authentifiées par des certificats CA reconnus publiquement.
 
-      Cette règle peut être utilisée pour détecter la présence de proxy affectés et les mettre à niveau. En principe, les proxy affectés provoqueront un échec de connexion avec le code d'erreur "ERR_TLS13_DOWNGRADE_DETECTED". Une version ultérieure de <ph name="PRODUCT_NAME" /> activera cette option par défaut.
+      Cette règle peut être utilisée pour détecter la présence de proxys affectés et les mettre à niveau. En principe, les proxys affectés provoqueront un échec de connexion avec le code d'erreur "ERR_TLS13_DOWNGRADE_DETECTED". Une version ultérieure de <ph name="PRODUCT_NAME" /> activera cette option par défaut.
 
-      Lorsque ce sera le cas, les administrateurs ayant besoin de plus de temps pour mettre à niveau les proxy affectés pourront utiliser cette règle pour désactiver provisoirement cette fonctionnalité de sécurité. Cette règle sera supprimée après la version 85.
+      Lorsque ce sera le cas, les administrateurs ayant besoin de plus de temps pour mettre à niveau les proxys affectés pourront utiliser cette règle pour désactiver provisoirement cette fonctionnalité de sécurité. Cette règle sera supprimée après la version 85.
       </translation>
 <translation id="2438609638493026652">Permet de signaler des événements clés à Google pendant l'installation d'une application Android. Les événements ne sont enregistrés que pour les applications dont l'installation a été déclenchée via des règles.
 
@@ -1289,32 +1259,12 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 <translation id="3038323923255997294">Poursuivre l'exécution des applications en arrière-plan après la fermeture de <ph name="PRODUCT_NAME" /></translation>
 <translation id="3046192273793919231">Envoyer des paquets réseau au serveur de gestion pour contrôler l'état en ligne</translation>
 <translation id="3047732214002457234">Contrôler comment Chrome Cleanup transmet des données à Google</translation>
-<translation id="304775240152542058">Cette règle contrôle les paramètres de ligne de commande pour lancer le navigateur secondaire.
-
-      Si cette règle n'est pas définie, seule l'URL est transmise comme paramètre de ligne de commande.
-
-      Si cette règle est définie sur une liste de chaînes, chaque chaîne est transmise au navigateur secondaire comme paramètres de ligne de commande séparés. Pour Windows, les paramètres sont séparés par des espaces. Pour Mac OS X et Linux, un paramètre peut contenir des espaces et être quand même traité comme un seul et même paramètre.
-
-      Si un élément contient ${url}, il est remplacé par l'URL de la page à ouvrir.
-
-      Si aucun élément ne contient ${url}, l'URL est ajoutée à la fin de la ligne de commande.
-
-      Les variables d'environnement sont développées. Pour Windows, la variable %ABC% est remplacée par la valeur de la variable d'environnement ABC. Pour Mac OS X et Linux, la variable ${ABC} est remplacée par la valeur de la variable d'environnement ABC.</translation>
 <translation id="3048744057455266684">Si cette règle est définie et que la chaîne de requête ou l'identifiant du fragment d'une URL de recherche suggérée à partir de l'Omnibox contient ce paramètre, la suggestion affiche les termes et le moteur de recherche, et non l'URL de recherche brute.
 
           Cette règle est facultative. Si vous ne la définissez pas, aucun remplacement des termes de recherche n'est effectué.
 
           Cette règle ne s'applique que si la règle 'DefaultSearchProviderEnabled' est activée.</translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="306887062252197004">Cette règle permet aux utilisateurs de la fonctionnalité WebDriver d'ignorer
-      les règles pouvant affecter son fonctionnement.
-
-      Actuellement, cette règle désactive les règles SitePerProcess et IsolateOrigins.
-
-      Si elle est activée, WebDriver pourra ignorer les règles
-      incompatibles.
-      Si elle est désactivée ou pas configurée, WebDriver ne sera pas autorisée
-      à ignorer les règles incompatibles.</translation>
 <translation id="3069958900488014740">Permet la désactivation de l'optimisation WPAD (Web Proxy Auto-Discovery) dans <ph name="PRODUCT_NAME" />.
 
       Si cette règle est définie sur "False", l'optimisation WPAD est désactivée. Par conséquent, l'attente est plus longue dans <ph name="PRODUCT_NAME" /> pour obtenir une réponse des serveurs WPAD basés sur le DNS. Si la règle n'est pas configurée ou si elle est activée, l'optimisation WPAD est activée.
@@ -2098,13 +2048,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4347908978527632940">Si la valeur est définie sur "True" et si l'utilisateur est supervisé, d'autres applications Android peuvent envoyer une requête concernant les restrictions Web de ce dernier via un fournisseur de contenu.
 
           Si la valeur est définie sur "False" ou si elle n'est pas définie, le fournisseur de contenu n'envoie aucune information.</translation>
-<translation id="435461861920493948">Contient une liste de schémas utilisés pour contrôler la visibilité des comptes dans <ph name="PRODUCT_NAME" />.
-
-      Chaque compte Google sur l'appareil sera comparé aux schémas enregistrés dans cette règle pour que la visibilité du compte dans <ph name="PRODUCT_NAME" /> soit définie. Le compte sera visible si son nom correspond à l'un des schémas de la liste. Sinon, il sera masqué.
-
-      Utilisez le caractère générique "*" pour remplacer des caractères arbitraires. Le caractère d'échappement est "\". Pour spécifier les caractères "*" ou "\", vous devez donc saisir "\" devant ceux-ci.
-
-      Si cette règle n'est pas configurée, tous les comptes Google présents sur l'appareil seront visibles dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4360826270668210664">Si cette règle est définie, l'hôte d'accès à distance exigera des clients qui s'authentifient qu'ils obtiennent un jeton d'authentification à partir de cette URL pour se connecter. Elle doit être utilisée avec la règle RemoteAccessHostTokenValidationUrl.
 
           Cette fonctionnalité est actuellement désactivée côté serveur.</translation>
@@ -2153,7 +2096,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Bien que la règle elle-même soit compatible avec les plates-formes citées, la fonctionnalité qu'elle active peut n'être disponible que sur un nombre plus restreint de plates-formes. Les fonctionnalités abandonnées de la plate-forme en ligne ne peuvent pas toutes être réactivées. Seules celles qui sont énumérées ci-dessous peuvent l'être pendant une durée limitée, qui varie selon la fonctionnalité. Le format général de la balise de chaîne est [FonctionnalitéAbandonnée]_EffectiveUntil[aaaammjj]. Pour information, vous pouvez découvrir les raisons pour lesquelles des motivations ont été apportées aux fonctionnalités des plates-formes en ligne en consultant la page https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Activer le verrouillage lorsque l'appareil est inactif ou en veille</translation>
-<translation id="4449469846627734399">Définir la configuration quotidienne du passage à l'alimentation via la batterie</translation>
+<translation id="4449469846627734399">Définir la configuration quotidienne de l'alimentation alternée en heures pleines</translation>
 <translation id="4449545651113180484">Faire pivoter l'écran vers la droite de 270 degrés</translation>
 <translation id="445270821089253489">Contrôle le type d'informations figurant dans les rapports sur les utilisateurs et les appareils.</translation>
 <translation id="4453913621209182880">Autoriser l'impression uniquement avec des images de fond</translation>
@@ -2564,17 +2507,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5236882091572996759">Lorsque cette règle est définie sur "True" ou si elle n'est pas définie, l'utilisateur n'est pas considéré comme inactif pendant la lecture audio. Le délai d'inactivité ne peut ainsi pas être atteint, et l'action à effectuer en cas d'inactivité n'est pas appliquée. L'assombrissement, l'arrêt et le verrouillage de l'écran sont toutefois appliqués au terme des délais configurés, indépendamment de l'activité audio.
 
           Si cette règle est définie sur "False", l'activité audio n'empêche pas l'utilisateur d'être considéré comme inactif.</translation>
-<translation id="5246700266104954355">Cette règle est obsolète. Veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> pour contrôler la disponibilité du plug-in Flash et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
-
-      Cette règle définit une liste des plug-ins activés dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
-
-      Les caractères génériques "*" et "?" peuvent être utilisés pour représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" représente un caractère unique facultatif. C'est-à-dire qu'il correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
-
-      La liste des plug-ins définie est toujours utilisée dans <ph name="PRODUCT_NAME" /> s'ils sont installés. Les plug-ins sont marqués comme activés dans "about:plugins", et les utilisateurs ne peuvent pas les désactiver.
-
-      Notez que cette règle ignore les règles DisabledPlugins et DisabledPluginsExceptions.
-
-      Si cette règle n'est pas configurée, l'utilisateur peut désactiver n'importe quel plug-in installé sur le système.</translation>
 <translation id="5247006254130721952">Bloquer les téléchargements dangereux</translation>
 <translation id="5248863213023520115">Définit les types de chiffrement autorisés lors des demandes de tickets Kerberos à partir d'un serveur <ph name="MS_AD_NAME" />.
 
@@ -2635,11 +2567,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5362531528507578966">Permet d'ignorer le mode d'impression d'images de fond par défaut.</translation>
 <translation id="5365476955714838841">Paramètres de ligne de commande pour le navigateur secondaire.</translation>
 <translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
-<translation id="5366745336748853475">Vous permet de spécifier une liste de formats d'URL indiquant les sites pour lesquels un certificat client est sélectionné automatiquement sur l'écran de connexion (dans le cadre où se trouve le flux SAML), lorsque le site nécessite un certificat. Par exemple, vous pouvez configurer un certificat applicable à l'intégralité de l'appareil afin de le présenter au fournisseur d'identité SAML.
-
-      Cette valeur doit correspondre à un ensemble de dictionnaires convertis au format JSON à l'aide de la méthode JSON.stringify(). Chaque dictionnaire doit avoir le format { "pattern": "$URL_PATTERN", "filter" : $FILTER }, où $URL_PATTERN correspond à un schéma de paramètre de contenu. La valeur $FILTER limite les certificats client à partir desquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificats du serveur sont sélectionnés. De plus, si $FILTER a le format { "ISSUER": { "CN": "$ISSUER_CN" } }, seuls les certificats client émis par un certificat dont la valeur CommonName est $ISSUER_CN sont sélectionnés. Si $FILTER correspond à la valeur {} vide du dictionnaire, la sélection de certificats client ne fait pas l'objet de restrictions supplémentaires.
-
-      Si cette règle n'est pas définie, la sélection automatique n'est effectuée pour aucun site.</translation>
 <translation id="5366977351895725771">Si cette règle est associée à la valeur "false", la création de comptes utilisateur supervisés par cet utilisateur est désactivée. Les utilisateurs supervisés existants restent disponibles.
 
           Si elle est associée à la valeur "true" ou si elle n'est pas configurée, cet utilisateur peut créer et gérer des comptes utilisateur supervisés.</translation>
@@ -2747,11 +2674,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Si cette règle n'est pas configurée, les cookies tiers sont activés, mais l'utilisateur est en mesure de modifier cette situation.</translation>
 <translation id="5442026853063570579">Cette règle permet également de contrôler l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "DeveloperToolsDisallowed" (valeur 2), les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur une autre valeur ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant sept fois sur le numéro de version dans l'application des paramètres Android.</translation>
-<translation id="544342220587994947">Vous permet de spécifier une liste de formats d'URL indiquant les sites pour lesquels <ph name="PRODUCT_NAME" /> doit sélectionner automatiquement un certificat client, si le site demande un certificat.
-
-          Cette valeur doit correspondre à un ensemble de dictionnaires convertis au format JSON à l'aide de la méthode JSON.stringify(). Chaque dictionnaire doit avoir le format { "pattern": "$URL_PATTERN", "filter" : $FILTER }, où $URL_PATTERN correspond à un schéma de paramètre de contenu. La valeur $FILTER limite les certificats client à partir desquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificats du serveur sont sélectionnés. Par exemple, si $FILTER a le format { "ISSUER": { "CN": "$ISSUER_CN" } }, seuls les certificats clients émis par un certificat dont la valeur CommonName est $ISSUER_CN sont sélectionnés. Si $FILTER contient une section "ISSUER" et "SUBJECT", le certificat client doit satisfaire les deux conditions pour être sélectionné. Si $FILTER spécifie une organisation ("O"), le certificat doit contenir au moins une organisation correspondant à la valeur spécifiée pour être sélectionné. Si $FILTER spécifie une unité organisationnelle ("UO"), le certificat doit contenir au moins une unité organisationnelle correspondant à la valeur spécifiée pour être sélectionné. Si $FILTER correspond à la valeur {} vide du dictionnaire, la sélection de certificats clients ne fait pas l'objet de restrictions supplémentaires.
-
-          Si cette règle n'est pas définie, la sélection automatique n'est effectuée pour aucun site.</translation>
 <translation id="5447306928176905178">Activer l'envoi d'informations sur la mémoire (taille du tas JS) à la page (obsolète)</translation>
 <translation id="5457065417344056871">Activer le mode Invité dans le navigateur</translation>
 <translation id="5457924070961220141">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME" /> est installé. 
@@ -2775,19 +2697,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5475361623548884387">Activer l'impression</translation>
 <translation id="547601067149622666">Ne pas autoriser les annonces sur les sites présentant des annonces intrusives</translation>
 <translation id="5483065054530244863">Autoriser les certificats signés SHA-1 émis par les ancres d'approbation locales</translation>
-<translation id="5483777239978559943">Cette règle est obsolète. Veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> pour contrôler la disponibilité du plug-in Flash et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
-
-      Répertorie les plug-ins qu'un utilisateur peut activer ou désactiver dans <ph name="PRODUCT_NAME" />.
-
-      Les caractères génériques "*" et "?" remplacent des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" représente un caractère unique facultatif. C'est-à-dire qu'il correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
-
-      Si vous activez ce paramètre, la liste des plug-ins spécifiée peut être utilisée dans <ph name="PRODUCT_NAME" />. Les utilisateurs peuvent activer ou désactiver ces plug-ins dans "about:plugins', même s'ils correspondent à un format dans DisabledPlugins. Les utilisateurs peuvent aussi activer et désactiver des plug-ins qui ne correspondent à aucun format dans DisabledPlugins, DisabledPluginsExceptions et EnabledPlugins.
-
-      Cette règle permet à l'administrateur de définir des exceptions pour les plug-ins répertoriés dans la liste noire "DisabledPlugins" lorsque les entrées correspondantes contiennent des caractères génériques (par exemple, "*" qui permet de désactiver tous les plug-ins ou "*Java*" qui permet de désactiver tous les plug-ins Java). Si l'administrateur souhaite activer des versions spécifiques de ces plug-ins ("IcedTea Java 2.3", par exemple), cette règle le permet. Cette version peut être spécifiée dans cette règle.
-
-      Sachez que l'exclusion doit viser à la fois le nom du plug-in et son nom de groupe. Chaque groupe de plug-ins s'affiche dans une section séparée dans "about:plugins", et chaque section peut contenir un plug-in ou plus. Par exemple, le plug-in "Shockwave Flash" fait partie du groupe "Adobe Flash Player". Ces deux noms doivent donc être indiqués dans la liste d'exceptions pour que le plug-in soit exclu de la liste noire.
-
-      Si cette règle n'est pas configurée, tous les plug-ins qui sont détectés par "DisabledPlugins" sont verrouillés/désactivés, et les utilisateurs ne sont pas en mesure de les activer</translation>
 <translation id="5498045818698736356">Définit la liste des sites Web qui sont installés silencieusement, sans aucune intervention de l'utilisateur, et que ce dernier ne peut pas désinstaller ni désactiver.
 
       Dans cette règle, chaque élément de la liste est un objet avec un membre obligatoire, "url", et deux membres facultatifs, "default_launch_container" et "create_desktop_shortcut". "url" doit correspondre à l'URL de l'application Web à installer, et "launch_container" doit correspondre à "window" ou "tab" pour préciser dans quel élément d'interface l'application Web sera ouverte après son installation. Enfin, "create_desktop_shortcut" doit être défini sur "True" si un raccourci sur le Bureau doit être créé sous Linux et Windows. Si le membre "default_launch_container" n'est pas défini, l'application s'ouvre par défaut dans un nouvel onglet. Quelle que soit la valeur de "default_launch_container", les utilisateurs peuvent modifier le conteneur dans lequel l'application doit s'ouvrir. Si "create_desktop_shortcut" n'est pas défini, aucun raccourci n'est créé sur le Bureau. Consultez la règle <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> pour épingler des applications à l'étagère Chrome OS.</translation>
@@ -3063,7 +2972,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="6038407313189625985">Si cette règle est activée ou si elle n'est pas définie, la règle d'intégrité du code du moteur de rendu est activée. Cette règle ne doit être désactivée qu'en cas de problèmes de compatibilité avec le logiciel tiers qui doit s'exécuter dans les processus du moteur de rendu de Chrome.
 
       Désactiver cette règle affectera la sécurité et la stabilité de Chrome, car des codes inconnus et potentiellement dangereux pourront être chargés dans les processus de son moteur de rendu. Consultez la page https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies pour en savoir plus.</translation>
-<translation id="6048199181629830227">Activer la gestion de l'alimentation en heures pleines</translation>
+<translation id="6048199181629830227">Activer l'alimentation alternée en heures pleines</translation>
 <translation id="605475635122964053">Limite le mode d'impression par code. Si cette règle n'est pas définie, aucune limite ne s'applique. Si le mode est indisponible, cette règle est ignorée. Notez que la fonctionnalité d'impression par code n'est activée que pour les imprimantes utilisant l'un des protocoles IPPS, USB ou IPP sur USB. </translation>
 <translation id="6070667616071269965">Dispositions de clavier de l'écran de connexion de l'appareil</translation>
 <translation id="6074963268421707432">Interdire à tous les sites d'afficher des notifications sur le Bureau</translation>
@@ -3082,7 +2991,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si cette règle est définie sur "Bloquer l'importation et le téléchargement de fichiers volumineux", <ph name="PRODUCT_NAME" /> se comporte conformément aux règles indiquées sous "Bloquer les téléchargements volumineux" et "Bloquer les importations volumineuses".
       </translation>
 <translation id="6083631234867522991">Windows (clients Windows) :</translation>
-<translation id="608788685013546076">Définir le pourcentage de passage à l'alimentation sur batterie en heures pleines</translation>
+<translation id="608788685013546076">Définir le niveau de batterie minimal autorisé avec l'alimentation alternée en heures pleines</translation>
 <translation id="6089679180657323464">Contrôle les paramètres du dispositif de contrôle de diagnostic et de télémétrie de Wilco.</translation>
 <translation id="6091233616732024397">Obliger les utilisateurs à se connecter pour se servir du navigateur</translation>
 <translation id="6093156968240188330">Permettre aux utilisateurs distants d'interagir avec des fenêtres élevées dans les sessions d'assistance à distance</translation>
@@ -3330,7 +3239,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       </translation>
 <translation id="6598235178374410284">Avatar de l'utilisateur</translation>
 <translation id="6603004149426829878">Toujours transmettre les signaux de localisation disponibles au serveur tout en mettant à jour le fuseau horaire</translation>
-<translation id="6628043374475466084">Formats d'URL ne déclenchant pas l'analyse des contenus téléchargés pour vérifier s'ils respectent les règles applicables aux données sensibles</translation>
+<translation id="6628043374475466084">Formats d'URL ne déclenchant pas l'analyse des contenus téléchargés pour vérifier s'ils respectent les règles de protection des données sensibles</translation>
 <translation id="6628120204569232711">Envoyer des rapports sur l'état du stockage</translation>
 <translation id="6628646143828354685">Permet d'indiquer si les sites Web sont autorisés à accéder aux appareils Bluetooth à proximité. Soit l'accès est complètement bloqué, soit l'utilisateur reçoit un message chaque fois qu'un site Web souhaite accéder aux appareils Bluetooth à proximité.
 
@@ -3400,13 +3309,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6810445994095397827">Bloquer JavaScript sur ces sites</translation>
 <translation id="6813263547126514821">Démarrage et arrêt</translation>
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
-<translation id="6816212867679667972">Détermine le nom d'hôte de l'appareil utilisé pour les requêtes DHCP.
-
-      Si cette règle est définie sur une chaîne non vide, la chaîne servira de nom d'hôte de l'appareil lors de la requête DHCP.
-
-      La chaîne peut contenir les variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} et ${MACHINE_NAME}, qui seront remplacées par des valeurs sur l'appareil avant l'utilisation comme nom d'hôte. Le résultat de cette substitution doit former un nom d'hôte valide (conformément à la RFC 1035, section 3.1).
-
-      Si cette règle n'est pas définie ou si la valeur après substitution ne constitue pas un nom d'hôte valide, aucun nom d'hôte ne sera défini dans la requête DHCP. </translation>
 <translation id="6833988859168635883">Démarrage, page d'accueil et page Nouvel onglet</translation>
 <translation id="6835883744948188639">Afficher une invite récurrente indiquant qu'un redémarrage est recommandé</translation>
 <translation id="683688607121170501">Ce paramètre permet aux utilisateurs de basculer d'un compte Google à l'autre dans la zone de contenu de la fenêtre de leur navigateur et dans les applications Android une fois qu'ils sont connectés sur leur appareil <ph name="PRODUCT_OS_NAME" />.
@@ -3624,11 +3526,11 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
 
       Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, consultez la page https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL autorisées à accéder aux appareils de capture vidéo sans avis préalable</translation>
-<translation id="713712866686796666">Permet de définir la configuration quotidienne du passage à l'alimentation via la batterie.
+<translation id="713712866686796666">Permet de définir la configuration quotidienne de l'alimentation alternée en heures pleines.
 
           Cette règle n'est utilisée que si la règle <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> est définie sur "True".
 
-          Si cette règle n'est pas configurée ni définie, le passage à l'alimentation via la batterie est désactivé.
+          Si cette règle n'est pas définie, l'alimentation alternée en heures pleines est désactivée.
 
           Remarque : Les valeurs autorisées dans le champ <ph name="MINUTE_FIELD_NAME" /> de <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> et <ph name="CHARGE_START_TIME_FIELD_NAME" /> sont 0, 15, 30 et 45.</translation>
 <translation id="7138678301420049075">Autre</translation>
@@ -3661,17 +3563,6 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
       Sur <ph name="ANDROID_VERSION" /> et versions ultérieures, si DNS-over-TLS est activé, <ph name="PRODUCT_NAME" /> n'envoie pas les requêtes DNS à risque.
 
       Si cette règle n'est pas définie, le navigateur peut envoyer des requêtes DNS-over-HTTPS à un résolveur associé au résolveur configuré du système.</translation>
-<translation id="7158064522994309072">Cette règle détermine la commande à utiliser pour ouvrir les URL dans un navigateur secondaire.
-
-      Si cette règle n'est pas définie, un navigateur par défaut propre à la plate-forme est utilisé : Internet Explorer pour Windows et Safari pour Mac OS X. Pour Linux, l'ouverture d'un navigateur secondaire échoue si cette règle n'est pas définie.
-
-      Si cette règle est définie sur ${ie}, ${firefox}, ${safari} ou
-      ${opera}, le navigateur correspondant est ouvert, s'il est installé. ${ie} n'est
-      disponible que pour Windows et ${safari} n'est disponible que pour Windows
-      et Mac OS X.
-
-      Si cette règle est définie sur le chemin d'accès à un fichier, ce dernier
-      est utilisé comme fichier exécutable.</translation>
 <translation id="7167436895080860385">Permet aux utilisateurs d'afficher les mots de passe dans le gestionnaire de mots de passe (obsolète).</translation>
 <translation id="7173856672248996428">Profil éphémère</translation>
 <translation id="717630378807352957">Autorise toutes les imprimantes répertoriées dans le fichier de configuration.</translation>
@@ -3682,17 +3573,17 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
           Si cette règle est définie sur "False", les demandes de wakelocks forçant l'activation de l'écran seront rétrogradées au rang de demandes de wakelocks système.</translation>
 <translation id="7177857088692019405">Déverrouillage rapide</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
-<translation id="7187447094921703950">Permet d'activer la règle de gestion de l'alimentation avec passage à l'alimentation via la batterie.
+<translation id="7187447094921703950">Permet d'activer l'alimentation alternée en heures pleines.
 
-          Le passage à l'alimentation via la batterie est une règle d'économie d'énergie qui limite le recours à l'alimentation secteur pendant les pics d'utilisation au cours de la journée. Il est possible de définir l'heure de début et de fin de ce mode pour chaque jour de la semaine. Durant ces plages horaires, le système fonctionnera sur la batterie, même si l'appareil est branché sur le secteur, tant que le niveau de la batterie reste au-dessus du seuil défini. À la fin de la plage horaire programmée, le système fonctionnera sur le secteur s'il y est branché, mais ne rechargera pas la batterie. Le système reprendra son fonctionnement habituel en utilisant l'alimentation secteur et en rechargeant la batterie à l'heure programmée pour le début de la charge.
+La règle d'alimentation alternée en heures pleines permet de réduire la consommation électrique pendant les heures pleines de la journée. Il est possible de définir les heures de début et de fin du basculement sur batterie pour chaque jour de la semaine. Lorsque ce mode est activé, le système est alimenté uniquement par la batterie, même si l’appareil est branché sur une prise électrique, tant que le niveau de charge minimal défini par l’utilisateur n’est pas atteint. À la fin de la plage spécifiée, si le système est branché sur une prise, il recommence à être alimenté par le secteur mais ne recharge pas la batterie. Il reprend son fonctionnement normal (alimentation secteur et recharge de la batterie) à l'heure de début de charge indiquée.
 
-          Si cette règle est définie sur "True", et si les règles <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> et <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> sont configurées, le passage à l'alimentation via la batterie est toujours activé s'il est compatible avec l'appareil.
+Lorsque cette règle est définie sur "True" et que la valeur de <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> et de <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> est définie, l'alimentation alternée en heures pleines est toujours activée si elle est compatible avec l'appareil.
 
-          Si cette règle est définie sur "False", le passage à l'alimentation via la batterie est désactivé.
+Si cette règle est définie sur "False", l'alimentation alternée en heures pleines est toujours désactivée.
 
-          Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier ni l'ignorer.
+Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
 
-          Si cette règle n'est pas configurée, le passage à l'alimentation via la batterie est désactivé au départ et ne peut être activé par l'utilisateur.</translation>
+Si cette règle n'est pas définie, l'alimentation alternée est désactivée dès le départ et ne peut pas être activée par l'utilisateur.</translation>
 <translation id="718956142899066210">Types de connexion autorisés pour les mises à jour</translation>
 <translation id="7190286937411178540">Activer la fonctionnalité d'accessibilité de mise en surbrillance au clavier</translation>
 <translation id="7194407337890404814">Nom du moteur de recherche par défaut</translation>
@@ -3852,11 +3743,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7434202861148928348">Configurer les noms de domaines requis pour les clients d'accès à distance</translation>
 <translation id="7443616896860707393">Invites d'authentification de base HTTP (Basic Auth) multi-domaine</translation>
 <translation id="7448430478749155471">Activer la fonctionnalité Sélectionner pour prononcer sur l'écran de connexion</translation>
-<translation id="7454519673779830548">Permet d'ajouter des comptes Kerberos préremplis. Si les identifiants Kerberos et de connexion sont les mêmes, un compte peut être configuré pour réutiliser les identifiants de connexion en définissant respectivement "${{LOGIN_EMAIL}}" et "${{PASSWORD}}" comme compte principal et mot de passe, afin que le ticket Kerberos puisse être récupéré automatiquement, sauf si l’authentification à deux facteurs est configurée. Les utilisateurs ne peuvent pas modifier de comptes avec cette règle.
-
-          Si cette règle est activée, la liste des comptes qu'elle définit est ajoutée aux paramètres de comptes Kerberos.
-
-          Si cette règle est désactivée ou si elle n'est pas définie, aucun compte n'est ajouté aux paramètres de comptes Kerberos et tous ceux déjà ajoutés avec cette règle sont supprimés. Les utilisateurs peuvent toujours ajouter des comptes manuellement si la règle KerberosAddAccountsAllowed est activée.</translation>
 <translation id="7458437477941640506">Ne rétablissez pas la version cible si elle est antérieure à la version de l'OS. Les mises à jour seront également désactivées.</translation>
 <translation id="7464991223784276288">Limiter les cookies des URL correspondantes à la session en cours</translation>
 <translation id="7469554574977894907">Activer les suggestions de recherche</translation>
@@ -4553,11 +4439,11 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
       Si cette règle est configurée, le groupe d'applications est figé et ne peut plus être modifié par l'utilisateur.
 
       Si cette règle n'est pas définie, l'utilisateur a la possibilité de modifier la liste des applications épinglées dans le Lanceur d'applications.</translation>
-<translation id="8779504970846195767">Permet de définir en pourcentage le seuil de passage à l'alimentation via la batterie.
+<translation id="8779504970846195767">Permet de définir le niveau de batterie minimal autorisé avec l'alimentation alternée en heures pleines.
 
           Cette règle n'est utilisée que si la règle <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> est définie sur "True".
 
-          Si cette règle n'est pas configurée ni définie, le passage à l'alimentation via la batterie est désactivé.</translation>
+          Si cette règle n'est pas configurée ni définie, l'alimentation alternée en heures pleines est toujours désactivée.</translation>
 <translation id="8798099450830957504">Par défaut</translation>
 <translation id="8800453707696044281">Personnaliser le pourcentage auquel la recharge de la batterie doit s'arrêter</translation>
 <translation id="8801680448782904838">Avertir un utilisateur qu'un redémarrage du navigateur ou de l'appareil est recommandé ou exigé</translation>
@@ -4701,7 +4587,7 @@ indique uniquement les imprimantes qui peuvent être choisies.
       Cette règle n'affecte que les utilisateurs qui se sont authentifiés via SAML.
 
       La valeur doit être indiquée en secondes.</translation>
-<translation id="9021334785554745279">Formats d'URL déclenchant l'analyse des contenus téléchargés pour vérifier s'ils respectent les règles applicables aux données sensibles</translation>
+<translation id="9021334785554745279">Formats d'URL déclenchant l'analyse des contenus téléchargés pour vérifier s'ils respectent les règles de protection des données sensibles</translation>
 <translation id="9035086760683255833">Active la fonctionnalité d'accessibilité de mise en surbrillance au clavier.
 
           Cette fonctionnalité permet de mettre en surbrillance l'objet sélectionné à l'aide du clavier.
@@ -4806,7 +4692,7 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
           Compatible avec la version 75 et les versions ultérieures de <ph name="PRODUCT_OS_NAME" />. Pour les clients plus anciens, cette valeur signifie que la fonction de rollback est désactivée.</translation>
 <translation id="9156175786579877198">Liste des formats d'URL pour lesquels le contenu téléchargé doit être vérifié afin de déterminer si les règles de protection des données sensibles sont respectées avant que ce contenu ne soit enregistré dans un espace de stockage local.  Cette règle ne s'applique que si la règle <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> est activée.
 
-      Si cette règle n'est pas définie ou si aucun format d'URL n'est indiqué dans la liste, aucun contenu téléchargé n'est examiné en vue de détecter d'éventuelles violations des règles relatives à la protection des données sensibles.
+      Si cette règle n'est pas définie ou si aucun format d'URL n'est indiqué dans la liste, aucun contenu téléchargé n'est examiné en vue de détecter d'éventuelles violations des règles de protection des données sensibles.
 
       Les formats d'URL suivent le modèle de la règle "URLBlacklist", décrit sur la page https://www.chromium.org/administrators/url-blacklist-filter-format.
       </translation>
@@ -4833,15 +4719,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="9217154963008402249">Fréquence des paquets réseau de contrôle</translation>
 <translation id="922540222991413931">Configurer les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>
-<translation id="926146562923985266">Cette règle contrôle la commande qui permet d'ouvrir les URL dans <ph name="PRODUCT_NAME" /> à partir d'Internet Explorer.
-
-      Si le module complémentaire Legacy Browser Support pour Internet Explorer n'est pas installé, cette règle n'a aucun effet.
-
-      Si cette règle n'est pas définie, Internet Explorer détecte automatiquement le chemin d'accès au fichier exécutable de <ph name="PRODUCT_NAME" /> lors du lancement de <ph name="PRODUCT_NAME" /> à partir de ce navigateur.
-
-      Si cette règle est définie, elle s'applique pour ouvrir <ph name="PRODUCT_NAME" /> lors du lancement de <ph name="PRODUCT_NAME" /> à partir d'Internet Explorer.
-
-      Cette règle peut être définie sur le chemin d'accès à un fichier exécutable ou sur ${chrome} pour détecter automatiquement l'emplacement d'installation de Chrome.</translation>
 <translation id="930930237275114205">Définir le répertoire de données utilisateur de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="943865157632139008">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME" /> est installé.
       Le paramétrage par défaut de cette stratégie autorise le navigateur hôte à effectuer le rendu. Toutefois, vous pouvez remplacer ce paramétrage pour que <ph name="PRODUCT_FRAME_NAME" /> assure le rendu des pages HTML par défaut.</translation>

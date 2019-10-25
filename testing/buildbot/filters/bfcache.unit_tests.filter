@@ -21,3 +21,12 @@
 # Other failures
 -OfflinePageUtilsTest.*
 -PreviewsUKMObserverTest.TestPageEndReasonUMA
+
+# https://crbug.com/1015328
+-DownloadRequestLimiterTest.HistoryBack
+-DownloadRequestLimiterTest.HistoryForwardBack
+-SafeBrowsingBlockingPageTest.NavigatingBackAndForth
+-SafeBrowsingBlockingPageTest.PageWithMalwareResourceDontProceed
+-SafeBrowsingBlockingPageTest.PageWithMultipleMalwareResourceDontProceed
+-SafeBrowsingBlockingPageTest.PageWithMultipleMalwareResourceProceedThenDontProceed
+-TaskTabHelperUnitTest.TestTaskIdBackButton

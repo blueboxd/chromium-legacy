@@ -100,6 +100,9 @@ public class SideSlideLayout extends ViewGroup {
     // True while swiped to a distance where, if released, the navigation would be triggered.
     private boolean mWillNavigate;
 
+    // Used for metrics. Indicates user swiped over the threshold that turns the arrow blue.
+    private boolean mSwipedOverThreshold;
+
     private final AnimationListener mNavigateListener = new AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {}
@@ -293,7 +296,10 @@ public class SideSlideLayout extends ViewGroup {
         boolean navigating = willNavigate();
         if (navigating != mWillNavigate) {
             mArrowView.setImageTint(navigating);
-            if (navigating) performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            if (navigating) {
+                performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                mSwipedOverThreshold = true;
+            }
         }
         mWillNavigate = navigating;
 
@@ -361,6 +367,11 @@ public class SideSlideLayout extends ViewGroup {
         mIsBeingDragged = false;
 
         GestureNavMetrics.recordHistogram("GestureNavigation.Triggered", mIsForward);
+        if (mSwipedOverThreshold) {
+            GestureNavMetrics.recordHistogram("GestureNavigation.SwipedOverThreshold", mIsForward);
+            mSwipedOverThreshold = false;
+        }
+
         if (isEnabled() && willNavigate()) {
             if (allowNav) {
                 setNavigating(true);

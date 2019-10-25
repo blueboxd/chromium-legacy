@@ -1460,7 +1460,8 @@ void NetworkContext::ForceDomainReliabilityUploadsForTesting(
   std::move(callback).Run();
 }
 
-void NetworkContext::SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) {
+void NetworkContext::SaveHttpAuthCacheProxyEntries(
+    SaveHttpAuthCacheProxyEntriesCallback callback) {
   net::HttpAuthCache* http_auth_cache =
       url_request_context_->http_transaction_factory()
           ->GetSession()
@@ -1471,8 +1472,9 @@ void NetworkContext::SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) {
   std::move(callback).Run(cache_key);
 }
 
-void NetworkContext::LoadHttpAuthCache(const base::UnguessableToken& cache_key,
-                                       LoadHttpAuthCacheCallback callback) {
+void NetworkContext::LoadHttpAuthCacheProxyEntries(
+    const base::UnguessableToken& cache_key,
+    LoadHttpAuthCacheProxyEntriesCallback callback) {
   net::HttpAuthCache* http_auth_cache =
       url_request_context_->http_transaction_factory()
           ->GetSession()

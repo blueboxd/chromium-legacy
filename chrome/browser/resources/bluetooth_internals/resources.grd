@@ -89,6 +89,14 @@
                use_base_dir="false"
                type="BINDATA"
                compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_NODE_UTILS_HTML"
+               file="node_utils.html"
+               type="BINDATA"
+               compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_NODE_UTILS_JS"
+               file="node_utils.js"
+               type="BINDATA"
+               compress="gzip" />
       <include name="IDR_BLUETOOTH_INTERNALS_OBJECT_FIELDSET_JS"
                file="object_fieldset.js"
                type="BINDATA"

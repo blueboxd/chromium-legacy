@@ -8,17 +8,17 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {
 
 namespace {
 
-media::mojom::AudioInputStreamClientPtr CreatePtrAndStoreRequest(
-    media::mojom::AudioInputStreamClientRequest* request_out) {
-  media::mojom::AudioInputStreamClientPtr ptr;
-  *request_out = mojo::MakeRequest(&ptr);
-  return ptr;
+mojo::PendingRemote<media::mojom::AudioInputStreamClient>
+CreateRemoteAndStoreReceiver(
+    mojo::PendingReceiver<media::mojom::AudioInputStreamClient>* receiver_out) {
+  mojo::PendingRemote<media::mojom::AudioInputStreamClient> remote;
+  *receiver_out = remote.InitWithNewPipeAndPassReceiver();
+  return remote;
 }
 
 }  // namespace
@@ -32,9 +32,8 @@ AudioInputStreamHandle::AudioInputStreamHandle(
     : stream_id_(base::UnguessableToken::Create()),
       deleter_callback_(std::move(deleter_callback)),
       client_remote_(std::move(client_pending_remote)),
-      stream_client_request_(),
       stream_(pending_stream_.InitWithNewPipeAndPassReceiver(),
-              CreatePtrAndStoreRequest(&stream_client_request_),
+              CreateRemoteAndStoreReceiver(&pending_stream_client_),
               std::move(create_delegate_callback),
               base::BindOnce(&AudioInputStreamHandle::OnCreated,
                              base::Unretained(this)),
@@ -65,7 +64,7 @@ void AudioInputStreamHandle::OnCreated(
   DCHECK(deleter_callback_)
       << "|deleter_callback_| was called, but |this| hasn't been destructed!";
   client_remote_->StreamCreated(
-      std::move(pending_stream_), std::move(stream_client_request_),
+      std::move(pending_stream_), std::move(pending_stream_client_),
       std::move(data_pipe), initially_muted, stream_id_);
 }
 

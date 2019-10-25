@@ -82,6 +82,8 @@ void BroadcastChannel::postMessage(const ScriptValue& message,
 
   BlinkCloneableMessage msg;
   msg.message = std::move(value);
+  msg.sender_origin =
+      GetExecutionContext()->GetSecurityOrigin()->IsolatedCopy();
   remote_client_->OnMessage(std::move(msg));
 }
 

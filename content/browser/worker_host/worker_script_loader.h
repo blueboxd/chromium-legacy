@@ -19,6 +19,10 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
+namespace blink {
+class ThrottlingURLLoader;
+}  // namespace blink
+
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -27,7 +31,6 @@ namespace content {
 
 class AppCacheHost;
 class BrowserContext;
-class ThrottlingURLLoader;
 class NavigationLoaderInterceptor;
 class ResourceContext;
 class ServiceWorkerNavigationHandle;
@@ -105,7 +108,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* response_url_loader,
       network::mojom::URLLoaderClientRequest* response_client_request,
-      ThrottlingURLLoader* url_loader);
+      blink::ThrottlingURLLoader* url_loader);
 
   base::Optional<SubresourceLoaderParams> TakeSubresourceLoaderParams() {
     return std::move(subresource_loader_params_);

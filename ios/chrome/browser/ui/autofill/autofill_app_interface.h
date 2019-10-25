@@ -30,6 +30,15 @@
 // Resturns the name of the sample profile.
 + (NSString*)exampleProfileName;
 
+// Removes the stored credit cards.
++ (void)clearCreditCardStore;
+
+// Saves a local credit card that doesn't require CVC to be used.
++ (void)saveLocalCreditCard;
+
+// Saves a masked credit card that requires CVC to be used.
++ (void)saveMaskedCreditCard;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_APP_INTERFACE_H_

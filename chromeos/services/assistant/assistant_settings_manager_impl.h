@@ -10,8 +10,8 @@
 
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace ash {
 class AssistantStateBase;
@@ -46,7 +46,8 @@ class AssistantSettingsManagerImpl : public AssistantSettingsManager {
   bool speaker_id_enrollment_done() { return speaker_id_enrollment_done_; }
 
   // AssistantSettingsManager overrides:
-  void BindRequest(mojom::AssistantSettingsManagerRequest request) override;
+  void BindReceiver(
+      mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) override;
 
   // mojom::AssistantSettingsManager overrides:
   void GetSettings(const std::string& selector,
@@ -84,7 +85,7 @@ class AssistantSettingsManagerImpl : public AssistantSettingsManager {
   // Whether the speaker id enrollment has complete for the user.
   bool speaker_id_enrollment_done_ = false;
 
-  mojo::BindingSet<mojom::AssistantSettingsManager> bindings_;
+  mojo::ReceiverSet<mojom::AssistantSettingsManager> receivers_;
 
   base::WeakPtrFactory<AssistantSettingsManagerImpl> weak_factory_;
 

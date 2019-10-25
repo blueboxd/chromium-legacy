@@ -292,15 +292,14 @@ void LayoutText::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
 Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
   Vector<TextBoxInfo> results;
   if (const NGOffsetMapping* mapping = GetNGOffsetMapping()) {
-    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     bool in_hidden_for_paint = false;
-    for (const NGPaintFragment* fragment : fragments) {
-      const auto& text_fragment =
-          To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
       // TODO(yosin): We should introduce
       // |NGPhysicalTextFragment::IsTruncated()| to skip them instead of using
       // |IsHiddenForPaint()| with ordering of fragments.
-      if (text_fragment.IsHiddenForPaint()) {
+      if (cursor.IsHiddenForPaint()) {
         in_hidden_for_paint = true;
       } else if (in_hidden_for_paint) {
         // Because of we finished original fragments (not painted), we should
@@ -309,7 +308,7 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
       }
       // We don't put generated texts, e.g. ellipsis, hyphen, etc. not in text
       // content, into results. Note: CSS "content" aren't categorized this.
-      if (text_fragment.TextType() == NGPhysicalTextFragment::kGeneratedText)
+      if (cursor.IsGeneratedTextType())
         continue;
       // When the corresponding DOM range contains collapsed whitespaces, NG
       // produces one fragment but legacy produces multiple text boxes broken at
@@ -317,22 +316,23 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
       // to match the legacy output.
       for (const NGOffsetMappingUnit& unit :
            mapping->GetMappingUnitsForTextContentOffsetRange(
-               text_fragment.StartOffset(), text_fragment.EndOffset())) {
+               cursor.CurrentTextStartOffset(),
+               cursor.CurrentTextEndOffset())) {
         DCHECK_EQ(unit.GetLayoutObject(), this);
         if (unit.GetType() == NGOffsetMappingUnitType::kCollapsed)
           continue;
         // [clamped_start, clamped_end] of |fragment| matches a legacy text box.
         const unsigned clamped_start =
-            std::max(unit.TextContentStart(), text_fragment.StartOffset());
+            std::max(unit.TextContentStart(), cursor.CurrentTextStartOffset());
         const unsigned clamped_end =
-            std::min(unit.TextContentEnd(), text_fragment.EndOffset());
+            std::min(unit.TextContentEnd(), cursor.CurrentTextEndOffset());
         DCHECK_LT(clamped_start, clamped_end);
         const unsigned box_length = clamped_end - clamped_start;
 
         // Compute rect of the legacy text box.
         LayoutRect rect =
-            text_fragment.LocalRect(clamped_start, clamped_end).ToLayoutRect();
-        rect.MoveBy(fragment->InlineOffsetToContainerBox().ToLayoutPoint());
+            cursor.CurrentLocalRect(clamped_start, clamped_end).ToLayoutRect();
+        rect.MoveBy(cursor.CurrentOffset().ToLayoutPoint());
 
         // Compute start of the legacy text box.
         if (unit.AssociatedNode()) {

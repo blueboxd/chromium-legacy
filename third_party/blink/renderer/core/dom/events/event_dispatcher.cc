@@ -228,11 +228,6 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventPreProcess(
         activation_target->PreDispatchEventHandler(*event_);
   }
 
-  // If this is a trusted keyboard event, update the keyboard event state and
-  // trigger :focus-visible matching if necessary.
-  if (event_->isTrusted() && event_->IsKeyboardEvent())
-    node_->UpdateHadKeyboardEvent(*event_);
-
   return (event_->GetEventPath().IsEmpty() || event_->PropagationStopped())
              ? kDoneDispatching
              : kContinueDispatching;

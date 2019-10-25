@@ -13,7 +13,7 @@ class WebThemeEngineMac : public blink::WebThemeEngine {
  public:
   ~WebThemeEngineMac() override {}
 
-  blink::ForcedColors ForcedColors() const override;
+  blink::ForcedColors GetForcedColors() const override;
   void SetForcedColors(const blink::ForcedColors forced_colors) override;
   blink::PreferredColorScheme PreferredColorScheme() const override;
   void SetPreferredColorScheme(

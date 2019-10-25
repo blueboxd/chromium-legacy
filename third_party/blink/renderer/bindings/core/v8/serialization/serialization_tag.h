@@ -48,6 +48,11 @@ enum SerializationTag {
   kFileIndexTag = 'e',      // index:int32_t -> File (ref)
   kDOMFileSystemTag = 'd',  // type:int32_t, name:WebCoreString,
                             // uuid:WebCoreString -> FileSystem (ref)
+  kNativeFileSystemFileHandleTag = 'n',  // name:WebCoreString, index:uint32_t
+                                         // -> NativeFileSystemFileHandle (ref)
+  kNativeFileSystemDirectoryHandleTag =
+      'N',  // name:WebCoreString, index:uint32_t ->
+            // NativeFileSystemDirectoryHandle (ref)
   kFileListTag =
       'l',  // length:uint32_t, files:RawFile[length] -> FileList (ref)
   kFileListIndexTag =

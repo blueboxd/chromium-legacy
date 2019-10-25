@@ -1025,6 +1025,10 @@ String HTMLElement::title() const {
 }
 
 int HTMLElement::tabIndex() const {
+  if (AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus())
+    return GetIntegralAttribute(html_names::kTabindexAttr, -1);
+
+  // TODO(tkent): Follow https://html.spec.whatwg.org/C/#dom-tabindex
   if (SupportsFocus() ||
       (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
        IsScrollableNode(this))) {

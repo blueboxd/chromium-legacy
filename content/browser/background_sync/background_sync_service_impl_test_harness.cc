@@ -178,6 +178,7 @@ void BackgroundSyncServiceImplTestHarness::CreateServiceWorkerRegistration() {
   options.scope = GURL(kServiceWorkerScope);
   embedded_worker_helper_->context()->RegisterServiceWorker(
       GURL(kServiceWorkerScript), options,
+      /*outside_fetch_client_settings_object=*/nullptr,
       base::BindOnce(&RegisterServiceWorkerCallback, &called,
                      &sw_registration_id_));
   base::RunLoop().RunUntilIdle();

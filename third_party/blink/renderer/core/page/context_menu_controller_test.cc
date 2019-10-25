@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -586,6 +588,60 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
 
   context_menu_data = GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(context_menu_data.selected_text, "Sample Input Text");
+}
+
+TEST_F(ContextMenuControllerTest, SelectionRectClipped) {
+  GetDocument()->documentElement()->SetInnerHTMLFromString(
+      "<textarea id='text-area' cols=6 rows=2>Sample editable text</textarea>");
+
+  Document* document = GetDocument();
+  Element* editable_element = document->getElementById("text-area");
+  document->UpdateStyleAndLayout();
+  FrameSelection& selection = document->GetFrame()->Selection();
+
+  // Select the 'Sample' of |textarea|.
+  DOMRect* rect = editable_element->getBoundingClientRect();
+  WebGestureEvent gesture_event(
+      WebInputEvent::kGestureLongPress, WebInputEvent::kNoModifiers,
+      base::TimeTicks::Now(), WebGestureDevice::kTouchscreen);
+  gesture_event.SetPositionInWidget(WebFloatPoint(rect->left(), rect->top()));
+  GetWebView()->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(gesture_event));
+
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.selected_text, "Sample");
+
+  // The selection rect is not clipped.
+  IntRect anchor, focus;
+  selection.ComputeAbsoluteBounds(anchor, focus);
+  anchor = document->GetFrame()->View()->FrameToViewport(anchor);
+  focus = document->GetFrame()->View()->FrameToViewport(focus);
+  int left = std::min(focus.X(), anchor.X());
+  int top = std::min(focus.Y(), anchor.Y());
+  int right = std::max(focus.MaxX(), anchor.MaxX());
+  int bottom = std::max(focus.MaxY(), anchor.MaxY());
+  WebRect selection_rect(left, top, right - left, bottom - top);
+  EXPECT_EQ(context_menu_data.selection_rect, selection_rect);
+
+  // Select all the content of |textarea|.
+  selection.SelectAll();
+  EXPECT_TRUE(ShowContextMenuForElement(editable_element, kMenuSourceMouse));
+
+  context_menu_data = GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.selected_text, "Sample editable text");
+
+  // The selection rect is clipped by the editable box.
+  IntRect clip_bound = editable_element->VisibleBoundsInVisualViewport();
+  selection.ComputeAbsoluteBounds(anchor, focus);
+  anchor = document->GetFrame()->View()->FrameToViewport(anchor);
+  focus = document->GetFrame()->View()->FrameToViewport(focus);
+  left = std::max(clip_bound.X(), std::min(focus.X(), anchor.X()));
+  top = std::max(clip_bound.Y(), std::min(focus.Y(), anchor.Y()));
+  right = std::min(clip_bound.MaxX(), std::max(focus.MaxX(), anchor.MaxX()));
+  bottom = std::min(clip_bound.MaxY(), std::max(focus.MaxY(), anchor.MaxY()));
+  selection_rect = WebRect(left, top, right - left, bottom - top);
+  EXPECT_EQ(context_menu_data.selection_rect, selection_rect);
 }
 
 }  // namespace blink

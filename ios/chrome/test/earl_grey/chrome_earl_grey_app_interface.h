@@ -219,11 +219,6 @@
 // doesn't specify a title.
 + (NSString*)displayTitleForURL:(NSString*)URL;
 
-#pragma mark - Autofill Utilities (EG2)
-
-// Removes the stored credit cards.
-+ (void)clearCreditCards;
-
 #pragma mark - Sync Utilities (EG2)
 
 // Clears fake sync server data.

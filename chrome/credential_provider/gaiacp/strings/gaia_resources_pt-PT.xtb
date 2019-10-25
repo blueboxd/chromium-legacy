@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Perdeu o acesso à sua conta. Contacte o administrador do sistema.</translation>
 <translation id="2844349213149998955">Não é permitido iniciar sessão com uma conta pessoal neste dispositivo. Inicie sessão com uma conta profissional.</translation>
 <translation id="3306357053520292004">Já foi adicionado um utilizador neste computador com esta conta. Inicie sessão com uma conta diferente.</translation>
+<translation id="3926852373333893095">Apenas os utilizadores do G Suite Enterprise têm autorização para iniciar sessão.</translation>
 <translation id="4057329986137569701">Ocorreu um erro interno.</translation>
 <translation id="4267670563222825190">Não foi possível encontrar qualquer utilizador do domínio para a sua conta. Contacte o seu administrador.</translation>
 <translation id="4300229033992784001">A palavra-passe da sua conta foi alterada. Introduza a sua palavra-passe do Windows atual para sincronizar a conta do Windows com a sua conta profissional.</translation>
 <translation id="4706454071748629324">Falha ao adicionar um novo utilizador. Este computador apenas permite a criação de um utilizador através de uma conta profissional.</translation>
 <translation id="6033715878377252112">Assistente do Google Credential Provider para Windows</translation>
 <translation id="6149399665202317746">Google Credential Provider para Windows</translation>
+<translation id="6239180560789153226">Faltam informações de recuperação no dispositivo. Inicie sessão com a sua conta profissional Google.</translation>
 <translation id="6312494990035843744">Não é permitido iniciar sessão com uma conta profissional neste domínio. Experimente com outra conta.</translation>
 <translation id="6463752215771576050">Não é possível inscrever este computador para gestão empresarial.  Inicie sessão com uma conta profissional diferente.</translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
+<translation id="6937049691815837345">É necessário inscrever o dispositivo na gestão de dispositivos. Inicie sessão com a sua conta profissional Google.</translation>
 <translation id="7209941495304122410">Introduzir palavra-passe do Windows</translation>
 <translation id="7357241217513796177">Certifique-se de que tem uma ligação de rede e tente novamente.</translation>
 <translation id="7536769223115622137">Adicionar conta profissional</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">A sua sessão expirou. Inicie sessão com a sua conta profissional Google.</translation>
 <translation id="9055998212250844221">Conta de utilizador criada pelo Google Credential Provider para Windows</translation>
 <translation id="9135619837062629367">Não é permitido iniciar sessão com esta conta. Experimente uma conta diferente.</translation>
+<translation id="998002716857524853">Inicie sessão com a sua conta profissional do G Suite.</translation>
 </translationbundle>

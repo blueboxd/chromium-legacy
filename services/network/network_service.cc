@@ -329,12 +329,8 @@ std::unique_ptr<NetworkService> NetworkService::Create(
 }
 
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
-  auto network_service = std::make_unique<NetworkService>(
-      std::make_unique<service_manager::BinderRegistry>(), mojo::NullReceiver(),
-      true /* delay_initialization_until_set_client */);
-  network_service->Initialize(mojom::NetworkServiceParams::New(),
-                              true /* mock_network_change_notifier */);
-  return network_service;
+  return std::make_unique<NetworkService>(
+      std::make_unique<service_manager::BinderRegistry>());
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {

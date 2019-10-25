@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">Määritä kieli</translation>
 <translation id="1962969542251276847">Ruudunlukitus</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">Hei <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">Tekstinsyöttö</translation>
 <translation id="1993072747612765854">Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="1995660704900986789">Virta pois</translation>
@@ -275,7 +276,7 @@
 <translation id="4831034276697007977">Haluatko varmasti lopettaa automaattisen klikkaamisen?</translation>
 <translation id="4849058404725798627">Korosta tekstin syöttökohde</translation>
 <translation id="485592688953820832">Ei toimenpiteitä (keskeytä)</translation>
-<translation id="4868492592575313542">aktivoitu</translation>
+<translation id="4868492592575313542">otettu käyttöön</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="4890187583552566966">Järjestelmänvalvoja on poistanut Google Assistantin käytöstä.</translation>
 <translation id="4895488851634969361">Akku on täynnä.</translation>

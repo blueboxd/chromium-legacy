@@ -124,7 +124,7 @@ V4L2StatelessVideoDecoderBackend::~V4L2StatelessVideoDecoderBackend() {
     avd_ = nullptr;
   }
 
-  if (supports_requests_) {
+  if (input_queue_->SupportsRequests()) {
     requests_ = {};
     media_fd_.reset();
   }
@@ -133,15 +133,23 @@ V4L2StatelessVideoDecoderBackend::~V4L2StatelessVideoDecoderBackend() {
 bool V4L2StatelessVideoDecoderBackend::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!CheckRequestAPISupport()) {
-    VPLOGF(1) << "Failed to check request api support.";
-    return false;
+  if (input_queue_->SupportsRequests()) {
+    DCHECK(!media_fd_.is_valid());
+    // Let's try to open the media device
+    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
+    // integration.
+    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
+    if (media_fd < 0) {
+      VPLOGF(1) << "Failed to open media device.";
+      return false;
+    }
+    media_fd_ = base::ScopedFD(media_fd);
   }
 
   // Create codec-specific AcceleratedVideoDecoder.
   // TODO(akahuang): Check the profile is supported.
   if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
-    if (supports_requests_) {
+    if (input_queue_->SupportsRequests()) {
       avd_.reset(new H264Decoder(
           std::make_unique<V4L2H264Accelerator>(this, device_.get())));
     } else {
@@ -149,7 +157,7 @@ bool V4L2StatelessVideoDecoderBackend::Initialize() {
           std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get())));
     }
   } else if (profile_ >= VP8PROFILE_MIN && profile_ <= VP8PROFILE_MAX) {
-    if (supports_requests_) {
+    if (input_queue_->SupportsRequests()) {
       avd_.reset(new VP8Decoder(
           std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
     } else {
@@ -164,7 +172,7 @@ bool V4L2StatelessVideoDecoderBackend::Initialize() {
     return false;
   }
 
-  if (supports_requests_ && !AllocateRequests()) {
+  if (input_queue_->SupportsRequests() && !AllocateRequests()) {
     return false;
   }
 
@@ -252,7 +260,7 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
   }
 
   scoped_refptr<V4L2DecodeSurface> dec_surface;
-  if (supports_requests_) {
+  if (input_queue_->SupportsRequests()) {
     DCHECK(!requests_.empty());
     base::ScopedFD request = std::move(requests_.front());
     requests_.pop();
@@ -551,39 +559,6 @@ void V4L2StatelessVideoDecoderBackend::ClearPendingRequests(
     decode_request_queue_.pop();
     std::move(request.decode_cb).Run(status);
   }
-}
-
-bool V4L2StatelessVideoDecoderBackend::CheckRequestAPISupport() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOGF(3);
-
-  struct v4l2_requestbuffers reqbufs;
-  memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count = 0;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  reqbufs.memory = V4L2_MEMORY_MMAP;
-  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0) {
-    VPLOGF(1) << "VIDIOC_REQBUFS ioctl failed.";
-    return false;
-  }
-  if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
-    supports_requests_ = true;
-    VLOGF(1) << "Using request API.";
-    DCHECK(!media_fd_.is_valid());
-    // Let's try to open the media device
-    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
-    // integration.
-    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
-    if (media_fd < 0) {
-      VPLOGF(1) << "Failed to open media device.";
-      return false;
-    }
-    media_fd_ = base::ScopedFD(media_fd);
-  } else {
-    VLOGF(1) << "Using config store.";
-  }
-
-  return true;
 }
 
 bool V4L2StatelessVideoDecoderBackend::AllocateRequests() {

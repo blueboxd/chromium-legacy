@@ -25,6 +25,15 @@ out/Release/chromevoxclassic.
 Go to chrome://extensions, and click "Load
 Unpacked". Select out/Release/chromevoxclassic.
 
+#Automated Testing
+Build
+
+ninja -C out/Release ui/accessibility/extensions:extension_tests
+
+and run
+
+out/Release/chromevox_tests
+
 ## Maintenance/Contributions
 Tooling is minimal for this fork of ChromeVox. Much of what's available for
 ChromeVox in Chrome OS (chrome/browser/resources/chromeos/chromevox/tools is

@@ -24,6 +24,7 @@
 #include "media/capture/video_capture_types.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -220,11 +221,12 @@ class CastMirroringServiceHostBrowserTest
   // mojom::AudioStreamCreatorClient mocks.
   MOCK_METHOD0(OnAudioStreamCreated, void());
   void StreamCreated(mojo::PendingRemote<media::mojom::AudioInputStream> stream,
-                     media::mojom::AudioInputStreamClientRequest client_request,
+                     mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+                         client_receiver,
                      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
                      bool initially_muted) override {
     EXPECT_TRUE(stream);
-    EXPECT_TRUE(client_request);
+    EXPECT_TRUE(client_receiver);
     EXPECT_TRUE(data_pipe);
     OnAudioStreamCreated();
   }

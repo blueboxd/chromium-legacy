@@ -8,7 +8,7 @@ one-click install from the Settings page.
 
 Some of the extensions have localized strings and need to be built:
 
-ninja -C out/Release ui/accessibility/extensions
+ninja -C out/Release ui/accessibility/extensions:extensions
 
 The built extensions will be in your out directory, e.g.:
 
@@ -18,6 +18,16 @@ All other extensions should be zipped and uploaded to the webstore.
 
 Note for chromevoxclassic:
 see chromevoxclassic/README for further details.
+
+You can build all extension tests by doing:
+
+ninja -C out/Release ui/accessibility/extensions:extension_tests
+
+This currently only produces tests for ChromeVox Classic
+
+out/Release/chromevox_tests
+
+This target is not run on a bot, so run it manually before release!
 
 #
 # Instructions for publishing to the web store (new as of August 2019):

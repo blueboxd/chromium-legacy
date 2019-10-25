@@ -121,6 +121,7 @@
 <translation id="1501859676467574491">Google アカウントに保存したカードを表示</translation>
 <translation id="1507202001669085618">&lt;p&gt;インターネットに接続するために Wi-Fi ポータルへのログインが必要な場合は、このエラーが表示されます。&lt;/p&gt;
     &lt;p&gt;エラーを解決するには、開こうとしているページで [&lt;strong&gt;接続&lt;/strong&gt;] をクリックします。&lt;/p&gt;</translation>
+<translation id="1513706915089223971">履歴項目のリスト</translation>
 <translation id="1517433312004943670">電話番号が必要です</translation>
 <translation id="1517500485252541695">利用可能なクレジット カードとデビットカード</translation>
 <translation id="1519264250979466059">ビルド日</translation>
@@ -306,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は取り消されている可能性があります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="2438874542388153331">4 穴パンチ（右）</translation>
+<translation id="245044156129055925">偽のサイトでパスワードを入力しました。パスワードをすぐに変更することをおすすめします。</translation>
 <translation id="2463193859425327265">ホームページを変更する</translation>
 <translation id="2463739503403862330">入力する</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -600,6 +602,9 @@
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> はブロックされています</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> がブラウザで Chrome Enterprise Threat Protection を有効にしています。Chrome Enterprise Threat Protection がユーザーのデータの一部にアクセスできます。</translation>
+<translation id="3987405730340719549">偽のサイトまたは不正なサイトの可能性があります。
+
+    このメッセージが誤って表示されたと思われる場合は、https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals から問題を報告してください。</translation>
 <translation id="3987940399970879459">1 MB 未満</translation>
 <translation id="3990250421422698716">ジョグ オフセット</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 件の近くのウェブページ}other{# 件の近くのウェブページ}}</translation>
@@ -976,6 +981,9 @@
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="5838278095973806738">このサイトでは機密情報（パスワード、クレジット カードなど）を入力しないでください。悪意のあるユーザーに情報が盗まれる恐れがあります。</translation>
+<translation id="5855253129151731373">このサイトのホスト名は <ph name="LOOKALIKE_DOMAIN" /> と似ているようです。不正なユーザーがドメイン名のごく一部を一目ではわからないように改変してサイトを偽装する場合があります。
+
+    このメッセージが誤って表示されたと思われる場合は、https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals から問題を報告してください。</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5863847714970149516">表示しようとしているページでは課金される恐れがあります</translation>
 <translation id="5866257070973731571">電話番号の追加</translation>
@@ -1086,6 +1094,7 @@
 <translation id="6401136357288658127">このポリシーはサポートが終了したため、代わりに <ph name="NEW_POLICY" /> ポリシーを使用してください。</translation>
 <translation id="6404511346730675251">ブックマークを編集</translation>
 <translation id="6406765186087300643">C0（封筒）</translation>
+<translation id="6409754798200046165">偽のサイトでパスワードを入力しました。パスワードをすぐに変更することをおすすめします。</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> の有効期限と CVC を入力</translation>
 <translation id="6415778972515849510">Chromium には Google アカウントの保護とパスワードの変更をサポートする機能があります。</translation>
 <translation id="6427730057873428458">観音折り</translation>
@@ -1382,6 +1391,7 @@
 <translation id="7932579305932748336">コーティング</translation>
 <translation id="79338296614623784">有効な電話番号を入力してください</translation>
 <translation id="7934052535022478634">お支払いの完了</translation>
+<translation id="7935031712718413217">なりすましの可能性がある URL</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">有効期限は <ph name="EXPIRATION_DATE_ABBR" /> です</translation>
 <translation id="7938958445268990899">サーバーの証明書が有効になっていません。</translation>

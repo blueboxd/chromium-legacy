@@ -961,6 +961,8 @@ void ServiceWorkerProviderHost::CheckControllerConsistency(
 void ServiceWorkerProviderHost::Register(
     const GURL& script_url,
     blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object,
     RegisterCallback callback) {
   if (!CanServeContainerHostMethods(
           &callback, options->scope, script_url,
@@ -1005,7 +1007,7 @@ void ServiceWorkerProviderHost::Register(
       std::move(callback), blink::mojom::ServiceWorkerErrorType::kUnknown,
       std::string(), nullptr);
   context_->RegisterServiceWorker(
-      script_url, *options,
+      script_url, *options, std::move(outside_fetch_client_settings_object),
       base::BindOnce(&ServiceWorkerProviderHost::RegistrationComplete,
                      AsWeakPtr(), GURL(script_url), GURL(options->scope),
                      std::move(wrapped_callback), trace_id,

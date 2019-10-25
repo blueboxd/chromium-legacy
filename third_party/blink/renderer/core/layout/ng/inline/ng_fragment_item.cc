@@ -83,10 +83,20 @@ bool NGFragmentItem::IsAtomicInline() const {
   return false;
 }
 
+bool NGFragmentItem::IsEmptyLineBox() const {
+  // TODO(yosin): Implement |NGFragmentItem::IsEmptyLineBox()|.
+  return false;
+}
+
 bool NGFragmentItem::IsGeneratedText() const {
   if (Type() == kText || Type() == kGeneratedText)
     return is_generated_text_;
   NOTREACHED();
+  return false;
+}
+
+bool NGFragmentItem::IsListMarker() const {
+  // TODO(yosin): Implement |NGFragmentItem::IsListMarker()|.
   return false;
 }
 

@@ -69,7 +69,8 @@ class ClickToCallUiController
 
   // Sends |phone_number| to |device| as a SharingMessage.
   void SendNumberToDevice(const syncer::DeviceInfo& device,
-                          const std::string& phone_number);
+                          const std::string& phone_number,
+                          SharingClickToCallEntryPoint entry_point);
 
   UKMRecorderCallback ukm_recorder_;
   GURL phone_url_;

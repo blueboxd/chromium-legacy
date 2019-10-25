@@ -18,12 +18,15 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
+namespace blink {
+class ThrottlingURLLoader;
+}  // namespace blink
+
 namespace content {
 
 class BrowserContext;
 struct ResourceRequest;
 struct SubresourceLoaderParams;
-class ThrottlingURLLoader;
 
 // NavigationLoaderInterceptor is given a chance to create a URLLoader and
 // intercept a navigation request before the request is handed off to the
@@ -117,7 +120,7 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
-      ThrottlingURLLoader* url_loader,
+      blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect);
 

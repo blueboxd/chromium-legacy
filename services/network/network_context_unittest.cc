@@ -5945,6 +5945,79 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntryWithNetworkIsolationKey) {
                              net::NetworkIsolationKey()));
 }
 
+TEST_F(NetworkContextTest, CopyHttpAuthCacheProxyEntries) {
+  std::unique_ptr<NetworkContext> network_context1 =
+      CreateContextWithParams(CreateContextParams());
+
+  net::AuthChallengeInfo challenge;
+  challenge.is_proxy = true;
+  challenge.challenger = kOrigin;
+  challenge.scheme = "basic";
+  challenge.realm = "testrealm";
+  const char kProxyUsername[] = "proxy_user";
+  const char kProxyPassword[] = "proxy_pass";
+
+  base::RunLoop run_loop1;
+  network_context1->AddAuthCacheEntry(
+      challenge, net::NetworkIsolationKey(),
+      net::AuthCredentials(base::ASCIIToUTF16(kProxyUsername),
+                           base::ASCIIToUTF16(kProxyPassword)),
+      run_loop1.QuitClosure());
+  run_loop1.Run();
+
+  challenge.is_proxy = false;
+  const char kServerUsername[] = "server_user";
+  const char kServerPassword[] = "server_pass";
+
+  base::RunLoop run_loop2;
+  network_context1->AddAuthCacheEntry(
+      challenge, net::NetworkIsolationKey(),
+      net::AuthCredentials(base::ASCIIToUTF16(kServerUsername),
+                           base::ASCIIToUTF16(kServerPassword)),
+      run_loop2.QuitClosure());
+  run_loop2.Run();
+
+  base::UnguessableToken token;
+  base::RunLoop run_loop3;
+  network_context1->SaveHttpAuthCacheProxyEntries(base::BindLambdaForTesting(
+      [&](const base::UnguessableToken& returned_token) {
+        token = returned_token;
+        run_loop3.Quit();
+      }));
+  run_loop3.Run();
+
+  // Delete first NetworkContext, to make sure saved credentials outlast it.
+  network_context1.reset();
+  base::RunLoop().RunUntilIdle();
+
+  std::unique_ptr<NetworkContext> network_context2 =
+      CreateContextWithParams(CreateContextParams());
+
+  base::RunLoop run_loop4;
+  network_context2->LoadHttpAuthCacheProxyEntries(token,
+                                                  run_loop4.QuitClosure());
+  run_loop4.Run();
+
+  // Check cached credentials directly, since there's no API to check proxy
+  // credentials.
+  net::HttpAuthCache* cache = network_context2->url_request_context()
+                                  ->http_transaction_factory()
+                                  ->GetSession()
+                                  ->http_auth_cache();
+  // The server credentials should not have been copied.
+  EXPECT_FALSE(cache->Lookup(kURL, net::HttpAuth::AUTH_SERVER, challenge.realm,
+                             net::HttpAuth::AUTH_SCHEME_BASIC,
+                             net::NetworkIsolationKey()));
+  net::HttpAuthCache::Entry* entry = cache->Lookup(
+      kURL, net::HttpAuth::AUTH_PROXY, challenge.realm,
+      net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey());
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(base::ASCIIToUTF16(kProxyUsername),
+            entry->credentials().username());
+  EXPECT_EQ(base::ASCIIToUTF16(kProxyPassword),
+            entry->credentials().password());
+}
+
 TEST_F(NetworkContextTest, HSTSPolicyBypassList) {
   // The default test preload list includes "example" as a preloaded TLD
   // (including subdomains).

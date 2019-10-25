@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekunti jäljellä}other{# sekuntia jäljellä}}</translation>
 <translation id="5941711191222866238">Pienennä</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 tunti}other{# tuntia}}</translation>
-<translation id="5946629889255121107">Numeron lähde: <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Sivu <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Tyhjennä hakukentän teksti</translation>
 <translation id="6040143037577758943">Sulje</translation>
@@ -199,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Enemmän kuin 1 lukematon ilmoitus}other{Enemmän kuin # lukematonta ilmoitusta}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 min päästä}other{# min päästä}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568">Numeron lähde: <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 tunti sitten}other{# tuntia sitten}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s jäljellä}other{# s jäljellä}}</translation>
 <translation id="8134065097954893699">Ladataan sivu uudelleen</translation>

@@ -382,6 +382,9 @@
 // Returns a matcher for the profiles settings collection view.
 + (id<GREYMatcher>)settingsProfileMatcher;
 
+// Returns a matcher for the credit card settings collection view.
++ (id<GREYMatcher>)settingsCreditCardMatcher;
+
 // Returns a matcher for an autofill suggestion view.
 + (id<GREYMatcher>)autofillSuggestionViewMatcher;
 
@@ -429,6 +432,23 @@
 
 // Returns a matcher for the ProfileTableView window.
 + (id<GREYMatcher>)manualFallbackProfileTableViewWindowMatcher;
+
+// Returns a matcher for the credit card icon in the keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackCreditCardIconMatcher;
+
+// Returns a matcher for the credit card table view in manual fallback.
++ (id<GREYMatcher>)manualFallbackCreditCardTableViewMatcher;
+
+// Returns a matcher for the button to open password settings in manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackManageCreditCardsMatcher;
+
+// Returns a matcher for the button to add credit cards settings in manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackAddCreditCardsMatcher;
+
+// Returns a matcher for the CreditCardTableView window.
++ (id<GREYMatcher>)manualFallbackCreditCardTableViewWindowMatcher;
 
 @end
 

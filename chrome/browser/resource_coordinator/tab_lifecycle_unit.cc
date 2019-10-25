@@ -421,6 +421,14 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateOriginTrialFreezePolicy(
     performance_manager::mojom::InterventionPolicy policy) {
   // The origin trial policy should only be updated when its value changes.
   DCHECK_NE(policy, origin_trial_freeze_policy_);
+  // Unfreeze the tab if needed. This can happen if the tab gets frozen
+  // before all its frames are loaded and if one of these frames
+  // causes the tab to be opted out.
+  if (policy == performance_manager::mojom::InterventionPolicy::kOptOut &&
+      IsFrozenOrPendingFreeze(GetState())) {
+    Unfreeze();
+  }
+
   origin_trial_freeze_policy_ = policy;
 }
 

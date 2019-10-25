@@ -24,11 +24,11 @@ class GURL;
 namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
-}
+}  // namespace bookmarks
 
 namespace gfx {
 class Image;
-}
+}  // namespace gfx
 
 namespace bookmarks_helper {
 
@@ -237,8 +237,6 @@ std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkServerEntity(
     const std::string& title,
     const GURL& url);
 
-}  // namespace bookmarks_helper
-
 // Checker used to block until bookmarks match on all clients.
 class BookmarksMatchChecker : public MultiClientStatusChangeChecker {
  public:
@@ -318,5 +316,7 @@ class BookmarksGUIDChecker : public AwaitMatchStatusChangeChecker {
  public:
   BookmarksGUIDChecker(int profile_index, const std::string& guid);
 };
+
+}  // namespace bookmarks_helper
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_BOOKMARKS_HELPER_H_

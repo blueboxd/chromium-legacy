@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Остава 1 секунда}other{Остават # секунди}}</translation>
 <translation id="5941711191222866238">Намаляване</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 час}other{# часа}}</translation>
-<translation id="5946629889255121107">Номерът е получен от <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> от <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Изчистване на текста от полето за търсене</translation>
 <translation id="6040143037577758943">Затваряне</translation>
@@ -199,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Повече от 1 непрочетено известие}other{Повече от # непрочетени известия}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{след 1 м}other{след # м}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568">Номер от <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Преди 1 час}other{Преди # часа}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Остава 1 сек}other{Остават # сек}}</translation>
 <translation id="8134065097954893699">Презаредете страницата</translation>

@@ -449,6 +449,21 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_device_show_numeric_keyboard_for_password()) {
+    const em::BooleanPolicyProto& container(
+        policy.device_show_numeric_keyboard_for_password());
+    if (container.has_value()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(container.has_policy_options(),
+                         container.policy_options(), &level)) {
+        policies->Set(key::kDeviceShowNumericKeyboardForPassword, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(container.value()),
+                      nullptr);
+      }
+    }
+  }
+
   if (policy.has_saml_login_authentication_type()) {
     const em::SamlLoginAuthenticationTypeProto& container(
         policy.saml_login_authentication_type());

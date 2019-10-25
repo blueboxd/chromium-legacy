@@ -136,6 +136,7 @@ class GMockCertVerifier : public net::CertVerifier {
              net::CompletionOnceCallback callback,
              std::unique_ptr<net::CertVerifier::Request>* out_req,
              const net::NetLogWithSource& net_log) override {
+    verify_result->Reset();
     return VerifyImpl(params, verify_result, out_req, net_log);
   }
 

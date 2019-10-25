@@ -26,6 +26,7 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -93,7 +94,7 @@ class AdaptiveScreenBrightnessManagerTest
     auto logger = std::make_unique<TestingAdaptiveScreenBrightnessUkmLogger>();
     ukm_logger_ = logger.get();
 
-    viz::mojom::VideoDetectorObserverPtr observer;
+    mojo::PendingRemote<viz::mojom::VideoDetectorObserver> observer;
     auto periodic_timer = std::make_unique<base::RepeatingTimer>();
     periodic_timer->SetTaskRunner(
         task_environment()->GetMainThreadTaskRunner());
@@ -101,7 +102,8 @@ class AdaptiveScreenBrightnessManagerTest
         std::make_unique<AdaptiveScreenBrightnessManager>(
             std::move(logger), &user_activity_detector_,
             FakePowerManagerClient::Get(), nullptr, nullptr,
-            mojo::MakeRequest(&observer), std::move(periodic_timer));
+            observer.InitWithNewPipeAndPassReceiver(),
+            std::move(periodic_timer));
   }
 
   void TearDown() override {

@@ -106,7 +106,7 @@ void GoogleAssistantHandler::BindAssistantSettingsManager() {
   // Set up settings mojom.
   AssistantServiceConnection::GetForProfile(profile_)
       ->service()
-      ->BindSettingsManager(mojo::MakeRequest(&settings_manager_));
+      ->BindSettingsManager(settings_manager_.BindNewPipeAndPassReceiver());
 }
 
 }  // namespace settings

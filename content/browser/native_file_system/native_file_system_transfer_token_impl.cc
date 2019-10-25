@@ -16,15 +16,17 @@ NativeFileSystemTransferTokenImpl::NativeFileSystemTransferTokenImpl(
       url_(url),
       handle_state_(handle_state),
       type_(type),
-      manager_(manager),
-      receiver_(this, std::move(receiver)) {
+      manager_(manager) {
   DCHECK(manager_);
   DCHECK_EQ(url_.mount_type() == storage::kFileSystemTypeIsolated,
             handle_state_.file_system.is_valid())
       << url_.mount_type();
-  receiver_.set_disconnect_handler(
-      base::BindOnce(&NativeFileSystemTransferTokenImpl::OnMojoDisconnect,
-                     base::Unretained(this)));
+
+  receivers_.set_disconnect_handler(
+      base::BindRepeating(&NativeFileSystemTransferTokenImpl::OnMojoDisconnect,
+                          base::Unretained(this)));
+
+  receivers_.Add(this, std::move(receiver));
 }
 
 NativeFileSystemTransferTokenImpl::~NativeFileSystemTransferTokenImpl() =
@@ -36,7 +38,15 @@ void NativeFileSystemTransferTokenImpl::GetInternalID(
 }
 
 void NativeFileSystemTransferTokenImpl::OnMojoDisconnect() {
-  manager_->RemoveToken(token_);
+  if (receivers_.empty()) {
+    manager_->RemoveToken(token_);
+  }
+}
+
+void NativeFileSystemTransferTokenImpl::Clone(
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+        clone_receiver) {
+  receivers_.Add(this, std::move(clone_receiver));
 }
 
 }  // namespace content

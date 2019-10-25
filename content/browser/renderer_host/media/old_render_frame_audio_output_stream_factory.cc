@@ -69,8 +69,6 @@ OldRenderFrameAudioOutputStreamFactory::OldRenderFrameAudioOutputStreamFactory(
 OldRenderFrameAudioOutputStreamFactory::
     ~OldRenderFrameAudioOutputStreamFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  UMA_HISTOGRAM_EXACT_LINEAR("Media.Audio.OutputStreamsCanceledByBrowser",
-                             stream_providers_.size(), 50);
   // Make sure to close all streams.
   stream_providers_.clear();
 }

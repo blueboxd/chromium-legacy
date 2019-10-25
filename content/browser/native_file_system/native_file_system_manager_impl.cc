@@ -116,6 +116,24 @@ bool CreateOrTruncateFile(const base::FilePath& path) {
   return file.IsValid();
 }
 
+bool IsValidTransferToken(
+    NativeFileSystemTransferTokenImpl* token,
+    const url::Origin& expected_origin,
+    NativeFileSystemTransferTokenImpl::HandleType expected_handle_type) {
+  if (!token) {
+    return false;
+  }
+
+  if (token->type() != expected_handle_type) {
+    return false;
+  }
+
+  if (token->url().origin() != expected_origin) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 NativeFileSystemManagerImpl::SharedHandleState::SharedHandleState(
@@ -231,6 +249,34 @@ void NativeFileSystemManagerImpl::ChooseEntries(
                          weak_factory_.GetWeakPtr(), context, options,
                          std::move(callback)),
           base::SequencedTaskRunnerHandle::Get()));
+}
+
+void NativeFileSystemManagerImpl::GetFileHandleFromToken(
+    mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemFileHandle>
+        file_handle_receiver) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ResolveTransferToken(
+      std::move(token),
+      base::BindOnce(
+          &NativeFileSystemManagerImpl::DidResolveTransferTokenForFileHandle,
+          weak_factory_.GetWeakPtr(), receivers_.current_context(),
+          std::move(file_handle_receiver)));
+}
+
+void NativeFileSystemManagerImpl::GetDirectoryHandleFromToken(
+    mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemDirectoryHandle>
+        directory_handle_receiver) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ResolveTransferToken(
+      std::move(token),
+      base::BindOnce(&NativeFileSystemManagerImpl::
+                         DidResolveTransferTokenForDirectoryHandle,
+                     weak_factory_.GetWeakPtr(), receivers_.current_context(),
+                     std::move(directory_handle_receiver)));
 }
 
 blink::mojom::NativeFileSystemEntryPtr
@@ -380,6 +426,56 @@ void NativeFileSystemManagerImpl::ResolveTransferToken(
                      weak_factory_.GetWeakPtr(), std::move(token_remote),
                      std::move(callback)),
       base::UnguessableToken()));
+}
+
+void NativeFileSystemManagerImpl::DidResolveTransferTokenForFileHandle(
+    const BindingContext& binding_context,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemFileHandle>
+        file_handle_receiver,
+    NativeFileSystemTransferTokenImpl* resolved_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsValidTransferToken(
+          resolved_token, binding_context.origin,
+          NativeFileSystemTransferTokenImpl::HandleType::kFile)) {
+    // Fail silently. In practice, the NativeFileSystemManager should not
+    // receive any invalid tokens. Before redeeming a token, the render process
+    // performs an origin check to ensure the token is valid. Invalid tokens
+    // indicate a code bug or a compromised render process.
+    //
+    // After receiving an invalid token, the NativeFileSystemManager
+    // cannot determine which render process is compromised. Is it the post
+    // message sender or receiver? Because of this, the NativeFileSystemManager
+    // closes the FileHandle pipe and ignores the error.
+    return;
+  }
+
+  file_receivers_.Add(std::make_unique<NativeFileSystemFileHandleImpl>(
+                          this, binding_context, resolved_token->url(),
+                          resolved_token->shared_handle_state()),
+                      std::move(file_handle_receiver));
+}
+
+void NativeFileSystemManagerImpl::DidResolveTransferTokenForDirectoryHandle(
+    const BindingContext& binding_context,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemDirectoryHandle>
+        directory_handle_receiver,
+    NativeFileSystemTransferTokenImpl* resolved_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsValidTransferToken(
+          resolved_token, binding_context.origin,
+          NativeFileSystemTransferTokenImpl::HandleType::kDirectory)) {
+    // Fail silently. See comment above in
+    // DidResolveTransferTokenForFileHandle() for details.
+    return;
+  }
+
+  directory_receivers_.Add(
+      std::make_unique<NativeFileSystemDirectoryHandleImpl>(
+          this, binding_context, resolved_token->url(),
+          resolved_token->shared_handle_state()),
+      std::move(directory_handle_receiver));
 }
 
 const base::SequenceBound<storage::FileSystemOperationRunner>&

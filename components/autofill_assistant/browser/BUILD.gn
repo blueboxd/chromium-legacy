@@ -52,6 +52,8 @@ jumbo_static_library("browser") {
     "actions/popup_message_action.h",
     "actions/prompt_action.cc",
     "actions/prompt_action.h",
+    "actions/required_fields_fallback_handler.cc",
+    "actions/required_fields_fallback_handler.h",
     "actions/reset_action.cc",
     "actions/reset_action.h",
     "actions/select_option_action.cc",

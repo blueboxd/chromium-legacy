@@ -204,9 +204,7 @@ void AudioInputStreamBroker::StreamCreated(
   DCHECK(stream_id.has_value());
   DCHECK(renderer_factory_client_);
   renderer_factory_client_->StreamCreated(
-      std::move(stream),
-      media::mojom::AudioInputStreamClientRequest(
-          pending_client_receiver_.PassPipe()),
+      std::move(stream), std::move(pending_client_receiver_),
       std::move(data_pipe), initially_muted, stream_id);
 }
 void AudioInputStreamBroker::ObserverBindingLost(

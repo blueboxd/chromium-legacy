@@ -19,6 +19,7 @@
 #include "ipc/ipc_mojo_param_traits.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
+#include "services/network/public/cpp/net_ipc_param_traits.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
@@ -244,6 +245,31 @@ struct ParamTraits<blink::mojom::SerializedBlobPtr> {
   }
 };
 
+template <>
+struct ParamTraits<
+    mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>> {
+  using param_type =
+      mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>;
+  static void Write(base::Pickle* m, const param_type& p) {
+    // Move the Mojo pipe to serialize the
+    // PendingRemote<NativeFileSystemTransferToken> for a postMessage() target.
+    WriteParam(m, const_cast<param_type&>(p).PassPipe().release());
+  }
+
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r) {
+    mojo::MessagePipeHandle handle;
+    if (!ReadParam(m, iter, &handle)) {
+      return false;
+    }
+    *r = mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>(
+        mojo::ScopedMessagePipeHandle(handle),
+        blink::mojom::NativeFileSystemTransferToken::Version_);
+    return true;
+  }
+};
+
 void ParamTraits<scoped_refptr<base::RefCountedData<
     blink::TransferableMessage>>>::Write(base::Pickle* m, const param_type& p) {
   m->WriteData(reinterpret_cast<const char*>(p->data.encoded_message.data()),
@@ -258,6 +284,8 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, !!p->data.user_activation);
   WriteParam(m, p->data.transfer_user_activation);
   WriteParam(m, p->data.allow_autoplay);
+  WriteParam(m, p->data.sender_origin);
+  WriteParam(m, p->data.native_file_system_tokens);
   if (p->data.user_activation) {
     WriteParam(m, p->data.user_activation->has_been_active);
     WriteParam(m, p->data.user_activation->was_active);
@@ -290,7 +318,9 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stream_channels) ||
       !ReadParam(m, iter, &has_activation) ||
       !ReadParam(m, iter, &(*r)->data.transfer_user_activation) ||
-      !ReadParam(m, iter, &(*r)->data.allow_autoplay)) {
+      !ReadParam(m, iter, &(*r)->data.allow_autoplay) ||
+      !ReadParam(m, iter, &(*r)->data.sender_origin) ||
+      !ReadParam(m, iter, &(*r)->data.native_file_system_tokens)) {
     return false;
   }
 

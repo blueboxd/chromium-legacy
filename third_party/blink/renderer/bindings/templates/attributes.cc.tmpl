@@ -41,16 +41,13 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.is_save_same_object %}
   // [SaveSameObject]
-  {% set same_object_private_key = interface_name + attribute.camel_case_name %}
-  // If you see a compile error that
-  //   V8PrivateProperty::GetSameObject{{same_object_private_key}}
-  // is not defined, then you need to register your attribute at
-  // V8_PRIVATE_PROPERTY_FOR_EACH defined in V8PrivateProperty.h as
-  //   X(SameObject, {{same_object_private_key}})
-  auto privateSameObject = V8PrivateProperty::GetSameObject{{same_object_private_key}}(info.GetIsolate());
+  static const V8PrivateProperty::SymbolKey
+      save_same_object_key("{{cpp_class}}#{{attribute.camel_case_name}}");
+  auto private_same_object =
+      V8PrivateProperty::GetSymbol(info.GetIsolate(), save_same_object_key);
   {
     v8::Local<v8::Value> v8_value;
-    if (privateSameObject.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
+    if (private_same_object.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
       V8SetReturnValue(info, v8_value);
       return;
     }
@@ -80,13 +77,13 @@ const v8::FunctionCallbackInfo<v8::Value>& info
       V8PrivateProperty::GetHistoryStateSymbol(info.GetIsolate());
   {% else %}
   {% if not attribute.private_property_is_shared_between_getter_and_setter %}
-  static int {{attribute.private_property_key_name}};
+  static const V8PrivateProperty::SymbolKey
+      {{attribute.private_property_key_name}}("{{cpp_class}}#{{attribute.camel_case_name}}");
 
   {% endif %}
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
-          &{{attribute.private_property_key_name}},
-          "{{cpp_class}}#{{attribute.camel_case_name}}");
+          {{attribute.private_property_key_name}});
   {% endif %}
   if (!static_cast<const {{cpp_class}}*>(impl)->{{attribute.cached_attribute_validation_method}}()) {
     v8::Local<v8::Value> v8_value;
@@ -201,7 +198,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.is_save_same_object %}
   // [SaveSameObject]
-  privateSameObject.Set(holder, info.GetReturnValue().Get());
+  private_same_object.Set(holder, info.GetReturnValue().Get());
   {% endif %}
   {% endfilter %}{# format_remove_duplicates #}
 }
@@ -478,8 +475,7 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
       isolate,
-      &{{attribute.private_property_key_name}},
-      "{{cpp_class}}#{{attribute.camel_case_name}}")
+      {{attribute.private_property_key_name}})
       .DeleteProperty(holder, v8::Undefined(isolate));
   {% endif %}
   {% endif %}{# attribute.is_put_forwards #}

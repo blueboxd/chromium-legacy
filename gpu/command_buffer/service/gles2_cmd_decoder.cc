@@ -4489,6 +4489,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_REWRITE_FLOAT_UNARY_MINUS_OPERATOR;
   if (workarounds().dont_use_loops_to_initialize_variables)
     driver_bug_workarounds |= SH_DONT_USE_LOOPS_TO_INITIALIZE_VARIABLES;
+  if (workarounds().remove_dynamic_indexing_of_swizzled_vector)
+    driver_bug_workarounds |= SH_REMOVE_DYNAMIC_INDEXING_OF_SWIZZLED_VECTOR;
 
   // Initialize uninitialized locals by default
   if (!workarounds().dont_initialize_uninitialized_locals)

@@ -28,6 +28,8 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
 
   void Register(const GURL& script_url,
                 const blink::mojom::ServiceWorkerRegistrationOptions& options,
+                blink::mojom::FetchClientSettingsObjectPtr
+                    outside_fetch_client_settings_object,
                 ServiceWorkerRegisterJob::RegistrationCallback callback);
 
   void Unregister(const GURL& scope,

@@ -180,7 +180,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
-      ThrottlingURLLoader* url_loader,
+      blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

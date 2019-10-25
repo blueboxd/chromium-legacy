@@ -9,6 +9,7 @@
 #ifndef BASE_PROFILER_REGISTER_CONTEXT_H_
 #define BASE_PROFILER_REGISTER_CONTEXT_H_
 
+#include <cstdint>
 #include <type_traits>
 
 #include "build/build_config.h"

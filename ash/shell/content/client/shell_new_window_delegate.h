@@ -33,6 +33,7 @@ class ShellNewWindowDelegate : public ash::NewWindowDelegate {
   void ShowTaskManager() override;
   void OpenFeedbackPage(bool from_assistant) override;
   void LaunchCameraApp(const std::string& queries) override;
+  void CloseCameraApp() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellNewWindowDelegate);

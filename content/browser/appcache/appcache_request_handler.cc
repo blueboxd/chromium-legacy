@@ -581,7 +581,7 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
     mojo::ScopedDataPipeConsumerHandle* response_body,
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
-    ThrottlingURLLoader* url_loader,
+    blink::ThrottlingURLLoader* url_loader,
     bool* skip_other_interceptors,
     bool* will_return_unsafe_redirect) {
   // The sync interface of this method is inherited from the

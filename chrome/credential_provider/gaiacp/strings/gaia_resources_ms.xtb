@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Akaun anda telah dikunci. Sila hubungi pentadbir sistem anda.</translation>
 <translation id="2844349213149998955">Log masuk dengan akaun peribadi pada peranti ini tidak benarkan. Sila log masuk dengan akaun kerja.</translation>
 <translation id="3306357053520292004">Seorang pengguna pada komputer ini sudah pun ditambahkan menggunakan akaun ini. Sila log masuk dengan akaun lain.</translation>
+<translation id="3926852373333893095">Hanya pengguna GSuite Enterprise dibenarkan untuk log masuk.</translation>
 <translation id="4057329986137569701">Ralat dalaman telah berlaku.</translation>
 <translation id="4267670563222825190">Tiada pengguna Domain ditemui untuk akaun anda. Sila hubungi pentadbir anda.</translation>
 <translation id="4300229033992784001">Kata laluan akaun anda telah berubah. Sila masukkan kata laluan Windows semasa anda untuk menyegerakkan akaun Windows anda dengan akaun kerja anda.</translation>
 <translation id="4706454071748629324">Gagal menambahkan pengguna baharu. Komputer ini hanya membenarkan satu pengguna dibuat menggunakan akaun kerja.</translation>
 <translation id="6033715878377252112">Pembantu Penyedia Bukti Kelayakan Google untuk Windows</translation>
 <translation id="6149399665202317746">Penyedia Bukti Kelayakan Google untuk Windows</translation>
+<translation id="6239180560789153226">Peranti anda ketiadaan maklumat pemulihan. Log masuk menggunakan akaun kerja Google anda.</translation>
 <translation id="6312494990035843744">Log masuk dengan akaun kerja pada domain ini tidak benarkan. Cuba akaun lain.</translation>
 <translation id="6463752215771576050">Tidak dapat mendaftarkan komputer ini untuk pengurusan perusahaan.  Sila log masuk dengan akaun kerja lain.</translation>
 <translation id="6657585470893396449">Kata laluan</translation>
+<translation id="6937049691815837345">Peranti anda perlu mendaftar dengan pengurusan peranti. Log masuk menggunakan akaun kerja Google anda.</translation>
 <translation id="7209941495304122410">Masukkan Kata Laluan Windows</translation>
 <translation id="7357241217513796177">Pastikan anda mempunyai sambungan rangkaian dan cuba lagi.</translation>
 <translation id="7536769223115622137">Tambahkan akaun kerja</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Sesi anda telah tamat tempoh. Log masuk menggunakan akaun kerja Google anda.</translation>
 <translation id="9055998212250844221">Akaun pengguna yang dibuat oleh Penyedia Bukti Kelayakan Google untuk Windows</translation>
 <translation id="9135619837062629367">Tidak dibenarkan log masuk menggunakan akaun ini. Cuba akaun lain.</translation>
+<translation id="998002716857524853">Log masuk menggunakan akaun kerja GSuite anda.</translation>
 </translationbundle>

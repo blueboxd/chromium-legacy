@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BUBBLE_MENU_ITEM_FACTORY_H_
 #define CHROME_BROWSER_UI_VIEWS_BUBBLE_MENU_ITEM_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/strings/string16.h"

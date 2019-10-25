@@ -2458,7 +2458,7 @@
                     "params": {
                         "denseVariation": "titleBottom",
                         "exp": "games-top",
-                        "mostLikelyvariation": "groupedIcon",
+                        "mostLikelyVariation": "groupedIcon",
                         "variation": "mostLikelyTile"
                     },
                     "enable_features": [

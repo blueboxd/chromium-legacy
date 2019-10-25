@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{O secundă rămasă}few{# secunde rămase}other{# de secunde rămase}}</translation>
 <translation id="5941711191222866238">Minimizează</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{o oră}few{# ore}other{# de ore}}</translation>
-<translation id="5946629889255121107">Numărul provine de la <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780">Pagina <ph name="SELECTED_PAGE" /> din <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Șterge textul din caseta de căutare</translation>
 <translation id="6040143037577758943">Închide</translation>

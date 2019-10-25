@@ -32,7 +32,7 @@ void NotifyDestructionOnCorrectThread(
 }  // namespace
 
 ClientGpuMemoryBufferManager::ClientGpuMemoryBufferManager(
-    mojom::GpuMemoryBufferFactoryPtr gpu)
+    mojo::PendingRemote<mojom::GpuMemoryBufferFactory> gpu)
     : thread_("GpuMemoryThread"),
       gpu_memory_buffer_support_(
           std::make_unique<gpu::GpuMemoryBufferSupport>()) {
@@ -41,7 +41,7 @@ ClientGpuMemoryBufferManager::ClientGpuMemoryBufferManager(
   // the object has been destroyed. So Unretained() is safe.
   thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&ClientGpuMemoryBufferManager::InitThread,
-                                base::Unretained(this), gpu.PassInterface()));
+                                base::Unretained(this), std::move(gpu)));
 }
 
 ClientGpuMemoryBufferManager::~ClientGpuMemoryBufferManager() {
@@ -52,9 +52,9 @@ ClientGpuMemoryBufferManager::~ClientGpuMemoryBufferManager() {
 }
 
 void ClientGpuMemoryBufferManager::InitThread(
-    mojom::GpuMemoryBufferFactoryPtrInfo gpu_info) {
-  gpu_.Bind(std::move(gpu_info));
-  gpu_.set_connection_error_handler(
+    mojo::PendingRemote<mojom::GpuMemoryBufferFactory> gpu_remote) {
+  gpu_.Bind(std::move(gpu_remote));
+  gpu_.set_disconnect_handler(
       base::BindOnce(&ClientGpuMemoryBufferManager::DisconnectGpuOnThread,
                      base::Unretained(this)));
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();

@@ -338,6 +338,9 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // Returns the number of buffers currently queued on this queue.
   size_t QueuedBuffersCount() const;
 
+  // Returns true if requests are supported by this queue.
+  bool SupportsRequests();
+
  private:
   ~V4L2Queue();
 
@@ -347,6 +350,8 @@ class MEDIA_GPU_EXPORT V4L2Queue
   const enum v4l2_buf_type type_;
   enum v4l2_memory memory_ = V4L2_MEMORY_MMAP;
   bool is_streaming_ = false;
+  // Set to true if the queue supports requests.
+  bool supports_requests_ = false;
   size_t planes_count_ = 0;
   // Current format as set by SetFormat.
   base::Optional<struct v4l2_format> current_format_;

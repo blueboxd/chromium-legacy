@@ -262,8 +262,6 @@ gfx::NativeView OmniboxViewIOS::GetRelativeWindowForPopup() const {
 }
 
 void OmniboxViewIOS::OnDidBeginEditing() {
-  // Reset the changed flag.
-  omnibox_interacted_while_focused_ = NO;
 
   // If Open from Clipboard offers a suggestion, the popup may be opened when
   // |OnSetFocus| is called on the model. The state of the popup is saved early
@@ -406,8 +404,6 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
 }
 
 void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
-  omnibox_interacted_while_focused_ = YES;
-
   // Sanitize pasted text.
   if (model() && model()->is_pasting()) {
     base::string16 pastedText = base::SysNSStringToUTF16([field_ text]);
@@ -483,7 +479,6 @@ void OmniboxViewIOS::OnClear() {
 }
 
 void OmniboxViewIOS::OnCopy() {
-  omnibox_interacted_while_focused_ = YES;
   UIPasteboard* board = [UIPasteboard generalPasteboard];
   NSString* selectedText = nil;
   NSInteger start_location = 0;
@@ -658,11 +653,6 @@ void OmniboxViewIOS::EndEditing() {
     // Blow away any in-progress edits.
     RevertAll();
     DCHECK(![field_ hasAutocompleteText]);
-
-    if (!omnibox_interacted_while_focused_) {
-      RecordAction(
-          UserMetricsAction("Mobile_FocusedDefocusedOmnibox_WithNoAction"));
-    }
   }
 }
 

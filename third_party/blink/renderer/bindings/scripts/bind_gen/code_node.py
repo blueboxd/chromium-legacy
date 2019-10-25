@@ -479,10 +479,11 @@ class SymbolNode(CodeNode):
             self._definition_node_constructor = definition_node_constructor
 
     def _render(self, renderer, last_render_state):
-        if not renderer.last_caller.is_code_symbol_defined(self):
-            for caller in renderer.callers:
-                assert isinstance(caller, CodeNode)
-                caller.on_undefined_code_symbol_found(self)
+        for caller in renderer.callers:
+            assert isinstance(caller, CodeNode)
+            if caller.is_code_symbol_defined(self):
+                break
+            caller.on_undefined_code_symbol_found(self)
 
         return self.name
 

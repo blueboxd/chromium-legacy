@@ -212,8 +212,7 @@ Response WebAuthnHandler::AddCredential(
   } else {
     credential_created = authenticator->AddRegistration(
         CopyBinaryToVector(credential->GetCredentialId()),
-        base::make_span<uint8_t, device::kRpIdHashLength>(
-            device::fido_parsing_utils::CreateSHA256Hash(rp_id)),
+        device::fido_parsing_utils::CreateSHA256Hash(rp_id),
         CopyBinaryToVector(credential->GetPrivateKey()),
         credential->GetSignCount());
   }

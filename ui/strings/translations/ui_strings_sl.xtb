@@ -137,7 +137,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{Še 1 s}one{Še # s}two{Še # s}few{Še # s}other{Še # s}}</translation>
 <translation id="5941711191222866238">Pomanjšaj</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 h}one{# h}two{# h}few{# h}other{# h}}</translation>
-<translation id="5946629889255121107">Številka je bila izbrana tukaj: <ph name="ORIGIN" /></translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />. stran od <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Izbris besedila v iskalnem polju</translation>
 <translation id="6040143037577758943">Zapri</translation>

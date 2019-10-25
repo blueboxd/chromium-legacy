@@ -17,7 +17,7 @@ namespace media {
 
 MojoAudioInputStream::MojoAudioInputStream(
     mojo::PendingReceiver<mojom::AudioInputStream> receiver,
-    mojom::AudioInputStreamClientPtr client,
+    mojo::PendingRemote<mojom::AudioInputStreamClient> client,
     CreateDelegateCallback create_delegate_callback,
     StreamCreatedCallback stream_created_callback,
     base::OnceClosure deleter_callback)
@@ -31,7 +31,7 @@ MojoAudioInputStream::MojoAudioInputStream(
   // |this| owns |receiver_|, so unretained is safe.
   receiver_.set_disconnect_handler(
       base::BindOnce(&MojoAudioInputStream::OnError, base::Unretained(this)));
-  client_.set_connection_error_handler(
+  client_.set_disconnect_handler(
       base::BindOnce(&MojoAudioInputStream::OnError, base::Unretained(this)));
   delegate_ = std::move(create_delegate_callback).Run(this);
   if (!delegate_) {

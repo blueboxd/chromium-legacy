@@ -111,6 +111,7 @@ void ServiceWorkerClient::postMessage(ScriptState* script_state,
 
   BlinkTransferableMessage msg;
   msg.message = serialized_message;
+  msg.sender_origin = context->GetSecurityOrigin()->IsolatedCopy();
   msg.ports = MessagePort::DisentanglePorts(
       context, transferables.message_ports, exception_state);
   if (exception_state.HadException())

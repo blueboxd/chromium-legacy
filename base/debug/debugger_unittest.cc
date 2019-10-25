@@ -36,14 +36,8 @@ TEST(Debugger, CrashAtBreakpoint) {
 
 #if defined(OS_WIN)
 TEST(Debugger, DoesntExecuteBeyondBreakpoint) {
-#if defined(ARCH_CPU_ARM64)
-  // brk on aarch64 Windows seems to cause an illegal instruction exception
-  EXPECT_EXIT(CrashWithBreakDebugger(),
-              ::testing::ExitedWithCode(STATUS_ILLEGAL_INSTRUCTION), "");
-#else
   EXPECT_EXIT(CrashWithBreakDebugger(),
               ::testing::ExitedWithCode(STATUS_BREAKPOINT), "");
-#endif
 }
 #endif  // defined(OS_WIN)
 

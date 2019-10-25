@@ -856,5 +856,67 @@ TEST_F(CollectUserDataActionTest, TextInputSectionWritesToClientMemory) {
   EXPECT_EQ(*client_memory_.additional_value("key2"), "modified");
 }
 
+TEST_F(CollectUserDataActionTest, AllowedBasicCardNetworks) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+
+  std::string kSupportedBasicCardNetworks[] = {"amex", "diners",   "discover",
+                                               "elo",  "jcb",      "mastercard",
+                                               "mir",  "unionpay", "visa"};
+
+  for (const auto& network : kSupportedBasicCardNetworks) {
+    *collect_user_data_proto->add_supported_basic_card_networks() = network;
+  }
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+             std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+
+            user_data->billing_address =
+                std::make_unique<autofill::AutofillProfile>(
+                    base::GenerateGUID(), kFakeUrl);
+            autofill::test::SetProfileInfo(
+                user_data->billing_address.get(), "Marion", "Mitchell",
+                "Morrison", "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                "Hollywood", "CA", "96043", "US", "16505678910");
+
+            user_data->card = std::make_unique<autofill::CreditCard>(
+                base::GenerateGUID(), kFakeUrl);
+            autofill::test::SetCreditCardInfo(
+                user_data->card.get(), "Marion Mitchell", "4111 1111 1111 1111",
+                "01", "2020", user_data->billing_address->guid());
+
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, InvalidBasicCardNetworks) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+
+  *collect_user_data_proto->add_supported_basic_card_networks() = "visa";
+  *collect_user_data_proto->add_supported_basic_card_networks() =
+      "unknown_network";
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
 }  // namespace
 }  // namespace autofill_assistant

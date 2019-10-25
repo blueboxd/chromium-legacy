@@ -86,9 +86,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   static std::unique_ptr<NetworkService> Create(
       mojo::PendingReceiver<mojom::NetworkService> receiver);
 
-  // Creates a testing instance of NetworkService not bound to an actual Service
-  // pipe. This will cause NetworkChangeNotifier, unless already created, to be
-  // mocked. This instance must be driven by direct calls onto the
+  // Creates a testing instance of NetworkService not bound to an actual
+  // Service pipe. This instance must be driven by direct calls onto the
   // NetworkService object.
   static std::unique_ptr<NetworkService> CreateForTesting();
 

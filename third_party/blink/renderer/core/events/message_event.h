@@ -181,6 +181,11 @@ class CORE_EXPORT MessageEvent final : public Event {
     return data_as_serialized_script_value_->Value();
   }
 
+  // Returns true when |data_as_serialized_script_value_| contains values that
+  // remote origins cannot access. If true, remote origins must dispatch a
+  // messageerror event instead of message event.
+  bool IsOriginCheckRequiredToAccessData() const;
+
   void EntangleMessagePorts(ExecutionContext*);
 
   void Trace(blink::Visitor*) override;

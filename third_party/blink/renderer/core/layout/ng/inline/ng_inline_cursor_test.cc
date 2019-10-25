@@ -266,6 +266,27 @@ TEST_P(NGInlineCursorTest, Next) {
                                 "#span2", "text3", "text4", "text5"));
 }
 
+TEST_P(NGInlineCursorTest, NextLine) {
+  NGInlineCursor cursor = SetupCursor("<div id=root>abc<br>xyz</div>");
+  NGInlineCursor line1(cursor);
+  while (line1 && !line1.IsLineBox())
+    line1.MoveToNext();
+  ASSERT_TRUE(line1.IsNotNull());
+  NGInlineCursor line2(line1);
+  line2.MoveToNext();
+  while (line2 && !line2.IsLineBox())
+    line2.MoveToNext();
+  ASSERT_NE(line1, line2);
+
+  NGInlineCursor should_be_line2(line1);
+  should_be_line2.MoveToNextLine();
+  EXPECT_EQ(line2, should_be_line2);
+
+  NGInlineCursor should_be_null(line2);
+  should_be_null.MoveToNextLine();
+  EXPECT_TRUE(should_be_null.IsNull());
+}
+
 TEST_P(NGInlineCursorTest, NextWithImage) {
   NGInlineCursor cursor = SetupCursor("<div id=root>abc<img id=img>xyz</div>");
   Vector<String> list = ToDebugStringList(cursor);

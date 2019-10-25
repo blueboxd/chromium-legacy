@@ -12,6 +12,7 @@
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/events/event.h"
@@ -63,10 +64,10 @@ class IdleEventNotifierTest : public testing::Test {
 
   void SetUp() override {
     PowerManagerClient::InitializeFake();
-    viz::mojom::VideoDetectorObserverPtr observer;
+    mojo::PendingRemote<viz::mojom::VideoDetectorObserver> observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
         PowerManagerClient::Get(), &user_activity_detector_,
-        mojo::MakeRequest(&observer));
+        observer.InitWithNewPipeAndPassReceiver());
     ac_power_.set_external_power(
         power_manager::PowerSupplyProperties_ExternalPower_AC);
     disconnected_power_.set_external_power(

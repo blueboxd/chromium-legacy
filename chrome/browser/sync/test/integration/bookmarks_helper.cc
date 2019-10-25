@@ -53,10 +53,12 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
 
-using bookmarks::BookmarkModel;
-using bookmarks::BookmarkNode;
+namespace bookmarks_helper {
 
 namespace {
+
+using bookmarks::BookmarkModel;
+using bookmarks::BookmarkNode;
 
 void ApplyBookmarkFavicon(
     const BookmarkNode* bookmark_node,
@@ -276,14 +278,14 @@ void SetFaviconImpl(Profile* profile,
                     const BookmarkNode* node,
                     const GURL& icon_url,
                     const gfx::Image& image,
-                    bookmarks_helper::FaviconSource favicon_source) {
+                    FaviconSource favicon_source) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
 
   FaviconChangeObserver observer(model, node);
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
-  if (favicon_source == bookmarks_helper::FROM_UI) {
+  if (favicon_source == FROM_UI) {
     favicon_service->SetFavicons({node->url()}, icon_url,
                                  favicon_base::IconType::kFavicon, image);
   } else {
@@ -318,7 +320,7 @@ void OnGotFaviconData(
 // |test()->verifier()|.
 void DeleteFaviconMappingsImpl(Profile* profile,
                                const BookmarkNode* node,
-                               bookmarks_helper::FaviconSource favicon_source) {
+                               FaviconSource favicon_source) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
 
   FaviconChangeObserver observer(model, node);
@@ -326,7 +328,7 @@ void DeleteFaviconMappingsImpl(Profile* profile,
       FaviconServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
 
-  if (favicon_source == bookmarks_helper::FROM_UI) {
+  if (favicon_source == FROM_UI) {
     favicon_service->DeleteFaviconMappings({node->url()},
                                            favicon_base::IconType::kFavicon);
   } else {
@@ -481,7 +483,7 @@ void FindNodeInVerifier(BookmarkModel* foreign_model,
   }
 
   // Swing over to the other tree.
-  walker = bookmarks_helper::GetVerifierBookmarkModel()->root_node();
+  walker = GetVerifierBookmarkModel()->root_node();
 
   // Climb down.
   while (!path.empty()) {
@@ -496,9 +498,6 @@ void FindNodeInVerifier(BookmarkModel* foreign_model,
 }
 
 }  // namespace
-
-
-namespace bookmarks_helper {
 
 BookmarkModel* GetBookmarkModel(int index) {
   return BookmarkModelFactory::GetForBrowserContext(
@@ -1018,15 +1017,13 @@ std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkServerEntity(
   return bookmark_builder.BuildBookmark(url);
 }
 
-}  // namespace bookmarks_helper
-
 BookmarksMatchChecker::BookmarksMatchChecker()
     : MultiClientStatusChangeChecker(
           sync_datatype_helper::test()->GetSyncServices()) {}
 
 bool BookmarksMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
   *os << "Waiting for matching models";
-  return bookmarks_helper::AllModelsMatch();
+  return AllModelsMatch();
 }
 
 BookmarksMatchVerifierChecker::BookmarksMatchVerifierChecker()
@@ -1035,7 +1032,7 @@ BookmarksMatchVerifierChecker::BookmarksMatchVerifierChecker()
 
 bool BookmarksMatchVerifierChecker::IsExitConditionSatisfied(std::ostream* os) {
   *os << "Waiting for model to match verifier";
-  return bookmarks_helper::AllModelsMatchVerifier();
+  return AllModelsMatchVerifier();
 }
 
 BookmarksTitleChecker::BookmarksTitleChecker(int profile_index,
@@ -1051,8 +1048,7 @@ BookmarksTitleChecker::BookmarksTitleChecker(int profile_index,
 
 bool BookmarksTitleChecker::IsExitConditionSatisfied(std::ostream* os) {
   *os << "Waiting for bookmark count to match";
-  int actual_count = bookmarks_helper::CountBookmarksWithTitlesMatching(
-      profile_index_, title_);
+  int actual_count = CountBookmarksWithTitlesMatching(profile_index_, title_);
   return expected_count_ == actual_count;
 }
 
@@ -1124,8 +1120,7 @@ namespace {
 bool BookmarkCountsByUrlMatch(int profile,
                               const GURL& url,
                               int expected_count) {
-  int actual_count =
-      bookmarks_helper::CountBookmarksWithUrlsMatching(profile, url);
+  int actual_count = CountBookmarksWithUrlsMatching(profile, url);
   if (expected_count != actual_count) {
     DVLOG(1) << base::StringPrintf("Expected %d URL(s), but there were %d.",
                                    expected_count, actual_count);
@@ -1147,7 +1142,7 @@ BookmarksUrlChecker::BookmarksUrlChecker(int profile,
 
 BookmarksGUIDChecker::BookmarksGUIDChecker(int profile, const std::string& guid)
     : AwaitMatchStatusChangeChecker(
-          base::BindRepeating(bookmarks_helper::ContainsBookmarkNodeWithGUID,
-                              profile,
-                              guid),
+          base::BindRepeating(ContainsBookmarkNodeWithGUID, profile, guid),
           "Bookmark GUID exists.") {}
+
+}  // namespace bookmarks_helper

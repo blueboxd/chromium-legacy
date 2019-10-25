@@ -9,10 +9,7 @@
 
 // A11y identifier for button that will replace the displayed badge with the
 // overflow badge button.
-extern NSString* const kSCShowOverflowDisplayedBadgeButton;
-
-// A11y identifier for button that will show an accepted displayed button.
-extern NSString* const kSCShowAcceptedDisplayedBadgeButton;
+extern NSString* const kSCDisplayedBadgeToggleButton;
 
 @interface SCBadgeCoordinator : NSObject <NavigationCoordinator>
 

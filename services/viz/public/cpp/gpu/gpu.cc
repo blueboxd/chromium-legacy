@@ -15,31 +15,31 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 #include "services/viz/public/mojom/gpu.mojom.h"
 
 namespace viz {
 
-// Encapsulates a mojom::GpuPtr object that will be used on the IO thread. This
-// is required because we can't install an error handler on a
-// mojom::GpuThreadSafePtr to detect if the message pipe was closed. Only the
-// constructor can be called on the main thread.
+// Encapsulates a mojo::Remote<mojom::Gpu> object that will be used on the IO
+// thread. This is required because we can't install an error handler on a
+// mojo::SharedRemote<mojom::Gpu> to detect if the message pipe was closed. Only
+// the constructor can be called on the main thread.
 class Gpu::GpuPtrIO {
  public:
   GpuPtrIO() { DETACH_FROM_THREAD(thread_checker_); }
   ~GpuPtrIO() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
-  void Initialize(mojom::GpuPtrInfo ptr_info,
+  void Initialize(mojo::PendingRemote<mojom::Gpu> gpu_remote,
                   mojo::PendingReceiver<mojom::GpuMemoryBufferFactory>
                       memory_buffer_factory_receiver) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-    gpu_ptr_.Bind(std::move(ptr_info));
-    gpu_ptr_.set_connection_error_handler(
+    gpu_remote_.Bind(std::move(gpu_remote));
+    gpu_remote_.set_disconnect_handler(
         base::BindOnce(&GpuPtrIO::ConnectionError, base::Unretained(this)));
-    gpu_ptr_->CreateGpuMemoryBufferFactory(
+    gpu_remote_->CreateGpuMemoryBufferFactory(
         std::move(memory_buffer_factory_receiver));
   }
 
@@ -48,11 +48,11 @@ class Gpu::GpuPtrIO {
     DCHECK(!establish_request_);
     establish_request_ = std::move(establish_request);
 
-    if (gpu_ptr_.encountered_error()) {
-      ConnectionError();
-    } else {
-      gpu_ptr_->EstablishGpuChannel(base::BindOnce(
+    if (gpu_remote_.is_connected()) {
+      gpu_remote_->EstablishGpuChannel(base::BindOnce(
           &GpuPtrIO::OnEstablishedGpuChannel, base::Unretained(this)));
+    } else {
+      ConnectionError();
     }
   }
 
@@ -61,7 +61,7 @@ class Gpu::GpuPtrIO {
       mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
           receiver) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    gpu_ptr_->CreateJpegDecodeAccelerator(std::move(receiver));
+    gpu_remote_->CreateJpegDecodeAccelerator(std::move(receiver));
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -69,7 +69,7 @@ class Gpu::GpuPtrIO {
       mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
           receiver) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    gpu_ptr_->CreateVideoEncodeAcceleratorProvider(std::move(receiver));
+    gpu_remote_->CreateVideoEncodeAcceleratorProvider(std::move(receiver));
   }
 
  private:
@@ -79,7 +79,7 @@ class Gpu::GpuPtrIO {
                                const gpu::GPUInfo& gpu_info,
                                const gpu::GpuFeatureInfo& gpu_feature_info);
 
-  mojom::GpuPtr gpu_ptr_;
+  mojo::Remote<mojom::Gpu> gpu_remote_;
 
   // This will point to a request that is waiting for the result of
   // EstablishGpuChannel(). |establish_request_| will be notified when the IPC
@@ -233,7 +233,7 @@ void Gpu::GpuPtrIO::OnEstablishedGpuChannel(
   establish_request_.reset();
 }
 
-Gpu::Gpu(mojom::GpuPtr gpu_ptr,
+Gpu::Gpu(mojo::PendingRemote<mojom::Gpu> gpu_remote,
          scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(task_runner)),
@@ -241,20 +241,20 @@ Gpu::Gpu(mojom::GpuPtr gpu_ptr,
   DCHECK(main_task_runner_);
   DCHECK(io_task_runner_);
 
-  mojom::GpuMemoryBufferFactoryPtr gpu_memory_buffer_factory;
-  auto gpu_memory_buffer_factory_request =
-      mojo::MakeRequest(&gpu_memory_buffer_factory);
+  mojo::PendingRemote<mojom::GpuMemoryBufferFactory> gpu_memory_buffer_factory;
+  auto gpu_memory_buffer_factory_receiver =
+      gpu_memory_buffer_factory.InitWithNewPipeAndPassReceiver();
   gpu_memory_buffer_manager_ = std::make_unique<ClientGpuMemoryBufferManager>(
       std::move(gpu_memory_buffer_factory));
-  // Initialize mojom::GpuPtr on the IO thread. |gpu_| can only be used on
-  // the IO thread after this point. It is safe to use base::Unretained with
-  // |gpu_| for IO thread tasks as |gpu_| is destroyed by an IO thread task
+  // Initialize mojo::Remote<mojom::Gpu> on the IO thread. |gpu_| can only be
+  // used on the IO thread after this point. It is safe to use base::Unretained
+  // with |gpu_| for IO thread tasks as |gpu_| is destroyed by an IO thread task
   // posted from the destructor.
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuPtrIO::Initialize, base::Unretained(gpu_.get()),
-                     base::Passed(gpu_ptr.PassInterface()),
-                     std::move(gpu_memory_buffer_factory_request)));
+                     base::Passed(std::move(gpu_remote)),
+                     std::move(gpu_memory_buffer_factory_receiver)));
 }
 
 Gpu::~Gpu() {
@@ -282,9 +282,8 @@ std::unique_ptr<Gpu> Gpu::Create(
 std::unique_ptr<Gpu> Gpu::Create(
     mojo::PendingRemote<mojom::Gpu> remote,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  mojom::GpuPtr gpu_ptr(std::move(remote));
   return base::WrapUnique(
-      new Gpu(std::move(gpu_ptr), std::move(io_task_runner)));
+      new Gpu(std::move(remote), std::move(io_task_runner)));
 }
 
 #if defined(OS_CHROMEOS)

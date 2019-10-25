@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 Sekunde übrig}other{# Sekunden übrig}}</translation>
 <translation id="5941711191222866238">Verkleinern</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 Stunde}other{# Stunden}}</translation>
-<translation id="5946629889255121107">Nummer wurde von <ph name="ORIGIN" /> initiiert</translation>
 <translation id="6012623610530968780">Seite <ph name="SELECTED_PAGE" /> von <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Text im Suchfeld löschen</translation>
 <translation id="6040143037577758943">Schließen</translation>

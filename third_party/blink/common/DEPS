@@ -14,6 +14,7 @@ include_rules = [
     "+services/metrics/public/cpp",
     "+services/network/public/cpp",
     "+services/network/public/mojom/url_loader.mojom.h",
+    "+services/network/public/mojom/url_loader_factory.mojom.h",
     "+services/network/public/mojom/url_response_head.mojom.h",
     "+services/network/public/mojom/url_response_head.mojom-forward.h",
     "+skia/public/mojom/bitmap_skbitmap_mojom_traits.h",

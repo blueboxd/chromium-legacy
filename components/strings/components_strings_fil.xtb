@@ -121,6 +121,7 @@
 <translation id="1501859676467574491">Ipakita ang mga card mula sa iyong Google Account</translation>
 <translation id="1507202001669085618">&lt;p&gt;Makikita mo ang error na ito kung gumagamit ka ng Wi-Fi portal kung saan kailangan mong mag-sign in bago ka makapag-online.&lt;/p&gt;
     &lt;p&gt;Para maayos ang error, i-click ang &lt;strong&gt;Kumonekta&lt;/strong&gt; sa page na sinusubukan mong buksan.&lt;/p&gt;</translation>
+<translation id="1513706915089223971">Listahan ng mga entry sa history</translation>
 <translation id="1517433312004943670">Kinakailangan ang numero ng telepono</translation>
 <translation id="1517500485252541695">Mga tinatanggap na credit at debit card</translation>
 <translation id="1519264250979466059">Petsa ng Build</translation>
@@ -306,6 +307,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; maaaring binawi ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="2438874542388153331">Quad punch right</translation>
+<translation id="245044156129055925">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chromium na palitan mo ang iyong password ngayon.</translation>
 <translation id="2463193859425327265">Baguhin ang Home Page</translation>
 <translation id="2463739503403862330">Punan</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -602,6 +604,9 @@
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="3973234410852337861">Naka-block ang <ph name="HOST_NAME" /></translation>
 <translation id="3981540111851280311">Na-enable ng <ph name="ENROLLMENT_DOMAIN" /> ang Proteksyon Laban sa Banta ng Chrome Enterprise sa iyong browser. May access ang Proteksyon Laban sa Banta ng Chrome Enterprise sa ilan sa iyong data.</translation>
+<translation id="3987405730340719549">Natukoy ng Chrome na posibleng peke o mapanloko ang site na ito.
+
+    Kung naniniwala kang mali ang pagpapakita nito, pakibisita ang https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Wala pang 1 MB</translation>
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page ang malapit}one{# web page ang malapit}other{# na web page ang malapit}}</translation>
@@ -978,6 +983,9 @@
 <translation id="5813119285467412249">&amp;Gawing Muli ang Pagdagdag</translation>
 <translation id="583281660410589416">Hindi-alam</translation>
 <translation id="5838278095973806738">Hindi ka dapat maglagay ng anumang sensitibong impormasyon sa site na ito (halimbawa, mga password o credit card), dahil maaari itong nakawin ng mga umaatake.</translation>
+<translation id="5855253129151731373">Mukhang katulad ng <ph name="LOOKALIKE_DOMAIN" /> ang hostname ng site na ito. Kung minsan, ginagaya ng mga attacker ang mga site sa pamamagitan ng paggawa ng mga maliit at mahirap makitang pagbabago sa domain name.
+
+    Kung naniniwala kang mali ang pagpapakita nito, pakibisita ang https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="5860033963881614850">Naka-off</translation>
 <translation id="5863847714970149516">Maaari kang singilin sa susunod na page</translation>
 <translation id="5866257070973731571">Magdagdag ng Numero ng Telepono</translation>
@@ -1088,6 +1096,7 @@
 <translation id="6401136357288658127">Hindi na ginagamit ang patakarang ito. Dapat mong gamitin ang patakarang <ph name="NEW_POLICY" /> sa halip.</translation>
 <translation id="6404511346730675251">I-edit ang bookmark</translation>
 <translation id="6406765186087300643">C0 (Envelope)</translation>
+<translation id="6409754798200046165">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chrome na palitan mo ang iyong password ngayon.</translation>
 <translation id="6410264514553301377">Ilagay ang petsa ng pag-expire at CVC para sa <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Makakatulong sa iyo ang Chromium na protektahan ang iyong Google Account at palitan ang password mo.</translation>
 <translation id="6427730057873428458">Gate fold</translation>
@@ -1384,6 +1393,7 @@ Mga karagdagang detalye:
 <translation id="7932579305932748336">Coat</translation>
 <translation id="79338296614623784">Maglagay ng wastong numero ng telepono</translation>
 <translation id="7934052535022478634">Kumpleto na ang pagbabayad</translation>
+<translation id="7935031712718413217">Posibleng nanggagayang URL</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Mag-e-expire sa <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Wala pang bisa ang certificate ng server.</translation>

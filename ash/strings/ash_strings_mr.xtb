@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> जोडले</translation>
 <translation id="1056775291175587022">कोणतीही नेटवर्क नाहीत</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="108486256082349153">सेल्युलर: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">मला कंटाळा आला आहे</translation>
 <translation id="1104084341931202936">ॲक्सेसिबिलिटी सेटिंग्ज दाखवा</translation>
 <translation id="1104621072296271835">तुमची डिव्हाइस एकत्र आणखी चांगले काम करतात</translation>
@@ -17,11 +18,13 @@
 <translation id="1195412055398077112">ओव्हरस्कॅन</translation>
 <translation id="119944043368869598">सर्व साफ करा</translation>
 <translation id="1247372569136754018">मायक्रोफोन (अंतर्गत)</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> या सेटिंगची अंमलबजावणी तुमचा अ‍ॅडमिनिस्ट्रेटरकडून करतो .</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> पासून चार्ज होत आहे</translation>
 <translation id="1255033239764210633">हवामान कसे आहे?</translation>
 <translation id="1267032506238418139">शॉर्टकट बदल</translation>
 <translation id="1270290102613614947">ऑन-स्क्रीन कीबोर्ड अक्षम</translation>
 <translation id="1272079795634619415">थांबा</translation>
+<translation id="1275285675049378717"><ph name="POWER_SOURCE" /> चार्ज करत आहे</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> <ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
 <translation id="1290331692326790741">खराब सिग्नल</translation>
@@ -116,6 +119,7 @@
 <translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
 <translation id="2542089167727451762">तुमच्या प्रोफाइल इमेजवर टॅप करा</translation>
 <translation id="255671100581129685">सार्वजनिक सेशनमध्ये Google असिस्टंट उपलब्ध नाही.</translation>
+<translation id="256712445991462162">डॉक केलेले मॅग्निफायर</translation>
 <translation id="2575685495496069081">एकाहून अधिक साइन इन बंद करण्यात आले आहे</translation>
 <translation id="2582112259361606227">अपडेट करण्यासाठी रीस्टार्ट करा</translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक केले आहे</translation>
@@ -172,6 +176,7 @@
 <translation id="3364721542077212959">स्टायलस टूल</translation>
 <translation id="3368922792935385530">कनेक्ट केले</translation>
 <translation id="3371140690572404006">USB-C डिव्‍हाइस (उजव्‍या बाजूचे पुढील पोर्ट)</translation>
+<translation id="3386978599540877378">फुल-स्क्रीन मॅग्निफायर</translation>
 <translation id="3400357268283240774">अतिरिक्त सेटिंग्ज</translation>
 <translation id="3413817803639110246">आत्ताच पाहण्यासाठी काहीही नाही</translation>
 <translation id="343571671045587506">रिमाइंडर संपादित करा</translation>
@@ -236,8 +241,10 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">भिंग</translation>
 <translation id="4351433414020964307">साहाय्यक लोड होत आहे...</translation>
+<translation id="4356930093361201197">हाय-काँट्रास्ट मोड</translation>
 <translation id="4378551569595875038">कनेक्ट करीत आहे...</translation>
 <translation id="4379531060876907730">ही तुमची स्टायलस टूल आहेत</translation>
+<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">तुम्ही डॉक मॅग्निफायरसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="4421231901400348175">दूरस्त सहाय्याद्वारे <ph name="HELPER_NAME" /> सह आपल्या स्क्रीनचे नियंत्रण शेअर करत आहे.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
@@ -268,6 +275,7 @@
 <translation id="4831034276697007977">तुम्हाला ऑटोमेटिक क्लिक नक्की बंद करायचे आहे का?</translation>
 <translation id="4849058404725798627">कीबोर्ड फोकससह ऑब्जेक्ट हायलाइट करा</translation>
 <translation id="485592688953820832">कृती नाही (थांबवा)</translation>
+<translation id="4868492592575313542">अ‍ॅक्टिव्हेट केले आहे</translation>
 <translation id="4872237917498892622">Alt+Search किंवा Shift</translation>
 <translation id="4890187583552566966">तुमच्या अ‍ॅडमिनिस्ट्रेटरने Google Assistant बंद केलेले आहे.</translation>
 <translation id="4895488851634969361">बॅटरी भरली आहे.</translation>
@@ -391,6 +399,7 @@
 <translation id="6727969043791803658">कनेक्ट केले, <ph name="BATTERY_PERCENTAGE" />% बॅटरी</translation>
 <translation id="6751826523481687655">परफॉर्मंस ट्रेसिंग चालू आहे</translation>
 <translation id="6752912906630585008"><ph name="REMOVED_DESK" /> डेस्क काढून टाकले आणि डेस्क <ph name="RECEIVE_DESK" /> साेबत मर्ज केले</translation>
+<translation id="6777216307882431711">कनेक्ट केलेल्या USB-C डिव्‍हाइसना चार्ज करत आहे</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
 <translation id="6803622936009808957">समर्थित रिजोल्यूशन न आढळल्यामुळे प्रदर्शने मिरर करू शकली नाहीत. त्याऐवजी विस्तारित डेस्कटॉप एंटर केला.</translation>
 <translation id="6820676911989879663">ब्रेक घ्या!</translation>
@@ -442,6 +451,7 @@
 <translation id="7568294522609223312">ऑटोमेटिक क्लिक बंद करा</translation>
 <translation id="7569509451529460200">ब्रेल आणि ChromeVox चालू केलेले आहेत</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
+<translation id="7600875258240007829">सर्व सूचना पहा</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालक)</translation>
 <translation id="7647488630410863958">आपल्या सूचना पाहण्यासाठी डिव्हाइस अनलॉक करा</translation>
 <translation id="7649070708921625228">मदत</translation>
@@ -506,6 +516,7 @@
 <translation id="8452135315243592079">गहाळ सिम कार्ड</translation>
 <translation id="8454013096329229812">वाय-फाय सुरू आहे.</translation>
 <translation id="847056008324733326">स्केल सेटिंग्‍ज दाखवा</translation>
+<translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> कडे <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" /> आहेत.</translation>
 <translation id="8477270416194247200">रद्द करण्यासाठी Alt+Search किंवा Shift दाबा.</translation>
 <translation id="8513108775083588393">ऑटो-रोटेट</translation>
 <translation id="8517041960877371778">तुमचे <ph name="DEVICE_TYPE" /> चालू केले असताना कदाचित चार्ज होणार नाही.</translation>
@@ -534,6 +545,7 @@
 <translation id="8909138438987180327">बॅटरी <ph name="PERCENTAGE" /> टक्के आहे.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google साहाय्यक ही भाषा बोलत नाही.</translation>
+<translation id="8936501819958976551">डीअॅक्टिव्हेट केले आहे</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
 <translation id="8940956008527784070">बॅटरी कमी झाली (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8983038754672563810">HSPA</translation>

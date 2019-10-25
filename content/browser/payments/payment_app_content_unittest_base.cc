@@ -191,6 +191,7 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   registration_opt.scope = scope_url;
   worker_helper_->context()->RegisterServiceWorker(
       sw_script_url, registration_opt,
+      /*outside_fetch_client_settings_object=*/nullptr,
       base::BindOnce(&RegisterServiceWorkerCallback, &called,
                      &registration_id));
   base::RunLoop().RunUntilIdle();

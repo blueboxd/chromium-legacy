@@ -77,7 +77,7 @@ public class ReparentingTask implements UserData {
             Runnable finalizeCallback) {
         if (intent == null) intent = new Intent();
         if (intent.getComponent() == null) {
-            intent.setClass(mTab.getThemedApplicationContext(), ChromeLauncherActivity.class);
+            intent.setClass(mTab.getApplicationContext(), ChromeLauncherActivity.class);
         }
         intent.setAction(Intent.ACTION_VIEW);
         if (TextUtils.isEmpty(intent.getDataString())) intent.setData(Uri.parse(mTab.getUrl()));

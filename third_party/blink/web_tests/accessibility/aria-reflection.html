@@ -13,17 +13,6 @@ test(function(t) {
 }, "role attribute reflects.");
 </script>
 
-<div id="activedescendant" aria-activedescendant="x"></div>
-
-<script>
-test(function(t) {
-    var element = document.getElementById("activedescendant");
-    assert_equals(element.ariaActiveDescendant, "x");
-    element.ariaActiveDescendant = "y";
-    assert_equals(element.getAttribute("aria-activedescendant"), "y");
-}, "aria-activedescendant attribute reflects.");
-</script>
-
 <div id="atomic" aria-atomic="true"></div>
 
 <script>
@@ -101,17 +90,6 @@ test(function(t) {
 }, "aria-colspan attribute reflects.");
 </script>
 
-<div id="controls" aria-controls="x"></div>
-
-<script>
-test(function(t) {
-    var element = document.getElementById("controls");
-    assert_equals(element.ariaControls, "x");
-    element.ariaControls = "y";
-    assert_equals(element.getAttribute("aria-controls"), "y");
-}, "aria-controls attribute reflects.");
-</script>
-
 <div id="current" aria-current="page"></div>
 
 <script>
@@ -121,28 +99,6 @@ test(function(t) {
     element.ariaCurrent = "step";
     assert_equals(element.getAttribute("aria-current"), "step");
 }, "aria-current attribute reflects.");
-</script>
-
-<div id="describedby" aria-describedby="x"></div>
-
-<script>
-test(function(t) {
-    var element = document.getElementById("describedby");
-    assert_equals(element.ariaDescribedBy, "x");
-    element.ariaDescribedBy = "y";
-    assert_equals(element.getAttribute("aria-describedby"), "y");
-}, "aria-describedby attribute reflects.");
-</script>
-
-<div id="details" aria-details="x"></div>
-
-<script>
-test(function(t) {
-    var element = document.getElementById("details");
-    assert_equals(element.ariaDetails, "x");
-    element.ariaDetails = "y";
-    assert_equals(element.getAttribute("aria-details"), "y");
-}, "aria-details attribute reflects.");
 </script>
 
 <div id="disabled" aria-disabled="true"></div>
@@ -156,17 +112,6 @@ test(function(t) {
 }, "aria-disabled attribute reflects.");
 </script>
 
-<div id="errormessage" aria-errormessage="x"></div>
-
-<script>
-test(function(t) {
-    var element = document.getElementById("errormessage");
-    assert_equals(element.ariaErrorMessage, "x");
-    element.ariaErrorMessage = "y";
-    assert_equals(element.getAttribute("aria-errormessage"), "y");
-}, "aria-errormessage attribute reflects.");
-</script>
-
 <div id="expanded" aria-expanded="true"></div>
 
 <script>
@@ -176,17 +121,6 @@ test(function(t) {
     element.ariaExpanded = "false";
     assert_equals(element.getAttribute("aria-expanded"), "false");
 }, "aria-expanded attribute reflects.");
-</script>
-
-<div id="flowto" aria-flowto="x"></div>
-
-<script>
-test(function(t) {
-    var element = document.getElementById("flowto");
-    assert_equals(element.ariaFlowTo, "x");
-    element.ariaFlowTo = "y";
-    assert_equals(element.getAttribute("aria-flowto"), "y");
-}, "aria-flowto attribute reflects.");
 </script>
 
 <div id="haspopup" aria-haspopup="menu"></div>
@@ -231,17 +165,6 @@ test(function(t) {
     element.ariaLabel = "y";
     assert_equals(element.getAttribute("aria-label"), "y");
 }, "aria-label attribute reflects.");
-</script>
-
-<div id="labelledby" aria-labelledby="x"></div>
-
-<script>
-test(function(t) {
-    var element = document.getElementById("labelledby");
-    assert_equals(element.ariaLabelledBy, "x");
-    element.ariaLabelledBy = "y";
-    assert_equals(element.getAttribute("aria-labelledby"), "y");
-}, "aria-labelledby attribute reflects.");
 </script>
 
 <div id="level" aria-level="1"></div>
@@ -308,17 +231,6 @@ test(function(t) {
     element.ariaOrientation = "horizontal";
     assert_equals(element.getAttribute("aria-orientation"), "horizontal");
 }, "aria-orientation attribute reflects.");
-</script>
-
-<div id="owns" aria-owns="x"></div>
-
-<script>
-test(function(t) {
-    var element = document.getElementById("owns");
-    assert_equals(element.ariaOwns, "x");
-    element.ariaOwns = "y";
-    assert_equals(element.getAttribute("aria-owns"), "y");
-}, "aria-owns attribute reflects.");
 </script>
 
 <div id="placeholder" aria-placeholder="x"></div>

@@ -43,23 +43,11 @@ using ::showcase_utils::Close;
                          kBadgeButtonSavePasswordAccessibilityIdentifier),
                      grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Tap on button to show the accepted badge.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kSCShowAcceptedDisplayedBadgeButton)]
-      performAction:grey_tap()];
-
   [[EarlGrey
       selectElementWithMatcher:
-          grey_allOf(
-              grey_accessibilityID(
-                  kBadgeButtonSavePasswordAcceptedAccessibilityIdentifier),
-              grey_sufficientlyVisible(), nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(grey_accessibilityID(
-                                kBadgeButtonIncognitoAccessibilityIdentifier),
-                            grey_sufficientlyVisible(), nil)]
+          grey_allOf(grey_accessibilityID(
+                         kBadgeButtonSavePasswordAccessibilityIdentifier),
+                     grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -68,7 +56,7 @@ using ::showcase_utils::Close;
 - (void)testOverflowbadge {
   // Tap on button to show the overflow badge.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kSCShowOverflowDisplayedBadgeButton)]
+                                          kSCDisplayedBadgeToggleButton)]
       performAction:grey_tap()];
 
   // Assert that overflow badge and the unread indicator is shown and tap on it.
@@ -99,7 +87,7 @@ using ::showcase_utils::Close;
   // badge is sufficient here. Assert that the unread indicator is not there
   // anymore.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kSCShowOverflowDisplayedBadgeButton)]
+                                          kSCDisplayedBadgeToggleButton)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:
                  grey_allOf(grey_accessibilityID(

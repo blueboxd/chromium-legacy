@@ -18,12 +18,11 @@ class SharedURLLoaderFactory;
 }  // namespace network
 
 namespace blink {
+class ThrottlingURLLoader;
 class URLLoaderThrottle;
 }  // namespace blink
 
 namespace content {
-
-class ThrottlingURLLoader;
 
 // Sends a ping to the given |validity_url|. Current implementation is
 // primarily for measurement and does no actual validity check: it only
@@ -71,7 +70,7 @@ class CONTENT_EXPORT SignedExchangeValidityPinger
 
   base::TimeTicks start_time_ = base::TimeTicks::Now();
 
-  std::unique_ptr<ThrottlingURLLoader> url_loader_;
+  std::unique_ptr<blink::ThrottlingURLLoader> url_loader_;
   std::unique_ptr<mojo::DataPipeDrainer> pipe_drainer_;
   base::OnceClosure callback_;
 

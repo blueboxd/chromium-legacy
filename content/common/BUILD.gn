@@ -224,8 +224,6 @@ source_set("common") {
     "text_input_state.h",
     "thread_pool_util.cc",
     "thread_pool_util.h",
-    "throttling_url_loader.cc",
-    "throttling_url_loader.h",
     "unfreezable_frame_messages.h",
     "unique_name_helper.cc",
     "unique_name_helper.h",

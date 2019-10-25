@@ -314,6 +314,7 @@ If '<ph name="SERVICE_SCRIPT_NAME" />' is already ticked, untick it and then tic
 <translation id="837021510621780684">From this computer</translation>
 <translation id="8383794970363966105">To use Chromoting, you'll need to add a Google Account to your device.</translation>
 <translation id="8386846956409881180">Host is configured with invalid OAuth credentials.</translation>
+<translation id="8397385476380433240">Grant permission to <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Select a session to launch within your Chrome Remote Desktop environment. (Note that some session types may not support running within Chrome Remote Desktop and on the local console simultaneously.)</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8445362773033888690">View in Google Play Store</translation>

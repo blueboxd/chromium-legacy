@@ -34,6 +34,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
+#include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -62,6 +63,8 @@
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -358,8 +361,19 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
       ParseUpdateViaCache(options->updateViaCache());
   mojom::ScriptType type = ParseScriptType(options->type());
 
-  provider_->RegisterServiceWorker(scope_url, script_url, type,
-                                   update_via_cache, std::move(callbacks));
+  WebFetchClientSettingsObject fetch_client_settings_object(
+      execution_context->Fetcher()
+          ->GetProperties()
+          .GetFetchClientSettingsObject());
+  // The outgoing referrer is a required parameter. Use |script_url| if the
+  // ResourceFetcher doesn't provide it.
+  if (fetch_client_settings_object.outgoing_referrer.IsEmpty()) {
+    fetch_client_settings_object.outgoing_referrer = script_url;
+  }
+
+  provider_->RegisterServiceWorker(
+      scope_url, script_url, type, update_via_cache,
+      std::move(fetch_client_settings_object), std::move(callbacks));
   return promise;
 }
 

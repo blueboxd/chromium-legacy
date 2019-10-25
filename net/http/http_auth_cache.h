@@ -210,9 +210,11 @@ class NET_EXPORT HttpAuthCache {
                             const NetworkIsolationKey& network_isolation_key,
                             const std::string& auth_challenge);
 
-  // Copies all entries from |other| cache. Both |this| and |other| must have
-  // the same key_server_entries_by_network_isolation_key() value.
-  void UpdateAllFrom(const HttpAuthCache& other);
+  // Copies all entries from |other| cache with a target of
+  // HttpAuth::AUTH_PROXY. |this| and |other| need not have the same
+  // |key_server_entries_by_network_isolation_key_| value, since proxy
+  // credentials are not keyed on NetworkIsolationKey.
+  void CopyProxyEntriesFrom(const HttpAuthCache& other);
 
   size_t GetEntriesSizeForTesting();
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {

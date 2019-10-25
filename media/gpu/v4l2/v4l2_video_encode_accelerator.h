@@ -21,7 +21,7 @@
 #include "base/optional.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "media/gpu/image_processor.h"
+#include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/video/video_encode_accelerator.h"

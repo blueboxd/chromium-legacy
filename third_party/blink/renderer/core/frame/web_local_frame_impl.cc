@@ -2260,7 +2260,7 @@ void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
   }
 
   GetFrame()->DomWindow()->DispatchMessageEventWithOriginCheck(
-      intended_target_origin.Get(), event,
+      intended_target_origin.Get(), msg_event,
       std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
 }
 

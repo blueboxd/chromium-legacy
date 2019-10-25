@@ -255,7 +255,7 @@ public class Tab {
         return mUserDataHost;
     }
 
-    public Context getThemedApplicationContext() {
+    Context getThemedApplicationContext() {
         return mThemedApplicationContext;
     }
 

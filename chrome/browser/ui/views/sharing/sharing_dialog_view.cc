@@ -111,20 +111,17 @@ std::unique_ptr<views::View> CreateOriginView(const SharingDialogData& data) {
   return label;
 }
 
-std::unique_ptr<views::View> MaybeCreateImageView(int image_id) {
-  if (!image_id)
+std::unique_ptr<views::View> MaybeCreateImageView(
+    const gfx::VectorIcon* image) {
+  if (!image)
     return nullptr;
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* image = rb.GetNativeImageNamed(image_id).ToImageSkia();
-  gfx::Size image_size(image->width(), image->height());
-  constexpr int kHeaderImageHeight = 100;
-  const int image_width = image->width() * kHeaderImageHeight / image->height();
-  image_size.SetToMin(gfx::Size(image_width, kHeaderImageHeight));
+  constexpr gfx::Size kHeaderImageSize(320, 100);
 
   auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetImageSize(image_size);
-  image_view->SetImage(*image);
+  image_view->SetPreferredSize(kHeaderImageSize);
+  image_view->SetImage(gfx::CreateVectorIcon(*image, gfx::kPlaceholderColor));
+  image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   return image_view;
 }
 
@@ -227,11 +224,14 @@ void SharingDialogView::MaybeShowHeaderImage() {
   if (!frame_view)
     return;
 
-  int image_id = color_utils::IsDark(frame_view->GetBackgroundColor())
-                     ? data_.header_image_dark
-                     : data_.header_image_light;
+  // TODO(crbug.com/1013099): Merge both images using alpha blending so they
+  // work on any background color.
+  const gfx::VectorIcon* image =
+      color_utils::IsDark(frame_view->GetBackgroundColor())
+          ? data_.header_image_dark
+          : data_.header_image_light;
 
-  frame_view->SetHeaderView(MaybeCreateImageView(image_id));
+  frame_view->SetHeaderView(MaybeCreateImageView(image));
 }
 
 void SharingDialogView::AddedToWidget() {

@@ -2648,6 +2648,13 @@ if (enable_java_templates) {
         use_final_fields = true
       }
       _srcjar_deps += [ ":${_template_name}__native_libraries" ]
+    } else {
+      if (defined(invoker.native_lib_version_arg)) {
+        not_needed(invoker, [ "native_lib_version_arg" ])
+      }
+      if (defined(invoker.native_lib_version_rule)) {
+        not_needed(invoker, [ "native_lib_version_rule" ])
+      }
     }
 
     _extra_native_libs = []

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.download;
 
 import android.Manifest.permission;
 import android.app.DownloadManager;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Environment;
@@ -50,17 +49,13 @@ public class ChromeDownloadDelegate implements UserData {
             "text/plain", "application/octet-stream", "binary/octet-stream", "octet/stream",
             "application/download", "application/force-download", "application/unknown"));
 
-    // The application context.
-    private final Context mContext;
     private Tab mTab;
 
     public static ChromeDownloadDelegate from(Tab tab) {
         UserDataHost host = tab.getUserDataHost();
         ChromeDownloadDelegate controller = host.getUserData(USER_DATA_KEY);
-        return controller == null
-                ? host.setUserData(USER_DATA_KEY,
-                          new ChromeDownloadDelegate(tab.getThemedApplicationContext(), tab))
-                : controller;
+        return controller == null ? host.setUserData(USER_DATA_KEY, new ChromeDownloadDelegate(tab))
+                                  : controller;
     }
 
     /**
@@ -68,8 +63,7 @@ public class ChromeDownloadDelegate implements UserData {
      * @param tab The corresponding tab instance.
      */
     @VisibleForTesting
-    ChromeDownloadDelegate(Context context, Tab tab) {
-        mContext = context;
+    ChromeDownloadDelegate(Tab tab) {
         mTab = tab;
     }
 
@@ -279,9 +273,5 @@ public class ChromeDownloadDelegate implements UserData {
                     new String[] {permission.WRITE_EXTERNAL_STORAGE}, permissionCallback);
         }
         return true;
-    }
-
-    protected Context getContext() {
-        return mContext;
     }
 }

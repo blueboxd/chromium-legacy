@@ -7,14 +7,16 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/viz/public/cpp/compositing/copy_output_result_mojom_traits.h"
 
 namespace {
 
 // When we're sending a CopyOutputRequest, we keep the result_callback_ in a
-// CopyOutputResultSenderImpl and send a CopyOutputResultSenderPtr to the other
-// process. When SendResult is called, we run the stored result_callback_.
+// CopyOutputResultSenderImpl and send a PendingRemote<CopyOutputResultSender>
+// to the other process. When SendResult is called, we run the stored
+// result_callback_.
 class CopyOutputResultSenderImpl : public viz::mojom::CopyOutputResultSender {
  public:
   CopyOutputResultSenderImpl(
@@ -45,9 +47,12 @@ class CopyOutputResultSenderImpl : public viz::mojom::CopyOutputResultSender {
   viz::CopyOutputRequest::CopyOutputRequestCallback result_callback_;
 };
 
-void SendResult(viz::mojom::CopyOutputResultSenderPtr ptr,
-                std::unique_ptr<viz::CopyOutputResult> result) {
-  ptr->SendResult(std::move(result));
+void SendResult(
+    mojo::PendingRemote<viz::mojom::CopyOutputResultSender> pending_remote,
+    std::unique_ptr<viz::CopyOutputResult> result) {
+  mojo::Remote<viz::mojom::CopyOutputResultSender> remote(
+      std::move(pending_remote));
+  remote->SendResult(std::move(result));
 }
 
 }  // namespace
@@ -55,14 +60,15 @@ void SendResult(viz::mojom::CopyOutputResultSenderPtr ptr,
 namespace mojo {
 
 // static
-viz::mojom::CopyOutputResultSenderPtr
+mojo::PendingRemote<viz::mojom::CopyOutputResultSender>
 StructTraits<viz::mojom::CopyOutputRequestDataView,
              std::unique_ptr<viz::CopyOutputRequest>>::
     result_sender(const std::unique_ptr<viz::CopyOutputRequest>& request) {
-  viz::mojom::CopyOutputResultSenderPtr result_sender;
+  mojo::PendingRemote<viz::mojom::CopyOutputResultSender> result_sender;
   auto impl = std::make_unique<CopyOutputResultSenderImpl>(
       request->result_format(), std::move(request->result_callback_));
-  MakeStrongBinding(std::move(impl), MakeRequest(&result_sender));
+  MakeSelfOwnedReceiver(std::move(impl),
+                        result_sender.InitWithNewPipeAndPassReceiver());
   return result_sender;
 }
 
@@ -75,8 +81,9 @@ bool StructTraits<viz::mojom::CopyOutputRequestDataView,
   if (!data.ReadResultFormat(&result_format))
     return false;
 
-  auto result_sender =
-      data.TakeResultSender<viz::mojom::CopyOutputResultSenderPtr>();
+  auto result_sender = data.TakeResultSender<
+      mojo::PendingRemote<viz::mojom::CopyOutputResultSender>>();
+
   auto request = std::make_unique<viz::CopyOutputRequest>(
       result_format, base::BindOnce(SendResult, base::Passed(&result_sender)));
 

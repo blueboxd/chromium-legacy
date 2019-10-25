@@ -138,7 +138,6 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 நிமிடம் உள்ளது}other{# நிமிடங்கள் உள்ளன}}</translation>
 <translation id="5941711191222866238">சிறிதாக்கு</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 மணிநேரம்}other{# மணிநேரம்}}</translation>
-<translation id="5946629889255121107">எண் <ph name="ORIGIN" /> இணைப்பிலிருந்து தொடங்கப்பட்டது</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> இல் <ph name="SELECTED_PAGE" />வது பக்கம்</translation>
 <translation id="6022924867608035986">தேடல்பெட்டியிலிருக்கும் உரையை அழிக்கும்</translation>
 <translation id="6040143037577758943">மூடு</translation>

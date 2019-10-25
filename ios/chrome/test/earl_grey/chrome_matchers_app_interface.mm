@@ -11,6 +11,9 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_view_controller.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/card_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/card_mediator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/card_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
@@ -748,6 +751,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kAutofillProfileTableViewID);
 }
 
++ (id<GREYMatcher>)settingsCreditCardMatcher {
+  return grey_accessibilityID(kAutofillCreditCardTableViewId);
+}
+
 + (id<GREYMatcher>)autofillSuggestionViewMatcher {
   return grey_accessibilityID(kFormSuggestionLabelAccessibilityIdentifier);
 }
@@ -825,4 +832,31 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
       grey_descendant([self manualFallbackProfilesTableViewMatcher]);
   return grey_allOf(classMatcher, parentMatcher, nil);
 }
+
++ (id<GREYMatcher>)manualFallbackCreditCardIconMatcher {
+  return grey_accessibilityID(
+      manual_fill::AccessoryCreditCardAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackCreditCardTableViewMatcher {
+  return grey_accessibilityID(
+      manual_fill::CardTableViewAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackManageCreditCardsMatcher {
+  return grey_accessibilityID(manual_fill::ManageCardsAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackAddCreditCardsMatcher {
+  return grey_accessibilityID(
+      manual_fill::kAddCreditCardsAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)manualFallbackCreditCardTableViewWindowMatcher {
+  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
+  id<GREYMatcher> parentMatcher =
+      grey_descendant([self manualFallbackCreditCardTableViewMatcher]);
+  return grey_allOf(classMatcher, parentMatcher, nil);
+}
+
 @end

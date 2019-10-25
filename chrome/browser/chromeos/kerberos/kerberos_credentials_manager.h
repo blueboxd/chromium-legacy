@@ -257,9 +257,6 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   // Keeps track of accounts currently being added.
   std::vector<std::unique_ptr<KerberosAddAccountRunner>> add_account_runners_;
 
-  // Will be true if one of the current account additions succeed.
-  bool should_notify_accounts_changes_ = false;
-
   // Variable expander for the principal name (replaces ${LOGIN_ID} etc.).
   std::unique_ptr<VariableExpander> principal_expander_;
 

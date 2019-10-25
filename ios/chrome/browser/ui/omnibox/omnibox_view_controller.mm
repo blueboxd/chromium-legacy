@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
@@ -27,6 +29,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::UserMetricsAction;
 
 namespace {
 
@@ -58,6 +62,11 @@ const CGFloat kClearButtonSize = 28.0f;
 // distinguish between calls to textDidChange that are triggered by the user
 // typing vs by calls to setText.
 @property(nonatomic, assign) BOOL processingUserEvent;
+
+// A flag that is set whenever any input or copy/paste event happened in the
+// omnibox while it was focused. Used to count event "user focuses the omnibox
+// to view the complete URL and immediately defocuses it".
+@property(nonatomic, assign) BOOL omniboxInteractedWhileFocused;
 
 @end
 
@@ -184,6 +193,9 @@ const CGFloat kClearButtonSize = 28.0f;
   if (self.forwardingOnDidChange)
     return;
 
+  // Reset the changed flag.
+  self.omniboxInteractedWhileFocused = YES;
+
   BOOL savedProcessingUserEvent = self.processingUserEvent;
   self.processingUserEvent = NO;
   self.forwardingOnDidChange = YES;
@@ -212,6 +224,7 @@ const CGFloat kClearButtonSize = 28.0f;
 
   self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
 
+  self.omniboxInteractedWhileFocused = NO;
   DCHECK(_textChangeDelegate);
   _textChangeDelegate->OnDidBeginEditing();
 }
@@ -223,6 +236,16 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 // When editing, forward the message on to |_textChangeDelegate|.
+- (void)textFieldDidEndEditing:(UITextField*)textField
+                        reason:(UITextFieldDidEndEditingReason)reason {
+  if (!self.omniboxInteractedWhileFocused) {
+    RecordAction(
+        UserMetricsAction("Mobile_FocusedDefocusedOmnibox_WithNoAction"));
+  }
+  DCHECK(_textChangeDelegate);
+  _textChangeDelegate->EndEditing();
+}
+
 - (BOOL)textFieldShouldClear:(UITextField*)textField {
   DCHECK(_textChangeDelegate);
   _textChangeDelegate->ClearText();
@@ -231,6 +254,7 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 - (void)onCopy {
+  self.omniboxInteractedWhileFocused = YES;
   DCHECK(_textChangeDelegate);
   _textChangeDelegate->OnCopy();
 }
@@ -398,6 +422,7 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 - (void)searchCopiedImage:(id)sender {
+  self.omniboxInteractedWhileFocused = YES;
   if (base::Optional<gfx::Image> optionalImage =
           ClipboardRecentContent::GetInstance()
               ->GetRecentImageFromClipboard()) {
@@ -428,6 +453,7 @@ const CGFloat kClearButtonSize = 28.0f;
                  clipboardRecentContent->GetRecentTextFromClipboard()) {
     query = base::SysUTF16ToNSString(optionalText.value());
   }
+  self.omniboxInteractedWhileFocused = YES;
   [self.dispatcher loadQuery:query immediately:YES];
   [self.dispatcher cancelOmniboxEdit];
 }

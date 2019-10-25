@@ -45,12 +45,13 @@ class StreamCreatedCallbackAdapter final
   // mojom::RendererAudioInputStreamFactoryClient implementation.
   void StreamCreated(
       mojo::PendingRemote<media::mojom::AudioInputStream> stream,
-      media::mojom::AudioInputStreamClientRequest client_request,
+      mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+          client_receiver,
       media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
       const base::Optional<base::UnguessableToken>& stream_id) override {
     DCHECK(!initially_muted);  // Loopback streams shouldn't be started muted.
-    callback_.Run(std::move(stream), std::move(client_request),
+    callback_.Run(std::move(stream), std::move(client_receiver),
                   std::move(data_pipe));
   }
 

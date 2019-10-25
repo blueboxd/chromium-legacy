@@ -156,12 +156,11 @@ def GenerateVersionCodes(version_values, arch, is_next_build):
     version_code_val = new_version_code + diff
     version_codes[version_code_name] = str(version_code_val)
 
-    if arch == 'arm64' or arch == 'x64':
-      for variant, config in ARCH64_APK_VARIANTS.iteritems():
-        if apk in config['PACKAGES']:
-          variant_name = apk + '_' + variant + '_VERSION_CODE'
-          variant_val = version_code_val + config['MODIFIER']
-          version_codes[variant_name] = str(variant_val)
+    for variant, config in ARCH64_APK_VARIANTS.iteritems():
+      if apk in config['PACKAGES']:
+        variant_name = apk + '_' + variant + '_VERSION_CODE'
+        variant_val = version_code_val + config['MODIFIER']
+        version_codes[variant_name] = str(variant_val)
 
 
   return version_codes

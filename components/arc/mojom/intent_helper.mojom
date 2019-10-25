@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 31
+// Next MinVersion: 32
 
 module arc.mojom;
 
@@ -184,7 +184,7 @@ interface CustomTabSession {
 
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4
-// Next method ID: 14
+// Next method ID: 15
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -254,6 +254,9 @@ interface IntentHelperHost {
   // called when apps are installed, uninstalled or updated.
   [MinVersion=29] OnIntentFiltersUpdatedForPackage@13(
       string package_name, array<IntentFilter> intent_filters);
+
+  // Closes Chrome camera app.
+  [MinVersion=31] CloseCameraApp@14();
 };
 
 // Sends intents to ARC on behalf of Chrome.

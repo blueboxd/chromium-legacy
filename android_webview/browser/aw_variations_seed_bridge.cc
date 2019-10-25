@@ -43,4 +43,9 @@ std::unique_ptr<variations::SeedResponse> GetAndClearJavaSeed() {
   return java_seed;
 }
 
+bool IsSeedFresh() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return static_cast<bool>(Java_AwVariationsSeedBridge_isLoadedSeedFresh(env));
+}
+
 }  // namespace android_webview

@@ -177,6 +177,8 @@ export class PDFViewer {
 
     /** @private {boolean} */
     this.isPrintPreview_ = location.origin === 'chrome://print';
+    document.documentElement.toggleAttribute(
+        'is-print-preview', this.isPrintPreview_);
 
     /** @private {boolean} */
     this.isPrintPreviewLoadingFinished_ = false;

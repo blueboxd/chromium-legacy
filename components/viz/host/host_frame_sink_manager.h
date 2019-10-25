@@ -161,7 +161,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
       const FrameSinkId& start) const;
 
   // Asks viz to send updates regarding video activity to |observer|.
-  void AddVideoDetectorObserver(mojom::VideoDetectorObserverPtr observer);
+  void AddVideoDetectorObserver(
+      mojo::PendingRemote<mojom::VideoDetectorObserver> observer);
 
   // Creates a FrameSinkVideoCapturer instance in viz.
   void CreateVideoCapturer(

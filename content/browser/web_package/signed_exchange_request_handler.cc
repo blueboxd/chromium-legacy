@@ -14,13 +14,13 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 
 namespace content {
@@ -81,7 +81,7 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     mojo::ScopedDataPipeConsumerHandle* response_body,
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
-    ThrottlingURLLoader* url_loader,
+    blink::ThrottlingURLLoader* url_loader,
     bool* skip_other_interceptors,
     bool* will_return_unsafe_redirect) {
   DCHECK(!signed_exchange_loader_);
@@ -94,9 +94,9 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   *client_request = mojo::MakeRequest(&client);
 
   // This lets the SignedExchangeLoader directly returns an artificial redirect
-  // to the downstream client without going through ThrottlingURLLoader, which
-  // means some checks like SafeBrowsing may not see the redirect. Given that
-  // the redirected request will be checked when it's restarted we suppose
+  // to the downstream client without going through blink::ThrottlingURLLoader,
+  // which means some checks like SafeBrowsing may not see the redirect. Given
+  // that the redirected request will be checked when it's restarted we suppose
   // this is fine.
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       request, response_head, std::move(*response_body), std::move(client),

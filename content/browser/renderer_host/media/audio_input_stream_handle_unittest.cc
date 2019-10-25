@@ -50,19 +50,20 @@ class MockRendererAudioInputStreamFactoryClient
 
   void StreamCreated(
       mojo::PendingRemote<media::mojom::AudioInputStream> input_stream,
-      media::mojom::AudioInputStreamClientRequest client_request,
+      mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+          client_receiver,
       media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
       bool initially_muted,
       const base::Optional<base::UnguessableToken>& stream_id) override {
     EXPECT_TRUE(stream_id.has_value());
     input_stream_.Bind(std::move(input_stream));
-    client_request_ = std::move(client_request);
+    client_receiver_ = std::move(client_receiver);
     Created();
   }
 
  private:
   mojo::Remote<media::mojom::AudioInputStream> input_stream_;
-  media::mojom::AudioInputStreamClientRequest client_request_;
+  mojo::PendingReceiver<media::mojom::AudioInputStreamClient> client_receiver_;
 };
 
 using MockDeleter =

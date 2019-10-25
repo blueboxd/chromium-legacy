@@ -207,6 +207,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     options->scope = scope;
     container_host->Register(
         worker_url, std::move(options),
+        /*outside_fetch_client_settings_object=*/nullptr,
         base::BindOnce([](blink::mojom::ServiceWorkerErrorType* out_error,
                           blink::mojom::ServiceWorkerErrorType error,
                           const base::Optional<std::string>& error_msg,

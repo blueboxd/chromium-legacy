@@ -20,6 +20,7 @@ static const int kDecryptingClientId = 1;
 
 using bookmarks_helper::AddURL;
 using bookmarks_helper::AllModelsMatchVerifier;
+using bookmarks_helper::BookmarksMatchVerifierChecker;
 
 // These tests consider the client as a black-box; they are not concerned with
 // whether the data is committed to the server correctly encrypted. Rather, they

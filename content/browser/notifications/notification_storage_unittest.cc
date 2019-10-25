@@ -68,7 +68,7 @@ class NotificationStorageTest : public ::testing::Test {
       options.scope = origin_;
       base::RunLoop run_loop;
       helper_->context()->RegisterServiceWorker(
-          script_url, options,
+          script_url, options, /*outside_fetch_client_settings_object=*/nullptr,
           base::BindOnce(&NotificationStorageTest::DidRegisterServiceWorker,
                          base::Unretained(this), run_loop.QuitClosure()));
       run_loop.Run();

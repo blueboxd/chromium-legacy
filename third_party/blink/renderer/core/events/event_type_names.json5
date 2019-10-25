@@ -274,6 +274,8 @@
     "sync",
     "terminate",
     "textInput",
+    "textupdate",
+    "textformatupdate",
     "timeout",
     "timeupdate",
     "toggle",

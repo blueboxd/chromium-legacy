@@ -70,7 +70,9 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   ItemType Type() const { return static_cast<ItemType>(type_); }
 
   bool IsAtomicInline() const;
+  bool IsEmptyLineBox() const;
   bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
+  bool IsListMarker() const;
 
   NGStyleVariant StyleVariant() const {
     return static_cast<NGStyleVariant>(style_variant_);

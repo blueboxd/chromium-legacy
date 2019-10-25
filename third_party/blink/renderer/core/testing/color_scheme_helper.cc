@@ -15,7 +15,7 @@ ColorSchemeHelper::ColorSchemeHelper() {
   DCHECK(Platform::Current() && Platform::Current()->ThemeEngine());
   web_theme_engine_ = Platform::Current()->ThemeEngine();
   default_preferred_color_scheme_ = web_theme_engine_->PreferredColorScheme();
-  default_forced_colors_ = web_theme_engine_->ForcedColors();
+  default_forced_colors_ = web_theme_engine_->GetForcedColors();
 }
 
 ColorSchemeHelper::~ColorSchemeHelper() {

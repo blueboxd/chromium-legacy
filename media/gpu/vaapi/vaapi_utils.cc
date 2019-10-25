@@ -103,7 +103,7 @@ ScopedVAImage::~ScopedVAImage() {
     base::AutoLock auto_lock(*lock_);
 
     // |va_buffer_| has to be deleted before vaDestroyImage().
-    va_buffer_.release();
+    va_buffer_.reset();
     vaDestroyImage(va_display_, image_->image_id);
   }
 }

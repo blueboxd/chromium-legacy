@@ -43,6 +43,7 @@ if (is_mac) {
       "chrome_modern_version_code = \"@CHROME_MODERN_VERSION_CODE@\" " +
       "monochrome_version_code = \"@MONOCHROME_VERSION_CODE@\" " +
       "trichrome_version_code = \"@TRICHROME_VERSION_CODE@\" " +
+      "trichrome_64_32_version_code = \"@TRICHROME_64_32_VERSION_CODE@\" " +
       "notouch_chrome_version_code = \"@NOTOUCH_CHROME_VERSION_CODE@\" " +
       "webview_stable_version_code = \"@WEBVIEW_STABLE_VERSION_CODE@\" " +
       "webview_beta_version_code = \"@WEBVIEW_BETA_VERSION_CODE@\" " +
@@ -52,7 +53,6 @@ if (is_mac) {
     _version_dictionary_template +=
         "monochrome_64_32_version_code = \"@MONOCHROME_64_32_VERSION_CODE@\" " +
         "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" " +
-        "trichrome_64_32_version_code = \"@TRICHROME_64_32_VERSION_CODE@\" " +
         "trichrome_64_version_code = \"@TRICHROME_64_VERSION_CODE@\" "
   }
 

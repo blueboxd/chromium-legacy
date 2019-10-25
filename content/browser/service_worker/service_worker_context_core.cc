@@ -393,6 +393,8 @@ ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHostByClientID(
 void ServiceWorkerContextCore::RegisterServiceWorker(
     const GURL& script_url,
     const blink::mojom::ServiceWorkerRegistrationOptions& options,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object,
     RegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   std::string error_message;
@@ -404,7 +406,7 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
   }
   was_service_worker_registered_ = true;
   job_coordinator_->Register(
-      script_url, options,
+      script_url, options, std::move(outside_fetch_client_settings_object),
       base::BindOnce(&ServiceWorkerContextCore::RegistrationComplete,
                      AsWeakPtr(), options.scope, std::move(callback)));
 }

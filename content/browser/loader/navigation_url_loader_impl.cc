@@ -50,7 +50,6 @@
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/common/net/record_load_histograms.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -89,6 +88,7 @@
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 #if defined(OS_ANDROID)
@@ -422,7 +422,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Requests to WebUI scheme won't get redirected to/from other schemes
     // or be intercepted, so we just let it go here.
     if (factory_for_webui.is_valid()) {
-      url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+      url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
               std::move(factory_for_webui)),
           CreateURLLoaderThrottles(), 0 /* routing_id */,
@@ -436,7 +436,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // or be intercepted, so we just let it go here.
     if (request_info->common_params->url.SchemeIsBlob() &&
         request_info->blob_url_loader_factory) {
-      url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+      url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
           network::SharedURLLoaderFactory::Create(
               std::move(request_info->blob_url_loader_factory)),
           CreateURLLoaderThrottles(), 0 /* routing_id */,
@@ -565,7 +565,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           base::ThreadTaskRunnerHandle::Get()));
 
       default_loader_used_ = false;
-      url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+      url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(single_request_factory), std::move(throttles),
           frame_tree_node_id_, global_request_id_.request_id,
           network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
@@ -624,7 +624,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     uint32_t options = network::mojom::kURLLoadOptionNone;
     scoped_refptr<network::SharedURLLoaderFactory> factory =
         PrepareForNonInterceptedRequest(&options);
-    url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+    url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
         std::move(factory), CreateURLLoaderThrottles(), frame_tree_node_id_,
         global_request_id_.request_id, options, resource_request_.get(),
         this /* client */, kNavigationUrlLoaderTrafficAnnotation,
@@ -653,7 +653,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // MaybeCreateLoaderForResponse.
       DCHECK(response_loader_binding_);
       response_loader_binding_.Close();
-      url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+      url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(factory), CreateURLLoaderThrottles(), frame_tree_node_id_,
           global_request_id_.request_id, options, resource_request_.get(),
           this /* client */, kNavigationUrlLoaderTrafficAnnotation,
@@ -1138,7 +1138,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
-  std::unique_ptr<ThrottlingURLLoader> url_loader_;
+  std::unique_ptr<blink::ThrottlingURLLoader> url_loader_;
 
   // Caches the modified request headers provided by clients during redirect,
   // will be consumed by next |url_loader_->FollowRedirect()|.

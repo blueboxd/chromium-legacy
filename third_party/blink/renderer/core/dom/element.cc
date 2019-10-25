@@ -4002,26 +4002,26 @@ void Element::focus(const FocusParams& params) {
 
   DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(this);
   GetDocument().UpdateStyleAndLayoutTree();
-  if (!IsFocusable())
-    return;
+  if (!IsFocusable()) {
+    if (AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus()) {
+      UseCounter::Count(GetDocument(), WebFeature::kDelegateFocus);
+      Element* focused_element = GetDocument().FocusedElement();
+      if (focused_element &&
+          IsShadowIncludingInclusiveAncestorOf(*focused_element))
+        return;
 
-  if (AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus()) {
-    UseCounter::Count(GetDocument(), WebFeature::kDelegateFocus);
-    Element* focused_element = GetDocument().FocusedElement();
-    if (focused_element &&
-        IsShadowIncludingInclusiveAncestorOf(*focused_element))
-      return;
-
-    // Slide the focus to its inner node.
-    Element* found = GetDocument()
-                         .GetPage()
-                         ->GetFocusController()
-                         .FindFocusableElementInShadowHost(*this);
-    if (found && IsShadowIncludingInclusiveAncestorOf(*found)) {
-      found->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                               kWebFocusTypeForward, nullptr, params.options));
-      return;
+      // Slide the focus to its inner node.
+      Element* found = GetDocument()
+                           .GetPage()
+                           ->GetFocusController()
+                           .FindFocusableElementInShadowHost(*this);
+      if (found && IsShadowIncludingInclusiveAncestorOf(*found)) {
+        found->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                                 kWebFocusTypeForward, nullptr,
+                                 params.options));
+      }
     }
+    return;
   }
   // If script called focus(), then the type would be none. This means we are
   // activating because of a script action (kUser). Otherwise, this is a
@@ -4125,10 +4125,10 @@ bool Element::SupportsFocus() const {
   // But supportsFocus must return true when the element is editable, or else
   // it won't be focusable. Furthermore, supportsFocus cannot just return true
   // always or else tabIndex() will change for all HTML elements.
+  if (AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus())
+    return false;
   return HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly) ||
          IsRootEditableElementWithCounting(*this) ||
-         (IsShadowHost(this) && AuthorShadowRoot() &&
-          AuthorShadowRoot()->delegatesFocus()) ||
          SupportsSpatialNavigationFocus();
 }
 
@@ -5303,7 +5303,12 @@ KURL Element::GetNonEmptyURLAttribute(const QualifiedName& name) const {
 }
 
 int Element::GetIntegralAttribute(const QualifiedName& attribute_name) const {
-  int integral_value = 0;
+  return GetIntegralAttribute(attribute_name, 0);
+}
+
+int Element::GetIntegralAttribute(const QualifiedName& attribute_name,
+                                  int default_value) const {
+  int integral_value = default_value;
   ParseHTMLInteger(getAttribute(attribute_name), integral_value);
   return integral_value;
 }

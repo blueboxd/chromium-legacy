@@ -54,7 +54,7 @@ constexpr int kMenuWidth = 288;
 constexpr int kIconSize = 16;
 constexpr int kIdentityImageSize = 64;
 constexpr int kMaxImageSize = kIdentityImageSize;
-constexpr int kDefaultVerticalMargin = 12;
+constexpr int kDefaultVerticalMargin = 8;
 
 // If the bubble is too large to fit on the screen, it still needs to be at
 // least this tall to show one row.
@@ -278,7 +278,7 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
   constexpr int kTopMargin = kMenuEdgeMargin;
   constexpr int kBottomMargin = kDefaultVerticalMargin;
   constexpr int kHorizontalMargin = kMenuEdgeMargin;
-  constexpr int kImageBottomMargin = 8;
+  constexpr int kImageBottomMargin = kDefaultVerticalMargin;
   constexpr int kBadgeSize = 16;
   constexpr int kBadgePadding = 1;
   const SkColor kBadgeBackgroundColor = GetNativeTheme()->GetSystemColor(
@@ -332,14 +332,14 @@ void ProfileMenuViewBase::SetSyncInfo(const gfx::ImageSkia& icon,
   const int kDescriptionIconSpacing =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_LABEL_HORIZONTAL);
+  constexpr int kInsidePadding = 12;
   constexpr int kBorderThickness = 1;
   const int kBorderCornerRadius =
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
 
   sync_info_container_->RemoveAllChildViews(/*delete_children=*/true);
   sync_info_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      kDefaultVerticalMargin));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), kInsidePadding));
 
   if (description.empty()) {
     views::Button* button =
@@ -353,7 +353,7 @@ void ProfileMenuViewBase::SetSyncInfo(const gfx::ImageSkia& icon,
   sync_info_container_->SetBorder(views::CreatePaddedBorder(
       views::CreateRoundedRectBorder(kBorderThickness, kBorderCornerRadius,
                                      GetDefaultSeparatorColor()),
-      /*padding=*/gfx::Insets(kDefaultVerticalMargin, kMenuEdgeMargin)));
+      gfx::Insets(kInsidePadding)));
   sync_info_container_->SetProperty(
       views::kMarginsKey, gfx::Insets(kDefaultVerticalMargin, kMenuEdgeMargin));
 
@@ -397,15 +397,17 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
     const gfx::ImageSkia& icon,
     const base::string16& text,
     base::RepeatingClosure action) {
-  constexpr int kBottomMargin = 8;
-  constexpr int kButtonSpacing = 6;
+  const int kButtonSpacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
 
   // Initialize layout if this is the first time a button is added.
   if (!shortcut_features_container_->GetLayoutManager()) {
     views::BoxLayout* layout = shortcut_features_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal,
-            gfx::Insets(0, 0, kBottomMargin, 0), kButtonSpacing));
+            gfx::Insets(/*top=*/kDefaultVerticalMargin / 2, 0,
+                        /*bottom=*/kMenuEdgeMargin, 0),
+            kButtonSpacing));
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
   }
@@ -437,15 +439,13 @@ void ProfileMenuViewBase::AddFeatureButton(const gfx::ImageSkia& icon,
 
 void ProfileMenuViewBase::SetProfileManagementHeading(
     const base::string16& heading) {
-  constexpr int kSeparatorMargins = 4;
-
   // Add separator before heading.
   profile_mgmt_separator_container_->RemoveAllChildViews(
       /*delete_children=*/true);
   profile_mgmt_separator_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
   profile_mgmt_separator_container_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(kSeparatorMargins, /*horizontal=*/0)));
+      gfx::Insets(kDefaultVerticalMargin, /*horizontal=*/0)));
   profile_mgmt_separator_container_->AddChildView(
       std::make_unique<views::Separator>());
 

@@ -33,7 +33,6 @@ js_type_check("ui_resources") {
     ":menu",
     ":menu_button",
     ":menu_item",
-    ":node_utils",
     ":overlay",
     ":position_util",
     ":splitter",
@@ -205,12 +204,6 @@ js_library("menu") {
     ":menu_item",
     "..:ui",
     "../..:assert",
-    "../..:cr",
-  ]
-}
-
-js_library("node_utils") {
-  deps = [
     "../..:cr",
   ]
 }

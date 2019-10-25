@@ -13,6 +13,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
+#include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -63,6 +64,7 @@ void WebServiceWorkerProviderImpl::RegisterServiceWorker(
     const WebURL& web_script_url,
     blink::mojom::ScriptType script_type,
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
+    const blink::WebFetchClientSettingsObject& fetch_client_settings_object,
     std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks) {
   DCHECK(callbacks);
 
@@ -98,6 +100,7 @@ void WebServiceWorkerProviderImpl::RegisterServiceWorker(
       pattern, script_type, update_via_cache);
   context_->container_host()->Register(
       script_url, std::move(options),
+      FetchClientSettingsObjectFromWebToMojom(fetch_client_settings_object),
       base::BindOnce(&WebServiceWorkerProviderImpl::OnRegistered,
                      weak_factory_.GetWeakPtr(), std::move(callbacks)));
 }

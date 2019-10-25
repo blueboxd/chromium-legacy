@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 // AssistantSetup is the class responsible for start Assistant OptIn flow.
 class AssistantSetup : public ash::AssistantSetup,
@@ -38,7 +39,8 @@ class AssistantSetup : public ash::AssistantSetup,
   void OnGetSettingsResponse(const std::string& settings);
 
   chromeos::assistant::mojom::AssistantService* const service_;
-  chromeos::assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
+  mojo::Remote<chromeos::assistant::mojom::AssistantSettingsManager>
+      settings_manager_;
 
   base::WeakPtrFactory<AssistantSetup> weak_factory_{this};
 

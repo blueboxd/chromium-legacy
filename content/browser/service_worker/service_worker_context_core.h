@@ -192,6 +192,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RegisterServiceWorker(
       const GURL& script_url,
       const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object,
       RegistrationCallback callback);
   void UnregisterServiceWorker(const GURL& scope,
                                UnregistrationCallback callback);

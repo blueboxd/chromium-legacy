@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Váš účet byl uzamčen. Kontaktujte administrátora systému.</translation>
 <translation id="2844349213149998955">Přihlášení pomocí osobního účtu na tomto zařízení není povoleno. Přihlaste se pomocí pracovního účtu.</translation>
 <translation id="3306357053520292004">Pomocí tohoto účtu již byl do tohoto počítače uživatel přidán. Přihlaste se pomocí jiného účtu.</translation>
+<translation id="3926852373333893095">Přihlásit se smějí pouze uživatelé GSuite Enterprise.</translation>
 <translation id="4057329986137569701">Došlo k interní chybě.</translation>
 <translation id="4267670563222825190">Pro váš účet nebyl nalezen žádný doménový uživatel. Obraťte se na administrátora.</translation>
 <translation id="4300229033992784001">Heslo vašeho účtu se změnilo. Chcete-li účet Windows synchronizovat se svým pracovním účtem, zadejte své aktuální heslo pro Windows.</translation>
 <translation id="4706454071748629324">Přidání nového uživatele se nezdařilo. Na tomto počítači lze pomocí pracovního účtu vytvořit jen jednoho uživatele.</translation>
 <translation id="6033715878377252112">Pomocník Poskytovatele identifikačních údajů Google pro Windows</translation>
 <translation id="6149399665202317746">Poskytovatel identifikačních údajů Google pro Windows</translation>
+<translation id="6239180560789153226">V zařízení chybí údaje pro obnovení. Přihlaste se pomocí pracovního účtu Google.</translation>
 <translation id="6312494990035843744">Přihlášení pomocí pracovních účtů v této doméně není povoleno. Zkuste jiný účet.</translation>
 <translation id="6463752215771576050">Tento počítač nelze zaregistrovat do podnikové správy.  Přihlaste se pomocí jiného pracovního účtu.</translation>
 <translation id="6657585470893396449">Heslo</translation>
+<translation id="6937049691815837345">Zařízení je potřeba zaregistrovat pomocí správy zařízení. Přihlaste se pomocí pracovního účtu Google.</translation>
 <translation id="7209941495304122410">Zadejte heslo účtu Windows</translation>
 <translation id="7357241217513796177">Zkontrolujte, zda jste připojeni k síti a zkuste to znovu.</translation>
 <translation id="7536769223115622137">Přidat pracovní účet</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Platnost relace vypršela. Přihlaste se pomocí pracovního účtu Google.</translation>
 <translation id="9055998212250844221">Uživatelský účet vytvořený pomocí Poskytovatele identifikačních údajů Google pro Windows</translation>
 <translation id="9135619837062629367">Přihlášení pomocí tohoto účtu není povoleno. Zkuste jiný účet.</translation>
+<translation id="998002716857524853">Přihlaste se pomocí pracovního účtu GSuite.</translation>
 </translationbundle>

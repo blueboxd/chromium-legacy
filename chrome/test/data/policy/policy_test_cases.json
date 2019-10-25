@@ -4220,6 +4220,9 @@
   "DeviceLoginScreenSystemInfoEnforced" : {
   },
 
+  "DeviceShowNumericKeyboardForPassword" : {
+  },
+
   "UptimeLimit": {
   },
 

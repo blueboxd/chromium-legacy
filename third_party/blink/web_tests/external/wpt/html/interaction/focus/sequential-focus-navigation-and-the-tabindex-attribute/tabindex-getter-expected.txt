@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 100 tests; 94 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 100 tests; 95 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS input.tabIndex should return 0 by default
 PASS input.tabIndex should return -1 when set to -1
 PASS input.tabIndex should return 0 when set to 0
@@ -92,7 +92,7 @@ PASS summary#secondsummary.tabIndex should return -1 by default
 PASS summary#secondsummary.tabIndex should return -1 when set to -1
 PASS summary#secondsummary.tabIndex should return 0 when set to 0
 PASS summary#secondsummary.tabIndex should return 1 when set to 1
-FAIL #hostDelegatesFocus.tabIndex should return -1 by default assert_equals: expected -1 but got 0
+PASS #hostDelegatesFocus.tabIndex should return -1 by default
 PASS #hostDelegatesFocus.tabIndex should return -1 when set to -1
 PASS #hostDelegatesFocus.tabIndex should return 0 when set to 0
 PASS #hostDelegatesFocus.tabIndex should return 1 when set to 1

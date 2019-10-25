@@ -19,6 +19,7 @@ class SharedURLLoaderFactory;
 }  // namespace network
 
 namespace blink {
+class ThrottlingURLLoader;
 class URLLoaderThrottle;
 }  // namespace blink
 
@@ -56,7 +57,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
-      ThrottlingURLLoader* url_loader,
+      blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect) override;
 

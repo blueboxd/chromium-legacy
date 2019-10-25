@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">ホスト プロセス</translation>
 <translation id="20876857123010370">トラックパッド モード</translation>
 <translation id="2089514346391228378">このパソコンのリモート接続が有効になりました。</translation>
+<translation id="2198363917176605566"><ph name="PRODUCT_NAME" />を使用するには、「画面の録画」権限を付与して、この Mac の画面コンテンツをリモートマシンに送信できるようにする必要があります。
+
+この権限を付与するには、下の [<ph name="BUTTON_NAME" />] をクリックして [画面の録画] 設定パネルを開き、[<ph name="SERVICE_SCRIPT_NAME" />] の横にあるチェックボックスをオンにします。
+
+[<ph name="SERVICE_SCRIPT_NAME" />] のチェックボックスがすでにオンになっている場合は、いったんオフにしてもう一度オンにしてください。</translation>
 <translation id="2208514473086078157">ポリシー設定により、Chrome リモート デスクトップのホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
 <translation id="2220529011494928058">問題を報告</translation>
 <translation id="2221097377466213233">右 Ctrl キーを Win キー（Mac の場合は ⌘）として使用</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />最終オンライン: <ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2405928220797050937">このアプリのサポートは終了しました。最新の機能とセキュリティ アップデートを反映した <ph name="LINK_BEGIN" />Chrome リモート デスクトップ ウェブアプリ<ph name="LINK_END" />をご利用ください。</translation>
 <translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
+<translation id="2504109125669302160"><ph name="PRODUCT_NAME" />に「アクセシビリティ」権限を付与する</translation>
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> に接続されました</translation>
 <translation id="2512228156274966424">注: すべてのキーボード ショートカットを使用できるようにするには、Chrome リモート デスクトップを [ウィンドウとして開く] に設定してください。</translation>
 <translation id="2540992418118313681">このパソコンの閲覧と制御の権限を別のユーザーと共有しますか？</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">コア ライブラリ</translation>
 <translation id="4430435636878359009">このパソコンへのリモート接続を無効にする</translation>
 <translation id="4430915108080446161">アクセス コードを生成しています...</translation>
+<translation id="443560535555262820">[アクセシビリティ] 設定を開く</translation>
 <translation id="4450893287417543264">次回から表示しない</translation>
 <translation id="4472575034687746823">利用を開始</translation>
 <translation id="4481276415609939789">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chromoting をインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">PIN を変更</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" />（最新ではありません）</translation>
 <translation id="6221358653751391898">Chrome にログインしていません。ログインしてもう一度お試しください。</translation>
+<translation id="6223301979382383752">[画面の録画] 設定を開く</translation>
 <translation id="6227369581881558336">Chrome リモート デスクトップがウェブに対応し、ファイル転送などの新しい機能が追加されました。<ph name="LINK_BEGIN" />ウェブアプリ<ph name="LINK_END" />をご確認ください。</translation>
 <translation id="6284412385303060032">コンソールのログイン画面で実行されるホストは、カーテンモードをサポートするために終了されました（ユーザー固有のセッションで実行されるホストに切り替えられました）。</translation>
 <translation id="629730747756840877">アカウント</translation>
 <translation id="6304318647555713317">クライアント</translation>
 <translation id="6381670701864002291">その他の問題。</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
+<translation id="6411861157501911556"><ph name="PRODUCT_NAME" />を使用するには、「アクセシビリティ」権限を付与して、リモートマシンからの入力をこの Mac に反映できるようにする必要があります。
+
+この権限を付与するには、下の [<ph name="BUTTON_NAME" />] をクリックして [アクセシビリティ] 設定パネルを開き、[<ph name="SERVICE_SCRIPT_NAME" />] の横にあるチェックボックスをオンにします。
+
+[<ph name="SERVICE_SCRIPT_NAME" />] のチェックボックスがすでにオンになっている場合は、いったんオフにしてからもう一度オンにしてください。</translation>
 <translation id="6441316101718669559">このプラットフォームでデスクトップの統合はサポートされていません。アプリケーションは引き続き使用できますが、ユーザー エクスペリエンスは低下します。</translation>
 <translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
 <translation id="6527303717912515753">共有</translation>
@@ -327,6 +340,7 @@
 <translation id="9149580767411232853">リモート デスクトップ全体が見える状態を維持します</translation>
 <translation id="9149992051684092333">デスクトップの共有を開始するには、共有するユーザーに以下のアクセス コードをお知らせください。</translation>
 <translation id="916856682307586697">デフォルトの XSession を起動</translation>
+<translation id="9187628920394877737"><ph name="PRODUCT_NAME" />に「画面の録画」権限を付与する</translation>
 <translation id="9188433529406846933">承認</translation>
 <translation id="9213184081240281106">ホストの設定が無効です。</translation>
 <translation id="951991426597076286">同意しない</translation>

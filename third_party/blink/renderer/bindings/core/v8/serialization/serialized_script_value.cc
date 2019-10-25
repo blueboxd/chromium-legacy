@@ -769,4 +769,8 @@ static_assert(kSerializedScriptValueVersion ==
                   SerializedScriptValue::kWireFormatVersion,
               "Update WebSerializedScriptValueVersion.h.");
 
+bool SerializedScriptValue::IsOriginCheckRequired() const {
+  return native_file_system_tokens_.size() > 0;
+}
+
 }  // namespace blink

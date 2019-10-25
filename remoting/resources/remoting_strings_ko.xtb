@@ -39,6 +39,11 @@
 <translation id="2078880767960296260">호스트 프로세스</translation>
 <translation id="20876857123010370">트랙패드 모드</translation>
 <translation id="2089514346391228378">컴퓨터의 원격 연결을 사용하도록 설정했습니다.</translation>
+<translation id="2198363917176605566"><ph name="PRODUCT_NAME" />을(를) 사용하려면 이 Mac의 화면 내용이 원격 기기에 전송될 수 있도록 '화면 녹화' 권한을 부여해야 합니다.
+
+권한을 부여하려면 아래의 ‘<ph name="BUTTON_NAME" />’ 버튼을 클릭하여 ‘화면 녹화’ 환경설정 창을 연 다음 ‘<ph name="SERVICE_SCRIPT_NAME" />’ 옆의 체크박스를 선택하세요.
+
+‘<ph name="SERVICE_SCRIPT_NAME" />’이(가) 이미 선택되어 있다면 선택 해제한 다음 다시 선택합니다.</translation>
 <translation id="2208514473086078157">정책 설정에서 이 컴퓨터를 Chrome 원격 데스크톱 호스트로 공유하는 것을 허용하지 않습니다. 도움이 필요하면 시스템 관리자에게 문의하세요.</translation>
 <translation id="2220529011494928058">문제 신고</translation>
 <translation id="2221097377466213233">오른쪽 Ctrl를 Win 키로 사용(Mac의 경우 ⌘)</translation>
@@ -56,6 +61,7 @@
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  <ph name="RELATIVE_TIMESTAMP" /> 온라인에 마지막으로 연결했습니다.</translation>
 <translation id="2405928220797050937">이 앱은 더 이상 지원되지 않습니다. 최신 기능과 보안 업데이트를 받으려면 <ph name="LINK_BEGIN" />Chrome 원격 데스크톱 웹 앱<ph name="LINK_END" />을 사용하시기 바랍니다.</translation>
 <translation id="2499160551253595098">사용 통계 및 비정상 종료 보고서 수집을 허용하여 Chrome 원격 데스크톱 개선에 참여하겠습니다.</translation>
+<translation id="2504109125669302160"><ph name="PRODUCT_NAME" />에 '접근성' 권한 부여</translation>
 <translation id="2509394361235492552"><ph name="HOSTNAME" />에 연결되었습니다</translation>
 <translation id="2512228156274966424">참고: 모든 단축키를 사용하려면 Chrome 원격 데스크톱을 '창으로 열기'로 설정합니다.</translation>
 <translation id="2540992418118313681">이 컴퓨터를 다른 사용자가 보고 제어하도록 공유하시겠습니까?</translation>
@@ -136,6 +142,7 @@
 <translation id="4405930547258349619">핵심 라이브러리</translation>
 <translation id="4430435636878359009">컴퓨터에 원격 연결 사용중지</translation>
 <translation id="4430915108080446161">액세스 코드 생성 중...</translation>
+<translation id="443560535555262820">접근성 환경설정 열기</translation>
 <translation id="4450893287417543264">다시 표시하지 않음</translation>
 <translation id="4472575034687746823">시작하기</translation>
 <translation id="4481276415609939789">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chromoting을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>
@@ -215,12 +222,18 @@
 <translation id="6198252989419008588">PIN 변경</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" />(이전 버전)</translation>
 <translation id="6221358653751391898">Chrome에 로그인하지 않았습니다. 로그인 후 다시 시도하세요.</translation>
+<translation id="6223301979382383752">화면 녹화 환경설정 열기</translation>
 <translation id="6227369581881558336">이제 웹에서 Chrome 원격 데스크톱을 사용할 수 있습니다. 파일 전송 등 새로운 기능도 사용해 보세요. <ph name="LINK_BEGIN" />웹 앱<ph name="LINK_END" />을 확인하세요.</translation>
 <translation id="6284412385303060032">콘솔 로직 화면에서 실행 중인 호스트가 사용자별 세션에서 실행 중인 호스트로 전환하여 커튼 모드를 지원하기 위해 종료되었습니다.</translation>
 <translation id="629730747756840877">계정</translation>
 <translation id="6304318647555713317">클라이언트</translation>
 <translation id="6381670701864002291">기타 문제</translation>
 <translation id="6398765197997659313">전체화면 닫기</translation>
+<translation id="6411861157501911556"><ph name="PRODUCT_NAME" />을(를) 사용하려면 원격 기기에서 입력한 내용이 이 Mac에 삽입될 수 있도록 ‘접근성’ 권한을 부여해야 합니다.
+
+권한을 부여하려면 아래의 ‘<ph name="BUTTON_NAME" />’ 버튼을 클릭하여 ‘접근성’ 환경설정 창을 연 다음 ‘<ph name="SERVICE_SCRIPT_NAME" />’ 옆의 체크박스를 선택하세요.
+
+‘<ph name="SERVICE_SCRIPT_NAME" />’이(가) 이미 선택되어 있다면 선택 해제한 다음 다시 선택합니다.</translation>
 <translation id="6441316101718669559">데스크톱 통합이 이 플랫폼에서 지원되지 않습니다. 애플리케이션을 사용할 수는 있지만, 사용자 환경이 저하될 수 있습니다.</translation>
 <translation id="652218476070540101">컴퓨터의 PIN을 업데이트 중…</translation>
 <translation id="6527303717912515753">공유</translation>
@@ -327,6 +340,7 @@
 <translation id="9149580767411232853">원격 데스크톱 전체가 보이도록 표시</translation>
 <translation id="9149992051684092333">데스크톱 공유를 시작하려면 내 데스크톱에 액세스하려는 사용자에게 아래 액세스 코드를 알려주세요.</translation>
 <translation id="916856682307586697">기본 XSession 실행</translation>
+<translation id="9187628920394877737"><ph name="PRODUCT_NAME" />에 '화면 녹화' 권한 부여</translation>
 <translation id="9188433529406846933">승인</translation>
 <translation id="9213184081240281106">호스트 구성이 잘못되었습니다.</translation>
 <translation id="951991426597076286">거부</translation>

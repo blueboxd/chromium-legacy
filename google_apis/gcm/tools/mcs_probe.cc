@@ -153,6 +153,8 @@ class MyTestCertVerifier : public net::CertVerifier {
              net::CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
              const net::NetLogWithSource& net_log) override {
+    verify_result->Reset();
+    verify_result->verified_cert = params.certificate();
     return net::OK;
   }
   void SetConfig(const Config& config) override {}

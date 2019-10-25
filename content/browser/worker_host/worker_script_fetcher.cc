@@ -9,11 +9,11 @@
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/browser/worker_host/worker_script_loader.h"
 #include "content/browser/worker_host/worker_script_loader_factory.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
@@ -95,7 +95,7 @@ void WorkerScriptFetcher::Start(
   // browser-initiated navigations and worker script fetch.
   int request_id = NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
 
-  url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+  url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory), std::move(throttles), routing_id,
       request_id, network::mojom::kURLLoadOptionNone, resource_request_.get(),
       this, kWorkerScriptLoadTrafficAnnotation,

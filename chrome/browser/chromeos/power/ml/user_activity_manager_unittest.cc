@@ -40,6 +40,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -181,11 +182,11 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     PowerManagerClient::InitializeFake();
-    viz::mojom::VideoDetectorObserverPtr observer;
+    mojo::PendingRemote<viz::mojom::VideoDetectorObserver> observer;
     activity_logger_ = std::make_unique<UserActivityManager>(
         &delegate_, &user_activity_detector_, PowerManagerClient::Get(),
-        &session_manager_, mojo::MakeRequest(&observer), &fake_user_manager_,
-        &model_);
+        &session_manager_, observer.InitWithNewPipeAndPassReceiver(),
+        &fake_user_manager_, &model_);
   }
 
   void TearDown() override {

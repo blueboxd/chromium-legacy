@@ -606,7 +606,7 @@
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> hat das Chrome Enterprise-Sicherheitssystem für Ihren Browser aktiviert. Das Chrome Enterprise-Sicherheitssystem kann auf manche Ihrer Daten zugreifen.</translation>
-<translation id="3987405730340719549">Chromes hat festgestellt, dass diese Website eventuell gefälscht oder betrügerisch ist.
+<translation id="3987405730340719549">Chrome hat festgestellt, dass diese Website eventuell gefälscht oder betrügerisch ist.
 
     Wenn dies Ihrer Meinung nach fälschlicherweise angezeigt wird, gehen Sie bitte auf: https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Weniger als 1 MB</translation>

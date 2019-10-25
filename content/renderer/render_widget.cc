@@ -1422,6 +1422,7 @@ void RenderWidget::SetShowScrollBottleneckRects(bool show) {
   debug_state.show_touch_event_handler_rects = show;
   debug_state.show_wheel_event_handler_rects = show;
   debug_state.show_non_fast_scrollable_rects = show;
+  debug_state.show_main_thread_scrolling_reason_rects = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 

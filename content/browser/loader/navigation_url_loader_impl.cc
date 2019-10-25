@@ -33,6 +33,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
@@ -113,7 +114,19 @@ class NavigationLoaderInterceptorBrowserContainer
       LoaderCallback callback,
       FallbackCallback fallback_callback) override {
     browser_interceptor_->MaybeCreateLoader(
-        tentative_resource_request, browser_context, std::move(callback));
+        tentative_resource_request, browser_context,
+        base::BindOnce(
+            [](LoaderCallback callback,
+               URLLoaderRequestInterceptor::RequestHandler handler) {
+              if (handler) {
+                std::move(callback).Run(
+                    base::MakeRefCounted<SingleRequestURLLoaderFactory>(
+                        std::move(handler)));
+              } else {
+                std::move(callback).Run({});
+              }
+            },
+            std::move(callback)));
   }
 
  private:
@@ -525,7 +538,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     received_response_ = false;
     head_ = network::ResourceResponseHead();
     MaybeStartLoader(nullptr /* interceptor */,
-                     {} /* single_request_handler */);
+                     {} /* single_request_factory */);
   }
 
   // |interceptor| is non-null if this is called by one of the interceptors
@@ -534,11 +547,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // non-null if the interceptor wants to handle the request.
   void MaybeStartLoader(
       NavigationLoaderInterceptor* interceptor,
-      SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
+      scoped_refptr<network::SharedURLLoaderFactory> single_request_factory) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(started_);
 
-    if (single_request_handler) {
+    if (single_request_factory) {
       // |interceptor| wants to handle the request with
       // |single_request_handler|.
       DCHECK(interceptor);
@@ -553,11 +566,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
       default_loader_used_ = false;
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-          base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-              std::move(single_request_handler)),
-          std::move(throttles), frame_tree_node_id_,
-          global_request_id_.request_id, network::mojom::kURLLoadOptionNone,
-          resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
+          std::move(single_request_factory), std::move(throttles),
+          frame_tree_node_id_, global_request_id_.request_id,
+          network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
+          kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
 
       subresource_loader_params_ =

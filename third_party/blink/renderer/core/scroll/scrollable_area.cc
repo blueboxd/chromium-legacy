@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/scroll/programmatic_scroll_animator.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
@@ -868,6 +869,7 @@ bool ScrollableArea::SnapAtCurrentPosition(
     bool scrolled_x,
     bool scrolled_y,
     base::ScopedClosureRunner on_finish) {
+  DCHECK(IsRootFrameViewport() || !GetLayoutBox()->IsGlobalRootScroller());
   FloatPoint current_position = ScrollPosition();
   return SnapForEndPosition(current_position, scrolled_x, scrolled_y,
                             std::move(on_finish));
@@ -877,6 +879,7 @@ bool ScrollableArea::SnapForEndPosition(const FloatPoint& end_position,
                                         bool scrolled_x,
                                         bool scrolled_y,
                                         base::ScopedClosureRunner on_finish) {
+  DCHECK(IsRootFrameViewport() || !GetLayoutBox()->IsGlobalRootScroller());
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_position), scrolled_x, scrolled_y);
@@ -885,6 +888,7 @@ bool ScrollableArea::SnapForEndPosition(const FloatPoint& end_position,
 
 bool ScrollableArea::SnapForDirection(const ScrollOffset& delta,
                                       base::ScopedClosureRunner on_finish) {
+  DCHECK(IsRootFrameViewport() || !GetLayoutBox()->IsGlobalRootScroller());
   FloatPoint current_position = ScrollPosition();
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForDirection(
@@ -894,6 +898,7 @@ bool ScrollableArea::SnapForDirection(const ScrollOffset& delta,
 }
 
 bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
+  DCHECK(IsRootFrameViewport() || !GetLayoutBox()->IsGlobalRootScroller());
   FloatPoint current_position = ScrollPosition();
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndAndDirection(
@@ -907,7 +912,6 @@ bool ScrollableArea::PerformSnapping(const cc::SnapSelectionStrategy& strategy,
   base::Optional<FloatPoint> snap_point = GetSnapPosition(strategy);
   if (!snap_point)
     return false;
-
   CancelScrollAnimation();
   CancelProgrammaticScrollAnimation();
   SetScrollOffset(ScrollPositionToOffset(snap_point.value()),
@@ -933,6 +937,19 @@ void ScrollableArea::InjectGestureScrollEvent(
   GetChromeClient()->InjectGestureScrollEvent(
       *GetLayoutBox()->GetFrame(), device, delta, granularity,
       GetCompositorElementId(), gesture_type);
+}
+
+ScrollableArea* ScrollableArea::GetForScrolling(const LayoutBox* layout_box) {
+  if (!layout_box)
+    return nullptr;
+
+  if (!layout_box->IsGlobalRootScroller())
+    return layout_box->GetScrollableArea();
+
+  // The global root scroller should be scrolled by the root frame view's
+  // ScrollableArea.
+  LocalFrame& root_frame = layout_box->GetFrame()->LocalFrameRoot();
+  return root_frame.View()->GetScrollableArea();
 }
 
 }  // namespace blink

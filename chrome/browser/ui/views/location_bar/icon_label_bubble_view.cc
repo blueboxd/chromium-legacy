@@ -51,11 +51,6 @@ constexpr int kIconLabelBubbleSpaceBesideSeparator = 8;
 constexpr int kIconLabelBubbleFadeInDurationMs = 250;
 constexpr int kIconLabelBubbleFadeOutDurationMs = 175;
 
-// The type of tweening for the animation.
-const gfx::Tween::Type kIconLabelBubbleTweenType = gfx::Tween::EASE_IN_OUT;
-
-// The ratio of text animation duration to total animation duration.
-const double kIconLabelBubbleOpenTimeFraction = 0.2;
 }  // namespace
 
 //////////////////////////////////////////////////////////////////
@@ -210,23 +205,32 @@ bool IconLabelBubbleView::ShouldShowSeparator() const {
   return ShouldShowLabel();
 }
 
-double IconLabelBubbleView::WidthMultiplier() const {
+int IconLabelBubbleView::GetWidthBetween(int min, int max) const {
   // TODO(https://crbug.com/8944): Disable animations globally instead of having
   // piecemeal opt ins for respecting prefers reduced motion.
   if (gfx::Animation::PrefersReducedMotion())
-    return 1.0;
+    return max;
 
   if (!slide_animation_.is_animating() && !is_animation_paused_)
-    return 1.0;
+    return max;
 
-  double state = is_animation_paused_ ? pause_animation_state_
-                                      : slide_animation_.GetCurrentValue();
-  double size_fraction = 1.0;
-  if (state < open_state_fraction_)
-    size_fraction = state / open_state_fraction_;
-  else if (state > (1.0 - open_state_fraction_))
-    size_fraction = (1.0 - state) / open_state_fraction_;
-  return size_fraction;
+  double progress = is_animation_paused_ ? pause_animation_state_
+                                         : slide_animation_.GetCurrentValue();
+  // This tween matches the default for SlideAnimation.
+  const gfx::Tween::Type kTween = gfx::Tween::EASE_OUT;
+  if (progress < open_state_fraction_) {
+    double state =
+        gfx::Tween::CalculateValue(kTween, progress / open_state_fraction_);
+    return gfx::Tween::IntValueBetween(state, min, max);
+  }
+
+  if (progress <= (1 - open_state_fraction_))
+    return max;
+
+  double state = gfx::Tween::CalculateValue(
+      kTween, (progress - (1 - open_state_fraction_)) / open_state_fraction_);
+  // Note |min| and |max| are reversed.
+  return gfx::Tween::IntValueBetween(state, max, min);
 }
 
 bool IconLabelBubbleView::IsShrinking() const {
@@ -246,7 +250,6 @@ bool IconLabelBubbleView::IsBubbleShowing() const {
 }
 
 gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
-  // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(label()->GetPreferredSize().width());
 }
 
@@ -394,32 +397,25 @@ void IconLabelBubbleView::OnTouchUiChanged() {
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
-  gfx::Size size(image()->GetPreferredSize());
-  size.Enlarge(GetInsets().left() + GetWidthBetweenIconAndSeparator() +
-                   GetEndPaddingWithSeparator(),
-               GetInsets().height());
+  gfx::Size image_size = image()->GetPreferredSize();
+  image_size.Enlarge(GetInsets().left() + GetWidthBetweenIconAndSeparator() +
+                         GetEndPaddingWithSeparator(),
+                     GetInsets().height());
 
   const bool shrinking = IsShrinking();
-  // Animation continues for the last few pixels even after the label is not
-  // visible in order to slide the icon into its final position. Therefore it
-  // is necessary to animate |total_width| even when the background is hidden
-  // as long as the animation is still shrinking.
-  if (ShouldShowLabel() || shrinking) {
-    // |multiplier| grows from zero to one, stays equal to one and then shrinks
-    // to zero again. The view width should correspondingly grow from the
-    // original width before animation started to fully showing both label and
-    // icon, stay there, then shrink to just large enough to show the icon. We
-    // don't want to shrink all the way back to zero, since this would mean the
-    // view would completely disappear and then pop back to an icon after the
-    // animation finishes.
-    const int max_width = size.width() + GetInternalSpacing() + label_width;
-    const int current_width = WidthMultiplier() * max_width;
-    size.set_width(
-        shrinking ? std::max(current_width, size.width())
-                  : std::min(current_width + grow_animation_starting_width_,
-                             max_width));
-  }
-  return size;
+  // The out portion of the in-out animation continues for the last few pixels
+  // even after the label is not visible in order to slide the icon into its
+  // final position. Therefore it is necessary to calculate additional width
+  // even when the label is hidden as long as the animation is still shrinking.
+  if (!ShouldShowLabel() && !shrinking)
+    return image_size;
+
+  const int min_width =
+      shrinking ? image_size.width() : grow_animation_starting_width_;
+  const int max_width = image_size.width() + GetInternalSpacing() + label_width;
+
+  // Height is ignored.
+  return gfx::Size(GetWidthBetween(min_width, max_width), 1);
 }
 
 int IconLabelBubbleView::GetInternalSpacing() const {
@@ -454,7 +450,6 @@ void IconLabelBubbleView::SetUpForAnimation() {
   label()->SetElideBehavior(gfx::NO_ELIDE);
   label()->SetVisible(false);
   slide_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
-  slide_animation_.SetTweenType(kIconLabelBubbleTweenType);
   open_state_fraction_ = 1.0;
 }
 
@@ -465,8 +460,9 @@ void IconLabelBubbleView::SetUpForInOutAnimation() {
   // proportion of time spent in each portion of the animation is controlled by
   // kIconLabelBubbleOpenTimeFraction.
   slide_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(3000));
-  open_state_fraction_ = gfx::Tween::CalculateValue(
-      kIconLabelBubbleTweenType, kIconLabelBubbleOpenTimeFraction);
+  // The tween is calculated in GetWidthBetween().
+  slide_animation_.SetTweenType(gfx::Tween::LINEAR);
+  open_state_fraction_ = 0.2;
 }
 
 void IconLabelBubbleView::AnimateIn(base::Optional<int> string_id) {

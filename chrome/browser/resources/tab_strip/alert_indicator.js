@@ -2,11 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './strings.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 import {CustomElement} from './custom_element.js';
 import {TabAlertState} from './tabs_api_proxy.js';
 
 /** @const {string} */
 const MAX_WIDTH = '16px';
+
+/**
+ * @param {!TabAlertState} alertState
+ * @return {string}
+ */
+function getAriaLabel(alertState) {
+  // The existing labels for alert states currently expects to format itself
+  // using the title of the tab (eg. "Website - Audio is playing"). The WebUI
+  // tab strip will provide the title of the tab elsewhere outside of this
+  // element, so just provide an empty string as the title here. This also
+  // allows for multiple labels for the same title (eg. "Website - Audio is
+  // playing - VR is presenting").
+  switch (alertState) {
+    case TabAlertState.MEDIA_RECORDING:
+      return loadTimeData.getStringF('mediaRecording', '');
+    case TabAlertState.TAB_CAPTURING:
+      return loadTimeData.getStringF('tabCapturing', '');
+    case TabAlertState.AUDIO_PLAYING:
+      return loadTimeData.getStringF('audioPlaying', '');
+    case TabAlertState.AUDIO_MUTING:
+      return loadTimeData.getStringF('audioMuting', '');
+    case TabAlertState.BLUETOOTH_CONNECTED:
+      return loadTimeData.getStringF('bluetoothConnected', '');
+    case TabAlertState.USB_CONNECTED:
+      return loadTimeData.getStringF('usbConnected', '');
+    case TabAlertState.SERIAL_CONNECTED:
+      return loadTimeData.getStringF('seriaLConnected', '');
+    case TabAlertState.PIP_PLAYING:
+      return loadTimeData.getStringF('pipPlaying', '');
+    case TabAlertState.DESKTOP_CAPTURING:
+      return loadTimeData.getStringF('desktopCapturing', '');
+    case TabAlertState.VR_PRESENTING_IN_HEADSET:
+      return loadTimeData.getStringF('vrPresenting', '');
+    default:
+      return '';
+  }
+}
 
 export class AlertIndicatorElement extends CustomElement {
   static get template() {
@@ -50,6 +90,7 @@ export class AlertIndicatorElement extends CustomElement {
   /** @param {!TabAlertState} alertState */
   set alertState(alertState) {
     this.setAttribute('alert-state_', alertState);
+    this.setAttribute('aria-label', getAriaLabel(alertState));
     this.alertState_ = alertState;
   }
 

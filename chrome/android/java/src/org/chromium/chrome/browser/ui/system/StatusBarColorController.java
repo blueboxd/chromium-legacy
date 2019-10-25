@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -106,10 +107,10 @@ public class StatusBarColorController
         };
 
         Resources resources = chromeActivity.getResources();
-        mStandardPrimaryBgColor = ColorUtils.getPrimaryBackgroundColor(resources, false);
-        mIncognitoPrimaryBgColor = ColorUtils.getPrimaryBackgroundColor(resources, true);
-        mStandardDefaultThemeColor = ColorUtils.getDefaultThemeColor(resources, false);
-        mIncognitoDefaultThemeColor = ColorUtils.getDefaultThemeColor(resources, true);
+        mStandardPrimaryBgColor = ChromeColors.getPrimaryBackgroundColor(resources, false);
+        mIncognitoPrimaryBgColor = ChromeColors.getPrimaryBackgroundColor(resources, true);
+        mStandardDefaultThemeColor = ChromeColors.getDefaultThemeColor(resources, false);
+        mIncognitoDefaultThemeColor = ChromeColors.getDefaultThemeColor(resources, true);
 
         mStatusBarColorTabObserver = new ActivityTabProvider.ActivityTabTabObserver(
                 chromeActivity.getActivityTabProvider()) {

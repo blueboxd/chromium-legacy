@@ -7,10 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
 #include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
-#include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 
 namespace paint_preview {
@@ -59,31 +57,14 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
   return true;
 }
 
-bool BuildAndSerializeProto(PaintPreviewTracker* tracker,
-                            base::ReadOnlySharedMemoryRegion* region) {
-  PaintPreviewFrameProto proto;
-  proto.set_unguessable_token_high(tracker->Guid().GetHighForSerialization());
-  proto.set_unguessable_token_low(tracker->Guid().GetLowForSerialization());
-  proto.set_id(tracker->RoutingId());
-  proto.set_is_main_frame(tracker->IsMainFrame());
-
-  auto* proto_content_proxy_map = proto.mutable_content_id_proxy_id_map();
-  for (const auto& id_pair : *(tracker->GetPictureSerializationContext()))
-    proto_content_proxy_map->insert(
-        google::protobuf::MapPair<uint32_t, int64_t>(id_pair.first,
-                                                     id_pair.second));
+void BuildResponse(PaintPreviewTracker* tracker,
+                   mojom::PaintPreviewCaptureResponse* response) {
+  response->id = tracker->RoutingId();
+  for (const auto& id_pair : *(tracker->GetPictureSerializationContext())) {
+    response->content_id_proxy_id_map.insert({id_pair.first, id_pair.second});
+  }
   for (const auto& link : tracker->GetLinks())
-    *proto.add_links() = link;
-
-  base::MappedReadOnlyRegion region_mapping =
-      mojo::CreateReadOnlySharedMemoryRegion(proto.ByteSizeLong());
-  if (!region_mapping.IsValid())
-    return false;
-  bool success = proto.SerializeToArray(region_mapping.mapping.memory(),
-                                        proto.ByteSizeLong());
-  if (success)
-    *region = std::move(region_mapping.region);
-  return success;
+    response->links.push_back(link.Clone());
 }
 
 }  // namespace paint_preview

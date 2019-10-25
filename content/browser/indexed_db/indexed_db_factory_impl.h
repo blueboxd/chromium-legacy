@@ -28,7 +28,6 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/origin.h"
@@ -42,6 +41,7 @@ class Origin;
 }
 
 namespace content {
+class TransactionalLevelDBFactory;
 class TransactionalLevelDBDatabase;
 class IndexedDBClassFactory;
 class IndexedDBContextImpl;
@@ -51,7 +51,6 @@ class IndexedDBOriginState;
 class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
  public:
   IndexedDBFactoryImpl(IndexedDBContextImpl* context,
-                       indexed_db::LevelDBFactory* leveldb_factory,
                        IndexedDBClassFactory* indexed_db_class_factory,
                        base::Clock* clock);
   ~IndexedDBFactoryImpl() override;
@@ -143,7 +142,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   // Used by unittests to allow subclassing of IndexedDBBackingStore.
   virtual std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
-      indexed_db::LevelDBFactory* leveldb_factory,
+      TransactionalLevelDBFactory* leveldb_factory,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
@@ -207,8 +206,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   SEQUENCE_CHECKER(sequence_checker_);
   IndexedDBContextImpl* context_;
-  indexed_db::LevelDBFactory* const leveldb_factory_;
-  IndexedDBClassFactory* const indexed_db_class_factory_;
+  IndexedDBClassFactory* const class_factory_;
   base::Clock* const clock_;
   base::Time earliest_sweep_;
 

@@ -267,7 +267,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
     "javatests/src/org/chromium/weblayer/test/WebLayerShellActivityTestRule.java",
     "javatests/src/org/chromium/weblayer/test/FragmentRestoreTest.java",
-    "javatests/src/org/chromium/weblayer/test/FileInputTest.java",
+    "javatests/src/org/chromium/weblayer/test/InputTypesTest.java",
     "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
   ]
   additional_apks = [

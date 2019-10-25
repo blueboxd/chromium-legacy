@@ -230,6 +230,10 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     render_passes_in_frame[pass->id] = {
         CalculateTextureSizeForRenderPass(pass.get()), pass->generate_mipmap};
   }
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Compositing.Display.FlattenedRenderPassCount",
+      base::saturated_cast<int>(render_passes_in_draw_order.size() -
+                                render_pass_bypass_quads_.size()));
   UpdateRenderPassTextures(render_passes_in_draw_order, render_passes_in_frame);
 }
 

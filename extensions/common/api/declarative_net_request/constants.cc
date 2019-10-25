@@ -15,6 +15,7 @@ const char kPriorityKey[] = "priority";
 const char kRuleConditionKey[] = "condition";
 const char kRuleActionKey[] = "action";
 const char kUrlFilterKey[] = "urlFilter";
+const char kRegexFilterKey[] = "regexFilter";
 const char kIsUrlFilterCaseSensitiveKey[] = "isUrlFilterCaseSensitive";
 const char kDomainsKey[] = "domains";
 const char kExcludedDomainsKey[] = "excludedDomains";

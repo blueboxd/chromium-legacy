@@ -58,11 +58,11 @@ IdleEventNotifier::ActivityData::ActivityData(const ActivityData& input_data) {
 IdleEventNotifier::IdleEventNotifier(
     PowerManagerClient* power_manager_client,
     ui::UserActivityDetector* detector,
-    viz::mojom::VideoDetectorObserverRequest request)
+    mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver)
     : power_manager_client_observer_(this),
       user_activity_observer_(this),
       internal_data_(std::make_unique<ActivityDataInternal>()),
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       key_counter_(
           std::make_unique<RecentEventsCounter>(kUserInputEventsDuration,
                                                 kNumUserInputEventsBuckets)),

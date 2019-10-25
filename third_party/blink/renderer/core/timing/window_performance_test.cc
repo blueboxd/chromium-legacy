@@ -41,8 +41,9 @@ class WindowPerformanceTest : public testing::Test {
   }
 
   bool ObservingLongTasks() {
-    return PerformanceMonitor::InstrumentingMonitor(
-        performance_->GetExecutionContext());
+    return !PerformanceMonitor::Monitor(performance_->GetExecutionContext())
+                ->thresholds_[PerformanceMonitor::kLongTask]
+                .is_zero();
   }
 
   void AddLongTaskObserver() {

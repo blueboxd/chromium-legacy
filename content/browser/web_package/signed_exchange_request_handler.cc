@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_loader.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
@@ -69,9 +70,9 @@ void SignedExchangeRequestHandler::MaybeCreateLoader(
 
   DCHECK(tentative_resource_request.url.EqualsIgnoringRef(
       *signed_exchange_loader_->inner_request_url()));
-  std::move(callback).Run(
+  std::move(callback).Run(base::MakeRefCounted<SingleRequestURLLoaderFactory>(
       base::BindOnce(&SignedExchangeRequestHandler::StartResponse,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr())));
 }
 
 bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(

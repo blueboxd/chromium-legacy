@@ -86,6 +86,22 @@ class _MediaPage(page_module.Page):
         extra_browser_args=extra_browser_args,
         traffic_setting=traffic_setting)
 
+  def GetExtraTracingMetrics(self):
+    metrics = super(_MediaPage, self).GetExtraTracingMetrics()
+    if self.ShouldMeasureMemory():
+      metrics.append('memoryMetric')
+    return metrics
+
+  def ShouldMeasureMemory(self):
+    """Returns whether the page should do a memory dump.
+
+    Also controls whether the pages enables the memory metric.
+    Subclasses should override to disable memory measurement.
+    Memory dumps are cpu-intensive, so it is reasonable keep it off in
+    some cases to avoid skewing cpu usage measurements.
+    """
+    return True
+
 
 class _BeginningToEndPlayPage(_MediaPage):
   """A normal play page simply plays the given media until the end."""
@@ -103,7 +119,7 @@ class _BeginningToEndPlayPage(_MediaPage):
     action_runner.PlayMedia(playing_event_timeout_in_seconds=60,
                             ended_event_timeout_in_seconds=60)
     # Generate memory dump for memoryMetric.
-    if self.story_set.measure_memory:
+    if self.ShouldMeasureMemory():
       action_runner.MeasureMemory()
 
 
@@ -134,7 +150,7 @@ class _SeekPage(_MediaPage):
     action_runner.SeekMedia(seconds=9, timeout_in_seconds=timeout,
                             label='seek_cold')
     # Generate memory dump for memoryMetric.
-    if self.story_set.measure_memory:
+    if self.ShouldMeasureMemory():
       action_runner.MeasureMemory()
 
 
@@ -172,7 +188,7 @@ class _BackgroundPlaybackPage(_MediaPage):
     new_tab.Close()
     action_runner.Wait(.5)
     # Generate memory dump for memoryMetric.
-    if self.story_set.measure_memory:
+    if self.ShouldMeasureMemory():
       action_runner.MeasureMemory()
 
 
@@ -203,6 +219,9 @@ class _MSEPage(_MediaPage):
     test_failed = action_runner.EvaluateJavaScript('window.__testFailed')
     if test_failed:
       raise RuntimeError(action_runner.EvaluateJavaScript('window.__testError'))
+
+  def ShouldMeasureMemory(self):
+    return False
 
 
 def _GetDesktopOnlyMediaPages(page_set):

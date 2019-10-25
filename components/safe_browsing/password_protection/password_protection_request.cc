@@ -178,9 +178,15 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
       password_protection_service_
           ->GetPasswordProtectionReusedPasswordAccountType(password_type_,
                                                            username_);
+
+  base::TimeTicks get_cache_verdict_start_time = base::TimeTicks::Now();
   auto verdict = password_protection_service_->GetCachedVerdict(
       main_frame_url_, trigger_type_, password_account_type,
       cached_response.get());
+  // TODO(crbug.com/1016546): Remove once the bug is fixed.
+  UMA_HISTOGRAM_TIMES("PasswordProtection.GetCachedVerdictDuration",
+                      base::TimeTicks::Now() - get_cache_verdict_start_time);
+
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED) {
     set_request_outcome(RequestOutcome::RESPONSE_ALREADY_CACHED);
     Finish(RequestOutcome::RESPONSE_ALREADY_CACHED, std::move(cached_response));

@@ -336,6 +336,7 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
       switches::kLogBestEffortTasks,
       switches::kLogFile,
       switches::kLoggingLevel,
+      switches::kPerfettoDisableInterning,
       switches::kTraceToConsole,
       switches::kV,
       switches::kVModule,

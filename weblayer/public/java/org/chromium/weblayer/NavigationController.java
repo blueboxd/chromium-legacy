@@ -40,6 +40,7 @@ public final class NavigationController {
     }
 
     public void navigate(@NonNull Uri uri) {
+        ThreadCheck.ensureOnUiThread();
         try {
             mNavigationController.navigate(uri.toString());
         } catch (RemoteException e) {
@@ -48,6 +49,7 @@ public final class NavigationController {
     }
 
     public void goBack() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mNavigationController.goBack();
         } catch (RemoteException e) {
@@ -56,6 +58,7 @@ public final class NavigationController {
     }
 
     public void goForward() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mNavigationController.goForward();
         } catch (RemoteException e) {
@@ -64,6 +67,7 @@ public final class NavigationController {
     }
 
     public boolean canGoBack() {
+        ThreadCheck.ensureOnUiThread();
         try {
             return mNavigationController.canGoBack();
         } catch (RemoteException e) {
@@ -72,6 +76,7 @@ public final class NavigationController {
     }
 
     public boolean canGoForward() {
+        ThreadCheck.ensureOnUiThread();
         try {
             return mNavigationController.canGoForward();
         } catch (RemoteException e) {
@@ -80,6 +85,7 @@ public final class NavigationController {
     }
 
     public void reload() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mNavigationController.reload();
         } catch (RemoteException e) {
@@ -88,6 +94,7 @@ public final class NavigationController {
     }
 
     public void stop() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mNavigationController.stop();
         } catch (RemoteException e) {
@@ -96,6 +103,7 @@ public final class NavigationController {
     }
 
     public int getNavigationListSize() {
+        ThreadCheck.ensureOnUiThread();
         try {
             return mNavigationController.getNavigationListSize();
         } catch (RemoteException e) {
@@ -104,6 +112,7 @@ public final class NavigationController {
     }
 
     public int getNavigationListCurrentIndex() {
+        ThreadCheck.ensureOnUiThread();
         try {
             return mNavigationController.getNavigationListCurrentIndex();
         } catch (RemoteException e) {
@@ -113,6 +122,7 @@ public final class NavigationController {
 
     @NonNull
     public Uri getNavigationEntryDisplayUri(int index) {
+        ThreadCheck.ensureOnUiThread();
         try {
             return Uri.parse(mNavigationController.getNavigationEntryDisplayUri(index));
         } catch (RemoteException e) {
@@ -121,10 +131,12 @@ public final class NavigationController {
     }
 
     public void addObserver(@NonNull NavigationObserver observer) {
+        ThreadCheck.ensureOnUiThread();
         mObservers.addObserver(observer);
     }
 
     public void removeObserver(@NonNull NavigationObserver observer) {
+        ThreadCheck.ensureOnUiThread();
         mObservers.removeObserver(observer);
     }
 

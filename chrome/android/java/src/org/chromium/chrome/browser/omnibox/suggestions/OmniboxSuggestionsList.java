@@ -19,7 +19,7 @@ import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.util.ViewUtils;
 
@@ -52,8 +52,8 @@ public class OmniboxSuggestionsList extends ListView {
         setFocusableInTouchMode(true);
 
         final Resources resources = context.getResources();
-        mStandardBgColor = ColorUtils.getDefaultThemeColor(resources, false);
-        mIncognitoBgColor = ColorUtils.getDefaultThemeColor(resources, true);
+        mStandardBgColor = ChromeColors.getDefaultThemeColor(resources, false);
+        mIncognitoBgColor = ChromeColors.getDefaultThemeColor(resources, true);
         int paddingBottom =
                 resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_bottom);
         ViewCompat.setPaddingRelative(this, 0, 0, 0, paddingBottom);

@@ -7,16 +7,13 @@
 
 #include "base/files/file.h"
 #include "cc/paint/paint_record.h"
+#include "components/paint_preview/common/mojom/paint_preview_recorder.mojom-forward.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 
 // These utilities are used by the PaintPreviewRecorderImpl. They are separate
 // for testing purposes and to enforce restrictions caused by the lifetime of
 // PaintPreviewServiceImpl being tied to it's associated RenderFrame.
-
-namespace base {
-class ReadOnlySharedMemoryRegion;
-}  // namespace base
 
 namespace paint_preview {
 
@@ -33,11 +30,11 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
                           const gfx::Rect& dimensions,
                           base::File file);
 
-// Builds and serializes a proto to |region| using the data contained in
-// |tracker|. Returns true on success.
+// Builds a mojom::PaintPreviewCaptureResponse |response| using the data
+// contained in |tracker|. Returns true on success.
 // NOTE: |tracker| is effectively const here despite being passed by pointer.
-bool BuildAndSerializeProto(PaintPreviewTracker* tracker,
-                            base::ReadOnlySharedMemoryRegion* region);
+void BuildResponse(PaintPreviewTracker* tracker,
+                   mojom::PaintPreviewCaptureResponse* response);
 
 }  // namespace paint_preview
 

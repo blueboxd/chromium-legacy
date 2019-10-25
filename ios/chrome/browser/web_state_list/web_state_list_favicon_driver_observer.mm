@@ -7,7 +7,6 @@
 #include "components/favicon/ios/web_favicon_driver.h"
 
 #include "base/logging.h"
-#include "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -4,9 +4,15 @@
 
 #include "services/device/time_zone_monitor/time_zone_monitor_android.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
+#include "base/android/timezone_utils.h"  // nogncheck
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string16.h"
 #include "services/device/time_zone_monitor/time_zone_monitor_jni_headers/TimeZoneMonitor_jni.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 using base::android::JavaParamRef;
 
@@ -25,7 +31,10 @@ TimeZoneMonitorAndroid::~TimeZoneMonitorAndroid() {
 void TimeZoneMonitorAndroid::TimeZoneChangedFromJava(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
-  NotifyClients();
+  base::string16 timezone_id = base::android::GetDefaultTimeZoneId();
+  std::unique_ptr<icu::TimeZone> new_zone(icu::TimeZone::createTimeZone(
+      icu::UnicodeString(FALSE, timezone_id.data(), timezone_id.length())));
+  UpdateIcuAndNotifyClients(std::move(new_zone));
 }
 
 // static

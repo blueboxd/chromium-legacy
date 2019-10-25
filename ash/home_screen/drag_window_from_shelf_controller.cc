@@ -419,10 +419,8 @@ void DragWindowFromShelfController::OnDragEnded(
         RootWindowController::ForWindow(window_->GetRootWindow())
             ->wallpaper_widget_controller()
             ->wallpaper_view();
-    if (wallpaper_view) {
-      wallpaper_view->RepaintBlurAndOpacity(kWallpaperClearBlurSigma,
-                                            kShieldOpacity);
-    }
+    if (wallpaper_view)
+      wallpaper_view->RepaintBlurAndOpacity(kWallpaperClearBlurSigma, 1.f);
   }
 
   WindowState::Get(window_)->DeleteDragDetails();

@@ -62,16 +62,6 @@ cc::SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
                               WebGestureEvent::InertialPhaseState::kMomentum,
       .event_time = event.TimeStamp()};
 }
-
-ScrollableArea* ScrollableAreaForSnapping(LayoutBox* layout_box) {
-  if (!layout_box)
-    return nullptr;
-
-  return layout_box->IsLayoutView()
-             ? layout_box->GetFrameView()->GetScrollableArea()
-             : layout_box->GetScrollableArea();
-}
-
 }  // namespace
 
 ScrollManager::ScrollManager(LocalFrame& frame) : frame_(frame) {
@@ -284,26 +274,8 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
         ToPhysicalDirection(direction, box->IsHorizontalWritingMode(),
                             box->Style()->IsFlippedBlocksWritingMode());
 
-    ScrollableArea* scrollable_area = nullptr;
-
-    // The global root scroller must be scrolled by the RootFrameViewport.
-    if (box->IsGlobalRootScroller()) {
-      LocalFrame& main_frame = frame_->LocalFrameRoot();
-      // The local root must be the main frame if we have the global root
-      // scroller since it can't yet be set on OOPIFs.
-      DCHECK(main_frame.IsMainFrame());
-
-      scrollable_area = main_frame.View()->GetScrollableArea();
-    } else {
-      scrollable_area = box->GetScrollableArea();
-    }
-
+    ScrollableArea* scrollable_area = ScrollableArea::GetForScrolling(box);
     DCHECK(scrollable_area);
-
-    // TODO(crbug.com/1015451): Remove ScrollableAreaForSnapping and use the
-    // RootFrameViewport if the scroller is a global root scroller.
-    ScrollableArea* scrollable_area_for_snapping =
-        ScrollableAreaForSnapping(box);
 
     ScrollOffset delta = ToScrollDelta(physical_direction, 1);
     delta.Scale(scrollable_area->ScrollStep(granularity, kHorizontalScrollbar),
@@ -314,12 +286,12 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     // scroll with intended end position only.
     switch (granularity) {
       case ScrollGranularity::kScrollByLine: {
-        if (scrollable_area_for_snapping->SnapForDirection(delta))
+        if (scrollable_area->SnapForDirection(delta))
           return true;
         break;
       }
       case ScrollGranularity::kScrollByPage: {
-        if (scrollable_area_for_snapping->SnapForEndAndDirection(delta))
+        if (scrollable_area->SnapForEndAndDirection(delta))
           return true;
         break;
       }
@@ -329,8 +301,8 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
                           physical_direction == kScrollRight;
         bool scrolled_y = physical_direction == kScrollUp ||
                           physical_direction == kScrollDown;
-        if (scrollable_area_for_snapping->SnapForEndPosition(
-                end_position, scrolled_x, scrolled_y))
+        if (scrollable_area->SnapForEndPosition(end_position, scrolled_x,
+                                                scrolled_y))
           return true;
         break;
       }
@@ -767,9 +739,9 @@ bool ScrollManager::SnapAtGestureScrollEnd(
   if (!previous_gesture_scrolled_node_ ||
       (!did_scroll_x_for_scroll_gesture_ && !did_scroll_y_for_scroll_gesture_))
     return false;
-  LayoutBox* layout_box = LayoutBoxForSnapping();
-  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(layout_box);
-  if (!layout_box || !scrollable_area)
+  ScrollableArea* scrollable_area =
+      ScrollableArea::GetForScrolling(LayoutBoxForSnapping());
+  if (!scrollable_area)
     return false;
 
   bool is_mouse_wheel =
@@ -806,9 +778,9 @@ bool ScrollManager::GetSnapFlingInfo(
     const gfx::Vector2dF& natural_displacement,
     gfx::Vector2dF* out_initial_position,
     gfx::Vector2dF* out_target_position) const {
-  LayoutBox* layout_box = LayoutBoxForSnapping();
-  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(layout_box);
-  if (!layout_box || !scrollable_area)
+  ScrollableArea* scrollable_area =
+      ScrollableArea::GetForScrolling(LayoutBoxForSnapping());
+  if (!scrollable_area)
     return false;
 
   FloatPoint current_position = scrollable_area->ScrollPosition();
@@ -828,7 +800,7 @@ bool ScrollManager::GetSnapFlingInfo(
 gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
     const gfx::Vector2dF& delta) {
   ScrollableArea* scrollable_area =
-      ScrollableAreaForSnapping(LayoutBoxForSnapping());
+      ScrollableArea::GetForScrolling(LayoutBoxForSnapping());
   if (!scrollable_area)
     return gfx::Vector2dF();
 

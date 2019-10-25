@@ -218,7 +218,7 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
     // after starting it.
     original_callback = std::move(loader_callback);
     loader_callback =
-        base::BindOnce([](SingleRequestURLLoaderFactory::RequestHandler) {});
+        base::BindOnce([](scoped_refptr<network::SharedURLLoaderFactory>) {});
     initialize_provider_only = true;
   }
 
@@ -269,9 +269,9 @@ void ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper(
   // |handler_on_core_thread| expects to run on the core thread. Give our own
   // wrapper to the loader callback.
   std::move(loader_callback)
-      .Run(base::BindOnce(
+      .Run(base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
           &ServiceWorkerNavigationLoaderInterceptor::RequestHandlerWrapper,
-          GetWeakPtr(), std::move(handler_on_core_thread)));
+          GetWeakPtr(), std::move(handler_on_core_thread))));
 }
 
 void ServiceWorkerNavigationLoaderInterceptor::FallbackCallbackWrapper(

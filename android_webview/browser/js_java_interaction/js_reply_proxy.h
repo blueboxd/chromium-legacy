@@ -26,7 +26,7 @@ class JsReplyProxy {
                    const base::android::JavaParamRef<jstring>& message);
 
  private:
-  JavaObjectWeakGlobalRef java_ref_;
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   mojo::AssociatedRemote<mojom::JavaToJsMessaging> java_to_js_messaging_;
 
   DISALLOW_COPY_AND_ASSIGN(JsReplyProxy);

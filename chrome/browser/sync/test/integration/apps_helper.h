@@ -118,8 +118,7 @@ class AppsMatchChecker : public StatusChangeChecker,
   ~AppsMatchChecker() override;
 
   // StatusChangeChecker implementation.
-  std::string GetDebugMessage() const override;
-  bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // extensions::ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* context,

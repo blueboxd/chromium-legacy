@@ -28,10 +28,15 @@ void LinuxUI::SetInstance(LinuxUI* instance) {
   SkiaFontDelegate::SetInstance(instance);
   ShellDialogLinux::SetInstance(instance);
   ui::SetTextEditKeyBindingsDelegate(instance);
+  ui::CursorThemeManagerLinux::SetInstance(instance);
 }
 
 LinuxUI* LinuxUI::instance() {
   return g_linux_ui;
 }
+
+LinuxUI::LinuxUI() = default;
+
+LinuxUI::~LinuxUI() = default;
 
 }  // namespace views

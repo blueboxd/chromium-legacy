@@ -506,10 +506,11 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
   }
 
   // The URL should not be changed to app-specific URL if the load is
-  // renderer-initiated requested by non-app-specific URL. Pages with
-  // app-specific urls have elevated previledges and should not be allowed to
-  // open app-specific URLs.
-  if (initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
+  // renderer-initiated or a reload requested by non-app-specific URL. Pages
+  // with app-specific urls have elevated previledges and should not be allowed
+  // to open app-specific URLs.
+  if ((initiation_type == web::NavigationInitiationType::RENDERER_INITIATED ||
+       PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD)) &&
       loaded_url != url && web::GetWebClient()->IsAppSpecificURL(loaded_url) &&
       !web::GetWebClient()->IsAppSpecificURL(previous_url)) {
     loaded_url = url;

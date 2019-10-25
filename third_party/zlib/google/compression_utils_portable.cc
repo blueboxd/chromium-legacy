@@ -8,7 +8,6 @@
 #include "third_party/zlib/google/compression_utils_portable.h"
 
 #include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,6 +30,21 @@ const int kZlibMemoryLevel = 8;
 // header size.
 uLongf GZipExpectedCompressedSize(uLongf input_size) {
   return kGzipZlibHeaderDifferenceBytes + compressBound(input_size);
+}
+
+// The expected decompressed size is stored in the last
+// 4 bytes of |input| in LE.
+uint32_t GetUncompressedSize(Bytef* compressed_data, size_t length) {
+  uint32_t size;
+  if (length < sizeof(size))
+    return 0;
+
+  memcpy(&size, &compressed_data[length - sizeof(size)], sizeof(size));
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+  return size;
+#else
+  return __builtin_bswap32(size);
+#endif
 }
 
 // This code is taken almost verbatim from third_party/zlib/compress.c. The only

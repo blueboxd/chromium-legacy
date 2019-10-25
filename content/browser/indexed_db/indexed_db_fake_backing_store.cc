@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 
 namespace content {
 namespace {
@@ -17,12 +19,17 @@ namespace {
 using blink::IndexedDBKey;
 using blink::IndexedDBKeyRange;
 
+TransactionalLevelDBFactory* GetTransactionalLevelDBFactory() {
+  static base::NoDestructor<DefaultTransactionalLevelDBFactory> factory;
+  return factory.get();
+}
+
 }  // namespace
 
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(IndexedDBBackingStore::Mode::kInMemory,
                             nullptr /* indexed_db_factory */,
-                            indexed_db::LevelDBFactory::Get(),
+                            GetTransactionalLevelDBFactory(),
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             std::unique_ptr<TransactionalLevelDBDatabase>(),
@@ -32,7 +39,7 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     base::SequencedTaskRunner* task_runner)
     : IndexedDBBackingStore(IndexedDBBackingStore::Mode::kOnDisk,
                             factory,
-                            indexed_db::LevelDBFactory::Get(),
+                            GetTransactionalLevelDBFactory(),
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             std::unique_ptr<TransactionalLevelDBDatabase>(),

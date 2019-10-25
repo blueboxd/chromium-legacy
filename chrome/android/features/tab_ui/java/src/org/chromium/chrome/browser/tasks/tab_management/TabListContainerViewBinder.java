@@ -16,7 +16,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import android.support.v7.widget.LinearLayoutManager;
 import android.widget.FrameLayout;
 
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -39,7 +39,7 @@ class TabListContainerViewBinder {
                 view.startHiding(model.get(ANIMATE_VISIBILITY_CHANGES));
             }
         } else if (IS_INCOGNITO == propertyKey) {
-            view.setBackgroundColor(ColorUtils.getPrimaryBackgroundColor(
+            view.setBackgroundColor(ChromeColors.getPrimaryBackgroundColor(
                     view.getResources(), model.get(IS_INCOGNITO)));
         } else if (VISIBILITY_LISTENER == propertyKey) {
             view.setVisibilityListener(model.get(VISIBILITY_LISTENER));

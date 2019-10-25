@@ -146,6 +146,16 @@ void UpdateAuthAccountCheckStatus(mojom::AccountCheckStatus status) {
       static_cast<int>(mojom::AccountCheckStatus::CHECK_FAILED) + 1);
 }
 
+void UpdateMainAccountResolutionStatus(
+    const Profile* profile,
+    mojom::MainAccountResolutionStatus status) {
+  DCHECK(mojom::IsKnownEnumValue(status));
+  base::UmaHistogramEnumeration(
+      GetHistogramNameByUserType("ArcAuth.MainAccountResolutionStatus",
+                                 profile),
+      status);
+}
+
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state) {
   base::UmaHistogramSparse("Arc.OptInSilentAuthCode", static_cast<int>(state));
 }

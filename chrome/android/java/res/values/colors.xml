@@ -109,12 +109,7 @@
     <color name="contextual_search_promo_border_color">#C2C2C2</color>
     <color name="contextual_search_divider_line_color">@color/modern_secondary_color</color>
 
-    <!-- Incognito background and branding colors -->
-    <color name="incognito_modern_primary_color">@color/modern_grey_900</color>
-
     <!-- Toolbar colors -->
-    <color name="toolbar_background_primary">@color/default_bg_color_elev_3</color>
-    <color name="toolbar_background_primary_incognito">@color/default_bg_color_dark_elev_3</color>
     <color name="toolbar_text_box_background">@color/modern_grey_100</color>
     <color name="toolbar_text_box_background_incognito">@color/black_alpha_38</color>
 

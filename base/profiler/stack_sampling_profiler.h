@@ -11,6 +11,7 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/profiler/profile_builder.h"
+#include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -86,14 +87,14 @@ class BASE_EXPORT StackSamplingProfiler {
   //
   // The caller must ensure that this object gets destroyed before the thread
   // exits.
-  StackSamplingProfiler(PlatformThreadId thread_id,
+  StackSamplingProfiler(SamplingProfilerThreadToken thread_token,
                         const SamplingParams& params,
                         std::unique_ptr<ProfileBuilder> profile_builder,
                         StackSamplerTestDelegate* test_delegate = nullptr);
 
   // Same as above function, with custom |sampler| implementation. The sampler
   // on Android is not implemented in base.
-  StackSamplingProfiler(PlatformThreadId thread_id,
+  StackSamplingProfiler(SamplingProfilerThreadToken thread_token,
                         const SamplingParams& params,
                         std::unique_ptr<ProfileBuilder> profile_builder,
                         std::unique_ptr<StackSampler> sampler,
@@ -157,7 +158,7 @@ class BASE_EXPORT StackSamplingProfiler {
   class SamplingThread;
 
   // The thread whose stack will be sampled.
-  PlatformThreadId thread_id_;
+  SamplingProfilerThreadToken thread_token_;
 
   const SamplingParams params_;
 

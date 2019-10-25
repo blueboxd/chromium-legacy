@@ -1129,7 +1129,7 @@ This file contains the strings for ash.
         Input
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED_EXCEEDED_MAXIMUM" desc="The label used when user connects more external displays than the maximum that the device can support.">
-        Your device is connected to the maximum number of monitors, so one of the screens has been disconnected.
+        This device couldn't support all of your displays, so one has been disconnected
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
         Mirroring to <ph name="DISPLAY_NAME">$1</ph>

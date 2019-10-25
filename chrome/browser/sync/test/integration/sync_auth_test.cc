@@ -65,7 +65,8 @@ class TestForAuthError : public UpdatedProgressMarkerChecker {
       : UpdatedProgressMarkerChecker(service) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for auth error";
     // Note: This is quite fragile. It relies on Sync trying to fetch a new
     // access token, even though it might already be in a persistent auth error
     // state.
@@ -73,11 +74,7 @@ class TestForAuthError : public UpdatedProgressMarkerChecker {
                 ->GetSyncTokenStatusForDebugging()
                 .last_get_token_error.state() !=
             GoogleServiceAuthError::NONE) ||
-           UpdatedProgressMarkerChecker::IsExitConditionSatisfied();
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for auth error";
+           UpdatedProgressMarkerChecker::IsExitConditionSatisfied(os);
   }
 };
 
@@ -87,12 +84,11 @@ class SyncTransportActiveChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sync transport to become active";
     return service()->GetTransportState() ==
            syncer::SyncService::TransportState::ACTIVE;
   }
-
-  std::string GetDebugMessage() const override { return "Sync Active"; }
 };
 
 class SyncAuthTest : public SyncTest {
@@ -332,12 +328,9 @@ class NoAuthErrorChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for auth error to be cleared";
     return service()->GetAuthError().state() == GoogleServiceAuthError::NONE;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for auth error to be cleared";
   }
 };
 

@@ -117,12 +117,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Returns true when the separator should be visible.
   virtual bool ShouldShowSeparator() const;
 
-  // Returns a multiplier used to calculate the actual width of the view based
-  // on its desired width.  This ranges from 0 for a zero-width view to 1 for a
-  // full-width view and can be used to animate the width of the view.
-  virtual double WidthMultiplier() const;
+  // Gets the current width based on |slide_animation_| and given bounds.
+  // Virtual for testing.
+  virtual int GetWidthBetween(int min, int max) const;
 
   // Returns true when animation is in progress and is shrinking.
+  // Virtual for testing.
   virtual bool IsShrinking() const;
 
   // Returns true if a bubble was shown.

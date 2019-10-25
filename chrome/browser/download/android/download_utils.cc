@@ -115,7 +115,7 @@ bool DownloadUtils::ShouldAutoOpenDownload(download::DownloadItem* item) {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_DownloadUtils_shouldAutoOpenDownload(
       env, ConvertUTF8ToJavaString(env, item->GetMimeType()),
-      item->HasUserGesture());
+      IsDownloadUserInitiated(item));
 }
 
 // static
@@ -131,4 +131,18 @@ void DownloadUtils::ShowDownloadManager(bool show_prefetched_content,
   Java_DownloadUtils_showDownloadManager(
       env, nullptr, nullptr, static_cast<jint>(open_source),
       static_cast<jboolean>(show_prefetched_content));
+}
+
+bool DownloadUtils::IsDownloadUserInitiated(download::DownloadItem* download) {
+  ui::PageTransition page_transition = download->GetTransitionType();
+  return download->HasUserGesture() ||
+         (page_transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
+         PageTransitionCoreTypeIs(page_transition, ui::PAGE_TRANSITION_TYPED) ||
+         PageTransitionCoreTypeIs(page_transition,
+                                  ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
+         PageTransitionCoreTypeIs(page_transition,
+                                  ui::PAGE_TRANSITION_GENERATED) ||
+         PageTransitionCoreTypeIs(page_transition,
+                                  ui::PAGE_TRANSITION_RELOAD) ||
+         PageTransitionCoreTypeIs(page_transition, ui::PAGE_TRANSITION_KEYWORD);
 }

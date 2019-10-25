@@ -16,10 +16,13 @@
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
@@ -407,14 +410,40 @@ void AppCacheRequestHandler::OnMainResponseFound(
 
 // NetworkService loading:
 void AppCacheRequestHandler::RunLoaderCallbackForMainResource(
+    int frame_tree_node_id,
+    BrowserContext* browser_context,
     LoaderCallback callback,
     SingleRequestURLLoaderFactory::RequestHandler handler) {
-  // For now let |this| always also return the subresource loader
-  // if (and only if) this returns a non-null |start_loader_callback|
-  // for handling the main resource.
-  if (handler)
+  scoped_refptr<network::SharedURLLoaderFactory> single_request_factory;
+
+  // For now let |this| always also return the subresource loader if (and only
+  // if) this returns a non-null |handler| for handling the main resource.
+  if (handler) {
     should_create_subresource_loader_ = true;
-  std::move(callback).Run(std::move(handler));
+
+    single_request_factory =
+        base::MakeRefCounted<SingleRequestURLLoaderFactory>(std::move(handler));
+    FrameTreeNode* frame_tree_node =
+        FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+    if (frame_tree_node) {
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
+      auto factory_receiver = pending_factory.InitWithNewPipeAndPassReceiver();
+      bool use_proxy =
+          GetContentClient()->browser()->WillCreateURLLoaderFactory(
+              browser_context, frame_tree_node->current_frame_host(),
+              frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+              ContentBrowserClient::URLLoaderFactoryType::kNavigation,
+              url::Origin(), &factory_receiver, nullptr /* header_client */,
+              nullptr /* bypass_redirect_checks */);
+      if (use_proxy) {
+        single_request_factory->Clone(std::move(factory_receiver));
+        single_request_factory =
+            base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+                std::move(pending_factory));
+      }
+    }
+  }
+  std::move(callback).Run(std::move(single_request_factory));
 }
 
 // Sub-resource handling ----------------------------------------------
@@ -518,16 +547,25 @@ void AppCacheRequestHandler::MaybeCreateLoader(
     BrowserContext* browser_context,
     LoaderCallback callback,
     FallbackCallback fallback_callback) {
-  loader_callback_ =
+  MaybeCreateLoaderInternal(
+      tentative_resource_request,
       base::BindOnce(&AppCacheRequestHandler::RunLoaderCallbackForMainResource,
-                     weak_factory_.GetWeakPtr(), std::move(callback));
+                     weak_factory_.GetWeakPtr(),
+                     tentative_resource_request.render_frame_id,
+                     browser_context, std::move(callback)));
+}
+
+void AppCacheRequestHandler::MaybeCreateLoaderInternal(
+    const network::ResourceRequest& resource_request,
+    AppCacheLoaderCallback callback) {
+  loader_callback_ = std::move(callback);
 
   // TODO(crbug.com/876531): Figure out how AppCache interception should
   // interact with URLLoaderThrottles. It might be incorrect to store
   // |tentative_resource_request| here, since throttles can rewrite headers
   // between now and when the request handler passed to |loader_callback_| is
   // invoked.
-  request_->set_request(tentative_resource_request);
+  request_->set_request(resource_request);
 
   MaybeLoadResource(nullptr);
   // If a job is created, the job assumes ownership of the callback and
@@ -602,21 +640,17 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
 
 void AppCacheRequestHandler::MaybeCreateSubresourceLoader(
     const network::ResourceRequest& resource_request,
-    LoaderCallback loader_callback) {
+    AppCacheLoaderCallback loader_callback) {
   DCHECK(!job_);
   DCHECK(!is_main_resource());
-  // AppCache doesn't use the fallback_callback.
-  FallbackCallback fallback_callback = base::DoNothing();
-
   // Subresource loads start out just like a main resource loads, but they go
   // down different branches along the way to completion.
-  MaybeCreateLoader(resource_request, nullptr, std::move(loader_callback),
-                    std::move(fallback_callback));
+  MaybeCreateLoaderInternal(resource_request, std::move(loader_callback));
 }
 
 void AppCacheRequestHandler::MaybeFallbackForSubresourceResponse(
     const network::ResourceResponseHead& response,
-    LoaderCallback loader_callback) {
+    AppCacheLoaderCallback loader_callback) {
   DCHECK(!job_);
   DCHECK(!is_main_resource());
   loader_callback_ = std::move(loader_callback);
@@ -628,7 +662,7 @@ void AppCacheRequestHandler::MaybeFallbackForSubresourceResponse(
 
 void AppCacheRequestHandler::MaybeFallbackForSubresourceRedirect(
     const net::RedirectInfo& redirect_info,
-    LoaderCallback loader_callback) {
+    AppCacheLoaderCallback loader_callback) {
   DCHECK(!job_);
   DCHECK(!is_main_resource());
   loader_callback_ = std::move(loader_callback);
@@ -639,7 +673,7 @@ void AppCacheRequestHandler::MaybeFallbackForSubresourceRedirect(
 
 void AppCacheRequestHandler::MaybeFollowSubresourceRedirect(
     const net::RedirectInfo& redirect_info,
-    LoaderCallback loader_callback) {
+    AppCacheLoaderCallback loader_callback) {
   DCHECK(!job_);
   DCHECK(!is_main_resource());
   loader_callback_ = std::move(loader_callback);

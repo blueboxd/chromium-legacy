@@ -39,6 +39,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/cursor/cursor_theme_manager_linux_observer.h"
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
@@ -435,6 +436,10 @@ void GtkUi::Initialize() {
                          G_CALLBACK(OnThemeChangedThunk), this);
   g_signal_connect_after(settings, "notify::gtk-application-prefer-dark-theme",
                          G_CALLBACK(OnThemeChangedThunk), this);
+  g_signal_connect_after(settings, "notify::gtk-cursor-theme-name",
+                         G_CALLBACK(OnCursorThemeNameChangedThunk), this);
+  g_signal_connect_after(settings, "notify::gtk-cursor-theme-size",
+                         G_CALLBACK(OnCursorThemeSizeChangedThunk), this);
 
   GdkScreen* screen = gdk_screen_get_default();
   // Listen for DPI changes.
@@ -628,14 +633,14 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
     bool focus;
     views::Button::ButtonState state;
   } const paintstate[] = {
-      { !kFocus, views::Button::STATE_NORMAL, },
-      { !kFocus, views::Button::STATE_HOVERED, },
-      { !kFocus, views::Button::STATE_PRESSED, },
-      { !kFocus, views::Button::STATE_DISABLED, },
-      { kFocus, views::Button::STATE_NORMAL, },
-      { kFocus, views::Button::STATE_HOVERED, },
-      { kFocus, views::Button::STATE_PRESSED, },
-      { kFocus, views::Button::STATE_DISABLED, },
+      {!kFocus, views::Button::STATE_NORMAL},
+      {!kFocus, views::Button::STATE_HOVERED},
+      {!kFocus, views::Button::STATE_PRESSED},
+      {!kFocus, views::Button::STATE_DISABLED},
+      {kFocus, views::Button::STATE_NORMAL},
+      {kFocus, views::Button::STATE_HOVERED},
+      {kFocus, views::Button::STATE_PRESSED},
+      {kFocus, views::Button::STATE_DISABLED},
   };
 
   for (unsigned i = 0; i < base::size(paintstate); i++) {
@@ -804,6 +809,25 @@ base::flat_map<std::string, std::string> GtkUi::GetKeyboardLayoutMap() {
   return layouts->GetFirstAsciiCapableLayout()->GetMap();
 }
 
+std::string GtkUi::GetCursorThemeName() {
+  gchar* theme = nullptr;
+  g_object_get(gtk_settings_get_default(), "gtk-cursor-theme-name", &theme,
+               nullptr);
+  std::string theme_string;
+  if (theme) {
+    theme_string = theme;
+    g_free(theme);
+  }
+  return theme_string;
+}
+
+int GtkUi::GetCursorThemeSize() {
+  gint size = 0;
+  g_object_get(gtk_settings_get_default(), "gtk-cursor-theme-size", &size,
+               nullptr);
+  return size;
+}
+
 bool GtkUi::MatchEvent(const ui::Event& event,
                        std::vector<ui::TextEditCommandAuraLinux>* commands) {
   // Ensure that we have a keyboard handler.
@@ -822,6 +846,20 @@ void GtkUi::OnThemeChanged(GtkSettings* settings, GtkParamSpec* param) {
   native_theme_->NotifyObservers();
 }
 
+void GtkUi::OnCursorThemeNameChanged(GtkSettings* settings,
+                                     GtkParamSpec* param) {
+  std::string cursor_theme_name = GetCursorThemeName();
+  for (auto& observer : cursor_theme_observers())
+    observer.OnCursorThemeNameChanged(cursor_theme_name);
+}
+
+void GtkUi::OnCursorThemeSizeChanged(GtkSettings* settings,
+                                     GtkParamSpec* param) {
+  int cursor_theme_size = GetCursorThemeSize();
+  for (auto& observer : cursor_theme_observers())
+    observer.OnCursorThemeSizeChanged(cursor_theme_size);
+}
+
 void GtkUi::OnDeviceScaleFactorMaybeChanged(void*, GParamSpec*) {
   UpdateDeviceScaleFactor();
 }
@@ -832,7 +870,6 @@ void GtkUi::LoadGtkValues() {
   // we'd regress startup time. Figure out how to do that when we can't access
   // the prefs system from here.
   UpdateDeviceScaleFactor();
-  UpdateCursorTheme();
   UpdateColors();
 }
 
@@ -997,31 +1034,6 @@ void GtkUi::UpdateColors() {
           toolbar_top_separator_inactive;
     }
   }
-}
-
-void GtkUi::UpdateCursorTheme() {
-#if defined(USE_X11)
-  GtkSettings* settings = gtk_settings_get_default();
-
-  gchar* theme = nullptr;
-  gint size = 0;
-  g_object_get(settings, "gtk-cursor-theme-name", &theme,
-               "gtk-cursor-theme-size", &size, nullptr);
-
-  if (theme)
-    XcursorSetTheme(gfx::GetXDisplay(), theme);
-  if (size)
-    XcursorSetDefaultSize(gfx::GetXDisplay(), size);
-
-  g_free(theme);
-#else
-  // TODO(thomasanderson): GtkUi shouldn't be the class to make X11 or wayland
-  // calls. Instead, this function should be a getter for X11
-  // (XCursorSetTheme/XcursorSetDefaultSize) and Wayland (wl_cursor_theme_load)
-  // cursor code to call into. In addition, cursor theme name/size changes are
-  // not handled, so an observer interface should be added as well.
-  NOTIMPLEMENTED();
-#endif
 }
 
 void GtkUi::UpdateDefaultFont() {

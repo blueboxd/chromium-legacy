@@ -257,6 +257,19 @@ const base::Feature kOmniboxDisableInstantExtendedLimit{
 const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to allow users to remove suggestions from clipboard.
+const base::Feature kOmniboxRemoveSuggestionsFromClipboard{
+    "OmniboxRemoveSuggestionsFromClipboard", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to provide non personalized head search suggestion from a compact
+// on device model.
+const base::Feature kOnDeviceHeadProvider{"OmniboxOnDeviceHeadProvider",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to debounce drive requests from the document provider.
+const base::Feature kDebounceDocumentProvider{
+    "OmniboxDebounceDocumentProvider", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Exempts the default match from demotion-by-type.
 const base::Feature kOmniboxPreserveDefaultMatchScore {
   "OmniboxPreserveDefaultMatchScore",
@@ -274,10 +287,6 @@ const base::Feature kOmniboxPreserveDefaultMatchScore {
 const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate{
     "OmniboxPreserveDefaultMatchAgainstAsyncUpdate",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to allow users to remove suggestions from clipboard.
-const base::Feature kOmniboxRemoveSuggestionsFromClipboard{
-    "OmniboxRemoveSuggestionsFromClipboard", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature to configure on-focus suggestions provided by ZeroSuggestProvider.
 // This feature's main job is to contain some field trial parameters such as:
@@ -300,10 +309,12 @@ const base::Feature kZeroSuggestionsOnNTPRealbox{
 const base::Feature kZeroSuggestionsOnSERP{"OmniboxZeroSuggestionsOnSERP",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Feature to provide non personalized head search suggestion from a compact
-// on device model.
-const base::Feature kOnDeviceHeadProvider{"OmniboxOnDeviceHeadProvider",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+// If enabled, changes the way Google-provided search suggestions are scored by
+// the backend. Note that this Feature is only used for triggering a server-
+// side experiment config that will send experiment IDs to the backend. It is
+// not referred to in any of the Chromium code.
+const base::Feature kOmniboxExperimentalSuggestScoring{
+    "OmniboxExperimentalSuggestScoring", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, shows a confirm dialog before removing search suggestions from
 // the omnibox. See ConfirmNtpSuggestionRemovals for the NTP equivalent.

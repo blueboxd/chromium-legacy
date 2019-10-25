@@ -59,10 +59,11 @@ bool SuspendableThreadDelegateMac::ScopedSuspendThread::WasSuccessful() const {
 // SuspendableThreadDelegateMac -----------------------------------------------
 
 SuspendableThreadDelegateMac::SuspendableThreadDelegateMac(
-    mach_port_t thread_port)
-    : thread_port_(thread_port),
-      thread_stack_base_address_(reinterpret_cast<uintptr_t>(
-          pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port)))) {
+    SamplingProfilerThreadToken thread_token)
+    : thread_port_(thread_token.id),
+      thread_stack_base_address_(
+          reinterpret_cast<uintptr_t>(pthread_get_stackaddr_np(
+              pthread_from_mach_thread_np(thread_token.id)))) {
   // This class suspends threads, and those threads might be suspended in dyld.
   // Therefore, for all the system functions that might be linked in dynamically
   // that are used while threads are suspended, make calls to them to make sure

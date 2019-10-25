@@ -14,6 +14,7 @@ namespace media {
 namespace mixer_service {
 
 media::SampleFormat ConvertSampleFormat(SampleFormat format);
+SampleFormat ConvertSampleFormat(media::SampleFormat format);
 int GetSampleSizeBytes(SampleFormat format);
 
 ContentType ConvertContentType(media::AudioContentType content_type);

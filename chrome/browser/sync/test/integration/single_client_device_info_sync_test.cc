@@ -89,19 +89,15 @@ class ServerDeviceInfoMatchChecker : public StatusChangeChecker,
   }
 
   // StatusChangeChecker overrides.
-  bool IsExitConditionSatisfied() override {
-    std::vector<sync_pb::SyncEntity> entities =
-        fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO);
-    return testing::Matches(matcher_)(entities);
-  }
-
-  std::string GetDebugMessage() const override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
     std::vector<sync_pb::SyncEntity> entities =
         fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO);
 
     testing::StringMatchResultListener result_listener;
-    testing::ExplainMatchResult(matcher_, entities, &result_listener);
-    return result_listener.str();
+    const bool matches =
+        testing::ExplainMatchResult(matcher_, entities, &result_listener);
+    *os << result_listener.str();
+    return matches;
   }
 
  private:

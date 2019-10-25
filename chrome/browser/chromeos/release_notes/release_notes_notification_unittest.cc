@@ -38,6 +38,8 @@ class ReleaseNotesNotificationTest : public BrowserWithTestWindowTest {
                             base::Unretained(this)));
     release_notes_notification_ =
         std::make_unique<ReleaseNotesNotification>(profile());
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kReleaseNotesNotification);
   }
 
   void TearDown() override {
@@ -59,6 +61,7 @@ class ReleaseNotesNotificationTest : public BrowserWithTestWindowTest {
 
  private:
   std::unique_ptr<NotificationDisplayServiceTester> tester_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ReleaseNotesNotificationTest);
 };

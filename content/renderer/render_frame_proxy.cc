@@ -412,8 +412,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_AddContentSecurityPolicies,
                         OnAddContentSecurityPolicies)
-    IPC_MESSAGE_HANDLER(FrameMsg_ResetContentSecurityPolicy,
-                        OnResetContentSecurityPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureNavigationsSet,
@@ -530,10 +528,6 @@ void RenderFrameProxy::OnAddContentSecurityPolicies(
         blink::WebString::FromUTF8(header.header_value), header.type,
         header.source);
   }
-}
-
-void RenderFrameProxy::OnResetContentSecurityPolicy() {
-  web_frame_->ResetReplicatedContentSecurityPolicy();
 }
 
 void RenderFrameProxy::OnEnforceInsecureRequestPolicy(

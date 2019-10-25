@@ -15,6 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/skia_paint_util.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -26,32 +27,45 @@ namespace {
 // is outside of the display.
 constexpr int kDistanceFromArrowToTouchPoint = 64;
 
+// Parameters defining the arrow of the affordance.
 constexpr int kArrowSize = 20;
+constexpr SkColor kArrowColorBeforeComplete = gfx::kGoogleBlue600;
+constexpr SkColor kArrowColorAfterComplete = gfx::kGoogleGrey100;
 
-// Radius of the arrow's rounded background.
+// Parameters defining the background circle of the affordance.
 constexpr int kBackgroundRadius = 20;
+const SkColor kBackgroundColorBeforeComplete = SK_ColorWHITE;
+const SkColor kBackgroundColorAfterComplete = gfx::kGoogleBlue600;
+// Y offset of the background shadow.
+const int kBgShadowOffsetY = 2;
+const int kBgShadowBlurRadius = 8;
+const SkColor kBgShadowColor = SkColorSetA(SK_ColorBLACK, 0x4D);
 
 // Radius of the ripple while x-axis movement of the affordance achieves
-// |kDistanceForFullProgress|.
-constexpr int kRippleMaxRadius = 32;
+// |kDistanceForFullRadius|.
+constexpr int kFullRippleRadius = 32;
 
 // Radius of the ripple while x-axis movement of the affordance achieves
-// |kDistanceForBurstRipple|.
-constexpr int kRippleBurstRadius = 40;
+// |kDistanceForMaxRipple|.
+constexpr int kMaxRippleRadius = 40;
 
-// Drag distance for full drag progress. Affordance also needs to update its
-// arrow and background colors while its x-axis movement achieves this.
-constexpr float kDistanceForFullProgress = 100.f;
+// Maximium burst ripple radius while release the drag with COMPLETING state.
+constexpr int kMaxBurstRippleRadius = 48;
 
-// |kDistanceForFullProgress| plus the x-axis distance for the ripple of the
-// affordance to increase from |kRippleMaxRadius| to |kRippleBurstRadius|.
-constexpr float kDistanceForBurstRipple = 116.f;
+// Drag distance for full ripple radius. Also the drag distance for full drag
+// progress. The affordance arrow and background colors will be updated while
+// its x-axis movement achieves this.
+constexpr float kDistanceForFullRadius = 100.f;
+
+// |kDistanceForFullRadius| plus the x-axis distance for the ripple of the
+// affordance to increase from |kFullRippleRadius| to |kMaxRippleRadius|.
+constexpr float kDistanceForMaxRipple = 116.f;
 
 // Drag distance to achieve the max drag progress.
 constexpr float kDistanceForMaxDragProgress = 260.f;
 
 constexpr float kMaxDragProgress =
-    kDistanceForMaxDragProgress / kDistanceForFullProgress;
+    kDistanceForMaxDragProgress / kDistanceForFullRadius;
 
 constexpr base::TimeDelta kAbortAnimationTimeout =
     base::TimeDelta::FromMilliseconds(300);
@@ -77,9 +91,14 @@ class AffordanceView : public views::View {
   ~AffordanceView() override = default;
 
   // Schedule painting on given |drag_progress| and |abort_progress|.
-  void Paint(float drag_progress, float abort_progress) {
+  void Paint(float drag_progress,
+             float abort_progress,
+             float complete_progress,
+             BackGestureAffordance::State state) {
     drag_progress_ = drag_progress;
     abort_progress_ = abort_progress;
+    complete_progress_ = complete_progress;
+    state_ = state;
     SchedulePaint();
   }
 
@@ -88,7 +107,8 @@ class AffordanceView : public views::View {
   void OnPaint(gfx::Canvas* canvas) override {
     views::View::OnPaint(canvas);
 
-    const gfx::PointF center_point(kRippleBurstRadius, kRippleBurstRadius);
+    const gfx::PointF center_point(kMaxBurstRippleRadius,
+                                   kMaxBurstRippleRadius);
     const float progress = (1 - abort_progress_) * drag_progress_;
 
     // Draw the ripple.
@@ -99,13 +119,19 @@ class AffordanceView : public views::View {
 
     const bool exceed_full_progress = progress >= 1.f;
     float ripple_radius = 0.f;
-    if (exceed_full_progress) {
-      const float factor =
-          (kRippleBurstRadius - kRippleMaxRadius) / (kMaxDragProgress - 1);
-      ripple_radius = (kRippleMaxRadius - factor) + factor * progress;
-    } else {
+    if (state_ == BackGestureAffordance::State::COMPLETING) {
+      const float burst_progress = gfx::Tween::CalculateValue(
+          gfx::Tween::FAST_OUT_SLOW_IN, complete_progress_);
       ripple_radius =
-          kBackgroundRadius + progress * (kRippleMaxRadius - kBackgroundRadius);
+          kMaxRippleRadius +
+          burst_progress * (kMaxBurstRippleRadius - kMaxRippleRadius);
+    } else if (exceed_full_progress) {
+      const float factor =
+          (kMaxRippleRadius - kFullRippleRadius) / (kMaxDragProgress - 1);
+      ripple_radius = (kFullRippleRadius - factor) + factor * progress;
+    } else {
+      ripple_radius = kBackgroundRadius +
+                      progress * (kFullRippleRadius - kBackgroundRadius);
     }
     canvas->DrawCircle(center_point, ripple_radius, ripple_flags);
 
@@ -113,29 +139,34 @@ class AffordanceView : public views::View {
     cc::PaintFlags bg_flags;
     bg_flags.setAntiAlias(true);
     bg_flags.setStyle(cc::PaintFlags::kFill_Style);
-
-    bg_flags.setColor(exceed_full_progress ? gfx::kGoogleBlue600
-                                           : SK_ColorWHITE);
+    gfx::ShadowValues shadow;
+    shadow.emplace_back(gfx::Vector2d(0, kBgShadowOffsetY), kBgShadowBlurRadius,
+                        kBgShadowColor);
+    bg_flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
+    bg_flags.setColor(exceed_full_progress ? kBackgroundColorAfterComplete
+                                           : kBackgroundColorBeforeComplete);
     canvas->DrawCircle(center_point, kBackgroundRadius, bg_flags);
 
     // Draw the arrow.
     const float arrow_x = center_point.x() - kArrowSize / 2.f;
     const float arrow_y = center_point.y() - kArrowSize / 2.f;
     if (exceed_full_progress) {
-      canvas->DrawImageInt(gfx::CreateVectorIcon(vector_icons::kBackArrowIcon,
-                                                 kArrowSize, SK_ColorWHITE),
-                           static_cast<int>(arrow_x),
-                           static_cast<int>(arrow_y));
+      canvas->DrawImageInt(
+          gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, kArrowSize,
+                                kArrowColorAfterComplete),
+          static_cast<int>(arrow_x), static_cast<int>(arrow_y));
     } else {
       canvas->DrawImageInt(
           gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, kArrowSize,
-                                gfx::kGoogleBlue600),
+                                kArrowColorBeforeComplete),
           static_cast<int>(arrow_x), static_cast<int>(arrow_y));
     }
   }
 
   float drag_progress_ = 0.f;
   float abort_progress_ = 0.f;
+  float complete_progress_ = 0.f;
+  BackGestureAffordance::State state_ = BackGestureAffordance::State::DRAGGING;
 
   DISALLOW_COPY_AND_ASSIGN(AffordanceView);
 };
@@ -144,14 +175,14 @@ class AffordanceView : public views::View {
 // the display.
 gfx::Rect GetWidgetBounds(const gfx::Point& location) {
   gfx::Rect widget_bounds(
-      gfx::Rect(2 * kRippleBurstRadius, 2 * kRippleBurstRadius));
+      gfx::Rect(2 * kMaxBurstRippleRadius, 2 * kMaxBurstRippleRadius));
   gfx::Point origin;
-  origin.set_x(-kRippleBurstRadius - kBackgroundRadius);
+  origin.set_x(-kMaxBurstRippleRadius - kBackgroundRadius);
   int origin_y =
-      location.y() - kDistanceFromArrowToTouchPoint - kRippleBurstRadius;
+      location.y() - kDistanceFromArrowToTouchPoint - kMaxBurstRippleRadius;
   if (origin_y < 0) {
     origin_y =
-        location.y() + kDistanceFromArrowToTouchPoint - kRippleBurstRadius;
+        location.y() + kDistanceFromArrowToTouchPoint - kMaxBurstRippleRadius;
   }
   origin.set_y(origin_y);
   widget_bounds.set_origin(origin);
@@ -174,8 +205,7 @@ void BackGestureAffordance::SetDragProgress(int x_drag_amount,
   // Since affordance is put outside of the display, add the distance from its
   // center point to the left edge of the display to be the actual drag
   // distance.
-  float progress =
-      (x_drag_amount + kBackgroundRadius) / kDistanceForFullProgress;
+  float progress = (x_drag_amount + kBackgroundRadius) / kDistanceForFullRadius;
   progress = std::min(progress, kMaxDragProgress);
 
   float y_progress = y_drag_amount / kDistanceForFullYProgress;
@@ -202,8 +232,6 @@ void BackGestureAffordance::Abort() {
 
 void BackGestureAffordance::Complete() {
   DCHECK_EQ(State::DRAGGING, state_);
-  DCHECK_LE(1.f, drag_progress_);
-
   state_ = State::COMPLETING;
 
   animation_ = std::make_unique<gfx::LinearAnimation>(
@@ -233,11 +261,11 @@ void BackGestureAffordance::UpdateTransform() {
   const float progress = (1 - abort_progress_) * drag_progress_;
   float offset = 0.f;
   if (progress >= 1.f) {
-    const float factor = (kDistanceForBurstRipple - kDistanceForFullProgress) /
+    const float factor = (kDistanceForMaxRipple - kDistanceForFullRadius) /
                          (kMaxDragProgress - 1.f);
-    offset = (kDistanceForFullProgress - factor) + factor * progress;
+    offset = (kDistanceForFullRadius - factor) + factor * progress;
   } else {
-    offset = progress * kDistanceForFullProgress;
+    offset = progress * kDistanceForFullRadius;
   }
 
   float y_offset = kMaxYMovement * y_drag_progress_;
@@ -248,7 +276,7 @@ void BackGestureAffordance::UpdateTransform() {
 
 void BackGestureAffordance::SchedulePaint() {
   static_cast<AffordanceView*>(affordance_widget_->GetContentsView())
-      ->Paint(drag_progress_, abort_progress_);
+      ->Paint(drag_progress_, abort_progress_, complete_progress_, state_);
 }
 
 void BackGestureAffordance::SetAbortProgress(float progress) {

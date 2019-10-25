@@ -1,3 +1,0 @@
-include_rules = [
-  "+components/minidump_uploader/android/java",
-]

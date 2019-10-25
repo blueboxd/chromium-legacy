@@ -75,11 +75,11 @@ class UI_BASE_EXPORT OSExchangeData {
   // Encapsulates the info about a file to be downloaded.
   struct UI_BASE_EXPORT DownloadFileInfo {
     DownloadFileInfo(const base::FilePath& filename,
-                     DownloadFileProvider* downloader);
+                     std::unique_ptr<DownloadFileProvider> downloader);
     ~DownloadFileInfo();
 
     base::FilePath filename;
-    scoped_refptr<DownloadFileProvider> downloader;
+    std::unique_ptr<DownloadFileProvider> downloader;
   };
 
   // Provider defines the platform specific part of OSExchangeData that
@@ -135,7 +135,7 @@ class UI_BASE_EXPORT OSExchangeData {
         const std::vector<std::pair<base::FilePath, std::string>>&
             filenames_and_contents,
         DWORD tymed) = 0;
-    virtual void SetDownloadFileInfo(const DownloadFileInfo& download) = 0;
+    virtual void SetDownloadFileInfo(DownloadFileInfo* download) = 0;
 #endif
 
 #if defined(USE_AURA)
@@ -266,7 +266,7 @@ class UI_BASE_EXPORT OSExchangeData {
       const;
 
   // Adds a download file with full path (CF_HDROP).
-  void SetDownloadFileInfo(const DownloadFileInfo& download);
+  void SetDownloadFileInfo(DownloadFileInfo* download);
 #endif
 
 #if defined(USE_AURA)

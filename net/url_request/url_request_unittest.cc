@@ -117,7 +117,6 @@
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
@@ -313,6 +312,16 @@ void TestLoadTimingNoHttpResponse(
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 #endif
+
+// Less verbose way of running a simple testserver for the tests below.
+class HttpTestServer : public EmbeddedTestServer {
+ public:
+  explicit HttpTestServer(const base::FilePath& document_root) {
+    AddDefaultHandlers(document_root);
+  }
+
+  HttpTestServer() { AddDefaultHandlers(base::FilePath()); }
+};
 
 // Job that allows monitoring of its priority.
 class PriorityMonitoringURLRequestJob : public URLRequestTestJob {
@@ -699,10 +708,7 @@ class URLRequestTest : public PlatformTest, public WithTaskEnvironment {
 
   void TearDown() override { default_context_.reset(); }
 
-  virtual void SetUpFactory() {
-    job_factory_impl_->SetProtocolHandler(
-        "data", std::make_unique<DataProtocolHandler>());
-  }
+  virtual void SetUpFactory() {}
 
   TestNetworkDelegate* default_network_delegate() {
     return &default_network_delegate_;
@@ -759,46 +765,6 @@ TEST_F(URLRequestTest, AboutBlankTest) {
     EXPECT_TRUE(!r->is_pending());
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(d.bytes_received(), 0);
-    EXPECT_TRUE(r->GetResponseRemoteEndpoint().address().empty());
-    EXPECT_EQ(0, r->GetResponseRemoteEndpoint().port());
-  }
-}
-
-TEST_F(URLRequestTest, DataURLImageTest) {
-  TestDelegate d;
-  {
-    // Use our nice little Chrome logo.
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        GURL("data:image/png;base64,"
-             "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADVklEQVQ4jX2TfUwUB"
-             "BjG3w1y+HGcd9dxhXR8T4awOccJGgOSWclHImznLkTlSw0DDQXkrmgYgbUYnlQTqQ"
-             "xIEVxitD5UMCATRA1CEEg+Qjw3bWDxIauJv/5oumqs39/P827vnucRmYN0gyF01GI"
-             "5MpCVdW0gO7tvNC+vqSEtbZefk5NuLv1jdJ46p/zw0HeH4+PHr3h7c1mjoV2t5rKz"
-             "Mx1+fg9bAgK6zHq9cU5z+LpA3xOtx34+vTeT21onRuzssC3zxbbSwC13d/pFuC7Ck"
-             "IMDxQpF7r/MWq12UctI1dWWm99ypqSYmRUBdKem8MkrO/kgaTt1O7YzlpzE5GIVd0"
-             "WYUqt57yWf2McHTObYPbVD+ZwbtlLTVMZ3BW+TnLyXLaWtmEq6WJVbT3HBh3Svj2H"
-             "QQcm43XwmtoYM6vVKleh0uoWvnzW3v3MpidruPTQPf0bia7sJOtBM0ufTWNvus/nk"
-             "DFHF9ZS+uYVjRUasMeHUmyLYtcklTvzWGFZnNOXczThvpKIzjcahSqIzkvDLayDq6"
-             "D3eOjtBbNUEIZYyqsvj4V4wY92eNJ4IoyhTbxXX1T5xsV9tm9r4TQwHLiZw/pdDZJ"
-             "ea8TKmsmR/K0uLh/GwnCHghTja6lPhphezPfO5/5MrVvMzNaI3+ERHfrFzPKQukrQ"
-             "GI4d/3EFD/3E2mVNYvi4at7CXWREaxZGD+3hg28zD3gVMd6q5c8GdosynKmSeRuGz"
-             "pjyl1/9UDGtPR5HeaKT8Wjo17WXk579BXVUhN64ehF9fhRtq/uxxZKzNiZFGD0wRC"
-             "3NFROZ5mwIPL/96K/rKMMLrIzF9uhHr+/sYH7DAbwlgC4J+R2Z7FUx1qLnV7MGF40"
-             "smVSoJ/jvHRfYhQeUJd/SnYtGWhPHR0Sz+GE2F2yth0B36Vcz2KpnufBJbsysjjW4"
-             "kblBUiIjiURUWqJY65zxbnTy57GQyH58zgy0QBtTQv5gH15XMdKkYu+TGaJMnlm2O"
-             "34uI4b9tflqp1+QEFGzoW/ulmcofcpkZCYJhDfSpme7QcrHa+Xfji8paEQkTkSfmm"
-             "oRWRNZr/F1KfVMjW+IKEnv2FwZfKdzt0BQR6lClcZR0EfEXEfv/G6W9iLiIyCoReV"
-             "5EnhORIBHx+ufPj/gLB/zGI/G4Bk0AAAAASUVORK5CYII="),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_TRUE(!r->is_pending());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(d.bytes_received(), 911);
     EXPECT_TRUE(r->GetResponseRemoteEndpoint().address().empty());
     EXPECT_EQ(0, r->GetResponseRemoteEndpoint().port());
   }
@@ -1271,11 +1237,17 @@ TEST_F(URLRequestTest, SkipSecureDnsEnabled) {
 // Make sure that NetworkDelegate::NotifyCompleted is called if
 // content is empty.
 TEST_F(URLRequestTest, RequestCompletionForEmptyResponse) {
+  HttpTestServer test_server;
+  ASSERT_TRUE(test_server.Start());
+
   TestDelegate d;
   std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("data:,"), DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+      test_server.GetURL("/nocontent"), DEFAULT_PRIORITY, &d,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   req->Start();
   d.RunUntilComplete();
+  EXPECT_THAT(d.request_status(), IsOk());
+  EXPECT_EQ(204, req->GetResponseCode());
   EXPECT_EQ("", d.data_received());
   EXPECT_EQ(1, default_network_delegate_.completed_requests());
 }
@@ -1366,20 +1338,6 @@ TEST_F(URLRequestTest, PriorityIgnoreLimits) {
   EXPECT_EQ(MAXIMUM_PRIORITY, req->priority());
   EXPECT_EQ(MAXIMUM_PRIORITY, job_priority);
 }
-
-namespace {
-
-// Less verbose way of running a simple testserver for the tests below.
-class HttpTestServer : public EmbeddedTestServer {
- public:
-  explicit HttpTestServer(const base::FilePath& document_root) {
-    AddDefaultHandlers(document_root);
-  }
-
-  HttpTestServer() { AddDefaultHandlers(base::FilePath()); }
-};
-
-}  // namespace
 
 TEST_F(URLRequestTest, DelayedCookieCallback) {
   HttpTestServer test_server;
@@ -3061,6 +3019,37 @@ class URLRequestTestHTTP : public URLRequestTest {
   URLRequestTestHTTP() : test_server_(base::FilePath(kTestFilePath)) {}
 
  protected:
+  // ProtocolHandler for the scheme that's unsafe to redirect to.
+  class NET_EXPORT UnsafeRedirectProtocolHandler
+      : public URLRequestJobFactory::ProtocolHandler {
+   public:
+    UnsafeRedirectProtocolHandler() = default;
+    ~UnsafeRedirectProtocolHandler() override = default;
+
+    // URLRequestJobFactory::ProtocolHandler implementation:
+
+    URLRequestJob* MaybeCreateJob(
+        URLRequest* request,
+        NetworkDelegate* network_delegate) const override {
+      NOTREACHED();
+      return nullptr;
+    }
+
+    bool IsSafeRedirectTarget(const GURL& location) const override {
+      return false;
+    }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(UnsafeRedirectProtocolHandler);
+  };
+
+  // URLRequestTest interface:
+  void SetUpFactory() override {
+    // Add FTP support to the default URLRequestContext.
+    job_factory_impl_->SetProtocolHandler(
+        "unsafe", std::make_unique<UnsafeRedirectProtocolHandler>());
+  }
+
   // Requests |redirect_url|, which must return a HTTP 3xx redirect.
   // |request_method| is the method to use for the initial request.
   // |redirect_method| is the method that is expected to be used for the second
@@ -6122,17 +6111,7 @@ TEST_F(URLRequestTestHTTP, ContentTypeNormalizationTest) {
   req->Cancel();
 }
 
-TEST_F(URLRequestTestHTTP, ProtocolHandlerAndFactoryRestrictDataRedirects) {
-  // Test URLRequestJobFactory::ProtocolHandler::IsSafeRedirectTarget().
-  GURL data_url("data:,foo");
-  DataProtocolHandler data_protocol_handler;
-  EXPECT_FALSE(data_protocol_handler.IsSafeRedirectTarget(data_url));
-
-  // Test URLRequestJobFactoryImpl::IsSafeRedirectTarget().
-  EXPECT_FALSE(job_factory_->IsSafeRedirectTarget(data_url));
-}
-
-TEST_F(URLRequestTestHTTP, RestrictFileRedirects) {
+TEST_F(URLRequestTestHTTP, FileRedirect) {
   ASSERT_TRUE(http_test_server()->Start());
 
   TestDelegate d;
@@ -6146,13 +6125,28 @@ TEST_F(URLRequestTestHTTP, RestrictFileRedirects) {
   EXPECT_EQ(1, d.received_redirect_count());
 }
 
-TEST_F(URLRequestTestHTTP, RestrictDataRedirects) {
+TEST_F(URLRequestTestHTTP, DataRedirect) {
   ASSERT_TRUE(http_test_server()->Start());
 
   TestDelegate d;
   std::unique_ptr<URLRequest> req(default_context().CreateRequest(
       http_test_server()->GetURL("/redirect-to-data.html"), DEFAULT_PRIORITY,
       &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->Start();
+  d.RunUntilComplete();
+
+  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, d.request_status());
+  EXPECT_EQ(1, d.received_redirect_count());
+}
+
+TEST_F(URLRequestTestHTTP, RestrictUnsafeRedirect) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+      http_test_server()->GetURL(
+          "/server-redirect?unsafe://here-there-be-dragons"),
+      DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
   req->Start();
   d.RunUntilComplete();
 
@@ -11111,20 +11105,6 @@ TEST_F(URLRequestTestFTPOverHttpProxy, Fails) {
 
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-TEST_F(URLRequestTest, NetworkAccessedClearOnDataRequest) {
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      GURL("data:,"), DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-
-  EXPECT_FALSE(req->response_info().network_accessed);
-
-  req->Start();
-  d.RunUntilComplete();
-
-  EXPECT_EQ(1, default_network_delegate_.completed_requests());
-  EXPECT_FALSE(req->response_info().network_accessed);
-}
-
 TEST_F(URLRequestTest, NetworkAccessedSetOnHostResolutionFailure) {
   MockHostResolver host_resolver;
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
@@ -11352,23 +11332,6 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacksAuthRetry) {
   EXPECT_NE(raw_resp_headers[2].get(), r2->response_headers());
   EXPECT_EQ(304, raw_resp_headers[2]->response_code());
   EXPECT_EQ("Not Modified", raw_resp_headers[2]->GetStatusText());
-}
-
-TEST_F(URLRequestTest, HeadersCallbacksNonHTTP) {
-  GURL data_url("data:text/html,<html><body>Hello!</body></html>");
-  TestDelegate d;
-  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-      data_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  r->SetRequestHeadersCallback(base::Bind([](net::HttpRawRequestHeaders) {
-    FAIL() << "Callback should not be called for non-HTTP schemes";
-  }));
-  r->SetResponseHeadersCallback(
-      base::Bind([](scoped_refptr<const net::HttpResponseHeaders>) {
-        FAIL() << "Callback should not be called for non-HTTP schemes";
-      }));
-  r->Start();
-  d.RunUntilComplete();
-  EXPECT_FALSE(r->is_pending());
 }
 
 TEST_F(URLRequestTest, UpgradeIfInsecureFlagSet) {

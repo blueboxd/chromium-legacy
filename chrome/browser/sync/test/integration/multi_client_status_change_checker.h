@@ -31,8 +31,7 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
   void OnStateChanged(syncer::SyncService* sync) override;
 
   // StatusChangeChecker implementations and stubs.
-  bool IsExitConditionSatisfied() override = 0;
-  std::string GetDebugMessage() const override = 0;
+  bool IsExitConditionSatisfied(std::ostream* os) override = 0;
 
  protected:
   const std::vector<syncer::ProfileSyncService*>& services() {

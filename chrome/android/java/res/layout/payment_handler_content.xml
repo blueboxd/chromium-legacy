@@ -2,9 +2,13 @@
 <!-- Copyright 2019 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
-<RelativeLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@color/sheet_bg_color"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent">
-</RelativeLayout>
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <org.chromium.chrome.browser.ui.widget.FadingShadowView
+        android:id="@+id/shadow"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/action_bar_shadow_height"/>
+</FrameLayout>

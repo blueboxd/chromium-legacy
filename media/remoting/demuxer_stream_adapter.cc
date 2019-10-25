@@ -60,8 +60,8 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
   DCHECK(demuxer_stream);
   DCHECK(!error_callback.is_null());
   const RpcBroker::ReceiveMessageCallback receive_callback =
-      BindToCurrentLoop(base::Bind(&DemuxerStreamAdapter::OnReceivedRpc,
-                                   weak_factory_.GetWeakPtr()));
+      BindToCurrentLoop(base::BindRepeating(
+          &DemuxerStreamAdapter::OnReceivedRpc, weak_factory_.GetWeakPtr()));
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RpcBroker::RegisterMessageReceiverCallback,
                                 rpc_broker_, rpc_handle_, receive_callback));

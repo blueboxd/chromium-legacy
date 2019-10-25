@@ -45,9 +45,6 @@ class NET_EXPORT SSLInfo {
 
   bool is_valid() const { return cert.get() != nullptr; }
 
-  // Adds the specified |error| to the cert status.
-  void SetCertError(int error);
-
   // Adds the SignedCertificateTimestamps and policy compliance details
   // from ct_verify_result to |signed_certificate_timestamps| and
   // |ct_policy_compliance_details|. SCTs are held in three separate

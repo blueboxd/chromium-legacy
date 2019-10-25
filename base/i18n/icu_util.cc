@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/putil.h"
 #include "third_party/icu/source/common/unicode/udata.h"
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_ANDROID)
+#if (defined(OS_LINUX) && !defined(IS_CHROMECAST)) || defined(OS_ANDROID)
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #endif
 
@@ -40,8 +40,9 @@
 namespace base {
 namespace i18n {
 
-namespace {
 #if !defined(OS_NACL)
+namespace {
+
 #if DCHECK_IS_ON()
 // Assert that we are not called more than once.  Even though calling this
 // function isn't harmful (ICU can handle it), being called twice probably
@@ -50,7 +51,7 @@ bool g_check_called_once = true;
 bool g_called_once = false;
 #endif  // DCHECK_IS_ON()
 
-#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
+#if (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
 // To debug http://crbug.com/445616.
 int g_debug_icu_last_error;
@@ -233,13 +234,11 @@ bool InitializeICUWithFileDescriptorInternal(
   udata_setFileAccess(UDATA_ONLY_PACKAGES, &err);
   return U_SUCCESS(err);
 }
-#endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
-#endif  // !defined(OS_NACL)
+#endif  // (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
 }  // namespace
 
-#if !defined(OS_NACL)
-#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
+#if (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 bool InitializeExtraICUWithFileDescriptor(
     PlatformFile data_fd,
     const MemoryMappedFile::Region& data_region) {
@@ -302,6 +301,12 @@ bool InitializeExtraICU() {
   return true;
 }
 
+void ResetGlobalsForTesting() {
+  g_icudtl_pf = kInvalidPlatformFile;
+  g_icudtl_mapped_file = nullptr;
+  g_icudtl_extra_pf = kInvalidPlatformFile;
+  g_icudtl_extra_mapped_file = nullptr;
+}
 #endif  // (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
 bool InitializeICU() {
@@ -335,37 +340,30 @@ bool InitializeICU() {
   wcscpy_s(debug_icu_pf_filename, g_debug_icu_pf_filename);
   debug::Alias(&debug_icu_pf_filename);
   CHECK(result);  // TODO(brucedawson): http://crbug.com/445616
-#endif
-#endif
+#endif  // defined(OS_WIN)
+#else
+#error Unsupported ICU_UTIL_DATA_IMPL value
+#endif  // (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_STATIC)
 
-// To respond to the timezone change properly, the default timezone
-// cache in ICU has to be populated on starting up.
-// TODO(jungshik): Some callers do not care about tz at all. If necessary,
-// add a boolean argument to this function to init'd the default tz only
-// when requested.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(IS_CHROMECAST)
+  // To respond to the timezone change properly, the default timezone
+  // cache in ICU has to be populated on starting up.
+  // See TimeZoneMonitorLinux::NotifyClientsFromImpl().
+  // TODO(jungshik): Some callers do not care about tz at all. If necessary,
+  // add a boolean argument to this function to init the default tz only
+  // when requested.
   if (result)
     std::unique_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
-#endif
+#endif  // defined(OS_LINUX) && !defined(IS_CHROMECAST)
   return result;
 }
-#endif  // !defined(OS_NACL)
 
 void AllowMultipleInitializeCallsForTesting() {
-#if DCHECK_IS_ON() && !defined(OS_NACL)
+#if DCHECK_IS_ON()
   g_check_called_once = false;
 #endif
 }
 
-#if !defined(OS_NACL)
-#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
-void ResetGlobalsForTesting() {
-  g_icudtl_pf = kInvalidPlatformFile;
-  g_icudtl_mapped_file = nullptr;
-  g_icudtl_extra_pf = kInvalidPlatformFile;
-  g_icudtl_extra_mapped_file = nullptr;
-}
-#endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 #endif  // !defined(OS_NACL)
 
 }  // namespace i18n

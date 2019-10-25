@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <numeric>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -211,8 +212,13 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       preferred_width_(init_params.min_width),
       bubble_border_(new BubbleBorder(
           arrow(),
-          init_params.has_shadow ? BubbleBorder::NO_ASSETS
-                                 : BubbleBorder::BIG_SHADOW,
+          // Note: for legacy reasons, a shadow is rendered even if |has_shadow|
+          // is false. This is fixed with the
+          // IsUnifiedMessageCenterRefactorEnabled feature flag.
+          init_params.has_shadow ||
+                  features::IsUnifiedMessageCenterRefactorEnabled()
+              ? BubbleBorder::NO_ASSETS
+              : BubbleBorder::BIG_SHADOW,
           init_params.bg_color.value_or(gfx::kPlaceholderColor))),
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
@@ -349,7 +355,7 @@ ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() {
 
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                               Widget* bubble_widget) const {
-  if (bubble_border_->shadow() == BubbleBorder::NO_ASSETS) {
+  if (params_.has_shadow) {
     // Apply a WM-provided shadow (see ui/wm/core/).
     params->shadow_type = Widget::InitParams::ShadowType::kDrop;
     params->shadow_elevation = wm::kShadowElevationActiveWindow;

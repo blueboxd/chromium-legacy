@@ -3321,10 +3321,60 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                        0xDEADC0DEU);
   list_item2_text_data.SetName("list item 2");
 
+  ui::AXNodeData input_text_data;
+  input_text_data.id = 12;
+  input_text_data.role = ax::mojom::Role::kTextField;
+  input_text_data.AddState(ax::mojom::State::kEditable);
+  input_text_data.AddIntAttribute(
+      ax::mojom::IntAttribute::kNameFrom,
+      static_cast<int>(ax::mojom::NameFrom::kPlaceholder));
+  input_text_data.AddStringAttribute(ax::mojom::StringAttribute::kPlaceholder,
+                                     "placeholder2");
+  input_text_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                  0xDEADBEEFU);
+  input_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
+  input_text_data.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot,
+                                   true);
+  input_text_data.SetName("placeholder");
+  input_text_data.child_ids = {13};
+
+  ui::AXNodeData placeholder_text_data;
+  placeholder_text_data.id = 13;
+  placeholder_text_data.role = ax::mojom::Role::kStaticText;
+  placeholder_text_data.AddIntAttribute(
+      ax::mojom::IntAttribute::kBackgroundColor, 0xDEADBEEFU);
+  placeholder_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                        0xDEADC0DEU);
+  placeholder_text_data.SetName("placeholder");
+
+  ui::AXNodeData input_text_data2;
+  input_text_data2.id = 14;
+  input_text_data2.role = ax::mojom::Role::kTextField;
+  input_text_data2.AddState(ax::mojom::State::kEditable);
+  input_text_data2.AddStringAttribute(ax::mojom::StringAttribute::kPlaceholder,
+                                      "placeholder2");
+  input_text_data2.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                   0xDEADBEEFU);
+  input_text_data2.AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                   0xDEADC0DEU);
+  input_text_data2.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot,
+                                    true);
+  input_text_data2.SetName("foo");
+  input_text_data2.child_ids = {15};
+
+  ui::AXNodeData placeholder_text_data2;
+  placeholder_text_data2.id = 15;
+  placeholder_text_data2.role = ax::mojom::Role::kStaticText;
+  placeholder_text_data2.AddIntAttribute(
+      ax::mojom::IntAttribute::kBackgroundColor, 0xDEADBEEFU);
+  placeholder_text_data2.AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                         0xDEADC0DEU);
+  placeholder_text_data2.SetName("placeholder2");
+
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids = {2, 3, 5, 7};
+  root_data.child_ids = {2, 3, 5, 7, 12, 14};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -3343,6 +3393,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   update.nodes.push_back(list_item_text_data);
   update.nodes.push_back(list_item2_data);
   update.nodes.push_back(list_item2_text_data);
+  update.nodes.push_back(input_text_data);
+  update.nodes.push_back(placeholder_text_data);
+  update.nodes.push_back(input_text_data2);
+  update.nodes.push_back(placeholder_text_data2);
 
   Init(update);
   AXNodePosition::SetTree(tree_.get());
@@ -3359,6 +3413,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXNode* list_item_text_node = list_item_node->children()[0];
   AXNode* list_item2_node = list_node->children()[1];
   AXNode* list_item2_text_node = list_item2_node->children()[0];
+  AXNode* input_text_node = root_node->children()[4];
+  AXNode* placeholder_text_node = input_text_node->children()[0];
+  AXNode* input_text_node2 = root_node->children()[5];
+  AXNode* placeholder_text_node2 = input_text_node2->children()[0];
 
   ComPtr<ITextRangeProvider> document_range_provider;
   GetTextRangeProviderFromTextNode(document_range_provider, root_node);
@@ -3375,6 +3433,14 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ComPtr<ITextRangeProvider> list_item2_text_range_provider;
   GetTextRangeProviderFromTextNode(list_item2_text_range_provider,
                                    list_item2_text_node);
+
+  ComPtr<ITextRangeProvider> placeholder_text_range_provider;
+  GetTextRangeProviderFromTextNode(placeholder_text_range_provider,
+                                   placeholder_text_node);
+
+  ComPtr<ITextRangeProvider> placeholder_text_range_provider2;
+  GetTextRangeProviderFromTextNode(placeholder_text_range_provider2,
+                                   placeholder_text_node2);
 
   base::win::ScopedVariant expected_variant;
 
@@ -3458,6 +3524,16 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   expected_variant.Set(false);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(heading_text_range_provider,
+                              UIA_IsReadOnlyAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(false);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(placeholder_text_range_provider,
+                              UIA_IsReadOnlyAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(false);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(placeholder_text_range_provider2,
                               UIA_IsReadOnlyAttributeId, expected_variant);
   expected_variant.Reset();
 

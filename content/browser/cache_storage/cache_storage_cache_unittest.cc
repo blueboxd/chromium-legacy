@@ -52,6 +52,7 @@
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/test/blob_test_utils.h"
 #include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -211,31 +212,6 @@ class DelayableBackend : public disk_cache::Backend {
   base::OnceClosure open_entry_started_callback_;
 };
 
-class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
- public:
-  DataPipeDrainerClient(std::string* output) : output_(output) {}
-  void Run() { run_loop_.Run(); }
-
-  void OnDataAvailable(const void* data, size_t num_bytes) override {
-    output_->append(reinterpret_cast<const char*>(data), num_bytes);
-  }
-  void OnDataComplete() override { run_loop_.Quit(); }
-
- private:
-  base::RunLoop run_loop_;
-  std::string* output_;
-};
-
-std::string CopyBody(blink::mojom::Blob* actual_blob) {
-  std::string output;
-  mojo::DataPipe pipe;
-  actual_blob->ReadAll(std::move(pipe.producer_handle), mojo::NullRemote());
-  DataPipeDrainerClient client(&output);
-  mojo::DataPipeDrainer drainer(&client, std::move(pipe.consumer_handle));
-  client.Run();
-  return output;
-}
-
 std::string CopySideData(blink::mojom::Blob* actual_blob) {
   std::string output;
   base::RunLoop loop;
@@ -299,7 +275,7 @@ bool ResponseMetadataEqual(const blink::mojom::FetchAPIResponse& expected,
 
 bool ResponseBodiesEqual(const std::string& expected_body,
                          blink::mojom::Blob* actual_blob) {
-  std::string actual_body = CopyBody(actual_blob);
+  std::string actual_body = storage::BlobToString(actual_blob);
   return expected_body == actual_body;
 }
 

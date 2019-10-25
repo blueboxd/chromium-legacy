@@ -10,17 +10,17 @@
 #include <utility>
 
 #include "base/sequence_checker.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/leveldb_factory.h"
 
 namespace content {
-namespace indexed_db {
 
 // Used for unittests, this factory will only create in-memory leveldb
 // databases, and will optionally allow the user to override the next
 // LevelDBState returned with |EnqueueNextLevelDBState|.
 class FakeLevelDBFactory : public DefaultLevelDBFactory {
  public:
-  FakeLevelDBFactory();
+  FakeLevelDBFactory(leveldb_env::Options database_options,
+                     const std::string& in_memory_db_name);
   ~FakeLevelDBFactory() override;
 
   struct FlakePoint {
@@ -49,8 +49,9 @@ class FakeLevelDBFactory : public DefaultLevelDBFactory {
                                leveldb::Status status);
 
   std::tuple<std::unique_ptr<leveldb::DB>, leveldb::Status> OpenDB(
-      const leveldb_env::Options& options,
-      const std::string& name) override;
+      const std::string& name,
+      bool create_if_missing,
+      size_t write_buffer_size) override;
 
   void EnqueueNextOpenLevelDBStateResult(scoped_refptr<LevelDBState> state,
                                          leveldb::Status status,
@@ -58,8 +59,8 @@ class FakeLevelDBFactory : public DefaultLevelDBFactory {
 
   std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /*disk_full*/>
   OpenLevelDBState(const base::FilePath& file_name,
-                   const leveldb::Comparator* ldb_comparator,
-                   bool create_if_missing) override;
+                   bool create_if_missing,
+                   size_t write_buffer_size) override;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);
@@ -72,7 +73,6 @@ class FakeLevelDBFactory : public DefaultLevelDBFactory {
       next_leveldb_states_;
 };
 
-}  // namespace indexed_db
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_FAKE_LEVELDB_FACTORY_H_

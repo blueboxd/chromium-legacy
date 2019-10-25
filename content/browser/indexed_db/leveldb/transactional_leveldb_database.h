@@ -32,15 +32,11 @@ class Snapshot;
 
 namespace content {
 class TransactionalLevelDBDatabase;
+class TransactionalLevelDBFactory;
 class TransactionalLevelDBIterator;
 class TransactionalLevelDBTransaction;
 class LevelDBScopes;
 class LevelDBWriteBatch;
-
-namespace indexed_db {
-class LevelDBFactory;
-class DefaultLevelDBFactory;
-}  // namespace indexed_db
 
 // This class manages the acquisition and release of a leveldb snapshot.
 class CONTENT_EXPORT LevelDBSnapshot {
@@ -96,18 +92,16 @@ class CONTENT_EXPORT TransactionalLevelDBDatabase
   LevelDBScopes* scopes() { return scopes_.get(); }
   base::Time LastModified() const { return last_modified_; }
 
-  indexed_db::LevelDBFactory* leveldb_class_factory() const {
-    return class_factory_;
-  }
+  TransactionalLevelDBFactory* class_factory() const { return class_factory_; }
 
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
  private:
+  friend class DefaultTransactionalLevelDBFactory;
   friend class LevelDBSnapshot;
   friend class TransactionalLevelDBIterator;
   friend class TransactionalLevelDBTransaction;
   friend class LevelDBTestDatabase;
-  friend class indexed_db::DefaultLevelDBFactory;
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, DeleteFailsIfDirectoryLocked);
   class IteratorNotifier;
 
@@ -116,7 +110,7 @@ class CONTENT_EXPORT TransactionalLevelDBDatabase
   TransactionalLevelDBDatabase(
       scoped_refptr<LevelDBState> level_db_state,
       std::unique_ptr<LevelDBScopes> leveldb_scopes,
-      indexed_db::LevelDBFactory* factory,
+      TransactionalLevelDBFactory* factory,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       size_t max_open_iterators);
 
@@ -140,7 +134,7 @@ class CONTENT_EXPORT TransactionalLevelDBDatabase
 
   scoped_refptr<LevelDBState> level_db_state_;
   std::unique_ptr<LevelDBScopes> scopes_;
-  indexed_db::LevelDBFactory* class_factory_;
+  TransactionalLevelDBFactory* class_factory_;
   base::Time last_modified_;
   std::unique_ptr<base::Clock> clock_;
 

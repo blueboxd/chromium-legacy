@@ -104,6 +104,8 @@ class GtkUi : public views::LinuxUI {
   std::unique_ptr<views::NavButtonProvider> CreateNavButtonProvider() override;
 #endif
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
+  std::string GetCursorThemeName() override;
+  int GetCursorThemeSize() override;
 
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,
@@ -113,6 +115,18 @@ class GtkUi : public views::LinuxUI {
   using TintMap = std::map<int, color_utils::HSL>;
 
   CHROMEG_CALLBACK_1(GtkUi, void, OnThemeChanged, GtkSettings*, GtkParamSpec*);
+
+  CHROMEG_CALLBACK_1(GtkUi,
+                     void,
+                     OnCursorThemeNameChanged,
+                     GtkSettings*,
+                     GtkParamSpec*);
+
+  CHROMEG_CALLBACK_1(GtkUi,
+                     void,
+                     OnCursorThemeSizeChanged,
+                     GtkSettings*,
+                     GtkParamSpec*);
 
   CHROMEG_CALLBACK_1(GtkUi,
                      void,
@@ -126,9 +140,6 @@ class GtkUi : public views::LinuxUI {
   // Extracts colors and tints from the GTK theme, both for the
   // ThemeService interface and the colors we send to Blink.
   void UpdateColors();
-
-  // Sets the Xcursor theme and size with the GTK theme and size.
-  void UpdateCursorTheme();
 
   // Updates |default_font_*|.
   void UpdateDefaultFont();

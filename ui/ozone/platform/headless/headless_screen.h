@@ -36,9 +36,6 @@ class HeadlessScreen : public PlatformScreen {
   void RemoveObserver(display::DisplayObserver* observer) override;
 
  private:
-  // The next available display id.
-  int64_t next_display_id_ = 0;
-
   display::DisplayList display_list_;
 
   base::ObserverList<display::DisplayObserver> observers_;

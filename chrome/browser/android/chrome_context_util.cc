@@ -5,7 +5,7 @@
 #include "chrome/browser/android/chrome_context_util.h"
 
 #include "base/android/jni_android.h"
-#include "chrome/browser/util/android/jni_headers/ChromeContextUtil_jni.h"
+#include "chrome/browser/util/jni_headers/ChromeContextUtil_jni.h"
 
 namespace chrome {
 namespace android {

@@ -1005,6 +1005,25 @@ TEST_F(ExtensionManagementServiceTest,
 }
 #endif
 
+TEST_F(ExtensionManagementServiceTest,
+       ExtensionsAreBlockedByDefaultForExtensionRequest) {
+  // When extension request policy is set to true, all extensions are blocked by
+  // default.
+  SetPref(true, prefs::kCloudExtensionRequestEnabled,
+          std::make_unique<base::Value>(true));
+  EXPECT_TRUE(extension_management_->BlacklistedByDefault());
+  EXPECT_EQ(ExtensionManagement::INSTALLATION_BLOCKED,
+            GetInstallationModeById(kTargetExtension));
+  // However, it will be overridden by ExtensionSettings
+  SetExampleDictPref(R"({
+    "*": {
+      "installation_mode": "removed",
+    }
+  })");
+  EXPECT_EQ(ExtensionManagement::INSTALLATION_REMOVED,
+            GetInstallationModeById(kTargetExtension));
+}
+
 // Tests the flag value indicating that extensions are blacklisted by default.
 TEST_F(ExtensionAdminPolicyTest, BlacklistedByDefault) {
   EXPECT_FALSE(BlacklistedByDefault(NULL));

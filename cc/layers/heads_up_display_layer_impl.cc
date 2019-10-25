@@ -1031,6 +1031,14 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
         stroke_width = DebugColors::NonFastScrollableRectBorderWidth();
         label_text = "repaints on scroll";
         break;
+      case MAIN_THREAD_SCROLLING_REASON_RECT_TYPE:
+        stroke_color = DebugColors::MainThreadScrollingReasonRectBorderColor();
+        fill_color = DebugColors::MainThreadScrollingReasonRectFillColor();
+        stroke_width = DebugColors::MainThreadScrollingReasonRectBorderWidth();
+        label_text = "main thread scrolling: ";
+        label_text.append(base::ToLowerASCII(MainThreadScrollingReason::AsText(
+            debug_rects[i].main_thread_scrolling_reasons)));
+        break;
       case ANIMATION_BOUNDS_RECT_TYPE:
         stroke_color = DebugColors::LayerAnimationBoundsBorderColor();
         fill_color = DebugColors::LayerAnimationBoundsFillColor();

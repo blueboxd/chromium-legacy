@@ -63,7 +63,6 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/ssl/client_cert_store.h"
-#include "net/url_request/url_request.h"
 #include "services/network/ignore_errors_cert_verifier.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
@@ -340,6 +339,12 @@ ProfileIOData* ProfileIOData::FromResourceContext(
 bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
   static const char* const kProtocolList[] = {
+    url::kHttpScheme,
+    url::kHttpsScheme,
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+    url::kWsScheme,
+    url::kWssScheme,
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
     url::kFileScheme,
     content::kChromeDevToolsScheme,
     dom_distiller::kDomDistillerScheme,
@@ -362,11 +367,11 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     url::kFileSystemScheme,
     chrome::kChromeSearchScheme,
   };
-  for (size_t i = 0; i < base::size(kProtocolList); ++i) {
-    if (scheme == kProtocolList[i])
+  for (const char* supported_protocol : kProtocolList) {
+    if (scheme == supported_protocol)
       return true;
   }
-  return net::URLRequest::IsHandledProtocol(scheme);
+  return false;
 }
 
 // static

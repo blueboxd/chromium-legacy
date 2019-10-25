@@ -81,6 +81,8 @@ class RealTimeUrlLookupService {
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
                            std::unique_ptr<std::string> response_body);
 
+  std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url);
+
   // Helper function to return a weak pointer.
   base::WeakPtr<RealTimeUrlLookupService> GetWeakPtr();
 

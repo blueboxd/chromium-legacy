@@ -3883,8 +3883,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
   MaybeAddThrottle(
       &throttles,
-      lookalikes::LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
-          handle));
+      LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(handle));
 
   MaybeAddThrottle(&throttles,
                    PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle));

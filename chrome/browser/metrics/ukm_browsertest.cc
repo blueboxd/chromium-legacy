@@ -130,13 +130,10 @@ class SyncConnectionOkChecker : public SingleClientStatusChangeChecker {
   explicit SyncConnectionOkChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for CONNECTION_OK.";
     return service()->GetSyncTokenStatusForDebugging().connection_status ==
            syncer::CONNECTION_OK;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for CONNECTION_OK.";
   }
 
  private:
@@ -379,12 +376,9 @@ class UkmEnabledChecker : public SingleClientStatusChangeChecker {
         want_enabled_(want_enabled) {}
 
   // StatusChangeChecker:
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for ukm_enabled=" << (want_enabled_ ? "true" : "false");
     return test_->ukm_enabled() == want_enabled_;
-  }
-  std::string GetDebugMessage() const override {
-    return std::string("waiting for ukm_enabled=") +
-           (want_enabled_ ? "true" : "false");
   }
 
  private:

@@ -59,6 +59,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
  public:
   using DisplayType = blink::WebMediaPlayer::DisplayType;
   using GetMediaTimeCB = base::RepeatingCallback<base::TimeDelta(void)>;
+  using GetPipelineStatsCB = base::Callback<PipelineStatistics(void)>;
 
   // Constructor for the reporter; all requested metadata should be fully known
   // before attempting construction as incorrect values will result in the wrong
@@ -82,6 +83,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                     const gfx::Size& natural_size,
                     GetMediaTimeCB get_media_time_cb,
+                    GetPipelineStatsCB get_pipeline_stats_cb,
                     mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
                     const base::TickClock* tick_clock = nullptr);
@@ -121,6 +123,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // finalized the total watch time for a given category will be divided by the
   // number of rebuffering events. Reset to zero after a finalize event.
   void OnUnderflow();
+  void OnUnderflowComplete(base::TimeDelta elapsed);
 
   // These methods are used to ensure that the watch time is reported relative
   // to whether the media is using native controls.
@@ -159,6 +162,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
                     bool is_muted,
                     const gfx::Size& natural_size,
                     GetMediaTimeCB get_media_time_cb,
+                    GetPipelineStatsCB get_pipeline_stats_cb,
                     mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
                     const base::TickClock* tick_clock);
@@ -183,6 +187,8 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   void RecordWatchTime();
   void UpdateWatchTime();
 
+  void ResetUnderflowState();
+
   // Helper methods for creating the components that make up the watch time
   // report. All components except the base component require a creation method
   // and a conversion method to get the correct WatchTimeKey.
@@ -199,6 +205,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   const bool is_background_;
   const bool is_muted_;
   const GetMediaTimeCB get_media_time_cb_;
+  const GetPipelineStatsCB get_pipeline_stats_cb_;
   mojom::WatchTimeRecorderPtr recorder_;
 
   // The amount of time between each UpdateWatchTime(); this is the frequency by
@@ -220,8 +227,18 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // transitioning above/below kMinimumVideoSize.
   gfx::Size natural_size_;
 
-  int underflow_count_ = 0;
-  std::vector<base::TimeDelta> pending_underflow_events_;
+  int total_underflow_count_ = 0;
+  int total_completed_underflow_count_ = 0;
+  base::TimeDelta total_underflow_duration_;
+  struct UnderflowEvent {
+    bool reported = false;
+    base::TimeDelta timestamp = kNoTimestamp;
+    base::TimeDelta duration = kNoTimestamp;
+  };
+  std::vector<UnderflowEvent> pending_underflow_events_;
+
+  PipelineStatistics initial_stats_;
+  PipelineStatistics last_stats_;
 
   // The various components making up WatchTime. If the |base_component_| is
   // finalized, all reporting will be stopped and finalized using its ending

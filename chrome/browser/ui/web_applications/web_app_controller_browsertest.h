@@ -30,6 +30,9 @@ enum class ControllerType {
   kUnifiedControllerWithWebApp,
 };
 
+std::string ControllerTypeParamToString(
+    const ::testing::TestParamInfo<web_app::ControllerType>& controller_type);
+
 // Base class for tests of user interface support for web applications.
 // ControllerType selects between use of WebAppBrowserController and
 // HostedAppBrowserController.

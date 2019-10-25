@@ -20,9 +20,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/reputation/safety_tip_ui_helper.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -996,7 +996,7 @@ void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
   switch (label->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS:
       if (GetSecurityDescriptionType() == SecurityDescriptionType::SAFETY_TIP) {
-        safety_tips::OpenHelpCenter(web_contents());
+        OpenHelpCenterFromSafetyTip(web_contents());
       } else {
         web_contents()->OpenURL(content::OpenURLParams(
             GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),

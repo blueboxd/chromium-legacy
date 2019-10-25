@@ -30,6 +30,26 @@ media::SampleFormat ConvertSampleFormat(SampleFormat format) {
   return kSampleFormatS16;
 }
 
+SampleFormat ConvertSampleFormat(media::SampleFormat format) {
+  switch (format) {
+    case kSampleFormatS16:
+      return SAMPLE_FORMAT_INT16_I;
+    case kSampleFormatS32:
+      return SAMPLE_FORMAT_INT32_I;
+    case kSampleFormatF32:
+      return SAMPLE_FORMAT_FLOAT_I;
+    case kSampleFormatPlanarS16:
+      return SAMPLE_FORMAT_INT16_P;
+    case kSampleFormatPlanarF32:
+      return SAMPLE_FORMAT_INT32_P;
+    case kSampleFormatPlanarS32:
+      return SAMPLE_FORMAT_FLOAT_P;
+    default:
+      NOTREACHED() << "Unhandled sample format " << format;
+  }
+  return SAMPLE_FORMAT_INT16_I;
+}
+
 int GetSampleSizeBytes(mixer_service::SampleFormat format) {
   if (format == SAMPLE_FORMAT_INT16_I || format == SAMPLE_FORMAT_INT16_P) {
     return 2;

@@ -1765,7 +1765,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   bad_data.SetFileContents(base::FilePath(L"x"), "x");
   bad_data.SetHtml(base::string16(ASCIIToUTF16("x")), GURL("x.org"));
   ui::OSExchangeData::DownloadFileInfo download(base::FilePath(), nullptr);
-  bad_data.SetDownloadFileInfo(download);
+  bad_data.SetDownloadFileInfo(&download);
   EXPECT_FALSE(textfield_->CanDrop(bad_data));
 }
 #endif

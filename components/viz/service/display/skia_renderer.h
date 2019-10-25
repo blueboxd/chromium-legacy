@@ -174,16 +174,20 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                        SkPaint* paint,
                        DrawQuadParams* params);
 
-  // DebugBorder, Picture, RPDQ, and SolidColor quads cannot be batched. They
-  // either are not textures (debug, picture, solid color), or it's very likely
-  // the texture will have advanced paint effects (rpdq)
+  // RPDQ, DebugBorder and picture quads cannot be batched. They
+  // either are not textures (debug, picture), or it's very likely
+  // the texture will have advanced paint effects (rpdq). Additionally, they do
+  // not support being drawn directly for a pass-through RenderPass.
   void DrawRenderPassQuad(const RenderPassDrawQuad* quad,
                           DrawQuadParams* params);
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
                            DrawQuadParams* params);
   void DrawPictureQuad(const PictureDrawQuad* quad, DrawQuadParams* params);
 
+  // Solid-color quads are not batchable, but can be drawn directly in place of
+  // a RenderPass (hence it takes the optional DrawRPDQParams).
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad,
+                          const DrawRPDQParams* rpdq_params,
                           DrawQuadParams* params);
 
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,

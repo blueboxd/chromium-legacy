@@ -20,8 +20,11 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kSCDisplayedBadgeToggleButton =
-    @"kSCDisplayedBadgeToggleButtonAXID";
+NSString* const kSCShowOverflowDisplayedBadgeButton =
+    @"kSCShowOverflowDisplayedBadgeButtonAXID";
+
+NSString* const kSCShowAcceptedDisplayedBadgeButton =
+    @"kSCShowAcceptedDisplayedBadgeButtonAXID";
 
 @interface BadgeContainerViewController : UIViewController
 @property(nonatomic, strong) BadgeViewController* centeredChildViewController;
@@ -54,13 +57,27 @@ NSString* const kSCDisplayedBadgeToggleButton =
         constraintEqualToConstant:100]
   ]];
 
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
-  button.accessibilityIdentifier = kSCDisplayedBadgeToggleButton;
-  [button setTitle:@"Show Overflow badge" forState:UIControlStateNormal];
-  [button addTarget:self
-                action:@selector(addSecondBadge:)
-      forControlEvents:UIControlEventTouchUpInside];
-  [stackView addArrangedSubview:button];
+  UIButton* showAcceptedBadgeButton =
+      [UIButton buttonWithType:UIButtonTypeSystem];
+  showAcceptedBadgeButton.accessibilityIdentifier =
+      kSCShowAcceptedDisplayedBadgeButton;
+  [showAcceptedBadgeButton setTitle:@"Show Accepted Badge"
+                           forState:UIControlStateNormal];
+  [showAcceptedBadgeButton addTarget:self
+                              action:@selector(showAcceptedDisplayedBadge)
+                    forControlEvents:UIControlEventTouchUpInside];
+  [stackView addArrangedSubview:showAcceptedBadgeButton];
+
+  UIButton* showOverflowBadgeButton =
+      [UIButton buttonWithType:UIButtonTypeSystem];
+  showOverflowBadgeButton.accessibilityIdentifier =
+      kSCShowOverflowDisplayedBadgeButton;
+  [showOverflowBadgeButton setTitle:@"Show Overflow badge"
+                           forState:UIControlStateNormal];
+  [showOverflowBadgeButton addTarget:self
+                              action:@selector(addSecondBadge:)
+                    forControlEvents:UIControlEventTouchUpInside];
+  [stackView addArrangedSubview:showOverflowBadgeButton];
 
   UIView* containerView = self.view;
   containerView.backgroundColor = [UIColor whiteColor];
@@ -70,6 +87,17 @@ NSString* const kSCDisplayedBadgeToggleButton =
       initWithBadgeType:BadgeType::kBadgeTypeIncognito];
   InfobarBadgeModel* passwordBadgeItem = [[InfobarBadgeModel alloc]
       initWithInfobarType:InfobarType::kInfobarTypePasswordSave];
+  passwordBadgeItem.badgeState = BadgeStateRead;
+  [self.consumer setupWithDisplayedBadge:passwordBadgeItem
+                         fullScreenBadge:incognitoItem];
+}
+
+- (void)showAcceptedDisplayedBadge {
+  BadgeStaticItem* incognitoItem = [[BadgeStaticItem alloc]
+      initWithBadgeType:BadgeType::kBadgeTypeIncognito];
+  InfobarBadgeModel* passwordBadgeItem = [[InfobarBadgeModel alloc]
+      initWithInfobarType:InfobarType::kInfobarTypePasswordSave];
+  passwordBadgeItem.badgeState = BadgeStateRead | BadgeStateAccepted;
   [self.consumer setupWithDisplayedBadge:passwordBadgeItem
                          fullScreenBadge:incognitoItem];
 }

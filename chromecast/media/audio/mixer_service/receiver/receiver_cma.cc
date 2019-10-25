@@ -24,6 +24,27 @@ namespace {
 constexpr base::TimeDelta kInactivityTimeout = base::TimeDelta::FromSeconds(5);
 }  // namespace
 
+class ReceiverCma::UnusedSocket : public MixerSocket::Delegate {
+ public:
+  UnusedSocket(ReceiverCma* receiver, std::unique_ptr<MixerSocket> socket)
+      : receiver_(receiver), socket_(std::move(socket)) {
+    DCHECK(receiver_);
+    DCHECK(socket_);
+    socket_->SetDelegate(this);
+  }
+
+  ~UnusedSocket() override = default;
+
+ private:
+  // MixerSocket::Delegate implementation:
+  void OnConnectionError() override { receiver_->RemoveUnusedSocket(this); }
+
+  ReceiverCma* const receiver_;
+  const std::unique_ptr<MixerSocket> socket_;
+
+  DISALLOW_COPY_AND_ASSIGN(UnusedSocket);
+};
+
 class ReceiverCma::Stream : public MixerSocket::Delegate,
                             public CmaBackendShim::Delegate {
  public:
@@ -152,6 +173,8 @@ class ReceiverCma::Stream : public MixerSocket::Delegate,
   base::TimeTicks last_receive_time_;
 
   base::WeakPtrFactory<Stream> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(Stream);
 };
 
 ReceiverCma::ReceiverCma(MediaPipelineBackendManager* backend_manager)
@@ -172,20 +195,33 @@ void ReceiverCma::CreateOutputStream(std::unique_ptr<MixerSocket> socket,
 void ReceiverCma::CreateLoopbackConnection(std::unique_ptr<MixerSocket> socket,
                                            const Generic& message) {
   LOG(INFO) << "Unhandled loopback connection";
+  AddUnusedSocket(std::move(socket));
 }
 
 void ReceiverCma::CreateAudioRedirection(std::unique_ptr<MixerSocket> socket,
                                          const Generic& message) {
   LOG(INFO) << "Unhandled redirection connection";
+  AddUnusedSocket(std::move(socket));
 }
 
 void ReceiverCma::CreateControlConnection(std::unique_ptr<MixerSocket> socket,
                                           const Generic& message) {
   LOG(INFO) << "Unhandled control connection";
+  AddUnusedSocket(std::move(socket));
 }
 
 void ReceiverCma::RemoveStream(Stream* stream) {
   streams_.erase(stream);
+}
+
+void ReceiverCma::AddUnusedSocket(std::unique_ptr<MixerSocket> socket) {
+  auto unused_socket = std::make_unique<UnusedSocket>(this, std::move(socket));
+  UnusedSocket* ptr = unused_socket.get();
+  unused_sockets_[ptr] = std::move(unused_socket);
+}
+
+void ReceiverCma::RemoveUnusedSocket(UnusedSocket* unused_socket) {
+  unused_sockets_.erase(unused_socket);
 }
 
 }  // namespace mixer_service

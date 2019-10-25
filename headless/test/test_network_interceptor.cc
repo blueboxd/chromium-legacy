@@ -12,8 +12,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace headless {
 
@@ -57,15 +57,15 @@ class RedirectLoader : public network::mojom::URLLoader {
         response_->headers->response_code(), url_.Resolve(location),
         net::RedirectUtil::GetReferrerPolicyHeader(response_->headers.get()),
         false /* insecure_scheme_was_upgraded */, true);
-    network::ResourceResponseHead head;
-    head.request_time = base::Time::Now();
-    head.response_time = base::Time::Now();
-    head.content_length = 0;
-    head.encoded_data_length = 0;
-    head.headers = response_->headers;
+    auto head = network::mojom::URLResponseHead::New();
+    head->request_time = base::Time::Now();
+    head->response_time = base::Time::Now();
+    head->content_length = 0;
+    head->encoded_data_length = 0;
+    head->headers = response_->headers;
     url_ = redirect_info.new_url;
     method_ = redirect_info.new_method;
-    client_->OnReceiveRedirect(redirect_info, head);
+    client_->OnReceiveRedirect(redirect_info, std::move(head));
   }
 
   TestNetworkInterceptor::Impl* const interceptor_impl_;

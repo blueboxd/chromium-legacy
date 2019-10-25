@@ -415,6 +415,52 @@ class HeadlessWebContentsPDFStreamTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFStreamTest);
+
+class HeadlessWebContentsPDFPageSizeRoundingTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public page::Observer {
+ public:
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+
+    devtools_client_->GetPage()->AddObserver(this);
+
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    run_loop.Run();
+
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/red_square.html").spec());
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
+        page::PrintToPDFParams::Builder()
+            .SetPrintBackground(true)
+            .SetPaperHeight(41)
+            .SetPaperWidth(41)
+            .SetMarginTop(0)
+            .SetMarginBottom(0)
+            .SetMarginLeft(0)
+            .SetMarginRight(0)
+            .Build(),
+        base::BindOnce(
+            &HeadlessWebContentsPDFPageSizeRoundingTest::OnPDFCreated,
+            base::Unretained(this)));
+  }
+
+  void OnPDFCreated(std::unique_ptr<page::PrintToPDFResult> result) {
+    protocol::Binary pdf_data = result->GetData();
+    EXPECT_GT(pdf_data.size(), 0U);
+    auto pdf_span = base::make_span(pdf_data.data(), pdf_data.size());
+    int num_pages;
+    EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
+    EXPECT_THAT(num_pages, testing::Eq(1));
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFPageSizeRoundingTest);
 #endif
 
 class HeadlessWebContentsSecurityTest

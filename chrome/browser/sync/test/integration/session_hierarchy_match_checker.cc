@@ -12,11 +12,8 @@ SessionHierarchyMatchChecker::SessionHierarchyMatchChecker(
       sessions_hierarchy_(sessions_hierarchy),
       verifier_(fake_server) {}
 
-bool SessionHierarchyMatchChecker::IsExitConditionSatisfied() {
-  return verifier_.VerifySessions(sessions_hierarchy_);
-}
-
-std::string SessionHierarchyMatchChecker::GetDebugMessage() const {
-  return "Waiting for matching sessions hierarchy to be reflected in fake "
+bool SessionHierarchyMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for matching sessions hierarchy to be reflected in fake "
          "server";
+  return verifier_.VerifySessions(sessions_hierarchy_);
 }

@@ -30,6 +30,8 @@ An archive of all packages built so far is at https://is.gd/chromeclang
             gs://chromium-browser-clang/$x/translation_unit-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvm-code-coverage-$rev.tgz \
             gs://chromium-browser-clang/$x/llvm-code-coverage-$rev.tgz ; \
+        gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/libclang-$rev.tgz \
+            gs://chromium-browser-clang/$x/libclang-$rev.tgz ; \
         done && gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/Mac/lld-$rev.tgz \
             gs://chromium-browser-clang/Mac/lld-$rev.tgz
     ```

@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 
@@ -44,14 +45,14 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
   CodeCacheHostImpl(
       int render_process_id,
       scoped_refptr<CacheStorageContextImpl> cache_storage_context,
-      scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context);
-  ~CodeCacheHostImpl() override;
-
-  static void Create(
-      int render_process_id,
-      scoped_refptr<CacheStorageContextImpl> cache_storage_context,
       scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context,
       mojo::PendingReceiver<blink::mojom::CodeCacheHost> receiver);
+  ~CodeCacheHostImpl() override;
+
+  mojo::Receiver<blink::mojom::CodeCacheHost>& receiver() { return receiver_; }
+
+  void SetCacheStorageContextForTesting(
+      scoped_refptr<CacheStorageContextImpl> context);
 
  private:
   // blink::mojom::CodeCacheHost implementation.
@@ -90,6 +91,8 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
   scoped_refptr<CacheStorageContextImpl> cache_storage_context_;
 
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
+
+  mojo::Receiver<blink::mojom::CodeCacheHost> receiver_;
 
   base::WeakPtrFactory<CodeCacheHostImpl> weak_ptr_factory_{this};
 

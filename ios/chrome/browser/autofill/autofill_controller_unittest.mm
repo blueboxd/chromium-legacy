@@ -33,7 +33,6 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_finished_profile_tasks_waiter.h"
@@ -248,8 +247,6 @@ void AutofillControllerTest::SetUp() {
   // WebDataService; this is not initialized on a TestChromeBrowserState by
   // default.
   chrome_browser_state_->CreateWebDataService();
-
-  IOSSecurityStateTabHelper::CreateForWebState(web_state());
 
   autofill_agent_ = [[AutofillAgent alloc]
       initWithPrefService:chrome_browser_state_->GetPrefs()

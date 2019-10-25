@@ -27,8 +27,7 @@ class ServerCountMatchStatusChecker
   ServerCountMatchStatusChecker(syncer::ModelType type, size_t count);
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
   const syncer::ModelType type_;
@@ -41,8 +40,7 @@ class PassphraseRequiredChecker : public SingleClientStatusChangeChecker {
   explicit PassphraseRequiredChecker(syncer::ProfileSyncService* service);
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 // Checker to block until service has accepted a new passphrase.
@@ -51,8 +49,7 @@ class PassphraseAcceptedChecker : public SingleClientStatusChangeChecker {
   explicit PassphraseAcceptedChecker(syncer::ProfileSyncService* service);
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_INTEGRATION_TEST_UTIL_H_

@@ -405,14 +405,14 @@ public class FeedConfigurationTest {
     @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
     public void testCreateConfiguration() {
         Configuration configuration = FeedConfiguration.createConfiguration();
-        Assert.assertTrue(
-                configuration.getValueOrDefault(ConfigKey.ABANDON_RESTORE_BELOW_FOLD, false));
+        Assert.assertFalse(
+                configuration.getValueOrDefault(ConfigKey.ABANDON_RESTORE_BELOW_FOLD, true));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, true));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.CONSUME_SYNTHETIC_TOKENS, true));
-        Assert.assertFalse(configuration.getValueOrDefault(
-                ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING, true));
+        Assert.assertTrue(configuration.getValueOrDefault(
+                ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING, false));
         Assert.assertEquals((long) FeedConfiguration.DEFAULT_ACTION_TTL_SECONDS_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.DEFAULT_ACTION_TTL_SECONDS, 0));
         Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_ENDPOINT_DEFAULT,

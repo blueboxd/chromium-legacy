@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -94,13 +95,13 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     private int calculateDefaultColor() {
-        return ColorUtils.getDefaultThemeColor(
+        return ChromeColors.getDefaultThemeColor(
                 mTab.getContext().getResources(), mTab.isIncognito());
     }
 
     private void updateDefaultBackgroundColor() {
         mDefaultBackgroundColor =
-                ColorUtils.getPrimaryBackgroundColor(mTab.getContext().getResources(), false);
+                ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false);
     }
 
     /**

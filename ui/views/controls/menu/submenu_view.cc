@@ -408,9 +408,13 @@ void SubmenuView::Reposition(const gfx::Rect& bounds) {
 
 void SubmenuView::Close() {
   if (host_) {
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuPopupEnd, true);
+    // We send the event to the ScrollViewContainer first because the View
+    // accessibility delegate sets up a focus override when receiving the
+    // kMenuStart event that we want to be disabled when we send the
+    // kMenuPopupEnd event in order to access the previously focused node.
     GetScrollViewContainer()->NotifyAccessibilityEvent(
         ax::mojom::Event::kMenuEnd, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuPopupEnd, true);
 
     host_->DestroyMenuHost();
     host_ = nullptr;

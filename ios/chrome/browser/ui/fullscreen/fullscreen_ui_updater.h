@@ -6,6 +6,7 @@
 #define IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_UI_UPDATER_H_
 
 #include "base/scoped_observer.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_observer.h"
 
 @protocol FullscreenUIElement;

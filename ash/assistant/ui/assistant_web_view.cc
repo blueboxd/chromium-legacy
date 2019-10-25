@@ -10,6 +10,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
@@ -30,6 +31,7 @@ namespace ash {
 
 AssistantWebView::AssistantWebView(AssistantViewDelegate* delegate)
     : delegate_(delegate) {
+  SetID(AssistantViewID::kWebView);
   InitLayout();
 
   delegate_->AddObserver(this);

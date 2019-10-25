@@ -99,4 +99,9 @@ interface RemoteFrame {
   // part of ViewMsg_Resize, once the browser process has resized the tab for
   // fullscreen.
   WillEnterFullscreen();
+
+  // Resets the replicated ContentSecurityPolicy on the remote frame's
+  // SecurityContext. Used to reset CSP from the previous document on
+  // a cross-document navigation.
+  ResetReplicatedContentSecurityPolicy();
 };

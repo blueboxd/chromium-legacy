@@ -11,7 +11,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"

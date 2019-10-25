@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
@@ -50,11 +51,13 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   // This could get called multiple times during the lifetime in redirect
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)
+  using ServiceWorkerLoaderCallback =
+      base::OnceCallback<void(SingleRequestURLLoaderFactory::RequestHandler)>;
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_request,
       BrowserContext* browser_context,
       ResourceContext* resource_context,
-      NavigationLoaderInterceptor::LoaderCallback callback,
+      ServiceWorkerLoaderCallback callback,
       NavigationLoaderInterceptor::FallbackCallback fallback_callback);
   // Returns params with the ControllerServiceWorkerInfoPtr if we have found
   // a matching controller service worker for the |request| that is given
@@ -114,7 +117,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   bool force_update_started_;
   base::TimeTicks registration_lookup_start_time_;
 
-  NavigationLoaderInterceptor::LoaderCallback loader_callback_;
+  ServiceWorkerLoaderCallback loader_callback_;
   NavigationLoaderInterceptor::FallbackCallback fallback_callback_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_{

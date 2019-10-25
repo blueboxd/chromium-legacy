@@ -7005,6 +7005,8 @@
   "GPU FYI Win dEQP Builder": {},
   "GPU FYI Win x64 Builder": {},
   "GPU FYI Win x64 Builder (dbg)": {},
+  "GPU FYI Win x64 DX12 Vulkan Builder": {},
+  "GPU FYI Win x64 DX12 Vulkan Builder (dbg)": {},
   "GPU FYI Win x64 dEQP Builder": {},
   "Linux FYI Debug (NVIDIA)": {
     "gtest_tests": [
@@ -18313,6 +18315,72 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      }
+    ]
+  },
+  "Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "noop_sleep",
+          "--show-stdout",
+          "--browser=debug_x64",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "noop_sleep_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      }
+    ]
+  },
+  "Win10 FYI x64 DX12 Vulkan Release (NVIDIA)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "noop_sleep",
+          "--show-stdout",
+          "--browser=release_x64",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "noop_sleep_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
         }
       }
     ]

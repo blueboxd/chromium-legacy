@@ -17,6 +17,8 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/dns/host_resolver_source.h"
+#include "net/dns/public/dns_query_type.h"
 
 namespace proxy_resolver {
 namespace {
@@ -30,14 +32,15 @@ constexpr auto kNegativeCacheEntryTTL = base::TimeDelta();
 net::HostCache::Key CacheKeyForRequest(
     const std::string& hostname,
     net::ProxyResolveDnsOperation operation) {
-  net::AddressFamily address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
+  net::DnsQueryType dns_query_type = net::DnsQueryType::UNSPECIFIED;
   if (operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
       operation == net::ProxyResolveDnsOperation::DNS_RESOLVE) {
-    address_family = net::ADDRESS_FAMILY_IPV4;
+    dns_query_type = net::DnsQueryType::A;
   }
 
-  return net::HostCache::Key(hostname, address_family,
-                             0 /* host_resolver_flags */);
+  return net::HostCache::Key(hostname, dns_query_type,
+                             0 /* host_resolver_flags */,
+                             net::HostResolverSource::ANY);
 }
 
 }  // namespace

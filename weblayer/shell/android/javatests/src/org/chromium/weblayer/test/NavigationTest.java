@@ -191,8 +191,8 @@ public class NavigationTest {
         mActivityTestRule.navigateAndWait(URL2);
         mActivityTestRule.navigateAndWait(URL3);
 
-        NavigationController navigationController =
-                    activity.getBrowserController().getNavigationController();
+        NavigationController navigationController = runOnUiThreadBlocking(
+                () -> activity.getBrowserController().getNavigationController());
 
         navigateAndWaitForCompletion(URL2, () -> {
             assertTrue(navigationController.canGoBack());

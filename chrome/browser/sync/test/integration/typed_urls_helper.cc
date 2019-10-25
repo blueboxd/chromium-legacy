@@ -556,12 +556,10 @@ ProfilesHaveSameTypedURLsChecker::ProfilesHaveSameTypedURLsChecker()
     : MultiClientStatusChangeChecker(
           sync_datatype_helper::test()->GetSyncServices()) {}
 
-bool ProfilesHaveSameTypedURLsChecker::IsExitConditionSatisfied() {
+bool ProfilesHaveSameTypedURLsChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for matching typed urls profiles";
   return typed_urls_helper::CheckAllProfilesHaveSameTypedURLs();
-}
-
-std::string ProfilesHaveSameTypedURLsChecker::GetDebugMessage() const {
-  return "Waiting for matching typed urls profiles";
 }
 
 TypedURLChecker::TypedURLChecker(int index, const std::string& url)
@@ -572,7 +570,9 @@ TypedURLChecker::TypedURLChecker(int index, const std::string& url)
 
 TypedURLChecker::~TypedURLChecker() {}
 
-bool TypedURLChecker::IsExitConditionSatisfied() {
+bool TypedURLChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for data for url '" << url_ << "' to be populated.";
+
   history::URLRows rows = typed_urls_helper::GetTypedUrlsFromClient(index_);
 
   for (auto row : rows) {
@@ -580,8 +580,4 @@ bool TypedURLChecker::IsExitConditionSatisfied() {
       return true;
   }
   return false;
-}
-
-std::string TypedURLChecker::GetDebugMessage() const {
-  return "Waiting for data for url '" + url_ + "' to be populated.";
 }

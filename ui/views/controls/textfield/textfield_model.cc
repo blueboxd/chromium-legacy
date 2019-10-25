@@ -364,8 +364,8 @@ bool TextfieldModel::Delete(bool add_to_kill_buffer) {
     DeleteSelection();
     return true;
   }
-  if (text().length() > GetCursorPosition()) {
-    size_t cursor_position = GetCursorPosition();
+  const size_t cursor_position = GetCursorPosition();
+  if (cursor_position < text().length()) {
     size_t next_grapheme_index = render_text_->IndexOfAdjacentGrapheme(
         cursor_position, gfx::CURSOR_FORWARD);
     gfx::Range range_to_delete(cursor_position, next_grapheme_index);
@@ -393,7 +393,7 @@ bool TextfieldModel::Backspace(bool add_to_kill_buffer) {
     DeleteSelection();
     return true;
   }
-  size_t cursor_position = GetCursorPosition();
+  const size_t cursor_position = GetCursorPosition();
   if (cursor_position > 0) {
     gfx::Range range_to_delete(
         PlatformStyle::RangeToDeleteBackwards(text(), cursor_position));
@@ -524,13 +524,6 @@ bool TextfieldModel::Cut() {
   if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteText(GetSelectedText());
-    // A trick to let undo/redo handle cursor correctly.
-    // Undoing CUT moves the cursor to the end of the change rather
-    // than beginning, unlike Delete/Backspace.
-    // TODO(oshima): Change Delete/Backspace to use DeleteSelection,
-    // update DeleteEdit and remove this trick.
-    const gfx::Range& selection = render_text_->selection();
-    render_text_->SelectRange(gfx::Range(selection.end(), selection.start()));
     DeleteSelection();
     return true;
   }

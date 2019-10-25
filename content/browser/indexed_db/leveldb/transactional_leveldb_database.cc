@@ -30,8 +30,8 @@
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes.h"
@@ -80,7 +80,7 @@ constexpr const size_t
 TransactionalLevelDBDatabase::TransactionalLevelDBDatabase(
     scoped_refptr<LevelDBState> level_db_state,
     std::unique_ptr<LevelDBScopes> leveldb_scopes,
-    indexed_db::LevelDBFactory* class_factory,
+    TransactionalLevelDBFactory* class_factory,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     size_t max_open_iterators)
     : level_db_state_(std::move(level_db_state)),

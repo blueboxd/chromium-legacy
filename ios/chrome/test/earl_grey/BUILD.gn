@@ -384,6 +384,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui_constants",
     "//ios/chrome/browser/ui/safe_mode",
     "//ios/chrome/browser/ui/safe_mode:eg_app_support+eg2",
+    "//ios/chrome/browser/ui/settings:eg_app_support+eg2",
     "//ios/chrome/browser/ui/settings:settings",
     "//ios/chrome/browser/ui/settings/autofill",
     "//ios/chrome/browser/ui/settings/autofill:feature_flags",

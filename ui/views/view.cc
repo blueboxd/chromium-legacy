@@ -1623,9 +1623,14 @@ void View::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void View::PreferredSizeChanged() {
-  InvalidateLayout();
   if (parent_)
     parent_->ChildPreferredSizeChanged(this);
+  // Since some layout managers (specifically AnimatingLayoutManager) can react
+  // to InvalidateLayout() by doing calculations and since the parent can
+  // potentially change preferred size, etc. as a result of calling
+  // ChildPreferredSizeChanged(), postpone invalidation until the events have
+  // run all the way up the hierarchy.
+  InvalidateLayout();
   for (ViewObserver& observer : observers_)
     observer.OnViewPreferredSizeChanged(this);
 }

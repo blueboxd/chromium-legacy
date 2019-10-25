@@ -14,6 +14,7 @@
 #import "components/history/ios/browser/web_state_top_sites_observer.h"
 #include "components/keyed_service/core/service_access_type.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#import "components/security_state/ios/insecure_input_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -40,8 +41,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #import "ios/chrome/browser/ssl/captive_portal_metrics_tab_helper.h"
-#import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
-#import "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
@@ -81,7 +80,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
   IOSChromeSyncedTabDelegate::CreateForWebState(web_state);
   InfoBarManagerImpl::CreateForWebState(web_state);
-  IOSSecurityStateTabHelper::CreateForWebState(web_state);
   BlockedPopupTabHelper::CreateForWebState(web_state);
   FindTabHelper::CreateForWebState(web_state);
   U2FTabHelper::CreateForWebState(web_state);

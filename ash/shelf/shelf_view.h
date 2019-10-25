@@ -120,7 +120,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
  public:
   ShelfView(ShelfModel* model,
             Shelf* shelf,
-            ApplicationDragAndDropHost* drag_and_drop_host);
+            ApplicationDragAndDropHost* drag_and_drop_host,
+            ShelfButtonDelegate* delegate);
   ~ShelfView() override;
 
   Shelf* shelf() const { return shelf_; }
@@ -732,6 +733,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // When the scrollable shelf is enabled, |drag_and_drop_host_| should be
   // ScrollableShelfView.
   ApplicationDragAndDropHost* drag_and_drop_host_ = nullptr;
+
+  // When the scrollable shelf is enabled, |shelf_button_delegate_| should
+  // be ScrollableShelfView.
+  ShelfButtonDelegate* shelf_button_delegate_ = nullptr;
 
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
 

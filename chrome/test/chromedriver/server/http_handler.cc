@@ -1249,11 +1249,15 @@ HttpHandler::PrepareStandardResponse(
     // error UnexpectedAlertOpen should contain 'data.text' with alert text
     if (status.code() == kUnexpectedAlertOpen) {
       const std::string& message = status.message();
-      unsigned first = message.find("{");
-      unsigned last = message.find_last_of("}");
-      std::string alertText = message.substr(first, last-first);
-      alertText = alertText.substr(alertText.find(":") + 2);
-      inner_params->SetString("data.text", alertText);
+      auto first = message.find("{");
+      auto last = message.find_last_of("}");
+      if (first == std::string::npos || last == std::string::npos) {
+        inner_params->SetString("data.text", "");
+      } else {
+        std::string alertText = message.substr(first, last - first);
+        alertText = alertText.substr(alertText.find(":") + 2);
+        inner_params->SetString("data.text", alertText);
+      }
     }
     body_params.SetDictionary("value", std::move(inner_params));
   } else {

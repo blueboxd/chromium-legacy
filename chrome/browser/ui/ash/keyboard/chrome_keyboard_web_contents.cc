@@ -15,6 +15,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_bounds_observer.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -47,8 +48,8 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override {
-    source->GetController().LoadURL(params.url, params.referrer,
-                                    params.transition, params.extra_headers);
+    source->GetController().LoadURLWithParams(
+        content::NavigationController::LoadURLParams(params));
     Observe(source);
     return source;
   }

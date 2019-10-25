@@ -330,7 +330,10 @@ class ScrollableShelfFocusSearch : public views::FocusSearch {
 // ScrollableShelfView
 
 ScrollableShelfView::ScrollableShelfView(ShelfModel* model, Shelf* shelf)
-    : shelf_view_(new ShelfView(model, shelf, /*drag_and_drop_host=*/this)),
+    : shelf_view_(new ShelfView(model,
+                                shelf,
+                                /*drag_and_drop_host=*/this,
+                                /*shelf_button_delegate=*/this)),
       page_flip_time_threshold_(kShelfPageFlipDelay) {
   Shell::Get()->AddShellObserver(this);
   set_allow_deactivate_on_esc(true);
@@ -747,7 +750,24 @@ const char* ScrollableShelfView::GetClassName() const {
 
 void ScrollableShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
     ShelfButton* button,
-    bool reverse) {}
+    bool reverse) {
+  if ((button == left_arrow_) || (button == right_arrow_))
+    return;
+
+  shelf_view_->OnShelfButtonAboutToRequestFocusFromTabTraversal(button,
+                                                                reverse);
+}
+
+void ScrollableShelfView::ButtonPressed(views::Button* sender,
+                                        const ui::Event& event,
+                                        views::InkDrop* ink_drop) {
+  if ((sender == left_arrow_) || (sender == right_arrow_)) {
+    ScrollToNewPage(sender == right_arrow_);
+    return;
+  }
+
+  shelf_view_->ButtonPressed(sender, event, ink_drop);
+}
 
 void ScrollableShelfView::ShowContextMenuForViewImpl(
     views::View* source,
@@ -755,16 +775,6 @@ void ScrollableShelfView::ShowContextMenuForViewImpl(
     ui::MenuSourceType source_type) {
   // |point| is in screen coordinates. So it does not need to transform.
   shelf_view_->ShowContextMenuForViewImpl(shelf_view_, point, source_type);
-}
-
-void ScrollableShelfView::ButtonPressed(views::Button* sender,
-                                        const ui::Event& event,
-                                        views::InkDrop* ink_drop) {
-  // Verfies that |sender| is either |left_arrow_| or |right_arrow_|.
-  views::View* sender_view = sender;
-  DCHECK((sender_view == left_arrow_) || (sender_view == right_arrow_));
-
-  ScrollToNewPage(sender_view == right_arrow_);
 }
 
 void ScrollableShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {

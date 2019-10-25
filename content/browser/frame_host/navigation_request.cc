@@ -2253,7 +2253,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
     // DownloadManager, and cancel the navigation.
     if (is_download_) {
       // TODO(arthursonzogni): Pass the real ResourceRequest. For the moment
-      // only these 4 parameters will be used, but it may evolve quickly.
+      // only these parameters will be used, but it may evolve quickly.
       auto resource_request = std::make_unique<network::ResourceRequest>();
       resource_request->url = common_params_->url;
       resource_request->method = common_params_->method;
@@ -2261,6 +2261,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       resource_request->referrer = common_params_->referrer->url;
       resource_request->has_user_gesture = common_params_->has_user_gesture;
       resource_request->mode = network::mojom::RequestMode::kNavigate;
+      resource_request->transition_type = common_params_->transition;
 
       BrowserContext* browser_context =
           frame_tree_node_->navigator()->GetController()->GetBrowserContext();

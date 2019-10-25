@@ -137,7 +137,6 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
  protected:
   LayoutThemeDefault();
   ~LayoutThemeDefault() override;
-  bool ShouldUseFallbackTheme(const ComputedStyle&) const override;
 
   IntRect DeterminateProgressValueRectFor(LayoutProgress*,
                                           const IntRect&) const;

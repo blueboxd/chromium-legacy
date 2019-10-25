@@ -16,11 +16,11 @@ import android.os.StrictMode;
 
 import org.chromium.android_webview.common.CommandLineUtil;
 import org.chromium.android_webview.common.PlatformServiceBridge;
-import org.chromium.android_webview.common.ServiceNames;
+import org.chromium.android_webview.common.services.ICrashReceiverService;
+import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.metrics.AwMetricsServiceClient;
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
-import org.chromium.android_webview.services.ICrashReceiverService;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

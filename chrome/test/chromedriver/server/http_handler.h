@@ -85,6 +85,7 @@ class HttpHandler {
   FRIEND_TEST_ALL_PREFIXES(HttpHandlerTest, HandleInvalidPost);
   FRIEND_TEST_ALL_PREFIXES(HttpHandlerTest, HandleUnimplementedCommand);
   FRIEND_TEST_ALL_PREFIXES(HttpHandlerTest, HandleCommand);
+  FRIEND_TEST_ALL_PREFIXES(HttpHandlerTest, StandardResponse_ErrorNoMessage);
   typedef std::vector<CommandMapping> CommandMap;
 
   Command WrapToCommand(const char* name,

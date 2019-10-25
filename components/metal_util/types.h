@@ -15,7 +15,10 @@ namespace metal {
 // This file defines types that resolve to Metal types in Objective-C sources
 // and can be included in C++ sources.
 #if __OBJC__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
 using MTLDevicePtr = id<MTLDevice>;
+#pragma clang diagnostic pop
 #else
 class MTLDeviceProtocol;
 using MTLDevicePtr = MTLDeviceProtocol*;

@@ -846,6 +846,9 @@ extern const char kOmniboxDisableInstantExtendedLimitDescription[];
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+extern const char kOmniboxExperimentalSuggestScoringName[];
+extern const char kOmniboxExperimentalSuggestScoringDescription[];
+
 extern const char kOmniboxGroupSuggestionsBySearchVsUrlName[];
 extern const char kOmniboxGroupSuggestionsBySearchVsUrlDescription[];
 
@@ -1272,9 +1275,6 @@ extern const char kTurnOffStreamingMediaCachingDescription[];
 
 extern const char kUnexpireFlagsM76Name[];
 extern const char kUnexpireFlagsM76Description[];
-
-extern const char kUnifiedConsentName[];
-extern const char kUnifiedConsentDescription[];
 
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
@@ -2159,6 +2159,9 @@ extern const char kReduceDisplayNotificationsDescription[];
 
 extern const char kReleaseNotesName[];
 extern const char kReleaseNotesDescription[];
+
+extern const char kReleaseNotesNotificationName[];
+extern const char kReleaseNotesNotificationDescription[];
 
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/send_tab_to_self_helper.h"
 
+#include <sstream>
+
 #include "base/logging.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
@@ -25,7 +27,9 @@ SendTabToSelfUrlChecker::~SendTabToSelfUrlChecker() {
   service_->GetSendTabToSelfModel()->RemoveObserver(this);
 }
 
-bool SendTabToSelfUrlChecker::IsExitConditionSatisfied() {
+bool SendTabToSelfUrlChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for data for url '" + url_.spec() + "' to be populated.";
+
   send_tab_to_self::SendTabToSelfModel* model =
       service_->GetSendTabToSelfModel();
   for (auto const& guid : model->GetAllGuids()) {
@@ -34,10 +38,6 @@ bool SendTabToSelfUrlChecker::IsExitConditionSatisfied() {
     }
   }
   return false;
-}
-
-std::string SendTabToSelfUrlChecker::GetDebugMessage() const {
-  return "Waiting for data for url '" + url_.spec() + "' to be populated.";
 }
 
 void SendTabToSelfUrlChecker::SendTabToSelfModelLoaded() {
@@ -67,7 +67,9 @@ SendTabToSelfUrlOpenedChecker::~SendTabToSelfUrlOpenedChecker() {
   service_->GetSendTabToSelfModel()->RemoveObserver(this);
 }
 
-bool SendTabToSelfUrlOpenedChecker::IsExitConditionSatisfied() {
+bool SendTabToSelfUrlOpenedChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for data for url '" + url_.spec() + "' to be marked opened.";
+
   send_tab_to_self::SendTabToSelfModel* model =
       service_->GetSendTabToSelfModel();
   for (auto const& guid : model->GetAllGuids()) {
@@ -78,10 +80,6 @@ bool SendTabToSelfUrlOpenedChecker::IsExitConditionSatisfied() {
     }
   }
   return false;
-}
-
-std::string SendTabToSelfUrlOpenedChecker::GetDebugMessage() const {
-  return "Waiting for data for url '" + url_.spec() + "' to be marked opened.";
 }
 
 void SendTabToSelfUrlOpenedChecker::SendTabToSelfModelLoaded() {
@@ -120,7 +118,10 @@ SendTabToSelfModelEqualityChecker::~SendTabToSelfModelEqualityChecker() {
   service1_->GetSendTabToSelfModel()->RemoveObserver(this);
 }
 
-bool SendTabToSelfModelEqualityChecker::IsExitConditionSatisfied() {
+bool SendTabToSelfModelEqualityChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for services to converge";
+
   const send_tab_to_self::SendTabToSelfModel* model0 =
       service0_->GetSendTabToSelfModel();
   const send_tab_to_self::SendTabToSelfModel* model1 =
@@ -151,10 +152,6 @@ bool SendTabToSelfModelEqualityChecker::IsExitConditionSatisfied() {
   return true;
 }
 
-std::string SendTabToSelfModelEqualityChecker::GetDebugMessage() const {
-  return "Waiting for services to converge";
-}
-
 void SendTabToSelfModelEqualityChecker::SendTabToSelfModelLoaded() {
   CheckExitCondition();
 }
@@ -181,12 +178,9 @@ SendTabToSelfActiveChecker::~SendTabToSelfActiveChecker() {
   service_->GetSendTabToSelfModel()->RemoveObserver(this);
 }
 
-bool SendTabToSelfActiveChecker::IsExitConditionSatisfied() {
+bool SendTabToSelfActiveChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for model to be active.";
   return service_->GetSendTabToSelfModel()->IsReady();
-}
-
-std::string SendTabToSelfActiveChecker::GetDebugMessage() const {
-  return "Waiting for model to be active.";
 }
 
 void SendTabToSelfActiveChecker::SendTabToSelfModelLoaded() {
@@ -215,12 +209,10 @@ SendTabToSelfMultiDeviceActiveChecker::
   tracker_->RemoveObserver(this);
 }
 
-bool SendTabToSelfMultiDeviceActiveChecker::IsExitConditionSatisfied() {
+bool SendTabToSelfMultiDeviceActiveChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for multiple devices to be active.";
   return tracker_->CountActiveDevices() > 1;
-}
-
-std::string SendTabToSelfMultiDeviceActiveChecker::GetDebugMessage() const {
-  return "Waiting for multiple devices to be active.";
 }
 
 void SendTabToSelfMultiDeviceActiveChecker::OnDeviceInfoChange() {
@@ -239,7 +231,10 @@ SendTabToSelfUrlDeletedChecker::~SendTabToSelfUrlDeletedChecker() {
   service_->GetSendTabToSelfModel()->RemoveObserver(this);
 }
 
-bool SendTabToSelfUrlDeletedChecker::IsExitConditionSatisfied() {
+bool SendTabToSelfUrlDeletedChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for data for url '" + url_.spec() + "' to be deleted.";
+
   send_tab_to_self::SendTabToSelfModel* model =
       service_->GetSendTabToSelfModel();
   DCHECK(model);
@@ -253,13 +248,10 @@ bool SendTabToSelfUrlDeletedChecker::IsExitConditionSatisfied() {
   return true;
 }
 
-std::string SendTabToSelfUrlDeletedChecker::GetDebugMessage() const {
-  return "Waiting for data for url '" + url_.spec() + "' to be deleted.";
-}
-
 void SendTabToSelfUrlDeletedChecker::SendTabToSelfModelLoaded() {
   // This ensures that the URL being inspected is present when the model loads.
-  DCHECK(!IsExitConditionSatisfied());
+  std::ostringstream s;
+  DCHECK(!IsExitConditionSatisfied(&s));
 }
 
 void SendTabToSelfUrlDeletedChecker::EntriesAddedRemotely(

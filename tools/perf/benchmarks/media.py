@@ -39,8 +39,9 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
     options.config.chrome_trace_config.SetMemoryDumpConfig(
         chrome_trace_config.MemoryDumpConfig())
 
-    options.SetTimelineBasedMetrics(['mediaMetric', 'cpuTimeMetric',
-                                     'memoryMetric'])
+    # Note that memoryMetric is added using GetExtraTracingMetrics() for
+    # certain stories.
+    options.SetTimelineBasedMetrics(['mediaMetric', 'cpuTimeMetric'])
     return options
 
 
@@ -52,7 +53,7 @@ class MediaDesktop(_MediaBenchmark):
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   def CreateStorySet(self, options):
-    return page_sets.MediaCasesDesktopStorySet(measure_memory=True)
+    return page_sets.MediaCasesDesktopStorySet()
 
   @classmethod
   def Name(cls):
@@ -69,7 +70,7 @@ class MediaMobile(_MediaBenchmark):
   SUPPORTED_PLATFORMS = [story.expectations.ANDROID_NOT_WEBVIEW]
 
   def CreateStorySet(self, options):
-    return page_sets.MediaCasesMobileStorySet(measure_memory=True)
+    return page_sets.MediaCasesMobileStorySet()
 
   @classmethod
   def Name(cls):

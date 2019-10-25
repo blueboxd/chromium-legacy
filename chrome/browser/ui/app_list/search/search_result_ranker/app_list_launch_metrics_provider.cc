@@ -30,8 +30,6 @@
 namespace app_list {
 namespace {
 
-using LaunchInfo = AppListLaunchRecorder::LaunchInfo;
-
 using ::metrics::ChromeOSAppListLaunchEventProto;
 using ::metrics::ChromeUserMetricsExtension;
 using ::metrics::MetricsLog;
@@ -250,7 +248,7 @@ void AppListLaunchMetricsProvider::ProvideCurrentSessionData(
 }
 
 void AppListLaunchMetricsProvider::OnAppListLaunch(
-    const LaunchInfo& launch_info) {
+    const AppListLaunchRecorder::LaunchInfo& launch_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (init_state_ == InitState::UNINITIALIZED) {
     init_state_ = InitState::INIT_STARTED;
@@ -261,8 +259,7 @@ void AppListLaunchMetricsProvider::OnAppListLaunch(
       launch_info_cache_.size() >= static_cast<size_t>(kMaxEventsPerUpload))
     return;
 
-  if (launch_info.launch_type ==
-      ChromeOSAppListLaunchEventProto::LAUNCH_TYPE_UNSPECIFIED) {
+  if (launch_info.client == AppListLaunchRecorder::Client::kUnspecified) {
     LogMetricsProviderError(MetricsProviderError::kLaunchTypeUnspecified);
     return;
   }
@@ -277,7 +274,7 @@ void AppListLaunchMetricsProvider::OnAppListLaunch(
 }
 
 void AppListLaunchMetricsProvider::CreateLaunchEvent(
-    const LaunchInfo& launch_info,
+    const AppListLaunchRecorder::LaunchInfo& launch_info,
     ChromeOSAppListLaunchEventProto* event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(secret_ && user_id_);
@@ -285,18 +282,11 @@ void AppListLaunchMetricsProvider::CreateLaunchEvent(
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
 
-  // Unhashed data.
-  event->set_recurrence_ranker_user_id(user_id_.value());
-  event->set_hour(now.hour);
-  event->set_search_query_length(launch_info.query.size());
-  event->set_launch_type(launch_info.launch_type);
-  event->set_search_provider_type(launch_info.search_provider_type);
+  // TODO(crbug.com/1016655): set hashed and unhashed data after proto has been
+  // updated.
 
-  // Hashed data.
-  event->set_hashed_target(HashWithSecret(launch_info.target, secret_.value()));
-  event->set_hashed_query(HashWithSecret(launch_info.query, secret_.value()));
-  event->set_hashed_domain(HashWithSecret(launch_info.domain, secret_.value()));
-  event->set_hashed_app(HashWithSecret(launch_info.app, secret_.value()));
+  // Dummy call so that HashWithSecret compiles.
+  LOG(ERROR) << HashWithSecret("dummy hash", secret_.value());
 }
 
 }  // namespace app_list

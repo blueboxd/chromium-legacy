@@ -1380,139 +1380,144 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   model.SetText(base::ASCIIToUTF16("ABCDE"));
   EXPECT_FALSE(model.Redo());  // There is nothing to redo.
   // Test Cut.
-  model.SelectRange(gfx::Range(1, 3));
-  model.Cut();
+  model.SelectRange(gfx::Range(1, 3));  //                         A[BC]DE
+  EXPECT_EQ(3U, model.GetCursorPosition());
+  model.Cut();  //                                                 A|DE
   EXPECT_STR_EQ("ADE", model.text());
   EXPECT_EQ(1U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
-  EXPECT_STR_EQ("ABCDE", model.text());
-  EXPECT_EQ(1U, model.GetCursorPosition());
-  EXPECT_TRUE(model.render_text()->selection().EqualsIgnoringDirection(
-      gfx::Range(1, 3)));
-  EXPECT_TRUE(model.Undo());
-  EXPECT_STR_EQ("", model.text());
-  EXPECT_EQ(0U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Undo());  // There is no more to undo.
-  EXPECT_STR_EQ("", model.text());
-  EXPECT_TRUE(model.Redo());
-  EXPECT_STR_EQ("ABCDE", model.text());
-  EXPECT_EQ(5U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Redo());
-  EXPECT_STR_EQ("ADE", model.text());
-  EXPECT_EQ(1U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Redo());  // There is no more to redo.
-  EXPECT_STR_EQ("ADE", model.text());
-
-  model.Paste();
-  model.Paste();
-  model.Paste();
-  EXPECT_STR_EQ("ABCBCBCDE", model.text());
-  EXPECT_EQ(7U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
-  EXPECT_STR_EQ("ABCBCDE", model.text());
-  EXPECT_EQ(5U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
+  EXPECT_TRUE(model.Undo());  //                                   A[BC]DE
   EXPECT_STR_EQ("ABCDE", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
-  EXPECT_STR_EQ("ADE", model.text());
-  EXPECT_EQ(1U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
-  EXPECT_STR_EQ("ABCDE", model.text());
-  EXPECT_EQ(1U, model.GetCursorPosition());
   EXPECT_TRUE(model.render_text()->selection().EqualsIgnoringDirection(
       gfx::Range(1, 3)));
-  EXPECT_TRUE(model.Undo());
+  EXPECT_TRUE(model.Undo());  //                                   |
   EXPECT_STR_EQ("", model.text());
   EXPECT_EQ(0U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Undo());
+  EXPECT_FALSE(model.Undo());  // There is no more to undo.        |
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_TRUE(model.Redo());  //                                   ABCDE|
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_EQ(5U, model.GetCursorPosition());
+  EXPECT_TRUE(model.Redo());  //                                   A|DE
+  EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_EQ(1U, model.GetCursorPosition());
+  EXPECT_FALSE(model.Redo());  // There is no more to redo.        A|DE
+  EXPECT_STR_EQ("ADE", model.text());
+
+  model.Paste();  //                                               ABC|DE
+  model.Paste();  //                                               ABCBC|DE
+  model.Paste();  //                                               ABCBCBC|DE
+  EXPECT_STR_EQ("ABCBCBCDE", model.text());
+  EXPECT_EQ(7U, model.GetCursorPosition());
+  EXPECT_TRUE(model.Undo());  //                                   ABCBC|DE
+  EXPECT_STR_EQ("ABCBCDE", model.text());
+  EXPECT_EQ(5U, model.GetCursorPosition());
+  EXPECT_TRUE(model.Undo());  //                                   ABC|DE
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_EQ(3U, model.GetCursorPosition());
+  EXPECT_TRUE(model.Undo());  //                                   A|DE
+  EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_EQ(1U, model.GetCursorPosition());
+  EXPECT_TRUE(model.Undo());  //                                   A[BC]DE
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_EQ(3U, model.GetCursorPosition());
+  EXPECT_TRUE(model.render_text()->selection().EqualsIgnoringDirection(
+      gfx::Range(1, 3)));
+  EXPECT_TRUE(model.Undo());  //                                   |
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_EQ(0U, model.GetCursorPosition());
+  EXPECT_FALSE(model.Undo());  //                                  |
   EXPECT_STR_EQ("", model.text());
   EXPECT_TRUE(model.Redo());
-  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_STR_EQ("ABCDE", model.text());  //                        ABCDE|
   EXPECT_EQ(5U, model.GetCursorPosition());
 
   // Test Redo.
-  EXPECT_TRUE(model.Redo());
+  EXPECT_TRUE(model.Redo());  //                                   A|DE
   EXPECT_STR_EQ("ADE", model.text());
   EXPECT_EQ(1U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Redo());
+  EXPECT_TRUE(model.Redo());  //                                   ABC|DE
   EXPECT_STR_EQ("ABCDE", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Redo());
+  EXPECT_TRUE(model.Redo());  //                                   ABCBC|DE
   EXPECT_STR_EQ("ABCBCDE", model.text());
   EXPECT_EQ(5U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Redo());
+  EXPECT_TRUE(model.Redo());  //                                   ABCBCBC|DE
   EXPECT_STR_EQ("ABCBCBCDE", model.text());
   EXPECT_EQ(7U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Redo());
+  EXPECT_FALSE(model.Redo());  //                                  ABCBCBC|DE
 
   // Test using SelectRange.
-  model.SelectRange(gfx::Range(1, 3));
-  EXPECT_TRUE(model.Cut());
+  model.SelectRange(gfx::Range(1, 3));  //                         A[BC]BCBCDE
+  EXPECT_TRUE(model.Cut());  //                                    A|BCBCDE
   EXPECT_STR_EQ("ABCBCDE", model.text());
   EXPECT_EQ(1U, model.GetCursorPosition());
-  model.SelectRange(gfx::Range(1, 1));
-  EXPECT_FALSE(model.Cut());
+  model.SelectRange(gfx::Range(1, 1));  //                         A|BCBCDE
+  EXPECT_FALSE(model.Cut());  //                                   A|BCBCDE
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, gfx::SELECTION_NONE);
-  EXPECT_TRUE(model.Paste());
+  //                                                               ABCBCDE|
+  EXPECT_TRUE(model.Paste());  //                                  ABCBCDEBC|
   EXPECT_STR_EQ("ABCBCDEBC", model.text());
   EXPECT_EQ(9U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
+  EXPECT_TRUE(model.Undo());  //                                   ABCBCDE|
   EXPECT_STR_EQ("ABCBCDE", model.text());
   EXPECT_EQ(7U, model.GetCursorPosition());
   // An empty cut shouldn't create an edit.
-  EXPECT_TRUE(model.Undo());
+  EXPECT_TRUE(model.Undo());  //                                   ABC|BCBCDE
   EXPECT_STR_EQ("ABCBCBCDE", model.text());
-  EXPECT_EQ(1U, model.GetCursorPosition());
+  EXPECT_EQ(3U, model.GetCursorPosition());
   EXPECT_TRUE(model.render_text()->selection().EqualsIgnoringDirection(
       gfx::Range(1, 3)));
   // Test Copy.
   ResetModel(&model);
-  model.SetText(base::ASCIIToUTF16("12345"));
+  model.SetText(base::ASCIIToUTF16("12345"));  //                  12345|
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(5U, model.GetCursorPosition());
-  model.SelectRange(gfx::Range(1, 3));
-  model.Copy();  // Copy "23".
+  model.SelectRange(gfx::Range(1, 3));  //                         1[23]45
+  model.Copy();  // Copy "23".  //                                 1[23]45
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
-  model.Paste();  // Paste "23" into "23".
+  model.Paste();  // Paste "23" into "23".  //                     123|45
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
-  model.Paste();
+  model.Paste();  //                                               12323|45
   EXPECT_STR_EQ("1232345", model.text());
   EXPECT_EQ(5U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
+  EXPECT_TRUE(model.Undo());  //                                   123|45
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
   // TODO(oshima): Change the return type from bool to enum.
-  EXPECT_FALSE(model.Undo());  // No text change.
+  EXPECT_FALSE(model.Undo());  // No text change.                  1[23]45
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
+  EXPECT_TRUE(model.render_text()->selection().EqualsIgnoringDirection(
+      gfx::Range(1, 3)));
+  EXPECT_TRUE(model.Undo());  //                                   |
   EXPECT_STR_EQ("", model.text());
-  EXPECT_FALSE(model.Undo());
+  EXPECT_FALSE(model.Undo());  //                                  |
   // Test Redo.
-  EXPECT_TRUE(model.Redo());
+  EXPECT_TRUE(model.Redo());  //                                   12345|
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(5U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Redo());
+  EXPECT_TRUE(model.Redo());  //                                   12|345
   EXPECT_STR_EQ("12345", model.text());  // For 1st paste
   EXPECT_EQ(3U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Redo());
+  EXPECT_TRUE(model.Redo());  //                                   12323|45
   EXPECT_STR_EQ("1232345", model.text());
   EXPECT_EQ(5U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Redo());
+  EXPECT_FALSE(model.Redo());  //                                  12323|45
   EXPECT_STR_EQ("1232345", model.text());
 
   // Test using SelectRange.
-  model.SelectRange(gfx::Range(1, 3));
-  model.Copy();
+  model.SelectRange(gfx::Range(1, 3));  //                         1[23]2345
+  model.Copy();  //                                                1[23]2345
   EXPECT_STR_EQ("1232345", model.text());
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, gfx::SELECTION_NONE);
-  EXPECT_TRUE(model.Paste());
+  //                                                               1232345|
+  EXPECT_TRUE(model.Paste());  //                                  123234523|
   EXPECT_STR_EQ("123234523", model.text());
   EXPECT_EQ(9U, model.GetCursorPosition());
-  EXPECT_TRUE(model.Undo());
+  EXPECT_TRUE(model.Undo());  //                                   1232345|
   EXPECT_STR_EQ("1232345", model.text());
   EXPECT_EQ(7U, model.GetCursorPosition());
 }

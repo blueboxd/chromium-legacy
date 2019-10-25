@@ -20,7 +20,6 @@
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
-namespace indexed_db {
 namespace {
 class FlakyIterator;
 
@@ -359,7 +358,9 @@ class BreakOnCallbackDB : public leveldb::DB {
 
 }  // namespace
 
-FakeLevelDBFactory::FakeLevelDBFactory() = default;
+FakeLevelDBFactory::FakeLevelDBFactory(leveldb_env::Options database_options,
+                                       const std::string& in_memory_db_name)
+    : DefaultLevelDBFactory(database_options, in_memory_db_name) {}
 FakeLevelDBFactory::~FakeLevelDBFactory() {}
 
 // static
@@ -385,7 +386,7 @@ scoped_refptr<LevelDBState> FakeLevelDBFactory::GetBrokenLevelDB(
     leveldb::Status error_to_return,
     const base::FilePath& reported_file_path) {
   return LevelDBState::CreateForDiskDB(
-      indexed_db::GetDefaultLevelDBComparator(),
+      leveldb::BytewiseComparator(),
       std::make_unique<BrokenDB>(error_to_return), reported_file_path);
 }
 
@@ -397,11 +398,13 @@ void FakeLevelDBFactory::EnqueueNextOpenDBResult(
 }
 
 std::tuple<std::unique_ptr<leveldb::DB>, leveldb::Status>
-FakeLevelDBFactory::OpenDB(const leveldb_env::Options& options,
-                           const std::string& name) {
+FakeLevelDBFactory::OpenDB(const std::string& name,
+                           bool create_if_missing,
+                           size_t write_buffer_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (next_dbs_.empty())
-    return DefaultLevelDBFactory::OpenDB(options, name);
+    return DefaultLevelDBFactory::OpenDB(name, create_if_missing,
+                                         write_buffer_size);
   auto tuple = std::move(next_dbs_.front());
   next_dbs_.pop();
   return tuple;
@@ -418,17 +421,16 @@ void FakeLevelDBFactory::EnqueueNextOpenLevelDBStateResult(
 
 std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /*disk_full*/>
 FakeLevelDBFactory::OpenLevelDBState(const base::FilePath& file_name,
-                                     const leveldb::Comparator* ldb_comparator,
-                                     bool create_if_missing) {
+                                     bool create_if_missing,
+                                     size_t write_buffer_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (next_leveldb_states_.empty()) {
-    return DefaultLevelDBFactory::OpenLevelDBState(file_name, ldb_comparator,
-                                                   create_if_missing);
+    return DefaultLevelDBFactory::OpenLevelDBState(file_name, create_if_missing,
+                                                   write_buffer_size);
   }
   auto tuple = std::move(next_leveldb_states_.front());
   next_leveldb_states_.pop();
   return tuple;
 }
 
-}  // namespace indexed_db
 }  // namespace content

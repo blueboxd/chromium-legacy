@@ -50,6 +50,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
@@ -91,6 +92,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "net/android/network_library.h"
 #include "net/http/http_util.h"
+#include "net/net_buildflags.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/network_service.h"
@@ -413,10 +415,13 @@ bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
 
   const std::string scheme = url.scheme();
   DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
-  // See CreateJobFactory in aw_url_request_context_getter.cc for the
-  // list of protocols that are handled.
-  // TODO(mnaganov): Make this automatic.
   static const char* const kProtocolList[] = {
+    url::kHttpScheme,
+    url::kHttpsScheme,
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+    url::kWsScheme,
+    url::kWssScheme,
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
     url::kDataScheme,
     url::kBlobScheme,
     url::kFileSystemScheme,
@@ -428,11 +433,11 @@ bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
     // even if access to file: scheme is not granted to the child process.
     return !IsAndroidSpecialFileUrl(url);
   }
-  for (size_t i = 0; i < base::size(kProtocolList); ++i) {
-    if (scheme == kProtocolList[i])
+  for (const char* supported_protocol : kProtocolList) {
+    if (scheme == supported_protocol)
       return true;
   }
-  return net::URLRequest::IsHandledProtocol(scheme);
+  return false;
 }
 
 bool AwContentBrowserClient::ForceSniffingFileUrlsForHtml() {
@@ -968,21 +973,6 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
                                 process_id, std::move(proxied_receiver),
                                 std::move(target_factory_info)));
   return true;
-}
-
-void AwContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
-    int render_process_id,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>* pending_factory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto pending_proxy = std::move(*pending_factory);
-  mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver =
-      pending_factory->InitWithNewPipeAndPassReceiver();
-
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
-                                render_process_id, std::move(factory_receiver),
-                                std::move(pending_proxy)));
 }
 
 uint32_t AwContentBrowserClient::GetWebSocketOptions(

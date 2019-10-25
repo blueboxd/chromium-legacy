@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -60,6 +61,11 @@ public class AwMetricsServiceClient {
         AwMetricsServiceClientJni.get().setHaveMetricsConsent(userConsent, !isAppOptedOut(ctx));
     }
 
+    @VisibleForTesting
+    public static void setFastStartupForTesting(boolean fastStartupForTesting) {
+        AwMetricsServiceClientJni.get().setFastStartupForTesting(fastStartupForTesting);
+    }
+
     @CalledByNative
     private static String getAppPackageName() {
         Context ctx = ContextUtils.getApplicationContext();
@@ -91,5 +97,6 @@ public class AwMetricsServiceClient {
     @NativeMethods
     interface Natives {
         void setHaveMetricsConsent(boolean userConsent, boolean appConsent);
+        void setFastStartupForTesting(boolean fastStartupForTesting);
     }
 }

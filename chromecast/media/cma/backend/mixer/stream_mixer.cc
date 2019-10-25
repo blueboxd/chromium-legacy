@@ -30,6 +30,7 @@
 #include "chromecast/media/cma/backend/interleaved_channel_mixer.h"
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector.h"
 #include "chromecast/media/cma/backend/mixer/filter_group.h"
+#include "chromecast/media/cma/backend/mixer/loopback_handler.h"
 #include "chromecast/media/cma/backend/mixer/mixer_service_receiver.h"
 #include "chromecast/media/cma/backend/mixer/post_processing_pipeline_impl.h"
 #include "chromecast/media/cma/backend/mixer/post_processing_pipeline_parser.h"
@@ -178,7 +179,6 @@ StreamMixer::StreamMixer(
           std::make_unique<PostProcessingPipelineFactoryImpl>()),
       mixer_thread_(std::move(mixer_thread)),
       mixer_task_runner_(std::move(mixer_task_runner)),
-      loopback_handler_(LoopbackHandler::Create(mixer_task_runner_)),
       enable_dynamic_channel_count_(
           GetSwitchValueBoolean(switches::kMixerEnableDynamicChannelCount,
                                 false)),
@@ -213,19 +213,19 @@ StreamMixer::StreamMixer(
     mixer_task_runner_ = mixer_thread_->task_runner();
     mixer_task_runner_->PostTask(FROM_HERE, base::BindOnce(&UseHighPriority));
 
-    health_checker_ = std::make_unique<ThreadHealthChecker>(
-        mixer_task_runner_, loopback_handler_->GetTaskRunner(),
-        kHealthCheckInterval, kMixerThreadCheckTimeout,
-        base::BindRepeating(&StreamMixer::OnHealthCheckFailed,
-                            base::Unretained(this)));
-    LOG(INFO) << "Mixer health checker started";
-
     io_thread_ = std::make_unique<base::Thread>("MixerIO");
     base::Thread::Options io_options;
     io_options.message_pump_type = base::MessagePumpType::IO;
     io_options.priority = base::ThreadPriority::REALTIME_AUDIO;
     CHECK(io_thread_->StartWithOptions(io_options));
     io_task_runner_ = io_thread_->task_runner();
+
+    health_checker_ = std::make_unique<ThreadHealthChecker>(
+        mixer_task_runner_, io_task_runner_, kHealthCheckInterval,
+        kMixerThreadCheckTimeout,
+        base::BindRepeating(&StreamMixer::OnHealthCheckFailed,
+                            base::Unretained(this)));
+    LOG(INFO) << "Mixer health checker started";
   } else {
     io_task_runner_ = mixer_task_runner_;
   }
@@ -249,7 +249,9 @@ StreamMixer::StreamMixer(
         external_volume_observer_.get());
   }
 
-  receiver_ = base::SequenceBound<MixerServiceReceiver>(io_task_runner_, this);
+  loopback_handler_ = std::make_unique<LoopbackHandler>(io_task_runner_);
+  receiver_ = base::SequenceBound<MixerServiceReceiver>(
+      io_task_runner_, this, loopback_handler_.get());
 }
 
 void StreamMixer::OnHealthCheckFailed() {
@@ -366,6 +368,10 @@ void StreamMixer::SetNumOutputChannelsForTest(int num_output_channels) {
 void StreamMixer::EnableDynamicChannelCountForTest(bool enable) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   enable_dynamic_channel_count_ = enable;
+}
+
+LoopbackHandler* StreamMixer::GetLoopbackHandlerForTest() {
+  return loopback_handler_.get();
 }
 
 StreamMixer::~StreamMixer() {
@@ -829,16 +835,6 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
   if (playback_interrupted) {
     loopback_handler_->SendInterrupt();
   }
-}
-
-void StreamMixer::AddLoopbackAudioObserver(
-    CastMediaShlib::LoopbackAudioObserver* observer) {
-  loopback_handler_->AddObserver(observer);
-}
-
-void StreamMixer::RemoveLoopbackAudioObserver(
-    CastMediaShlib::LoopbackAudioObserver* observer) {
-  loopback_handler_->RemoveObserver(observer);
 }
 
 void StreamMixer::AddAudioOutputRedirector(

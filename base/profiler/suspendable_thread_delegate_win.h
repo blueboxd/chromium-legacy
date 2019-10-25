@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include "base/base_export.h"
+#include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/suspendable_thread_delegate.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
@@ -34,7 +35,8 @@ class BASE_EXPORT SuspendableThreadDelegateWin
     DISALLOW_COPY_AND_ASSIGN(ScopedSuspendThread);
   };
 
-  explicit SuspendableThreadDelegateWin(PlatformThreadId thread_id);
+  explicit SuspendableThreadDelegateWin(
+      SamplingProfilerThreadToken thread_token);
   ~SuspendableThreadDelegateWin() override;
 
   SuspendableThreadDelegateWin(const SuspendableThreadDelegateWin&) = delete;

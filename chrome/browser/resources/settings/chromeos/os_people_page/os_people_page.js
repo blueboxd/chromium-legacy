@@ -27,20 +27,6 @@ Polymer({
     },
 
     /**
-     * This flag is used to conditionally show a set of sync UIs to the
-     * profiles that have been migrated to have a unified consent flow.
-     * TODO(tangltom): In the future when all profiles are completely migrated,
-     * this should be removed, and UIs hidden behind it should become default.
-     * @private
-     */
-    unifiedConsentEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('unifiedConsentEnabled');
-      },
-    },
-
-    /**
      * The current sync status, supplied by SyncBrowserProxy.
      * @type {?settings.SyncStatus}
      */
@@ -118,11 +104,7 @@ Polymer({
       value: function() {
         const map = new Map();
         if (settings.routes.SYNC) {
-          map.set(
-              settings.routes.SYNC.path,
-              loadTimeData.getBoolean('unifiedConsentEnabled') ?
-                  '#sync-setup' :
-                  '#sync-status');
+          map.set(settings.routes.SYNC.path, '#sync-setup');
         }
         if (settings.routes.LOCK_SCREEN) {
           map.set(
@@ -293,38 +275,8 @@ Polymer({
 
   /** @private */
   onSyncTap_: function() {
-    // When unified-consent is enabled, users can go to sync subpage regardless
-    // of sync status.
-    if (this.unifiedConsentEnabled_) {
-      settings.navigateTo(settings.routes.SYNC);
-      return;
-    }
-
-    // TODO(crbug.com/862983): Remove this code once UnifiedConsent is rolled
-    // out to 100%.
-    assert(this.syncStatus.signedIn);
-    assert(this.syncStatus.syncSystemEnabled);
-
-    if (!this.isSyncStatusActionable_(this.syncStatus)) {
-      return;
-    }
-
-    switch (this.syncStatus.statusAction) {
-      case settings.StatusAction.REAUTHENTICATE:
-        this.syncBrowserProxy_.startSignIn();
-        break;
-      case settings.StatusAction.SIGNOUT_AND_SIGNIN:
-        this.syncBrowserProxy_.attemptUserExit();
-        break;
-      case settings.StatusAction.UPGRADE_CLIENT:
-        settings.navigateTo(settings.routes.ABOUT);
-        break;
-      case settings.StatusAction.ENTER_PASSPHRASE:
-      case settings.StatusAction.CONFIRM_SYNC_SETTINGS:
-      case settings.StatusAction.NO_ACTION:
-      default:
-        settings.navigateTo(settings.routes.SYNC);
-    }
+    // Users can go to sync subpage regardless of sync status.
+    settings.navigateTo(settings.routes.SYNC);
   },
 
   /**
@@ -360,90 +312,6 @@ Polymer({
   /** @private */
   onManageOtherPeople_: function() {
     settings.navigateTo(settings.routes.ACCOUNTS);
-  },
-
-  /**
-   * @private
-   * @param {?settings.SyncStatus} syncStatus
-   * @return {boolean}
-   */
-  isPreUnifiedConsentAdvancedSyncSettingsVisible_: function(syncStatus) {
-    return !!syncStatus && !!syncStatus.signedIn &&
-        !!syncStatus.syncSystemEnabled && !this.unifiedConsentEnabled_;
-  },
-
-  /**
-   * @private
-   * @param {?settings.SyncStatus} syncStatus
-   * @return {boolean}
-   */
-  isAdvancedSyncSettingsSearchable_: function(syncStatus) {
-    return this.isPreUnifiedConsentAdvancedSyncSettingsVisible_(syncStatus) ||
-        !!this.unifiedConsentEnabled_;
-  },
-
-  /**
-   * @private
-   * @return {Element|null}
-   */
-  getAdvancedSyncSettingsAssociatedControl_: function() {
-    return this.unifiedConsentEnabled_ ? this.$$('#sync-setup') :
-                                         this.$$('#sync-status');
-  },
-
-  /**
-   * @private
-   * @param {?settings.SyncStatus} syncStatus
-   * @return {boolean} Whether an action can be taken with the sync status. sync
-   *     status is actionable if sync is not managed and if there is a sync
-   *     error, there is an action associated with it.
-   */
-  isSyncStatusActionable_: function(syncStatus) {
-    return !!syncStatus && !syncStatus.managed &&
-        (!syncStatus.hasError ||
-         syncStatus.statusAction != settings.StatusAction.NO_ACTION);
-  },
-
-  /**
-   * @private
-   * @param {?settings.SyncStatus} syncStatus
-   * @return {string}
-   */
-  getSyncIcon_: function(syncStatus) {
-    if (!syncStatus) {
-      return '';
-    }
-
-    let syncIcon = 'cr:sync';
-
-    if (syncStatus.hasError) {
-      syncIcon = 'settings:sync-problem';
-    }
-
-    // Override the icon to the disabled icon if sync is managed.
-    if (syncStatus.managed ||
-        syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE) {
-      syncIcon = 'settings:sync-disabled';
-    }
-
-    return syncIcon;
-  },
-
-  /**
-   * @private
-   * @param {?settings.SyncStatus} syncStatus
-   * @return {string} The class name for the sync status row.
-   */
-  getSyncStatusClass_: function(syncStatus) {
-    if (syncStatus && syncStatus.hasError) {
-      // Most of the time re-authenticate states are caused by intentional user
-      // action, so they will be displayed differently as other errors.
-      return syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE ?
-          'auth-error' :
-          'sync-error';
-    }
-
-    return 'no-error';
   },
 
   /**

@@ -221,10 +221,6 @@ void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
   const GURL& currently_committed_url =
       committed_load_ ? committed_load_->url() : opener_url;
 
-  // We can have two provisional loads in some cases. E.g. a same-site
-  // navigation can have a concurrent cross-process navigation started
-  // from the omnibox.
-  DCHECK_GT(2ul, provisional_loads_.size());
   // Passing raw pointers to observers_ and embedder_interface_ is safe because
   // the MetricsWebContentsObserver owns them both list and they are torn down
   // after the PageLoadTracker. The PageLoadTracker does not hold on to

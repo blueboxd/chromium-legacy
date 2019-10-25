@@ -366,12 +366,14 @@ repack("dev_ui_paks") {
     "$root_gen_dir/chrome/omnibox_resources.pak",
     "$root_gen_dir/chrome/usb_internals_resources.pak",
     "$root_gen_dir/components/sync_driver_resources.pak",
+    "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
   ]
   deps = [
     "//chrome/browser/resources/bluetooth_internals:resources",
     "//chrome/browser/resources/omnibox:resources",
     "//chrome/browser/resources/usb_internals:resources",
     "//components/sync/driver:resources",
+    "//content/browser/webrtc/resources",
   ]
 }
 

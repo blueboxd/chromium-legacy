@@ -459,7 +459,7 @@ invoke it via:
 
 [new-isolates]: gpu_testing_bot_details.md#Adding-a-new-isolated-test-to-the-bots
 
-o## Adding new steps to the GPU Bots
+### Adding new steps to the GPU Bots
 
 The tests that are run by the GPU bots are described by a couple of JSON files
 in the Chromium workspace:

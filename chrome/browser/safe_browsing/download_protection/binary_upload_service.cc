@@ -5,9 +5,11 @@
 #include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -15,6 +17,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/download_protection/multipart_uploader.h"
 #include "components/prefs/pref_service.h"
@@ -30,6 +34,29 @@ namespace {
 const int kScanningTimeoutSeconds = 5 * 60;           // 5 minutes
 const char kSbBinaryUploadUrl[] =
     "https://safebrowsing.google.com/safebrowsing/uploads/webprotect";
+
+std::string* GetDMTokenForTestingStorage() {
+  static std::string dm_token;
+  return &dm_token;
+}
+
+std::string GetDMToken() {
+  std::string dm_token = *GetDMTokenForTestingStorage();
+
+#if !defined(OS_CHROMEOS)
+  // This is not compiled on chromeos because
+  // ChromeBrowserCloudManagementController does not exist.  Also,
+  // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
+  // valid token either.  Once these are fixed the #if !defined can be removed.
+
+  if (dm_token.empty() &&
+      policy::ChromeBrowserCloudManagementController::IsEnabled()) {
+    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  }
+#endif
+
+  return dm_token;
+}
 
 }  // namespace
 
@@ -48,6 +75,29 @@ BinaryUploadService::BinaryUploadService(
       weakptr_factory_(this) {}
 
 BinaryUploadService::~BinaryUploadService() {}
+
+void BinaryUploadService::MaybeUploadForDeepScanning(
+    std::unique_ptr<BinaryUploadService::Request> request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!can_upload_data_.has_value()) {
+    IsAuthorized(
+        base::BindOnce(&BinaryUploadService::MaybeUploadForDeepScanningCallback,
+                       weakptr_factory_.GetWeakPtr(), std::move(request)));
+    return;
+  }
+
+  MaybeUploadForDeepScanningCallback(std::move(request),
+                                     can_upload_data_.value());
+}
+
+void BinaryUploadService::MaybeUploadForDeepScanningCallback(
+    std::unique_ptr<BinaryUploadService::Request> request,
+    bool authorized) {
+  // Ignore the request if the browser cannot upload data.
+  if (!authorized)
+    return;
+  UploadForDeepScanning(std::move(request));
+}
 
 void BinaryUploadService::UploadForDeepScanning(
     std::unique_ptr<BinaryUploadService::Request> request) {
@@ -298,6 +348,80 @@ void BinaryUploadService::Request::FinishRequest(
 
 bool BinaryUploadService::IsActive(Request* request) {
   return (active_requests_.find(request) != active_requests_.end());
+}
+
+class ValidateDataUploadRequest : public BinaryUploadService::Request {
+ public:
+  explicit ValidateDataUploadRequest(BinaryUploadService::Callback callback)
+      : BinaryUploadService::Request(std::move(callback)) {}
+  ValidateDataUploadRequest(const ValidateDataUploadRequest&) = delete;
+  ValidateDataUploadRequest& operator=(const ValidateDataUploadRequest&) =
+      delete;
+  ~ValidateDataUploadRequest() override = default;
+
+ private:
+  // BinaryUploadService::Request implementation.
+  void GetRequestData(DataCallback callback) override;
+};
+
+inline void ValidateDataUploadRequest::GetRequestData(DataCallback callback) {
+  std::move(callback).Run(BinaryUploadService::Result::SUCCESS,
+                          BinaryUploadService::Request::Data());
+}
+
+void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
+  // Start |timer_| on the first call to IsAuthorized. This is necessary in
+  // order to invalidate the authorization every 24 hours.
+  if (!timer_.IsRunning()) {
+    timer_.Start(FROM_HERE, base::TimeDelta::FromHours(24), this,
+                 &BinaryUploadService::ResetAuthorizationData);
+  }
+
+  if (!can_upload_data_.has_value()) {
+    // Send a request to check if the browser can upload data.
+    if (!pending_validate_data_upload_request_) {
+      std::string dm_token = GetDMToken();
+      if (dm_token.empty()) {
+        std::move(callback).Run(false);
+        return;
+      }
+
+      pending_validate_data_upload_request_ = true;
+      auto request = std::make_unique<ValidateDataUploadRequest>(base::BindOnce(
+          &BinaryUploadService::ValidateDataUploadRequestCallback,
+          weakptr_factory_.GetWeakPtr()));
+      request->set_dm_token(dm_token);
+      UploadForDeepScanning(std::move(request));
+    }
+    authorization_callbacks_.push_back(std::move(callback));
+    return;
+  }
+  std::move(callback).Run(can_upload_data_.value());
+}
+
+void BinaryUploadService::ValidateDataUploadRequestCallback(
+    BinaryUploadService::Result result,
+    DeepScanningClientResponse response) {
+  pending_validate_data_upload_request_ = false;
+  can_upload_data_ = result == BinaryUploadService::Result::SUCCESS;
+  RunAuthorizationCallbacks();
+}
+
+void BinaryUploadService::RunAuthorizationCallbacks() {
+  DCHECK(can_upload_data_.has_value());
+  for (auto& callback : authorization_callbacks_) {
+    std::move(callback).Run(can_upload_data_.value());
+  }
+  authorization_callbacks_.clear();
+}
+
+void BinaryUploadService::ResetAuthorizationData() {
+  // Setting |can_upload_data_| to base::nullopt will make the next call to
+  // IsAuthorized send out a request to validate data uploads.
+  can_upload_data_ = base::nullopt;
+
+  // Call IsAuthorized  to update |can_upload_data_| right away.
+  IsAuthorized(base::DoNothing());
 }
 
 // static

@@ -308,16 +308,14 @@ void CheckClientDownloadRequest::MaybeStorePingsForDownload(
       result, upload_requested, item_, request_data, response_body);
 }
 
-bool CheckClientDownloadRequest::ShouldReturnAsynchronousVerdict(
+bool CheckClientDownloadRequest::MaybeReturnAsynchronousVerdict(
     DownloadCheckResultReason reason) {
-  return ShouldUploadBinary(reason) && ShouldDelayVerdicts();
-}
+  if (ShouldUploadBinary(reason)) {
+    callback_.Run(DownloadCheckResult::ASYNC_SCANNING);
+    return true;
+  }
 
-bool CheckClientDownloadRequest::ShouldDelayVerdicts() {
-  int delay_delivery = g_browser_process->local_state()->GetInteger(
-      prefs::kDelayDeliveryUntilVerdict);
-  return (delay_delivery == DELAY_DOWNLOADS ||
-          delay_delivery == DELAY_UPLOADS_AND_DOWNLOADS);
+  return false;
 }
 
 bool CheckClientDownloadRequest::ShouldUploadBinary(

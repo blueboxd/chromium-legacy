@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,6 +37,34 @@ ACTION_P(CaptureArg, wrapper) {
 
 }  // namespace
 
+class FakeAuthorizedSafeBrowsingPrivateEventRouter
+    : public SafeBrowsingPrivateEventRouter {
+ public:
+  explicit FakeAuthorizedSafeBrowsingPrivateEventRouter(
+      content::BrowserContext* context)
+      : SafeBrowsingPrivateEventRouter(context) {}
+
+ private:
+  void ReportRealtimeEvent(const std::string& name,
+                           EventBuilder event_builder) override {
+    ReportRealtimeEventCallback(name, std::move(event_builder), true);
+  }
+};
+
+class FakeUnauthorizedSafeBrowsingPrivateEventRouter
+    : public SafeBrowsingPrivateEventRouter {
+ public:
+  explicit FakeUnauthorizedSafeBrowsingPrivateEventRouter(
+      content::BrowserContext* context)
+      : SafeBrowsingPrivateEventRouter(context) {}
+
+ private:
+  void ReportRealtimeEvent(const std::string& name,
+                           EventBuilder event_builder) override {
+    ReportRealtimeEventCallback(name, std::move(event_builder), false);
+  }
+};
+
 class SafeBrowsingEventObserver : public TestEventRouter::EventObserver {
  public:
   // The observer will only listen to events with the |event_name|.
@@ -64,9 +94,14 @@ class SafeBrowsingEventObserver : public TestEventRouter::EventObserver {
 };
 
 std::unique_ptr<KeyedService> BuildSafeBrowsingPrivateEventRouter(
+    bool authorized,
     content::BrowserContext* context) {
-  return std::unique_ptr<KeyedService>(
-      new SafeBrowsingPrivateEventRouter(context));
+  if (authorized)
+    return std::unique_ptr<KeyedService>(
+        new FakeAuthorizedSafeBrowsingPrivateEventRouter(context));
+  else
+    return std::unique_ptr<KeyedService>(
+        new FakeUnauthorizedSafeBrowsingPrivateEventRouter(context));
 }
 
 class SafeBrowsingPrivateEventRouterTest : public testing::Test {
@@ -142,10 +177,12 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
         ->SetCloudPolicyClientForTesting(std::move(client));
   }
 
-  void SetUpRouters(bool realtime_reporting_enable = true) {
+  void SetUpRouters(bool realtime_reporting_enable = true,
+                    bool authorized = true) {
     event_router_ = extensions::CreateAndUseTestEventRouter(profile_);
     SafeBrowsingPrivateEventRouterFactory::GetInstance()->SetTestingFactory(
-        profile_, base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+        profile_,
+        base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter, authorized));
 
     SetReportingPolicy(realtime_reporting_enable);
   }
@@ -473,6 +510,124 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOffToOnIsDynamic) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
   Mock::VerifyAndClearExpectations(client_);
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestUnauthorizedOnReuseDetected) {
+  SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/false);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnPolicySpecifiedPasswordReuseDetected::
+          kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+
+  TriggerOnPolicySpecifiedPasswordReuseDetectedEvent();
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_);
+  EXPECT_EQ(base::Value::Type::NONE, report.type());
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestUnauthorizedOnPasswordChanged) {
+  SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/false);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnPolicySpecifiedPasswordChanged::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+
+  TriggerOnPolicySpecifiedPasswordChangedEvent();
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_);
+  EXPECT_EQ(base::Value::Type::NONE, report.type());
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest,
+       TestUnauthorizedOnDangerousDownloadOpened) {
+  SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/false);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnDangerousDownloadOpened::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+
+  TriggerOnDangerousDownloadOpenedEvent();
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_);
+  EXPECT_EQ(base::Value::Type::NONE, report.type());
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest,
+       TestUnauthorizedOnSecurityInterstitialProceeded) {
+  SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/false);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnSecurityInterstitialProceeded::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+
+  TriggerOnSecurityInterstitialProceededEvent();
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_);
+  EXPECT_EQ(base::Value::Type::NONE, report.type());
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest,
+       TestUnauthorizedOnSecurityInterstitialShown) {
+  SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/false);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnSecurityInterstitialShown::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_);
+  EXPECT_EQ(base::Value::Type::NONE, report.type());
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest,
+       TestUnauthorizedOnDangerousDownloadWarning) {
+  SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/false);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnDangerousDownloadOpened::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+
+  TriggerOnDangerousDownloadWarningEvent();
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_);
+  EXPECT_EQ(base::Value::Type::NONE, report.type());
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest,
+       TestUnauthorizedOnDangerousDownloadWarningBypass) {
+  SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/false);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnDangerousDownloadOpened::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+
+  TriggerOnDangerousDownloadWarningEventBypass();
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_);
+  EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
 
 }  // namespace extensions

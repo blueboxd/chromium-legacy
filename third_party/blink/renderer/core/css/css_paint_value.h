@@ -20,6 +20,7 @@ namespace blink {
 class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
  public:
   explicit CSSPaintValue(CSSCustomIdentValue* name);
+  CSSPaintValue(CSSCustomIdentValue* name, bool threaded_compositing_enabled);
   CSSPaintValue(CSSCustomIdentValue* name,
                 Vector<scoped_refptr<CSSVariableData>>&);
   ~CSSPaintValue();

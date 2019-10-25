@@ -27,6 +27,7 @@ namespace arc {
 namespace {
 
 constexpr const char kUserIdHash[] = "this_is_a_valid_user_id_hash";
+constexpr int64_t kCid = 123;
 
 // A debugd client that can fail to start Concierge.
 // TODO(yusukes): Merge the feature to FakeDebugDaemonClient.
@@ -107,6 +108,8 @@ class ArcVmClientAdapterTest : public testing::Test,
     // to VM_STATUS_RUNNING which is used by ARCVM.
     vm_tools::concierge::StartVmResponse start_vm_response;
     start_vm_response.set_status(vm_tools::concierge::VM_STATUS_RUNNING);
+    auto* vm_info = start_vm_response.mutable_vm_info();
+    vm_info->set_cid(kCid);
     GetTestConciergeClient()->set_start_vm_response(start_vm_response);
   }
 
@@ -161,13 +164,16 @@ class ArcVmClientAdapterTest : public testing::Test,
     RecreateRunLoop();
   }
 
-  void SendVmStoppedSignal() {
+  void SendVmStoppedSignalForCid(int64_t cid) {
     vm_tools::concierge::VmStoppedSignal signal;
     signal.set_name(kArcVmName);
+    signal.set_cid(kCid);
     auto& vm_observers = GetTestConciergeClient()->vm_observer_list();
     for (auto& observer : vm_observers)
       observer.OnVmStopped(signal);
   }
+
+  void SendVmStoppedSignal() { SendVmStoppedSignalForCid(kCid); }
 
   void SendNameOwnerChangedSignal() {
     auto& observers = GetTestConciergeClient()->observer_list();
@@ -222,7 +228,10 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc) {
 
 // Tests that StopArcInstance() eventually notifies the observer.
 TEST_F(ArcVmClientAdapterTest, StopArcInstance) {
+  SetValidUserIdHash();
   StartMiniArc();
+  UpgradeArc(true);
+
   adapter()->StopArcInstance();
   run_loop()->RunUntilIdle();
   EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
@@ -439,6 +448,27 @@ TEST_F(ArcVmClientAdapterTest, CrosvmAndConciergeCrashes) {
   RecreateRunLoop();
   reset_arc_instance_stopped_called();
   SendNameOwnerChangedSignal();
+  run_loop()->RunUntilIdle();
+  EXPECT_FALSE(arc_instance_stopped_called());
+}
+
+// Tests the case where a unknown VmStopped signal is sent to Chrome.
+TEST_F(ArcVmClientAdapterTest, VmStoppedSignal_UnknownCid) {
+  SetValidUserIdHash();
+  StartMiniArc();
+  UpgradeArc(true);
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+
+  SendVmStoppedSignalForCid(42);  // unknown CID
+  run_loop()->RunUntilIdle();
+  EXPECT_TRUE(arc_instance_stopped_called());
+}
+
+// Tests the case where a stale VmStopped signal is sent to Chrome.
+TEST_F(ArcVmClientAdapterTest, VmStoppedSignal_Stale) {
+  SendVmStoppedSignalForCid(42);
   run_loop()->RunUntilIdle();
   EXPECT_FALSE(arc_instance_stopped_called());
 }

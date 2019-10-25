@@ -22,7 +22,7 @@ public final class FeedConfiguration {
 
     private static final String ABANDON_RESTORE_BELOW_FOLD = "abandon_restore_below_fold";
     /** Default value for whether to restore below fold. */
-    public static final boolean ABANDON_RESTORE_BELOW_FOLD_DEFAULT = true;
+    public static final boolean ABANDON_RESTORE_BELOW_FOLD_DEFAULT = false;
 
     private static final String CARD_MENU_TOOLTIP_ELIGIBLE = "card_menu_tooltip_eligible";
     /** Default value for if card menus should have tooltips enabled. */
@@ -35,7 +35,7 @@ public final class FeedConfiguration {
     private static final String CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING =
             "consume_synthetic_tokens_while_restoring_bool";
     /** Default value for whether to consumer synthetic tokens on restore. */
-    public static final boolean CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT = false;
+    public static final boolean CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT = true;
 
     private static final String DEFAULT_ACTION_TTL_SECONDS = "default_action_ttl_seconds";
     /** Default value for the TTL of default action (3 days). */

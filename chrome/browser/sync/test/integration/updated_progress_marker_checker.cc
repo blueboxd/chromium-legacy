@@ -25,7 +25,9 @@ UpdatedProgressMarkerChecker::UpdatedProgressMarkerChecker(
 
 UpdatedProgressMarkerChecker::~UpdatedProgressMarkerChecker() {}
 
-bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
+bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for progress markers";
+
   if (!has_unsynced_items_.has_value()) {
     return false;
   }
@@ -49,10 +51,6 @@ void UpdatedProgressMarkerChecker::GotHasUnsyncedItems(
     bool has_unsynced_items) {
   has_unsynced_items_ = has_unsynced_items;
   CheckExitCondition();
-}
-
-std::string UpdatedProgressMarkerChecker::GetDebugMessage() const {
-  return "Waiting for progress markers";
 }
 
 void UpdatedProgressMarkerChecker::OnSyncCycleCompleted(

@@ -69,6 +69,7 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -738,12 +739,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 // between the transition, we set a translucent default toolbar color based on
                 // the expansion percentage of the toolbar.
                 return android.support.v4.graphics.ColorUtils.setAlphaComponent(
-                        ColorUtils.getDefaultThemeColor(getResources(), false),
+                        ChromeColors.getDefaultThemeColor(getResources(), false),
                         Math.round(mUrlExpansionPercent * 255));
             case VisualState.NORMAL:
-                return ColorUtils.getDefaultThemeColor(getResources(), false);
+                return ChromeColors.getDefaultThemeColor(getResources(), false);
             case VisualState.INCOGNITO:
-                return ColorUtils.getDefaultThemeColor(getResources(), true);
+                return ChromeColors.getDefaultThemeColor(getResources(), true);
             case VisualState.BRAND_COLOR:
                 return getToolbarDataProvider().getPrimaryColor();
             default:
@@ -1059,7 +1060,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             // Only transition theme colors if in static tab mode that is not the NTP. In practice
             // this only runs when you focus the omnibox on a web page.
             if (!isLocationBarShownInNTP() && mTabSwitcherState == STATIC_TAB) {
-                int defaultColor = ColorUtils.getDefaultThemeColor(getResources(), isIncognito());
+                int defaultColor = ChromeColors.getDefaultThemeColor(getResources(), isIncognito());
                 int defaultLocationBarColor = getLocationBarColorForToolbarColor(defaultColor);
                 int primaryColor = getToolbarDataProvider().getPrimaryColor();
                 int themedLocationBarColor = getLocationBarColorForToolbarColor(primaryColor);

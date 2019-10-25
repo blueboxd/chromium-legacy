@@ -482,7 +482,7 @@ void OmniboxViewIOS::OnClear() {
   [field_ exitPreEditState];
 }
 
-bool OmniboxViewIOS::OnCopy() {
+void OmniboxViewIOS::OnCopy() {
   omnibox_interacted_while_focused_ = YES;
   UIPasteboard* board = [UIPasteboard generalPasteboard];
   NSString* selectedText = nil;
@@ -521,7 +521,6 @@ bool OmniboxViewIOS::OnCopy() {
     [item setObject:net::NSURLWithGURL(url) forKey:(NSString*)kUTTypeURL];
 
   board.items = [NSArray arrayWithObject:item];
-  return true;
 }
 
 void OmniboxViewIOS::WillPaste() {

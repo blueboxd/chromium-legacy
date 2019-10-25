@@ -164,17 +164,24 @@ class FlagsStateTest : public ::testing::Test {
     while (os_other_than_current == FlagsState::GetCurrentPlatform())
       os_other_than_current <<= 1;
     kEntries[2].supported_platforms = os_other_than_current;
-    flags_state_.reset(new FlagsState(kEntries, base::size(kEntries)));
+    flags_state_.reset(new FlagsState(
+        kEntries, base::size(kEntries),
+        base::Bind(&FlagsStateTest::IsFlagExcluded, base::Unretained(this))));
   }
 
   ~FlagsStateTest() override {
     variations::testing::ClearAllVariationParams();
   }
 
+  bool IsFlagExcluded(const FeatureEntry& entry) {
+    return exclude_flags_.count(entry.internal_name) != 0;
+  }
+
   TestingPrefServiceSimple prefs_;
   PrefServiceFlagsStorage flags_storage_;
   std::unique_ptr<FlagsState> flags_state_;
   base::FieldTrialList trial_list_;
+  std::set<std::string> exclude_flags_;
 };
 
 TEST_F(FlagsStateTest, NoChangeNoRestart) {
@@ -826,6 +833,20 @@ TEST_F(FlagsStateTest, EnableDisableValues) {
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));
   }
+
+  // "Disable" option selected, but flag filtered out by exclude predicate.
+  flags_state_->SetFeatureEntryEnabled(&flags_storage_, entry.NameForOption(2),
+                                       true);
+  exclude_flags_.insert(entry.internal_name);
+  {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    flags_state_->ConvertFlagsToSwitches(&flags_storage_, &command_line,
+                                         kAddSentinels, kEnableFeatures,
+                                         kDisableFeatures);
+    EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
+    EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
+  }
+  exclude_flags_.clear();
 }
 
 TEST_F(FlagsStateTest, FeatureValues) {

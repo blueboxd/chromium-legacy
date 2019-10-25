@@ -94,6 +94,8 @@ jumbo_static_library("browser") {
     "autocomplete_provider.h",
     "autocomplete_provider_client.cc",
     "autocomplete_provider_client.h",
+    "autocomplete_provider_debouncer.cc",
+    "autocomplete_provider_debouncer.h",
     "autocomplete_result.cc",
     "autocomplete_result.h",
     "autocomplete_scheme_classifier.h",

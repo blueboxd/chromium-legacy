@@ -41,13 +41,10 @@ class SyncDisabledByUserChecker : public SingleClientStatusChangeChecker {
   explicit SyncDisabledByUserChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sync disabled by user";
     return service()->HasDisableReason(
         syncer::SyncService::DISABLE_REASON_USER_CHOICE);
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Sync Disabled by User";
   }
 };
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/common/buildflags.h"
+#include "ui/events/event_handler.h"
 #include "ui/views/view.h"
 
 #if !BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
@@ -45,6 +46,8 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   std::unique_ptr<ToolbarButton> CreateToggleButton();
 
  private:
+  class AutoCloser;
+
   // TabStripUI::Embedder:
   void CloseContainer() override;
   void ShowContextMenuAtPoint(
@@ -66,6 +69,8 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   views::View* const tab_contents_container_;
 
   int desired_height_ = 0;
+
+  std::unique_ptr<AutoCloser> auto_closer_;
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
   std::unique_ptr<ui::MenuModel> context_menu_model_;

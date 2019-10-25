@@ -16,11 +16,11 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
-#include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tips.pb.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
+#include "chrome/browser/reputation/reputation_web_contents_observer.h"
+#include "chrome/browser/reputation/safety_tip_test_utils.h"
+#include "chrome/browser/reputation/safety_tip_ui_helper.h"
+#include "chrome/browser/reputation/safety_tips.pb.h"
+#include "chrome/browser/reputation/safety_tips_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -648,7 +648,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     CloseWarningLeaveSite(browser());
     histogram_tester.ExpectUniqueSample(
         kHistogramPrefix + "SafetyTip_Lookalike",
-        safety_tips::SafetyTipInteraction::kLeaveSite, 1);
+        SafetyTipInteraction::kLeaveSite, 1);
   }
 
   {
@@ -663,10 +663,10 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismiss, 1);
+        SafetyTipInteraction::kDismiss, 1);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismissWithClose, 1);
+        SafetyTipInteraction::kDismissWithClose, 1);
   }
 
   // Test that the specific dismissal type is recorded correctly.
@@ -678,10 +678,10 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     CloseWarningIgnore(views::Widget::ClosedReason::kEscKeyPressed);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismiss, 1);
+        SafetyTipInteraction::kDismiss, 1);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismissWithEsc, 1);
+        SafetyTipInteraction::kDismissWithEsc, 1);
   }
 
   {
@@ -692,10 +692,10 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     CloseWarningIgnore(views::Widget::ClosedReason::kCancelButtonClicked);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismiss, 1);
+        SafetyTipInteraction::kDismiss, 1);
     histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
-        safety_tips::SafetyTipInteraction::kDismissWithIgnore, 1);
+        SafetyTipInteraction::kDismissWithIgnore, 1);
   }
 }
 

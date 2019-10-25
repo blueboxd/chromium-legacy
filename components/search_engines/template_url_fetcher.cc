@@ -160,7 +160,8 @@ void TemplateURLFetcher::RequestDelegate::OnSimpleLoaderComplete(
 
   template_url_ = TemplateURLParser::Parse(
       fetcher_->template_url_service_->search_terms_data(),
-      response_body->data(), response_body->length(), nullptr);
+      response_body->data(), response_body->length(),
+      TemplateURLParser::ParameterFilter());
   if (!template_url_ ||
       !template_url_->url_ref().SupportsReplacement(
           fetcher_->template_url_service_->search_terms_data())) {

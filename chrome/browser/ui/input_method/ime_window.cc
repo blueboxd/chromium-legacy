@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/input_method/ime_native_window.h"
 #include "chrome/browser/ui/input_method/ime_window_observer.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -164,8 +165,8 @@ void ImeWindow::Observe(int type,
 content::WebContents* ImeWindow::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  source->GetController().LoadURL(params.url, params.referrer,
-                                  params.transition, params.extra_headers);
+  source->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(params));
   return source;
 }
 

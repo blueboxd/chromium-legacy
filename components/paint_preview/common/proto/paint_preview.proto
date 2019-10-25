@@ -25,27 +25,23 @@ message LinkDataProto {
 }
 
 // A paint preview of a single frame.
-// NEXT_TAG = 8
+// NEXT_TAG = 6
 message PaintPreviewFrameProto {
-  // Serialized base::UnguessableToken.
-  required uint64 unguessable_token_high = 1;
-  required uint64 unguessable_token_low = 2;
-
   // Originates in renderer as Routing ID.
   // Converted to (Process ID || Routing ID) once processed in browser.
-  required uint64 id = 3;
+  required uint64 id = 1;
 
   // Boolean indicating if the frame is the main frame.
-  required bool is_main_frame = 4;
+  required bool is_main_frame = 2;
 
   // The file path to the serialized Skia Picture.
-  optional string file_path = 5;
+  optional string file_path = 3;
 
   // A list of links within the frame.
-  repeated LinkDataProto links = 6;
+  repeated LinkDataProto links = 4;
 
   // A map between the content IDs of subframes and the |id| field.
-  map<uint32, int64> content_id_proxy_id_map = 7;
+  map<uint32, int64> content_id_proxy_id_map = 5;
 }
 
 // A paint preview of the entire page.

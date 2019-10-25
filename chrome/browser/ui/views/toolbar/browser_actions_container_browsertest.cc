@@ -238,7 +238,7 @@ namespace {
 class ForwardingDelegate : public BrowserActionsContainer::Delegate {
  public:
   explicit ForwardingDelegate(BrowserActionsContainer::Delegate* forward_to);
-  virtual ~ForwardingDelegate() = default;
+  ~ForwardingDelegate() override = default;
 
   BrowserActionsContainer::Delegate* forward_to() { return forward_to_; }
   void set_max_browser_actions_width(

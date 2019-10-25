@@ -24,13 +24,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/grit/components_resources.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
 #include "components/security_interstitials/core/common/mojom/interstitial_commands.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -410,7 +410,7 @@ void NetErrorHelper::LoadErrorPage(const std::string& html,
 }
 
 void NetErrorHelper::EnablePageHelperFunctions() {
-  SecurityInterstitialPageController::Install(
+  security_interstitials::SecurityInterstitialPageController::Install(
       render_frame(),
       weak_security_interstitial_controller_delegate_factory_.GetWeakPtr());
   NetErrorPageController::Install(

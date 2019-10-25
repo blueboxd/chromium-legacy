@@ -112,7 +112,7 @@ void WorkerScriptLoader::Start() {
 
 void WorkerScriptLoader::MaybeStartLoader(
     NavigationLoaderInterceptor* interceptor,
-    SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
+    scoped_refptr<network::SharedURLLoaderFactory> single_request_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!completed_);
   DCHECK(interceptor);
@@ -123,12 +123,11 @@ void WorkerScriptLoader::MaybeStartLoader(
   subresource_loader_params_ =
       interceptor->MaybeCreateSubresourceLoaderParams();
 
-  if (single_request_handler) {
+  if (single_request_factory) {
     // The interceptor elected to handle the request. Use it.
     network::mojom::URLLoaderClientPtr client;
     url_loader_client_binding_.Bind(mojo::MakeRequest(&client));
-    url_loader_factory_ = base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-        std::move(single_request_handler));
+    url_loader_factory_ = std::move(single_request_factory);
     url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_), routing_id_, request_id_, options_,
         resource_request_, std::move(client), traffic_annotation_);

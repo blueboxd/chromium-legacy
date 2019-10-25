@@ -293,10 +293,6 @@ void AssistantPageView::OnUiVisibilityChanged(
   }
 }
 
-AssistantMainView* AssistantPageView::GetMainViewForTest() {
-  return assistant_main_view_;
-}
-
 int AssistantPageView::GetChildViewHeightForWidth(int width) const {
   int height = 0;
   if (assistant_view_delegate_) {

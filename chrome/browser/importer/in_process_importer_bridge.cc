@@ -65,26 +65,16 @@ namespace {
 
 // FirefoxURLParameterFilter is used to remove parameter mentioning Firefox from
 // the search URL when importing search engines.
-class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
- public:
-  FirefoxURLParameterFilter() {}
-  ~FirefoxURLParameterFilter() override {}
-
-  // TemplateURLParser::ParameterFilter method.
-  bool KeepParameter(const std::string& key,
-                     const std::string& value) override {
-    std::string low_value = base::ToLowerASCII(value);
-    if (low_value.find("mozilla") != std::string::npos ||
-        low_value.find("firefox") != std::string::npos ||
-        low_value.find("moz:") != std::string::npos) {
-      return false;
-    }
-    return true;
+bool FirefoxURLParameterFilter(const std::string& key,
+                               const std::string& value) {
+  std::string low_value = base::ToLowerASCII(value);
+  if (low_value.find("mozilla") != std::string::npos ||
+      low_value.find("firefox") != std::string::npos ||
+      low_value.find("moz:") != std::string::npos) {
+    return false;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FirefoxURLParameterFilter);
-};
+  return true;
+}
 
 // Attempts to create a TemplateURL from the provided data. |title| is optional.
 // If TemplateURL creation fails, returns null.
@@ -110,15 +100,14 @@ void ParseSearchEnginesFromFirefoxXMLData(
   DCHECK(search_engines);
 
   std::map<std::string, std::unique_ptr<TemplateURL>> search_engine_for_url;
-  FirefoxURLParameterFilter param_filter;
   // The first XML file represents the default search engine in Firefox 3, so we
   // need to keep it on top of the list.
   auto default_turl = search_engine_for_url.end();
   for (auto xml_iter = xml_data.begin(); xml_iter != xml_data.end();
        ++xml_iter) {
-    std::unique_ptr<TemplateURL> template_url =
-        TemplateURLParser::Parse(UIThreadSearchTermsData(), xml_iter->data(),
-                                 xml_iter->length(), &param_filter);
+    std::unique_ptr<TemplateURL> template_url = TemplateURLParser::Parse(
+        UIThreadSearchTermsData(), xml_iter->data(), xml_iter->length(),
+        base::BindRepeating(&FirefoxURLParameterFilter));
     if (template_url) {
       auto iter = search_engine_for_url.find(template_url->url());
       if (iter == search_engine_for_url.end()) {

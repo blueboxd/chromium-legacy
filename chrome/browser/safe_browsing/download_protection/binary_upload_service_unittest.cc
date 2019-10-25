@@ -5,9 +5,11 @@
 #include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/time/time.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/download_protection/multipart_uploader.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
@@ -118,6 +120,13 @@ class BinaryUploadServiceTest : public testing::Test {
             }));
   }
 
+  void UploadForDeepScanning(
+      std::unique_ptr<BinaryUploadService::Request> request,
+      bool authorized = true) {
+    service_->MaybeUploadForDeepScanningCallback(std::move(request),
+                                                 authorized);
+  }
+
   void ReceiveMessageForRequest(BinaryUploadService::Request* request,
                                 const DeepScanningClientResponse& response) {
     service_->OnGetResponse(request, response);
@@ -127,6 +136,11 @@ class BinaryUploadServiceTest : public testing::Test {
                                  bool success,
                                  const std::string& response) {
     service_->OnUploadComplete(request, success, response);
+  }
+
+  void ServiceWithNoFCMConnection() {
+    service_ = std::make_unique<BinaryUploadService>(
+        nullptr, std::unique_ptr<BinaryFCMService>(nullptr));
   }
 
   std::unique_ptr<MockRequest> MakeRequest(
@@ -152,6 +166,18 @@ class BinaryUploadServiceTest : public testing::Test {
     return request;
   }
 
+  void ValidateAuthorizationTimerIdle() {
+    EXPECT_FALSE(service_->timer_.IsRunning());
+    EXPECT_EQ(base::TimeDelta::FromHours(0),
+              service_->timer_.GetCurrentDelay());
+  }
+
+  void ValidateAuthorizationTimerStarted() {
+    EXPECT_TRUE(service_->timer_.IsRunning());
+    EXPECT_EQ(base::TimeDelta::FromHours(24),
+              service_->timer_.GetCurrentDelay());
+  }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<BinaryUploadService> service_;
@@ -173,7 +199,7 @@ TEST_F(BinaryUploadServiceTest, FailsForLargeFile) {
             std::move(callback).Run(BinaryUploadService::Result::FILE_TOO_LARGE,
                                     data);
           }));
-  service_->UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
 
   content::RunAllTasksUntilIdle();
 
@@ -189,7 +215,7 @@ TEST_F(BinaryUploadServiceTest, FailsWhenMissingInstanceID) {
 
   ExpectInstanceID(BinaryFCMService::kInvalidId);
 
-  service_->UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::FAILED_TO_GET_TOKEN);
@@ -204,7 +230,7 @@ TEST_F(BinaryUploadServiceTest, FailsWhenUploadFails) {
   ExpectInstanceID("valid id");
   ExpectNetworkResponse(false, DeepScanningClientResponse());
 
-  service_->UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::UPLOAD_FAILURE);
@@ -223,7 +249,7 @@ TEST_F(BinaryUploadServiceTest, HoldsScanResponsesUntilAllReady) {
   ExpectNetworkResponse(true, DeepScanningClientResponse());
 
   MockRequest* raw_request = request.get();
-  service_->UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
 
   // Simulate receiving the DLP response
@@ -255,7 +281,7 @@ TEST_F(BinaryUploadServiceTest, TimesOut) {
 
   ExpectInstanceID("valid id");
   ExpectNetworkResponse(true, DeepScanningClientResponse());
-  service_->UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
   task_environment_.FastForwardUntilNoTasksRemain();
 
@@ -280,7 +306,7 @@ TEST_F(BinaryUploadServiceTest, OnInstanceIDAfterTimeout) {
           }));
 
   ExpectNetworkResponse(true, DeepScanningClientResponse());
-  service_->UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
   task_environment_.FastForwardUntilNoTasksRemain();
 
@@ -304,7 +330,7 @@ TEST_F(BinaryUploadServiceTest, OnUploadCompleteAfterTimeout) {
   ExpectNetworkResponse(true, DeepScanningClientResponse());
 
   MockRequest* raw_request = request.get();
-  service_->UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
@@ -327,7 +353,7 @@ TEST_F(BinaryUploadServiceTest, OnGetResponseAfterTimeout) {
   ExpectNetworkResponse(true, DeepScanningClientResponse());
 
   MockRequest* raw_request = request.get();
-  service_->UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
@@ -335,6 +361,31 @@ TEST_F(BinaryUploadServiceTest, OnGetResponseAfterTimeout) {
   // Expect nothing to change if we get a message after the timeout.
   ReceiveMessageForRequest(raw_request, DeepScanningClientResponse());
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
+}
+
+TEST_F(BinaryUploadServiceTest, OnUnauthorized) {
+  BinaryUploadService::Result scanning_result =
+      BinaryUploadService::Result::UNKNOWN;
+  DeepScanningClientResponse scanning_response;
+  std::unique_ptr<MockRequest> request =
+      MakeRequest(&scanning_result, &scanning_response);
+  request->set_request_dlp_scan(DlpDeepScanningClientRequest());
+  request->set_request_malware_scan(MalwareDeepScanningClientRequest());
+
+  ExpectInstanceID("valid id");
+
+  DeepScanningClientResponse simulated_response;
+  simulated_response.mutable_dlp_scan_verdict();
+  simulated_response.mutable_malware_scan_verdict();
+  ExpectNetworkResponse(true, simulated_response);
+
+  UploadForDeepScanning(std::move(request), /*authorized=*/false);
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
 }
 
 TEST_F(BinaryUploadServiceTest, OnGetSynchronousResponse) {
@@ -353,16 +404,14 @@ TEST_F(BinaryUploadServiceTest, OnGetSynchronousResponse) {
   simulated_response.mutable_malware_scan_verdict();
   ExpectNetworkResponse(true, simulated_response);
 
-  service_->UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::SUCCESS);
 }
 
 TEST_F(BinaryUploadServiceTest, ReturnsAsynchronouslyWithNoFCM) {
-  // Instantiate a BinaryUploadService with no FCM connection.
-  BinaryUploadService service(nullptr,
-                              std::unique_ptr<BinaryFCMService>(nullptr));
+  ServiceWithNoFCMConnection();
 
   BinaryUploadService::Result scanning_result =
       BinaryUploadService::Result::UNKNOWN;
@@ -372,13 +421,20 @@ TEST_F(BinaryUploadServiceTest, ReturnsAsynchronouslyWithNoFCM) {
   request->set_request_dlp_scan(DlpDeepScanningClientRequest());
   request->set_request_malware_scan(MalwareDeepScanningClientRequest());
 
-  service.UploadForDeepScanning(std::move(request));
+  UploadForDeepScanning(std::move(request));
 
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
 
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::FAILED_TO_GET_TOKEN);
+}
+
+TEST_F(BinaryUploadServiceTest, IsAuthorizedValidTimer) {
+  // The 24 hours timer should be started on the first IsAuthorized call.
+  ValidateAuthorizationTimerIdle();
+  service_->IsAuthorized(base::DoNothing());
+  ValidateAuthorizationTimerStarted();
 }
 
 }  // namespace safe_browsing

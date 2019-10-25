@@ -169,6 +169,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnWindowVisibilityChanged();
   void OnScrolledToAnchor();
 
+  void ResendFocusSignalsForCurrentlyFocusedNode();
   bool SupportsSelectionWithAtkSelection();
   bool SelectionAndFocusAreTheSame();
 

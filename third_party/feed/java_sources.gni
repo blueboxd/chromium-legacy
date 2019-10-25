@@ -327,6 +327,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/publicapi/scroll/ScrollObservable.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/publicapi/scroll/ScrollObserver.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/removetrackingfactory/StreamRemoveTrackingFactory.java",
+  "src/src/main/java/com/google/android/libraries/feed/sharedstream/scroll/PietScrollObserver.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/scroll/ScrollEvents.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/scroll/ScrollListenerNotifier.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/scroll/ScrollLogger.java",

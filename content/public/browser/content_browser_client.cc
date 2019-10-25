@@ -747,12 +747,6 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
   return false;
 }
 
-#if defined(OS_ANDROID)
-void ContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
-    int render_process_id,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>* pending_factory) {}
-#endif
-
 bool ContentBrowserClient::WillInterceptWebSocket(RenderFrameHost*) {
   return false;
 }

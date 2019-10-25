@@ -18,8 +18,8 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "content/browser/indexed_db/scopes/leveldb_scope.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes.h"
@@ -451,7 +451,7 @@ class IndexedDBConnectionCoordinator::DeleteRequest
       scoped_refptr<TransactionalLevelDBTransaction> txn;
       TransactionalLevelDBDatabase* db = db_->backing_store_->db();
       if (db) {
-        txn = db->leveldb_class_factory()->CreateLevelDBTransaction(
+        txn = db->class_factory()->CreateLevelDBTransaction(
             db, db->scopes()->CreateScope(std::move(lock_receiver_.locks), {}));
         txn->set_commit_cleanup_complete_callback(
             std::move(on_database_deleted_));

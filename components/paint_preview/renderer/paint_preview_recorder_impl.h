@@ -15,10 +15,6 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
-namespace base {
-class ReadOnlySharedMemoryRegion;
-}  // namespace base
-
 namespace content {
 class RenderFrame;
 }  // namespace content
@@ -49,7 +45,7 @@ class PaintPreviewRecorderImpl : public content::RenderFrameObserver,
   // Handles the bulk of the capture.
   void CapturePaintPreviewInternal(
       const mojom::PaintPreviewCaptureParamsPtr& params,
-      base::ReadOnlySharedMemoryRegion* region,
+      mojom::PaintPreviewCaptureResponse* region,
       mojom::PaintPreviewStatus* status);
 
   bool is_painting_preview_;

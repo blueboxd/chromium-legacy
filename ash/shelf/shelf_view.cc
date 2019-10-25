@@ -301,13 +301,15 @@ const int ShelfView::kMinimumDragDistance = 8;
 
 ShelfView::ShelfView(ShelfModel* model,
                      Shelf* shelf,
-                     ApplicationDragAndDropHost* drag_and_drop_host)
+                     ApplicationDragAndDropHost* drag_and_drop_host,
+                     ShelfButtonDelegate* shelf_button_delegate)
     : model_(model),
       shelf_(shelf),
       view_model_(std::make_unique<views::ViewModel>()),
       bounds_animator_(std::make_unique<views::BoundsAnimator>(this)),
       focus_search_(std::make_unique<ShelfFocusSearch>(this)),
-      drag_and_drop_host_(drag_and_drop_host) {
+      drag_and_drop_host_(drag_and_drop_host),
+      shelf_button_delegate_(shelf_button_delegate) {
   DCHECK(model_);
   DCHECK(shelf_);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
@@ -525,7 +527,8 @@ void ShelfView::ToggleOverflowBubble() {
     overflow_bubble_.reset(new OverflowBubble(shelf_));
 
   ShelfView* overflow_view =
-      new ShelfView(model_, shelf_, /*drag_and_drop_host=*/nullptr);
+      new ShelfView(model_, shelf_, /*drag_and_drop_host=*/nullptr,
+                    /*shelf_button_delegate=*/nullptr);
   overflow_view->overflow_mode_ = true;
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
@@ -1154,7 +1157,8 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
     case TYPE_DIALOG: {
-      ShelfAppButton* button = new ShelfAppButton(this);
+      ShelfAppButton* button = new ShelfAppButton(
+          this, shelf_button_delegate_ ? shelf_button_delegate_ : this);
       button->SetImage(item.image);
       button->ReflectItemStatus(item);
       view = button;

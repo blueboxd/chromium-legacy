@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/retry_verifier.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -49,17 +48,14 @@ class ExponentialBackoffChecker : public SingleClientStatusChangeChecker {
 
   // Checks if backoff is complete. Called repeatedly each time PSS notifies
   // observers of a state change.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Verifying backoff intervals (" << retry_verifier_.retry_count()
+        << "/" << RetryVerifier::kMaxRetry << ")";
+
     const SyncCycleSnapshot& snap =
         service()->GetLastCycleSnapshotForDebugging();
     retry_verifier_.VerifyRetryInterval(snap);
     return (retry_verifier_.done() && retry_verifier_.Succeeded());
-  }
-
-  std::string GetDebugMessage() const override {
-    return base::StringPrintf("Verifying backoff intervals (%d/%d)",
-                              retry_verifier_.retry_count(),
-                              RetryVerifier::kMaxRetry);
   }
 
  private:

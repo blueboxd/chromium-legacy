@@ -272,6 +272,9 @@ crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/angle
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/radians/radians_001_to_006.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/reflect/reflect_001_to_006.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/refract/refract_001_to_006.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/sign/sign_001_to_006.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/smoothstep/smoothstep_001_to_006.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/sin/sin_001_to_006.html [ Failure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]

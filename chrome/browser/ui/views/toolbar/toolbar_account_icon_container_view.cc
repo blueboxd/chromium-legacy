@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 // static
@@ -45,6 +47,10 @@ ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
   page_action_icon_container_view_ =
       AddChildView(std::make_unique<PageActionIconContainerView>(params));
 
+  avatar_->SetProperty(views::kFlexBehaviorKey,
+                       views::FlexSpecification::ForSizeRule(
+                           views::MinimumFlexSizeRule::kScaleToMinimum,
+                           views::MaximumFlexSizeRule::kPreferred));
   AddMainButton(avatar_);
 }
 

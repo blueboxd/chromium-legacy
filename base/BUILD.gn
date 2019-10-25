@@ -616,6 +616,8 @@ jumbo_component("base") {
     "profiler/register_context.h",
     "profiler/sample_metadata.cc",
     "profiler/sample_metadata.h",
+    "profiler/sampling_profiler_thread_token.cc",
+    "profiler/sampling_profiler_thread_token.h",
     "profiler/stack_buffer.cc",
     "profiler/stack_buffer.h",
     "profiler/stack_copier.cc",

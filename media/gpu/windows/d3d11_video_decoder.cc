@@ -611,8 +611,7 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
     DCHECK(!buffer->in_picture_use());
   picture_buffers_.clear();
 
-  // Create each picture buffer.1
-  const int textures_per_picture = 2;  // From the VDA
+  // Create each picture buffer.
   for (size_t i = 0; i < TextureSelector::BUFFER_COUNT; i++) {
     auto tex_wrapper = texture_selector_->CreateTextureWrapper(
         device_, video_device_, device_context_, in_texture, size);
@@ -621,7 +620,7 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
         new D3D11PictureBuffer(std::move(tex_wrapper), size, i));
     if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_,
                                    texture_selector_->DecoderGuid(),
-                                   textures_per_picture, media_log_->Clone())) {
+                                   media_log_->Clone())) {
       NotifyError("Unable to allocate PictureBuffer");
       return;
     }

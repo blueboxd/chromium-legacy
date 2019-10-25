@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -140,20 +141,20 @@ mojom::ServiceRequest TestConnectorFactory::RegisterInstance(
 
 void TestConnectorFactory::OnStartResponseHandler(
     const std::string& service_name,
-    mojom::ConnectorRequest connector_request,
-    mojom::ServiceControlAssociatedRequest control_request) {
-  impl_->Clone(std::move(connector_request));
-  service_control_bindings_.AddBinding(this, std::move(control_request),
-                                       service_name);
+    mojo::PendingReceiver<mojom::Connector> connector_receiver,
+    mojo::PendingAssociatedReceiver<mojom::ServiceControl> control_receiver) {
+  impl_->Clone(std::move(connector_receiver));
+  service_control_receivers_.Add(this, std::move(control_receiver),
+                                 service_name);
 }
 
 void TestConnectorFactory::RequestQuit() {
   if (ignore_quit_requests_)
     return;
 
-  service_proxies_.erase(service_control_bindings_.dispatch_context());
-  service_control_bindings_.RemoveBinding(
-      service_control_bindings_.dispatch_binding());
+  service_proxies_.erase(service_control_receivers_.current_context());
+  service_control_receivers_.Remove(
+      service_control_receivers_.current_receiver());
 }
 
 }  // namespace service_manager

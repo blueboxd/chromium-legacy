@@ -18,10 +18,8 @@ namespace ui {
 
 OSExchangeData::DownloadFileInfo::DownloadFileInfo(
     const base::FilePath& filename,
-    DownloadFileProvider* downloader)
-    : filename(filename),
-      downloader(downloader) {
-}
+    std::unique_ptr<DownloadFileProvider> downloader)
+    : filename(filename), downloader(std::move(downloader)) {}
 
 OSExchangeData::DownloadFileInfo::~DownloadFileInfo() = default;
 
@@ -156,7 +154,7 @@ bool OSExchangeData::GetVirtualFilesAsTempFiles(
   return provider_->GetVirtualFilesAsTempFiles(std::move(callback));
 }
 
-void OSExchangeData::SetDownloadFileInfo(const DownloadFileInfo& download) {
+void OSExchangeData::SetDownloadFileInfo(DownloadFileInfo* download) {
   provider_->SetDownloadFileInfo(download);
 }
 #endif

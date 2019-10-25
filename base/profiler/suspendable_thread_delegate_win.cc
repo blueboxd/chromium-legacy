@@ -172,9 +172,9 @@ bool SuspendableThreadDelegateWin::ScopedSuspendThread::WasSuccessful() const {
 // ----------------------------------------------------------
 
 SuspendableThreadDelegateWin::SuspendableThreadDelegateWin(
-    PlatformThreadId thread_id)
-    : thread_id_(thread_id),
-      thread_handle_(GetThreadHandle(thread_id)),
+    SamplingProfilerThreadToken thread_token)
+    : thread_id_(thread_token.id),
+      thread_handle_(GetThreadHandle(thread_token.id)),
       thread_stack_base_address_(reinterpret_cast<uintptr_t>(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase)) {}
 

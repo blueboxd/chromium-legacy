@@ -82,6 +82,9 @@ class TransportSecurityState;
 // Specifies the maximum HPACK dynamic table size the server is allowed to set.
 const uint32_t kSpdyMaxHeaderTableSize = 64 * 1024;
 
+// The maximum size of header list that the server is allowed to send.
+const uint32_t kSpdyMaxHeaderListSize = 256 * 1024;
+
 // Specifies the maximum concurrent streams server could send (via push).
 const uint32_t kSpdyMaxConcurrentPushedStreams = 1000;
 

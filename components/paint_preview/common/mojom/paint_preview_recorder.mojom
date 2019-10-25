@@ -4,11 +4,10 @@
 
 module paint_preview.mojom;
 
-import "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom";
 import "mojo/public/mojom/base/file.mojom";
-import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "url/mojom/url.mojom";
 
 // Status codes for the PaintPreviewRecorder.
 enum PaintPreviewStatus {
@@ -42,6 +41,25 @@ struct PaintPreviewCaptureParams {
   mojo_base.mojom.File file;
 };
 
+struct LinkData {
+  // URL of the link.
+  url.mojom.Url url;
+
+  // Rect for the link.
+  gfx.mojom.Rect rect;
+};
+
+struct PaintPreviewCaptureResponse {
+  // Routing ID of the frame.
+  uint64 id;
+
+  // Map between subframe content IDs and the RenderFrameProxy Routing ID.
+  map<uint32, uint64> content_id_proxy_id_map;
+
+  // A list of links within the frame.
+  array<LinkData> links;
+};
+
 // Service for capturing a paint preview of a RenderFrame's contents. This
 // includes both the visual contents (as an SkPicture) and hyperlinks
 // for the frame.
@@ -53,9 +71,9 @@ interface PaintPreviewRecorder {
   // via the RenderFrameProxy. The browser handles dispatching these requests to
   // the correct RenderFrame and aggregating all the outputs.
   //
-  // Returns a status. If |status| == kOk then proto contains a serialized
-  // PaintPreviewFrameProto.
+  // Returns a status, and if |status| == kOK a valid instance of
+  // PaintPreviewCaptureResponse.
   CapturePaintPreview(PaintPreviewCaptureParams params) =>
     (PaintPreviewStatus status,
-     mojo_base.mojom.ReadOnlySharedMemoryRegion? proto);
+     PaintPreviewCaptureResponse response);
 };

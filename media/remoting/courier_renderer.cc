@@ -79,8 +79,8 @@ CourierRenderer::CourierRenderer(
   // on the media thread. Therefore, all weak pointers must be dereferenced on
   // the media thread.
   const RpcBroker::ReceiveMessageCallback receive_callback =
-      base::Bind(&CourierRenderer::OnMessageReceivedOnMainThread,
-                 media_task_runner_, weak_factory_.GetWeakPtr());
+      base::BindRepeating(&CourierRenderer::OnMessageReceivedOnMainThread,
+                          media_task_runner_, weak_factory_.GetWeakPtr());
   rpc_broker_->RegisterMessageReceiverCallback(rpc_handle_, receive_callback);
 }
 

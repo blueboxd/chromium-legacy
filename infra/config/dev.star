@@ -14,16 +14,11 @@ lucicfg.config(
     fail_on_warnings = True,
 )
 
-# Copy the not-yet migrated files to the generated outputs
-# TODO(https://crbug.com/1011908) Migrate the configuration in these files to starlark
-[lucicfg.emit(dest = f, data = io.read_file(f)) for f in (
-    'luci-milo-dev.cfg',
-)]
-
 luci.project(
     name = 'chromium',
     buildbucket = 'cr-buildbucket-dev.appspot.com',
     logdog = 'luci-logdog-dev.appspot.com',
+    milo = 'luci-milo-dev.appspot.com',
     scheduler = 'luci-scheduler-dev.appspot.com',
     swarming = 'chromium-swarm-dev.appspot.com',
     acls = [
@@ -50,6 +45,13 @@ luci.logdog(
     gs_bucket = 'chromium-luci-logdog',
 )
 
+luci.milo(
+    logo = 'https://storage.googleapis.com/chrome-infra-public/logo/chromium.svg',
+)
+
 exec('//dev/buckets/ci.star')
 exec('//dev/buckets/cron.star')
 exec('//dev/buckets/try.star')
+
+exec('//dev/consoles/chromium.swarm.star')
+exec('//dev/consoles/snapshots.star')

@@ -42,6 +42,8 @@ std::string SecurityStyleToProtocolSecurityState(
       return Security::SecurityStateEnum::Insecure;
     case blink::SecurityStyle::kSecure:
       return Security::SecurityStateEnum::Secure;
+    case blink::SecurityStyle::kInsecureBroken:
+      return Security::SecurityStateEnum::InsecureBroken;
     default:
       NOTREACHED();
       return Security::SecurityStateEnum::Unknown;

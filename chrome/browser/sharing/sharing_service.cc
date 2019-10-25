@@ -99,8 +99,7 @@ DeviceNames GetDeviceNames(const syncer::DeviceInfo* device) {
   // For chromeOS, return manufacturer + model.
   if (type == sync_pb::SyncEnums::TYPE_CROS) {
     device_names.short_name = device_names.full_name =
-        base::StrCat({device->hardware_info().manufacturer, " ",
-                      device->hardware_info().model});
+        base::StrCat({hardware_info.manufacturer, " ", hardware_info.model});
     return device_names;
   }
 

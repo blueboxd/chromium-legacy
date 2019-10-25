@@ -48,8 +48,6 @@
 #include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "media/mojo/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -256,21 +254,17 @@ ShellContentBrowserClient::CreateBrowserMainParts(
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   if (!url.is_valid())
     return false;
-  // Keep in sync with ProtocolHandlers added by
-  // ShellURLRequestContextGetter::GetURLRequestContext().
   static const char* const kProtocolList[] = {
-      url::kBlobScheme,
-      url::kFileSystemScheme,
-      kChromeUIScheme,
-      kChromeDevToolsScheme,
-      url::kDataScheme,
+      url::kHttpScheme, url::kHttpsScheme,     url::kWsScheme,
+      url::kWssScheme,  url::kBlobScheme,      url::kFileSystemScheme,
+      kChromeUIScheme,  kChromeDevToolsScheme, url::kDataScheme,
       url::kFileScheme,
   };
-  for (size_t i = 0; i < base::size(kProtocolList); ++i) {
-    if (url.scheme() == kProtocolList[i])
+  for (const char* supported_protocol : kProtocolList) {
+    if (url.scheme_piece() == supported_protocol)
       return true;
   }
-  return net::URLRequest::IsHandledProtocol(url.scheme());
+  return false;
 }
 
 void ShellContentBrowserClient::BindInterfaceRequestFromFrame(

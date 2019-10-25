@@ -368,7 +368,14 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForEmptyTitles) {
                          GURL("http://e.com"));
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, EmitUmaForEmptyTitles) {
+// TODO(crbug.com/1017731): Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_EmitUmaForEmptyTitles DISABLED_EmitUmaForEmptyTitles
+#else
+#define MAYBE_EmitUmaForEmptyTitles EmitUmaForEmptyTitles
+#endif
+
+IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, MAYBE_EmitUmaForEmptyTitles) {
   WaitForBookmarkModel(browser()->profile());
 
   ASSERT_THAT(

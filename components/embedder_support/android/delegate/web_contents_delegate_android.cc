@@ -101,25 +101,8 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
     return NULL;
   }
 
-  // content::OpenURLParams -> content::NavigationController::LoadURLParams
-  content::NavigationController::LoadURLParams load_params(url);
-  load_params.referrer = params.referrer;
-  load_params.frame_tree_node_id = params.frame_tree_node_id;
-  load_params.redirect_chain = params.redirect_chain;
-  load_params.transition_type = params.transition;
-  load_params.extra_headers = params.extra_headers;
-  load_params.should_replace_current_entry =
-      params.should_replace_current_entry;
-  load_params.is_renderer_initiated = params.is_renderer_initiated;
-  load_params.has_user_gesture = params.user_gesture;
-  load_params.initiator_origin = params.initiator_origin;
-
-  if (params.uses_post) {
-    load_params.load_type = content::NavigationController::LOAD_TYPE_HTTP_POST;
-    load_params.post_data = params.post_data;
-  }
-
-  source->GetController().LoadURLWithParams(load_params);
+  source->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(params));
 
   return source;
 }

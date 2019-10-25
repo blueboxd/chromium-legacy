@@ -263,33 +263,4 @@ TEST_F(CWVAutofillDataManagerTest, DeletePassword) {
   EXPECT_EQ(0ul, passwords.count);
 }
 
-// Tests CWVAutofillDataManager properly deletes all local data.
-TEST_F(CWVAutofillDataManagerTest, ClearAllLocalData) {
-  personal_data_manager_->AddCreditCard(autofill::test::GetCreditCard());
-  personal_data_manager_->AddCreditCard(autofill::test::GetCreditCard2());
-  personal_data_manager_->AddServerCreditCard(
-      autofill::test::GetMaskedServerCard());
-  personal_data_manager_->AddProfile(autofill::test::GetFullProfile());
-  personal_data_manager_->AddProfile(autofill::test::GetFullProfile2());
-
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    EXPECT_EQ(3ul, credit_cards.count);
-  }));
-
-  EXPECT_TRUE(FetchProfiles(^(NSArray<CWVAutofillProfile*>* profiles) {
-    EXPECT_EQ(2ul, profiles.count);
-  }));
-
-  [autofill_data_manager_ clearAllLocalData];
-
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    EXPECT_EQ(1ul, credit_cards.count);
-    EXPECT_TRUE(credit_cards.firstObject.fromGooglePay);
-  }));
-
-  EXPECT_TRUE(FetchProfiles(^(NSArray<CWVAutofillProfile*>* profiles) {
-    EXPECT_EQ(0ul, profiles.count);
-  }));
-}
-
 }  // namespace ios_web_view

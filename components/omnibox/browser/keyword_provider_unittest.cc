@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -24,11 +25,11 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
-#include "net/url_request/url_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using base::ASCIIToUTF16;
 
@@ -38,7 +39,8 @@ class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
  public:
   metrics::OmniboxInputType GetInputTypeForScheme(
       const std::string& scheme) const override {
-    if (net::URLRequest::IsHandledProtocol(scheme))
+    DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
+    if (scheme == url::kHttpScheme || scheme == url::kHttpsScheme)
       return metrics::OmniboxInputType::URL;
     return metrics::OmniboxInputType::EMPTY;
   }

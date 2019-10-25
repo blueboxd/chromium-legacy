@@ -247,17 +247,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // started. Once it was set to block all cookies, it cannot be changed back.
   static void SetDefaultCookiePolicyToBlock();
 
-  // Returns true if the scheme can be handled by URLRequest. False otherwise.
-  static bool IsHandledProtocol(const std::string& scheme);
-
-  // Returns true if the url can be handled by URLRequest. False otherwise.
-  // The function returns true for invalid urls because URLRequest knows how
-  // to handle those.
-  // NOTE: This will also return true for URLs that are handled by
-  // ProtocolFactories that only work for requests that are scoped to a
-  // Profile.
-  static bool IsHandledURL(const GURL& url);
-
   // The original url is the url used to initialize the request, and it may
   // differ from the url if the request was redirected.
   const GURL& original_url() const { return url_chain_.front(); }

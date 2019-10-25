@@ -83,7 +83,8 @@
         on-closed="onDialogCanceled_" exportparts="dialog">
       <div slot="title">[[dialogTitle]]</div>
       <div slot="body">
-        <div class="contents layout vertical center center-justified">
+        <div class="contents layout vertical center center-justified"
+            role="alert">
           <template is="dom-if" if="[[!errorMessage_]]">
             <div id="pairing" class="layout vertical center center-justified">
               <div class="dialog-message">

@@ -116,6 +116,8 @@ class BrowserActionsContainer : public views::View,
  public:
   class Delegate {
    public:
+    virtual ~Delegate() {}
+
     // Returns the view of the toolbar actions overflow menu to use as a
     // reference point for a popup when this view isn't visible.
     virtual views::LabelButton* GetOverflowReferenceView() = 0;

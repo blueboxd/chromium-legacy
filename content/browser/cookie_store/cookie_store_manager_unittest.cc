@@ -1139,7 +1139,7 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
   ASSERT_TRUE(SetCanonicalCookie(net::CanonicalCookie(
       "cookie-name-1", "cookie-value-1", "example.com", "/", base::Time(),
       base::Time(), base::Time(),
-      /* secure = */ false,
+      /* secure = */ true,
       /* httponly = */ true, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT)));
   task_environment_.RunUntilIdle();
@@ -1149,7 +1149,7 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
   ASSERT_TRUE(SetCanonicalCookie(net::CanonicalCookie(
       "cookie-name-2", "cookie-value-2", "example.com", "/", base::Time(),
       base::Time(), base::Time(),
-      /* secure = */ false,
+      /* secure = */ true,
       /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT)));
   task_environment_.RunUntilIdle();

@@ -4,6 +4,7 @@
 
 package org.chromium.components.module_installer.builder;
 
+import org.chromium.base.BuildConfig;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
@@ -113,15 +114,6 @@ public class Module<T> {
             if (mImpl != null) return mImpl;
 
             assert isInstalled();
-            // Accessing classes in the module may cause its DEX file to be loaded. And on some
-            // devices that causes a read mode violation.
-            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                mImpl = mInterfaceClass.cast(Class.forName(mImplClassName).newInstance());
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                    | IllegalArgumentException e) {
-                throw new RuntimeException(e);
-            }
-
             // Load the module's native code and/or resources if they are present, and the Chrome
             // native library itself has been loaded.
             if (sPendingNativeRegistrations == null) {
@@ -132,6 +124,7 @@ public class Module<T> {
                 // initialization.
                 sPendingNativeRegistrations.add(mName);
             }
+            mImpl = mInterfaceClass.cast(instantiateReflectively(mImplClassName));
             return mImpl;
         }
     }
@@ -139,25 +132,65 @@ public class Module<T> {
     private static void loadNative(String name) {
         // Can only initialize native once per lifetime of Chrome.
         if (sInitializedModules.contains(name)) return;
-        // TODO(crbug.com/870055, crbug.com/986960): Automatically determine if module has native
-        // code or resources instead of whitelisting.
-        boolean loadLibrary = false;
+        String[] libraries = loadModuleDescriptor(name).getLibraries();
+        // TODO(crbug.com/986960): Automatically determine if module has native
+        // resources instead of whitelisting.
         boolean loadResources = false;
         if ("test_dummy".equals(name)) {
-            loadLibrary = true;
             loadResources = true;
         }
         if ("dev_ui".equals(name)) {
             loadResources = true;
         }
-        if (loadLibrary || loadResources) {
-            ModuleJni.get().loadNative(name, loadLibrary, loadResources);
+        if (libraries.length > 0 || loadResources) {
+            ModuleJni.get().loadNative(name, libraries, loadResources);
         }
         sInitializedModules.add(name);
     }
 
+    /**
+     * Loads the {@link ModuleDescriptor} for a module.
+     *
+     * For bundles, uses reflection to load the descriptor from inside the
+     * module. For APKs, returns an empty descriptor since APKs won't have
+     * descriptors packaged into them.
+     *
+     * @param name The module's name.
+     * @return The module's {@link ModuleDescriptor}.
+     */
+    private static ModuleDescriptor loadModuleDescriptor(String name) {
+        if (!BuildConfig.IS_BUNDLE) {
+            return new ModuleDescriptor() {
+                @Override
+                public String[] getLibraries() {
+                    return new String[0];
+                }
+            };
+        }
+
+        return (ModuleDescriptor) instantiateReflectively(
+                "org.chromium.components.module_installer.builder.ModuleDescriptor_" + name);
+    }
+
+    /**
+     * Instantiates an object via reflection.
+     *
+     * Ignores strict mode violations since accessing code in a module may cause its DEX file to be
+     * loaded and on some devices that can cause such a violation.
+     *
+     * @param className The object's class name.
+     * @return The object.
+     */
+    private static Object instantiateReflectively(String className) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return Class.forName(className).newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @NativeMethods
     interface Natives {
-        void loadNative(String name, boolean loadLibrary, boolean loadResources);
+        void loadNative(String name, String[] libraries, boolean loadResources);
     }
 }

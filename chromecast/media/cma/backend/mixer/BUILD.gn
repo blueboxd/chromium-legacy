@@ -29,6 +29,24 @@ cast_source_set("post_processor_paths") {
   ]
 }
 
+cast_source_set("loopback") {
+  sources = [
+    "loopback_handler.cc",
+    "loopback_handler.h",
+    "mixer_loopback_connection.cc",
+    "mixer_loopback_connection.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/media/audio:libcast_external_audio_pipeline_1.0",
+    "//chromecast/media/audio/mixer_service:common",
+    "//chromecast/media/audio/mixer_service:proto",
+    "//chromecast/net:io_buffer_pool",
+    "//chromecast/public/media",
+  ]
+}
+
 cast_source_set("mixer") {
   sources = [
     "audio_output_redirector.cc",
@@ -38,8 +56,6 @@ cast_source_set("mixer") {
     "direct_mixer_source.h",
     "filter_group.cc",
     "filter_group.h",
-    "loopback_handler.cc",
-    "loopback_handler.h",
     "mixer_input.cc",
     "mixer_input.h",
     "mixer_input_connection.cc",
@@ -60,6 +76,7 @@ cast_source_set("mixer") {
   ]
 
   deps = [
+    ":loopback",
     ":mixer_control",
     ":post_processor_paths",
     "//base",
@@ -101,6 +118,21 @@ cast_source_set("mixer") {
   }
 }
 
+cast_source_set("loopback_test_support") {
+  testonly = true
+  sources = [
+    "loopback_test_support.cc",
+    "loopback_test_support.h",
+  ]
+
+  deps = [
+    ":loopback",
+    "//base",
+    "//chromecast/media/audio/mixer_service:common",
+    "//chromecast/net:test_support",
+  ]
+}
+
 cast_source_set("unittests") {
   testonly = true
   sources = [
@@ -116,14 +148,19 @@ cast_source_set("unittests") {
   ]
 
   deps = [
+    ":loopback",
+    ":loopback_test_support",
     ":mixer",
     "//base",
     "//chromecast/media/audio:fake_external_audio_pipeline",
+    "//chromecast/media/audio/mixer_service:common",
+    "//chromecast/media/audio/mixer_service:loopback_connection",
     "//chromecast/media/cma/backend/mixer/post_processors:unittests",
     "//chromecast/public",
     "//chromecast/public/media",
     "//media",
     "//media:shared_memory_support",
+    "//net",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -187,7 +188,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
 
   // This instance's control interface to the service manager. Note that this
   // is unbound and therefore invalid until OnStart() is called.
-  mojom::ServiceControlAssociatedPtr service_control_;
+  mojo::AssociatedRemote<mojom::ServiceControl> service_control_;
 
   // Tracks whether |RequestClose()| has been called at least once prior to
   // receiving |OnStart()| on a bound ServiceBinding. This ensures that the

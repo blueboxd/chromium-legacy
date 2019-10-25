@@ -528,6 +528,7 @@ jumbo_static_library("ui") {
     "//components/web_resource",
     "//components/webrtc_logging/browser",
     "//content/app/resources",
+    "//content/browser/webrtc/resources",
     "//content/public/common",
     "//crypto",
     "//extensions/buildflags",

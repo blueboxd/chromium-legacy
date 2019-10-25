@@ -618,23 +618,29 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
       intrinsic_inline = ((*intrinsic_block - border_padding.BlockSum()) *
                           aspect_ratio.inline_size / aspect_ratio.block_size) +
                          border_padding.InlineSum();
-    } else {
+    } else if (!replaced_inline && !replaced_block) {
+      // No sizes available, return only the aspect ratio.
       *out_aspect_ratio = aspect_ratio;
       return;
     }
   }
-  if (!intrinsic_block) {
+  if (intrinsic_inline && !intrinsic_block) {
+    DCHECK(!aspect_ratio.IsEmpty());
     intrinsic_block = ((*intrinsic_inline - border_padding.InlineSum()) *
                        aspect_ratio.block_size / aspect_ratio.inline_size) +
                       border_padding.BlockSum();
   }
-  // At this point, both intrinsic_inline and intrinsic_block have value.
+
+  DCHECK(intrinsic_inline || intrinsic_block || replaced_inline ||
+         replaced_block);
+
   // If we only know one length, the other length gets computed wrt one we know.
   auto ComputeBlockFromInline = [&replaced_inline, &aspect_ratio,
                                  &border_padding](LayoutUnit default_block) {
-    DCHECK(default_block >= border_padding.BlockSum());
-    if (aspect_ratio.IsEmpty())
+    if (aspect_ratio.IsEmpty()) {
+      DCHECK_GE(default_block, border_padding.BlockSum());
       return default_block;
+    }
     return ((*replaced_inline - border_padding.InlineSum()) *
             aspect_ratio.block_size / aspect_ratio.inline_size) +
            border_padding.BlockSum();
@@ -642,20 +648,25 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
 
   auto ComputeInlineFromBlock = [&replaced_block, &aspect_ratio,
                                  &border_padding](LayoutUnit default_inline) {
-    DCHECK(default_inline >= border_padding.InlineSum());
-    if (aspect_ratio.IsEmpty())
+    if (aspect_ratio.IsEmpty()) {
+      DCHECK_GE(default_inline, border_padding.InlineSum());
       return default_inline;
+    }
     return ((*replaced_block - border_padding.BlockSum()) *
             aspect_ratio.inline_size / aspect_ratio.block_size) +
            border_padding.InlineSum();
   };
   if (replaced_inline) {
     DCHECK(!replaced_block);
-    replaced_block = ComputeBlockFromInline(*intrinsic_block);
+    DCHECK(intrinsic_block || !aspect_ratio.IsEmpty());
+    replaced_block =
+        ComputeBlockFromInline(intrinsic_block.value_or(kIndefiniteSize));
     replaced_block = ConstrainByMinMax(*replaced_block, block_min, block_max);
   } else if (replaced_block) {
     DCHECK(!replaced_inline);
-    replaced_inline = ComputeInlineFromBlock(*intrinsic_inline);
+    DCHECK(intrinsic_inline || !aspect_ratio.IsEmpty());
+    replaced_inline =
+        ComputeInlineFromBlock(intrinsic_inline.value_or(kIndefiniteSize));
     replaced_inline =
         ConstrainByMinMax(*replaced_inline, inline_min, inline_max);
   } else {

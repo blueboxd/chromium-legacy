@@ -28,13 +28,11 @@ class AutofillProfileDisabledChecker : public SingleClientStatusChangeChecker {
   ~AutofillProfileDisabledChecker() override = default;
 
   // SingleClientStatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for AUTOFILL_PROFILE to get disabled";
     return service()->GetTransportState() ==
                syncer::SyncService::TransportState::ACTIVE &&
            !service()->GetActiveDataTypes().Has(syncer::AUTOFILL_PROFILE);
-  }
-  std::string GetDebugMessage() const override {
-    return "Waiting for AUTOFILL_PROFILE to get disabled";
   }
 };
 

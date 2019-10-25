@@ -13,8 +13,6 @@ include_rules = [
     "+net/base",
     "+net/http",
     "+net/nqe",
-    # For URLRequestDataJob::BuildResponse().
-    "+net/url_request/url_request_data_job.h",
 
     "+services/network/public/cpp/features.h",
     "+third_party/blink/renderer/platform/blob/blob_data.h",

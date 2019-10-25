@@ -129,8 +129,8 @@ class CheckClientDownloadRequestBase {
                                           const std::string& response_body) = 0;
 
   // Called when finishing the request, to determine whether asynchronous
-  // scanning is pending.
-  virtual bool ShouldReturnAsynchronousVerdict(
+  // scanning is pending. Returns whether an asynchronous verdict was provided.
+  virtual bool MaybeReturnAsynchronousVerdict(
       DownloadCheckResultReason reason) = 0;
 
   // Called after receiving, or failing to receive a response from the server.

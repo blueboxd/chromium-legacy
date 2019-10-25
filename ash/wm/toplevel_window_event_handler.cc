@@ -539,10 +539,12 @@ void ToplevelWindowEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_RELEASED)
     first_touch_id_ = ui::kPointerIdUnknown;
 
-  if (event->type() == ui::ET_TOUCH_PRESSED)
-    y_drag_amount_ = 0;
-  else
+  if (event->type() == ui::ET_TOUCH_PRESSED) {
+    x_drag_amount_ = y_drag_amount_ = 0;
+  } else {
+    x_drag_amount_ += (event->location().x() - last_touch_point_.x());
     y_drag_amount_ += (event->location().y() - last_touch_point_.y());
+  }
 
   last_touch_point_ = event->location();
 }
@@ -909,7 +911,6 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
       going_back_started_ = StartedAwayFromLeftArea(event);
       if (!going_back_started_)
         break;
-      x_drag_amount_ = 0;
       back_gesture_affordance_ =
           std::make_unique<BackGestureAffordance>(screen_location);
       return true;
@@ -918,7 +919,6 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
-      x_drag_amount_ += event->details().scroll_x();
       back_gesture_affordance_->SetDragProgress(x_drag_amount_, y_drag_amount_);
       return true;
     case ui::ET_GESTURE_SCROLL_END:
@@ -927,7 +927,7 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
         break;
       DCHECK(back_gesture_affordance_);
       if ((event->type() == ui::ET_GESTURE_SCROLL_END &&
-           screen_location.x() >= kSwipingDistanceForGoingBack) ||
+           x_drag_amount_ >= kSwipingDistanceForGoingBack) ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
         aura::Window* root_window =

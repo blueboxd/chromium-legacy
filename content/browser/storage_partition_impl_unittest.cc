@@ -144,7 +144,7 @@ class RemoveCookieTester {
   bool ContainsCookie() {
     get_cookie_success_ = false;
     storage_partition_->GetCookieManagerForBrowserProcess()->GetCookieList(
-        kOrigin1.GetURL(), net::CookieOptions(),
+        kOrigin1.GetURL(), net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(&RemoveCookieTester::GetCookieListCallback,
                        base::Unretained(this)));
     await_completion_.BlockUntilNotified();
@@ -157,7 +157,7 @@ class RemoveCookieTester {
         kOrigin1.GetURL(), "A=1", base::Time::Now(),
         base::nullopt /* server_time */, &status));
     storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-        *cc, kOrigin1.scheme(), net::CookieOptions(),
+        *cc, kOrigin1.scheme(), net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(&RemoveCookieTester::SetCookieCallback,
                        base::Unretained(this)));
     await_completion_.BlockUntilNotified();

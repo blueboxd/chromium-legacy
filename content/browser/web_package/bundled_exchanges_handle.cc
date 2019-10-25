@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
 #include "content/browser/web_package/bundled_exchanges_navigation_info.h"
 #include "content/browser/web_package/bundled_exchanges_reader.h"
@@ -168,8 +169,9 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       std::move(callback).Run({});
       return;
     }
-    std::move(callback).Run(base::BindOnce(&InterceptorForFile::StartResponse,
-                                           weak_factory_.GetWeakPtr()));
+    std::move(callback).Run(
+        base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
+            &InterceptorForFile::StartResponse, weak_factory_.GetWeakPtr())));
   }
 
   bool MaybeCreateLoaderForResponse(
@@ -293,9 +295,9 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    std::move(callback).Run(
+    std::move(callback).Run(base::MakeRefCounted<SingleRequestURLLoaderFactory>(
         base::BindOnce(&InterceptorForTrustableFile::CreateURLLoader,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr())));
   }
 
   void CreateURLLoader(const network::ResourceRequest& resource_request,
@@ -413,9 +415,10 @@ class InterceptorForTrackedNavigationFromTrustableFile final
                          FallbackCallback fallback_callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(url_loader_factory_->reader()->HasEntry(resource_request.url));
-    std::move(callback).Run(base::BindOnce(
-        &InterceptorForTrackedNavigationFromTrustableFile::CreateURLLoader,
-        weak_factory_.GetWeakPtr()));
+    std::move(callback).Run(
+        base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
+            &InterceptorForTrackedNavigationFromTrustableFile::CreateURLLoader,
+            weak_factory_.GetWeakPtr())));
   }
 
   void CreateURLLoader(const network::ResourceRequest& resource_request,
@@ -475,9 +478,10 @@ class InterceptorForTrackedNavigationFromFile final
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    std::move(callback).Run(base::BindOnce(
-        &InterceptorForTrackedNavigationFromFile::CreateURLLoader,
-        weak_factory_.GetWeakPtr()));
+    std::move(callback).Run(
+        base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
+            &InterceptorForTrackedNavigationFromFile::CreateURLLoader,
+            weak_factory_.GetWeakPtr())));
   }
 
   bool ShouldBypassRedirectChecks() override { return true; }
@@ -564,9 +568,9 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    std::move(callback).Run(
+    std::move(callback).Run(base::MakeRefCounted<SingleRequestURLLoaderFactory>(
         base::BindOnce(&InterceptorForNavigationInfo::CreateURLLoader,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr())));
   }
 
   void CreateURLLoader(const network::ResourceRequest& resource_request,

@@ -177,22 +177,10 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
 
   if (!link_) {
     if (rel_attribute_.IsImport()) {
-      // Only create an import link when HTML imports are enabled. Either:
-      // 1) For chrome internal resources only, if HTMLImportsOnlyChromeEnabled.
-      // 2) The WebComponentsV0 origin trial is enabled.
-      bool imports_enabled =
-          RuntimeEnabledFeatures::HTMLImportsOnlyChromeEnabled() &&
-          (Href().Protocol() == "chrome" ||
-           Href().Protocol() == "chrome-extension");
-      if (!imports_enabled) {
-        imports_enabled =
-            RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument());
-      }
-      if (imports_enabled) {
-        link_ = MakeGarbageCollected<LinkImport>(this);
-      } else {
+      // Only create an import link when HTML imports are enabled.
+      if (!RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument()))
         return nullptr;
-      }
+      link_ = MakeGarbageCollected<LinkImport>(this);
     } else if (rel_attribute_.IsManifest()) {
       link_ = MakeGarbageCollected<LinkManifest>(this);
     } else {

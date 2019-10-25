@@ -69,6 +69,13 @@ const CGPoint kPointOnSvgLink = {50.0, 75.0};
 // on the svg link returned by |GetHtmlForSvgLink()| and |GetHtmlForSvgXlink()|.
 const CGPoint kPointOutsideSvgLink = {50.0, 10.0};
 
+// A point in the web view's coordinate space on the shadow DOM link returned by
+// |GetHtmlForShadowDomLink()|.
+const CGPoint kPointOnShadowDomLink = {5.0, 2.0};
+// A point in the web view's coordinate space within the shadow DOM returned by
+// |GetHtmlForShadowDomLink()| but not on the link.
+const CGPoint kPointOutsideShadowDomLink = {50.0, 75.0};
+
 // A point in the web view's coordinate space outside of the document bounds.
 const CGPoint kPointOutsideDocument = {150.0, 150.0};
 
@@ -125,6 +132,21 @@ NSString* GetHtmlForSvgXlink(NSString* href) {
 // Returns HTML for a link to |href| and display text |text|.
 NSString* GetHtmlForLink(NSString* href, NSString* text) {
   return GetHtmlForLink(href, text, /*style=*/nil);
+}
+
+// Returns HTML for a shadow DOM link to |href| and display text |text|.
+NSString* GetHtmlForShadowDomLink(NSString* href, NSString* text) {
+  NSString* shadow_html = [NSString
+      stringWithFormat:@"<div style=\"height:100px;font-size:20px\">%@</div>",
+                       GetHtmlForLink(href, text)];
+  return [NSString
+      stringWithFormat:
+          @"<div id='largeDiv' style='height:100px'></div>"
+          @"<script>var shadow = "
+          @"document.getElementById('largeDiv').attachShadow({mode: 'open'});"
+          @"shadow.innerHTML = '%@';"
+          @"</script>",
+          shadow_html];
 }
 
 // Returns html for an image styled to fill the width and top 25% of its
@@ -577,6 +599,38 @@ TEST_F(ContextMenuJsFindElementAtPointTest, LinkOfTextFromTallPage) {
     kContextMenuElementHyperlink : link,
   };
   EXPECT_NSEQ(expected_result, result);
+}
+
+// Tests that __gCrWeb.findElementAtPoint finds a link inside shadow DOM
+// content.
+TEST_F(ContextMenuJsFindElementAtPointTest, ShadowDomLink) {
+  NSString* const link = @"http://destination/";
+  ASSERT_TRUE(web::test::LoadHtml(
+      web_view_,
+      GetHtmlForPage(/*head=*/nil, GetHtmlForShadowDomLink(link, @"link")),
+      GetTestURL()));
+
+  id result = FindElementAtPoint(kPointOnShadowDomLink);
+  NSDictionary* expected_result = @{
+    kContextMenuElementRequestId : kRequestId,
+    kContextMenuElementInnerText : @"link",
+    kContextMenuElementReferrerPolicy : @"default",
+    kContextMenuElementHyperlink : link,
+  };
+  EXPECT_NSEQ(expected_result, result);
+}
+
+// Tests that a point within shadow DOM content but not on a link does not
+// return details for the link.
+TEST_F(ContextMenuJsFindElementAtPointTest, PointOutsideShadowDomLink) {
+  NSString* const link = @"http://destination/";
+  ASSERT_TRUE(web::test::LoadHtml(
+      web_view_,
+      GetHtmlForPage(/*head=*/nil, GetHtmlForShadowDomLink(link, @"link")),
+      GetTestURL()));
+
+  id result = FindElementAtPoint(kPointOutsideShadowDomLink);
+  EXPECT_NSEQ(@{kContextMenuElementRequestId : kRequestId}, result);
 }
 
 // Tests that a callout information about a link is displayed when

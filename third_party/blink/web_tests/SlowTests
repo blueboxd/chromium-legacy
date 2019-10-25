@@ -125,7 +125,7 @@ crbug.com/869829 virtual/audio-service/http/tests/media/video-cancel-load.html [
 crbug.com/870259 virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Slow ]
 
 # Many of the virtual animations tests are slow.
-crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]
+crbug.com/243871 virtual/threaded-prefer-compositing/fast/scroll-behavior/ [ Slow ]
 
 # These html5lib tests are generated tests that test a huge amount of permutations so they need a bit more time.
 crbug.com/453312 html5lib/generated/run-doctype01-data.html [ Slow ]
@@ -318,7 +318,7 @@ crbug.com/869800 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker
 crbug.com/869800 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-synconworker.html [ Slow ]
 
 ### Slow only on Mac10.13
-crbug.com/869662 [ Mac10.13 ] virtual/threaded/fast/scrolling/overflow-scrollability.html [ Slow ]
+crbug.com/869662 [ Mac10.13 ] virtual/threaded-prefer-compositing/fast/scrolling/overflow-scrollability.html [ Slow ]
 
 # Tests with slowest_run >= 10s on flakiness dashboard for site_per_process_webkit_layout_tests
 crbug.com/874695 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Slow ]
@@ -594,10 +594,10 @@ crbug.com/874695 virtual/streaming-preload/http/tests/fetch/workers/thorough/ [ 
 crbug.com/874695 http/tests/devtools/sxg/sxg-cert-not-found.js [ Slow ]
 crbug.com/874695 http/tests/devtools/sxg/sxg-disable-cache.js [ Slow ]
 crbug.com/874695 virtual/sxg-with-network-service/http/tests/devtools/sxg/sxg-disable-cache.js [ Slow ]
-crbug.com/874695 virtual/threaded/animations/svg/animated-filter-svg-element.html [ Slow ]
+crbug.com/874695 virtual/threaded-no-composited-antialiasing/animations/svg/animated-filter-svg-element.html [ Slow ]
 crbug.com/874695 virtual/threaded/fast/idle-callback/idle_periods.html [ Slow ]
 crbug.com/874695 virtual/threaded/fast/idle-callback/long_idle_periods.html [ Slow ]
-crbug.com/874695 virtual/threaded/fast/scroll-behavior/overscroll-behavior.html [ Slow ]
+crbug.com/874695 virtual/threaded-prefer-compositing/fast/scroll-behavior/overscroll-behavior.html [ Slow ]
 crbug.com/874695 virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ Slow ]
 crbug.com/874695 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Slow ]
 crbug.com/874695 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Slow ]
@@ -640,7 +640,7 @@ crbug.com/967526 http/tests/devtools/console/console-uncaught-promise.js [ Slow 
 crbug.com/980804 fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
 crbug.com/980804 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
 crbug.com/980804 virtual/scroll_customization/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
-crbug.com/980804 virtual/threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
+crbug.com/980804 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
 
 crbug.com/983642 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
 crbug.com/983642 [ Mac Debug ] fast/canvas/canvas-composite-alpha.html [ Slow ]

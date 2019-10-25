@@ -319,8 +319,30 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("eg_tests") {
+source_set("eg_test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "block_popups_app_interface.h",
+    "block_popups_app_interface.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/content_settings/core/browser",
+    "//components/content_settings/core/common",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/content_settings",
+    "//ios/chrome/test/app:test_support",
+  ]
+}
+
+source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
   testonly = true
   sources = [
     "block_popups_egtest.mm",
@@ -330,6 +352,7 @@ source_set("eg_tests") {
   ]
 
   deps = [
+    ":eg_test_support",
     ":settings",
     "//base",
     "//base/test:test_support",
@@ -375,8 +398,60 @@ source_set("eg_tests") {
     "//ui/base",
     "//url",
   ]
-  libs = [
-    "UIKit.framework",
-    "XCTest.framework",
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "block_popups_app_interface.h",
+    "block_popups_app_interface.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/content_settings/core/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/content_settings",
+    "//ios/chrome/test/app:test_support",
+  ]
+  public_deps = [
+    "//components/content_settings/core/common",
+  ]
+}
+
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "block_popups_app_interface.h",
+  ]
+  public_deps = [
+    "//components/content_settings/core/common",
+  ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "block_popups_egtest.mm",
+  ]
+  deps = [
+    ":eg_test_support+eg2",
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test/http_server",
+    "//ui/base",
+    "//url",
   ]
 }

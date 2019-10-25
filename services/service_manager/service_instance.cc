@@ -356,16 +356,16 @@ void ServiceInstance::BindServiceManagerReceiver(
 }
 
 void ServiceInstance::OnStartCompleted(
-    mojom::ConnectorRequest connector_request,
-    mojom::ServiceControlAssociatedRequest control_request) {
+    mojo::PendingReceiver<mojom::Connector> connector_receiver,
+    mojo::PendingAssociatedReceiver<mojom::ServiceControl> control_receiver) {
   state_ = mojom::InstanceState::kStarted;
-  if (connector_request.is_pending()) {
-    connector_receivers_.Add(this, std::move(connector_request));
+  if (connector_receiver.is_valid()) {
+    connector_receivers_.Add(this, std::move(connector_receiver));
     connector_receivers_.set_disconnect_handler(base::BindRepeating(
         &ServiceInstance::OnConnectorDisconnected, base::Unretained(this)));
   }
-  if (control_request.is_pending())
-    control_receiver_.Bind(std::move(control_request));
+  if (control_receiver.is_valid())
+    control_receiver_.Bind(std::move(control_receiver));
   service_manager_->NotifyServiceStarted(identity_, pid_);
   MaybeNotifyPidAvailable();
 }

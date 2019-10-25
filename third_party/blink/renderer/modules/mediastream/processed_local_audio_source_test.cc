@@ -20,7 +20,7 @@
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/web_heap.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/modules/mediastream/testing_platform_support_with_mock_audio_capture_source.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -48,49 +48,6 @@ constexpr int kExpectedSourceBufferSize = kRequestedBufferSize;
 // MediaStreamAudioProcessor will force the use of 10ms buffer sizes on the
 // output end of its FIFO.
 constexpr int kExpectedOutputBufferSize = kSampleRate / 100;
-
-class MockAudioCapturerSource : public media::AudioCapturerSource {
- public:
-  MockAudioCapturerSource();
-  MOCK_METHOD2(Initialize,
-               void(const media::AudioParameters& params,
-                    CaptureCallback* callback));
-  MOCK_METHOD0(Start, void());
-  MOCK_METHOD0(Stop, void());
-  MOCK_METHOD1(SetAutomaticGainControl, void(bool enable));
-  void SetVolume(double volume) override {}
-  void SetOutputDeviceForAec(const std::string& output_device_id) override {}
-
- protected:
-  ~MockAudioCapturerSource() override;
-};
-
-MockAudioCapturerSource::MockAudioCapturerSource() {}
-MockAudioCapturerSource::~MockAudioCapturerSource() {}
-
-// Test Platform implementation that overrides the known methods needed
-// by the tests, including creation of AudioCapturerSource instances.
-class AudioCapturerSourceTestingPlatformSupport
-    : public TestingPlatformSupport {
- public:
-  AudioCapturerSourceTestingPlatformSupport() = default;
-
-  scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
-      WebLocalFrame* web_frame,
-      const media::AudioSourceParameters& params) override {
-    // The |web_frame| is irrelevant here, so we use MSG_ROUTING_NONE directly.
-    EXPECT_EQ(nullptr, web_frame);
-    return mock_audio_capturer_source_;
-  }
-
-  MockAudioCapturerSource* mock_audio_capturer_source() {
-    return mock_audio_capturer_source_.get();
-  }
-
- private:
-  scoped_refptr<MockAudioCapturerSource> mock_audio_capturer_source_ =
-      base::MakeRefCounted<MockAudioCapturerSource>();
-};
 
 class MockMediaStreamAudioSink : public WebMediaStreamAudioSink {
  public:

@@ -3,6 +3,8 @@ include_rules = [
   "+chrome/android/java/src/org/chromium/chrome/browser/AppHooks.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/ChromeFeatureList.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/webapps/WebDisplayMode.java",
+  "+chrome/browser/ui/android/styles",
+  "+chrome/browser/ui/android/widget",
   "+content/public/android/java/src/org/chromium/content_public",
 ]
 

@@ -1374,7 +1374,7 @@ void GraphicsContext::SetURLForRect(const KURL& link,
 
   // Intercept URL rects when painting previews.
   if (IsPaintingPreview() && tracker_) {
-    tracker_->AnnotateLink(link.GetString().Utf8(), dest_rect);
+    tracker_->AnnotateLink(GURL(link), dest_rect);
     return;
   }
 
@@ -1391,7 +1391,7 @@ void GraphicsContext::SetURLFragmentForRect(const String& dest_name,
 
   // Intercept URL rects when painting previews.
   if (IsPaintingPreview() && tracker_) {
-    tracker_->AnnotateLink(dest_name.Utf8(), rect);
+    tracker_->AnnotateLink(GURL(dest_name.Utf8()), rect);
     return;
   }
 

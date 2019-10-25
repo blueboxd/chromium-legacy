@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
                        OverflowedBrowserActionPopupTest) {
   std::unique_ptr<BrowserActionTestUtil> overflow_bar =
-      browser_actions_bar()->CreateOverflowBar();
+      browser_actions_bar()->CreateOverflowBar(browser());
 
   // Load up two extensions that have browser action popups.
   base::FilePath data_dir =
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
                        OverflowedBrowserActionPopupTestRemoval) {
   std::unique_ptr<BrowserActionTestUtil> overflow_bar =
-      browser_actions_bar()->CreateOverflowBar();
+      browser_actions_bar()->CreateOverflowBar(browser());
 
   // Install an extension and shrink the visible count to zero so the extension
   // is overflowed.

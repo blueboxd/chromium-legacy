@@ -44,12 +44,6 @@ static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
   return box;
 }
 
-static ScrollableArea* ScrollableAreaForSnapping(const LayoutBox& layout_box) {
-  return layout_box.IsLayoutView()
-             ? layout_box.GetFrameView()->GetScrollableArea()
-             : layout_box.GetScrollableArea();
-}
-
 // Snap types are categorized according to the spec
 // https://drafts.csswg.org/css-scroll-snap-1/#snap-axis
 static cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
@@ -91,10 +85,12 @@ void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container) {
       snap_container.GetDocument().documentElement())
     return;
 
-  bool is_scroll_container =
-      snap_container.IsLayoutView() || snap_container.HasOverflowClip();
-  if (!is_scroll_container) {
-    DCHECK(!ScrollableAreaForSnapping(snap_container));
+  // Per specification snap positions only affect *scroll containers* [1]. So if
+  // the layout box is not a scroll container we ignore it here even if it has
+  // non-none scroll-snap-type. Note that in blink, existence of scrollable area
+  // directly maps to being a scroll container in the specification. [1]
+  // https://drafts.csswg.org/css-scroll-snap/#overview
+  if (!snap_container.GetScrollableArea()) {
     DCHECK(!snap_containers_.Contains(&snap_container));
     return;
   }
@@ -149,8 +145,8 @@ void SnapCoordinator::UpdateAllSnapContainerData() {
 }
 
 void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
-
-  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
+  ScrollableArea* scrollable_area =
+      ScrollableArea::GetForScrolling(&snap_container);
   const auto* old_snap_container_data = scrollable_area->GetSnapContainerData();
   auto snap_type = GetPhysicalSnapType(snap_container);
 
@@ -270,7 +266,9 @@ cc::SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   PhysicalRect area_rect = snap_area.PhysicalBorderBoxRect();
   area_rect = snap_area.LocalToAncestorRect(area_rect, &snap_container,
                                             kTraverseDocumentBoundaries);
-  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
+  ScrollableArea* scrollable_area =
+      ScrollableArea::GetForScrolling(&snap_container);
+
   if (scrollable_area) {
     if (snap_container.IsLayoutView()) {
       area_rect = snap_container.GetFrameView()->FrameToDocument(area_rect);
@@ -313,10 +311,12 @@ void SnapCoordinator::ShowSnapAreasFor(const LayoutBox* container) {
 }
 
 void SnapCoordinator::ShowSnapDataFor(const LayoutBox* snap_container) {
+  if (!snap_container)
+    return;
+  ScrollableArea* scrollable_area =
+      ScrollableArea::GetForScrolling(snap_container);
   const auto* optional_data =
-      ScrollableAreaForSnapping(*snap_container)
-          ? ScrollableAreaForSnapping(*snap_container)->GetSnapContainerData()
-          : nullptr;
+      scrollable_area ? scrollable_area->GetSnapContainerData() : nullptr;
   if (optional_data)
     LOG(INFO) << *optional_data;
 }

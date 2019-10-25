@@ -693,6 +693,20 @@ enum class HitTestType {
   kSurfaceLayer,
 };
 
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+bool IsScreenTooSmallForPopup(const ScreenInfo& screen_info) {
+  // Small display size will cause popup positions to be adjusted,
+  // causing test failures.
+  //
+  // The size adjustment happens in adjustWindowRect()
+  // (third_party/blink/renderer/core/html/forms/resources/pickerCommon.js
+  // lines 132-133).
+  static constexpr gfx::Size kMinimumScreenSize(300, 300);
+  return screen_info.rect.width() < kMinimumScreenSize.width() ||
+         screen_info.rect.height() < kMinimumScreenSize.height();
+}
+#endif
+
 }  // namespace
 
 class SitePerProcessHitTestBrowserTest
@@ -5620,12 +5634,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
   SetWebEventPositions(&click_event, gfx::Point(1, 1), rwhv_root);
   rwhv_child->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
+  ScreenInfo screen_info;
+  shell()->web_contents()->GetRenderWidgetHostView()->GetScreenInfo(
+      &screen_info);
+
   filter->Wait();
   gfx::Rect popup_rect = filter->last_initial_rect();
   if (IsUseZoomForDSFEnabled()) {
-    ScreenInfo screen_info;
-    shell()->web_contents()->GetRenderWidgetHostView()->GetScreenInfo(
-        &screen_info);
     popup_rect = gfx::ScaleToRoundedRect(popup_rect,
                                          1 / screen_info.device_scale_factor);
   }
@@ -5635,8 +5650,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
   EXPECT_EQ(popup_rect.x(), 9);
   EXPECT_EQ(popup_rect.y(), 9);
 #else
-  EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
-  EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 94);
+  if (!IsScreenTooSmallForPopup(screen_info)) {
+    EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
+    EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 94);
+  }
 #endif
 
 #if defined(OS_LINUX)
@@ -5756,12 +5773,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   gfx::Rect popup_rect = filter->last_initial_rect();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(popup_rect.x(), 9);
   EXPECT_EQ(popup_rect.y(), 9);
 #else
-  EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
-  EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 154);
+  ScreenInfo screen_info;
+  shell()->web_contents()->GetRenderWidgetHostView()->GetScreenInfo(
+      &screen_info);
+  if (!IsScreenTooSmallForPopup(screen_info)) {
+    EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
+    EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 154);
+  }
 #endif
 
   // Save the screen rect for b_node. Since it updates asynchronously from
@@ -5803,12 +5825,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   popup_rect = filter->last_initial_rect();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(popup_rect.x(), 9);
   EXPECT_EQ(popup_rect.y(), 9);
 #else
-  EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 203);
-  EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 248);
+  if (!IsScreenTooSmallForPopup(screen_info)) {
+    EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 203);
+    EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 248);
+  }
 #endif
 }
 

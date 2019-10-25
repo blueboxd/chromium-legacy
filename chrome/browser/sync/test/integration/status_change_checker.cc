@@ -4,9 +4,12 @@
 
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 
+#include <sstream>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,10 +26,11 @@ StatusChangeChecker::StatusChangeChecker()
 StatusChangeChecker::~StatusChangeChecker() {}
 
 bool StatusChangeChecker::Wait() {
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Already satisfied: " << GetDebugMessage();
+  std::ostringstream s;
+  if (IsExitConditionSatisfied(&s)) {
+    DVLOG(1) << "Already satisfied: " << s.str();
   } else {
-    DVLOG(1) << "Blocking: " << GetDebugMessage();
+    DVLOG(1) << "Blocking: " << s.str();
     StartBlockingWait();
   }
   return !TimedOut();
@@ -42,10 +46,12 @@ void StatusChangeChecker::StopWaiting() {
 }
 
 void StatusChangeChecker::CheckExitCondition() {
-  DVLOG(1) << "Await -> Checking Condition: " << GetDebugMessage();
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Await -> Condition met: " << GetDebugMessage();
+  std::ostringstream s;
+  if (IsExitConditionSatisfied(&s)) {
+    DVLOG(1) << "Await -> Condition met: " << s.str();
     StopWaiting();
+  } else {
+    DVLOG(1) << "Await -> Condition not met: " << s.str();
   }
 }
 
@@ -61,7 +67,13 @@ void StatusChangeChecker::StartBlockingWait() {
 }
 
 void StatusChangeChecker::OnTimeout() {
-  ADD_FAILURE() << "Await -> Timed out: " << GetDebugMessage();
+  std::ostringstream s;
+  if (IsExitConditionSatisfied(&s)) {
+    ADD_FAILURE() << "Await -> Timed out despite conditions being satisfied.";
+  } else {
+    ADD_FAILURE() << "Await -> Timed out: " << s.str();
+  }
+
   timed_out_ = true;
   StopWaiting();
 }

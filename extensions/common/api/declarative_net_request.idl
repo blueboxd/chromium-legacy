@@ -143,6 +143,11 @@ namespace declarativeNetRequest {
     // http://abc.xn--p1ai/?q=%D1%84.
     DOMString? urlFilter;
 
+    // TODO(crbug.com/974391): Add documentation once the implementation is
+    // complete.
+    [nodoc]
+    DOMString? regexFilter;
+
     // Whether the <code>urlFilter</code> is case sensitive. Default is true.
     boolean? isUrlFilterCaseSensitive;
 

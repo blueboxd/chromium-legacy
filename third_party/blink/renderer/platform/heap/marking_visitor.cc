@@ -65,13 +65,6 @@ void MarkingVisitorCommon::RegisterBackingStoreCallback(
   }
 }
 
-bool MarkingVisitorCommon::RegisterWeakTable(
-    const void* closure,
-    EphemeronCallback iteration_callback) {
-  weak_table_worklist_.Push({const_cast<void*>(closure), iteration_callback});
-  return true;
-}
-
 void MarkingVisitorCommon::AdjustMarkedBytes(HeapObjectHeader* header,
                                              size_t old_size) {
   DCHECK(header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>());

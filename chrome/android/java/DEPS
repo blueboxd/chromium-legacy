@@ -3,6 +3,7 @@ include_rules = [
 
   "+chrome/browser/android/thin_webview/java",
   "+chrome/browser/share/android",
+  "+chrome/browser/ui/android/styles",
   "+chrome/browser/ui/android/widget",
   "+chrome/browser/download/android/java",
   "+chrome/browser/util/android/java",

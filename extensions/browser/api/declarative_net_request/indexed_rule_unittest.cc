@@ -637,6 +637,42 @@ TEST_F(IndexedRuleTest, RedirectParsing) {
   }
 }
 
+TEST_F(IndexedRuleTest, RegexFilterParsing) {
+  struct {
+    std::string regex_filter;
+    ParseResult result;
+  } cases[] = {{"", ParseResult::ERROR_EMPTY_REGEX_FILTER},
+               // Filter with non-ascii characters.
+               {"αcd", ParseResult::ERROR_NON_ASCII_REGEX_FILTER},
+               // Invalid regex: Unterminated character class.
+               {"x[ab", ParseResult::ERROR_INVALID_REGEX_FILTER},
+               // Invalid regex: Incomplete capturing group.
+               {"x(", ParseResult::ERROR_INVALID_REGEX_FILTER},
+               // Invalid regex: Invalid escape sequence \x.
+               {R"(ij\x1)", ParseResult::ERROR_INVALID_REGEX_FILTER},
+               {R"(ij\\x1)", ParseResult::SUCCESS},
+               {R"(^http://www\.(abc|def)\.xyz\.com/)", ParseResult::SUCCESS}};
+
+  for (const auto& test_case : cases) {
+    SCOPED_TRACE(test_case.regex_filter);
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.condition.url_filter.reset();
+    rule.condition.regex_filter =
+        std::make_unique<std::string>(test_case.regex_filter);
+
+    IndexedRule indexed_rule;
+    ParseResult result = IndexedRule::CreateIndexedRule(
+        std::move(rule), GetBaseURL(), &indexed_rule);
+    EXPECT_EQ(result, test_case.result);
+
+    if (result == ParseResult::SUCCESS) {
+      EXPECT_EQ(indexed_rule.url_pattern, test_case.regex_filter);
+      EXPECT_EQ(flat_rule::UrlPatternType_REGEXP,
+                indexed_rule.url_pattern_type);
+    }
+  }
+}
+
 }  // namespace
 }  // namespace declarative_net_request
 }  // namespace extensions

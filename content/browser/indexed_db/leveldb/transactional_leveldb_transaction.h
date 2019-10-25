@@ -27,10 +27,6 @@ class TransactionalLevelDBIterator;
 class LevelDBScope;
 class LevelDBWriteBatch;
 
-namespace indexed_db {
-class DefaultLevelDBFactory;
-}  // namespace indexed_db
-
 // Represents a transaction on top of a TransactionalLevelDBDatabase, and is
 // backed by a LevelDBScope. This class is not thread-safe.
 // Isolation: Read committed
@@ -90,7 +86,7 @@ class CONTENT_EXPORT TransactionalLevelDBTransaction
   leveldb::Status ForceWriteChangesAndUndoLog();
 
  protected:
-  friend class indexed_db::DefaultLevelDBFactory;
+  friend class DefaultTransactionalLevelDBFactory;
   friend class TransactionalLevelDBTransactionTest;
 
   TransactionalLevelDBTransaction(TransactionalLevelDBDatabase* db,
@@ -162,7 +158,7 @@ class CONTENT_EXPORT LevelDBDirectTransaction {
   TransactionalLevelDBDatabase* db() { return db_; }
 
  protected:
-  friend class indexed_db::DefaultLevelDBFactory;
+  friend class DefaultTransactionalLevelDBFactory;
 
   explicit LevelDBDirectTransaction(TransactionalLevelDBDatabase* db);
 

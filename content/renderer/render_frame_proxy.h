@@ -248,7 +248,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnAddContentSecurityPolicies(
       const std::vector<ContentSecurityPolicyHeader>& header);
-  void OnResetContentSecurityPolicy();
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnEnforceInsecureNavigationsSet(const std::vector<uint32_t>& set);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);

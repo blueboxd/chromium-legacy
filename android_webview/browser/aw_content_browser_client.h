@@ -210,10 +210,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
       bool* bypass_redirect_checks) override;
-  void WillCreateURLLoaderFactoryForAppCacheSubresource(
-      int render_process_id,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>* pending_factory)
-      override;
   uint32_t GetWebSocketOptions(content::RenderFrameHost* frame) override;
   bool WillCreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole role,

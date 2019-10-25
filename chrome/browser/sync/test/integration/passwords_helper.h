@@ -117,8 +117,7 @@ class SamePasswordFormsChecker : public MultiClientStatusChangeChecker {
   SamePasswordFormsChecker();
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
   bool in_progress_;
@@ -133,8 +132,7 @@ class SamePasswordFormsAsVerifierChecker
   explicit SamePasswordFormsAsVerifierChecker(int index);
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
   int index_;
@@ -151,11 +149,10 @@ class PasswordFormsChecker : public SingleClientStatusChangeChecker {
   ~PasswordFormsChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
-  bool IsExitConditionSatisfiedImpl();
+  bool IsExitConditionSatisfiedImpl(std::ostream* os);
 
   const int index_;
   std::vector<std::unique_ptr<autofill::PasswordForm>> expected_forms_;

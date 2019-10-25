@@ -17,9 +17,9 @@
 #include "chrome/common/network_easter_egg.mojom.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
-#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
+#include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -51,7 +51,8 @@ class NetErrorHelper
       public content::RenderThreadObserver,
       public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
-      public SecurityInterstitialPageController::Delegate,
+      public security_interstitials::SecurityInterstitialPageController::
+          Delegate,
       public chrome::mojom::NetworkDiagnosticsClient,
       public chrome::mojom::NavigationCorrector {
  public:
@@ -70,7 +71,8 @@ class NetErrorHelper
   void UpdateEasterEggHighScore(int high_score) override;
   void ResetEasterEggHighScore() override;
 
-  // SecurityInterstitialPageController::Delegate implementation
+  // security_interstitials::SecurityInterstitialPageController::Delegate
+  // implementation
   void SendCommand(
       security_interstitials::SecurityInterstitialCommand command) override;
 
@@ -194,7 +196,8 @@ class NetErrorHelper
   base::WeakPtrFactory<NetErrorPageController::Delegate>
       weak_controller_delegate_factory_{this};
 
-  base::WeakPtrFactory<SecurityInterstitialPageController::Delegate>
+  base::WeakPtrFactory<
+      security_interstitials::SecurityInterstitialPageController::Delegate>
       weak_security_interstitial_controller_delegate_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorHelper);

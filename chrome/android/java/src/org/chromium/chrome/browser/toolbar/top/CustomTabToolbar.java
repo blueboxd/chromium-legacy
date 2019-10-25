@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -176,7 +177,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        final int backgroundColor = ColorUtils.getDefaultThemeColor(getResources(), false);
+        final int backgroundColor = ChromeColors.getDefaultThemeColor(getResources(), false);
         setBackground(new ColorDrawable(backgroundColor));
         mUseDarkColors = !ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor);
         mUrlBar = (TextView) findViewById(R.id.url_bar);

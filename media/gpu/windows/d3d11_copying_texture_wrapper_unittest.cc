@@ -65,8 +65,7 @@ class MockTexture2DWrapper : public Texture2DWrapper {
 
   bool Init(GetCommandBufferHelperCB get_helper_cb,
             size_t array_slice,
-            gfx::Size size,
-            int textures_per_picture) override {
+            gfx::Size size) override {
     return MockInit();
   }
 
@@ -155,7 +154,7 @@ TEST_P(D3D11CopyingTexture2DWrapperTest,
   auto picture_buffer =
       base::MakeRefCounted<D3D11PictureBuffer>(nullptr, gfx::Size(0, 0), 0);
 
-  EXPECT_EQ(wrapper->Init(CreateMockHelperCB(), 0, {}, 0), InitSucceeds());
+  EXPECT_EQ(wrapper->Init(CreateMockHelperCB(), 0, {}), InitSucceeds());
   EXPECT_EQ(wrapper->ProcessTexture(picture_buffer.get(), nullptr),
             ProcessTextureSucceeds());
 }

@@ -46,6 +46,7 @@ enum DebugRectType {
   WHEEL_EVENT_HANDLER_RECT_TYPE,
   SCROLL_EVENT_HANDLER_RECT_TYPE,
   NON_FAST_SCROLLABLE_RECT_TYPE,
+  MAIN_THREAD_SCROLLING_REASON_RECT_TYPE,
   ANIMATION_BOUNDS_RECT_TYPE,
   LAYOUT_SHIFT_RECT_TYPE,
 };
@@ -53,19 +54,24 @@ enum DebugRectType {
 struct DebugRect {
   DebugRect(DebugRectType new_type,
             const gfx::Rect& new_rect,
-            TouchAction new_touch_action)
-      : type(new_type), rect(new_rect), touch_action(new_touch_action) {
+            TouchAction new_touch_action = kTouchActionNone,
+            uint32_t main_thread_scrolling_reasons = 0)
+      : type(new_type),
+        rect(new_rect),
+        touch_action(new_touch_action),
+        main_thread_scrolling_reasons(main_thread_scrolling_reasons) {
     if (type != TOUCH_EVENT_HANDLER_RECT_TYPE)
       DCHECK_EQ(touch_action, kTouchActionNone);
+    if (type != MAIN_THREAD_SCROLLING_REASON_RECT_TYPE)
+      DCHECK(!main_thread_scrolling_reasons);
   }
-  DebugRect(DebugRectType new_type, const gfx::Rect& new_rect)
-      : DebugRect(new_type, new_rect, kTouchActionNone) {}
-
   DebugRectType type;
   gfx::Rect rect;
   // Valid when |type| is |TOUCH_EVENT_HANDLER_RECT_TYPE|, otherwise default to
   // |kTouchActionNone|.
   TouchAction touch_action;
+  // Valid when |type| is |MAIN_THREAD_SCROLLING_REASON_RECT_TYPE|, otherwise 0.
+  uint32_t main_thread_scrolling_reasons;
 };
 
 // This class maintains a history of rects of various types that can be used
@@ -105,6 +111,7 @@ class DebugRectHistory {
   void SaveScrollEventHandlerRectsCallback(LayerImpl* layer);
   void SaveNonFastScrollableRects(LayerTreeImpl* layer);
   void SaveNonFastScrollableRectsCallback(LayerImpl* layer);
+  void SaveMainThreadScrollingReasonRects(LayerTreeImpl*);
 
   std::vector<DebugRect> debug_rects_;
 };

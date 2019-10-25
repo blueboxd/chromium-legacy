@@ -461,8 +461,11 @@ bool ExternalVkImageBacking::BeginAccess(
     bool readonly,
     std::vector<SemaphoreHandle>* semaphore_handles,
     bool is_gl) {
-  if (readonly && !reads_in_progress_)
-    UpdateContent(is_gl ? kInGLTexture : kInVkImage);
+  if (readonly && !reads_in_progress_) {
+    UpdateContent(kInVkImage);
+    if (texture_)
+      UpdateContent(kInGLTexture);
+  }
   return BeginAccessInternal(readonly, semaphore_handles);
 }
 

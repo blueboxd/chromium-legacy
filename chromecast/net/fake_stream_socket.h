@@ -21,6 +21,7 @@ class SocketBuffer;
 // Fake StreamSocket that communicates with another instance in memory.
 class FakeStreamSocket : public net::StreamSocket {
  public:
+  FakeStreamSocket();
   explicit FakeStreamSocket(const net::IPEndPoint& local_address);
   ~FakeStreamSocket() override;
 

@@ -8,7 +8,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
@@ -16,7 +18,8 @@ namespace content {
 // An implementation of SharedURLLoaderFactory which handles only a single
 // request. It's an error to call CreateLoaderAndStart() more than a total of
 // one time across this object or any of its clones.
-class SingleRequestURLLoaderFactory : public network::SharedURLLoaderFactory {
+class CONTENT_EXPORT SingleRequestURLLoaderFactory
+    : public network::SharedURLLoaderFactory {
  public:
   using RequestHandler =
       base::OnceCallback<void(const network::ResourceRequest& resource_request,
@@ -46,6 +49,10 @@ class SingleRequestURLLoaderFactory : public network::SharedURLLoaderFactory {
   ~SingleRequestURLLoaderFactory() override;
 
   scoped_refptr<HandlerState> state_;
+
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory,
+                    scoped_refptr<SingleRequestURLLoaderFactory>>
+      receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleRequestURLLoaderFactory);
 };

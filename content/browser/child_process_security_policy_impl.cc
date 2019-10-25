@@ -37,7 +37,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/filename_util.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request.h"
+#include "net/net_buildflags.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/file_system/file_permission_policy.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -525,6 +525,10 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   // We know about these schemes and believe them to be safe.
   RegisterWebSafeScheme(url::kHttpScheme);
   RegisterWebSafeScheme(url::kHttpsScheme);
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+  RegisterWebSafeScheme(url::kWsScheme);
+  RegisterWebSafeScheme(url::kWssScheme);
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
   RegisterWebSafeScheme(url::kFtpScheme);
   RegisterWebSafeScheme(url::kDataScheme);
   RegisterWebSafeScheme("feed");
@@ -930,8 +934,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
   }
 
   // Also allow URLs destined for ShellExecute and not the browser itself.
-  return !GetContentClient()->browser()->IsHandledURL(url) &&
-         !net::URLRequest::IsHandledURL(url);
+  return !GetContentClient()->browser()->IsHandledURL(url);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanRedirectToURL(const GURL& url) {

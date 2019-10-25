@@ -101,9 +101,9 @@ import org.chromium.chrome.browser.toolbar.top.tab_switcher_action_menu.TabSwitc
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.translate.TranslateUtils;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -1827,7 +1827,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
 
             int defaultPrimaryColor =
-                    ColorUtils.getDefaultThemeColor(mActivity.getResources(), isIncognito);
+                    ChromeColors.getDefaultThemeColor(mActivity.getResources(), isIncognito);
             int primaryColor =
                     tab != null ? TabThemeColorHelper.getColor(tab) : defaultPrimaryColor;
             onThemeColorChanged(primaryColor, false);

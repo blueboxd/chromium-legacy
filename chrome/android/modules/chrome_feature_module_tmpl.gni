@@ -5,6 +5,7 @@
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//chrome/android/modules/chrome_feature_modules.gni")
+import("//components/module_installer/android/module_desc_java.gni")
 
 # Instantiates a Chrome-specific app bundle module.
 #
@@ -27,6 +28,45 @@ template("chrome_feature_module") {
   _include_32_bit_webview =
       defined(invoker.include_32_bit_webview) && invoker.include_32_bit_webview
 
+  _loadable_modules_32_bit = []
+  if (defined(_module_desc.loadable_modules_32_bit)) {
+    _loadable_modules_32_bit += _module_desc.loadable_modules_32_bit
+  }
+
+  _loadable_modules_64_bit = []
+  if (defined(_module_desc.loadable_modules_64_bit)) {
+    _loadable_modules_64_bit += _module_desc.loadable_modules_64_bit
+  }
+
+  _shared_libraries = []
+  if (use_native_partitions && defined(_module_desc.native_deps) &&
+      _module_desc.native_deps != []) {
+    _arch = ""
+    _toolchain = ""
+    if (android_64bit_target_cpu && _is_monochrome_or_trichrome) {
+      if (_is_64_bit_browser) {
+        _arch = "_64"
+      } else {
+        _toolchain = "($android_secondary_abi_toolchain)"
+      }
+    }
+    if (_is_monochrome_or_trichrome) {
+      _base_target_name = "libmonochrome${_arch}"
+    } else {
+      _base_target_name = "libchrome${_arch}"
+    }
+    _shared_libraries += [
+      "//chrome/android:${_base_target_name}_${_module_desc.name}${_toolchain}",
+    ]
+  } else {
+    not_needed([ "_is_monochrome_or_trichrome" ])
+  }
+
+  module_desc_java("${target_name}__module_desc_java") {
+    module_name = _module_desc.name
+    shared_libraries = _shared_libraries
+  }
+
   android_app_bundle_module(target_name) {
     forward_variables_from(invoker,
                            [
@@ -40,70 +80,30 @@ template("chrome_feature_module") {
                            ])
     android_manifest = _module_desc.android_manifest
     target_sdk_version = android_sdk_version
-    deps = []
+    deps = [
+      ":${target_name}__module_desc_java",
+    ]
     if (defined(_module_desc.java_deps)) {
       deps += _module_desc.java_deps
     }
 
     # Don't embed more translations than required (http://crbug.com/932017).
     aapt_locale_whitelist = locales
-
     proguard_enabled = !is_java_debug
-
     package_name = _module_desc.name
 
-    _loadable_modules_32_bit = []
-    _loadable_modules_64_bit = []
-    if (defined(_module_desc.loadable_modules_32_bit)) {
-      _loadable_modules_32_bit += _module_desc.loadable_modules_32_bit
-    }
-    if (defined(_module_desc.loadable_modules_64_bit)) {
-      _loadable_modules_64_bit += _module_desc.loadable_modules_64_bit
-    }
-
-    if (use_native_partitions && defined(_module_desc.native_deps) &&
-        _module_desc.native_deps != []) {
-      _arch = ""
-      _toolchain = ""
-      _root_out_dir = root_out_dir
-      if (android_64bit_target_cpu && _is_monochrome_or_trichrome) {
-        if (_is_64_bit_browser) {
-          _arch = "_64"
-        } else {
-          _toolchain = "($android_secondary_abi_toolchain)"
-          _root_out_dir =
-              get_label_info(":foo($android_secondary_abi_toolchain)",
-                             "root_out_dir")
-        }
-      }
-      if (_is_monochrome_or_trichrome) {
-        _base_target_name = "libmonochrome${_arch}"
-      } else {
-        _base_target_name = "libchrome${_arch}"
-      }
-      deps += [ "//chrome/android:${_base_target_name}_${_module_desc.name}${_toolchain}" ]
-      _native_library = "${_root_out_dir}/${_base_target_name}_partitions/lib${_module_desc.name}.so"
-
-      # Pass the correct library as both the 32 and 64-bit options. Underlying
-      # logic will choose from the correct variable, and supply a dummy library
-      # for the other architecture if required.
-      _loadable_modules_32_bit += [ _native_library ]
-      _loadable_modules_64_bit += [ _native_library ]
-    } else {
-      not_needed([ "_is_monochrome_or_trichrome" ])
-    }
-
     # Specify native libraries and placeholders.
-    if (_loadable_modules_32_bit != [] || _loadable_modules_64_bit != []) {
+    if (_loadable_modules_32_bit != [] || _loadable_modules_64_bit != [] ||
+        _shared_libraries != []) {
       # Decision logic: Assign decision variables:
       #   _loadable_modules_to_use: Either |_loadable_modules_64_bit| or
       #     |_loadable_modules_32_bit|.
-      #   _native_is_primary: Whether |_loadable_modules_to_use| should be
-      #     assigned as primary ABI or secondary ABI.
+      #   _native_is_primary: Whether |_loadable_modules_to_use| and/or
+      #     |_shared_libraries| should be assigned as primary ABI or
+      #     secondary ABI.
       #   _native_need_placeholder: Whether a placeholder is needed for the
       #     complementary ABI to the library.
       if (_is_64_bit_browser) {
-        assert(_loadable_modules_64_bit != [])
         not_needed([ "_loadable_modules_32_bit" ])
         _loadable_modules_to_use = _loadable_modules_64_bit
         _native_is_primary =
@@ -112,7 +112,6 @@ template("chrome_feature_module") {
             build_apk_secondary_abi && _include_32_bit_webview
         not_needed([ "_include_32_bit_webview" ])
       } else {
-        assert(_loadable_modules_32_bit != [])
         not_needed([
                      "_loadable_modules_64_bit",
                      "_include_32_bit_webview",
@@ -127,11 +126,13 @@ template("chrome_feature_module") {
       # Realization logic: Assign libraries and placeholders.
       if (_native_is_primary) {
         loadable_modules = _loadable_modules_to_use
+        shared_libraries = _shared_libraries
         if (_native_need_placeholder) {
           secondary_native_lib_placeholders = [ "libdummy.so" ]
         }
       } else {
         secondary_abi_loadable_modules = _loadable_modules_to_use
+        secondary_abi_shared_libraries = _shared_libraries
         if (_native_need_placeholder) {
           native_lib_placeholders = [ "libdummy.so" ]
         }

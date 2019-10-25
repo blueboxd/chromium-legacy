@@ -25,6 +25,13 @@ namespace data_decoder {
 
 namespace {
 
+#if defined(OS_CHROMEOS)
+// NOTE: This 1 GB limit is arbitrary and may be subject to change. The purpose
+// of limiting image decode size is to avoid OOM crashes caused by very large
+// image data being thrown at the service.
+constexpr size_t kJpegMaxDecodedNumBytes = 1024 * 1024 * 1024;
+#endif
+
 int64_t kPadding = 64;
 
 void ResizeImage(SkBitmap* decoded_image,
@@ -81,7 +88,7 @@ void ImageDecoderImpl::DecodeImage(const std::vector<uint8_t>& encoded_data,
     // Our robust jpeg decoding is using IJG libjpeg.
     if (encoded_data.size()) {
       std::unique_ptr<SkBitmap> decoded_jpeg(gfx::JPEGCodecRobustSlow::Decode(
-          encoded_data.data(), encoded_data.size()));
+          encoded_data, kJpegMaxDecodedNumBytes));
       if (decoded_jpeg.get() && !decoded_jpeg->empty())
         decoded_image = *decoded_jpeg;
     }

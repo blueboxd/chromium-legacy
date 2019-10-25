@@ -3713,8 +3713,8 @@ test("unit_tests") {
       "../browser/importer/profile_writer_unittest.cc",
       "../browser/lifetime/application_lifetime_unittest.cc",
       "../browser/lookalikes/lookalike_url_navigation_throttle_unittest.cc",
-      "../browser/lookalikes/safety_tips/local_heuristics_unittest.cc",
-      "../browser/lookalikes/safety_tips/reputation_service_unittest.cc",
+      "../browser/reputation/local_heuristics_unittest.cc",
+      "../browser/reputation/reputation_service_unittest.cc",
 
       # Media remoting is not supported on Android for now.
       "../browser/media/cast_remoting_connector_unittest.cc",

@@ -11,7 +11,9 @@
 #include "chromecast/media/audio/mixer_service/conversions.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
+#include "chromecast/media/cma/backend/mixer/loopback_handler.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input_connection.h"
+#include "chromecast/media/cma/backend/mixer/mixer_loopback_connection.h"
 #include "chromecast/media/cma/backend/mixer/stream_mixer.h"
 
 namespace chromecast {
@@ -105,8 +107,11 @@ class MixerServiceReceiver::ControlConnection
   DISALLOW_COPY_AND_ASSIGN(ControlConnection);
 };
 
-MixerServiceReceiver::MixerServiceReceiver(StreamMixer* mixer) : mixer_(mixer) {
+MixerServiceReceiver::MixerServiceReceiver(StreamMixer* mixer,
+                                           LoopbackHandler* loopback_handler)
+    : mixer_(mixer), loopback_handler_(loopback_handler) {
   DCHECK(mixer_);
+  DCHECK(loopback_handler_);
 }
 
 MixerServiceReceiver::~MixerServiceReceiver() = default;
@@ -133,7 +138,9 @@ void MixerServiceReceiver::CreateOutputStream(
 void MixerServiceReceiver::CreateLoopbackConnection(
     std::unique_ptr<mixer_service::MixerSocket> socket,
     const mixer_service::Generic& message) {
-  LOG(INFO) << "Unhandled loopback connection";
+  auto connection =
+      std::make_unique<MixerLoopbackConnection>(std::move(socket));
+  loopback_handler_->AddConnection(std::move(connection));
 }
 
 void MixerServiceReceiver::CreateAudioRedirection(

@@ -19,7 +19,7 @@
 namespace paint_preview {
 
 // Maps a content ID to a frame ID (Process ID || Routing ID).
-using PictureSerializationContext = base::flat_map<uint32_t, int64_t>;
+using PictureSerializationContext = base::flat_map<uint32_t, uint64_t>;
 
 // Maps a typeface ID to a glyph usage tracker.
 using TypefaceUsageMap = base::flat_map<SkFontID, std::unique_ptr<GlyphUsage>>;

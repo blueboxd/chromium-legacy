@@ -259,14 +259,17 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel(
     finished_download_menu_model_->AddItem(
         DownloadCommands::OPEN_WHEN_COMPLETE,
         GetLabelForCommandId(DownloadCommands::OPEN_WHEN_COMPLETE));
-    finished_download_menu_model_->AddCheckItem(
-        DownloadCommands::ALWAYS_OPEN_TYPE,
-        GetLabelForCommandId(DownloadCommands::ALWAYS_OPEN_TYPE));
   }
 
   finished_download_menu_model_->AddItem(
       DownloadCommands::PLATFORM_OPEN,
       GetLabelForCommandId(DownloadCommands::PLATFORM_OPEN));
+
+  if (is_download) {
+    finished_download_menu_model_->AddCheckItem(
+        DownloadCommands::ALWAYS_OPEN_TYPE,
+        GetLabelForCommandId(DownloadCommands::ALWAYS_OPEN_TYPE));
+  }
   finished_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
 
   if (is_download) {

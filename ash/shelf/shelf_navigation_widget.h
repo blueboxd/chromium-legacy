@@ -48,6 +48,7 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
 
   // views::Widget:
   bool OnNativeWidgetActivationChanged(bool active) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Getters for the back and home buttons.
   BackButton* GetBackButton() const;

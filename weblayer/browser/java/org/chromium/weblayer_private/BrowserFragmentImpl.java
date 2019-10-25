@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.weblayer_private.aidl.BrowserFragmentArgs;
 import org.chromium.weblayer_private.aidl.IBrowserFragment;
 import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
@@ -32,9 +33,9 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mContext = context;
+        mContext = ClassLoaderContextWrapperFactory.get(context);
         if (mController != null) { // On first creation, onAttach is called before onCreate
-            mController.onFragmentAttached(context, new FragmentWindowAndroid(context, this));
+            mController.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
         }
     }
 

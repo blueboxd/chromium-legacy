@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -34,7 +34,7 @@ class NetworkStructTraitsTest : public testing::Test,
     std::move(callback).Run(header);
   }
 
-  base::MessageLoop loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   mojo::ReceiverSet<TraitsTestService> traits_test_receivers_;
   DISALLOW_COPY_AND_ASSIGN(NetworkStructTraitsTest);
 };

@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifierDelegate;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.VerifierDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
@@ -59,6 +61,12 @@ public class CustomTabActivityModule {
             Lazy<DefaultCustomTabIntentHandlingStrategy> defaultHandler,
             Lazy<TwaIntentHandlingStrategy> twaHandler) {
         return mIntentDataProvider.isTrustedWebActivity() ? twaHandler.get() : defaultHandler.get();
+    }
+
+    @Provides
+    public VerifierDelegate provideVerifierDelegate(Lazy<TwaVerifierDelegate> twaVerifierDelegate) {
+        // TODO(peconn): Add handing of WebAPK/A2HS delegate.
+        return twaVerifierDelegate.get();
     }
 
     @Provides

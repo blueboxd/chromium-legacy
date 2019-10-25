@@ -28,8 +28,6 @@
 
 namespace {
 
-using lookalikes::LookalikeUrlService;
-
 constexpr uint32_t kEngagedSiteUpdateIntervalInSeconds = 5 * 60;
 
 class LookalikeUrlServiceFactory : public BrowserContextKeyedServiceFactory {
@@ -71,8 +69,6 @@ class LookalikeUrlServiceFactory : public BrowserContextKeyedServiceFactory {
 };
 
 }  // namespace
-
-namespace lookalikes {
 
 std::string GetETLDPlusOne(const std::string& hostname) {
   return net::registry_controlled_domains::GetDomainAndRegistry(
@@ -191,5 +187,3 @@ void LookalikeUrlService::OnFetchEngagedSites(
   last_engagement_fetch_time_ = clock_->Now();
   std::move(callback).Run(engaged_sites_);
 }
-
-}  // namespace lookalikes

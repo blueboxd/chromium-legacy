@@ -39,7 +39,7 @@ std::unique_ptr<net::CanonicalCookie> CreateCookie(base::StringPiece name,
       GURL(kTestCookieUrl), name.as_string(), value.as_string(), /*domain=*/"",
       /*path=*/"", /*creation_time=*/base::Time(),
       /*expiration_time=*/base::Time(), /*last_access_time=*/base::Time(),
-      /*secure=*/false,
+      /*secure=*/true,
       /*httponly*/ false, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_MEDIUM);
 }

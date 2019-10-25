@@ -55,6 +55,12 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/src"/>
     <classpathentry kind="src" path="chrome/browser/android/thin_webview/internal/java/src"/>
     <classpathentry kind="src" path="chrome/browser/android/thin_webview/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/download/android/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/image_fetcher/android/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/share/android/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/touch_to_fill/android/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/touch_to_fill/android/internal/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/ui/android/styles/java/src"/>
     <classpathentry kind="src" path="chrome/browser/ui/android/widget/java/src"/>
     <classpathentry kind="src" path="chrome/browser/ui/android/widget/test/java/src"/>
     <classpathentry kind="src" path="chrome/browser/util/android/java/src"/>

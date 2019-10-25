@@ -105,7 +105,7 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
               result);
     return;
   }
@@ -129,7 +129,7 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
               result);
     return;
   }
@@ -260,7 +260,7 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
               result);
     access_handler_.reset();
     return;

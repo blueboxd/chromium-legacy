@@ -78,7 +78,12 @@ public interface NavigationSheet {
         public void start(boolean forward, boolean showCloseIndicator) {}
 
         @Override
-        public void startAndExpand(boolean forward, boolean animate) {}
+        public boolean startAndExpand(boolean forward, boolean animate) {
+            return false;
+        }
+
+        @Override
+        public void close(boolean animate) {}
 
         @Override
         public void onScroll(float delta, float overscroll, boolean willNavigate) {}
@@ -109,8 +114,15 @@ public interface NavigationSheet {
      * Fully expand the navigation sheet from the beginning.
      * @param forward {@code true} if this is for forward navigation.
      * @param animate {@code true} to enable animation.
+     * @return {@code true} if the sheet is opened as expected.
      */
-    void startAndExpand(boolean forward, boolean animate);
+    boolean startAndExpand(boolean forward, boolean animate);
+
+    /**
+     * Close the navigation sheet.
+     * @param animate {@code true} to enable animation.
+     */
+    void close(boolean animate);
 
     /**
      * Process swipe gesture and update the navigation sheet state.

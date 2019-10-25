@@ -53,7 +53,7 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
   is_fallback_ = is_fallback;
 
   if (is_fallback_ && loader_callback_)
-    CallLoaderCallback();
+    CallLoaderCallback({});
 
   InitializeRangeRequestInfo(appcache_request_->GetHeaders());
   storage_->LoadResponseInfo(manifest_url_, entry_.response_id(), this);
@@ -81,20 +81,12 @@ void AppCacheURLLoaderJob::DeliverErrorResponse() {
   if (AppCacheRequestHandler::IsRunningInTests())
     return;
 
-  if (loader_callback_)
-    CallLoaderCallback();
-
-  if (!client_) {
-    // Although all callsites that lead to construction of AppCacheURLLoaderJob
-    // provide a NavigationLoaderInterceptor::LoaderCallback, some use weak
-    // pointers to bind it. So it's possible that in between the time that
-    // AppCacheURLLoaderJob grabs the response info from storage that the
-    // callback is now empty, which leads to client_ not being initialized.
-    DeleteSoon();
-    return;
+  if (loader_callback_) {
+    CallLoaderCallback(base::BindOnce(&AppCacheURLLoaderJob::NotifyCompleted,
+                                      GetDerivedWeakPtr(), net::ERR_FAILED));
+  } else {
+    NotifyCompleted(net::ERR_FAILED);
   }
-
-  NotifyCompleted(net::ERR_FAILED);
 }
 
 AppCacheURLLoaderJob* AppCacheURLLoaderJob::AsURLLoaderJob() {
@@ -128,6 +120,7 @@ void AppCacheURLLoaderJob::DeleteIfNeeded() {
 }
 
 void AppCacheURLLoaderJob::Start(
+    base::OnceClosure continuation,
     const network::ResourceRequest& /* resource_request */,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
@@ -139,12 +132,14 @@ void AppCacheURLLoaderJob::Start(
   client_ = std::move(client);
   binding_.set_connection_error_handler(
       base::BindOnce(&AppCacheURLLoaderJob::DeleteSoon, GetDerivedWeakPtr()));
+  if (continuation)
+    std::move(continuation).Run();
 }
 
 AppCacheURLLoaderJob::AppCacheURLLoaderJob(
     AppCacheRequest* appcache_request,
     AppCacheStorage* storage,
-    NavigationLoaderInterceptor::LoaderCallback loader_callback)
+    AppCacheRequestHandler::AppCacheLoaderCallback loader_callback)
     : storage_(storage->GetWeakPtr()),
       start_time_tick_(base::TimeTicks::Now()),
       cache_id_(blink::mojom::kAppCacheNoCacheId),
@@ -158,12 +153,12 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
       is_main_resource_load_(IsResourceTypeFrame(
           static_cast<ResourceType>(appcache_request->GetResourceType()))) {}
 
-void AppCacheURLLoaderJob::CallLoaderCallback() {
+void AppCacheURLLoaderJob::CallLoaderCallback(base::OnceClosure continuation) {
   DCHECK(loader_callback_);
   DCHECK(!binding_.is_bound());
   std::move(loader_callback_)
-      .Run(base::BindOnce(&AppCacheURLLoaderJob::Start, GetDerivedWeakPtr()));
-  DCHECK(binding_.is_bound());
+      .Run(base::BindOnce(&AppCacheURLLoaderJob::Start, GetDerivedWeakPtr(),
+                          std::move(continuation)));
 }
 
 void AppCacheURLLoaderJob::OnResponseInfoLoaded(
@@ -177,36 +172,13 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
   }
 
   if (response_info) {
-    if (loader_callback_)
-      CallLoaderCallback();
-
-    if (!client_) {
-      // See comment in DeliverErrorResponse.
-      DeleteSoon();
-      return;
+    if (loader_callback_) {
+      CallLoaderCallback(base::BindOnce(
+          &AppCacheURLLoaderJob::ContinueOnResponseInfoLoaded,
+          GetDerivedWeakPtr(), base::WrapRefCounted(response_info)));
+    } else {
+      ContinueOnResponseInfoLoaded(response_info);
     }
-
-    info_ = response_info;
-    reader_ =
-        storage_->CreateResponseReader(manifest_url_, entry_.response_id());
-
-    if (is_range_request())
-      SetupRangeResponse();
-
-    response_body_stream_ = std::move(data_pipe_.producer_handle);
-
-    // TODO(ananta)
-    // Move the asynchronous reading and mojo pipe handling code to a helper
-    // class. That would also need a change to BlobURLLoader.
-
-    // Wait for the data pipe to be ready to accept data.
-    writable_handle_watcher_.Watch(
-        response_body_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        base::BindRepeating(&AppCacheURLLoaderJob::OnResponseBodyStreamReady,
-                            GetDerivedWeakPtr()));
-
-    SendResponseInfo();
-    ReadMore();
     return;
   }
 
@@ -226,6 +198,30 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     DeliverNetworkResponse();
   else
     DeliverErrorResponse();
+}
+
+void AppCacheURLLoaderJob::ContinueOnResponseInfoLoaded(
+    scoped_refptr<AppCacheResponseInfo> response_info) {
+  info_ = response_info;
+  reader_ = storage_->CreateResponseReader(manifest_url_, entry_.response_id());
+
+  if (is_range_request())
+    SetupRangeResponse();
+
+  response_body_stream_ = std::move(data_pipe_.producer_handle);
+
+  // TODO(ananta)
+  // Move the asynchronous reading and mojo pipe handling code to a helper
+  // class. That would also need a change to BlobURLLoader.
+
+  // Wait for the data pipe to be ready to accept data.
+  writable_handle_watcher_.Watch(
+      response_body_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+      base::BindRepeating(&AppCacheURLLoaderJob::OnResponseBodyStreamReady,
+                          GetDerivedWeakPtr()));
+
+  SendResponseInfo();
+  ReadMore();
 }
 
 void AppCacheURLLoaderJob::OnReadComplete(int result) {

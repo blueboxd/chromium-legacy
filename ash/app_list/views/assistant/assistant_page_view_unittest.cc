@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/views/assistant/assistant_page_view.h"
-#include "ash/app_list/views/assistant/assistant_main_view.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/run_loop.h"

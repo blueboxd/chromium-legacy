@@ -222,8 +222,7 @@ void CheckClientDownloadRequestBase::FinishRequest(
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
 
-  if (ShouldReturnAsynchronousVerdict(reason)) {
-    std::move(callback_).Run(DownloadCheckResult::ASYNC_SCANNING);
+  if (MaybeReturnAsynchronousVerdict(reason)) {
     timeout_closure_.Cancel();
   } else {
     std::move(callback_).Run(result);

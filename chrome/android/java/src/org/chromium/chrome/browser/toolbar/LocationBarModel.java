@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -62,7 +63,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
      */
     public LocationBarModel(Context context) {
         mContext = context;
-        mPrimaryColor = ColorUtils.getDefaultThemeColor(context.getResources(), false);
+        mPrimaryColor = ChromeColors.getDefaultThemeColor(context.getResources(), false);
     }
 
     /**
@@ -306,14 +307,14 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
     private void updateUsingBrandColor() {
         mIsUsingBrandColor = !isIncognito()
                 && mPrimaryColor
-                        != ColorUtils.getDefaultThemeColor(mContext.getResources(), isIncognito())
+                        != ChromeColors.getDefaultThemeColor(mContext.getResources(), isIncognito())
                 && hasTab() && !mTab.isNativePage();
     }
 
     @Override
     public int getPrimaryColor() {
         return isInOverviewAndShowingOmnibox()
-                ? ColorUtils.getDefaultThemeColor(mContext.getResources(), isIncognito())
+                ? ChromeColors.getDefaultThemeColor(mContext.getResources(), isIncognito())
                 : mPrimaryColor;
     }
 

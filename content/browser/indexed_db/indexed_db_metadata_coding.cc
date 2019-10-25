@@ -13,8 +13,8 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "content/browser/indexed_db/scopes/leveldb_scope_deletion_mode.h"
@@ -528,7 +528,7 @@ Status IndexedDBMetadataCoding::CreateDatabase(
     IndexedDBDatabaseMetadata* metadata) {
   // TODO(jsbell): Don't persist metadata if open fails. http://crbug.com/395472
   std::unique_ptr<LevelDBDirectTransaction> transaction =
-      db->leveldb_class_factory()->CreateLevelDBDirectTransaction(db);
+      db->class_factory()->CreateLevelDBDirectTransaction(db);
 
   int64_t row_id = 0;
   Status s = indexed_db::GetNewDatabaseId(transaction.get(), &row_id);

@@ -33,77 +33,20 @@
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
+#include "third_party/blink/renderer/platform/blob/blob_url_null_origin_map.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/weborigin/url_security_origin_map.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
-#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 namespace {
 
-// When a blob URL is created in an opaque origin or something whose
-// SecurityOrigin::SerializesAsNull() returns true, the origin is serialized
-// into the URL as "null". Since that makes it impossible to parse the origin
-// back out and compare it against a context's origin (to check if a context is
-// allowed to dereference the URL) we store a map of blob URL to SecurityOrigin
-// instance for blob URLs with such the origins.
-
-class BlobURLNullOriginMap final : public URLSecurityOriginMap {
- public:
-  BlobURLNullOriginMap();
-
-  // If the given blob URL has a "null" origin, returns SecurityOrigin that
-  // represents the "null" origin. Otherwise, returns nullptr.
-  SecurityOrigin* GetOrigin(const KURL& blob_url) override;
-};
-
-typedef HashMap<String, scoped_refptr<SecurityOrigin>> BlobURLOriginMap;
-static ThreadSpecific<BlobURLOriginMap>& OriginMap() {
-  // We want to create the BlobURLNullOriginMap exactly once because it is
-  // shared by all the threads.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(BlobURLNullOriginMap, cache, ());
-  // BlobURLNullOriginMap's constructor does the interesting work.
-  (void)cache;
-
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<BlobURLOriginMap>, map, ());
-  return map;
-}
-
-static void SaveToOriginMap(SecurityOrigin* origin, const KURL& blob_url) {
-  DCHECK(blob_url.ProtocolIs("blob"));
-  DCHECK(!blob_url.HasFragmentIdentifier());
-
-  // If the blob URL contains "null" origin, as in the context with opaque
-  // security origin or file URL, save the mapping between url and origin so
-  // that the origin can be retrieved when doing security origin check.
-  //
-  // See the definition of the origin of a Blob URL in the File API spec.
-  if (origin && origin->SerializesAsNull()) {
-    DCHECK_EQ(BlobURL::GetOrigin(blob_url), "null");
-    OriginMap()->insert(blob_url.GetString(), origin);
-  }
-}
-
-static void RemoveFromOriginMap(const KURL& blob_url) {
+static void RemoveFromNullOriginMapIfNecessary(const KURL& blob_url) {
   DCHECK(blob_url.ProtocolIs("blob"));
   if (BlobURL::GetOrigin(blob_url) == "null")
-    OriginMap()->erase(blob_url.GetString());
-}
-
-BlobURLNullOriginMap::BlobURLNullOriginMap() {
-  SecurityOrigin::SetBlobURLNullOriginMap(this);
-}
-
-SecurityOrigin* BlobURLNullOriginMap::GetOrigin(const KURL& blob_url) {
-  DCHECK(blob_url.ProtocolIs("blob"));
-  KURL blob_url_without_fragment = blob_url;
-  blob_url_without_fragment.RemoveFragmentIdentifier();
-  return OriginMap()->at(blob_url_without_fragment.GetString());
+    BlobURLNullOriginMap::GetInstance()->Remove(blob_url);
 }
 
 }  // namespace
@@ -138,7 +81,9 @@ String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
     registry->RegisterURL(origin, url, registrable);
     url_to_registry_.insert(url_string, registry);
   }
-  SaveToOriginMap(origin, url);
+
+  if (origin->SerializesAsNull())
+    BlobURLNullOriginMap::GetInstance()->Add(url, origin);
 
   return url_string;
 }
@@ -162,7 +107,7 @@ void PublicURLManager::Revoke(const KURL& url) {
   url_store_->Revoke(url);
   mojo_urls_.erase(url.GetString());
 
-  RemoveFromOriginMap(url);
+  RemoveFromNullOriginMapIfNecessary(url);
   auto it = url_to_registry_.find(url.GetString());
   if (it == url_to_registry_.end())
     return;
@@ -208,10 +153,10 @@ void PublicURLManager::ContextDestroyed(ExecutionContext*) {
   is_stopped_ = true;
   for (auto& url_registry : url_to_registry_) {
     url_registry.value->UnregisterURL(KURL(url_registry.key));
-    RemoveFromOriginMap(KURL(url_registry.key));
+    RemoveFromNullOriginMapIfNecessary(KURL(url_registry.key));
   }
   for (const auto& url : mojo_urls_)
-    RemoveFromOriginMap(KURL(url));
+    RemoveFromNullOriginMapIfNecessary(KURL(url));
 
   url_to_registry_.clear();
   mojo_urls_.clear();

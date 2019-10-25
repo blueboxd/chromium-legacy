@@ -852,6 +852,9 @@
   <message name="IDS_SETTINGS_ALT_PAGE_TITLE" desc="The settings page title for the about page.">
     Settings - <ph name="SECTION_TITLE">$1<ex>About Chromium</ex></ph>
   </message>
+  <message name="IDS_SETTINGS_SUBPAGE_BUTTON" desc="Accessibility description for a button navigating the user from a settings page to one of the settings subpages.">
+    Subpage button
+  </message>
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_RESTART" desc="Text for a button that will restart Chrome.">
       Relaunch
@@ -880,7 +883,7 @@
   <message name="IDS_SETTINGS_TOGGLE_ON" desc="Label used on a main settings toggle that is on.">
     On
   </message>
-  <message name="IDS_SETTINGS_TOGGLE_OFF" desc="Label used on a main settings toggle that is ooff.">
+  <message name="IDS_SETTINGS_TOGGLE_OFF" desc="Label used on a main settings toggle that is off.">
     Off
   </message>
   <message name="IDS_SETTINGS_NOT_VALID" desc="Text indicating that an input is not valid.">

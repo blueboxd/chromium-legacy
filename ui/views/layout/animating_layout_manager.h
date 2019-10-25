@@ -133,6 +133,14 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   // layout from the embedded layout manager.
   void ResetLayout();
 
+  // Does the work of ResetLayout() or FreezeLayout(), with the resulting layout
+  // snapped to |target_size|.
+  void ResetLayoutToSize(const gfx::Size& target_size);
+
+  // Cleans up after an animation, runs delayed actions, and sends
+  // notifications.
+  void OnAnimationEnded();
+
   // Causes the specified child view to fade out and become hidden. Alternative
   // to directly hiding the view (which will have the same effect, but could
   // cause visual flicker if the view paints before it can re-layout.

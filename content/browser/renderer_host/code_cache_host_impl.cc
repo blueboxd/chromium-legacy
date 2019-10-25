@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -98,27 +99,20 @@ base::Optional<GURL> GetSecondaryKeyForCodeCache(const GURL& resource_url,
 CodeCacheHostImpl::CodeCacheHostImpl(
     int render_process_id,
     scoped_refptr<CacheStorageContextImpl> cache_storage_context,
-    scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context)
+    scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context,
+    mojo::PendingReceiver<blink::mojom::CodeCacheHost> receiver)
     : render_process_id_(render_process_id),
       cache_storage_context_(std::move(cache_storage_context)),
-      generated_code_cache_context_(std::move(generated_code_cache_context)) {}
+      generated_code_cache_context_(std::move(generated_code_cache_context)),
+      receiver_(this, std::move(receiver)) {}
 
 CodeCacheHostImpl::~CodeCacheHostImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-// static
-void CodeCacheHostImpl::Create(
-    int render_process_id,
-    scoped_refptr<CacheStorageContextImpl> cache_storage_context,
-    scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context,
-    mojo::PendingReceiver<blink::mojom::CodeCacheHost> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<CodeCacheHostImpl>(
-          render_process_id, std::move(cache_storage_context),
-          std::move(generated_code_cache_context)),
-      std::move(receiver));
+void CodeCacheHostImpl::SetCacheStorageContextForTesting(
+    scoped_refptr<CacheStorageContextImpl> context) {
+  cache_storage_context_ = std::move(context);
 }
 
 void CodeCacheHostImpl::DidGenerateCacheableMetadata(
@@ -189,6 +183,24 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
     mojo_base::BigBuffer data,
     const url::Origin& cache_storage_origin,
     const std::string& cache_storage_cache_name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // We cannot trust the renderer to give us the correct origin here.  Validate
+  // it against the ChildProcessSecurityPolicy.
+  bool origin_allowed =
+      ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
+          render_process_id_, cache_storage_origin);
+  base::UmaHistogramBoolean(
+      "ServiceWorkerCache.DidGenerateCacheableMetadataMessageInCacheStorage."
+      "OriginAllowed",
+      origin_allowed);
+  if (!origin_allowed) {
+    // TODO(crbug/925035): Report a bad mojo message here.  Currently we just
+    // null-route the request since this condition triggers more frequently
+    // than we expect.
+    return;
+  }
+
   int64_t trace_id = blink::cache_storage::CreateTraceId();
   TRACE_EVENT_WITH_FLOW1(
       "CacheStorage",

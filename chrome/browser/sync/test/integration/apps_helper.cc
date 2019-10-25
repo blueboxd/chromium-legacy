@@ -202,11 +202,9 @@ AppsMatchChecker::~AppsMatchChecker() {
                     content::NotificationService::AllSources());
 }
 
-std::string AppsMatchChecker::GetDebugMessage() const {
-  return "Waiting for apps to match";
-}
+bool AppsMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for apps to match";
 
-bool AppsMatchChecker::IsExitConditionSatisfied() {
   auto it = profiles_.begin();
   Profile* profile0 = *it;
   ++it;
@@ -279,4 +277,3 @@ void AppsMatchChecker::Observe(int type,
   DCHECK_EQ(chrome::NOTIFICATION_APP_LAUNCHER_REORDERED, type);
   CheckExitCondition();
 }
-

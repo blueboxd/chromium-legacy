@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSIONS_MENU_VIEW_H_
 
 #include <memory>
+#include <vector>
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -14,14 +16,16 @@
 
 namespace views {
 class Button;
-class ImageView;
+class View;
 }  // namespace views
 
+class Browser;
 class ExtensionsContainer;
 class ExtensionsMenuItemView;
 
 // This bubble view displays a list of user extensions and a button to get to
 // managing the user's extensions (chrome://extensions).
+// This class is only used with the kExtensionsToolbarMenu feature.
 class ExtensionsMenuView : public views::BubbleDialogDelegateView,
                            public ToolbarActionsModel::Observer {
  public:
@@ -32,13 +36,22 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
                      ExtensionsContainer* extensions_container);
   ~ExtensionsMenuView() override;
 
+  // Displays the ExtensionsMenu under |anchor_view|, attached to |browser|, and
+  // with the associated |extensions_container|.
+  // Only one menu is allowed to be shown at a time (outside of tests).
   static void ShowBubble(views::View* anchor_view,
                          Browser* browser,
                          ExtensionsContainer* extensions_container);
+
+  // Returns true if there is currently an ExtensionsMenuView showing (across
+  // all browsers and profiles).
   static bool IsShowing();
+
+  // Hides the currently-showing ExtensionsMenuView, if any exists.
   static void Hide();
+
+  // Returns the currently-showing ExtensionsMenuView, if any exists.
   static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
-  static std::unique_ptr<views::ImageView> CreateFixedSizeIconView();
 
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;

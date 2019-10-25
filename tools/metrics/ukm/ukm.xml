@@ -3712,6 +3712,18 @@ be describing additional metrics about the same event.
       activation on the page or without a user initiated same-domain navigation.
     </summary>
   </metric>
+  <metric name="CompletedRebuffersCount">
+    <summary>
+      Integer count of the number of times a previous rebuffer succeeded and
+      playback continued.
+    </summary>
+  </metric>
+  <metric name="CompletedRebuffersDuration">
+    <summary>
+      Sum in milliseconds of all completed rebuffering events. Only reported if
+      a rebuffering completion occurred.
+    </summary>
+  </metric>
   <metric name="Duration">
     <summary>
       Duration in milliseconds, rounded to the most significant digit, of the
@@ -3803,6 +3815,17 @@ be describing additional metrics about the same event.
     <summary>
       media::EncryptionMode enum value. Can be kUnencrypted if IsEME is false or
       if the video track is unencrypted.
+    </summary>
+  </metric>
+  <metric name="VideoFramesDecoded">
+    <summary>
+      Integer count of the video frames decoded in this record.
+    </summary>
+  </metric>
+  <metric name="VideoFramesDropped">
+    <summary>
+      Integer count of the video frames dropped in this record. Should not
+      exceed VideoFramesDecoded.
     </summary>
   </metric>
   <metric name="VideoNaturalHeight">

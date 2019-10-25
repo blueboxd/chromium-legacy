@@ -149,7 +149,13 @@ void HotseatWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 }
 
 HotseatWidget::HotseatWidget()
-    : delegate_view_(new DelegateView(Shell::Get()->wallpaper_controller())) {}
+    : delegate_view_(new DelegateView(Shell::Get()->wallpaper_controller())) {
+  ShelfConfig::Get()->AddObserver(this);
+}
+
+HotseatWidget::~HotseatWidget() {
+  ShelfConfig::Get()->RemoveObserver(this);
+}
 
 void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   DCHECK(container);
@@ -173,7 +179,8 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
     // The shelf view observes the shelf model and creates icons as items are
     // added to the model.
     shelf_view_ = GetContentsView()->AddChildView(std::make_unique<ShelfView>(
-        ShelfModel::Get(), shelf, /*drag_and_drop_host=*/nullptr));
+        ShelfModel::Get(), shelf, /*drag_and_drop_host=*/nullptr,
+        /*shelf_button_delegate=*/nullptr));
     shelf_view_->Init();
   }
   delegate_view_->Init(scrollable_shelf_view(), GetLayer());
@@ -205,6 +212,10 @@ bool HotseatWidget::OnNativeWidgetActivationChanged(bool active) {
   return true;
 }
 
+void HotseatWidget::OnShelfConfigUpdated() {
+  set_manually_extended(false);
+}
+
 ShelfView* HotseatWidget::GetShelfView() {
   if (IsScrollableShelfEnabled()) {
     DCHECK(scrollable_shelf_view_);
@@ -224,7 +235,7 @@ bool HotseatWidget::IsShowingOverflowBubble() const {
   return GetShelfView()->IsShowingOverflowBubble();
 }
 
-bool HotseatWidget::IsDraggedToExtended() const {
+bool HotseatWidget::IsExtended() const {
   DCHECK(GetShelfView()->shelf()->IsHorizontalAlignment());
   const int extended_y =
       display::Screen::GetScreen()

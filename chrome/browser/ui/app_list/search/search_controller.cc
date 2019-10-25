@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
@@ -221,34 +220,7 @@ int SearchController::GetLastQueryLength() const {
 
 void SearchController::Train(AppLaunchData&& app_launch_data) {
   if (app_list_features::IsAppListLaunchRecordingEnabled()) {
-    ChromeOSAppListLaunchEventProto::LaunchType launch_type;
-    if (app_launch_data.ranking_item_type == RankingItemType::kApp ||
-        app_launch_data.ranking_item_type == RankingItemType::kArcAppShortcut) {
-      launch_type = ChromeOSAppListLaunchEventProto::APP_TILES;
-    } else {
-      launch_type = ChromeOSAppListLaunchEventProto::RESULTS_LIST;
-    }
-
-    ChromeOSAppListLaunchEventProto::SearchProviderType provider_type;
-    switch (app_launch_data.ranking_item_type) {
-      case RankingItemType::kOmniboxGeneric:
-        provider_type = ChromeOSAppListLaunchEventProto::OMNIBOX;
-        break;
-      case RankingItemType::kZeroStateFile:
-        provider_type = ChromeOSAppListLaunchEventProto::ZERO_STATE_FILE;
-        break;
-      case RankingItemType::kDriveQuickAccess:
-        provider_type = ChromeOSAppListLaunchEventProto::DRIVE_QUICK_ACCESS;
-        break;
-      default:
-        provider_type = ChromeOSAppListLaunchEventProto::PROVIDER_UNSPECIFIED;
-        break;
-    }
-
-    // TODO(951287): Record the last-used domain.
-    AppListLaunchRecorder::GetInstance()->Record(
-        {launch_type, provider_type, NormalizeId(app_launch_data.id),
-         base::UTF16ToUTF8(last_query_), std::string(), last_launched_app_id_});
+    // TODO(crbug.com/951287): Add hashed logging once framework is done.
 
     // Only record the last launched app if the hashed logging feature flag is
     // enabled, because it is only used by hashed logging.

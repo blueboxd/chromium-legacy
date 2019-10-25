@@ -24,7 +24,6 @@
 #include "extensions/common/switches.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_bindings_system.h"
-#include "extensions/renderer/css_native_handler.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/lazy_background_page_native_handler.h"
 #include "extensions/renderer/native_extension_bindings_system.h"

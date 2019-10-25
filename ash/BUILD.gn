@@ -1734,6 +1734,7 @@ test("ash_unittests") {
     "frame/non_client_frame_view_ash_unittest.cc",
     "highlighter/highlighter_controller_unittest.cc",
     "highlighter/highlighter_gesture_util_unittest.cc",
+    "home_screen/drag_window_from_shelf_controller_unittest.cc",
     "home_screen/home_launcher_gesture_handler_unittest.cc",
     "home_screen/home_screen_controller_unittest.cc",
     "ime/ime_controller_unittest.cc",
@@ -2203,6 +2204,7 @@ static_library("test_support") {
   public = [
     "public/cpp/shelf_test_api.h",
     "public/cpp/system_tray_test_api.h",
+    "public/cpp/test/assistant_test_api.h",
   ]
   sources = [
     "accessibility/test_accessibility_controller_client.cc",
@@ -2211,6 +2213,8 @@ static_library("test_support") {
     "app_list/test/app_list_test_helper.h",
     "app_list/test/test_app_list_client.cc",
     "app_list/test/test_app_list_client.h",
+    "app_list/views/assistant/assistant_test_api_impl.cc",
+    "app_list/views/assistant/assistant_test_api_impl.h",
     "app_menu/notification_menu_view_test_api.cc",
     "app_menu/notification_menu_view_test_api.h",
     "assistant/test/assistant_ash_test_base.cc",
@@ -2345,6 +2349,7 @@ static_library("test_support") {
     "//ash/app_list:test_support",
     "//ash/app_menu",
     "//ash/assistant/model:model",
+    "//ash/assistant/ui:ui",
     "//ash/components/fast_ink",
     "//ash/public/cpp",
     "//ash/public/cpp:test_support",

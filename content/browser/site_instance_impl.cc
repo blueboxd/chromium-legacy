@@ -33,17 +33,6 @@
 
 namespace content {
 
-namespace {
-
-// Returns true if CreateForURL() and related functions should be allowed to
-// return a default SiteInstance.
-bool ShouldAllowDefaultSiteInstance() {
-  return base::FeatureList::IsEnabled(
-      features::kProcessSharingWithDefaultSiteInstances);
-}
-
-}  // namespace
-
 int32_t SiteInstanceImpl::next_site_instance_id_ = 1;
 
 // static
@@ -103,7 +92,11 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
   // This will create a new SiteInstance and BrowsingInstance.
   scoped_refptr<BrowsingInstance> instance(
       new BrowsingInstance(browser_context));
-  return instance->GetSiteInstanceForURL(url, ShouldAllowDefaultSiteInstance());
+
+  // Note: The |allow_default_instance| value used here MUST match the value
+  // used in DoesSiteForURLMatch().
+  return instance->GetSiteInstanceForURL(url,
+                                         true /* allow_default_instance */);
 }
 
 // static
@@ -349,10 +342,8 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
 void SiteInstanceImpl::ConvertToDefaultOrSetSite(const GURL& url) {
   DCHECK(!has_site_);
 
-  if (ShouldAllowDefaultSiteInstance() &&
-      browsing_instance_->TrySettingDefaultSiteInstance(this, url)) {
+  if (browsing_instance_->TrySettingDefaultSiteInstance(this, url))
     return;
-  }
 
   SetSite(url);
 }
@@ -645,7 +636,7 @@ bool SiteInstanceImpl::DoesSiteForURLMatch(const GURL& url) {
   // used in CreateForURL().
   return site_ == GetSiteForURLInternal(GetIsolationContext(), url,
                                         true /* should_use_effective_urls */,
-                                        ShouldAllowDefaultSiteInstance());
+                                        true /* allow_default_site_url */);
 }
 
 // static
@@ -813,6 +804,12 @@ bool SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(
     const GURL& url,
     const GURL& site_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!base::FeatureList::IsEnabled(
+          features::kProcessSharingWithDefaultSiteInstances)) {
+    return false;
+  }
+
   // Exclude "chrome-guest:" URLs from the default SiteInstance to ensure that
   // guest specific process selection, process swapping, and storage partition
   // behavior is preserved.

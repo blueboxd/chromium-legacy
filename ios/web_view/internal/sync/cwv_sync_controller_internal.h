@@ -19,7 +19,11 @@ class SyncService;
 
 namespace signin {
 class IdentityManager;
-}
+}  // namespace signin
+
+namespace password_manager {
+class PasswordStore;
+}  // password_manager
 
 class SigninErrorController;
 
@@ -31,6 +35,7 @@ class SigninErrorController;
           identityManager:(signin::IdentityManager*)identityManager
     signinErrorController:(SigninErrorController*)signinErrorController
       personalDataManager:(autofill::PersonalDataManager*)personalDataManager
+            passwordStore:(password_manager::PasswordStore*)passwordStore
     NS_DESIGNATED_INITIALIZER;
 
 @end

@@ -2880,7 +2880,7 @@ TEST_F(DownloadProtectionServiceTest,
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                           base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
+    EXPECT_TRUE(IsResult(DownloadCheckResult::ASYNC_SCANNING));
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
   }
@@ -2929,7 +2929,7 @@ TEST_F(DownloadProtectionServiceTest, LargeFileBlockedByPreference) {
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                           base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
+    EXPECT_TRUE(IsResult(DownloadCheckResult::ASYNC_SCANNING));
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
   }

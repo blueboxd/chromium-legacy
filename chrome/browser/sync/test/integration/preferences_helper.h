@@ -130,8 +130,7 @@ class PrefMatchChecker : public StatusChangeChecker {
   ~PrefMatchChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override = 0;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override = 0;
 
  protected:
   const char* GetPath() const;
@@ -149,7 +148,7 @@ class ListPrefMatchChecker : public PrefMatchChecker {
   explicit ListPrefMatchChecker(const char* path);
 
   // PrefMatchChecker implementation.
-  bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 // Matcher that blocks until the specified boolean pref matches on all clients.
@@ -158,7 +157,7 @@ class BooleanPrefMatchChecker : public PrefMatchChecker {
   explicit BooleanPrefMatchChecker(const char* path);
 
   // PrefMatchChecker implementation.
-  bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 // Matcher that blocks until the specified integer pref matches on all clients.
@@ -167,7 +166,7 @@ class IntegerPrefMatchChecker : public PrefMatchChecker {
   explicit IntegerPrefMatchChecker(const char* path);
 
   // PrefMatchChecker implementation.
-  bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 // Matcher that blocks until the specified string pref matches on all clients.
@@ -176,7 +175,7 @@ class StringPrefMatchChecker : public PrefMatchChecker {
   explicit StringPrefMatchChecker(const char* path);
 
   // PrefMatchChecker implementation.
-  bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 // Matcher that blocks until the specified pref is cleared on all clients.
@@ -185,7 +184,7 @@ class ClearedPrefMatchChecker : public PrefMatchChecker {
   explicit ClearedPrefMatchChecker(const char* path);
 
   // PrefMatchChecker implementation.
-  bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_PREFERENCES_HELPER_H_

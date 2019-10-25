@@ -74,6 +74,13 @@ class MixerSocket : public SmallMessageSocket::Delegate {
   explicit MixerSocket(std::unique_ptr<net::StreamSocket> socket);
   ~MixerSocket() override;
 
+  // Used to create local (in-process) connections.
+  MixerSocket();
+  void SetLocalCounterpart(
+      base::WeakPtr<MixerSocket> local_counterpart,
+      scoped_refptr<base::SequencedTaskRunner> counterpart_task_runner);
+  base::WeakPtr<MixerSocket> GetWeakPtr();
+
   // Sets/changes the delegate. Must be called immediately after creation
   // (ie, synchronously on the same sequence).
   void SetDelegate(Delegate* delegate);
@@ -114,16 +121,6 @@ class MixerSocket : public SmallMessageSocket::Delegate {
   void ReceiveMoreMessages();
 
  private:
-  friend class Receiver;
-
-  // Used by Receiver to create in-process mixer connections.
-  MixerSocket();
-
-  void SetLocalCounterpart(
-      base::WeakPtr<MixerSocket> local_counterpart,
-      scoped_refptr<base::SequencedTaskRunner> counterpart_task_runner);
-  base::WeakPtr<MixerSocket> GetWeakPtr();
-
   void SendBuffer(scoped_refptr<net::IOBuffer> buffer, int buffer_size);
 
   // SmallMessageSocket::Delegate implementation:

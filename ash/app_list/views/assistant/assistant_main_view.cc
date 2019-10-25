@@ -11,6 +11,7 @@
 #include "ash/app_list/views/assistant/assistant_main_stage.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -31,6 +32,7 @@ constexpr base::TimeDelta kDialogPlateAnimationFadeInDuration =
 
 AssistantMainView::AssistantMainView(AssistantViewDelegate* delegate)
     : delegate_(delegate) {
+  SetID(AssistantViewID::kMainView);
   InitLayout();
 
   // The view hierarchy will be destructed before AssistantController in Shell,

@@ -30,6 +30,7 @@ extern const char kPriorityKey[];
 extern const char kRuleConditionKey[];
 extern const char kRuleActionKey[];
 extern const char kUrlFilterKey[];
+extern const char kRegexFilterKey[];
 extern const char kIsUrlFilterCaseSensitiveKey[];
 extern const char kDomainsKey[];
 extern const char kExcludedDomainsKey[];

@@ -10,26 +10,9 @@
 
 namespace app_list {
 
-using LaunchInfo = AppListLaunchRecorder::LaunchInfo;
-
-AppListLaunchRecorder::LaunchInfo::LaunchInfo(
-    metrics::ChromeOSAppListLaunchEventProto::LaunchType launch_type,
-    metrics::ChromeOSAppListLaunchEventProto::SearchProviderType
-        search_provider_type,
-    const std::string& target,
-    const std::string& query,
-    const std::string& domain,
-    const std::string& app)
-    : launch_type(launch_type),
-      search_provider_type(search_provider_type),
-      target(target),
-      query(query),
-      domain(domain),
-      app(app) {}
-
+AppListLaunchRecorder::LaunchInfo::LaunchInfo() = default;
 AppListLaunchRecorder::LaunchInfo::LaunchInfo(const LaunchInfo& other) =
     default;
-
 AppListLaunchRecorder::LaunchInfo::~LaunchInfo() = default;
 
 AppListLaunchRecorder* AppListLaunchRecorder::GetInstance() {
@@ -44,14 +27,6 @@ std::unique_ptr<AppListLaunchRecorder::LaunchEventSubscription>
 AppListLaunchRecorder::RegisterCallback(const LaunchEventCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return callback_list_.Add(callback);
-}
-
-// Notifies all observers of the given |launch_info|. If the
-// AppListMetricsProvider has been constructed, this will queue an
-// AppListLaunchEvent to be provided to the metrics service.
-void AppListLaunchRecorder::Record(const LaunchInfo& launch_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  callback_list_.Notify(launch_info);
 }
 
 }  // namespace app_list

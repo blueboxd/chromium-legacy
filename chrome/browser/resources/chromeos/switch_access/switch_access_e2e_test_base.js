@@ -83,6 +83,11 @@ SwitchAccessE2ETest.prototype = {
    *     the desktop node once the document is ready.
    */
   runWithLoadedTree: function(url, callback) {
+    const prefix = url.substring(0, 4);
+    if (prefix !== 'http' && prefix !== 'data') {
+      url = 'data:text/html;charset=utf-8,' + url;
+    }
+
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(desktopRootNode) {
       var createParams = {active: true, url: url};

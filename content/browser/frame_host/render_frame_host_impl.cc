@@ -5329,18 +5329,28 @@ void RenderFrameHostImpl::CommitNavigation(
     if (subresource_loader_params &&
         subresource_loader_params->pending_appcache_loader_factory.is_valid()) {
       // If the caller has supplied a factory for AppCache, use it.
-      auto pending_factory =
-          std::move(subresource_loader_params->pending_appcache_loader_factory);
+      mojo::Remote<network::mojom::URLLoaderFactory> appcache_remote(std::move(
+          subresource_loader_params->pending_appcache_loader_factory));
 
-#if defined(OS_ANDROID)
-      GetContentClient()
-          ->browser()
-          ->WillCreateURLLoaderFactoryForAppCacheSubresource(
-              GetProcess()->GetID(), &pending_factory);
-#endif
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          appcache_proxied_remote;
+      auto appcache_proxied_receiver =
+          appcache_proxied_remote.InitWithNewPipeAndPassReceiver();
+      bool use_proxy =
+          GetContentClient()->browser()->WillCreateURLLoaderFactory(
+              browser_context, this, GetProcess()->GetID(),
+              ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
+              GetOriginForURLLoaderFactory(navigation_request),
+              &appcache_proxied_receiver, nullptr /* header_client */,
+              nullptr /* bypass_redirect_checks */);
+      if (use_proxy) {
+        appcache_remote->Clone(std::move(appcache_proxied_receiver));
+        appcache_remote.reset();
+        appcache_remote.Bind(std::move(appcache_proxied_remote));
+      }
 
       subresource_loader_factories->pending_appcache_factory() =
-          std::move(pending_factory);
+          appcache_remote.Unbind();
 
       // Inject test intermediary if needed.
       if (!GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {

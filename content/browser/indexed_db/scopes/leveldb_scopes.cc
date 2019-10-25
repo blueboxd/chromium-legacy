@@ -43,6 +43,7 @@ LevelDBScopes::~LevelDBScopes() = default;
 leveldb::Status LevelDBScopes::Initialize() {
 #if DCHECK_IS_ON()
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(level_db_);
   DCHECK(!initialize_called_) << "Initialize() already called";
   initialize_called_ = true;
 #endif  // DCHECK_IS_ON()

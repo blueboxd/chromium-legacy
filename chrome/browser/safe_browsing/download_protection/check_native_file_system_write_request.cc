@@ -151,7 +151,7 @@ void CheckNativeFileSystemWriteRequest::MaybeStorePingsForDownload(
   // TODO(https://crbug.com/996797): Integrate with DownloadFeedbackService.
 }
 
-bool CheckNativeFileSystemWriteRequest::ShouldReturnAsynchronousVerdict(
+bool CheckNativeFileSystemWriteRequest::MaybeReturnAsynchronousVerdict(
     DownloadCheckResultReason reason) {
   return false;
 }

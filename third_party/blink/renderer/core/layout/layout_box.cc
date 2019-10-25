@@ -3247,7 +3247,9 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
   // their intrinsic widths.
   // FIXME: Think about writing-mode here.
   // https://bugs.webkit.org/show_bug.cgi?id=46473
-  if (Parent()->StyleRef().IsDeprecatedWebkitBox() &&
+  if ((Parent()->IsDeprecatedFlexibleBox() ||
+       (Parent()->StyleRef().IsDeprecatedWebkitBox() &&
+        Parent()->IsFlexibleBox())) &&
       (Parent()->StyleRef().BoxOrient() == EBoxOrient::kHorizontal ||
        Parent()->StyleRef().BoxAlign() != EBoxAlignment::kStretch))
     return true;

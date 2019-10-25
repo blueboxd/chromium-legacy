@@ -251,7 +251,7 @@ class NavigationManager {
 
   /** @private */
   init_() {
-    if (window.switchAccess.prefsAreReady()) {
+    if (SwitchAccess.get().prefsAreReady()) {
       this.onPrefsReady();
     }
 
@@ -354,6 +354,6 @@ class NavigationManager {
     this.node_ = node;
     this.node_.onFocus();
     this.focusRingManager_.setFocusNodes(this.node_, this.group_);
-    window.switchAccess.restartAutoScan();
+    SwitchAccess.get().restartAutoScan();
   }
 }

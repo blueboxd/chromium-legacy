@@ -16,7 +16,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chromecast/media/audio/mixer_service/loopback_connection.h"
+#include "chromecast/media/audio/mixer_service/mixer_socket.h"
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector.h"
+#include "chromecast/media/cma/backend/mixer/loopback_handler.h"
+#include "chromecast/media/cma/backend/mixer/loopback_test_support.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer/mock_mixer_source.h"
 #include "chromecast/media/cma/backend/mixer/mock_post_processor_factory.h"
@@ -232,7 +236,8 @@ void VerifyAndClearPostProcessors(MockPostProcessorFactory* factory) {
   }
 }
 
-class MockLoopbackAudioObserver : public CastMediaShlib::LoopbackAudioObserver {
+class MockLoopbackAudioObserver
+    : public mixer_service::LoopbackConnection::Delegate {
  public:
   MockLoopbackAudioObserver() = default;
   ~MockLoopbackAudioObserver() override = default;
@@ -240,7 +245,6 @@ class MockLoopbackAudioObserver : public CastMediaShlib::LoopbackAudioObserver {
   MOCK_METHOD6(OnLoopbackAudio,
                void(int64_t, SampleFormat, int, int, uint8_t*, int));
   MOCK_METHOD0(OnLoopbackInterrupted, void());
-  MOCK_METHOD0(OnRemoved, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoopbackAudioObserver);
@@ -450,6 +454,16 @@ class StreamMixerTest : public testing::Test {
           GetMixedAudioData(redirected_inputs, apply_volume);
     }
     CompareAudioData(*expected_redirected_output, *actual_redirected_output);
+  }
+
+  std::unique_ptr<mixer_service::LoopbackConnection> AddLoopbackObserver(
+      mixer_service::LoopbackConnection::Delegate* observer) {
+    std::unique_ptr<mixer_service::MixerSocket> loopback_socket =
+        CreateLoopbackConnectionForTest(mixer_->GetLoopbackHandlerForTest());
+    auto connection = std::make_unique<mixer_service::LoopbackConnection>(
+        observer, std::move(loopback_socket));
+    connection->Connect();
+    return connection;
   }
 
  protected:
@@ -1198,7 +1212,7 @@ TEST_F(StreamMixerTest, ObserverGets2ChannelsByDefault) {
   MockMixerSource input(kTestSamplesPerSecond);
   testing::StrictMock<MockLoopbackAudioObserver> observer;
   mixer_->AddInput(&input);
-  mixer_->AddLoopbackAudioObserver(&observer);
+  auto connection = AddLoopbackObserver(&observer);
   EXPECT_CALL(observer,
               OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond,
                               kNumChannels, _, _))
@@ -1207,10 +1221,7 @@ TEST_F(StreamMixerTest, ObserverGets2ChannelsByDefault) {
   WaitForMixer();
   PlaybackOnce();
 
-  EXPECT_CALL(observer, OnRemoved());
-  mixer_->RemoveLoopbackAudioObserver(&observer);
   WaitForMixer();
-
   mixer_.reset();
 }
 
@@ -1221,7 +1232,7 @@ TEST_F(StreamMixerTest, ObserverGets1ChannelIfNumOutputChannelsIs1) {
   MockMixerSource input(kTestSamplesPerSecond);
   testing::StrictMock<MockLoopbackAudioObserver> observer;
   mixer_->AddInput(&input);
-  mixer_->AddLoopbackAudioObserver(&observer);
+  auto connection = AddLoopbackObserver(&observer);
 
   EXPECT_CALL(observer,
               OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond,
@@ -1231,10 +1242,7 @@ TEST_F(StreamMixerTest, ObserverGets1ChannelIfNumOutputChannelsIs1) {
   WaitForMixer();
   PlaybackOnce();
 
-  EXPECT_CALL(observer, OnRemoved());
-  mixer_->RemoveLoopbackAudioObserver(&observer);
   WaitForMixer();
-
   mixer_.reset();
 }
 

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
@@ -24,7 +25,7 @@ namespace ash {
 
 // The window drag controller that will be used when a window is dragged up by
 // swiping up from the shelf to homescreen, overview or splitview.
-class DragWindowFromShelfController : public aura::WindowObserver {
+class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
  public:
   // The distance for the dragged window to pass over shelf so that it can be
   // dragged into home launcher or overview. If not pass this value, the window
@@ -60,6 +61,9 @@ class DragWindowFromShelfController : public aura::WindowObserver {
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
+
+  aura::Window* dragged_window() const { return window_; }
+  bool drag_started() const { return drag_started_; }
 
  private:
   class WindowsHider;
@@ -116,7 +120,7 @@ class DragWindowFromShelfController : public aura::WindowObserver {
   gfx::Point initial_location_in_screen_;
   gfx::Point previous_location_in_screen_;
   bool drag_started_ = false;
-  BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAuto;
+  BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAutoOpaque;
 
   // Hide all eligible windows during window dragging. Depends on different
   // scenarios, we may or may not reshow there windows when drag ends.

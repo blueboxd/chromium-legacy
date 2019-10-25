@@ -30,8 +30,7 @@ class MEDIA_GPU_EXPORT CopyingTexture2DWrapper : public Texture2DWrapper {
 
   bool Init(GetCommandBufferHelperCB get_helper_cb,
             size_t array_slice,
-            gfx::Size size,
-            int textures_per_picture) override;
+            gfx::Size size) override;
 
  private:
   std::unique_ptr<VideoProcessorProxy> video_processor_;

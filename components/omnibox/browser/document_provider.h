@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_provider_debouncer.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
@@ -125,6 +126,9 @@ class DocumentProvider : public AutocompleteProvider {
   // We avoid queries for these cases for quality and scaling reasons.
   static bool IsInputLikelyURL(const AutocompleteInput& input);
 
+  // Called by |debouncer_|, queued when |start| is called.
+  void Run();
+
   // Called when the network request for suggestions has completed.
   void OnURLLoadComplete(const network::SimpleURLLoader* source,
                          std::unique_ptr<std::string> response_body);
@@ -211,6 +215,8 @@ class DocumentProvider : public AutocompleteProvider {
   // affect which autocomplete results are displayed and their ranks.
   const size_t cache_size_;
   MatchesCache matches_cache_;
+
+  std::unique_ptr<AutocompleteProviderDebouncer> debouncer_;
 
   // For callbacks that may be run after destruction. Must be declared last.
   base::WeakPtrFactory<DocumentProvider> weak_ptr_factory_{this};

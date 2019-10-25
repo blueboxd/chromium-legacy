@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/profiler/frame.h"
+#include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 
@@ -26,10 +27,10 @@ class TargetThread : public PlatformThread::Delegate {
   // PlatformThread::Delegate:
   void ThreadMain() override;
 
-  PlatformThreadId id() const { return id_; }
+  SamplingProfilerThreadToken thread_token() const { return thread_token_; }
 
  private:
-  PlatformThreadId id_ = 0;
+  SamplingProfilerThreadToken thread_token_ = {0};
   OnceClosure to_run_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetThread);
@@ -91,7 +92,7 @@ class UnwindScenario {
 FunctionAddressRange CallWithPlainFunction(OnceClosure wait_for_sample);
 
 // The callback to perform profiling on the provided thread.
-using ProfileCallback = OnceCallback<void(PlatformThreadId)>;
+using ProfileCallback = OnceCallback<void(SamplingProfilerThreadToken)>;
 
 // Executes |profile_callback| while running |scenario| on the target
 // thread. Performs all necessary target thread startup and shutdown work before

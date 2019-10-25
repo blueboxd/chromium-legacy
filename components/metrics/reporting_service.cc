@@ -47,7 +47,9 @@ void ReportingService::Initialize() {
   log_store()->LoadPersistedUnsentLogs();
   base::Closure send_next_log_callback = base::Bind(
       &ReportingService::SendNextLog, self_ptr_factory_.GetWeakPtr());
-  upload_scheduler_.reset(new MetricsUploadScheduler(send_next_log_callback));
+  bool fast_startup_for_testing = client_->ShouldStartUpFastForTesting();
+  upload_scheduler_.reset(new MetricsUploadScheduler(send_next_log_callback,
+                                                     fast_startup_for_testing));
 }
 
 void ReportingService::Start() {

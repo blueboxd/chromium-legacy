@@ -193,17 +193,12 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // True if swiping from left edge to go to previous page is in progress.
   bool going_back_started_ = false;
 
-  // Tracks the y-axis drag amount through touch events. Used for back gesture
-  // affordance in tablet mode. The gesture movement of back gesture can't be
-  // recognized by GestureRecognizer, which leads to wrong gesture locations of
-  // back gesture. See crbug.com/1015464 for the details.
-  int y_drag_amount_ = 0;
-
-  // Tracks the x-axis drag amount through gesture events. Used for back gesture
-  // affordance in tablet mode. Note, gets the drag amount from gesture events
-  // instead of touch events, since the x location of the gestures is reliable
-  // during back gesture movements.
+  // Tracks the x-axis and y-axis drag amount through touch events. Used for
+  // back gesture affordance in tablet mode. The gesture movement of back
+  // gesture can't be recognized by GestureRecognizer, which leads to wrong
+  // gesture locations of back gesture. See crbug.com/1015464 for the details.
   int x_drag_amount_ = 0;
+  int y_drag_amount_ = 0;
 
   // Position of last touch event. Used to calculate |y_drag_amount_|. Note,
   // only touch events from |first_touch_id_| will be recorded.

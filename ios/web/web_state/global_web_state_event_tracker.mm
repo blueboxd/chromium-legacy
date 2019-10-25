@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/web_state/global_web_state_event_tracker.h"
+#import "ios/web/web_state/global_web_state_event_tracker.h"
 
 #include <stddef.h>
 
@@ -21,9 +21,7 @@ GlobalWebStateEventTracker* GlobalWebStateEventTracker::GetInstance() {
   return instance.get();
 }
 
-GlobalWebStateEventTracker::GlobalWebStateEventTracker()
-    : scoped_observer_(this) {}
-
+GlobalWebStateEventTracker::GlobalWebStateEventTracker() = default;
 GlobalWebStateEventTracker::~GlobalWebStateEventTracker() = default;
 
 void GlobalWebStateEventTracker::OnWebStateCreated(WebState* web_state) {

@@ -479,9 +479,14 @@ void DocumentProvider::Start(const AutocompleteInput& input,
   }
 
   done_ = false;  // Set true in callbacks.
+  debouncer_->RequestRun(
+      base::BindOnce(&DocumentProvider::Run, base::Unretained(this)));
+}
+
+void DocumentProvider::Run() {
   client_->GetDocumentSuggestionsService(/*create_if_necessary=*/true)
       ->CreateDocumentSuggestionsRequest(
-          input.text(), client_->IsOffTheRecord(),
+          input_.text(), client_->IsOffTheRecord(),
           base::BindOnce(
               &DocumentProvider::OnDocumentSuggestionsLoaderAvailable,
               weak_ptr_factory_.GetWeakPtr()),
@@ -493,6 +498,7 @@ void DocumentProvider::Start(const AutocompleteInput& input,
 void DocumentProvider::Stop(bool clear_cached_results,
                             bool due_to_user_inactivity) {
   TRACE_EVENT0("omnibox", "DocumentProvider::Stop");
+  debouncer_->CancelRequest();
   if (loader_)
     LogOmniboxDocumentRequest(DOCUMENT_REQUEST_INVALIDATED);
   loader_.reset();
@@ -579,7 +585,19 @@ DocumentProvider::DocumentProvider(AutocompleteProviderClient* client,
       client_(client),
       listener_(listener),
       cache_size_(cache_size),
-      matches_cache_(MatchesCache::NO_AUTO_EVICT) {}
+      matches_cache_(MatchesCache::NO_AUTO_EVICT) {
+  if (base::FeatureList::IsEnabled(omnibox::kDebounceDocumentProvider)) {
+    bool from_last_run = base::GetFieldTrialParamByFeatureAsBool(
+        omnibox::kDebounceDocumentProvider,
+        "DebounceDocumentProviderFromLastRun", true);
+    int delay_ms = base::GetFieldTrialParamByFeatureAsInt(
+        omnibox::kDebounceDocumentProvider, "DebounceDocumentProviderDelayMs",
+        100);
+    debouncer_ = std::make_unique<AutocompleteProviderDebouncer>(from_last_run,
+                                                                 delay_ms);
+  } else
+    debouncer_ = std::make_unique<AutocompleteProviderDebouncer>(false, 0);
+}
 
 DocumentProvider::~DocumentProvider() {}
 

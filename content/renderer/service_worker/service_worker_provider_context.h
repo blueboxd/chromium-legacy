@@ -57,13 +57,12 @@ FORWARD_DECLARE_TEST(ServiceWorkerProviderContextTest,
 }  // namespace service_worker_provider_context_unittest
 
 class WebServiceWorkerProviderImpl;
-class WebServiceWorkerRegistrationImpl;
 struct ServiceWorkerProviderContextDeleter;
 
 // ServiceWorkerProviderContext stores common state for "providers" for service
 // worker clients (currently WebServiceWorkerProviderImpl and
-// ServiceWorkerNetworkProviderFor{Frame,Worker}). Providers for the same
-// underlying entity hold strong references to a shared instance of this class.
+// ServiceWorkerNetworkProviderForFrame). Providers for the same underlying
+// entity hold strong references to a shared instance of this class.
 //
 // ServiceWorkerProviderContext is also a
 // blink::mojom::ServiceWorkerWorkerClientRegistry. If it's a provider for a
@@ -189,7 +188,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
                                           ServiceWorkerProviderContextDeleter>;
   friend class service_worker_provider_context_unittest::
       ServiceWorkerProviderContextTest;
-  friend class WebServiceWorkerRegistrationImpl;
   friend struct ServiceWorkerProviderContextDeleter;
   FRIEND_TEST_ALL_PREFIXES(service_worker_provider_context_unittest::
                                ServiceWorkerProviderContextTest,

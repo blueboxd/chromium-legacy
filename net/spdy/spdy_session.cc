@@ -100,9 +100,6 @@ const uint32_t kDefaultInitialEnablePush = 1;
 const uint32_t kDefaultInitialInitialWindowSize = 65535;
 const uint32_t kDefaultInitialMaxFrameSize = 16384;
 
-// The maximum size of header list that the server is allowed to send.
-const uint32_t kSpdyMaxHeaderListSize = 256 * 1024;
-
 // Values of Vary response header on pushed streams.  This is logged to
 // Net.PushedStreamVaryResponseHeader, entries must not be changed.
 enum PushedStreamVaryResponseHeaderValues {
@@ -1618,11 +1615,9 @@ void SpdySession::InitializeInternal(SpdySessionPool* pool) {
   session_send_window_size_ = kDefaultInitialWindowSize;
   session_recv_window_size_ = kDefaultInitialWindowSize;
 
-  auto it = initial_settings_.find(spdy::SETTINGS_MAX_HEADER_LIST_SIZE);
-  uint32_t spdy_max_header_list_size =
-      (it == initial_settings_.end()) ? kSpdyMaxHeaderListSize : it->second;
   buffered_spdy_framer_ = std::make_unique<BufferedSpdyFramer>(
-      spdy_max_header_list_size, net_log_, time_func_);
+      initial_settings_.find(spdy::SETTINGS_MAX_HEADER_LIST_SIZE)->second,
+      net_log_, time_func_);
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
   buffered_spdy_framer_->UpdateHeaderDecoderTableSize(max_header_table_size_);

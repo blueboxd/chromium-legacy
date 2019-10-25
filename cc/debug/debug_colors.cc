@@ -276,6 +276,17 @@ SkColor DebugColors::NonFastScrollableRectFillColor() {
   return SkColorSetARGB(30, 238, 163, 59);
 }
 
+// Main-thread scrolling reason rects in yellow-orange.
+SkColor DebugColors::MainThreadScrollingReasonRectBorderColor() {
+  return SkColorSetARGB(255, 200, 100, 0);
+}
+int DebugColors::MainThreadScrollingReasonRectBorderWidth() {
+  return 2;
+}
+SkColor DebugColors::MainThreadScrollingReasonRectFillColor() {
+  return SkColorSetARGB(30, 200, 100, 0);
+}
+
 // Animation bounds are lime-green.
 SkColor DebugColors::LayerAnimationBoundsBorderColor() {
   return SkColorSetARGB(255, 112, 229, 0);

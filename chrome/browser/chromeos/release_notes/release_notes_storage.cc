@@ -12,6 +12,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -43,6 +44,10 @@ ReleaseNotesStorage::ReleaseNotesStorage(Profile* profile)
 ReleaseNotesStorage::~ReleaseNotesStorage() = default;
 
 bool ReleaseNotesStorage::ShouldNotify() {
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kReleaseNotesNotification))
+    return false;
+
   // TODO: remove after fixing http://crbug.com/991767.
   const base::CommandLine* current_command_line =
       base::CommandLine::ForCurrentProcess();
@@ -77,6 +82,11 @@ void ReleaseNotesStorage::MarkNotificationShown() {
 }
 
 bool ReleaseNotesStorage::ShouldShowSuggestionChip() {
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kReleaseNotesNotification)) {
+    return false;
+  }
+
   const int times_left_to_show = profile_->GetPrefs()->GetInteger(
       prefs::kReleaseNotesSuggestionChipTimesLeftToShow);
   return times_left_to_show > 0;

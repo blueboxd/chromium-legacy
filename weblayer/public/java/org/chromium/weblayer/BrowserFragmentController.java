@@ -32,6 +32,7 @@ public final class BrowserFragmentController {
     // TODO(pshmakov): rename this to BrowserTabController.
     @NonNull
     public BrowserController getBrowserController() {
+        ThreadCheck.ensureOnUiThread();
         if (mController == null) {
             try {
                 mController = new BrowserController(mImpl.getBrowserController());
@@ -43,6 +44,7 @@ public final class BrowserFragmentController {
     }
 
     public void setTopView(@Nullable View view) {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.setTopView(ObjectWrapper.wrap(view));
         } catch (RemoteException e) {
@@ -61,6 +63,7 @@ public final class BrowserFragmentController {
      */
     @NonNull
     public ListenableResult<Boolean> setSupportsEmbedding(boolean enable) {
+        ThreadCheck.ensureOnUiThread();
         try {
             final ListenableResult<Boolean> listenableResult = new ListenableResult<Boolean>();
             mImpl.setSupportsEmbedding(
@@ -82,6 +85,7 @@ public final class BrowserFragmentController {
      */
     @NonNull
     public Profile getProfile() {
+        ThreadCheck.ensureOnUiThread();
         try {
             return mProfileManager.getProfileFor(mImpl.getProfile());
         } catch (RemoteException e) {

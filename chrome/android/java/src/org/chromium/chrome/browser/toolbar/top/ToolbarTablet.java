@@ -40,8 +40,8 @@ import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
@@ -366,7 +366,7 @@ public class ToolbarTablet extends ToolbarLayout
         if (mIsIncognito == null || mIsIncognito != incognito) {
             // TODO (amaralp): Have progress bar observe theme color and incognito changes directly.
             getProgressBar().setThemeColor(
-                    ColorUtils.getDefaultThemeColor(getResources(), incognito), isIncognito());
+                    ChromeColors.getDefaultThemeColor(getResources(), incognito), isIncognito());
 
             mIsIncognito = incognito;
         }

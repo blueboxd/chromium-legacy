@@ -153,7 +153,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
     // With NO_ASSETS, there should be further insets, but the same logic is
     // used to position the bubble origin according to |anchor_rect|.
     DCHECK((shadow_ != NO_ASSETS && shadow_ != NO_SHADOW) ||
-           shadow_insets.IsEmpty());
+           insets_.has_value() || shadow_insets.IsEmpty());
     if (!avoid_shadow_overlap_)
       contents_bounds.Inset(-shadow_insets);
     // |arrow_offset_| is used to adjust bubbles that would normally be
@@ -217,12 +217,12 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Insets BubbleBorder::GetInsets() const {
+  if (insets_.has_value())
+    return insets_.value();
   if (shadow_ == NO_ASSETS)
     return gfx::Insets();
   if (shadow_ == NO_SHADOW)
     return gfx::Insets(kBorderThicknessDip);
-  if (insets_.has_value())
-    return insets_.value();
   return GetBorderAndShadowInsets(md_shadow_elevation_);
 }
 

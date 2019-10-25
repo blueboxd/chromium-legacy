@@ -957,9 +957,8 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
       DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), params);
       break;
     case DrawQuad::Material::kSolidColor:
-      // TODO(michaelludwig) - Support solid color quads bypassing a renderpass
-      DCHECK(rpdq_params == nullptr);
-      DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), params);
+      DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), rpdq_params,
+                         params);
       break;
     case DrawQuad::Material::kStreamVideoContent:
       // TODO(michaelludwig) - Support video quads bypassing a renderpass
@@ -1276,7 +1275,7 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
 
 const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
   // TODO(michaelludwig) - For now, this only supports opaque, src-over
-  // TileDrawQuads with invertable transforms.
+  // TileDrawQuads and SolidColor quads with invertable transforms.
   // It will be updated to select more quad material types as their
   // corresponding DrawXQuad() functions are updated to accept DrawRPDQParams
   // as well.
@@ -1291,7 +1290,8 @@ const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
   const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
   // TODO(michaelludwig) - The set of supported material types can be expanded
   // by passing the DrawRPDQParams to the other DrawXQuad() functions.
-  if (quad->material != DrawQuad::Material::kTiledContent)
+  if (quad->material != DrawQuad::Material::kTiledContent &&
+      quad->material != DrawQuad::Material::kSolidColor)
     return nullptr;
 
   // In order to concatenate the bypass'ed quads transform with RP itself, it
@@ -1690,8 +1690,9 @@ void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad,
 }
 
 void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
+                                      const DrawRPDQParams* rpdq_params,
                                       DrawQuadParams* params) {
-  DrawColoredQuad(quad->color, nullptr, params);
+  DrawColoredQuad(quad->color, rpdq_params, params);
 }
 
 void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,

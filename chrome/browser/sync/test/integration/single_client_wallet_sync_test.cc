@@ -112,7 +112,8 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
     scoped_observer_.Add(service);
   }
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for an updated Wallet progress marker.";
     // GetLastCycleSnapshot() returns by value, so make sure to capture it for
     // iterator use.
     const syncer::SyncCycleSnapshot snap =
@@ -124,10 +125,6 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
       return false;
     }
     return marker_it->second != initial_marker_;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for an updated Wallet progress marker.";
   }
 
   // syncer::SyncServiceObserver implementation.

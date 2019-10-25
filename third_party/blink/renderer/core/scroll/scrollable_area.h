@@ -462,6 +462,11 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                                 ScrollGranularity granularity,
                                 WebInputEvent::Type gesture_type) const;
 
+  // If the layout box is a global root scroller then the root frame view's
+  // ScrollableArea is returned. Otherwise, the layout box's
+  // PaintLayerScrollableArea (which can be null) is returned.
+  static ScrollableArea* GetForScrolling(const LayoutBox* layout_box);
+
  protected:
   // Deduces the ScrollBehavior based on the element style and the parameter set
   // by programmatic scroll into either instant or smooth scroll.

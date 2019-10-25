@@ -45,6 +45,8 @@ class FlatRulesetIndexer {
  private:
   using UrlPatternIndexBuilder = url_pattern_index::UrlPatternIndexBuilder;
 
+  flat::ActionType GetActionType(const IndexedRule& indexed_rule) const;
+  uint8_t GetRemoveHeadersMask(const IndexedRule& indexed_rule) const;
   std::vector<UrlPatternIndexBuilder*> GetBuilders(
       const IndexedRule& indexed_rule);
   std::vector<UrlPatternIndexBuilder*> GetRemoveHeaderBuilders(
@@ -57,6 +59,8 @@ class FlatRulesetIndexer {
   const std::vector<std::unique_ptr<UrlPatternIndexBuilder>> index_builders_;
 
   std::vector<flatbuffers::Offset<flat::UrlRuleMetadata>> metadata_;
+
+  std::vector<flatbuffers::Offset<flat::RegexRule>> regex_rules_;
 
   size_t indexed_rules_count_ = 0;  // Number of rules indexed till now.
   bool finished_ = false;           // Whether Finish() has been called.

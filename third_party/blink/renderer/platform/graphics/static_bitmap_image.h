@@ -15,12 +15,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-namespace WTF {
-
-class ArrayBufferContents;
-
-}  // namespace WTF
-
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -114,12 +108,16 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
       sk_sp<SkColorSpace>,
       SkColorType = kN32_SkColorType);
 
-  static bool ConvertToArrayBufferContents(
-      scoped_refptr<StaticBitmapImage> src_image,
-      WTF::ArrayBufferContents& dest_contents,
-      const IntRect&,
-      const CanvasColorParams&,
-      bool is_accelerated = false);
+  static size_t GetSizeInBytes(const IntRect& rect,
+                               const CanvasColorParams& color_params);
+
+  static bool MayHaveStrayArea(scoped_refptr<StaticBitmapImage> src_image,
+                               const IntRect& rect);
+
+  static bool CopyToByteArray(scoped_refptr<StaticBitmapImage> src_image,
+                              base::span<uint8_t> dst,
+                              const IntRect&,
+                              const CanvasColorParams&);
 
  protected:
   // Helper for sub-classes

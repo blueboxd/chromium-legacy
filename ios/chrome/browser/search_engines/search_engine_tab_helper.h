@@ -71,7 +71,7 @@ class SearchEngineTabHelper
                         const gfx::Image& image) override;
 
   // Manages observation relationship between |this| and WebFaviconDriver.
-  ScopedObserver<favicon::WebFaviconDriver, favicon::FaviconDriverObserver>
+  ScopedObserver<favicon::FaviconDriver, favicon::FaviconDriverObserver>
       favicon_driver_observer_{this};
 
   // WebState this tab helper is attached to.

@@ -2740,7 +2740,7 @@ TEST_P(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
   std::unique_ptr<aura::Window> window(
       CreateWindowWithType(bounds, AppType::BROWSER));
   EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kAuto);
+            BackdropWindowMode::kAutoOpaque);
 
   std::unique_ptr<WindowResizer> resizer =
       StartDrag(window.get(), window.get());
@@ -2754,7 +2754,7 @@ TEST_P(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
 
   resizer->CompleteDrag();
   EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kAuto);
+            BackdropWindowMode::kAutoOpaque);
 }
 
 // Test that in tablet mode, the window that is in tab-dragging process should

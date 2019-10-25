@@ -2784,6 +2784,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushDisabled) {
   initial_settings[spdy::SETTINGS_ENABLE_PUSH] = 0;
   initial_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
+  initial_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
+      kSpdyMaxHeaderListSize;
   spdy::SpdySerializedFrame initial_settings_frame(
       spdy_util_.ConstructSpdySettings(initial_settings));
 
@@ -7149,6 +7151,8 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
       kSpdyMaxConcurrentPushedStreams;
   initial_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
       stream_max_recv_window_size;
+  initial_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
+      kSpdyMaxHeaderListSize;
   spdy::SpdySerializedFrame initial_settings_frame(
       spdy_util_.ConstructSpdySettings(initial_settings));
 

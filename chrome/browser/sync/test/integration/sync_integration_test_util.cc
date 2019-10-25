@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/test/integration/themes_helper.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -25,39 +24,29 @@ ServerCountMatchStatusChecker::ServerCountMatchStatusChecker(
     size_t count)
     : type_(type), count_(count) {}
 
-bool ServerCountMatchStatusChecker::IsExitConditionSatisfied() {
-  return count_ == fake_server()->GetSyncEntitiesByModelType(type_).size();
-}
-
-std::string ServerCountMatchStatusChecker::GetDebugMessage() const {
-  return base::StringPrintf(
-      "Waiting for fake server entity count %zu to match expected count %zu "
-      "for type %d",
-      (size_t)fake_server()->GetSyncEntitiesByModelType(type_).size(), count_,
-      type_);
+bool ServerCountMatchStatusChecker::IsExitConditionSatisfied(std::ostream* os) {
+  size_t actual_count = fake_server()->GetSyncEntitiesByModelType(type_).size();
+  *os << "Waiting for fake server entity count " << actual_count
+      << " to match expected count " << count_ << " for type "
+      << ModelTypeToString(type_);
+  return count_ == actual_count;
 }
 
 PassphraseRequiredChecker::PassphraseRequiredChecker(
     syncer::ProfileSyncService* service)
     : SingleClientStatusChangeChecker(service) {}
 
-bool PassphraseRequiredChecker::IsExitConditionSatisfied() {
+bool PassphraseRequiredChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Passhrase Required";
   return service()->GetUserSettings()->IsPassphraseRequired();
-}
-
-std::string PassphraseRequiredChecker::GetDebugMessage() const {
-  return "Passhrase Required";
 }
 
 PassphraseAcceptedChecker::PassphraseAcceptedChecker(
     syncer::ProfileSyncService* service)
     : SingleClientStatusChangeChecker(service) {}
 
-bool PassphraseAcceptedChecker::IsExitConditionSatisfied() {
+bool PassphraseAcceptedChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Passhrase Accepted";
   return !service()->GetUserSettings()->IsPassphraseRequired() &&
          service()->GetUserSettings()->IsUsingSecondaryPassphrase();
-}
-
-std::string PassphraseAcceptedChecker::GetDebugMessage() const {
-  return "Passhrase Accepted";
 }

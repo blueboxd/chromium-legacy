@@ -83,7 +83,6 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   void SetUp() override {
     GetTestClassFactory()->Reset();
     IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
-    indexed_db::LevelDBFactory::SetFactoryGetterForTesting(GetLevelDBFactory);
     ContentBrowserTest::SetUp();
   }
 
@@ -252,10 +251,6 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   }
 
   static IndexedDBClassFactory* GetIDBClassFactory() {
-    return GetTestClassFactory();
-  }
-
-  static indexed_db::LevelDBFactory* GetLevelDBFactory() {
     return GetTestClassFactory();
   }
 

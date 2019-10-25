@@ -700,5 +700,10 @@ luci.console_view(
             category = 'win|week1|asan',
             short_name = 'media',
         ),
+        luci.console_view_entry(
+            builder = 'ci/win10-code-coverage',
+            category = 'win|week1.1',
+            short_name = 'code',
+        ),
     ],
 )

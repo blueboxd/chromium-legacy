@@ -136,12 +136,12 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
 
         boolean wasInServiceManagerOnlyMode = isNativeLoadedInServiceManagerOnlyMode();
         mRunningInServiceManagerOnlyMode = supportsServiceManagerOnly();
-        recordMetrics();
 
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
                 PostTask.postTask(UiThreadTaskTraits.DEFAULT, startWithNativeRunnable);
+                recordMetrics();
             }
             @Override
             public boolean startServiceManagerOnly() {

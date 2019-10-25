@@ -511,6 +511,14 @@ jumbo_component("base") {
     deps += [ "//third_party/fontconfig" ]
   }
 
+  if (is_desktop_linux) {
+    sources += [
+      "cursor/cursor_theme_manager_linux.cc",
+      "cursor/cursor_theme_manager_linux.h",
+      "cursor/cursor_theme_manager_linux_observer.h",
+    ]
+  }
+
   if (use_glib) {
     configs += [ "//build/config/linux:glib" ]
     sources += [

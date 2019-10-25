@@ -7,6 +7,8 @@
 #ifndef THIRD_PARTY_ZLIB_GOOGLE_COMPRESSION_UTILS_PORTABLE_H_
 #define THIRD_PARTY_ZLIB_GOOGLE_COMPRESSION_UTILS_PORTABLE_H_
 
+#include <stdint.h>
+
 #if defined(USE_SYSTEM_ZLIB)
 #include <zlib.h>
 #else
@@ -16,6 +18,8 @@
 namespace zlib_internal {
 
 uLongf GZipExpectedCompressedSize(uLongf input_size);
+
+uint32_t GetUncompressedSize(Bytef* compressed_data, size_t length);
 
 int GzipCompressHelper(Bytef* dest,
                        uLongf* dest_length,
@@ -28,6 +32,7 @@ int GzipUncompressHelper(Bytef* dest,
                          uLongf* dest_length,
                          const Bytef* source,
                          uLong source_length);
+
 }  // namespace zlib_internal
 
 #endif  // THIRD_PARTY_ZLIB_GOOGLE_COMPRESSION_UTILS_PORTABLE_H_

@@ -17,7 +17,8 @@
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
@@ -90,9 +91,10 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
     int touch_events_in_last_hour = 0;
   };
 
-  IdleEventNotifier(PowerManagerClient* power_client,
-                    ui::UserActivityDetector* detector,
-                    viz::mojom::VideoDetectorObserverRequest request);
+  IdleEventNotifier(
+      PowerManagerClient* power_client,
+      ui::UserActivityDetector* detector,
+      mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver);
   ~IdleEventNotifier() override;
 
   // chromeos::PowerManagerClient::Observer overrides:
@@ -163,7 +165,7 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
 
   // Whether video is playing.
   bool video_playing_ = false;
-  mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
+  mojo::Receiver<viz::mojom::VideoDetectorObserver> receiver_;
 
   std::unique_ptr<RecentEventsCounter> key_counter_;
   std::unique_ptr<RecentEventsCounter> mouse_counter_;

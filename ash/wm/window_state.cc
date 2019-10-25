@@ -565,6 +565,7 @@ WindowState::WindowState(aura::Window* window)
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
+  UpdateWindowPropertiesFromStateType();
   OnPrePipStateChange(WindowStateType::kDefault);
 }
 

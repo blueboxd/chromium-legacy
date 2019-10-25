@@ -33,11 +33,11 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
-#include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/image/image_util.h"
+#include "url/url_constants.h"
 
 static std::ostream& operator<<(std::ostream& os,
                                 const AutocompleteResult::const_iterator& it) {
@@ -55,7 +55,8 @@ class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
 
   metrics::OmniboxInputType GetInputTypeForScheme(
       const std::string& scheme) const override {
-    return net::URLRequest::IsHandledProtocol(scheme)
+    DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
+    return (scheme == url::kHttpScheme || scheme == url::kHttpsScheme)
                ? metrics::OmniboxInputType::URL
                : metrics::OmniboxInputType::EMPTY;
   }

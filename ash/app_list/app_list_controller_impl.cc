@@ -592,9 +592,39 @@ void AppListControllerImpl::OnShellDestroying() {
   Shutdown();
 }
 
-void AppListControllerImpl::OnOverviewModeStarting() {
-  if (!IsTabletMode())
+void AppListControllerImpl::OnOverviewModeWillStart() {
+  if (IsTabletMode()) {
+    const int64_t display_id = last_visible_display_id_;
+    OnHomeLauncherTargetPositionChanged(false /* showing */, display_id);
+    OnVisibilityWillChange(false /* visible */, display_id);
+  } else {
     DismissAppList();
+  }
+}
+
+void AppListControllerImpl::OnOverviewModeStartingAnimationComplete(
+    bool canceled) {
+  if (!IsTabletMode())
+    return;
+  OnHomeLauncherAnimationComplete(false /* shown */, last_visible_display_id_);
+}
+
+void AppListControllerImpl::OnOverviewModeEnding(OverviewSession* session) {
+  if (!IsTabletMode())
+    return;
+  const int64_t display_id = last_visible_display_id_;
+  const bool app_list_visible = IsVisible();
+  OnHomeLauncherTargetPositionChanged(app_list_visible, display_id);
+  OnVisibilityWillChange(app_list_visible, display_id);
+}
+
+void AppListControllerImpl::OnOverviewModeEnded() {
+  if (!IsTabletMode())
+    return;
+  const int64_t display_id = last_visible_display_id_;
+  const bool app_list_visible = IsVisible();
+  OnHomeLauncherAnimationComplete(app_list_visible, display_id);
+  OnVisibilityChanged(app_list_visible, display_id);
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
@@ -736,15 +766,21 @@ void AppListControllerImpl::OnUiVisibilityChanged(
 void AppListControllerImpl::OnHomeLauncherAnimationComplete(
     bool shown,
     int64_t display_id) {
-  animation_or_drag_to_visible_home_launcher_in_progress_ = false;
+  home_launcher_animation_state_ = HomeLauncherAnimationState::kFinished;
   CloseAssistantUi(shown ? AssistantExitPoint::kLauncherOpen
                          : AssistantExitPoint::kLauncherClose);
+  // Animations can be reversed (e.g. in a drag). Let's ensure the target
+  // visibility is correct first.
+  OnVisibilityWillChange(shown, display_id);
+  OnVisibilityChanged(shown, display_id);
 }
 
 void AppListControllerImpl::OnHomeLauncherTargetPositionChanged(
     bool showing,
     int64_t display_id) {
-  animation_or_drag_to_visible_home_launcher_in_progress_ = showing;
+  home_launcher_animation_state_ = showing
+                                       ? HomeLauncherAnimationState::kShowing
+                                       : HomeLauncherAnimationState::kHiding;
   OnVisibilityWillChange(showing, display_id);
 }
 
@@ -1251,7 +1287,7 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
   // unless we are in the process of animating to (or dragging) the home
   // launcher.
   if (is_home_launcher &&
-      !animation_or_drag_to_visible_home_launcher_in_progress_) {
+      home_launcher_animation_state_ == HomeLauncherAnimationState::kFinished) {
     real_visibility &= !HasVisibleWindows();
   }
 
@@ -1294,7 +1330,7 @@ void AppListControllerImpl::OnVisibilityWillChange(bool visible,
   // unless we are in the process of animating to (or dragging) the home
   // launcher.
   if (is_home_launcher &&
-      !animation_or_drag_to_visible_home_launcher_in_progress_) {
+      home_launcher_animation_state_ == HomeLauncherAnimationState::kFinished) {
     real_target_visibility &= !HasVisibleWindows();
   }
 

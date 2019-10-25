@@ -2102,7 +2102,9 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
 
     // Report the amount of time it took to leave the underflow state.
     if (underflow_timer_) {
-      RecordUnderflowDuration(underflow_timer_->Elapsed());
+      auto elapsed = underflow_timer_->Elapsed();
+      RecordUnderflowDuration(elapsed);
+      watch_time_reporter_->OnUnderflowComplete(elapsed);
       underflow_timer_.reset();
     }
   } else {
@@ -3146,6 +3148,8 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
           !!chunk_demuxer_, is_encrypted_, embedded_media_experience_enabled_),
       pipeline_metadata_.natural_size,
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
+                          base::Unretained(this)),
+      base::BindRepeating(&WebMediaPlayerImpl::GetPipelineStatistics,
                           base::Unretained(this)),
       media_metrics_provider_.get(),
       frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));

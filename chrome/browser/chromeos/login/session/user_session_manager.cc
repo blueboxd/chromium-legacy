@@ -2453,7 +2453,16 @@ void UserSessionManager::MaybeShowU2FNotification() {
 }
 
 void UserSessionManager::MaybeShowReleaseNotesNotification(Profile* profile) {
-  return;
+  if (!base::FeatureList::IsEnabled(features::kReleaseNotes))
+    return;
+  if (!ProfileHelper::IsPrimaryProfile(profile))
+    return;
+  if (!release_notes_notification_) {
+    release_notes_notification_ =
+        std::make_unique<ReleaseNotesNotification>(profile);
+    if (chrome::GetChannel() == version_info::Channel::STABLE)
+      release_notes_notification_->MaybeShowReleaseNotes();
+  }
 }
 
 void UserSessionManager::CreateTokenUtilIfMissing() {

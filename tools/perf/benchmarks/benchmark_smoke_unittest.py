@@ -65,12 +65,6 @@ def SmokeTestGenerator(benchmark, num_pages=1):
         # values, and does not take histograms into account. An alternative
         # should be implemented when using the results processor.
         type(self).MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set)
-
-        # Only smoke test the first story since smoke testing everything takes
-        # too long.
-        for s in story_set.stories[num_pages:]:
-          story_set.RemoveStory(s)
-
         return story_set
 
     # Some benchmarks are running multiple iterations
@@ -83,6 +77,9 @@ def SmokeTestGenerator(benchmark, num_pages=1):
       options = options_for_unittests.GetRunOptions(
           output_dir=temp_dir,
           benchmark_cls=SinglePageBenchmark,
+          # Only smoke test num_pages since smoke testing everything takes
+          # too long.
+          overrides={'story_shard_end_index': num_pages},
           environment=chromium_config.GetDefaultChromiumConfig())
       options.pageset_repeat = 1  # For smoke testing only run the page once.
       single_page_benchmark = SinglePageBenchmark()

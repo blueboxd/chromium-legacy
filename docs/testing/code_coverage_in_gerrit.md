@@ -8,8 +8,17 @@ Chromium CLs can show a line-by-line breakdown of test coverage. **You can use
 it to ensure you only submit well-tested code**.
 
 To see code coverage for a Chromium CL, **trigger a CQ dry run**, and once the
-builds finish and code coverage data is processed successfully, **look
-at the right column of the side by side diff view to see coverage information**:
+builds finish and code coverage data is processed successfully, **look at the
+change view to see absolute and incremental code coverage percentages**:
+
+![code_coverage_percentages]
+
+Absolute coverage percentage is the percentage of lines covered by tests
+out of **all the lines** in the file, while incremental coverage percentage only
+accounts for **newly added or modified lines**.
+
+To further dig into specific lines that are not covered by tests, **look at the
+right column of the side by side diff view**:
 
 ![code_coverage_annotations]
 
@@ -51,6 +60,7 @@ in Gerrit.
 [choose_tryjobs]: images/code_coverage_choose_tryjobs.png
 [linux_coverage_rel]: images/code_coverage_linux_coverage_rel.png
 [code_coverage_annotations]: images/code_coverage_annotations.png
+[code_coverage_percentages]: images/code_coverage_percentages.png
 [file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Infra%3ETest%3ECodeCoverage
 [code-coverage group]: https://groups.google.com/a/chromium.org/forum/#!forum/code-coverage
 [code_coverage.md]: code_coverage.md

@@ -57,6 +57,8 @@ constexpr const char kKernel[] = "vmlinux";
 constexpr const char kRootFs[] = "system.raw.img";
 constexpr const char kVendorImage[] = "vendor.raw.img";
 
+constexpr int64_t kInvalidCid = -1;
+
 // A move-only class to hold status of the host file system.
 class FileSystemStatus {
  public:
@@ -357,7 +359,14 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       const vm_tools::concierge::VmStoppedSignal& signal) override {
     if (signal.name() != kArcVmName)
       return;
-    VLOG(1) << "OnVmStopped: ARCVM";
+    const int64_t cid = signal.cid();
+    if (cid != current_cid_) {
+      VLOG(1) << "Ignoring VmStopped signal: current CID=" << current_cid_
+              << ", stopped CID=" << cid;
+      return;
+    }
+    VLOG(1) << "OnVmStopped: ARCVM cid=" << cid;
+    current_cid_ = kInvalidCid;
     OnArcInstanceStopped();
   }
 
@@ -568,7 +577,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       std::move(callback).Run(false);
       return;
     }
-    VLOG(1) << "arcvm started.";
+    current_cid_ = response.vm_info().cid();
+
+    VLOG(1) << "ARCVM started cid=" << current_cid_;
     std::move(callback).Run(true);
   }
 
@@ -616,6 +627,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   StartParams start_params_;
   bool should_notify_observers_ = false;
+  int64_t current_cid_ = kInvalidCid;
 
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_{this};

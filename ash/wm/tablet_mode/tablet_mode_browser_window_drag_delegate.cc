@@ -221,7 +221,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
 
   // The original backdrop mode of the source window. Should be disabled during
   // dragging.
-  BackdropWindowMode source_window_backdrop_ = BackdropWindowMode::kAuto;
+  BackdropWindowMode source_window_backdrop_ = BackdropWindowMode::kAutoOpaque;
 
   DISALLOW_COPY_AND_ASSIGN(WindowsHider);
 };

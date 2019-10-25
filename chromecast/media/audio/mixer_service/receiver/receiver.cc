@@ -141,8 +141,8 @@ Receiver::~Receiver() {
 }
 
 std::unique_ptr<MixerSocket> Receiver::LocalConnect() {
-  std::unique_ptr<MixerSocket> receiver_socket(new MixerSocket);
-  std::unique_ptr<MixerSocket> caller_socket(new MixerSocket);
+  auto receiver_socket = std::make_unique<MixerSocket>();
+  auto caller_socket = std::make_unique<MixerSocket>();
 
   receiver_socket->SetLocalCounterpart(caller_socket->GetWeakPtr(),
                                        base::SequencedTaskRunnerHandle::Get());

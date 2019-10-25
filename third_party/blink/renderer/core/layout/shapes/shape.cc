@@ -262,8 +262,21 @@ static bool ExtractImageData(Image* image,
               kDoNotRespectImageOrientation,
               Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
 
-  return StaticBitmapImage::ConvertToArrayBufferContents(
-      StaticBitmapImage::Create(surface->makeImageSnapshot()), contents,
+  size_t size_in_bytes =
+      StaticBitmapImage::GetSizeInBytes(image_dest_rect, color_params);
+  if (size_in_bytes > v8::TypedArray::kMaxLength)
+    return false;
+  WTF::ArrayBufferContents result(size_in_bytes, 1,
+                                  WTF::ArrayBufferContents::kNotShared,
+                                  WTF::ArrayBufferContents::kZeroInitialize);
+  if (result.DataLength() != size_in_bytes)
+    return false;
+  result.Transfer(contents);
+
+  return StaticBitmapImage::CopyToByteArray(
+      StaticBitmapImage::Create(surface->makeImageSnapshot()),
+      base::span<uint8_t>(reinterpret_cast<uint8_t*>(contents.Data()),
+                          contents.DataLength()),
       image_dest_rect, color_params);
 }
 

@@ -20,9 +20,9 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -162,10 +162,7 @@ class MockUsbDeviceClient : public mojom::UsbDeviceClient {
 
 class USBDeviceImplTest : public testing::Test {
  public:
-  USBDeviceImplTest()
-      : message_loop_(new base::MessageLoop),
-        is_device_open_(false),
-        allow_reset_(false) {}
+  USBDeviceImplTest() : is_device_open_(false), allow_reset_(false) {}
 
   ~USBDeviceImplTest() override = default;
 
@@ -430,7 +427,7 @@ class USBDeviceImplTest : public testing::Test {
     std::move(callback).Run(buffer, std::move(packets));
   }
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<MockUsbDevice> mock_device_;
   scoped_refptr<MockUsbDeviceHandle> mock_handle_;
   bool is_device_open_;

@@ -249,6 +249,14 @@ bool ShelfNavigationWidget::OnNativeWidgetActivationChanged(bool active) {
   return true;
 }
 
+void ShelfNavigationWidget::OnGestureEvent(ui::GestureEvent* event) {
+  if (shelf_->ProcessGestureEvent(*event)) {
+    event->StopPropagation();
+    return;
+  }
+  views::Widget::OnGestureEvent(event);
+}
+
 BackButton* ShelfNavigationWidget::GetBackButton() const {
   return delegate_->back_button();
 }

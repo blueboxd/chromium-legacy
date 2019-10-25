@@ -13,6 +13,7 @@
 
 namespace chromecast {
 namespace media {
+class LoopbackHandler;
 class StreamMixer;
 
 namespace mixer_service {
@@ -22,7 +23,7 @@ class MixerSocket;
 
 class MixerServiceReceiver : public mixer_service::Receiver {
  public:
-  explicit MixerServiceReceiver(StreamMixer* mixer);
+  MixerServiceReceiver(StreamMixer* mixer, LoopbackHandler* loopback_handler);
   ~MixerServiceReceiver() override;
 
   // Called by the mixer when the active stream count changes.
@@ -47,6 +48,7 @@ class MixerServiceReceiver : public mixer_service::Receiver {
   void RemoveControlConnection(ControlConnection* ptr);
 
   StreamMixer* const mixer_;
+  LoopbackHandler* const loopback_handler_;
 
   base::flat_map<ControlConnection*, std::unique_ptr<ControlConnection>>
       control_connections_;

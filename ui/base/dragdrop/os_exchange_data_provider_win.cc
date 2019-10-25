@@ -683,19 +683,19 @@ bool OSExchangeDataProviderWin::HasCustomFormat(
 }
 
 void OSExchangeDataProviderWin::SetDownloadFileInfo(
-    const OSExchangeData::DownloadFileInfo& download) {
+    OSExchangeData::DownloadFileInfo* download) {
   // If the filename is not provided, set storage to NULL to indicate that
   // the delay rendering will be used.
   // TODO(dcheng): Is it actually possible for filename to be empty here? I
   // think we always synthesize one in WebContentsDragWin.
   STGMEDIUM* storage = NULL;
-  if (!download.filename.empty())
-    GetStorageForFileNames({FileInfo(download.filename, base::FilePath())});
+  if (!download->filename.empty())
+    GetStorageForFileNames({FileInfo(download->filename, base::FilePath())});
 
   // Add CF_HDROP.
   auto info = std::make_unique<DataObjectImpl::StoredDataInfo>(
       ClipboardFormatType::GetCFHDropType().ToFormatEtc(), storage);
-  info->downloader = download.downloader;
+  info->downloader = std::move(download->downloader);
   data_->contents_.push_back(std::move(info));
 
   // Adding a download file always enables async mode.
@@ -857,14 +857,10 @@ DataObjectImpl::DataObjectImpl()
     : is_aborting_(false),
       in_drag_loop_(false),
       in_async_mode_(false),
-      async_operation_started_(false),
-      observer_(NULL) {
-}
+      async_operation_started_(false) {}
 
 DataObjectImpl::~DataObjectImpl() {
   StopDownloads();
-  if (observer_)
-    observer_->OnDataObjectDisposed();
 }
 
 void DataObjectImpl::StopDownloads() {
@@ -937,11 +933,6 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
 
       if (!wait_for_data)
         return DV_E_FORMATETC;
-
-      // Notify the observer we start waiting for the data. This gives
-      // an observer a chance to end the drag and drop.
-      if (observer_)
-        observer_->OnWaitForData();
 
       // Now we can start the download.
       if (content->downloader.get()) {

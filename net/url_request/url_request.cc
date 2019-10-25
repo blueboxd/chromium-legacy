@@ -442,21 +442,6 @@ void URLRequest::SetDefaultCookiePolicyToBlock() {
   g_default_can_use_cookies = false;
 }
 
-// static
-bool URLRequest::IsHandledProtocol(const std::string& scheme) {
-  return URLRequestJobManager::SupportsScheme(scheme);
-}
-
-// static
-bool URLRequest::IsHandledURL(const GURL& url) {
-  if (!url.is_valid()) {
-    // We handle error cases.
-    return true;
-  }
-
-  return IsHandledProtocol(url.scheme());
-}
-
 void URLRequest::set_site_for_cookies(const GURL& site_for_cookies) {
   DCHECK(!is_pending_);
   site_for_cookies_ = site_for_cookies;

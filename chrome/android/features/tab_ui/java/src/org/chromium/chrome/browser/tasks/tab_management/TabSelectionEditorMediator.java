@@ -137,8 +137,7 @@ class TabSelectionEditorMediator
                 boolean isIncognito = newModel.isIncognito();
                 @ColorInt
                 int primaryColor = ApiCompatibilityUtils.getColor(mContext.getResources(),
-                        isIncognito ? R.color.incognito_modern_primary_color
-                                    : R.color.modern_primary_color);
+                        isIncognito ? R.color.dark_primary_color : R.color.modern_primary_color);
                 // TODO(995876): Update color modern_blue_300 to active_color_dark when the
                 // associated bug is landed.
                 @ColorInt

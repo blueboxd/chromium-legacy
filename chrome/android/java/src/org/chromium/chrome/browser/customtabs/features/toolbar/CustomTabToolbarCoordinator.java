@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.util.TokenHolder;
 
@@ -194,8 +194,8 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
                 manager.setShouldUpdateToolbarPrimaryColor(true);
 
                 if (tab.isPreview()) {
-                    final int defaultColor = ColorUtils.getDefaultThemeColor(
-                            mActivity.getResources(), false);
+                    final int defaultColor =
+                            ChromeColors.getDefaultThemeColor(mActivity.getResources(), false);
                     manager.onThemeColorChanged(defaultColor, false);
                     mTriggeredPreviewChange = true;
                 } else if (mOriginalColor != manager.getPrimaryColor() && mTriggeredPreviewChange) {

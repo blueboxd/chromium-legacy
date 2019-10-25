@@ -45,8 +45,8 @@ template("chrome_common_shared_library") {
   generate_linker_version_script(_linker_script_target) {
     linker_script = _linker_script
     export_java_symbols = _export_java_symbols
+    export_feature_registrations = true
     if (_generate_partitions) {
-      export_feature_registrations = true
       export_symbol_whitelist_files = []
       foreach(_module_desc, invoker.module_descs) {
         if (defined(_module_desc.native_entrypoints)) {

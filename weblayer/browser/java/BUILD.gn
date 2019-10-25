@@ -42,6 +42,7 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//components/embedder_support/android:application_java",
+    "//components/embedder_support/android:web_contents_delegate_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//ui/android:ui_java",

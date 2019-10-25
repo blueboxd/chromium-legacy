@@ -40,6 +40,8 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
             .Callback2<Integer, MakeCredentialAuthenticatorResponse> mMakeCredentialCallback;
     private org.chromium.mojo.bindings.Callbacks
             .Callback2<Integer, GetAssertionAuthenticatorResponse> mGetAssertionCallback;
+    private org.chromium.mojo.bindings.Callbacks
+            .Callback1<Boolean> mIsUserVerifyingPlatformAuthenticatorAvailableCallback;
 
     /**
      * Builds the Authenticator service implementation.

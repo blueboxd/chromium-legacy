@@ -63,6 +63,8 @@ function conditionHolds(condition, error_message = 'Condition is not true anymor
   });
 }
 
+// TODO: Frames are animated every 1ms for testing. It may be better to have the
+// timeout based on time rather than frame count.
 function waitForAnimationEnd(getValue, max_frame, max_unchanged_frame) {
   const MAX_FRAME = max_frame;
   const MAX_UNCHANGED_FRAME = max_unchanged_frame;

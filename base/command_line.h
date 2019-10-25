@@ -34,13 +34,12 @@ class BASE_EXPORT CommandLine {
  public:
 #if defined(OS_WIN)
   // The native command line string type.
-  using StringType = string16;
-  using StringPieceType = base::StringPiece16;
+  using StringType = std::wstring;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   using StringType = std::string;
-  using StringPieceType = base::StringPiece;
 #endif
 
+  using StringPieceType = base::BasicStringPiece<StringType>;
   using CharType = StringType::value_type;
   using StringVector = std::vector<StringType>;
   using SwitchMap = std::map<std::string, StringType, std::less<>>;
@@ -104,7 +103,7 @@ class BASE_EXPORT CommandLine {
   static bool InitializedForCurrentProcess();
 
 #if defined(OS_WIN)
-  static CommandLine FromString(StringPiece16 command_line);
+  static CommandLine FromString(StringPieceType command_line);
 #endif
 
   // Initialize from an argv vector.
@@ -217,7 +216,7 @@ class BASE_EXPORT CommandLine {
 #if defined(OS_WIN)
   // Initialize by parsing the given command line string.
   // The program name is assumed to be the first item in the string.
-  void ParseFromString(StringPiece16 command_line);
+  void ParseFromString(StringPieceType command_line);
 #endif
 
  private:

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ios/chrome/browser/passwords/credential_manager_util.h"
+#include "components/password_manager/ios/credential_manager_util.h"
 #include "ios/chrome/browser/passwords/js_credential_manager.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 
@@ -58,7 +58,7 @@ void CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
   }
   int promise_id = static_cast<int>(promise_id_double);
 
-  if (!WebStateContentIsSecureHtml(web_state_)) {
+  if (!password_manager::WebStateContentIsSecureHtml(web_state_)) {
     RejectCredentialPromiseWithInvalidStateError(
         web_state_, promise_id,
         base::ASCIIToUTF16(
@@ -82,7 +82,7 @@ void CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
       return;
     }
     bool include_passwords;
-    if (!ParseIncludePasswords(json, &include_passwords)) {
+    if (!password_manager::ParseIncludePasswords(json, &include_passwords)) {
       RejectCredentialPromiseWithTypeError(
           web_state_, promise_id,
           base::ASCIIToUTF16(
@@ -90,7 +90,7 @@ void CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
       return;
     }
     std::vector<GURL> federations;
-    if (!ParseFederations(json, &federations)) {
+    if (!password_manager::ParseFederations(json, &federations)) {
       RejectCredentialPromiseWithTypeError(
           web_state_, promise_id,
           base::ASCIIToUTF16(

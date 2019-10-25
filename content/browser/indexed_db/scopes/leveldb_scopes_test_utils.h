@@ -20,10 +20,6 @@
 
 namespace content {
 
-namespace indexed_db {
-class LevelDBFactory;
-}
-
 class LevelDBScopesTestBase : public testing::Test {
  public:
   static constexpr const size_t kWriteBatchSizeForTesting = 1024;
@@ -37,6 +33,10 @@ class LevelDBScopesTestBase : public testing::Test {
   // deleted off disk.
   void TearDown() override;
 
+  // Ensures that |leveldb_| is destroyed correctly, but doesn't delete the
+  // database on disk.
+  void CloseScopesAndDestroyLevelDBState();
+
   // Initializes |leveldb_| to be a read database backed on disk.
   void SetUpRealDatabase();
 
@@ -45,8 +45,7 @@ class LevelDBScopesTestBase : public testing::Test {
   void SetUpBreakableDB(base::OnceCallback<void(leveldb::Status)>* callback);
 
   // Initializes |leveldb_| to be a flaky database that will
-  void SetUpFlakyDB(
-      std::queue<indexed_db::FakeLevelDBFactory::FlakePoint> flake_points);
+  void SetUpFlakyDB(std::queue<FakeLevelDBFactory::FlakePoint> flake_points);
 
   // Writes |metadata_buffer_| to disk.
   void WriteScopesMetadata(int64_t scope_number, bool ignore_cleanup_tasks);
@@ -93,6 +92,11 @@ class LevelDBScopesTestBase : public testing::Test {
   ScopesLockManager::ScopeLockRequest CreateSharedLock(int i);
   ScopesLockManager::ScopeLockRequest CreateExclusiveLock(int i);
 
+  const base::FilePath& DatabaseDirFilePath();
+
+ private:
+  void CreateAndSaveLevelDBState();
+
  protected:
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_;
   base::test::TaskEnvironment task_env_;
@@ -103,7 +107,7 @@ class LevelDBScopesTestBase : public testing::Test {
   const std::vector<uint8_t> metadata_prefix_ = {'a'};
   const std::vector<uint8_t> db_prefix_ = {'b'};
 
-  indexed_db::LevelDBFactory* leveldb_factory_ = nullptr;
+  std::unique_ptr<FakeLevelDBFactory> leveldb_factory_;
   scoped_refptr<LevelDBState> leveldb_;
   std::string large_string_;
   LevelDBScopesUndoTask undo_task_buffer_;

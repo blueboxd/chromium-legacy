@@ -31,12 +31,32 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
   void HandleLookupError() { rt_service_->HandleLookupError(); }
   void HandleLookupSuccess() { rt_service_->HandleLookupSuccess(); }
   bool IsInBackoffMode() { return rt_service_->IsInBackoffMode(); }
+  std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url) {
+    return rt_service_->FillRequestProto(url);
+  }
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<RealTimeUrlLookupService> rt_service_;
   content::BrowserTaskEnvironment task_environment_;
 };
+
+TEST_F(RealTimeUrlLookupServiceTest, TestFillRequestProto) {
+  struct SanitizeUrlCase {
+    const char* url;
+    const char* expected_url;
+  } sanitize_url_cases[] = {
+      {"http://example.com/", "http://example.com/"},
+      {"http://user:pass@example.com/", "http://example.com/"},
+      {"http://%123:bar@example.com/", "http://example.com/"},
+      {"http://example.com#123", "http://example.com/"}};
+  for (size_t i = 0; i < base::size(sanitize_url_cases); i++) {
+    GURL url(sanitize_url_cases[i].url);
+    auto result = FillRequestProto(url);
+    EXPECT_EQ(sanitize_url_cases[i].expected_url, result->url());
+    EXPECT_EQ(RTLookupRequest::NAVIGATION, result->lookup_type());
+  }
+}
 
 TEST_F(RealTimeUrlLookupServiceTest, TestBackoffAndTimerReset) {
   // Not in backoff at the beginning.

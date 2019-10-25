@@ -19,6 +19,7 @@
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -108,8 +109,9 @@ class ServiceInstance : public mojom::Connector,
   class InterfaceFilter;
   friend class InterfaceFilter;
 
-  void OnStartCompleted(mojom::ConnectorRequest connector_request,
-                        mojom::ServiceControlAssociatedRequest control_request);
+  void OnStartCompleted(
+      mojo::PendingReceiver<mojom::Connector> connector_receiver,
+      mojo::PendingAssociatedReceiver<mojom::ServiceControl> control_receiver);
   void OnConnectRequestAcknowledged();
   void MarkUnreachable();
   void MaybeNotifyPidAvailable();

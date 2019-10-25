@@ -38,7 +38,8 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
         condition_satisfied_callback_(std::move(condition_satisfied_callback)) {
   }
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting until sync is disabled";
     bool satisfied = !service()->IsSetupInProgress() &&
                      !service()->GetUserSettings()->IsFirstSetupComplete();
     if (satisfied && condition_satisfied_callback_) {
@@ -46,8 +47,6 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
     }
     return satisfied;
   }
-
-  std::string GetDebugMessage() const override { return "Sync Disabled"; }
 
  private:
   base::OnceClosure condition_satisfied_callback_;
@@ -59,10 +58,10 @@ class SyncEngineStoppedChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sync to stop";
     return !service()->IsEngineInitialized();
   }
-  std::string GetDebugMessage() const override { return "Sync stopped"; }
 };
 
 class TypeDisabledChecker : public SingleClientStatusChangeChecker {
@@ -72,10 +71,11 @@ class TypeDisabledChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service), type_(type) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for type " << syncer::ModelTypeToString(type_)
+        << " to become disabled";
     return !service()->GetActiveDataTypes().Has(type_);
   }
-  std::string GetDebugMessage() const override { return "Type disabled"; }
 
  private:
   syncer::ModelType type_;
@@ -100,15 +100,12 @@ class ActionableErrorChecker : public SingleClientStatusChangeChecker {
 
   // Checks if an actionable error has been hit. Called repeatedly each time PSS
   // notifies observers of a state change.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting until sync hits an actionable error";
     syncer::SyncStatus status;
     service()->QueryDetailedSyncStatusForDebugging(&status);
     return (status.sync_protocol_error.action != syncer::UNKNOWN_ACTION &&
             service()->HasUnrecoverableError());
-  }
-
-  std::string GetDebugMessage() const override {
-    return "ActionableErrorChecker";
   }
 
  private:

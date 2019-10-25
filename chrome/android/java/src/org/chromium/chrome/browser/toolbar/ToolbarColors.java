@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
 
 /**
@@ -50,7 +51,7 @@ public class ToolbarColors {
 
         // NTP should have no visible text box in the toolbar, so just return the NTP
         // background color.
-        if (isLocationBarShownInNtp) return ColorUtils.getPrimaryBackgroundColor(res, false);
+        if (isLocationBarShownInNtp) return ChromeColors.getPrimaryBackgroundColor(res, false);
 
         // Text box color on default toolbar background in standard mode is a pre-defined
         // color instead of a calculated color.
@@ -104,7 +105,7 @@ public class ToolbarColors {
      */
     public static boolean isUsingDefaultToolbarColor(
             Resources resources, boolean isIncognito, int color) {
-        return color == ColorUtils.getDefaultThemeColor(resources, isIncognito);
+        return color == ChromeColors.getDefaultThemeColor(resources, isIncognito);
     }
 
     /**

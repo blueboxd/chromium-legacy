@@ -15,7 +15,7 @@
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
@@ -24,6 +24,9 @@ namespace content {
 class IndexedDBConnection;
 class IndexedDBMetadataCoding;
 class LevelDBDirectTransaction;
+class LevelDBScope;
+class LevelDBScopes;
+class LevelDBSnapshot;
 class TransactionalLevelDBTransaction;
 class TransactionalLevelDBDatabase;
 
@@ -46,10 +49,12 @@ enum FailMethod {
 
 class MockBrowserTestIndexedDBClassFactory
     : public IndexedDBClassFactory,
-      public indexed_db::DefaultLevelDBFactory {
+      public DefaultTransactionalLevelDBFactory {
  public:
   MockBrowserTestIndexedDBClassFactory();
   ~MockBrowserTestIndexedDBClassFactory() override;
+
+  TransactionalLevelDBFactory& transactional_leveldb_factory() override;
 
   std::pair<std::unique_ptr<IndexedDBDatabase>, leveldb::Status>
   CreateIndexedDBDatabase(

@@ -218,6 +218,12 @@ void AwMetricsServiceClient::SetHaveMetricsConsent(bool user_consent,
   MaybeStartMetrics();
 }
 
+void AwMetricsServiceClient::SetFastStartupForTesting(
+    bool fast_startup_for_testing) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  fast_startup_for_testing_ = fast_startup_for_testing;
+}
+
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
 AwMetricsServiceClient::CreateLowEntropyProvider() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -303,6 +309,11 @@ base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {
   return metrics::GetUploadInterval(false /* use_cellular_upload_interval */);
 }
 
+bool AwMetricsServiceClient::ShouldStartUpFastForTesting() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return fast_startup_for_testing_;
+}
+
 std::string AwMetricsServiceClient::GetAppPackageName() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_app_name =
@@ -323,6 +334,14 @@ void JNI_AwMetricsServiceClient_SetHaveMetricsConsent(JNIEnv* env,
                                                       jboolean app_consent) {
   AwMetricsServiceClient::GetInstance()->SetHaveMetricsConsent(user_consent,
                                                                app_consent);
+}
+
+// static
+void JNI_AwMetricsServiceClient_SetFastStartupForTesting(
+    JNIEnv* env,
+    jboolean fast_startup_for_testing) {
+  AwMetricsServiceClient::GetInstance()->SetFastStartupForTesting(
+      fast_startup_for_testing);
 }
 
 }  // namespace android_webview

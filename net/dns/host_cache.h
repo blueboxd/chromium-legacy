@@ -50,9 +50,6 @@ class NET_EXPORT HostCache {
         DnsQueryType dns_query_type,
         HostResolverFlags host_resolver_flags,
         HostResolverSource host_resolver_source);
-    Key(const std::string& hostname,
-        AddressFamily address_family,
-        HostResolverFlags host_resolver_flags);
     Key();
 
     // This is a helper used in comparing keys. The order of comparisons of
@@ -78,10 +75,10 @@ class NET_EXPORT HostCache {
     }
 
     std::string hostname;
-    DnsQueryType dns_query_type;
-    HostResolverFlags host_resolver_flags;
-    HostResolverSource host_resolver_source;
-    bool secure;
+    DnsQueryType dns_query_type = DnsQueryType::UNSPECIFIED;
+    HostResolverFlags host_resolver_flags = 0;
+    HostResolverSource host_resolver_source = HostResolverSource::ANY;
+    bool secure = false;
   };
 
   struct NET_EXPORT EntryStaleness {

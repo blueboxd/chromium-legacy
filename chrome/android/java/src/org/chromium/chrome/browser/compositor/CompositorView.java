@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.AndroidResourceType;
@@ -143,7 +143,7 @@ public class CompositorView
         // Cover the black surface before it has valid content.  Set this placeholder view to
         // visible, but don't yet make SurfaceView visible, in order to delay
         // surfaceCreate/surfaceChanged calls until the native library is loaded.
-        setBackgroundColor(ColorUtils.getPrimaryBackgroundColor(getResources(), false));
+        setBackgroundColor(ChromeColors.getPrimaryBackgroundColor(getResources(), false));
         super.setVisibility(View.VISIBLE);
 
         // Request the opaque surface.  We might need the translucent one, but

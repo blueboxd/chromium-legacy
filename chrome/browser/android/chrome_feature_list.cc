@@ -136,7 +136,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadNotificationBadge,
     &kDownloadProgressInfoBar,
     &kDownloadRename,
-    &kDownloadTabManagementModule,
     &kDrawVerticallyEdgeToEdge,
     &kEphemeralTab,
     &kEphemeralTabUsingBottomSheet,
@@ -416,9 +415,6 @@ const base::Feature kDownloadNotificationBadge{
 
 const base::Feature kDownloadRename{"DownloadRename",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kDownloadTabManagementModule{
-    "DownloadTabManagementModule", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEphemeralTab{"EphemeralTab",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

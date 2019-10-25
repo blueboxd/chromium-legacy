@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/profiler/native_unwinder_mac.h"
+#include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/suspendable_thread_delegate.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/threading/platform_thread.h"
@@ -35,7 +36,7 @@ class BASE_EXPORT SuspendableThreadDelegateMac
     mach_port_t thread_port_;
   };
 
-  SuspendableThreadDelegateMac(mach_port_t thread_port);
+  SuspendableThreadDelegateMac(SamplingProfilerThreadToken thread_token);
   ~SuspendableThreadDelegateMac() override;
 
   SuspendableThreadDelegateMac(const SuspendableThreadDelegateMac&) = delete;

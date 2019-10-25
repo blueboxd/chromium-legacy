@@ -21,7 +21,7 @@ def _CommonChecks(input_api, output_api):
           kwargs={},
           message=output_api.PresubmitError))
   if ('infra/config/generated/luci-milo.cfg' in input_api.LocalPaths() or
-      'infra/config/luci-milo-dev.cfg' in input_api.LocalPaths()):
+      'infra/config/generated/luci-milo-dev.cfg' in input_api.LocalPaths()):
     commands.append(
       input_api.Command(
         name='testing/buildbot config checks',

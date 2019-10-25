@@ -103,6 +103,7 @@ message StreamConfig {
   optional SampleFormat sample_format = 1;
   optional int32 sample_rate = 2;
   optional int32 num_channels = 3;
+  optional int32 data_size = 4;  // Expected size of audio data in bytes.
 }
 
 // Sent to indicate that the mixer should stream loopback audio data back over

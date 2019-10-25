@@ -31,8 +31,7 @@ class QuiesceStatusChangeChecker : public MultiClientStatusChangeChecker {
   ~QuiesceStatusChangeChecker() override;
 
   // Implementation of StatusChangeChecker.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
   class NestedUpdatedProgressMarkerChecker;

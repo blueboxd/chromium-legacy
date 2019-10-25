@@ -26,7 +26,6 @@ namespace ash {
 
 class HomeLauncherGestureHandlerObserver;
 class SwipeHomeToOverviewController;
-class DragWindowFromShelfController;
 
 // HomeLauncherGestureHandler makes modifications to a window's transform and
 // opacity when gesture drag events are received and forwarded to it.
@@ -45,13 +44,6 @@ class ASH_EXPORT HomeLauncherGestureHandler
     // Sliding up the MRU window to display launcher. If in overview mode,
     // slides up overview mode as well.
     kSlideUpToShow,
-    // Sliding up from the shelf to drag the MRU window (or one of the snapped
-    // window in splitview) around to enter either home launcher screen or to
-    // overview screen. If in overview mode, this mode is a no-op. Note: This
-    // mode is behind the feature flag kDragFromShelfToHomeOrOverview.
-    // TODO(crbug.com/997885): Remove this mode. The window dragging logic has
-    // been moved into shelf dragging.
-    kDragWindowToHomeOrOverview,
     // Sliding down the MRU window to hide launcher.
     kSlideDownToHide,
     // Sliding up from the shelf in home launcher screen to the overview screen.
@@ -154,10 +146,8 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
   // Sets up windows that will be used in dragging and animation. If |window| is
   // not null for kSlideDownToHide mode, it will be set as the window to run
-  // slide down animation. |window| is not used for kSlideUpToShow or
-  // kDragWindowToHomeOrOverview mode. |location_in_screen| is only used for
-  // kDragWindowToHomeOrOverview mode to find the eligible widnow to drag.
-  // Returns true if windows are successfully set up.
+  // slide down animation. |window| is not used for kSlideUpToShow mode. Returns
+  // true if windows are successfully set up.
   bool SetUpWindows(Mode mode,
                     aura::Window* window,
                     base::Optional<gfx::Point> location_in_screen);
@@ -217,10 +207,6 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
   // The display where the windows are being processed.
   display::Display display_;
-
-  // The window drag controller that will be used in kDragWindowToHomeOrOverview
-  // mode. Will not be created in other modes.
-  std::unique_ptr<DragWindowFromShelfController> window_drag_controller_;
 
   // The gesture controller that switches from home screen to overview when it
   // detects a swipe from the shelf area.

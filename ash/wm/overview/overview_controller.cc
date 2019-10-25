@@ -443,6 +443,9 @@ void OverviewController::ToggleOverview(
   } else {
     DCHECK(CanEnterOverview());
     TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview", this);
+    LOG(ERROR) << "Will start, overview session " << overview_session();
+    for (auto& observer : observers_)
+      observer.OnOverviewModeWillStart();
 
     // Clear any animations that may be running from last overview end.
     for (const auto& animation : delayed_animations_)
@@ -450,6 +453,9 @@ void OverviewController::ToggleOverview(
     if (!delayed_animations_.empty())
       OnEndingAnimationComplete(/*canceled=*/true);
     delayed_animations_.clear();
+
+    for (auto& observer : observers_)
+      observer.OnOverviewModeWillStart();
 
     // |should_focus_overview_| shall be true except when split view mode starts
     // on transition between clamshell mode and tablet mode, on transition

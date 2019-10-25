@@ -47,12 +47,9 @@ class MEDIA_GPU_EXPORT Texture2DWrapper {
 
   // |array_slice| Tells us which array index of the array-type Texture2D
   // we should be using - if it is not an array-type, |array_slice| is 0.
-  // |textures_per_picture| is the number of entries present in an array-type
-  // Texture2D. It is 1 otherwise.
   virtual bool Init(GetCommandBufferHelperCB get_helper_cb,
                     size_t array_slice,
-                    gfx::Size size,
-                    int textures_per_picture) = 0;
+                    gfx::Size size) = 0;
 
  private:
   ComD3D11Texture2D texture_;
@@ -67,8 +64,7 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
 
   bool Init(GetCommandBufferHelperCB get_helper_cb,
             size_t array_slice,
-            gfx::Size size,
-            int textures_per_picture) override;
+            gfx::Size size) override;
 
   bool ProcessTexture(const D3D11PictureBuffer* owner_pb,
                       MailboxHolderArray* mailbox_dest) override;

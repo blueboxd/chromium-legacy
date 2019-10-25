@@ -30,6 +30,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/browserservices/permissiondelegation/NotificationChannelPreserverTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/permissiondelegation/NotificationPermissionUpdaterTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/ClientAppDataRecorderTest.java",
+  "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TestVerifierDelegate.java",
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityDisclosureControllerTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityOpenTimeRecorderTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityVerifierTest.java",

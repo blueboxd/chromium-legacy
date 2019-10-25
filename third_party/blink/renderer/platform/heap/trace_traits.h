@@ -218,15 +218,20 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
   using Traits = typename Table::ValueTraits;
 
   static TraceDescriptor GetTraceDescriptor(void* self) {
-    return {self, TraceTrait<Backing>::Trace};
+    return {self, TraceTrait<Backing>::Trace<WTF::kNoWeakHandling>};
   }
 
-  template <typename VisitorDispatcher>
+  static TraceDescriptor GetWeakTraceDescriptor(void* self) {
+    return {self, TraceTrait<Backing>::Trace<WTF::kWeakHandling>};
+  }
+
+  template <WTF::WeakHandlingFlag WeakHandling = WTF::kNoWeakHandling,
+            typename VisitorDispatcher>
   static void Trace(VisitorDispatcher visitor, void* self) {
     if (WTF::IsTraceableInCollectionTrait<Traits>::value ||
         Traits::kWeakHandlingFlag == WTF::kWeakHandling) {
-      WTF::TraceInCollectionTrait<WTF::kNoWeakHandling, Backing, void>::Trace(
-          visitor, self);
+      WTF::TraceInCollectionTrait<WeakHandling, Backing, void>::Trace(visitor,
+                                                                      self);
     }
   }
 };
@@ -394,12 +399,12 @@ struct TraceInCollectionTrait<kNoWeakHandling,
   }
 };
 
-// This trace method is used only for on-stack HeapHashTables found in
-// conservative scanning. On-heap HeapHashTables are traced by HashTable::trace.
-template <typename Table>
-struct TraceInCollectionTrait<kNoWeakHandling,
-                              blink::HeapHashTableBacking<Table>,
-                              void> {
+// This trace method is for tracing a HashTableBacking either through regular
+// tracing (via the relevant TraceTraits) or when finding a HashTableBacking
+// through conservative stack scanning (which will treat all references in the
+// backing strongly).
+template <WTF::WeakHandlingFlag WeakHandling, typename Table>
+struct TraceHashTableBackingInCollectionTrait {
   using Value = typename Table::ValueType;
   using Traits = typename Table::ValueTraits;
 
@@ -418,11 +423,33 @@ struct TraceInCollectionTrait<kNoWeakHandling,
       if (!HashTableHelper<Value, typename Table::ExtractorType,
                            typename Table::KeyTraitsType>::
               IsEmptyOrDeletedBucket(array[i])) {
-        blink::TraceCollectionIfEnabled<kNoWeakHandling, Value, Traits>::Trace(
+        blink::TraceCollectionIfEnabled<WeakHandling, Value, Traits>::Trace(
             visitor, array[i]);
       }
     }
     return false;
+  }
+};
+
+template <typename Table>
+struct TraceInCollectionTrait<kNoWeakHandling,
+                              blink::HeapHashTableBacking<Table>,
+                              void> {
+  template <typename VisitorDispatcher>
+  static bool Trace(VisitorDispatcher visitor, void* self) {
+    return TraceHashTableBackingInCollectionTrait<kNoWeakHandling,
+                                                  Table>::Trace(visitor, self);
+  }
+};
+
+template <typename Table>
+struct TraceInCollectionTrait<kWeakHandling,
+                              blink::HeapHashTableBacking<Table>,
+                              void> {
+  template <typename VisitorDispatcher>
+  static bool Trace(VisitorDispatcher visitor, void* self) {
+    return TraceHashTableBackingInCollectionTrait<kWeakHandling, Table>::Trace(
+        visitor, self);
   }
 };
 

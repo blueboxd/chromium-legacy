@@ -51,6 +51,7 @@ struct IndexedRule {
   url_pattern_index::flat::AnchorType anchor_right =
       url_pattern_index::flat::AnchorType_NONE;
   std::string url_pattern;
+
   // Lower-cased and sorted as required by the url_pattern_index component.
   std::vector<std::string> domains;
   std::vector<std::string> excluded_domains;

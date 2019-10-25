@@ -3,4 +3,8 @@
 # found in the LICENSE file.
 
 # TODO(gayane): This should be a separate build target when circular dependencies are removed.
-share_java_sources = [ "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/QrCodeShareActivity.java" ]
+share_java_sources = [
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/QrCodeCoordinator.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/QrCodeDialog.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/QrCodeShareActivity.java",
+]

@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -60,7 +60,13 @@ enum FlagAccess { kGeneralAccessFlagsOnly, kOwnerAccessToFlags };
 // Stores and encapsulates the little state that about:flags has.
 class FlagsState {
  public:
-  FlagsState(const FeatureEntry* feature_entries, size_t num_feature_entries);
+  // The |exclude_predicate| parameter is a predicate used to prevent flags from
+  // actually applying, while retaining them in the list of feature entries.
+  // This is used to implement flag expiration.
+  FlagsState(
+      const FeatureEntry* feature_entries,
+      size_t num_feature_entries,
+      base::RepeatingCallback<bool(const FeatureEntry&)> exclude_predicate);
   ~FlagsState();
 
   // Reads the state from |flags_storage| and adds the command line flags
@@ -210,6 +216,13 @@ class FlagsState {
   const FeatureEntry* FindFeatureEntryByName(
       const std::string& internal_name) const;
 
+  // Returns whether there is a FeatureEntry named by |name| in
+  // |feature_entries_| that:
+  // a) Is supported on this |platform_mask|, and
+  // b) Is not excluded by |exclude_predicate_|, if it is set (i.e. for which
+  //    |exclude_predicate_| returns false).
+  bool IsSupportedFeature(const std::string& name, int platform_mask) const;
+
   const FeatureEntry* feature_entries_;
   size_t num_feature_entries_;
 
@@ -219,6 +232,11 @@ class FlagsState {
   // Map from switch name to a set of string, that keeps track which strings
   // were appended to existing (list value) switches.
   std::map<std::string, std::set<std::string>> appended_switches_;
+
+  // Used as a predicate to exclude FeatureEntries from applying to
+  // switches or base::Features; those for which this predicate returns true
+  // will not have any effect.
+  base::RepeatingCallback<bool(const FeatureEntry&)> exclude_predicate_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsState);
 };

@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "content/browser/indexed_db/leveldb/fake_leveldb_factory.h"
 #include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "content/browser/indexed_db/scopes/leveldb_scope.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes.h"
@@ -531,8 +532,7 @@ TEST_F(LevelDBScopeTest, EmptyRangeRevert) {
 
 TEST_F(LevelDBScopeTest, BrokenDBForInitialize) {
   leveldb::Status error = leveldb::Status::IOError("test");
-  leveldb_ =
-      indexed_db::FakeLevelDBFactory::GetBrokenLevelDB(error, base::FilePath());
+  leveldb_ = FakeLevelDBFactory::GetBrokenLevelDB(error, base::FilePath());
   DisjointRangeLockManager lock_manager(3);
 
   leveldb::Status failure_status = leveldb::Status::OK();

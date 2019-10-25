@@ -469,8 +469,9 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
     {
       base::ScopedBlockingCall scoped_blocking_call(
           FROM_HERE, base::BlockingType::MAY_BLOCK);
-      if (!AddFilesForFont(font.Get(), *windows_fonts_path, &path_set,
-                           &custom_font_path_set, &ttc_index)) {
+      hr = AddFilesForFont(font.Get(), *windows_fonts_path, &path_set,
+                           &custom_font_path_set, &ttc_index);
+      if (FAILED(hr)) {
         // It's possible to not be able to retrieve a font file for a font that
         // is in the system font collection, see https://crbug.com/922183. If we
         // were not able to retrieve a file for a registered font, we do not

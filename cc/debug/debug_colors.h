@@ -104,6 +104,10 @@ class CC_DEBUG_EXPORT DebugColors {
   static int NonFastScrollableRectBorderWidth();
   static SkColor NonFastScrollableRectFillColor();
 
+  static SkColor MainThreadScrollingReasonRectBorderColor();
+  static int MainThreadScrollingReasonRectBorderWidth();
+  static SkColor MainThreadScrollingReasonRectFillColor();
+
   static SkColor LayerAnimationBoundsBorderColor();
   static int LayerAnimationBoundsBorderWidth();
   static SkColor LayerAnimationBoundsFillColor();

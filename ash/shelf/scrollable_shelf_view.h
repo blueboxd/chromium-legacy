@@ -170,15 +170,14 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // ShelfButtonDelegate:
   void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
                                                         bool reverse) override;
+  void ButtonPressed(views::Button* sender,
+                     const ui::Event& event,
+                     views::InkDrop* ink_drop) override;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
-
-  void ButtonPressed(views::Button* sender,
-                     const ui::Event& event,
-                     views::InkDrop* ink_drop) override;
 
   // Overridden from ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;

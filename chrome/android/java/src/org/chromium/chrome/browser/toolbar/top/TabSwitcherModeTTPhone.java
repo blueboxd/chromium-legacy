@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.toolbar.IncognitoToggleTabLayout;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -300,7 +301,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
             // the tab switcher, which is the standard mode background. Note that horizontal tab
             // switcher is an exception, which uses the correspond background color for standard
             // and incognito mode.
-            int backgroundColor = ColorUtils.getPrimaryBackgroundColor(
+            int backgroundColor = ChromeColors.getPrimaryBackgroundColor(
                     getResources(), usingHorizontalTabSwitcher() && mIsIncognito);
             useLightIcons = ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor);
         } else {
@@ -332,7 +333,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         // TODO(huayinz): Split tab switcher background color from primary background color.
         if (DeviceClassManager.enableAccessibilityLayout()
                 || FeatureUtilities.isGridTabSwitcherEnabled()) {
-            return ColorUtils.getPrimaryBackgroundColor(getResources(), mIsIncognito);
+            return ChromeColors.getPrimaryBackgroundColor(getResources(), mIsIncognito);
         }
 
         return Color.TRANSPARENT;

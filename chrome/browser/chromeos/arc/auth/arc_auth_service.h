@@ -190,6 +190,9 @@ class ArcAuthService : public KeyedService,
   // Google accounts in ARC.
   void DispatchAccountsInArc(GetGoogleAccountsInArcCallback callback);
 
+  // Response for |mojom::GetMainAccountResolutionStatus|.
+  void OnMainAccountResolutionStatus(mojom::MainAccountResolutionStatus status);
+
   // Non-owning pointers.
   Profile* const profile_;
   signin::IdentityManager* const identity_manager_;

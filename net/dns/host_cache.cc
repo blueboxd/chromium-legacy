@@ -122,19 +122,9 @@ HostCache::Key::Key(const std::string& hostname,
     : hostname(hostname),
       dns_query_type(dns_query_type),
       host_resolver_flags(host_resolver_flags),
-      host_resolver_source(host_resolver_source),
-      secure(false) {}
+      host_resolver_source(host_resolver_source) {}
 
-HostCache::Key::Key(const std::string& hostname,
-                    AddressFamily address_family,
-                    HostResolverFlags host_resolver_flags)
-    : Key(hostname,
-          AddressFamilyToDnsQueryType(address_family),
-          host_resolver_flags,
-          HostResolverSource::ANY) {}
-
-HostCache::Key::Key()
-    : Key("", DnsQueryType::UNSPECIFIED, 0, HostResolverSource::ANY) {}
+HostCache::Key::Key() = default;
 
 HostCache::Entry::Entry(int error, Source source, base::TimeDelta ttl)
     : error_(error), source_(source), ttl_(ttl) {

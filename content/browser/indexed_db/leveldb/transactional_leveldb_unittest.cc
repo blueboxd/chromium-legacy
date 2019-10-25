@@ -21,10 +21,13 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -33,6 +36,7 @@
 namespace content {
 namespace leveldb_unittest {
 
+constexpr size_t kWriteBufferSize = 4 * 1024 * 1024;
 static const size_t kDefaultMaxOpenIteratorsPerDatabase = 50;
 
 class SimpleLDBComparator : public leveldb::Comparator {
@@ -51,21 +55,22 @@ class SimpleLDBComparator : public leveldb::Comparator {
   void FindShortSuccessor(std::string* key) const override {}
 };
 
-std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
-OpenLevelDB(base::FilePath file_name) {
-  return indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
-      file_name, SimpleLDBComparator::Get(), /* create_if_missing=*/true);
-}
-
-class TransactionalLevelDBDatabaseTest : public testing::Test {
+class TransactionalLevelDBDatabaseTest : public LevelDBScopesTestBase {
  public:
   TransactionalLevelDBDatabaseTest() = default;
   ~TransactionalLevelDBDatabaseTest() override = default;
 
-  leveldb::Status OpenLevelDBDatabase(scoped_refptr<LevelDBState> ldb_state) {
+  void TearDown() override {
+    // Delete the database first to free the internal LevelDBState reference.
+    transactional_leveldb_database_.reset();
+    LevelDBScopesTestBase::TearDown();
+  }
+
+  leveldb::Status OpenLevelDBDatabase() {
+    CHECK(leveldb_);
     lock_manager_ = std::make_unique<DisjointRangeLockManager>(1);
     std::unique_ptr<LevelDBScopes> scopes = std::make_unique<LevelDBScopes>(
-        std::vector<uint8_t>{'a'}, 1024ul, ldb_state, lock_manager_.get(),
+        std::vector<uint8_t>{'a'}, 1024ul, leveldb_, lock_manager_.get(),
         base::DoNothing());
     leveldb::Status status = scopes->Initialize();
     if (!status.ok())
@@ -74,75 +79,74 @@ class TransactionalLevelDBDatabaseTest : public testing::Test {
         LevelDBScopes::TaskRunnerMode::kUseCurrentSequence);
     if (!status.ok())
       return status;
-    leveldb_database_ =
-        indexed_db::LevelDBFactory::Get()->CreateLevelDBDatabase(
-            std::move(ldb_state), std::move(scopes), nullptr,
+    transactional_leveldb_database_ =
+        transactional_leveldb_factory_.CreateLevelDBDatabase(
+            leveldb_, std::move(scopes), nullptr,
             kDefaultMaxOpenIteratorsPerDatabase);
     return leveldb::Status::OK();
   }
 
-  base::test::TaskEnvironment task_env_;
+ protected:
+  DefaultTransactionalLevelDBFactory transactional_leveldb_factory_;
+  std::unique_ptr<TransactionalLevelDBDatabase> transactional_leveldb_database_;
   std::unique_ptr<DisjointRangeLockManager> lock_manager_;
-  std::unique_ptr<TransactionalLevelDBDatabase> leveldb_database_;
 };
 
 TEST_F(TransactionalLevelDBDatabaseTest, CorruptionTest) {
-  base::ScopedTempDir temp_directory;
-  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-
   const std::string key("key");
   const std::string value("value");
+
+  ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
+
   std::string put_value;
   std::string got_value;
   scoped_refptr<LevelDBState> ldb_state;
   leveldb::Status status;
-  std::tie(ldb_state, status, std::ignore) =
-      OpenLevelDB(temp_directory.GetPath());
+  std::tie(leveldb_, status, std::ignore) = leveldb_factory_->OpenLevelDBState(
+      temp_directory_.GetPath(), true, kWriteBufferSize);
   EXPECT_TRUE(status.ok());
 
-  status = OpenLevelDBDatabase(ldb_state);
+  status = OpenLevelDBDatabase();
   EXPECT_TRUE(status.ok());
-  EXPECT_TRUE(leveldb_database_);
+  EXPECT_TRUE(transactional_leveldb_database_);
   put_value = value;
-  status = leveldb_database_->Put(key, &put_value);
+  status = transactional_leveldb_database_->Put(key, &put_value);
   EXPECT_TRUE(status.ok());
-  leveldb_database_.reset();
-  ldb_state.reset();
+  transactional_leveldb_database_.reset();
+  CloseScopesAndDestroyLevelDBState();
 
-  std::tie(ldb_state, status, std::ignore) =
-      OpenLevelDB(temp_directory.GetPath());
+  std::tie(leveldb_, status, std::ignore) = leveldb_factory_->OpenLevelDBState(
+      temp_directory_.GetPath(), true, kWriteBufferSize);
   EXPECT_TRUE(status.ok());
 
-  OpenLevelDBDatabase(ldb_state);
+  status = OpenLevelDBDatabase();
   EXPECT_TRUE(status.ok());
   bool found = false;
-  status = leveldb_database_->Get(key, &got_value, &found);
+  status = transactional_leveldb_database_->Get(key, &got_value, &found);
   EXPECT_TRUE(status.ok());
   EXPECT_TRUE(found);
   EXPECT_EQ(value, got_value);
-  leveldb_database_.reset();
-  ldb_state.reset();
+  transactional_leveldb_database_.reset();
+  CloseScopesAndDestroyLevelDBState();
 
-  EXPECT_TRUE(
-      leveldb_chrome::CorruptClosedDBForTesting(temp_directory.GetPath()));
+  EXPECT_TRUE(leveldb_chrome::CorruptClosedDBForTesting(DatabaseDirFilePath()));
 
-  std::tie(ldb_state, status, std::ignore) =
-      OpenLevelDB(temp_directory.GetPath());
+  std::tie(leveldb_, status, std::ignore) = leveldb_factory_->OpenLevelDBState(
+      temp_directory_.GetPath(), true, kWriteBufferSize);
   EXPECT_FALSE(status.ok());
   EXPECT_TRUE(status.IsCorruption());
 
-  status = indexed_db::LevelDBFactory::Get()->DestroyLevelDB(
-      temp_directory.GetPath());
+  status = leveldb_factory_->DestroyLevelDB(DatabaseDirFilePath());
   EXPECT_TRUE(status.ok());
 
-  std::tie(ldb_state, status, std::ignore) =
-      OpenLevelDB(temp_directory.GetPath());
+  std::tie(leveldb_, status, std::ignore) = leveldb_factory_->OpenLevelDBState(
+      temp_directory_.GetPath(), true, kWriteBufferSize);
   EXPECT_TRUE(status.ok());
 
-  status = OpenLevelDBDatabase(ldb_state);
+  status = OpenLevelDBDatabase();
   EXPECT_TRUE(status.ok());
-  ASSERT_TRUE(leveldb_database_);
-  status = leveldb_database_->Get(key, &got_value, &found);
+  ASSERT_TRUE(transactional_leveldb_database_);
+  status = transactional_leveldb_database_->Get(key, &got_value, &found);
   EXPECT_TRUE(status.ok());
   EXPECT_FALSE(found);
 }
@@ -172,6 +176,7 @@ TEST(LevelDB, Locking) {
 }
 
 TEST_F(TransactionalLevelDBDatabaseTest, LastModified) {
+  SetUpRealDatabase();
   const std::string key("key");
   const std::string value("value");
   std::string put_value;
@@ -179,28 +184,22 @@ TEST_F(TransactionalLevelDBDatabaseTest, LastModified) {
   base::SimpleTestClock* clock_ptr = test_clock.get();
   clock_ptr->Advance(base::TimeDelta::FromHours(2));
 
-  leveldb::Status status;
-  scoped_refptr<LevelDBState> ldb_state;
-  std::tie(ldb_state, status, std::ignore) = OpenLevelDB(base::FilePath());
-  EXPECT_TRUE(status.ok());
-
-  status = OpenLevelDBDatabase(ldb_state);
-  EXPECT_TRUE(status.ok());
-  ASSERT_TRUE(leveldb_database_);
-  leveldb_database_->SetClockForTesting(std::move(test_clock));
+  leveldb::Status status = OpenLevelDBDatabase();
+  ASSERT_TRUE(status.ok());
+  transactional_leveldb_database_->SetClockForTesting(std::move(test_clock));
   // Calling |Put| sets time modified.
   put_value = value;
   base::Time now_time = clock_ptr->Now();
-  status = leveldb_database_->Put(key, &put_value);
+  status = transactional_leveldb_database_->Put(key, &put_value);
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(now_time, leveldb_database_->LastModified());
+  EXPECT_EQ(now_time, transactional_leveldb_database_->LastModified());
 
   // Calling |Remove| sets time modified.
   clock_ptr->Advance(base::TimeDelta::FromSeconds(200));
   now_time = clock_ptr->Now();
-  status = leveldb_database_->Remove(key);
+  status = transactional_leveldb_database_->Remove(key);
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(now_time, leveldb_database_->LastModified());
+  EXPECT_EQ(now_time, transactional_leveldb_database_->LastModified());
 
   // Calling |Write| sets time modified
   clock_ptr->Advance(base::TimeDelta::FromMinutes(15));
@@ -208,9 +207,9 @@ TEST_F(TransactionalLevelDBDatabaseTest, LastModified) {
   auto batch = LevelDBWriteBatch::Create();
   batch->Put(key, value);
   batch->Remove(key);
-  status = leveldb_database_->Write(batch.get());
+  status = transactional_leveldb_database_->Write(batch.get());
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(now_time, leveldb_database_->LastModified());
+  EXPECT_EQ(now_time, transactional_leveldb_database_->LastModified());
 }
 
 }  // namespace leveldb_unittest

@@ -7457,7 +7457,7 @@ the Bookmarks menu.">
           Cancel
         </message>
         <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to ask the user whether they would like their decision remembered.">
-          Always open these types of links in the associated app
+          Always open links of this type in the associated app
         </message>
       </if>
       <if expr="chromeos">

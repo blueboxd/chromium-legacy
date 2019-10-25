@@ -122,7 +122,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   void Start();
   void MaybeStartLoader(
       NavigationLoaderInterceptor* interceptor,
-      SingleRequestURLLoaderFactory::RequestHandler single_request_handler);
+      scoped_refptr<network::SharedURLLoaderFactory> single_request_factory);
   void LoadFromNetwork(bool reset_subresource_loader_params);
   void CommitCompleted(const network::URLLoaderCompletionStatus& status);
 

@@ -159,9 +159,6 @@ QUIC_FLAG(bool,
 // If true, enable QUIC version 47.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
 
-// If true, enable QUIC version 48.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_48_2, true)
-
 // If true, disable QUIC version 39.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, true)
 
@@ -410,4 +407,10 @@ QUIC_FLAG(bool,
 // its highest offset.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_decrease_in_final_offset,
+          false)
+
+// If true, connection will be closed if a stream receives stream frame or
+// RESET_STREAM frame with bad close offset.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_close_connection_on_wrong_offset,
           false)

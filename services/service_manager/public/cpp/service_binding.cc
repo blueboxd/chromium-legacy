@@ -145,7 +145,7 @@ void ServiceBinding::OnStart(const Identity& identity,
   if (!pending_connector_request_.is_pending())
     connector_ = Connector::Create(&pending_connector_request_);
   std::move(callback).Run(std::move(pending_connector_request_),
-                          mojo::MakeRequest(&service_control_));
+                          service_control_.BindNewEndpointAndPassReceiver());
 
   service_->OnStart();
 

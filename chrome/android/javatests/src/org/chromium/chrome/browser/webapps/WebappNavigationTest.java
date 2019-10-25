@@ -37,7 +37,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -451,7 +451,7 @@ public class WebappNavigationTest {
     }
 
     private long getDefaultPrimaryColor() {
-        return ColorUtils.getDefaultThemeColor(
+        return ChromeColors.getDefaultThemeColor(
                 mActivityTestRule.getActivity().getResources(), false);
     }
 

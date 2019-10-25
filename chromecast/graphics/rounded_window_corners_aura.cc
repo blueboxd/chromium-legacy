@@ -68,6 +68,7 @@ class RoundedWindowCornersAura : public RoundedWindowCorners {
   explicit RoundedWindowCornersAura(CastWindowManager* window_manager);
   ~RoundedWindowCornersAura() override;
 
+  void SetEnabled(bool enable) override;
   void SetColorInversion(bool enable) override;
 
  private:
@@ -108,11 +109,21 @@ RoundedWindowCornersAura::RoundedWindowCornersAura(
   window_manager->SetZOrder(widget_->GetNativeView(),
                             mojom::ZOrder::CORNERS_OVERLAY);
 
-  widget_->Show();
+  // Remain hidden until explicitly shown. Rounded corners are only needed for
+  // specific circumstances such as webviews.
+  widget_->Hide();
 }
 
 RoundedWindowCornersAura::~RoundedWindowCornersAura() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
+
+void RoundedWindowCornersAura::SetEnabled(bool enable) {
+  if (enable) {
+    widget_->Show();
+  } else {
+    widget_->Hide();
+  }
 }
 
 void RoundedWindowCornersAura::SetColorInversion(bool enable) {

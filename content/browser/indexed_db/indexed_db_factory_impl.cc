@@ -20,11 +20,13 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
@@ -39,7 +41,9 @@
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
+#include "content/browser/indexed_db/leveldb/leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
@@ -154,15 +158,12 @@ std::tuple<bool, leveldb::Status> AreSchemasKnown(
 
 IndexedDBFactoryImpl::IndexedDBFactoryImpl(
     IndexedDBContextImpl* context,
-    indexed_db::LevelDBFactory* leveldb_factory,
     IndexedDBClassFactory* indexed_db_class_factory,
     base::Clock* clock)
     : context_(context),
-      leveldb_factory_(leveldb_factory),
-      indexed_db_class_factory_(indexed_db_class_factory),
+      class_factory_(indexed_db_class_factory),
       clock_(clock) {
   DCHECK(context);
-  DCHECK(leveldb_factory);
   DCHECK(indexed_db_class_factory);
   DCHECK(clock);
 }
@@ -282,7 +283,7 @@ void IndexedDBFactoryImpl::Open(
     return;
   }
   std::unique_ptr<IndexedDBDatabase> database;
-  std::tie(database, s) = indexed_db_class_factory_->CreateIndexedDBDatabase(
+  std::tie(database, s) = class_factory_->CreateIndexedDBDatabase(
       name, factory->backing_store(), this,
       base::BindRepeating(&IndexedDBFactoryImpl::MaybeRunTasksForOrigin,
                           origin_state_destruction_weak_factory_.GetWeakPtr(),
@@ -372,7 +373,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   }
 
   std::unique_ptr<IndexedDBDatabase> database;
-  std::tie(database, s) = indexed_db_class_factory_->CreateIndexedDBDatabase(
+  std::tie(database, s) = class_factory_->CreateIndexedDBDatabase(
       name, factory->backing_store(), this,
       base::BindRepeating(&IndexedDBFactoryImpl::MaybeRunTasksForOrigin,
                           origin_state_destruction_weak_factory_.GetWeakPtr(),
@@ -464,7 +465,8 @@ void IndexedDBFactoryImpl::HandleBackingStoreCorruption(
   //       so our corruption info file will remain.
   const base::FilePath file_path =
       path_base.Append(indexed_db::GetLevelDBFileName(saved_origin));
-  leveldb::Status s = leveldb_factory_->DestroyLevelDB(file_path);
+  leveldb::Status s =
+      class_factory_->leveldb_factory().DestroyLevelDB(file_path);
   DLOG_IF(ERROR, !s.ok()) << "Unable to delete backing store: " << s.ToString();
   base::UmaHistogramEnumeration(
       "WebCore.IndexedDB.DestroyCorruptBackingStoreStatus",
@@ -759,9 +761,9 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
   auto origin_state = std::make_unique<IndexedDBOriginState>(
       origin,
       /*persist_for_incognito=*/is_incognito_and_in_memory, clock_,
-      leveldb_factory_, &earliest_sweep_, std::move(lock_manager),
-      std::move(run_tasks_callback), std::move(tear_down_callback),
-      std::move(backing_store));
+      &class_factory_->transactional_leveldb_factory(), &earliest_sweep_,
+      std::move(lock_manager), std::move(run_tasks_callback),
+      std::move(tear_down_callback), std::move(backing_store));
 
   it = factories_per_origin_.emplace(origin, std::move(origin_state)).first;
 
@@ -772,14 +774,14 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
 
 std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
     IndexedDBBackingStore::Mode backing_store_mode,
-    indexed_db::LevelDBFactory* leveldb_factory,
+    TransactionalLevelDBFactory* transactional_leveldb_factory,
     const url::Origin& origin,
     const base::FilePath& blob_path,
     std::unique_ptr<TransactionalLevelDBDatabase> db,
     base::SequencedTaskRunner* task_runner) {
   return std::make_unique<IndexedDBBackingStore>(
-      backing_store_mode, this, leveldb_factory, origin, blob_path,
-      std::move(db), task_runner);
+      backing_store_mode, this, transactional_leveldb_factory, origin,
+      blob_path, std::move(db), task_runner);
 }
 
 std::tuple<std::unique_ptr<IndexedDBBackingStore>,
@@ -826,7 +828,7 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
           {"IndexedDB (database was corrupt): ", corruption_message});
       // This is a special case where we want to make sure the database is
       // deleted, so we try to delete again.
-      status = leveldb_factory_->DestroyLevelDB(database_path);
+      status = class_factory_->leveldb_factory().DestroyLevelDB(database_path);
       base::UmaHistogramEnumeration(
           "WebCore.IndexedDB.DestroyCorruptBackingStoreStatus",
           leveldb_env::GetLevelDBStatusUMAValue(status),
@@ -838,26 +840,44 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
     }
   }
 
-  bool is_disk_full;
-  scoped_refptr<LevelDBState> state;
-
   // Open the leveldb database.
-  std::tie(state, status, is_disk_full) = leveldb_factory_->OpenLevelDBState(
-      database_path, indexed_db::GetDefaultLevelDBComparator(),
-      create_if_missing);
+  scoped_refptr<LevelDBState> database_state;
+  bool is_disk_full;
+  {
+    IDB_TRACE("IndexedDBFactoryImpl::OpenLevelDB");
+    base::TimeTicks begin_time = base::TimeTicks::Now();
+    size_t write_buffer_size = leveldb_env::WriteBufferSize(
+        base::SysInfo::AmountOfTotalDiskSpace(database_path));
+    std::tie(database_state, status, is_disk_full) =
+        class_factory_->leveldb_factory().OpenLevelDBState(
+            database_path, create_if_missing, write_buffer_size);
+    if (UNLIKELY(!status.ok())) {
+      if (!status.IsNotFound()) {
+        indexed_db::ReportLevelDBError("WebCore.IndexedDB.LevelDBOpenErrors",
+                                       status);
+      }
+      return {nullptr, status, IndexedDBDataLossInfo(), is_disk_full};
+    }
+    UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.IndexedDB.LevelDB.OpenTime",
+                               base::TimeTicks::Now() - begin_time);
+  }
 
-  if (UNLIKELY(!status.ok()))
-    return {nullptr, status, IndexedDBDataLossInfo(), is_disk_full};
-
+  // Create the LevelDBScopes wrapper.
   std::unique_ptr<LevelDBScopes> scopes;
-  std::tie(scopes, status) = scopes_factory->CreateAndInitializeLevelDBScopes(
-      std::move(scopes_options), state);
-  if (UNLIKELY(!status.ok()))
-    return {nullptr, status, std::move(data_loss_info), /*is_disk_full=*/false};
+  {
+    IDB_TRACE("IndexedDBFactoryImpl::OpenLevelDBScopes");
+    DCHECK(scopes_factory);
+    std::tie(scopes, status) = scopes_factory->CreateAndInitializeLevelDBScopes(
+        std::move(scopes_options), database_state);
+    if (UNLIKELY(!status.ok()))
+      return {nullptr, status, std::move(data_loss_info),
+              /*is_disk_full=*/false};
+  }
 
+  // Create the TransactionalLevelDBDatabase wrapper.
   std::unique_ptr<TransactionalLevelDBDatabase> database =
-      leveldb_factory_->CreateLevelDBDatabase(
-          std::move(state), std::move(scopes), context_->TaskRunner(),
+      class_factory_->transactional_leveldb_factory().CreateLevelDBDatabase(
+          std::move(database_state), std::move(scopes), context_->TaskRunner(),
           TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
 
   bool are_schemas_known = false;
@@ -887,8 +907,8 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
       is_incognito_and_in_memory ? IndexedDBBackingStore::Mode::kInMemory
                                  : IndexedDBBackingStore::Mode::kOnDisk;
   std::unique_ptr<IndexedDBBackingStore> backing_store = CreateBackingStore(
-      backing_store_mode, leveldb_factory_, origin, blob_path,
-      std::move(database), context_->TaskRunner());
+      backing_store_mode, &class_factory_->transactional_leveldb_factory(),
+      origin, blob_path, std::move(database), context_->TaskRunner());
   status = backing_store->Initialize(
       /*cleanup_live_journal=*/(!is_incognito_and_in_memory &&
                                 first_open_since_startup));

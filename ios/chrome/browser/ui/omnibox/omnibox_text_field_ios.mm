@@ -668,16 +668,13 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 // preprending http:// to the copied URL if needed.
 - (void)copy:(id)sender {
   id<OmniboxTextFieldDelegate> delegate = [self delegate];
-  BOOL handled = NO;
 
   // Must test for the onCopy method, since it's optional.
-  if ([delegate respondsToSelector:@selector(onCopy)])
-    handled = [delegate onCopy];
-
-  // iOS 4 doesn't expose an API that allows the delegate to handle the copy
-  // operation, so let the superclass perform the copy if the delegate couldn't.
-  if (!handled)
+  if ([delegate respondsToSelector:@selector(onCopy)]) {
+    [delegate onCopy];
+  } else {
     [super copy:sender];
+  }
 }
 
 - (void)cut:(id)sender {

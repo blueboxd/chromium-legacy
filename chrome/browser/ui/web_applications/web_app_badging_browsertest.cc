@@ -248,6 +248,7 @@ INSTANTIATE_TEST_SUITE_P(
     WebAppBadgingBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp));
+                      ControllerType::kUnifiedControllerWithWebApp),
+    web_app::ControllerTypeParamToString);
 
 }  // namespace web_app

@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -46,10 +45,6 @@ static const float kDefaultCancelButtonSize = 9;
 static const float kMinCancelButtonSize = 5;
 static const float kMaxCancelButtonSize = 21;
 
-static bool UseMockTheme() {
-  return WebTestSupport::IsMockThemeEnabledForTest();
-}
-
 LayoutThemeDefault::LayoutThemeDefault()
     : LayoutTheme(),
       caret_blink_interval_(LayoutTheme::CaretBlinkInterval()),
@@ -58,13 +53,6 @@ LayoutThemeDefault::LayoutThemeDefault()
 LayoutThemeDefault::~LayoutThemeDefault() = default;
 
 bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
-  if (UseMockTheme()) {
-    // Don't use focus rings for buttons when mocking controls.
-    return style.EffectiveAppearance() == kButtonPart ||
-           style.EffectiveAppearance() == kPushButtonPart ||
-           style.EffectiveAppearance() == kSquareButtonPart;
-  }
-
   // This causes Blink to draw the focus rings for us.
   return false;
 }
@@ -77,12 +65,6 @@ Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
   constexpr Color kDefaultMenuColorDark(0xff404040);
 
   if (css_value_id == CSSValueID::kButtonface) {
-    if (UseMockTheme()) {
-      if (color_scheme == WebColorScheme::kLight)
-        return Color(0xc0, 0xc0, 0xc0);
-      else
-        return Color(0x80, 0x80, 0x80);
-    }
     switch (color_scheme) {
       case WebColorScheme::kLight:
         return kDefaultButtonGrayColor;
@@ -153,35 +135,25 @@ Color LayoutThemeDefault::InactiveListBoxSelectionForegroundColor(
 
 Color LayoutThemeDefault::PlatformActiveSelectionBackgroundColor(
     WebColorScheme color_scheme) const {
-  if (UseMockTheme())
-    return Color(0x00, 0x00, 0xff);  // Royal blue.
   return active_selection_background_color_;
 }
 
 Color LayoutThemeDefault::PlatformInactiveSelectionBackgroundColor(
     WebColorScheme color_scheme) const {
-  if (UseMockTheme())
-    return Color(0x99, 0x99, 0x99);  // Medium gray.
   return inactive_selection_background_color_;
 }
 
 Color LayoutThemeDefault::PlatformActiveSelectionForegroundColor(
     WebColorScheme color_scheme) const {
-  if (UseMockTheme())
-    return Color(0xff, 0xff, 0xcc);  // Pale yellow.
   return active_selection_foreground_color_;
 }
 
 Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor(
     WebColorScheme color_scheme) const {
-  if (UseMockTheme())
-    return Color::kWhite;
   return inactive_selection_foreground_color_;
 }
 
 IntSize LayoutThemeDefault::SliderTickSize() const {
-  if (UseMockTheme())
-    return IntSize(1, 3);
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
     return IntSize(1, 4);
   else
@@ -189,8 +161,6 @@ IntSize LayoutThemeDefault::SliderTickSize() const {
 }
 
 int LayoutThemeDefault::SliderTickOffsetFromTrackCenter() const {
-  if (UseMockTheme())
-    return 11;
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
     return 7;
   else
@@ -204,8 +174,7 @@ void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
   IntSize size = Platform::Current()->ThemeEngine()->GetSize(
       WebThemeEngine::kPartSliderThumb);
 
-  // FIXME: Mock theme doesn't handle zoomed sliders.
-  float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoom();
   if (style.EffectiveAppearance() == kSliderThumbHorizontalPart) {
     style.SetWidth(Length::Fixed(size.Width() * zoom_level));
     style.SetHeight(Length::Fixed(size.Height() * zoom_level));
@@ -266,18 +235,6 @@ void LayoutThemeDefault::AdjustInnerSpinButtonStyle(
 
 bool LayoutThemeDefault::ShouldOpenPickerWithF4Key() const {
   return true;
-}
-
-bool LayoutThemeDefault::ShouldUseFallbackTheme(
-    const ComputedStyle& style) const {
-  if (UseMockTheme()) {
-    // The mock theme can't handle zoomed controls, so we fall back to the
-    // "fallback" theme.
-    ControlPart part = style.EffectiveAppearance();
-    if (part == kCheckboxPart || part == kRadioPart)
-      return style.EffectiveZoom() != 1;
-  }
-  return LayoutTheme::ShouldUseFallbackTheme(style);
 }
 
 bool LayoutThemeDefault::SupportsHover(const ComputedStyle& style) const {

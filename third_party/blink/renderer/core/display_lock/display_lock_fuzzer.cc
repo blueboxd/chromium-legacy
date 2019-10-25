@@ -9,22 +9,13 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 
-static content::Env* env;
-
-bool Initialize() {
-  blink::WebRuntimeFeatures::EnableDisplayLocking(true);
-  env = new content::Env();
-  return true;
-}
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  static bool initialized = Initialize();
-  // Suppress unused variable warning.
-  (void)initialized;
-
   // Only handle reasonable size inputs.
   if (size < 1 || size > 10000)
     return 0;
+
+  blink::WebRuntimeFeatures::EnableDisplayLocking(true);
+  static base::NoDestructor<content::Env> env;
 
   std::string data_as_string(reinterpret_cast<const char*>(data), size);
   int num_rafs = std::hash<std::string>()(data_as_string) % 10;

@@ -99,7 +99,7 @@ class OmniboxViewIOS : public OmniboxView,
   void OnDidChange(bool processing_user_input) override;
   void OnWillEndEditing() override;
   void OnAccept() override;
-  bool OnCopy() override;
+  void OnCopy() override;
   void ClearText() override;
   void WillPaste() override;
   void OnDeleteBackward() override;

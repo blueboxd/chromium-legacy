@@ -23,23 +23,24 @@ template("weblayer_java") {
   android_library(target_name) {
     java_files = [
       "org/chromium/weblayer/BrowserController.java",
-      "org/chromium/weblayer/BrowserFragment.java",
       "org/chromium/weblayer/BrowserFragmentController.java",
+      "org/chromium/weblayer/BrowserFragment.java",
       "org/chromium/weblayer/BrowserObserver.java",
       "org/chromium/weblayer/Callback.java",
+      "org/chromium/weblayer/ChildProcessService.java",
       "org/chromium/weblayer/DownloadDelegate.java",
       "org/chromium/weblayer/FullscreenDelegate.java",
       "org/chromium/weblayer/ListenableFuture.java",
       "org/chromium/weblayer/ListenableResult.java",
-      "org/chromium/weblayer/Navigation.java",
       "org/chromium/weblayer/NavigationController.java",
+      "org/chromium/weblayer/Navigation.java",
       "org/chromium/weblayer/NavigationObserver.java",
       "org/chromium/weblayer/ObserverList.java",
       "org/chromium/weblayer/Profile.java",
       "org/chromium/weblayer/ProfileManager.java",
-      "org/chromium/weblayer/WebLayer.java",
-      "org/chromium/weblayer/ChildProcessService.java",
+      "org/chromium/weblayer/ThreadCheck.java",
       "org/chromium/weblayer/UnsupportedVersionException.java",
+      "org/chromium/weblayer/WebLayer.java",
     ]
 
     deps = [

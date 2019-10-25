@@ -163,12 +163,16 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     autofill::PersonalDataManager* personalDataManager =
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
             self.browserState);
+    scoped_refptr<password_manager::PasswordStore> passwordStore =
+        ios_web_view::WebViewPasswordStoreFactory::GetForBrowserState(
+            self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
 
     _syncController =
         [[CWVSyncController alloc] initWithSyncService:syncService
                                        identityManager:identityManager
                                  signinErrorController:signinErrorController
-                                   personalDataManager:personalDataManager];
+                                   personalDataManager:personalDataManager
+                                         passwordStore:passwordStore.get()];
   }
   return _syncController;
 }

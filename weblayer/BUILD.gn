@@ -164,6 +164,7 @@ jumbo_static_library("weblayer_lib") {
 
   if (is_android) {
     deps += [
+      "//components/embedder_support/android:web_contents_delegate",
       "//components/version_info",
       "//ui/android",
       "//weblayer/browser/java:jni",

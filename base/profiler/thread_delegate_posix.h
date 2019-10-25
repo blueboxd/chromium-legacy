@@ -6,6 +6,7 @@
 #define BASE_PROFILER_THREAD_DELEGATE_POSIX_H_
 
 #include "base/base_export.h"
+#include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/thread_delegate.h"
 #include "base/threading/platform_thread.h"
 
@@ -15,7 +16,7 @@ namespace base {
 // POSIX.
 class BASE_EXPORT ThreadDelegatePosix : public ThreadDelegate {
  public:
-  ThreadDelegatePosix(PlatformThreadId thread_id);
+  ThreadDelegatePosix(SamplingProfilerThreadToken thread_token);
 
   ThreadDelegatePosix(const ThreadDelegatePosix&) = delete;
   ThreadDelegatePosix& operator=(const ThreadDelegatePosix&) = delete;

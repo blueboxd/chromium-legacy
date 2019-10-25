@@ -145,12 +145,11 @@ class PageTitleChecker : public StatusChangeChecker,
   ~PageTitleChecker() override {}
 
   // StatusChangeChecker overrides.
-  std::string GetDebugMessage() const override {
-    return "Waiting for page title";
-  }
-
-  bool IsExitConditionSatisfied() override {
-    return web_contents()->GetTitle() == expected_title_;
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    const base::string16 actual_title = web_contents()->GetTitle();
+    *os << "Waiting for page title \"" << base::UTF16ToUTF8(expected_title_)
+        << "\"; actual=\"" << base::UTF16ToUTF8(actual_title) << "\"";
+    return actual_title == expected_title_;
   }
 
   // content::WebContentsObserver overrides.
@@ -172,12 +171,9 @@ class PasswordsDataTypeActiveChecker : public SingleClientStatusChangeChecker {
   ~PasswordsDataTypeActiveChecker() override {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for PASSWORDS to become active";
     return service()->GetActiveDataTypes().Has(syncer::PASSWORDS);
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for PASSWORDS to become active";
   }
 
  private:

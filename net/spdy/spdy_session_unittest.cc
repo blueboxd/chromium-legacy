@@ -6023,6 +6023,8 @@ TEST_F(SpdySessionTest, GreaseFrameType) {
   expected_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   expected_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
+  expected_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
+      kSpdyMaxHeaderListSize;
   spdy::SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(expected_settings));
 
@@ -6201,6 +6203,8 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, Empty) {
   expected_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   expected_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
+  expected_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
+      kSpdyMaxHeaderListSize;
   RunInitialSettingsTest(expected_settings);
 }
 
@@ -6216,6 +6220,8 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, ProtocolDefault) {
   spdy::SettingsMap expected_settings;
   expected_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
+  expected_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
+      kSpdyMaxHeaderListSize;
   RunInitialSettingsTest(expected_settings);
 }
 
@@ -6247,6 +6253,8 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, UnknownSettings) {
   expected_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   expected_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
+  expected_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
+      kSpdyMaxHeaderListSize;
   expected_settings[7] = 1234;
   expected_settings[25] = 5678;
   RunInitialSettingsTest(expected_settings);

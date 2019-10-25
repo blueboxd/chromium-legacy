@@ -125,7 +125,9 @@ void SharingIconView::UpdateOpacity() {
     layer()->SetFillsBoundsOpaquely(false);
   }
 
-  layer()->SetOpacity(PageActionIconView::WidthMultiplier());
+  int kLargeNumber = 100;
+  layer()->SetOpacity(GetWidthBetween(0, kLargeNumber) /
+                      static_cast<float>(kLargeNumber));
 }
 
 void SharingIconView::UpdateInkDrop(bool activate) {

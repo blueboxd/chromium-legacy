@@ -68,6 +68,7 @@ class BackingVisitor : public Visitor {
   void VisitBackingStoreWeakly(void*,
                                void**,
                                TraceDescriptor,
+                               TraceDescriptor,
                                WeakCallback,
                                void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}

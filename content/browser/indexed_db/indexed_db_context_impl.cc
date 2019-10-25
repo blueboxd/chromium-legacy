@@ -32,7 +32,7 @@
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/leveldb_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_switches.h"
@@ -115,10 +115,7 @@ IndexedDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {
     // detect when dbs are newly created.
     GetOriginSet();
     indexeddb_factory_ = std::make_unique<IndexedDBFactoryImpl>(
-        this,
-        leveldb_factory_for_testing_ ? leveldb_factory_for_testing_
-                                     : indexed_db::LevelDBFactory::Get(),
-        IndexedDBClassFactory::Get(), clock_);
+        this, IndexedDBClassFactory::Get(), clock_);
   }
   return indexeddb_factory_.get();
 }
@@ -329,7 +326,8 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
   EnsureDiskUsageCacheInitialized(origin);
 
   leveldb::Status s =
-      indexed_db::DefaultLevelDBFactory().DestroyLevelDB(idb_directory);
+      IndexedDBClassFactory::Get()->leveldb_factory().DestroyLevelDB(
+          idb_directory);
   if (!s.ok()) {
     LOG(WARNING) << "Failed to delete LevelDB database: "
                  << idb_directory.AsUTF8Unsafe();
@@ -524,12 +522,6 @@ void IndexedDBContextImpl::NotifyIndexedDBContentChanged(
     observer.OnIndexedDBContentChanged(origin, database_name,
                                        object_store_name);
   }
-}
-
-void IndexedDBContextImpl::SetLevelDBFactoryForTesting(
-    indexed_db::LevelDBFactory* factory) {
-  DCHECK(factory);
-  leveldb_factory_for_testing_ = factory;
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {

@@ -134,16 +134,14 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   aura::Window* GetDefaultSnappedWindow();
 
   // Gets the window bounds according to the snap state |snap_state| and the
-  // divider position |divider_position_|. The returned snapped window bounds
-  // are adjusted to its minimum size if the desired bounds are smaller than
-  // its minumum bounds. Note: the snapped window bounds can't be pushed
-  // outside of the workspace area.
-  gfx::Rect GetSnappedWindowBoundsInParent(SnapPosition snap_position);
-  gfx::Rect GetSnappedWindowBoundsInScreen(SnapPosition snap_position);
-
-  // Gets the desired snapped window bounds accoridng to the snap state
-  // |snap_state| and the divider pistion |divider_position_|.
-  gfx::Rect GetSnappedWindowBoundsInScreenUnadjusted(SnapPosition snap_postion);
+  // divider position |divider_position_|. If |adjust_for_minimum_size| is true,
+  // the returned snapped window bounds are adjusted to its minimum size if the
+  // desired bounds are smaller than its minumum bounds. Note: the snapped
+  // window bounds can't be pushed outside of the workspace area.
+  gfx::Rect GetSnappedWindowBoundsInParent(SnapPosition snap_position,
+                                           bool adjust_for_minimum_size = true);
+  gfx::Rect GetSnappedWindowBoundsInScreen(SnapPosition snap_position,
+                                           bool adjust_for_minimum_size = true);
 
   // Gets the default value of |divider_position_|.
   int GetDefaultDividerPosition() const;
@@ -237,6 +235,10 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   class TabDraggedWindowObserver;
   class DividerSnapAnimation;
 
+  // |position| should be |LEFT| or |RIGHT|, and this function returns
+  // |left_window_| or |right_window_| accordingly.
+  aura::Window* GetSnappedWindow(SnapPosition position);
+
   // These functions return |left_window_| and |right_window_|, swapped in
   // nonprimary screen orientations. Note that they may return null.
   aura::Window* GetPhysicalLeftOrTopWindow();
@@ -269,21 +271,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // Updates |divider_position_| according to the current event location during
   // resizing.
   void UpdateDividerPosition(const gfx::Point& location_in_screen);
-
-  // Get the window bounds for left_or_top and right_or_bottom snapped windows.
-  // Note the bounds returned by this function doesn't take the snapped windows
-  // minimum sizes into account.
-  void GetSnappedWindowBoundsInScreenInternal(gfx::Rect* left_or_top_rect,
-                                              gfx::Rect* right_or_bottom_rect);
-
-  // Splits the |work_area_rect| by |divider_rect| and outputs the two halves.
-  // |left_or_top_rect|, |divider_rect| and |right_or_bottom_rect| should align
-  // vertically or horizontally depending on |is_split_vertically|.
-  void SplitRect(const gfx::Rect& work_area_rect,
-                 const gfx::Rect& divider_rect,
-                 const bool is_split_vertically,
-                 gfx::Rect* left_or_top_rect,
-                 gfx::Rect* right_or_bottom_rect);
 
   // Returns the closest fix location for |divider_position_|.
   int GetClosestFixedDividerPosition();
@@ -321,13 +308,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // that moment. |window_drag| is true if the window was detached as a result
   // of dragging.
   void OnSnappedWindowDetached(aura::Window* window, bool window_drag);
-
-  // If the desired bounds of the snapped windows bounds |left_or_top_rect| and
-  // |right_or_bottom_rect| are smaller than the minimum bounds of the snapped
-  // windows, adjust the desired bounds to the minimum bounds. Note the snapped
-  // windows can't be pushed out of the work area display area.
-  void AdjustSnappedWindowBounds(gfx::Rect* left_or_top_rect,
-                                 gfx::Rect* right_or_bottom_rect);
 
   // Returns the closest position ratio based on |distance| and |length|.
   float FindClosestPositionRatio(float distance, float length);

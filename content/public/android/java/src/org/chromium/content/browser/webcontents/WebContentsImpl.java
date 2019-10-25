@@ -904,7 +904,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
         // Map can be null after WebView gets gc'ed on its way to destruction.
         if (userDataHost == null) {
-            Log.e(TAG, "UserDataHost can't be found");
+            Log.d(TAG, "UserDataHost can't be found");
             return null;
         }
 

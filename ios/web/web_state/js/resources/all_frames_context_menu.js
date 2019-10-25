@@ -92,7 +92,7 @@ __gCrWeb['findElementAtPointInPageCoordinates'] = function(requestId, x, y) {
     var coordinates = hitCoordinates[index];
 
     var coordinateDetails = newCoordinate(coordinates.x, coordinates.y);
-    var element = elementsFromCoordinates(coordinateDetails);
+    var element = elementsFromCoordinates(window.document, coordinateDetails);
     // if element is a frame, tell it to respond to this element request
     if (element &&
         (element.tagName.toLowerCase() === 'iframe' ||
@@ -219,26 +219,28 @@ var newCoordinate = function(x, y) {
 
 /**
  * Returns the element at the given coordinates.
+ * @param {Object} root The Document or ShadowRoot object to search within.
  * @param {Object} coordinates Page coordinates in the same format as the result
  *                             from {@code newCoordinate}.
  */
-var elementsFromCoordinates = function(coordinates) {
+var elementsFromCoordinates = function(root, coordinates) {
   coordinates.useViewPortCoordinates = coordinates.useViewPortCoordinates ||
       elementFromPointIsUsingViewPortCoordinates(coordinates.window);
 
   var currentElement = null;
   if (coordinates.useViewPortCoordinates) {
-    currentElement = coordinates.window.document.elementFromPoint(
+    currentElement = root.elementFromPoint(
         coordinates.viewPortX, coordinates.viewPortY);
   } else {
-    currentElement = coordinates.window.document.elementFromPoint(
-        coordinates.x, coordinates.y);
+    currentElement = root.elementFromPoint(coordinates.x, coordinates.y);
   }
-  // We have to check for tagName, because if a selection is made by the
-  // UIWebView, the element we will get won't have one.
+
+  // Check for tagName, because if a selection is made by the WebView, the
+  // element we will get won't have one.
   if (!currentElement || !currentElement.tagName) {
     return null;
   }
+
   if (currentElement.tagName.toLowerCase() === 'iframe' ||
       currentElement.tagName.toLowerCase() === 'frame') {
     // Check if the frame is in a different domain using only information
@@ -254,7 +256,16 @@ var elementsFromCoordinates = function(coordinates) {
     coordinates.window = currentElement.contentWindow;
     coordinates.x -= framePosition.x + coordinates.window.pageXOffset;
     coordinates.y -= framePosition.y + coordinates.window.pageYOffset;
-    return elementsFromCoordinates(coordinates);
+    return elementsFromCoordinates(coordinates.window.document, coordinates);
+  }
+
+  if (currentElement.shadowRoot) {
+    // The element's shadowRoot can be the same as |root| if the point is not
+    // on any child element. Break the recursion and return no found element.
+    if (currentElement.shadowRoot == root) {
+      return null;
+    }
+    return elementsFromCoordinates(currentElement.shadowRoot, coordinates);
   }
   return currentElement;
 };

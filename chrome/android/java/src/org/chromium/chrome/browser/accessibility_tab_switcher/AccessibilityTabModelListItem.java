@@ -37,7 +37,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 
 /**
  * A widget that shows a single row of the {@link AccessibilityTabModelListView} list.
@@ -215,7 +215,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
         mDefaultHeight =
                 context.getResources().getDimensionPixelOffset(R.dimen.accessibility_tab_height);
-        mDefaultIconColor = ColorUtils.getIconTint(context, false);
+        mDefaultIconColor = ChromeColors.getIconTint(context, false);
         mIncognitoIconColor =
                 AppCompatResources.getColorStateList(context, R.color.default_icon_color_dark);
         mDefaultCloseIconColor =
@@ -311,7 +311,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         }
 
         if (mTab.isIncognito()) {
-            setBackgroundResource(R.color.incognito_modern_primary_color);
+            setBackgroundResource(R.color.dark_primary_color);
             mFaviconView.getBackground().setLevel(mIncognitoLevel);
             ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.TextAppearance_WhiteTitle1);
             ApiCompatibilityUtils.setTextAppearance(

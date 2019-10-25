@@ -7,16 +7,20 @@ package org.chromium.chrome.browser.payments.handler;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.DismissObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * PaymentHandler mediator, which is responsible for receiving events from the view and notifies the
  * backend (the coordinator).
  */
 /* package */ class PaymentHandlerMediator extends EmptyBottomSheetObserver {
+    private final PropertyModel mModel;
     private final Runnable mHider;
     private final DismissObserver mDismissObserver;
 
-    /* package */ PaymentHandlerMediator(Runnable hider, DismissObserver dismissObserver) {
+    /* package */ PaymentHandlerMediator(
+            PropertyModel model, Runnable hider, DismissObserver dismissObserver) {
+        mModel = model;
         mHider = hider;
         mDismissObserver = dismissObserver;
     }
@@ -30,5 +34,10 @@ import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
                 mDismissObserver.onDismissed();
                 break;
         }
+    }
+
+    @Override
+    public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
+        mModel.set(PaymentHandlerProperties.BOTTOM_SHEET_HEIGHT_FRACTION, heightFraction);
     }
 }

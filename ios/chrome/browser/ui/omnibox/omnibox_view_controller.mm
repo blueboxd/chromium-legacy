@@ -230,9 +230,9 @@ const CGFloat kClearButtonSize = 28.0f;
   return YES;
 }
 
-- (BOOL)onCopy {
+- (void)onCopy {
   DCHECK(_textChangeDelegate);
-  return _textChangeDelegate->OnCopy();
+  _textChangeDelegate->OnCopy();
 }
 
 - (void)willPaste {

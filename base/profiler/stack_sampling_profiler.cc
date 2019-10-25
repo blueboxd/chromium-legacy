@@ -79,13 +79,11 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   };
 
   struct CollectionContext {
-    CollectionContext(PlatformThreadId target,
-                      const SamplingParams& params,
+    CollectionContext(const SamplingParams& params,
                       WaitableEvent* finished,
                       std::unique_ptr<StackSampler> sampler,
                       std::unique_ptr<ProfileBuilder> profile_builder)
         : collection_id(next_collection_id.GetNext()),
-          target(target),
           params(params),
           finished(finished),
           sampler(std::move(sampler)),
@@ -96,7 +94,6 @@ class StackSamplingProfiler::SamplingThread : public Thread {
     // collection to outside interests.
     const int collection_id;
 
-    const PlatformThreadId target;  // ID of The thread being sampled.
     const SamplingParams params;    // Information about how to sample.
     WaitableEvent* const finished;  // Signaled when all sampling complete.
 
@@ -649,23 +646,23 @@ void StackSamplingProfiler::TestPeer::PerformSamplingThreadIdleShutdown(
 }
 
 StackSamplingProfiler::StackSamplingProfiler(
-    PlatformThreadId thread_id,
+    SamplingProfilerThreadToken thread_token,
     const SamplingParams& params,
     std::unique_ptr<ProfileBuilder> profile_builder,
     StackSamplerTestDelegate* test_delegate)
-    : StackSamplingProfiler(thread_id,
+    : StackSamplingProfiler(thread_token,
                             params,
                             std::move(profile_builder),
                             nullptr,
                             test_delegate) {}
 
 StackSamplingProfiler::StackSamplingProfiler(
-    PlatformThreadId thread_id,
+    SamplingProfilerThreadToken thread_token,
     const SamplingParams& params,
     std::unique_ptr<ProfileBuilder> profile_builder,
     std::unique_ptr<StackSampler> sampler,
     StackSamplerTestDelegate* test_delegate)
-    : thread_id_(thread_id),
+    : thread_token_(thread_token),
       params_(params),
       profile_builder_(std::move(profile_builder)),
       sampler_(std::move(sampler)),
@@ -712,7 +709,7 @@ void StackSamplingProfiler::Start() {
 
   if (!sampler_)
     sampler_ = StackSampler::Create(
-        thread_id_, profile_builder_->GetModuleCache(), test_delegate_);
+        thread_token_, profile_builder_->GetModuleCache(), test_delegate_);
 
   if (!sampler_)
     return;
@@ -735,7 +732,7 @@ void StackSamplingProfiler::Start() {
   DCHECK_EQ(kNullProfilerId, profiler_id_);
   profiler_id_ = SamplingThread::GetInstance()->Add(
       std::make_unique<SamplingThread::CollectionContext>(
-          thread_id_, params_, &profiling_inactive_, std::move(sampler_),
+          params_, &profiling_inactive_, std::move(sampler_),
           std::move(profile_builder_)));
   DCHECK_NE(kNullProfilerId, profiler_id_);
 

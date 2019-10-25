@@ -52,13 +52,10 @@ void RealTimeUrlLookupService::StartLookup(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(url.is_valid());
 
-  RTLookupRequest request;
-  request.set_url(SanitizeURL(url).spec());
-  request.set_lookup_type(RTLookupRequest::NAVIGATION);
-  std::string req_data, req_base64;
-  request.SerializeToString(&req_data);
-  base::Base64UrlEncode(req_data, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                        &req_base64);
+  std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
+
+  std::string req_data;
+  request->SerializeToString(&req_data);
   // TODO(vakh): Add the correct chrome_policy field below.
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("safe_browsing_realtime_url_lookup",
@@ -112,7 +109,7 @@ void RealTimeUrlLookupService::StartLookup(
 
   pending_requests_[owned_loader.release()] = std::move(response_callback);
 
-  std::move(request_callback).Run(std::make_unique<RTLookupRequest>(request));
+  std::move(request_callback).Run(std::move(request));
 }
 
 RealTimeUrlLookupService::~RealTimeUrlLookupService() {
@@ -152,6 +149,15 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
 
 bool RealTimeUrlLookupService::CanCheckUrl(const GURL& url) const {
   return url.SchemeIsHTTPOrHTTPS();
+}
+
+std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
+    const GURL& url) {
+  auto request = std::make_unique<RTLookupRequest>();
+  request->set_url(SanitizeURL(url).spec());
+  request->set_lookup_type(RTLookupRequest::NAVIGATION);
+  // TODO(crbug.com/1017499): Set ChromeUserPopulation.
+  return request;
 }
 
 void RealTimeUrlLookupService::ExitBackoff() {

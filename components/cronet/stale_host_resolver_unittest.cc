@@ -35,7 +35,9 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
+#include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/dns_query_type.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
@@ -226,7 +228,8 @@ class StaleHostResolverTest : public testing::Test {
     DCHECK(resolver_->GetHostCache());
 
     base::TimeDelta ttl(base::TimeDelta::FromSeconds(kCacheEntryTTLSec));
-    net::HostCache::Key key(kHostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0);
+    net::HostCache::Key key(kHostname, net::DnsQueryType::UNSPECIFIED, 0,
+                            net::HostResolverSource::ANY);
     net::HostCache::Entry entry(
         error,
         error == net::OK ? MakeAddressList(kCacheAddress) : net::AddressList(),
@@ -247,7 +250,8 @@ class StaleHostResolverTest : public testing::Test {
     DCHECK(resolver_);
     DCHECK(resolver_->GetHostCache());
 
-    net::HostCache::Key key(kHostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0);
+    net::HostCache::Key key(kHostname, net::DnsQueryType::UNSPECIFIED, 0,
+                            net::HostResolverSource::ANY);
     base::TimeTicks now = tick_clock_.NowTicks();
     net::HostCache::EntryStaleness stale;
     EXPECT_TRUE(resolver_->GetHostCache()->LookupStale(key, now, &stale));

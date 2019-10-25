@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
@@ -83,6 +84,7 @@ class DotBackground : public views::Background {
 // AssistantProgressIndicator --------------------------------------------------
 
 AssistantProgressIndicator::AssistantProgressIndicator() {
+  SetID(AssistantViewID::kProgressIndicator);
   InitLayout();
 }
 

@@ -47,6 +47,7 @@ source_set("declarative_net_request") {
     "//extensions/common",
     "//extensions/common/api",
     "//net",
+    "//third_party/re2",
     "//tools/json_schema_compiler:generated_api_util",
     "//url",
   ]

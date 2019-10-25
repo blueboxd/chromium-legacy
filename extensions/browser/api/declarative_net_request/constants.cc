@@ -29,7 +29,7 @@ const char kErrorNoApplicableResourceTypes[] =
     "Rule with id * is not applicable to any resource type.";
 const char kErrorEmptyList[] =
     "Rule with id * cannot have an empty list as the value for * key.";
-const char kErrorEmptyUrlFilter[] =
+const char kErrorEmptyKey[] =
     "Rule with id * cannot have an empty value for * key.";
 const char kErrorInvalidRedirectUrl[] =
     "Rule with id * does not provide a valid URL for * key.";
@@ -52,6 +52,9 @@ const char kErrorQueryAndTransformBothSpecified[] =
 const char kErrorJavascriptRedirect[] =
     "Rule with id * specifies an incorrect value for the \"*\" key. Redirects "
     "to javascript urls are not supported.";
+const char kErrorMultipleFilters[] =
+    "Rule with id * can only specify one of \"*\" or \"*\" keys.";
+
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =

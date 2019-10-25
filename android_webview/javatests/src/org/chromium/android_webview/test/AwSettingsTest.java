@@ -2403,7 +2403,6 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest(message = "crbug.com/1010034")
     // As our implementation of network loads blocking uses the same net::URLRequest settings, make
     // sure that setting cache mode doesn't accidentally enable network loads.  The reference
     // behaviour is that when network loads are blocked, setting cache mode has no effect.

@@ -12,7 +12,6 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
@@ -32,7 +31,20 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
+
 namespace {
+
+constexpr SkColor kSemiOpaqueBackdropColor =
+    SkColorSetARGB(0x99, 0x20, 0x21, 0x24);
+
+SkColor GetBackdropColorByMode(BackdropWindowMode mode) {
+  if (mode == BackdropWindowMode::kAutoSemiOpaque)
+    return kSemiOpaqueBackdropColor;
+
+  DCHECK(mode == BackdropWindowMode::kAutoOpaque ||
+         mode == BackdropWindowMode::kEnabled);
+  return SK_ColorBLACK;
+}
 
 class BackdropEventHandler : public ui::EventHandler {
  public:
@@ -275,7 +287,7 @@ void BackdropController::UpdateBackdropInternal() {
     return;
   }
 
-  EnsureBackdropWidget();
+  EnsureBackdropWidget(window->GetProperty(kBackdropWindowMode));
   UpdateAccessibilityMode();
 
   if (window == backdrop_window_ && backdrop_->IsVisible()) {
@@ -299,9 +311,13 @@ void BackdropController::UpdateBackdropInternal() {
   container_->StackChildBelow(backdrop_window_, window);
 }
 
-void BackdropController::EnsureBackdropWidget() {
-  if (backdrop_)
+void BackdropController::EnsureBackdropWidget(BackdropWindowMode mode) {
+  if (backdrop_) {
+    SkColor backdrop_color = GetBackdropColorByMode(mode);
+    if (backdrop_window_->layer()->GetTargetColor() != backdrop_color)
+      backdrop_window_->layer()->SetColor(backdrop_color);
     return;
+  }
 
   backdrop_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params(
@@ -321,7 +337,7 @@ void BackdropController::EnsureBackdropWidget() {
   // The backdrop window in always on top container can be reparented without
   // this when the window is set to fullscreen.
   AlwaysOnTopController::SetDisallowReparent(backdrop_window_);
-  backdrop_window_->layer()->SetColor(SK_ColorBLACK);
+  backdrop_window_->layer()->SetColor(GetBackdropColorByMode(mode));
 
   WindowState::Get(backdrop_window_)->set_allow_set_bounds_direct(true);
 }
@@ -453,8 +469,8 @@ gfx::Rect BackdropController::GetBackdropBounds() {
       (state == SplitViewController::State::kLeftSnapped)
           ? SplitViewController::LEFT
           : SplitViewController::RIGHT;
-  return split_view_controller->GetSnappedWindowBoundsInScreenUnadjusted(
-      snap_position);
+  return split_view_controller->GetSnappedWindowBoundsInScreen(
+      snap_position, /*adjust_for_minimum_size=*/false);
 }
 
 void BackdropController::Layout() {

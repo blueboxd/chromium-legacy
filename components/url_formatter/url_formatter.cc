@@ -33,7 +33,7 @@ IDNConversionResult IDNToUnicodeWithAdjustments(
 
 bool IDNToUnicodeOneComponent(const base::char16* comp,
                               size_t comp_len,
-                              bool is_tld_ascii,
+                              base::StringPiece top_level_domain,
                               bool enable_spoof_checks,
                               base::string16* out,
                               bool* has_idn_component);
@@ -244,11 +244,10 @@ IDNConversionResult IDNToUnicodeWithAdjustmentsImpl(
   input16.reserve(host.length());
   input16.insert(input16.end(), host.begin(), host.end());
 
-  bool is_tld_ascii = true;
+  base::StringPiece top_level_domain;
   size_t last_dot = host.rfind('.');
-  if (last_dot != base::StringPiece::npos &&
-      host.substr(last_dot).starts_with(".xn--")) {
-    is_tld_ascii = false;
+  if (last_dot != base::StringPiece::npos) {
+    top_level_domain = host.substr(last_dot);
   }
 
   IDNConversionResult result;
@@ -269,7 +268,7 @@ IDNConversionResult IDNToUnicodeWithAdjustmentsImpl(
       // Add the substring that we just found.
       bool has_idn_component = false;
       converted_idn = IDNToUnicodeOneComponent(
-          input16.data() + component_start, component_length, is_tld_ascii,
+          input16.data() + component_start, component_length, top_level_domain,
           enable_spoof_checks, &out16, &has_idn_component);
       result.has_idn_component |= has_idn_component;
     }
@@ -319,8 +318,10 @@ IDNConversionResult UnsafeIDNToUnicodeWithAdjustments(
 // user. Note that this function does not deal with pure ASCII domain labels at
 // all even though it's possible to make up look-alike labels with ASCII
 // characters alone.
-bool IsIDNComponentSafe(base::StringPiece16 label, bool is_tld_ascii) {
-  return g_idn_spoof_checker.Get().SafeToDisplayAsUnicode(label, is_tld_ascii);
+bool IsIDNComponentSafe(base::StringPiece16 label,
+                        base::StringPiece top_level_domain) {
+  return g_idn_spoof_checker.Get().SafeToDisplayAsUnicode(label,
+                                                          top_level_domain);
 }
 
 // A wrapper to use LazyInstance<>::Leaky with ICU's UIDNA, a C pointer to
@@ -372,7 +373,7 @@ base::LazyInstance<UIDNAWrapper>::Leaky g_uidna = LAZY_INSTANCE_INITIALIZER;
 // input has IDN, regardless of whether it was converted to unicode or not.
 bool IDNToUnicodeOneComponent(const base::char16* comp,
                               size_t comp_len,
-                              bool is_tld_ascii,
+                              base::StringPiece top_level_domain,
                               bool enable_spoof_checks,
                               base::string16* out,
                               bool* has_idn_component) {
@@ -418,7 +419,7 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
     if (IsIDNComponentSafe(
             base::StringPiece16(out->data() + original_length,
                                 base::checked_cast<size_t>(output_length)),
-            is_tld_ascii)) {
+            top_level_domain)) {
       return true;
     }
   }

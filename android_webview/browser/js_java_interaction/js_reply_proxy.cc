@@ -14,22 +14,20 @@ JsReplyProxy::JsReplyProxy(
         java_to_js_messaging)
     : java_to_js_messaging_(std::move(java_to_js_messaging)) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_ref_ = JavaObjectWeakGlobalRef(
-      env, Java_JsReplyProxy_create(env, reinterpret_cast<intptr_t>(this)));
+  java_ref_.Reset(
+      Java_JsReplyProxy_create(env, reinterpret_cast<intptr_t>(this)));
 }
 
 JsReplyProxy::~JsReplyProxy() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (java_ref_.is_null())
     return;
 
-  Java_JsReplyProxy_onDestroy(env, obj);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_JsReplyProxy_onDestroy(env, java_ref_);
 }
 
 base::android::ScopedJavaLocalRef<jobject> JsReplyProxy::GetJavaPeer() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return java_ref_.get(env);
+  return base::android::ScopedJavaLocalRef<jobject>(java_ref_);
 }
 
 void JsReplyProxy::PostMessage(

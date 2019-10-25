@@ -4,6 +4,7 @@
 
 #include <pthread.h>
 
+#include "base/process/process_handle.h"
 #include "base/profiler/thread_delegate_posix.h"
 
 #include "build/build_config.h"
@@ -12,20 +13,39 @@ namespace base {
 
 namespace {
 
-uintptr_t GetThreadStackBaseAddress(PlatformThreadId thread_id) {
+uintptr_t GetThreadStackBaseAddressImpl(
+    SamplingProfilerThreadToken thread_token) {
   pthread_attr_t attr;
-  pthread_getattr_np(thread_id, &attr);
-  void* base_address;
+  pthread_getattr_np(thread_token.pthread_id, &attr);
+  // See crbug.com/617730 for limitations of this approach on Linux.
+  void* address;
   size_t size;
-  pthread_attr_getstack(&attr, &base_address, &size);
-  return reinterpret_cast<uintptr_t>(base_address);
+  pthread_attr_getstack(&attr, &address, &size);
+  const uintptr_t base_address = reinterpret_cast<uintptr_t>(address) + size;
+  return base_address;
+}
+
+uintptr_t GetThreadStackBaseAddress(SamplingProfilerThreadToken thread_token) {
+#if defined(OS_ANDROID)
+  // Caches the main thread base address on Android since Bionic has to read
+  // /proc/$PID/maps to obtain it. Other thread base addresses are sourced from
+  // pthread state so are cheap to get.
+  const bool is_main_thread = thread_token.id == GetCurrentProcId();
+  if (is_main_thread) {
+    static const uintptr_t main_thread_base_address =
+        GetThreadStackBaseAddressImpl(thread_token);
+    return main_thread_base_address;
+  }
+#endif
+  return GetThreadStackBaseAddressImpl(thread_token);
 }
 
 }  // namespace
 
-ThreadDelegatePosix::ThreadDelegatePosix(PlatformThreadId thread_id)
-    : thread_id_(thread_id),
-      thread_stack_base_address_(GetThreadStackBaseAddress(thread_id)) {}
+ThreadDelegatePosix::ThreadDelegatePosix(
+    SamplingProfilerThreadToken thread_token)
+    : thread_id_(thread_token.id),
+      thread_stack_base_address_(GetThreadStackBaseAddress(thread_token)) {}
 
 PlatformThreadId ThreadDelegatePosix::GetThreadId() const {
   return thread_id_;

@@ -177,6 +177,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"save", IDS_SAVE},
     {"settings", IDS_SETTINGS_SETTINGS},
     {"settingsAltPageTitle", IDS_SETTINGS_ALT_PAGE_TITLE},
+    {"subpageArrowRoleDescription", IDS_SETTINGS_SUBPAGE_BUTTON},
     {"toggleOn", IDS_SETTINGS_TOGGLE_ON},
     {"toggleOff", IDS_SETTINGS_TOGGLE_OFF},
     {"notValid", IDS_SETTINGS_NOT_VALID},

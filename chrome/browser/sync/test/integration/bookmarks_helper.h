@@ -245,8 +245,7 @@ class BookmarksMatchChecker : public MultiClientStatusChangeChecker {
   BookmarksMatchChecker();
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 // Checker used to block until bookmarks match the verifier bookmark model.
@@ -255,8 +254,7 @@ class BookmarksMatchVerifierChecker : public MultiClientStatusChangeChecker {
   BookmarksMatchVerifierChecker();
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 // Checker used to block until the actual number of bookmarks with the given
@@ -270,8 +268,7 @@ class BookmarksTitleChecker : public SingleClientStatusChangeChecker {
                         int expected_count);
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
   const int profile_index_;
@@ -297,8 +294,7 @@ class ServerBookmarksEqualityChecker : public SingleClientStatusChangeChecker {
       const std::vector<ExpectedBookmark>& expected_bookmarks,
       syncer::Cryptographer* cryptographer);
 
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   ~ServerBookmarksEqualityChecker() override;
 

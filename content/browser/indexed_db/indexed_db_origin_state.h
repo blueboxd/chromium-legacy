@@ -26,10 +26,7 @@ class IndexedDBBackingStore;
 class IndexedDBDatabase;
 class IndexedDBFactoryImpl;
 class IndexedDBPreCloseTaskQueue;
-
-namespace indexed_db {
-class LevelDBFactory;
-}  // namespace indexed_db
+class TransactionalLevelDBFactory;
 
 constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
 
@@ -77,15 +74,16 @@ class CONTENT_EXPORT IndexedDBOriginState {
 
   // Calling |destruct_myself| should destruct this object.
   // |earliest_global_sweep_time| is expected to outlive this object.
-  IndexedDBOriginState(url::Origin origin,
-                       bool persist_for_incognito,
-                       base::Clock* clock,
-                       indexed_db::LevelDBFactory* leveldb_factory,
-                       base::Time* earliest_global_sweep_time,
-                       std::unique_ptr<DisjointRangeLockManager> lock_manager,
-                       TasksAvailableCallback notify_tasks_callback,
-                       TearDownCallback tear_down_callback,
-                       std::unique_ptr<IndexedDBBackingStore> backing_store);
+  IndexedDBOriginState(
+      url::Origin origin,
+      bool persist_for_incognito,
+      base::Clock* clock,
+      TransactionalLevelDBFactory* transactional_leveldb_factory,
+      base::Time* earliest_global_sweep_time,
+      std::unique_ptr<DisjointRangeLockManager> lock_manager,
+      TasksAvailableCallback notify_tasks_callback,
+      TearDownCallback tear_down_callback,
+      std::unique_ptr<IndexedDBBackingStore> backing_store);
   ~IndexedDBOriginState();
 
   void AbortAllTransactions(bool compact);
@@ -184,7 +182,7 @@ class CONTENT_EXPORT IndexedDBOriginState {
   bool has_blobs_outstanding_ = false;
   bool skip_closing_sequence_ = false;
   base::Clock* const clock_;
-  indexed_db::LevelDBFactory* const leveldb_factory_;
+  TransactionalLevelDBFactory* const transactional_leveldb_factory_;
 
   bool running_tasks_ = false;
   bool task_run_scheduled_ = false;

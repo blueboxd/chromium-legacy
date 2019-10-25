@@ -275,8 +275,12 @@ void PasswordProtectionService::RequestFinished(
         GetPasswordProtectionReusedPasswordAccountType(request->password_type(),
                                                        request->username());
     if (outcome != RequestOutcome::RESPONSE_ALREADY_CACHED) {
+      base::TimeTicks cache_verdict_start_time = base::TimeTicks::Now();
       CacheVerdict(request->main_frame_url(), request->trigger_type(),
                    password_type, *response, base::Time::Now());
+      // TODO(crbug.com/1016546): Remove once the bug is fixed.
+      UMA_HISTOGRAM_TIMES("PasswordProtection.CacheVerdictDuration",
+                          base::TimeTicks::Now() - cache_verdict_start_time);
     }
     bool enable_warning_for_non_sync_users = base::FeatureList::IsEnabled(
         safe_browsing::kPasswordProtectionForSignedInUsers);

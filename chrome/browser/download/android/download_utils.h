@@ -34,6 +34,7 @@ class DownloadUtils {
   // of the action.
   static void ShowDownloadManager(bool show_prefetched_content,
                                   DownloadOpenSource open_source);
+  static bool IsDownloadUserInitiated(download::DownloadItem* download);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_UTILS_H_

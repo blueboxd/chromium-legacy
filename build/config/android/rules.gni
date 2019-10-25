@@ -2623,7 +2623,8 @@ if (enable_java_templates) {
       _srcjar_deps += [ ":$_compile_resources_target" ]
     }
 
-    if (_native_libs_deps != [] || _secondary_abi_native_libs_deps != []) {
+    if ((!_is_bundle_module || _is_base_module) &&
+        (_native_libs_deps != [] || _secondary_abi_native_libs_deps != [])) {
       write_native_libraries_java("${_template_name}__native_libraries") {
         forward_variables_from(invoker, [ "enable_chromium_linker_tests" ])
         deps = [
@@ -3468,7 +3469,6 @@ if (enable_java_templates) {
       assert(!defined(invoker.shared_resources_whitelist_target))
       assert(!defined(invoker.shared_resources_whitelist_locales))
       assert(!defined(invoker.build_hooks_android_impl_deps))
-      assert(!defined(invoker.shared_libraries))
       assert(defined(invoker.base_module_target))
       assert(!defined(invoker.bundle_target))
     }
@@ -4350,12 +4350,14 @@ if (enable_java_templates) {
   #   }
   #
   template("android_app_bundle") {
+    _target_name = target_name
+
     _bundle_base_path = "$root_build_dir/apks"
     if (defined(invoker.bundle_base_path)) {
       _bundle_base_path = invoker.bundle_base_path
     }
 
-    _bundle_name = target_name
+    _bundle_name = _target_name
     if (defined(invoker.bundle_name)) {
       _bundle_name = invoker.bundle_name
     }
@@ -4398,7 +4400,7 @@ if (enable_java_templates) {
       if (_uses_static_library) {
         _sync_dex_target_dep = "${invoker.static_library_provider}__dexsplitter"
       } else {
-        _sync_dex_target = "${target_name}__sync_dex"
+        _sync_dex_target = "${_target_name}__sync_dex"
         _sync_dex_target_dep = ":$_sync_dex_target"
       }
       _proguard_mapping_path = "${_bundle_path}.mapping"
@@ -4442,19 +4444,43 @@ if (enable_java_templates) {
       _module_build_configs += [ _module.build_config ]
     }
 
+    # Allot native libraries to modules they should be packaged into. This is
+    # necessary since all libraries that are depended on by multiple modules
+    # have to go into base.
+    _native_libraries_config =
+        "$target_gen_dir/$_target_name.native_libraries_config"
+    allot_native_libraries("${_target_name}__allot_native_libraries") {
+      modules = _modules
+      native_libraries_filearg_keys = [
+        "native:libraries",
+        "native:extra_shared_libraries",
+      ]
+      output = _native_libraries_config
+    }
+    if (defined(android_app_secondary_abi)) {
+      _secondary_abi_native_libraries_config =
+          "$target_gen_dir/$_target_name.secondary_abi_native_libraries_config"
+      allot_native_libraries(
+          "${_target_name}__allot_secondary_abi_native_libraries") {
+        modules = _modules
+        native_libraries_filearg_keys = [ "native:secondary_abi_libraries" ]
+        output = _secondary_abi_native_libraries_config
+      }
+    }
+
     # Used to expose the module Java targets of the bundle.
-    group("${target_name}__java") {
+    group("${_target_name}__java") {
       deps = _module_java_targets
     }
-    group("${target_name}__compile_resources") {
+    group("${_target_name}__compile_resources") {
       deps = [
         "${invoker.base_module_target}__compile_resources",
       ]
     }
 
-    _build_config = "$target_gen_dir/${target_name}.build_config"
+    _build_config = "$target_gen_dir/${_target_name}.build_config"
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
-    _build_config_target = "$target_name$build_config_target_suffix"
+    _build_config_target = "$_target_name$build_config_target_suffix"
     if (defined(invoker.proguard_android_sdk_dep)) {
       proguard_android_sdk_dep_ = invoker.proguard_android_sdk_dep
     } else {
@@ -4466,7 +4492,7 @@ if (enable_java_templates) {
     }
 
     _unsplit_dex_zip =
-        "${target_gen_dir}/${target_name}/${target_name}__unsplit_dex.zip"
+        "${target_gen_dir}/${_target_name}/${_target_name}__unsplit_dex.zip"
 
     write_build_config(_build_config_target) {
       type = "android_app_bundle"
@@ -4496,8 +4522,8 @@ if (enable_java_templates) {
                                  invoker.verify_proguard_flags
         if (_verify_proguard_flags) {
           _proguard_expectations_file =
-              get_label_info(":$target_name", "dir") +
-              "/java/$target_name.proguard_flags.expected"
+              get_label_info(":$_target_name", "dir") +
+              "/java/$_target_name.proguard_flags.expected"
         }
         dex(_sync_dex_target) {
           enable_multidex = _enable_multidex
@@ -4520,7 +4546,7 @@ if (enable_java_templates) {
         }
       }
 
-      _dexsplitter_target = "${target_name}__dexsplitter"
+      _dexsplitter_target = "${_target_name}__dexsplitter"
       dexsplitter(_dexsplitter_target) {
         input_dex_zip = _unsplit_dex_zip
         proguard_mapping = _proguard_mapping_path
@@ -4551,18 +4577,27 @@ if (enable_java_templates) {
       # Important: the bundle tool uses the module's zip filename as
       # the internal module name inside the final bundle, in other words,
       # this file *must* be named ${_module.name}.zip
-      _create_module_target = "${target_name}__${_module.name}__create"
+      _create_module_target = "${_target_name}__${_module.name}__create"
       _module_zip_path = "$target_gen_dir/$target_name/${_module.name}.zip"
 
       create_android_app_bundle_module(_create_module_target) {
+        module_name = _module.name
         build_config = _module_build_config
         module_zip_path = _module_zip_path
+        native_libraries_config = _native_libraries_config
 
         deps = [
+          ":${_target_name}__allot_native_libraries",
           _dex_target_for_module,
           _module_build_config_target,
           _module_target,
         ]
+
+        if (defined(android_app_secondary_abi)) {
+          secondary_abi_native_libraries_config =
+              _secondary_abi_native_libraries_config
+          deps += [ ":${_target_name}__allot_secondary_abi_native_libraries" ]
+        }
       }
 
       _all_create_module_targets += [
@@ -4606,7 +4641,7 @@ if (enable_java_templates) {
       _bundle_keystore_name = _keystore_name
     }
 
-    _bundle_target_name = "${target_name}__bundle"
+    _bundle_target_name = "${_target_name}__bundle"
     action_with_pydeps(_bundle_target_name) {
       script = "//build/android/gyp/create_app_bundle.py"
       inputs = _all_module_zip_paths + _all_module_build_configs
@@ -4667,7 +4702,7 @@ if (enable_java_templates) {
       # Merge all module targets to obtain size info files for all targets.
       _all_module_targets = _module_targets
 
-      _size_info_target = "${target_name}__size_info"
+      _size_info_target = "${_target_name}__size_info"
       create_size_info_files(_size_info_target) {
         name = "$_bundle_name.aab"
         deps = _all_module_targets + [ ":$_build_config_target" ]
@@ -4680,9 +4715,9 @@ if (enable_java_templates) {
 
     _bundle_apks_path = "$_bundle_base_path/$_bundle_name.apks"
     _bundle_wrapper_script_dir = "$root_build_dir/bin"
-    _bundle_wrapper_script_path = "$_bundle_wrapper_script_dir/$target_name"
+    _bundle_wrapper_script_path = "$_bundle_wrapper_script_dir/$_target_name"
 
-    action_with_pydeps("${target_name}__wrapper_script") {
+    action_with_pydeps("${_target_name}__wrapper_script") {
       script = "//build/android/gyp/create_bundle_wrapper_script.py"
       inputs = [
         _base_module_build_config,
@@ -4746,10 +4781,10 @@ if (enable_java_templates) {
       }
     }
 
-    group(target_name) {
+    group(_target_name) {
       public_deps = [
-        ":${target_name}__bundle",
-        ":${target_name}__wrapper_script",
+        ":${_target_name}__bundle",
+        ":${_target_name}__wrapper_script",
       ]
       if (defined(_size_info_target)) {
         public_deps += [ ":$_size_info_target" ]
@@ -4757,7 +4792,7 @@ if (enable_java_templates) {
     }
 
     _apks_path = "$root_build_dir/apks/$_bundle_name.apks"
-    action_with_pydeps("${target_name}_apks") {
+    action_with_pydeps("${_target_name}_apks") {
       script = "//build/android/gyp/create_app_bundle_apks.py"
       inputs = [
         _bundle_path,

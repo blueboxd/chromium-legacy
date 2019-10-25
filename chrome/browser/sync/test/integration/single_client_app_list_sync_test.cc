@@ -73,11 +73,8 @@ class AppListSyncUpdateWaiter
   }
 
   // StatusChangeChecker:
-  std::string GetDebugMessage() const override {
-    return "AwaitAppListSyncUpdated";
-  }
-
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "AwaitAppListSyncUpdated";
     return service_updated_;
   }
 

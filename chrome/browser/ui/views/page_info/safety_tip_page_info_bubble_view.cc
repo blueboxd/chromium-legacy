@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/page_info/safety_tip_page_info_bubble_view.h"
 
-#include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/reputation/reputation_service.h"
+#include "chrome/browser/reputation/safety_tip_ui_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -29,8 +29,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
-
-using security_state::SafetyTipStatus;
 
 namespace {
 
@@ -76,7 +74,7 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& url,
     const GURL& suggested_url,
-    base::OnceCallback<void(safety_tips::SafetyTipInteraction)> close_callback)
+    base::OnceCallback<void(SafetyTipInteraction)> close_callback)
     : PageInfoBubbleViewBase(anchor_view,
                              anchor_rect,
                              parent_window,
@@ -91,7 +89,7 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   set_close_on_deactivate(false);
 
   const base::string16 title_text =
-      safety_tips::GetSafetyTipTitle(safety_tip_status, suggested_url);
+      GetSafetyTipTitle(safety_tip_status, suggested_url);
   set_window_title(title_text);
 
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -154,9 +152,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
       layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL);
   bottom_layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
                                      views::GridLayout::kFixedSize, spacing);
-  auto text_label =
-      std::make_unique<views::Label>(safety_tips::GetSafetyTipDescription(
-          safety_tip_status, url_, suggested_url_));
+  auto text_label = std::make_unique<views::Label>(
+      GetSafetyTipDescription(safety_tip_status, url_, suggested_url_));
   text_label->SetMultiLine(true);
   text_label->SetLineHeight(20);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -211,9 +208,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   // Leave site button.
   std::unique_ptr<views::Button> leave_button(
       views::MdTextButton::CreateSecondaryUiBlueButton(
-          this,
-          l10n_util::GetStringUTF16(
-              safety_tips::GetSafetyTipLeaveButtonId(safety_tip_status))));
+          this, l10n_util::GetStringUTF16(
+                    GetSafetyTipLeaveButtonId(safety_tip_status))));
   leave_button->SetID(PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE);
   leave_button_ = button_layout->AddView(std::move(leave_button));
 
@@ -250,15 +246,15 @@ void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
       // stumble there again, we should warn again.
       break;
     case views::Widget::ClosedReason::kEscKeyPressed:
-      action_taken_ = safety_tips::SafetyTipInteraction::kDismissWithEsc;
+      action_taken_ = SafetyTipInteraction::kDismissWithEsc;
       should_set_ignore = true;
       break;
     case views::Widget::ClosedReason::kCloseButtonClicked:
-      action_taken_ = safety_tips::SafetyTipInteraction::kDismissWithClose;
+      action_taken_ = SafetyTipInteraction::kDismissWithClose;
       should_set_ignore = true;
       break;
     case views::Widget::ClosedReason::kCancelButtonClicked:
-      action_taken_ = safety_tips::SafetyTipInteraction::kDismissWithIgnore;
+      action_taken_ = SafetyTipInteraction::kDismissWithIgnore;
       should_set_ignore = true;
       break;
   }
@@ -266,7 +262,7 @@ void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
   if (should_set_ignore) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     if (browser) {
-      safety_tips::ReputationService::Get(browser->profile())
+      ReputationService::Get(browser->profile())
           ->SetUserIgnore(web_contents(), url_, action_taken_);
     }
   }
@@ -276,15 +272,16 @@ void SafetyTipPageInfoBubbleView::ButtonPressed(views::Button* button,
                                                 const ui::Event& event) {
   switch (button->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE:
-      action_taken_ = safety_tips::SafetyTipInteraction::kLeaveSite;
-      safety_tips::LeaveSite(web_contents(),
-                             safety_tip_status_ == SafetyTipStatus::kLookalike
-                                 ? suggested_url_
-                                 : GURL(safety_tips::kSafeUrl));
+      action_taken_ = SafetyTipInteraction::kLeaveSite;
+      LeaveSiteFromSafetyTip(
+          web_contents(),
+          safety_tip_status_ == security_state::SafetyTipStatus::kLookalike
+              ? suggested_url_
+              : GURL(kSafetyTipLeaveSiteUrl));
       return;
 
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_IGNORE_WARNING:
-      action_taken_ = safety_tips::SafetyTipInteraction::kDismiss;
+      action_taken_ = SafetyTipInteraction::kDismiss;
       GetWidget()->CloseWithReason(
           views::Widget::ClosedReason::kCancelButtonClicked);
       return;
@@ -296,11 +293,9 @@ void SafetyTipPageInfoBubbleView::StyledLabelLinkClicked(
     views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
-  action_taken_ = safety_tips::SafetyTipInteraction::kLearnMore;
-  safety_tips::OpenHelpCenter(web_contents());
+  action_taken_ = SafetyTipInteraction::kLearnMore;
+  OpenHelpCenterFromSafetyTip(web_contents());
 }
-
-namespace safety_tips {
 
 void ShowSafetyTipDialog(
     content::WebContents* web_contents,
@@ -331,16 +326,13 @@ void ShowSafetyTipDialog(
   bubble->GetWidget()->Show();
 }
 
-}  // namespace safety_tips
-
 PageInfoBubbleViewBase* CreateSafetyTipBubbleForTesting(
     gfx::NativeView parent_view,
     content::WebContents* web_contents,
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& virtual_url,
     const GURL& suggested_url,
-    base::OnceCallback<void(safety_tips::SafetyTipInteraction)>
-        close_callback) {
+    base::OnceCallback<void(SafetyTipInteraction)> close_callback) {
   return new SafetyTipPageInfoBubbleView(
       nullptr, gfx::Rect(), parent_view, web_contents, safety_tip_status,
       virtual_url, suggested_url, std::move(close_callback));

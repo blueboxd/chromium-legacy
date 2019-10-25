@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './strings.m.js';
+
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {AlertIndicatorsElement} from './alert_indicators.js';
 import {CustomElement} from './custom_element.js';
@@ -12,6 +15,24 @@ import {tabStripOptions} from './tab_strip_options.js';
 import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
 
 export const DEFAULT_ANIMATION_DURATION = 125;
+
+/**
+ * @param {!TabData} tab
+ * @return {string}
+ */
+function getAccessibleTitle(tab) {
+  const tabTitle = tab.title;
+
+  if (tab.crashed) {
+    return loadTimeData.getStringF('tabCrashed', tabTitle);
+  }
+
+  if (tab.networkState === TabNetworkState.ERROR) {
+    return loadTimeData.getStringF('tabNetworkError', tabTitle);
+  }
+
+  return tabTitle;
+}
 
 export class TabElement extends CustomElement {
   static get template() {
@@ -31,11 +52,12 @@ export class TabElement extends CustomElement {
     /** @private {!HTMLElement} */
     this.closeButtonEl_ =
         /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#close'));
+    this.closeButtonEl_.setAttribute(
+        'aria-label', loadTimeData.getString('closeTab'));
 
     /** @private {!HTMLElement} */
-    this.dragImage_ =
-        /** @type {!HTMLElement} */ (
-            this.shadowRoot.querySelector('#dragImage'));
+    this.tabEl_ =
+        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#tab'));
 
     /** @private {!HTMLElement} */
     this.faviconEl_ =
@@ -63,8 +85,8 @@ export class TabElement extends CustomElement {
     this.titleTextEl_ = /** @type {!HTMLElement} */ (
         this.shadowRoot.querySelector('#titleText'));
 
-    this.addEventListener('click', this.onClick_.bind(this));
-    this.addEventListener('contextmenu', this.onContextMenu_.bind(this));
+    this.tabEl_.addEventListener('click', this.onClick_.bind(this));
+    this.tabEl_.addEventListener('contextmenu', this.onContextMenu_.bind(this));
     this.closeButtonEl_.addEventListener('click', this.onClose_.bind(this));
   }
 
@@ -77,6 +99,7 @@ export class TabElement extends CustomElement {
   set tab(tab) {
     assert(this.tab_ !== tab);
     this.toggleAttribute('active', tab.active);
+    this.tabEl_.setAttribute('aria-selected', tab.active.toString());
     this.toggleAttribute('hide-icon_', !tab.showIcon);
     this.toggleAttribute(
         'waiting_',
@@ -94,6 +117,7 @@ export class TabElement extends CustomElement {
     if (!this.tab_ || this.tab_.title !== tab.title) {
       this.titleTextEl_.textContent = tab.title;
     }
+    this.titleTextEl_.setAttribute('aria-label', getAccessibleTitle(tab));
 
     if (tab.networkState === TabNetworkState.WAITING ||
         (tab.networkState === TabNetworkState.LOADING &&
@@ -120,11 +144,9 @@ export class TabElement extends CustomElement {
     this.tab_ = Object.freeze(tab);
   }
 
-  /**
-   * @return {!HTMLElement}
-   */
+  /** @return {!HTMLElement} */
   getDragImage() {
-    return this.dragImage_;
+    return this.tabEl_;
   }
 
   /**
@@ -147,7 +169,10 @@ export class TabElement extends CustomElement {
     }
   }
 
-  /** @private */
+  /**
+   * @param {!Event} event
+   * @private
+   */
   onContextMenu_(event) {
     event.preventDefault();
 

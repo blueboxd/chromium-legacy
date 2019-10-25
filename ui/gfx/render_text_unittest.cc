@@ -960,6 +960,47 @@ INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsBasics,
                          ::testing::ValuesIn(kBasicsRunListCases),
                          RenderTextTestWithRunListCase::ParamInfoToString);
 
+// see 'Unicode Bidirectional Algorithm': http://unicode.org/reports/tr9/
+const RunListCase kBidiRunListCases[] = {
+    {"simple_ltr", L"ascii", "[0->4]"},
+    {"simple_rtl", L"أسكي", "[3<-0]"},
+    {"simple_mixed", L"aaڭڭcc", "[0->1][3<-2][4->5]"},
+    {"simple_mixed_LRE", L"\u202Aaaڭڭcc\u202C", "[0][1->2][4<-3][5->6][7]"},
+    {"simple_mixed_RLE", L"\u202Baaڭڭcc\u202C", "[7][5->6][4<-3][0][1->2]"},
+    {"sequence_RLE", L"\u202Baa\u202C\u202Bbb\u202C",
+     "[7][0][1->2][3->4][5->6]"},
+    {"simple_mixed_LRI", L"\u2066aaڭڭcc\u2069", "[0][1->2][4<-3][5->6][7]"},
+    {"simple_mixed_RLI", L"\u2067aaڭڭcc\u2069", "[0][5->6][4<-3][1->2][7]"},
+    {"sequence_RLI", L"\u2067aa\u2069\u2067bb\u2069",
+     "[0][1->2][3->4][5->6][7]"},
+    {"override_ltr_RLO", L"\u202Eaaa\u202C", "[4][3<-1][0]"},
+    {"override_rtl_LRO", L"\u202Dڭڭڭ\u202C", "[0][1->3][4]"},
+    {"neutral_strong_ltr", L"a!!a", "[0][1->2][3]"},
+    {"neutral_strong_rtl", L"ڭ!!ڭ", "[3][2<-1][0]"},
+    {"neutral_strong_both", L"a a ڭ ڭ", "[0][1][2][3][6][5][4]"},
+    {"neutral_strong_both_RLE", L"\u202Ba a ڭ ڭ\u202C",
+     "[8][7][6][5][4][0][1][2][3]"},
+    {"weak_numbers", L"one ڭ222ڭ", "[0->2][3][8][5->7][4]"},
+    {"not_weak_letters", L"one ڭabcڭ", "[0->2][3][4][5->7][8]"},
+    {"weak_arabic_numbers", L"one ڭ١٢٣ڭ", "[0->2][3][8][5->7][4]"},
+    {"neutral_LRM_pre", L"\u200E\u2026\u2026", "[0->2]"},
+    {"neutral_LRM_post", L"\u2026\u2026\u200E", "[0->2]"},
+    {"neutral_RLM_pre", L"\u200F\u2026\u2026", "[2<-0]"},
+    {"neutral_RLM_post", L"\u2026\u2026\u200F", "[2<-0]"},
+    {"brackets_ltr", L"aa(ڭڭ)\u2026\u2026", "[0->1][2][4<-3][5][6->7]"},
+    {"brackets_rtl", L"ڭڭ(aa)\u2026\u2026", "[7<-6][5][3->4][2][1<-0]"},
+    {"mixed_with_punct", L"aa \"ڭڭ!\", aa", "[0->1][2->3][5<-4][6->9][10->11]"},
+    {"mixed_with_punct_RLI", L"aa \"\u2067ڭڭ!\u2069\", aa",
+     "[0->1][2->3][4][7][6<-5][8][9->11][12->13]"},
+    {"mixed_with_punct_RLM", L"aa \"ڭڭ!\u200F\", aa",
+     "[0->1][2->3][7][6][5<-4][8->10][11->12]"},
+};
+
+INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsBidi,
+                         RenderTextTestWithRunListCase,
+                         ::testing::ValuesIn(kBidiRunListCases),
+                         RenderTextTestWithRunListCase::ParamInfoToString);
+
 TEST_F(RenderTextTest, ElidedText) {
   // TODO(skanuj) : Add more test cases for following
   // - RenderText styles.
@@ -5022,10 +5063,6 @@ TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
 #if defined(OS_WIN)
 // Ensures that locale is used for fonts selection.
 TEST_F(RenderTextTest, CJKFontWithLocale) {
-  // The uniscribe fallback used by win7 is not supporting locale.
-  if (base::win::GetVersion() < base::win::Version::WIN10)
-    return;
-
   const wchar_t kCJKTest[] = L"\u8AA4\u904E\u9AA8";
   static const char* kLocaleTests[] = {"zh-CN", "ja-JP", "ko-KR"};
 

@@ -2812,6 +2812,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxLocalEntitySuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxLocalEntitySuggestions)},
 
+    {"omnibox-experimental-suggest-scoring",
+     flag_descriptions::kOmniboxExperimentalSuggestScoringName,
+     flag_descriptions::kOmniboxExperimentalSuggestScoringDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxExperimentalSuggestScoring)},
+
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
     {"omnibox-experimental-keyword-mode",
      flag_descriptions::kOmniboxExperimentalKeywordModeName,
@@ -4725,8 +4730,13 @@ class FlagsStateSingleton {
   FlagsStateSingleton()
       : flags_state_(std::make_unique<flags_ui::FlagsState>(
             kFeatureEntries,
-            base::size(kFeatureEntries))) {}
+            base::size(kFeatureEntries),
+            base::Bind(&FlagsStateSingleton::IsFlagExpired))) {}
   ~FlagsStateSingleton() {}
+
+  static bool IsFlagExpired(const flags_ui::FeatureEntry& entry) {
+    return flags::IsFlagExpired(entry.internal_name);
+  }
 
   static FlagsStateSingleton* GetInstance() {
     return base::Singleton<FlagsStateSingleton>::get();
@@ -4737,8 +4747,9 @@ class FlagsStateSingleton {
   }
 
   void RebuildState(const std::vector<flags_ui::FeatureEntry>& entries) {
-    flags_state_ =
-        std::make_unique<flags_ui::FlagsState>(entries.data(), entries.size());
+    flags_state_ = std::make_unique<flags_ui::FlagsState>(
+        entries.data(), entries.size(),
+        base::Bind(&FlagsStateSingleton::IsFlagExpired));
   }
 
  private:

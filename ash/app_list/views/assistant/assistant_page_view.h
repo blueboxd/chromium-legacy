@@ -67,8 +67,6 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
-  AssistantMainView* GetMainViewForTest();
-
  private:
   int GetChildViewHeightForWidth(int width) const;
   void MaybeUpdateAppListState(int child_height);

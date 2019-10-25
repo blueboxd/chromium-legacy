@@ -19,6 +19,19 @@
 
 namespace views {
 
+namespace {
+
+int GetMainAxis(LayoutOrientation orientation, const gfx::Size& size) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      return size.width();
+    case LayoutOrientation::kVertical:
+      return size.height();
+  }
+}
+
+}  // anonymous namespace
+
 // Holds data about a view that is fading in or out as part of an animation.
 struct AnimatingLayoutManager::LayoutFadeInfo {
   // Whether the view is fading in or out.
@@ -215,9 +228,6 @@ AnimatingLayoutManager& AnimatingLayoutManager::SetDefaultFadeMode(
 }
 
 void AnimatingLayoutManager::ResetLayout() {
-  if (animation_delegate_)
-    animation_delegate_->Reset();
-
   if (!target_layout_manager())
     return;
 
@@ -225,12 +235,31 @@ void AnimatingLayoutManager::ResetLayout() {
       should_animate_bounds_
           ? target_layout_manager()->GetPreferredSize(host_view())
           : host_view()->size();
+
+  ResetLayoutToSize(target_size);
+}
+
+void AnimatingLayoutManager::ResetLayoutToSize(const gfx::Size& target_size) {
+  if (animation_delegate_)
+    animation_delegate_->Reset();
+
   target_layout_ = target_layout_manager()->GetProposedLayout(target_size);
   current_layout_ = target_layout_;
   starting_layout_ = current_layout_;
   fade_infos_.clear();
   current_offset_ = 1.0;
   set_cached_layout_size(target_size);
+
+  if (is_animating_)
+    OnAnimationEnded();
+}
+
+void AnimatingLayoutManager::OnAnimationEnded() {
+  DCHECK(is_animating_);
+  is_animating_ = false;
+  RunDelayedActions();
+  DCHECK(!is_animating_) << "Queued actions should not change animation state.";
+  NotifyIsAnimatingChanged();
 }
 
 void AnimatingLayoutManager::FadeOut(View* child_view) {
@@ -289,7 +318,10 @@ gfx::Size AnimatingLayoutManager::GetMinimumSize(const View* host) const {
     return gfx::Size();
   // TODO(dfried): consider cases where the minimum size might not be just the
   // minimum size of the embedded layout.
-  return target_layout_manager()->GetMinimumSize(host);
+  gfx::Size minimum_size = target_layout_manager()->GetMinimumSize(host);
+  if (should_animate_bounds_ && is_animating_)
+    minimum_size.SetToMin(current_layout_.host_size);
+  return minimum_size;
 }
 
 int AnimatingLayoutManager::GetPreferredHeightForWidth(const View* host,
@@ -307,21 +339,22 @@ void AnimatingLayoutManager::Layout(View* host) {
   // Changing the size of a view directly will lead to a layout call rather
   // than an invalidation. This should reset the layout (but see the note in
   // RecalculateTarget() below).
-  if (!should_animate_bounds_ &&
-      (!cached_layout_size() || host->size() != *cached_layout_size())) {
+  if (should_animate_bounds_) {
+    const int host_main = GetMainAxis(orientation(), host->size());
+    const int desired_main =
+        GetMainAxis(orientation(), current_layout_.host_size);
+    if (desired_main > host_main)
+      ResetLayoutToSize(host->size());
+  } else if (!cached_layout_size() || host->size() != *cached_layout_size()) {
     ResetLayout();
   }
+
   ApplyLayout(current_layout_);
 
   // Send animating stopped events on layout so the current layout during the
   // event represents the final state instead of an intermediate state.
-  if (is_animating_ && current_offset_ == 1.0) {
-    is_animating_ = false;
-    RunDelayedActions();
-    DCHECK(!is_animating_)
-        << "Queued actions should not change animation state.";
-    NotifyIsAnimatingChanged();
-  }
+  if (is_animating_ && current_offset_ == 1.0)
+    OnAnimationEnded();
 }
 
 std::vector<View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(

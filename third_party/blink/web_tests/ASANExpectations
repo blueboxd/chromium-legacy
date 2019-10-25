@@ -49,10 +49,10 @@ crbug.com/438499 [ Linux ] http/tests/websocket/workers/worker-simple.html [ Tim
 crbug.com/438499 [ Linux ] http/tests/workers/text-encoding.html [ Timeout ]
 crbug.com/438499 [ Linux ] http/tests/devtools/profiler/heap-snapshot-loader.js [ Timeout ]
 crbug.com/438499 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-show-all.js [ Timeout ]
-crbug.com/438499 [ Linux ] virtual/threaded/animations/unanimated-style.html [ Timeout ]
+crbug.com/438499 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/unanimated-style.html [ Timeout ]
 
 # Flakily timeout on Linux ASAN bots.
-crbug.com/243871 [ Linux ] virtual/threaded/fast/scroll-behavior/ [ Skip ]
+crbug.com/243871 [ Linux ] virtual/threaded-prefer-compositing/fast/scroll-behavior/ [ Skip ]
 crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow.html [ Timeout ]
 crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow-2.html [ Timeout ]
 crbug.com/572723 [ Linux ] http/tests/devtools/sources/debugger/debugger-completions-on-call-frame.js [ Timeout Pass ]

@@ -94,7 +94,9 @@ void SingleRequestURLLoaderFactory::CreateLoaderAndStart(
 
 void SingleRequestURLLoaderFactory::Clone(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
-  NOTREACHED();
+  // Pass |this| as the recevier context to make sure this object stays alive
+  // while it still has receivers.
+  receivers_.Add(this, std::move(receiver), this);
 }
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>

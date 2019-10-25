@@ -252,6 +252,10 @@ void RemoteFrame::WillEnterFullscreen() {
       Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
 }
 
+void RemoteFrame::ResetReplicatedContentSecurityPolicy() {
+  GetSecurityContext()->ResetReplicatedContentSecurityPolicy();
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())

@@ -101,6 +101,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
   void Initialize(PrefService* pref_service);
   void SetHaveMetricsConsent(bool user_consent, bool app_consent);
+  void SetFastStartupForTesting(bool fast_startup_for_testing);
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
   CreateLowEntropyProvider();
 
@@ -125,6 +126,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
       const metrics::MetricsLogUploader::UploadCallback& on_upload_complete)
       override;
   base::TimeDelta GetStandardUploadInterval() override;
+  bool ShouldStartUpFastForTesting() const override;
   std::string GetAppPackageName() override;
 
  protected:
@@ -141,6 +143,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   bool user_consent_ = false;
   bool app_consent_ = false;
   bool is_in_sample_ = false;
+  bool fast_startup_for_testing_ = false;
 
   // AwMetricsServiceClient may be created before the UI thread is promoted to
   // BrowserThread::UI. Use |sequence_checker_| to enforce that the

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/task_environment.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 
 #include "base/bind.h"
@@ -138,7 +139,8 @@ class MockCoordinator : public mojom::Coordinator {
 class MemoryTracingIntegrationTest : public testing::Test {
  public:
   void SetUp() override {
-    message_loop_ = std::make_unique<base::MessageLoop>();
+    task_environment_ =
+        std::make_unique<base::test::SingleThreadTaskEnvironment>();
     coordinator_ = std::make_unique<MockCoordinator>(this);
   }
 
@@ -161,7 +163,7 @@ class MemoryTracingIntegrationTest : public testing::Test {
     mdm_.reset();
     client_process_.reset();
     coordinator_.reset();
-    message_loop_.reset();
+    task_environment_.reset();
     TraceLog::ResetForTesting();
   }
 
@@ -247,7 +249,7 @@ class MemoryTracingIntegrationTest : public testing::Test {
   std::unique_ptr<MemoryDumpManager> mdm_;
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
   std::unique_ptr<MockCoordinator> coordinator_;
   std::unique_ptr<ClientProcessImpl> client_process_;
   uint64_t guid_counter_ = 0;

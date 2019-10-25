@@ -473,10 +473,10 @@ void DWriteFontProxyImpl::MatchUniqueFont(
 
   base::string16 font_file_pathname;
   uint32_t ttc_index;
-  bool result = FontFilePathAndTtcIndex(first_font_face.Get(),
-                                        font_file_pathname, ttc_index);
-  if (!result)
+  if (FAILED(FontFilePathAndTtcIndex(first_font_face.Get(), font_file_pathname,
+                                     ttc_index))) {
     return;
+  }
 
   base::FilePath path(base::UTF16ToWide(font_file_pathname));
   std::move(callback).Run(path, ttc_index);

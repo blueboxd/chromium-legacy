@@ -129,20 +129,6 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageCenterBubbleTest);
 };
 
-TEST_F(UnifiedMessageCenterBubbleTest, VisibileOnlyWithNotifications) {
-  EnableMessageCenterRefactor();
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
-  // UnifiedMessageCenterBubble should not be visible when there are no
-  // notifications.
-  EXPECT_FALSE(GetMessageCenterBubble()->GetBubbleWidget()->IsVisible());
-
-  AddNotification();
-
-  // UnifiedMessageCenterBubble should become visible after a notification is
-  // added.
-  EXPECT_TRUE(GetMessageCenterBubble()->GetBubbleWidget()->IsVisible());
-}
-
 TEST_F(UnifiedMessageCenterBubbleTest, PositionedAboveSystemTray) {
   const int total_notifications = 5;
   EnableMessageCenterRefactor();

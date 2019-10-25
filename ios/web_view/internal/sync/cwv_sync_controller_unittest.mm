@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -87,14 +88,20 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
     personal_data_manager_ =
         std::make_unique<autofill::TestPersonalDataManager>();
 
+    password_store_ = new password_manager::TestPasswordStore();
+    password_store_->Init(base::RepeatingCallback<void(syncer::ModelType)>(),
+                          nullptr);
+
     sync_controller_ = [[CWVSyncController alloc]
           initWithSyncService:mock_sync_service()
               identityManager:identity_manager()
         signinErrorController:signin_error_controller()
-          personalDataManager:personal_data_manager_.get()];
+          personalDataManager:personal_data_manager_.get()
+                passwordStore:password_store_.get()];
   }
 
   ~CWVSyncControllerTest() override {
+    password_store_->ShutdownOnUIThread();
     EXPECT_CALL(*mock_sync_service(), RemoveObserver(_));
     EXPECT_CALL(*mock_sync_service(), Shutdown());
   }
@@ -120,6 +127,7 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
   web::WebTaskEnvironment task_environment_;
   web::ScopedTestingWebClient web_client_;
   ios_web_view::WebViewBrowserState browser_state_;
+  scoped_refptr<password_manager::TestPasswordStore> password_store_;
   std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
   CWVSyncController* sync_controller_ = nil;
   syncer::SyncServiceObserver* sync_service_observer_ = nullptr;

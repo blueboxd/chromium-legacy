@@ -44,6 +44,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/test/blob_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
@@ -339,7 +340,7 @@ class BackgroundFetchDataManagerTest
 
     if (blob && blob->blob) {
       mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob->blob));
-      return CopyBody(blob_remote.get());
+      return storage::BlobToString(blob_remote.get());
     }
 
     return std::string();
@@ -832,32 +833,6 @@ class BackgroundFetchDataManagerTest
                           blink::mojom::CacheStorageVerboseErrorPtr error) {
     DCHECK_EQ(error->value, blink::mojom::CacheStorageError::kSuccess);
     std::move(quit_closure).Run();
-  }
-
-  class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
-   public:
-    explicit DataPipeDrainerClient(std::string* output) : output_(output) {}
-    void Run() { run_loop_.Run(); }
-
-    void OnDataAvailable(const void* data, size_t num_bytes) override {
-      output_->append(reinterpret_cast<const char*>(data), num_bytes);
-    }
-    void OnDataComplete() override { run_loop_.Quit(); }
-
-   private:
-    base::RunLoop run_loop_;
-    std::string* output_;
-  };
-
-  std::string CopyBody(blink::mojom::Blob* blob) {
-    mojo::DataPipe pipe;
-    blob->ReadAll(std::move(pipe.producer_handle), mojo::NullRemote());
-
-    std::string output;
-    DataPipeDrainerClient client(&output);
-    mojo::DataPipeDrainer drainer(&client, std::move(pipe.consumer_handle));
-    client.Run();
-    return output;
   }
 
   blink::mojom::SerializedBlobPtr BuildBlob(const std::string data) {
@@ -1882,7 +1857,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithBody) {
 
   ASSERT_TRUE(request->blob->blob);
   mojo::Remote<blink::mojom::Blob> blob(std::move(request->blob->blob));
-  EXPECT_EQ(CopyBody(blob.get()), upload_data);
+  EXPECT_EQ(storage::BlobToString(blob.get()), upload_data);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {

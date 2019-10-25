@@ -35,7 +35,9 @@ UserEventEqualityChecker::UserEventEqualityChecker(
 
 UserEventEqualityChecker::~UserEventEqualityChecker() = default;
 
-bool UserEventEqualityChecker::IsExitConditionSatisfied() {
+bool UserEventEqualityChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting server side USER_EVENTS to match expected.";
+
   std::vector<SyncEntity> entities =
       fake_server_->GetSyncEntitiesByModelType(syncer::USER_EVENTS);
 
@@ -80,8 +82,4 @@ bool UserEventEqualityChecker::IsExitConditionSatisfied() {
   }
 
   return true;
-}
-
-std::string UserEventEqualityChecker::GetDebugMessage() const {
-  return "Waiting server side USER_EVENTS to match expected.";
 }

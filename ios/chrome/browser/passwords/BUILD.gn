@@ -9,8 +9,6 @@ source_set("passwords") {
   sources = [
     "credential_manager.h",
     "credential_manager.mm",
-    "credential_manager_util.h",
-    "credential_manager_util.mm",
     "ios_chrome_password_manager_client.h",
     "ios_chrome_password_manager_client.mm",
     "ios_chrome_password_manager_driver.h",
@@ -164,7 +162,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "credential_manager_unittest.mm",
-    "credential_manager_util_unittest.cc",
     "js_credential_manager_unittest.mm",
     "password_controller_js_unittest.mm",
     "password_controller_unittest.mm",

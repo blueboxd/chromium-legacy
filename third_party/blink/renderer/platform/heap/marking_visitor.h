@@ -60,13 +60,19 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
   // All work is registered through RegisterWeakCallback.
   void VisitBackingStoreWeakly(void* object,
                                void** object_slot,
-                               TraceDescriptor desc,
+                               TraceDescriptor strong_desc,
+                               TraceDescriptor weak_desc,
                                WeakCallback callback,
                                void* parameter) final {
     RegisterBackingStoreReference(object_slot);
     if (!object)
       return;
     RegisterWeakCallback(parameter, callback);
+
+    if (weak_desc.callback) {
+      weak_table_worklist_.Push(
+          {weak_desc.base_object_payload, weak_desc.callback});
+    }
   }
 
   // Used to only mark the backing store when it has been registered for weak
@@ -86,8 +92,6 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
   // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
   // relies on this feature.
   void RegisterBackingStoreCallback(void* backing, MovingObjectCallback) final;
-  bool RegisterWeakTable(const void* closure,
-                         EphemeronCallback iteration_callback) final;
   void RegisterWeakCallback(void* closure, WeakCallback) final;
 
   // Flush private segments remaining in visitor's worklists to global pools.

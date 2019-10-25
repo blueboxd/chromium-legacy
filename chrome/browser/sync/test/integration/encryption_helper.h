@@ -57,8 +57,7 @@ class ServerNigoriChecker : public SingleClientStatusChangeChecker {
                       fake_server::FakeServer* fake_server,
                       syncer::PassphraseType expected_passphrase_type);
 
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
   fake_server::FakeServer* const fake_server_;
@@ -71,8 +70,7 @@ class PassphraseRequiredStateChecker : public SingleClientStatusChangeChecker {
   PassphraseRequiredStateChecker(syncer::ProfileSyncService* service,
                                  bool desired_state);
 
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
   const bool desired_state_;
@@ -86,8 +84,7 @@ class TrustedVaultKeyRequiredStateChecker
   TrustedVaultKeyRequiredStateChecker(syncer::ProfileSyncService* service,
                                       bool desired_state);
 
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
   const bool desired_state_;

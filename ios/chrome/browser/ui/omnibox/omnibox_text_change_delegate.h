@@ -25,7 +25,7 @@ class OmniboxTextChangeDelegate {
   // Called when the Omnibox text field returns. (The "go" button is tapped.)
   virtual void OnAccept() = 0;
   // Called when the Omnibox text field should copy.
-  virtual bool OnCopy() = 0;
+  virtual void OnCopy() = 0;
   // Clear the Omnibox text.
   virtual void ClearText() = 0;
   // Called when the Omnibox text field should paste.

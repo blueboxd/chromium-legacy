@@ -75,9 +75,9 @@ class ScriptWrappable;
 //   private_property.set(object, value);
 //
 // Usage 2) Slow path to create a global private symbol.
-//   const char symbol_name[] = "Interface#PrivateKeyName";
-//   auto private_property =
-//       V8PrivateProperty::GetSymbol(isolate, symbol_name);
+//   /* |desc| is a description of the private property. */
+//   static const SymbolKey key(desc);
+//   auto private_property = V8PrivateProperty::GetSymbol(isolate, key);
 //   ...
 class PLATFORM_EXPORT V8PrivateProperty {
   USING_FAST_MALLOC(V8PrivateProperty);
@@ -143,14 +143,33 @@ class PLATFORM_EXPORT V8PrivateProperty {
     v8::Isolate* isolate_;
   };
 
+  // This class is used for a key to get Symbol.
+  //
+  // We can improve ability of tracking private properties by using an instance
+  // of this class. |desc_| is a description of the private property.
+  class PLATFORM_EXPORT SymbolKey {
+   public:
+    // Note that, unlike a string class, the lifetime of |desc| must be longer
+    // than this SymbolKey, i.e. this SymbolKey does not copy |desc| nor have
+    // |desc| alive enough long.
+    explicit SymbolKey(const char* desc) : desc_(desc) {}
+
+    const char* GetDescription() const { return desc_; }
+
+   private:
+    SymbolKey(const SymbolKey&) = delete;
+    SymbolKey& operator=(const SymbolKey&) = delete;
+
+    const char* const desc_;
+  };
+
 #define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)        \
   static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */          \
                                                 InterfaceName, KeyName)( \
       v8::Isolate * isolate) {                                           \
-    static int private_property_key;                                     \
-    return GetSymbol(                                                    \
-        isolate, &private_property_key,                                  \
+    static const SymbolKey private_property_key(                         \
         V8_PRIVATE_PROPERTY_SYMBOL_STRING(InterfaceName, KeyName));      \
+    return GetSymbol(isolate, private_property_key);                     \
   }
 
   V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DEFINE_GETTER)
@@ -188,8 +207,8 @@ class PLATFORM_EXPORT V8PrivateProperty {
   // This is a hack for PopStateEvent to get the same private property of
   // History, named State.
   static Symbol GetHistoryStateSymbol(v8::Isolate* isolate) {
-    static int private_property_key;
-    return GetSymbol(isolate, &private_property_key, "History#State");
+    static const SymbolKey private_property_key("History#State");
+    return GetSymbol(isolate, private_property_key);
   }
 
   // Returns a Symbol to access a private property. Symbol instances from same
@@ -205,6 +224,23 @@ class PLATFORM_EXPORT V8PrivateProperty {
     if (UNLIKELY(iter == symbol_map.end())) {
       v8_private = CreateV8Private(isolate, desc);
       symbol_map.insert(key, v8::Eternal<v8::Private>(isolate, v8_private));
+    } else {
+      v8_private = iter->value.Get(isolate);
+    }
+    return Symbol(isolate, v8_private);
+  }
+
+  // Returns a Symbol to access a private property. Symbol instances from same
+  // |key| are guaranteed to access the same property.
+  static Symbol GetSymbol(v8::Isolate* isolate, const SymbolKey& key) {
+    V8PrivateProperty* private_prop =
+        V8PerIsolateData::From(isolate)->PrivateProperty();
+    auto& symbol_map = private_prop->symbol_map_;
+    auto iter = symbol_map.find(&key);
+    v8::Local<v8::Private> v8_private;
+    if (UNLIKELY(iter == symbol_map.end())) {
+      v8_private = CreateV8Private(isolate, key.GetDescription());
+      symbol_map.insert(&key, v8::Eternal<v8::Private>(isolate, v8_private));
     } else {
       v8_private = iter->value.Get(isolate);
     }
@@ -230,7 +266,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
   // requirement.
   ScopedPersistent<v8::Private> symbol_window_document_cached_accessor_;
 
-  WTF::HashMap<void*, v8::Eternal<v8::Private>> symbol_map_;
+  WTF::HashMap<const void*, v8::Eternal<v8::Private>> symbol_map_;
 
   DISALLOW_COPY_AND_ASSIGN(V8PrivateProperty);
 };

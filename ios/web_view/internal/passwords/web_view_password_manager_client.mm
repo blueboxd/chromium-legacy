@@ -16,6 +16,8 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/password_manager/ios/credential_manager_util.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
@@ -121,6 +123,10 @@ WebViewPasswordManagerClient::GetPasswordManager() const {
 const password_manager::PasswordFeatureManager*
 WebViewPasswordManagerClient::GetPasswordFeatureManager() const {
   return &password_feature_manager_;
+}
+
+bool WebViewPasswordManagerClient::IsMainFrameSecure() const {
+  return password_manager::WebStateContentIsSecureHtml(delegate_.webState);
 }
 
 PrefService* WebViewPasswordManagerClient::GetPrefs() const {

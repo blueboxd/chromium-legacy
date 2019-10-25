@@ -19,6 +19,8 @@ namespace ash {
 // gesture affordance.
 class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
  public:
+  enum class State { DRAGGING, ABORTING, COMPLETING };
+
   explicit BackGestureAffordance(const gfx::Point& location);
   ~BackGestureAffordance() override;
 
@@ -40,8 +42,6 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
   }
 
  private:
-  enum class State { DRAGGING, ABORTING, COMPLETING };
-
   void CreateAffordanceWidget(const gfx::Point& location);
 
   void UpdateTransform();

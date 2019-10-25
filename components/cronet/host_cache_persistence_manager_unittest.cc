@@ -11,6 +11,8 @@
 #include "components/prefs/testing_pref_service.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_cache.h"
+#include "net/dns/host_resolver_source.h"
+#include "net/dns/public/dns_query_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cronet {
@@ -33,7 +35,8 @@ class HostCachePersistenceManagerTest : public testing::Test {
   // a write, and the HostCache's interaction with its PersistenceDelegate is
   // assumed to work (it's tested in net/dns/host_cache_unittest.cc).
   void WriteToCache(const std::string& host) {
-    net::HostCache::Key key(host, net::ADDRESS_FAMILY_UNSPECIFIED, 0);
+    net::HostCache::Key key(host, net::DnsQueryType::UNSPECIFIED, 0,
+                            net::HostResolverSource::ANY);
     net::HostCache::Entry entry(net::OK, net::AddressList(),
                                 net::HostCache::Entry::SOURCE_UNKNOWN);
     cache_->Set(key, entry, base::TimeTicks::Now(),
@@ -60,9 +63,12 @@ class HostCachePersistenceManagerTest : public testing::Test {
   void InitializePref() {
     net::HostCache temp_cache(10);
 
-    net::HostCache::Key key1("1", net::ADDRESS_FAMILY_UNSPECIFIED, 0);
-    net::HostCache::Key key2("2", net::ADDRESS_FAMILY_UNSPECIFIED, 0);
-    net::HostCache::Key key3("3", net::ADDRESS_FAMILY_UNSPECIFIED, 0);
+    net::HostCache::Key key1("1", net::DnsQueryType::UNSPECIFIED, 0,
+                             net::HostResolverSource::ANY);
+    net::HostCache::Key key2("2", net::DnsQueryType::UNSPECIFIED, 0,
+                             net::HostResolverSource::ANY);
+    net::HostCache::Key key3("3", net::DnsQueryType::UNSPECIFIED, 0,
+                             net::HostResolverSource::ANY);
     net::HostCache::Entry entry(net::OK, net::AddressList(),
                                 net::HostCache::Entry::SOURCE_UNKNOWN);
 

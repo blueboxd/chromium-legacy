@@ -61,15 +61,14 @@ bool CopyingTexture2DWrapper::ProcessTexture(const D3D11PictureBuffer* owner_pb,
 
 bool CopyingTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb,
                                    size_t array_slice,
-                                   gfx::Size size,
-                                   int textures_per_picture) {
+                                   gfx::Size size) {
   if (!video_processor_->Init(size.width(), size.height()))
     return false;
 
   return output_texture_wrapper_->Init(
       get_helper_cb,
       0,  // The output texture only has an array size of 1.
-      size, textures_per_picture);
+      size);
 }
 
 }  // namespace media

@@ -63,7 +63,8 @@ class EngineInitializeChecker : public SingleClientStatusChangeChecker {
   explicit EngineInitializeChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sync engine initialization to complete";
     if (service()->IsEngineInitialized())
       return true;
     // Engine initialization is blocked by an auth error.
@@ -75,8 +76,6 @@ class EngineInitializeChecker : public SingleClientStatusChangeChecker {
     // Still waiting on engine initialization.
     return false;
   }
-
-  std::string GetDebugMessage() const override { return "Engine Initialize"; }
 };
 
 class SyncSetupChecker : public SingleClientStatusChangeChecker {
@@ -87,7 +86,9 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service),
         wait_for_state_(wait_for_state) {}
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sync setup to complete";
+
     syncer::SyncService::TransportState transport_state =
         service()->GetTransportState();
     if (transport_state == syncer::SyncService::TransportState::ACTIVE &&
@@ -114,8 +115,6 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
     // Still waiting on sync setup.
     return false;
   }
-
-  std::string GetDebugMessage() const override { return "Sync Setup"; }
 
  private:
   const State wait_for_state_;

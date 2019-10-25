@@ -72,28 +72,21 @@ public final class WebLayer {
      * Loads assets for WebLayer and returns the package ID to use when calling
      * R.onResourcesLoaded().
      */
-    private static int loadAssets(Context appContext) {
+    private static int loadAssets(Context appContext, PackageInfo implPackageInfo)
+            throws ReflectiveOperationException {
         WebViewDelegate delegate;
-        PackageInfo implPackageInfo;
-        try {
-            // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
-            // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
-            // WebViewFactory, so we have to fake it.
-            implPackageInfo =
-                    appContext.getPackageManager().getPackageInfo(getImplPackageName(appContext),
-                            PackageManager.GET_SHARED_LIBRARY_FILES | PackageManager.GET_META_DATA);
-            Field packageInfo = WebViewFactory.class.getDeclaredField("sPackageInfo");
-            packageInfo.setAccessible(true);
-            packageInfo.set(null, implPackageInfo);
+        // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
+        // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
+        // WebViewFactory, so we have to fake it.
+        Field packageInfo = WebViewFactory.class.getDeclaredField("sPackageInfo");
+        packageInfo.setAccessible(true);
+        packageInfo.set(null, implPackageInfo);
 
-            // TODO(torne): Figure out how to load assets for production.
-            // Load assets using the WebViewDelegate.
-            Constructor constructor = WebViewDelegate.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            delegate = (WebViewDelegate) constructor.newInstance();
-        } catch (Exception e) {
-            throw new AndroidRuntimeException(e);
-        }
+        // TODO(torne): Figure out how to load assets for production.
+        // Load assets using the WebViewDelegate.
+        Constructor constructor = WebViewDelegate.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        delegate = (WebViewDelegate) constructor.newInstance();
         delegate.addWebViewAssetPath(appContext);
         return delegate.getPackageId(appContext.getResources(), implPackageInfo.packageName);
     }
@@ -109,13 +102,22 @@ public final class WebLayer {
     @NonNull
     public static ListenableFuture<WebLayer> create(Context appContext)
             throws UnsupportedVersionException {
+        ThreadCheck.ensureOnUiThread();
         if (sFuture == null) {
-            // Just in case the app passed an Activity context.
-            appContext = appContext.getApplicationContext();
-            ClassLoader remoteClassLoader = createRemoteClassLoader(appContext);
-            IWebLayer iWebLayer = connectToWebLayerImplementation(remoteClassLoader);
-            int resourcesPackageId = loadAssets(appContext);
-            sFuture = new WebLayerLoadFuture(iWebLayer, appContext, resourcesPackageId);
+            try {
+                // Just in case the app passed an Activity context.
+                appContext = appContext.getApplicationContext();
+                ClassLoader remoteClassLoader = createRemoteClassLoader(appContext);
+                IWebLayer iWebLayer = connectToWebLayerImplementation(remoteClassLoader);
+                PackageInfo packageInfo = appContext.getPackageManager().getPackageInfo(
+                        getImplPackageName(appContext),
+                        PackageManager.GET_SHARED_LIBRARY_FILES | PackageManager.GET_META_DATA);
+                int resourcesPackageId = loadAssets(appContext, packageInfo);
+                sFuture = new WebLayerLoadFuture(
+                        iWebLayer, appContext, packageInfo, resourcesPackageId);
+            } catch (Exception e) {
+                throw new AndroidRuntimeException(e);
+            }
         }
         return sFuture;
     }
@@ -126,7 +128,8 @@ public final class WebLayer {
     private static final class WebLayerLoadFuture extends ListenableFuture<WebLayer> {
         private final IWebLayer mIWebLayer;
 
-        WebLayerLoadFuture(IWebLayer iWebLayer, Context appContext, int resourcesPackageId) {
+        WebLayerLoadFuture(IWebLayer iWebLayer, Context appContext, PackageInfo packageInfo,
+                int resourcesPackageId) {
             mIWebLayer = iWebLayer;
             ValueCallback<Boolean> loadCallback = new ValueCallback<Boolean>() {
                 @Override
@@ -138,7 +141,8 @@ public final class WebLayer {
             };
             try {
                 iWebLayer.initAndLoadAsync(ObjectWrapper.wrap(appContext),
-                        ObjectWrapper.wrap(loadCallback), resourcesPackageId);
+                        ObjectWrapper.wrap(packageInfo), ObjectWrapper.wrap(loadCallback),
+                        resourcesPackageId);
             } catch (RemoteException e) {
                 throw new APICallException(e);
             }
@@ -157,7 +161,8 @@ public final class WebLayer {
         }
 
         @Override
-        public void onLoad() {
+        /* package */ void onLoad() {
+            ThreadCheck.ensureOnUiThread();
             try {
                 mIWebLayer.loadSync();
             } catch (RemoteException e) {
@@ -177,6 +182,7 @@ public final class WebLayer {
     }
 
     public void destroy() {
+        ThreadCheck.ensureOnUiThread();
         // TODO: implement me.
         mProfileManager.destroy();
     }
@@ -187,6 +193,7 @@ public final class WebLayer {
 
     @NonNull
     public static BrowserFragment createBrowserFragment(String profilePath) {
+        ThreadCheck.ensureOnUiThread();
         // TODO: use a profile id instead of the path to the actual file.
         Bundle args = new Bundle();
         args.putString(BrowserFragmentArgs.PROFILE_PATH, profilePath == null ? "" : profilePath);

@@ -46,13 +46,10 @@ class SessionCountMatchChecker : public SingleClientStatusChangeChecker {
         verifier_(fake_server) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
-    return verifier_.VerifyEntityCountByType(expected_count_, syncer::SESSIONS);
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for a matching number of sessions to be refleted on the "
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for a matching number of sessions to be refleted on the "
            "fake server.";
+    return verifier_.VerifyEntityCountByType(expected_count_, syncer::SESSIONS);
   }
 
  private:

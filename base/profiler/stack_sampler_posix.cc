@@ -12,7 +12,7 @@
 namespace base {
 
 std::unique_ptr<StackSampler> StackSampler::Create(
-    PlatformThreadId thread_id,
+    SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
     StackSamplerTestDelegate* test_delegate) {
   return nullptr;

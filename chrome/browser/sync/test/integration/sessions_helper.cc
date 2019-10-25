@@ -462,10 +462,7 @@ ForeignSessionsMatchChecker::ForeignSessionsMatchChecker(
       browser_index_(browser_index),
       windows_(windows) {}
 
-bool ForeignSessionsMatchChecker::IsExitConditionSatisfied() {
+bool ForeignSessionsMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for matching foreign sessions";
   return sessions_helper::CheckForeignSessionsAgainst(browser_index_, windows_);
-}
-
-std::string ForeignSessionsMatchChecker::GetDebugMessage() const {
-  return "Waiting for matching foreign sessions";
 }

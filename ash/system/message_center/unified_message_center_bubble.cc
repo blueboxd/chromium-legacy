@@ -55,10 +55,6 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
   tray->bubble()->unified_view()->AddObserver(this);
 
   UpdatePosition();
-
-  if (!message_center_view_->GetVisible()) {
-    bubble_widget_->Hide();
-  }
 }
 
 UnifiedMessageCenterBubble::~UnifiedMessageCenterBubble() {
@@ -95,10 +91,15 @@ void UnifiedMessageCenterBubble::UpdatePosition() {
   message_center_view_->SetMaxHeight(available_height);
   message_center_view_->SetAvailableHeight(available_height);
 
+  // Note: It's tempting to set the insets for TrayBubbleView in order to
+  // achieve the padding, but that enlarges the layer bounds and breaks rounded
+  // corner clipping for ARC notifications. This approach only modifies the
+  // position of the layer.
   gfx::Rect resting_bounds = tray_->shelf()->GetSystemTrayAnchorRect();
-  resting_bounds.set_y(resting_bounds.y() -
-                       tray_->bubble()->GetCurrentTrayHeight() -
-                       kUnifiedMessageCenterBubbleSpacing);
+  resting_bounds.set_x(resting_bounds.x() - kUnifiedMenuPadding);
+  resting_bounds.set_y(
+      resting_bounds.y() - tray_->bubble()->GetCurrentTrayHeight() -
+      kUnifiedMenuPadding - kUnifiedMessageCenterBubbleSpacing);
 
   bubble_widget_->SetBounds(resting_bounds);
   bubble_view_->ChangeAnchorRect(resting_bounds);
@@ -130,15 +131,6 @@ TrayBubbleView* UnifiedMessageCenterBubble::GetBubbleView() const {
 
 views::Widget* UnifiedMessageCenterBubble::GetBubbleWidget() const {
   return bubble_widget_;
-}
-
-void UnifiedMessageCenterBubble::OnViewVisibilityChanged(
-    views::View* observed_view,
-    views::View* starting_view) {
-  if (message_center_view_->GetVisible())
-    bubble_widget_->Show();
-  else
-    bubble_widget_->Hide();
 }
 
 void UnifiedMessageCenterBubble::OnViewPreferredSizeChanged(

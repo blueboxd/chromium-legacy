@@ -17,9 +17,7 @@
 #include "cc/paint/paint_recorder.h"
 #include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
-#include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/paint_preview/common/serial_utils.h"
-#include "components/paint_preview/common/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkFont.h"
@@ -126,31 +124,23 @@ TEST(PaintPreviewServiceUtilsTest, TestSerializeAsSkPicture) {
 TEST(PaintPreviewServiceUtilsTest, TestBuildAndSerializeProto) {
   auto token = base::UnguessableToken::Create();
   PaintPreviewTracker tracker(token, kRoutingId, true);
-  tracker.AnnotateLink("www.google.com", gfx::Rect(1, 2, 3, 4));
-  tracker.AnnotateLink("www.chromium.org", gfx::Rect(10, 20, 10, 20));
+  tracker.AnnotateLink(GURL("www.google.com"), gfx::Rect(1, 2, 3, 4));
+  tracker.AnnotateLink(GURL("www.chromium.org"), gfx::Rect(10, 20, 10, 20));
   tracker.CreateContentForRemoteFrame(gfx::Rect(1, 1, 1, 1), kRoutingId + 1);
   tracker.CreateContentForRemoteFrame(gfx::Rect(1, 2, 4, 8), kRoutingId + 2);
 
-  base::ReadOnlySharedMemoryRegion region;
-  EXPECT_TRUE(BuildAndSerializeProto(&tracker, &region));
-  PaintPreviewFrameProto proto;
-  EXPECT_TRUE(region.IsValid());
-  auto mapping = region.Map();
-  EXPECT_TRUE(mapping.IsValid());
-  EXPECT_TRUE(proto.ParseFromArray(mapping.memory(), mapping.size()));
+  auto response = mojom::PaintPreviewCaptureResponse::New();
+  BuildResponse(&tracker, response.get());
 
-  EXPECT_TRUE(proto.is_main_frame());
-  EXPECT_EQ(static_cast<int>(proto.id()), kRoutingId);
-  EXPECT_EQ(proto.unguessable_token_low(),
-            tracker.Guid().GetLowForSerialization());
-  EXPECT_EQ(proto.unguessable_token_high(),
-            tracker.Guid().GetHighForSerialization());
-  EXPECT_EQ(proto.links_size(), 2);
-  EXPECT_EQ(static_cast<size_t>(proto.links_size()), tracker.GetLinks().size());
-  for (int i = 0; i < proto.links_size(); ++i)
-    EXPECT_THAT(proto.links(i), EqualsProto(tracker.GetLinks()[i]));
+  EXPECT_EQ(static_cast<int>(response->id), kRoutingId);
+  EXPECT_EQ(response->links.size(), 2U);
+  EXPECT_EQ(response->links.size(), tracker.GetLinks().size());
+  for (size_t i = 0; i < response->links.size(); ++i) {
+    EXPECT_THAT(response->links[i]->url, tracker.GetLinks()[i].url);
+    EXPECT_THAT(response->links[i]->rect, tracker.GetLinks()[i].rect);
+  }
   auto* content_map = tracker.GetPictureSerializationContext();
-  for (const auto& id_pair : proto.content_id_proxy_id_map()) {
+  for (const auto& id_pair : response->content_id_proxy_id_map) {
     auto it = content_map->find(id_pair.first);
     EXPECT_NE(it, content_map->end());
     EXPECT_EQ(id_pair.first, it->first);

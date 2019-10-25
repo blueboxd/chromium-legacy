@@ -26,6 +26,7 @@
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
+#include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/java/jni/BrowserControllerImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
@@ -179,6 +180,18 @@ void BrowserControllerImpl::DidNavigateMainFramePostCommit(
     content::WebContents* web_contents) {
   for (auto& observer : observers_)
     observer.DisplayedUrlChanged(web_contents->GetVisibleURL());
+}
+
+content::ColorChooser* BrowserControllerImpl::OpenColorChooser(
+    content::WebContents* web_contents,
+    SkColor color,
+    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
+#if defined(OS_ANDROID)
+  return new web_contents_delegate_android::ColorChooserAndroid(
+      web_contents, color, suggestions);
+#else
+  return nullptr;
+#endif
 }
 
 void BrowserControllerImpl::RunFileChooser(

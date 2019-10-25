@@ -212,13 +212,6 @@ class PLATFORM_EXPORT HeapAllocator {
         visitor, t);
   }
 
-  template <typename VisitorDispatcher>
-  static bool RegisterWeakTable(VisitorDispatcher visitor,
-                                const void* closure,
-                                EphemeronCallback iteration_callback) {
-    return visitor->RegisterWeakTable(closure, iteration_callback);
-  }
-
   template <typename T, typename VisitorDispatcher>
   static void RegisterBackingStoreCallback(VisitorDispatcher visitor,
                                            T* backing,
@@ -305,7 +298,7 @@ class PLATFORM_EXPORT HeapAllocator {
                                           T** backing_slot,
                                           WeakCallback callback,
                                           void* parameter) {
-    visitor->TraceBackingStoreWeakly(
+    visitor->TraceBackingStoreWeakly<HashTable>(
         reinterpret_cast<HeapHashTableBacking<HashTable>*>(backing),
         reinterpret_cast<HeapHashTableBacking<HashTable>**>(backing_slot),
         callback, parameter);

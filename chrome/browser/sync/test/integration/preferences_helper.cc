@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -277,10 +276,6 @@ PrefMatchChecker::PrefMatchChecker(const char* path) : path_(path) {
 
 PrefMatchChecker::~PrefMatchChecker() {}
 
-std::string PrefMatchChecker::GetDebugMessage() const {
-  return base::StringPrintf("Waiting for pref '%s' to match", GetPath());
-}
-
 const char* PrefMatchChecker::GetPath() const {
   return path_;
 }
@@ -297,34 +292,39 @@ void PrefMatchChecker::RegisterPrefListener(PrefService* pref_service) {
 ListPrefMatchChecker::ListPrefMatchChecker(const char* path)
     : PrefMatchChecker(path) {}
 
-bool ListPrefMatchChecker::IsExitConditionSatisfied() {
+bool ListPrefMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for pref '" << GetPath() << "' to match";
   return preferences_helper::ListPrefMatches(GetPath());
 }
 
 BooleanPrefMatchChecker::BooleanPrefMatchChecker(const char* path)
     : PrefMatchChecker(path) {}
 
-bool BooleanPrefMatchChecker::IsExitConditionSatisfied() {
+bool BooleanPrefMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for pref '" << GetPath() << "' to match";
   return preferences_helper::BooleanPrefMatches(GetPath());
 }
 
 IntegerPrefMatchChecker::IntegerPrefMatchChecker(const char* path)
     : PrefMatchChecker(path) {}
 
-bool IntegerPrefMatchChecker::IsExitConditionSatisfied() {
+bool IntegerPrefMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for pref '" << GetPath() << "' to match";
   return preferences_helper::IntegerPrefMatches(GetPath());
 }
 
 StringPrefMatchChecker::StringPrefMatchChecker(const char* path)
     : PrefMatchChecker(path) {}
 
-bool StringPrefMatchChecker::IsExitConditionSatisfied() {
+bool StringPrefMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for pref '" << GetPath() << "' to match";
   return preferences_helper::StringPrefMatches(GetPath());
 }
 
 ClearedPrefMatchChecker::ClearedPrefMatchChecker(const char* path)
     : PrefMatchChecker(path) {}
 
-bool ClearedPrefMatchChecker::IsExitConditionSatisfied() {
+bool ClearedPrefMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for pref '" << GetPath() << "' to match";
   return preferences_helper::ClearedPrefMatches(GetPath());
 }

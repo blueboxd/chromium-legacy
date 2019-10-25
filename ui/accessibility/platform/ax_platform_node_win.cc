@@ -4355,6 +4355,14 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
                            : VARIANT_FALSE;
       break;
     case UIA_IsReadOnlyAttributeId:
+      // Placeholder text should return the enclosing element's read-only value.
+      if (IsPlaceholderText()) {
+        AXPlatformNodeWin* parent_platform_node =
+            static_cast<AXPlatformNodeWin*>(
+                FromNativeViewAccessible(GetParent()));
+        return parent_platform_node->GetTextAttributeValue(attribute_id,
+                                                           result);
+      }
       V_VT(result) = VT_BOOL;
       V_BOOL(result) =
           (GetData().GetRestriction() == ax::mojom::Restriction::kReadOnly ||
@@ -7107,6 +7115,17 @@ bool AXPlatformNodeWin::IsAncestorComboBox() {
   if (parent->MSAARole() == ROLE_SYSTEM_COMBOBOX)
     return true;
   return parent->IsAncestorComboBox();
+}
+
+bool AXPlatformNodeWin::IsPlaceholderText() const {
+  if (GetData().role != ax::mojom::Role::kStaticText)
+    return false;
+  AXPlatformNodeWin* parent =
+      static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
+  // Static text nodes are always expected to have a parent.
+  DCHECK(parent);
+  return (parent->IsPlainTextField() || parent->IsRichTextField()) &&
+         parent->HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder);
 }
 
 bool AXPlatformNodeWin::IsHyperlink() {

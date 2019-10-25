@@ -108,7 +108,7 @@ class LevelDBTestDatabase : public TransactionalLevelDBDatabase {
  public:
   LevelDBTestDatabase(scoped_refptr<LevelDBState> level_db_state,
                       std::unique_ptr<LevelDBScopes> leveldb_scopes,
-                      indexed_db::LevelDBFactory* factory,
+                      TransactionalLevelDBFactory* factory,
                       scoped_refptr<base::SequencedTaskRunner> task_runner,
                       size_t max_open_iterators,
                       FailMethod fail_method,
@@ -357,10 +357,13 @@ class LevelDBTestIterator : public content::TransactionalLevelDBIterator {
 MockBrowserTestIndexedDBClassFactory::MockBrowserTestIndexedDBClassFactory()
     : failure_class_(FAIL_CLASS_NOTHING),
       failure_method_(FAIL_METHOD_NOTHING),
-      only_trace_calls_(false) {
-}
+      only_trace_calls_(false) {}
 
-MockBrowserTestIndexedDBClassFactory::~MockBrowserTestIndexedDBClassFactory() {
+MockBrowserTestIndexedDBClassFactory::~MockBrowserTestIndexedDBClassFactory() {}
+
+TransactionalLevelDBFactory&
+MockBrowserTestIndexedDBClassFactory::transactional_leveldb_factory() {
+  return *this;
 }
 
 std::pair<std::unique_ptr<IndexedDBDatabase>, leveldb::Status>
@@ -413,7 +416,7 @@ MockBrowserTestIndexedDBClassFactory::CreateLevelDBDatabase(
         max_open_iterators, failure_method_,
         fail_on_call_num_[FAIL_CLASS_LEVELDB_DATABASE]);
   } else {
-    return DefaultLevelDBFactory::CreateLevelDBDatabase(
+    return DefaultTransactionalLevelDBFactory::CreateLevelDBDatabase(
         std::move(state), std::move(scopes), std::move(task_runner),
         max_open_iterators);
   }
@@ -431,7 +434,8 @@ MockBrowserTestIndexedDBClassFactory::CreateLevelDBDirectTransaction(
         db, failure_method_,
         fail_on_call_num_[FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION]);
   } else {
-    return DefaultLevelDBFactory::CreateLevelDBDirectTransaction(db);
+    return DefaultTransactionalLevelDBFactory::CreateLevelDBDirectTransaction(
+        db);
   }
 }
 
@@ -452,8 +456,8 @@ MockBrowserTestIndexedDBClassFactory::CreateLevelDBTransaction(
           db, std::move(scope), failure_method_,
           fail_on_call_num_[FAIL_CLASS_LEVELDB_TRANSACTION]);
     } else {
-      return DefaultLevelDBFactory::CreateLevelDBTransaction(db,
-                                                             std::move(scope));
+      return DefaultTransactionalLevelDBFactory::CreateLevelDBTransaction(
+          db, std::move(scope));
     }
   }
 }
@@ -478,7 +482,7 @@ MockBrowserTestIndexedDBClassFactory::CreateIterator(
           std::move(iterator), db, std::move(txn), std::move(snapshot),
           failure_method_, fail_on_call_num_[FAIL_CLASS_LEVELDB_ITERATOR]);
     } else {
-      return DefaultLevelDBFactory::CreateIterator(
+      return DefaultTransactionalLevelDBFactory::CreateIterator(
           std::move(iterator), db, std::move(txn), std::move(snapshot));
     }
   }

@@ -113,8 +113,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
 
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    DCHECK(!in_overflow_mode());
+  DCHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
 
   browser_->tab_strip_model()->AddObserver(this);
 }

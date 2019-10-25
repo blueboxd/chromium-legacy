@@ -69,6 +69,12 @@ class ASH_EXPORT AppListControllerImpl
   AppListControllerImpl();
   ~AppListControllerImpl() override;
 
+  enum HomeLauncherAnimationState {
+    kFinished,
+    kShowing,
+    kHiding,
+  };
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   AppListPresenterImpl* presenter() { return &presenter_; }
@@ -224,7 +230,10 @@ class ASH_EXPORT AppListControllerImpl
   void OnShellDestroying() override;
 
   // OverviewObserver:
-  void OnOverviewModeStarting() override;
+  void OnOverviewModeWillStart() override;
+  void OnOverviewModeStartingAnimationComplete(bool canceled) override;
+  void OnOverviewModeEnding(OverviewSession* session) override;
+  void OnOverviewModeEnded() override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -279,6 +288,10 @@ class ASH_EXPORT AppListControllerImpl
       aura::Window* window) override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
+
+  HomeLauncherAnimationState home_launcher_animation_state() const {
+    return home_launcher_animation_state_;
+  }
 
   // Performs the 'back' action for the active page.
   void Back();
@@ -358,6 +371,17 @@ class ASH_EXPORT AppListControllerImpl
   // Record the app launch for AppListAppLaunchedV2 metric.
   void RecordAppLaunched(AppListLaunchedFrom launched_from);
 
+  // Whether the home launcher is
+  // * being shown (either through an animation or a drag)
+  // * being hidden (either through an animation or a drag)
+  // * not animating nor being dragged.
+  // In the case where the home launcher is being dragged, the gesture can
+  // reverse direction at any point during the drag, in which case the only
+  // information given by "showing" versus "hiding" is the starting point of
+  // the drag and the assumed final state (which won't be accurate if the
+  // gesture is reversed).
+  HomeLauncherAnimationState home_launcher_animation_state_ = kFinished;
+
   AppListClient* client_ = nullptr;
 
   std::unique_ptr<AppListModel> model_;
@@ -378,12 +402,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // Whether to immediately dismiss the AppListView.
   bool should_dismiss_immediately_ = false;
-
-  // Whether the home launcher is in the process of being animated into view.
-  // This becomes true at the start of the animation (or the drag), becomes
-  // false once it ends and stays false until the next animation or drag
-  // showing the home launcher.
-  bool animation_or_drag_to_visible_home_launcher_in_progress_ = false;
 
   // The last target visibility change and its display id.
   bool last_target_visible_ = false;

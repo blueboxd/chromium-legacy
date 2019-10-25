@@ -204,7 +204,12 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest,
   ASSERT_TRUE(ConfirmSignoutDialog::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, UMATest) {
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_UMATest DISABLED_UMATest
+#else
+#define MAYBE_UMATest UMATest
+#endif
+IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, MAYBE_UMATest) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 

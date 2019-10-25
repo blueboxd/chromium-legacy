@@ -59,8 +59,6 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
   views::Widget* GetBubbleWidget() const override;
 
   // views::ViewObserver:
-  void OnViewVisibilityChanged(views::View* observed_view,
-                               views::View* starting_view) override;
   void OnViewPreferredSizeChanged(views::View* observed_view) override;
 
   // views::WidgetObserver:

@@ -8,6 +8,7 @@
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/main_stage/assistant_opt_in_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_container_view.h"
 #include "ash/assistant/util/animation_util.h"
@@ -44,6 +45,7 @@ AssistantFooterView::AssistantFooterView(AssistantViewDelegate* delegate)
           /*animation_ended_callback=*/base::BindRepeating(
               &AssistantFooterView::OnAnimationEnded,
               base::Unretained(this)))) {
+  SetID(AssistantViewID::kFooterView);
   InitLayout();
   AssistantState::Get()->AddObserver(this);
 }

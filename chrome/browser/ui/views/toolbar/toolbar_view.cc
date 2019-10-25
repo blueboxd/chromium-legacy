@@ -656,15 +656,20 @@ void ToolbarView::InitLayout() {
   const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
   // TODO(dfried): rename this constant.
   const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
-  const views::FlexSpecification browser_actions_flex_rule =
-      views::FlexSpecification::ForCustomRule(
-          BrowserActionsContainer::GetFlexRule())
-          .WithOrder(2);
+  const views::FlexSpecification account_container_flex_rule =
+      views::FlexSpecification::ForSizeRule(
+          views::MinimumFlexSizeRule::kScaleToMinimum,
+          views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(1);
   const views::FlexSpecification location_bar_flex_rule =
       views::FlexSpecification::ForSizeRule(
           views::MinimumFlexSizeRule::kScaleToMinimum,
           views::MaximumFlexSizeRule::kUnbounded)
-          .WithOrder(1);
+          .WithOrder(2);
+  const views::FlexSpecification browser_actions_flex_rule =
+      views::FlexSpecification::ForCustomRule(
+          BrowserActionsContainer::GetFlexRule())
+          .WithOrder(3);
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
 
@@ -683,6 +688,11 @@ void ToolbarView::InitLayout() {
     browser_actions_->SetProperty(views::kMarginsKey, gfx::Insets());
     browser_actions_->SetProperty(views::kInternalPaddingKey,
                                   gfx::Insets(0, location_bar_margin));
+  }
+
+  if (toolbar_account_icon_container_) {
+    toolbar_account_icon_container_->SetProperty(views::kFlexBehaviorKey,
+                                                 account_container_flex_rule);
   }
 
   LayoutCommon();

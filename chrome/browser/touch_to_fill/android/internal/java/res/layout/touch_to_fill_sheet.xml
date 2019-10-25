@@ -45,7 +45,7 @@
         android:text="@string/manage_passwords"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="8dp"
         android:paddingStart="@dimen/touch_to_fill_sheet_margin"
         android:paddingEnd="@dimen/touch_to_fill_sheet_margin"
         android:minHeight="48dp"

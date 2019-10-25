@@ -113,7 +113,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     BrowserContext* browser_context,
     ResourceContext* resource_context,
-    NavigationLoaderInterceptor::LoaderCallback callback,
+    ServiceWorkerLoaderCallback callback,
     NavigationLoaderInterceptor::FallbackCallback fallback_callback) {
   // InitializeProvider() will update the host. This is important to do before
   // falling back to network below, so service worker APIs still work even if

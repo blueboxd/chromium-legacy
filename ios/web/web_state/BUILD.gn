@@ -33,7 +33,7 @@ source_set("web_state") {
   sources = [
     "global_web_state_event_tracker.h",
     "global_web_state_event_tracker.mm",
-    "global_web_state_observer.cc",
+    "global_web_state_observer.mm",
     "web_state.mm",
     "web_state_delegate.mm",
     "web_state_delegate_bridge.mm",

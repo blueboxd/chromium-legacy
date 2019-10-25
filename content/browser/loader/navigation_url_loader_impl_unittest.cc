@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
@@ -75,8 +76,9 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
                          BrowserContext* browser_context,
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override {
-    std::move(callback).Run(base::BindOnce(
-        &TestNavigationLoaderInterceptor::StartLoader, base::Unretained(this)));
+    std::move(callback).Run(base::MakeRefCounted<SingleRequestURLLoaderFactory>(
+        base::BindOnce(&TestNavigationLoaderInterceptor::StartLoader,
+                       base::Unretained(this))));
   }
 
   void StartLoader(const network::ResourceRequest& resource_request,

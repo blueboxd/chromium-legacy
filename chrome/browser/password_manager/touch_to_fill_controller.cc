@@ -67,6 +67,7 @@ void TouchToFillController::OnCredentialSelected(
 }
 
 void TouchToFillController::OnManagePasswordsSelected() {
+  OnDismiss();
   password_client_->NavigateToManagePasswordsPage(
       password_manager::ManagePasswordsReferrer::kTouchToFill);
 }

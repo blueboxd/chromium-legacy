@@ -56,7 +56,6 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
   bool Init(GetCommandBufferHelperCB get_helper_cb,
             ComD3D11VideoDevice video_device,
             const GUID& decoder_guid,
-            int textures_per_picture,
             std::unique_ptr<MediaLog> media_log);
 
   // Set the contents of a mailbox holder array, return true if successful.

@@ -5,4 +5,4 @@
 package org.chromium.weblayer_private.aidl;
 
 /** Holds the current version number of WebLayer. */
-public final class WebLayerVersion { public static int sVersionNumber = 1; }
+public final class WebLayerVersion { public static int sVersionNumber = 2; }

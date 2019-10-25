@@ -22,10 +22,8 @@ namespace ash {
 
 class AssistantController;
 class AssistantInteractionController;
-class AssistantMainView;
-class AssistantPageView;
-class ContentsView;
 class TestAssistantService;
+class AssistantTestApi;
 
 // Helper class to make testing the Assistant Ash UI easier.
 class AssistantAshTestBase : public AshTestBase {
@@ -56,11 +54,11 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Return the actual displayed Assistant main view.
   // Can only be used after |ShowAssistantUi| has been called.
-  AssistantMainView* main_view();
+  views::View* main_view();
 
   // This is the top-level Assistant specific view.
   // Can only be used after |ShowAssistantUi| has been called.
-  AssistantPageView* page_view();
+  views::View* page_view();
 
   // Spoof sending a request to the Assistant service,
   // and receiving |response_text| as a response to display.
@@ -93,18 +91,12 @@ class AssistantAshTestBase : public AshTestBase {
   bool IsKeyboardShowing() const;
 
  private:
-  ContentsView* contents_view();
-
   AssistantInteractionController* interaction_controller();
   TestAssistantService* assistant_service();
 
-  void DisableAnimations();
-  void ReenableAnimations();
-
+  std::unique_ptr<AssistantTestApi> test_api_;
   base::test::ScopedFeatureList scoped_feature_list_;
   AssistantController* controller_ = nullptr;
-  std::unique_ptr<ui::ScopedAnimationDurationScaleMode>
-      scoped_animation_duration_;
 
   std::vector<std::unique_ptr<aura::Window>> windows_;
 

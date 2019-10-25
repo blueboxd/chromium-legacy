@@ -1035,6 +1035,14 @@ gpu_win_builder(
 )
 
 gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-dx12vk-dbg-64',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-dx12vk-rel-64',
+)
+
+gpu_win_builder(
     name = 'gpu-fyi-try-win10-nvidia-exp-64',
 )
 

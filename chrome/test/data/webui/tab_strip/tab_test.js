@@ -5,6 +5,7 @@
 import 'chrome://tab-strip/tab.js';
 
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TabNetworkState, TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
@@ -17,13 +18,22 @@ suite('Tab', function() {
   let tabElement;
 
   const tab = {
+    active: false,
     alertStates: [],
     id: 1001,
     networkState: TabNetworkState.NONE,
     title: 'My title',
   };
 
+  const strings = {
+    closeTab: 'Close tab',
+    tabCrashed: '$1 has crashed',
+    tabNetworkError: '$1 has a network error',
+  };
+
   setup(() => {
+    loadTimeData.overrideValues(strings);
+
     document.body.innerHTML = '';
 
     testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
@@ -63,6 +73,19 @@ suite('Tab', function() {
     assertTrue(tabElement.hasAttribute('active'));
     tabElement.tab = Object.assign({}, tab, {active: false});
     assertFalse(tabElement.hasAttribute('active'));
+  });
+
+  test('sets [aria-selected] attribute when active', () => {
+    tabElement.tab = Object.assign({}, tab, {active: true});
+    assertEquals(
+        'true',
+        tabElement.shadowRoot.querySelector('#tab').getAttribute(
+            'aria-selected'));
+    tabElement.tab = Object.assign({}, tab, {active: false});
+    assertEquals(
+        'false',
+        tabElement.shadowRoot.querySelector('#tab').getAttribute(
+            'aria-selected'));
   });
 
   test('hides entire favicon container when showIcon is false', () => {
@@ -158,7 +181,7 @@ suite('Tab', function() {
       });
 
   test('clicking on the element activates the tab', () => {
-    tabElement.click();
+    tabElement.shadowRoot.querySelector('#tab').click();
     return testTabsApiProxy.whenCalled('activateTab', tabId => {
       assertEquals(tabId, tab.id);
     });
@@ -247,15 +270,14 @@ suite('Tab', function() {
 
   test('getting the drag image grabs the contents', () => {
     assertEquals(
-        tabElement.getDragImage(),
-        tabElement.shadowRoot.querySelector('#dragImage'));
+        tabElement.getDragImage(), tabElement.shadowRoot.querySelector('#tab'));
   });
 
   test('has custom context menu', async () => {
     let event = new Event('contextmenu');
     event.clientX = 1;
     event.clientY = 2;
-    tabElement.dispatchEvent(event);
+    tabElement.shadowRoot.querySelector('#tab').dispatchEvent(event);
 
     const contextMenuArgs =
         await testTabStripEmbedderProxy.whenCalled('showTabContextMenu');
@@ -266,7 +288,28 @@ suite('Tab', function() {
 
   test('activating closes WebUI container', () => {
     assertEquals(testTabStripEmbedderProxy.getCallCount('closeContainer'), 0);
-    tabElement.click();
+    tabElement.shadowRoot.querySelector('#tab').click();
     assertEquals(testTabStripEmbedderProxy.getCallCount('closeContainer'), 1);
+  });
+
+  test('sets an accessible title', () => {
+    const titleTextElement = tabElement.shadowRoot.querySelector('#titleText');
+    assertEquals(titleTextElement.getAttribute('aria-label'), tab.title);
+
+    tabElement.tab = Object.assign({}, tab, {
+      crashed: true,
+      title: 'My tab',
+    });
+    assertEquals(
+        titleTextElement.getAttribute('aria-label'), 'My tab has crashed');
+
+    tabElement.tab = Object.assign({}, tab, {
+      crashed: false,
+      networkState: TabNetworkState.ERROR,
+      title: 'My tab',
+    });
+    assertEquals(
+        titleTextElement.getAttribute('aria-label'),
+        'My tab has a network error');
   });
 });

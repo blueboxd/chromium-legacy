@@ -24,8 +24,6 @@ namespace base {
 class Clock;
 }
 
-namespace lookalikes {
-
 // Returns eTLD+1 of |hostname|. This excludes private registries, and returns
 // "blogspot.com" for "test.blogspot.com" (blogspot.com is listed as a private
 // registry). We do this to be consistent with url_formatter's top domain list
@@ -98,7 +96,5 @@ class LookalikeUrlService : public KeyedService {
 
   DISALLOW_COPY_AND_ASSIGN(LookalikeUrlService);
 };
-
-}  // namespace lookalikes
 
 #endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_SERVICE_H_

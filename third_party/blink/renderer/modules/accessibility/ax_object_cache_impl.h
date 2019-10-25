@@ -288,9 +288,12 @@ class MODULES_EXPORT AXObjectCacheImpl
   };
 
   struct TreeUpdateParams final : public GarbageCollected<TreeUpdateParams> {
-    TreeUpdateParams(Node* node, base::OnceClosure callback)
-        : node(node), callback(std::move(callback)) {}
+    TreeUpdateParams(Node* node,
+                     ax::mojom::EventFrom event_from,
+                     base::OnceClosure callback)
+        : node(node), event_from(event_from), callback(std::move(callback)) {}
     WeakMember<Node> node;
+    ax::mojom::EventFrom event_from;
     base::OnceClosure callback;
 
     void Trace(Visitor* visitor) { visitor->Trace(node); }

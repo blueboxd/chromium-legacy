@@ -29,6 +29,7 @@ public final class Profile {
     }
 
     public void clearBrowsingData() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.clearBrowsingData();
         } catch (RemoteException e) {
@@ -37,6 +38,7 @@ public final class Profile {
     }
 
     public void destroy() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.destroy();
         } catch (RemoteException e) {

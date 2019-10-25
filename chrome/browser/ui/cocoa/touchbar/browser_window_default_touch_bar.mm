@@ -485,14 +485,17 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
       TemplateURLServiceFactory::GetForProfile(browser_->profile());
   const TemplateURL* defaultProvider =
       templateUrlService->GetDefaultSearchProvider();
-  BOOL isGoogle =
-      defaultProvider->GetEngineType(templateUrlService->search_terms_data()) ==
-      SEARCH_ENGINE_GOOGLE;
+  BOOL isGoogle = NO;
+  base::string16 title;
+  if (defaultProvider) {
+    isGoogle =
+        defaultProvider->GetEngineType(
+            templateUrlService->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
-  base::string16 title =
-      isGoogle ? l10n_util::GetStringUTF16(IDS_TOUCH_BAR_GOOGLE_SEARCH)
-               : l10n_util::GetStringFUTF16(IDS_TOUCH_BAR_SEARCH,
-                                            defaultProvider->short_name());
+    title = isGoogle ? l10n_util::GetStringUTF16(IDS_TOUCH_BAR_GOOGLE_SEARCH)
+                     : l10n_util::GetStringFUTF16(
+                           IDS_TOUCH_BAR_SEARCH, defaultProvider->short_name());
+  }
 
   NSImage* image = nil;
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

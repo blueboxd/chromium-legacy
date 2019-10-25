@@ -18,12 +18,16 @@
 
 namespace ios_web_view {
 class WebViewBrowserState;
-}
+}  // namespace ios_web_view
 
 namespace password_manager {
 class PasswordFormManagerForUI;
 class PasswordManagerDriver;
-}
+}  // namespace password_manager
+
+namespace web {
+class WebState;
+}  // namespace web
 
 @protocol CWVPasswordManagerClientDelegate
 
@@ -40,6 +44,7 @@ class PasswordManagerDriver;
     (std::unique_ptr<autofill::PasswordForm>)formSignedIn;
 
 @property(readonly, nonatomic) ios_web_view::WebViewBrowserState* browserState;
+@property(readonly, nonatomic) web::WebState* webState;
 
 @property(readonly, nonatomic)
     password_manager::PasswordManager* passwordManager;
@@ -86,6 +91,7 @@ class WebViewPasswordManagerClient
   const password_manager::PasswordManager* GetPasswordManager() const override;
   const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
       const override;
+  bool IsMainFrameSecure() const override;
   PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetProfilePasswordStore() const override;
   password_manager::PasswordStore* GetAccountPasswordStore() const override;

@@ -5,6 +5,7 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/traced_value.h"
 
 namespace cc {
@@ -19,6 +20,8 @@ std::string MainThreadScrollingReason::AsText(uint32_t reasons) {
   result =
       result.substr(array_start_pos + 1, array_end_pos - array_start_pos - 1);
   base::Erase(result, '\"');
+  // Add spaces after all commas.
+  base::ReplaceChars(result, ",", ", ", &result);
   return result;
 }
 

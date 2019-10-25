@@ -24,6 +24,12 @@ public class HandlerResponseCallback {
     public void onSignResponse(Integer status, GetAssertionAuthenticatorResponse response){};
 
     /**
+     * Callback for handling response from a request to call
+     * isUserVerifyingPlatformAuthenticatorAvailable.
+     */
+    public void onIsUserVerifyingPlatformAuthenticatorAvailableResponse(boolean isUVPAA){};
+
+    /**
      * Callback for handling any errors from either register or sign requests.
      */
     public void onError(Integer status){};

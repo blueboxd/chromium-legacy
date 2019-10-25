@@ -9,6 +9,7 @@
 
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -39,6 +40,7 @@ views::StyledLabel::RangeStyleInfo CreateStyleInfo(SkColor color) {
 // AssistantQueryView ----------------------------------------------------------
 
 AssistantQueryView::AssistantQueryView() {
+  SetID(AssistantViewID::kQueryView);
   InitLayout();
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kHeading);
 }

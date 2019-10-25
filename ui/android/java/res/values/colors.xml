@@ -43,6 +43,11 @@
     <color name="modern_primary_color" tools:ignore="UnusedResources">@color/default_bg_color_light</color>
     <color name="modern_secondary_color" tools:ignore="UnusedResources">@color/modern_grey_100</color>
 
+    <!-- Dark background and branding color. -->
+    <color name="dark_primary_color" tools:ignore="UnusedResources">
+        @color/modern_grey_900
+    </color>
+
     <!-- TODO(huayinz): Introduce a semantic bg reference for modern_grey_100. -->
     <!-- Background colors that are used to show layers and their relative elevation. In light mode,
          we use a combination of shadows and colors. In night mode, we use different colors to show

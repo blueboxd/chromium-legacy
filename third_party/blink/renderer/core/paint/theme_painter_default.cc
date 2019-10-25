@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
-#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -46,19 +45,11 @@ namespace {
 
 const unsigned kDefaultButtonBackgroundColor = 0xffdddddd;
 
-bool UseMockTheme() {
-  return WebTestSupport::IsMockThemeEnabledForTest();
-}
-
 WebThemeEngine::State GetWebThemeState(const Node* node) {
   if (!LayoutTheme::IsEnabled(node))
     return WebThemeEngine::kStateDisabled;
-  if (UseMockTheme() && LayoutTheme::IsReadOnlyControl(node))
-    return WebThemeEngine::kStateReadonly;
   if (LayoutTheme::IsPressed(node))
     return WebThemeEngine::kStatePressed;
-  if (UseMockTheme() && LayoutTheme::IsFocused(node))
-    return WebThemeEngine::kStateFocused;
   if (LayoutTheme::IsHovered(node))
     return WebThemeEngine::kStateHover;
 
@@ -199,8 +190,7 @@ bool ThemePainterDefault::PaintButton(const Node* node,
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
   extra_params.button = WebThemeEngine::ButtonExtraParams();
   extra_params.button.has_border = true;
-  extra_params.button.background_color =
-      UseMockTheme() ? 0xffc0c0c0 : kDefaultButtonBackgroundColor;
+  extra_params.button.background_color = kDefaultButtonBackgroundColor;
   if (style.HasBackground()) {
     extra_params.button.background_color =
         style.VisitedDependentColor(GetCSSPropertyBackgroundColor()).Rgb();
@@ -314,36 +304,17 @@ void ThemePainterDefault::SetupMenuListArrow(
   float arrow_box_width =
       theme_.ClampedMenuListArrowPaddingSize(document.GetFrame(), style);
   float arrow_scale_factor = arrow_box_width / theme_.MenuListArrowWidthInDIP();
-  if (UseMockTheme()) {
-    // The size and position of the drop-down button is different between
-    // the mock theme and the regular aura theme.
-
-    // Padding inside the arrowBox.
-    float extra_padding = 2 * arrow_scale_factor;
-    float arrow_size =
-        std::min(arrow_box_width,
-                 static_cast<float>(rect.Height() - style.BorderTopWidth() -
-                                    style.BorderBottomWidth())) -
-        2 * extra_padding;
-    // |arrowX| is the middle position for mock theme engine.
-    extra_params.menu_list.arrow_x =
-        (style.Direction() == TextDirection::kRtl)
-            ? rect.X() + extra_padding + (arrow_size / 2)
-            : right - (arrow_size / 2) - extra_padding;
-    extra_params.menu_list.arrow_size = arrow_size;
-  } else {
-    // TODO(tkent): This should be 7.0 to match scroll bar buttons.
-    float arrow_size =
-        (RuntimeEnabledFeatures::FormControlsRefreshEnabled() ? 8.0 : 6.0) *
-        arrow_scale_factor;
-    // Put the arrow at the center of paddingForArrow area.
-    // |arrowX| is the left position for Aura theme engine.
-    extra_params.menu_list.arrow_x =
-        (style.Direction() == TextDirection::kRtl)
-            ? left + (arrow_box_width - arrow_size) / 2
-            : right - (arrow_box_width + arrow_size) / 2;
-    extra_params.menu_list.arrow_size = arrow_size;
-  }
+  // TODO(tkent): This should be 7.0 to match scroll bar buttons.
+  float arrow_size =
+      (RuntimeEnabledFeatures::FormControlsRefreshEnabled() ? 8.0 : 6.0) *
+      arrow_scale_factor;
+  // Put the arrow at the center of paddingForArrow area.
+  // |arrowX| is the left position for Aura theme engine.
+  extra_params.menu_list.arrow_x =
+      (style.Direction() == TextDirection::kRtl)
+          ? left + (arrow_box_width - arrow_size) / 2
+          : right - (arrow_box_width + arrow_size) / 2;
+  extra_params.menu_list.arrow_size = arrow_size;
   extra_params.menu_list.arrow_color =
       style.VisitedDependentColor(GetCSSPropertyColor()).Rgb();
 }
@@ -359,8 +330,7 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
 
   PaintSliderTicks(o, i, rect);
 
-  // FIXME: Mock theme doesn't handle zoomed sliders.
-  float zoom_level = UseMockTheme() ? 1 : o.StyleRef().EffectiveZoom();
+  float zoom_level = o.StyleRef().EffectiveZoom();
   GraphicsContextStateSaver state_saver(i.context, false);
   IntRect unzoomed_rect = rect;
   if (zoom_level != 1) {
@@ -405,8 +375,7 @@ bool ThemePainterDefault::PaintSliderThumb(const Node* node,
       style.EffectiveAppearance() == kSliderThumbVerticalPart;
   extra_params.slider.in_drag = LayoutTheme::IsPressed(node);
 
-  // FIXME: Mock theme doesn't handle zoomed sliders.
-  float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoom();
   GraphicsContextStateSaver state_saver(paint_info.context, false);
   IntRect unzoomed_rect = rect;
   if (zoom_level != 1) {

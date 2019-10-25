@@ -55,8 +55,26 @@ enum ActionIndex : ubyte {
   remove_set_cookie_header,
   count
 }
+enum ActionType : ubyte {
+  block,
+  allow,
+  redirect,
+  upgrade_scheme,
+  remove_headers
+}
+enum RemoveHeaderType : ubyte (bit_flags) {
+  cookie,
+  referer,
+  set_cookie
+}
+table RegexRule {
+  url_rule: url_pattern_index.flat.UrlRule;
+  action_type: ActionType;
+  remove_headers_mask: ubyte;
+}
 table ExtensionIndexedRuleset {
   index_list : [url_pattern_index.flat.UrlPatternIndex];
+  regex_rules: [RegexRule];
   extension_metadata : [UrlRuleMetadata];
 }
 root_type ExtensionIndexedRuleset;
@@ -125,7 +143,7 @@ TEST_F(IndexedRulesetFormatVersionTest, CheckVersionUpdated) {
   EXPECT_EQ(StripCommentsAndWhitespace(kFlatbufferSchemaExpected),
             StripCommentsAndWhitespace(flatbuffer_schema))
       << "Schema change detected; update this test and the schema version.";
-  EXPECT_EQ(11, GetIndexedRulesetFormatVersionForTesting())
+  EXPECT_EQ(12, GetIndexedRulesetFormatVersionForTesting())
       << "Update this test if you update the schema version.";
 }
 

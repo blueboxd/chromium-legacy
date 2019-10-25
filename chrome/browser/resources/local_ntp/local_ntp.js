@@ -1496,10 +1496,13 @@ function populateAutocompleteMatches(matches) {
       const icon = document.createElement('button');
       icon.title = configData.translatedStrings.removeSuggestion;
       icon.classList.add(CLASSES.REMOVE_ICON);
+      icon.onmousedown = e => {
+        e.preventDefault();  // Stops default browser action (focus)
+      };
       icon.onclick = e => {
         matchElBeingDeleted = matchEl;
         window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(i);
-        e.preventDefault();
+        e.preventDefault();  // Stops default browser action (navigation)
       };
 
       const remove = document.createElement('div');

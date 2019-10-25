@@ -29,8 +29,8 @@
 #include "net/base/filename_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/parse_number.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 
@@ -179,7 +179,7 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
     }
 
     // Construct and deliver the HTTP response header.
-    network::ResourceResponseHead response;
+    auto response = network::mojom::URLResponseHead::New();
 
     // Read the charset and MIME type from the optional _metadata file.
     base::Optional<std::string> charset;
@@ -207,10 +207,10 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
           reinterpret_cast<char*>(mmap_.data()), mmap_.length(), request.url,
           "", net::ForceSniffFileUrlsForHtml::kDisabled, &*mime_type);
     }
-    response.mime_type = *mime_type;
-    response.headers = CreateHeaders(response.mime_type, charset);
-    response.content_length = mmap_.length();
-    client_->OnReceiveResponse(response);
+    response->mime_type = *mime_type;
+    response->headers = CreateHeaders(*mime_type, charset);
+    response->content_length = mmap_.length();
+    client_->OnReceiveResponse(std::move(response));
 
     // Set up the Mojo DataPipe used for streaming the response payload to the
     // client.

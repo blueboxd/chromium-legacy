@@ -10,8 +10,8 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
+#include "chrome/browser/reputation/reputation_web_contents_observer.h"
+#include "chrome/browser/reputation/safety_tip_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -258,8 +258,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    safety_tips::ReputationWebContentsObserver* rep_observer =
-        safety_tips::ReputationWebContentsObserver::FromWebContents(contents);
+    ReputationWebContentsObserver* rep_observer =
+        ReputationWebContentsObserver::FromWebContents(contents);
     ASSERT_TRUE(rep_observer);
 
     // Navigate to |url| and wait for the reputation check to complete before
@@ -308,8 +308,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
 
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    safety_tips::ReputationWebContentsObserver* rep_observer =
-        safety_tips::ReputationWebContentsObserver::FromWebContents(contents);
+    ReputationWebContentsObserver* rep_observer =
+        ReputationWebContentsObserver::FromWebContents(contents);
     ASSERT_TRUE(rep_observer);
 
     // Navigate to |url| and wait for the reputation check to complete before
@@ -483,8 +483,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
     }
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    safety_tips::ReputationWebContentsObserver* rep_observer =
-        safety_tips::ReputationWebContentsObserver::FromWebContents(contents);
+    ReputationWebContentsObserver* rep_observer =
+        ReputationWebContentsObserver::FromWebContents(contents);
     ASSERT_TRUE(rep_observer);
 
     // Navigate to |url| and wait for the reputation check to complete before

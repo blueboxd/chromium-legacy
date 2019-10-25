@@ -11,6 +11,7 @@
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/main_stage/animated_container_view.h"
 #include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
@@ -234,6 +235,7 @@ std::unique_ptr<ElementAnimator> CreateTextAnimator(
 
 UiElementContainerView::UiElementContainerView(AssistantViewDelegate* delegate)
     : AnimatedContainerView(delegate) {
+  SetID(AssistantViewID::kUiElementContainer);
   InitLayout();
 }
 

@@ -2021,27 +2021,9 @@ template <WeakHandlingFlag weakHandlingFlag,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-struct WeakProcessingHashTableHelper;
-
-template <typename Key,
-          typename Value,
-          typename Extractor,
-          typename HashFunctions,
-          typename Traits,
-          typename KeyTraits,
-          typename Allocator>
-struct WeakProcessingHashTableHelper<kNoWeakHandling,
-                                     Key,
-                                     Value,
-                                     Extractor,
-                                     HashFunctions,
-                                     Traits,
-                                     KeyTraits,
-                                     Allocator> {
+struct WeakProcessingHashTableHelper {
   STATIC_ONLY(WeakProcessingHashTableHelper);
   static void Process(typename Allocator::Visitor* visitor, void* closure) {}
-  static void EphemeronIteration(typename Allocator::Visitor* visitor,
-                                 void* closure) {}
 };
 
 template <typename Key,
@@ -2102,26 +2084,6 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
       }
     }
   }
-
-  // Called repeatedly for tables that have both weak and strong pointers.
-  static void EphemeronIteration(typename Allocator::Visitor* visitor,
-                                 void* closure) {
-    HashTableType* table = reinterpret_cast<HashTableType*>(closure);
-    // During incremental marking, the table may be freed after the callback has
-    // been registered.
-    if (!table->table_)
-      return;
-    // Check the hash table for elements that we now know will not be
-    // removed by weak processing. Those elements need to have their strong
-    // pointers traced.
-    for (ValueType* element = table->table_ + table->table_size_ - 1;
-         element >= table->table_; element--) {
-      if (!HashTableType::IsEmptyOrDeletedBucket(*element)) {
-        TraceInCollectionTrait<kWeakHandling, ValueType, Traits>::Trace(
-            visitor, *element);
-      }
-    }
-  }
 };
 
 template <typename Key,
@@ -2153,20 +2115,6 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
                                       Extractor, HashFunctions, Traits,
                                       KeyTraits, Allocator>::Process,
         this);
-
-    if (IsTraceableInCollectionTrait<Traits>::value) {
-      // Mix of strong and weak fields. We use an approach similar to ephemeron
-      // marking to find a fixed point, c.f.:
-      // - http://dl.acm.org/citation.cfm?doid=263698.263733
-      // - http://www.jucs.org/jucs_14_21/eliminating_cycles_in_weak
-      // Adding the table for ephemeron marking delays marking any elements in
-      // the backing until regular marking is finished.
-      Allocator::RegisterWeakTable(
-          visitor, this,
-          WeakProcessingHashTableHelper<
-              Traits::kWeakHandlingFlag, Key, Value, Extractor, HashFunctions,
-              Traits, KeyTraits, Allocator>::EphemeronIteration);
-    }
   }
 }
 

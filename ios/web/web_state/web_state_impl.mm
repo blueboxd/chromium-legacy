@@ -41,7 +41,7 @@
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #import "ios/web/security/web_interstitial_impl.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
-#include "ios/web/web_state/global_web_state_event_tracker.h"
+#import "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"

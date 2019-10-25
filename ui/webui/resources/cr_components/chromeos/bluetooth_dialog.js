@@ -478,7 +478,6 @@ Polymer({
   getEventDesc_: function(eventType) {
     assert(eventType);
     if (eventType == PairingEventType.COMPLETE ||
-        eventType == PairingEventType.KEYS_ENTERED ||
         eventType == PairingEventType.REQUEST_AUTHORIZATION) {
       return 'bluetoothStartConnecting';
     }

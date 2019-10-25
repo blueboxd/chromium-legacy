@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/chromeos/rules.gni")
 import("//build/config/ui.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -265,4 +266,13 @@ if (is_cros_chrome_sdk) {
       "$root_out_dir/resources/chromeos/",
     ]
   }
+}
+
+fuzzer_test("ppd_line_reader_fuzzer") {
+  sources = [
+    "printing/ppd_line_reader_fuzzer.cc",
+  ]
+  deps = [
+    ":chromeos",
+  ]
 }

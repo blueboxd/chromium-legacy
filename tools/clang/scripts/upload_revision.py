@@ -18,7 +18,8 @@ import shutil
 import subprocess
 import sys
 
-from build import GetCommitCount
+from build import GetCommitCount, CheckoutLLVM, LLVM_DIR
+from update import CHROMIUM_DIR
 
 # Path constants.
 THIS_DIR = os.path.dirname(__file__)
@@ -66,14 +67,18 @@ def main():
   args = parser.parse_args()
 
   clang_git_revision = args.clang_git_revision[0]
-  clang_svn_revision = GetCommitCount(clang_git_revision)
+
+  # To get the commit count, we need a checkout.
+  CheckoutLLVM(clang_git_revision, LLVM_DIR);
+  clang_svn_revision = 'n' + GetCommitCount(clang_git_revision)
   clang_sub_revision = args.clang_sub_revision
 
   # Needs shell=True on Windows due to git.bat in depot_tools.
+  os.chdir(CHROMIUM_DIR)
   git_revision = subprocess.check_output(
       ["git", "rev-parse", "origin/master"], shell=is_win).strip()
 
-  print("Making a patch for Clang n{}-{}-{}".format(
+  print("Making a patch for Clang {}-{}-{}".format(
       clang_svn_revision, clang_git_revision[:8], clang_sub_revision))
   print("Chrome revision: {}".format(git_revision))
 

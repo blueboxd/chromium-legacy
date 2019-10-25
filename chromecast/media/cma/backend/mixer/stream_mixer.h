@@ -22,7 +22,6 @@
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/backend/mixer/loopback_handler.h"
 #include "chromecast/media/cma/backend/mixer/mixer_control.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer/mixer_pipeline.h"
@@ -38,6 +37,7 @@ namespace media {
 
 class AudioOutputRedirector;
 class InterleavedChannelMixer;
+class LoopbackHandler;
 class MixerServiceReceiver;
 class MixerOutputStream;
 class PostProcessingPipelineFactory;
@@ -84,13 +84,6 @@ class StreamMixer : public MixerControl {
   // called on it; at this point it is safe to delete the input source.
   void RemoveInput(MixerInput::Source* input_source);
 
-  // Adds/removes a loopback audio observer. Observers are passed audio data
-  // just before it is written to output (prior to linearization filters).
-  void AddLoopbackAudioObserver(
-      CastMediaShlib::LoopbackAudioObserver* observer);
-  void RemoveLoopbackAudioObserver(
-      CastMediaShlib::LoopbackAudioObserver* observer);
-
   // Adds/removes an output redirector. Output redirectors take audio from
   // matching inputs and pass them to secondary output instead of the normal
   // mixer output.
@@ -132,6 +125,7 @@ class StreamMixer : public MixerControl {
       const std::string& pipeline_json);
   void SetNumOutputChannelsForTest(int num_output_channels);
   void EnableDynamicChannelCountForTest(bool enable);
+  LoopbackHandler* GetLoopbackHandlerForTest();
 
  private:
   class BaseExternalMediaVolumeChangeRequestObserver
@@ -195,7 +189,6 @@ class StreamMixer : public MixerControl {
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
   std::unique_ptr<base::Thread> io_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  std::unique_ptr<LoopbackHandler, LoopbackHandler::Deleter> loopback_handler_;
   std::unique_ptr<ThreadHealthChecker> health_checker_;
 
   std::unique_ptr<InterleavedChannelMixer> loopback_channel_mixer_;
@@ -242,6 +235,7 @@ class StreamMixer : public MixerControl {
   std::unique_ptr<BaseExternalMediaVolumeChangeRequestObserver>
       external_volume_observer_;
 
+  std::unique_ptr<LoopbackHandler> loopback_handler_;
   base::SequenceBound<MixerServiceReceiver> receiver_;
 
   base::WeakPtrFactory<StreamMixer> weak_factory_;

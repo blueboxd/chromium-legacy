@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
 
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "url/gurl.h"
@@ -56,9 +55,6 @@ class ExternalProtocolDialog : public views::DialogDelegateView,
 
   // The message box whose commands we handle.
   views::MessageBoxView* message_box_view_;
-
-  // The time at which this dialog was created.
-  base::TimeTicks creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolDialog);
 };

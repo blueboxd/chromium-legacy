@@ -147,25 +147,11 @@
             </div>
         </template>
 
-        <template is="dom-if"
-            if="[[isPreUnifiedConsentAdvancedSyncSettingsVisible_(
-                syncStatus, unifiedConsentEnabled_)]]">
-          <cr-link-row id="sync-status"
-              class$="[[getSyncStatusClass_(syncStatus)]]"
-              label="$i18n{syncAndNonPersonalizedServices}"
-              sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
-              on-click="onSyncTap_" start-icon="[[getSyncIcon_(syncStatus)]]"
-              actionable$="[[isSyncStatusActionable_(syncStatus)]]">
-          </cr-link-row>
-        </template>
-
-        <template is="dom-if" if="[[unifiedConsentEnabled_]]">
-          <cr-link-row id="sync-setup"
-              label="$i18n{syncAndNonPersonalizedServices}"
-              sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
-              on-click="onSyncTap_">
-          </cr-link-row>
-        </template>
+        <cr-link-row id="sync-setup"
+            label="$i18n{syncAndNonPersonalizedServices}"
+            sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
+            on-click="onSyncTap_">
+        </cr-link-row>
 
         <cr-link-row id="lock-screen-subpage-trigger" class="hr"
             on-click="onConfigureLockTap_"
@@ -192,33 +178,27 @@
         </template>
 
       </div>
-      <template is="dom-if" route-path="/syncSetup"
-          no-search="[[!isAdvancedSyncSettingsSearchable_(
-              syncStatus, unifiedConsentEnabled_)]]">
+
+      <template is="dom-if" route-path="/syncSetup">
         <settings-subpage
-            associated-control="[[getAdvancedSyncSettingsAssociatedControl_(
-                unifiedConsentEnabled_)]]"
+            associated-control="[[$$('#sync-setup')]"
             page-title="$i18n{syncPageTitle}"
-            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}"
-            no-search$="[[!isAdvancedSyncSettingsSearchable_(syncStatus,
-                unifiedConsentEnabled_)]]">
+            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
           <settings-sync-page
-              unified-consent-enabled="[[unifiedConsentEnabled_]]"
+              unified-consent-enabled
               sync-status="[[syncStatus]]" prefs="{{prefs}}"
               page-visibility="[[pageVisibility.privacy]]">
           </settings-sync-page>
         </settings-subpage>
       </template>
 
-      <template is="dom-if" if="[[unifiedConsentEnabled_]]">
-        <template is="dom-if" route-path="/syncSetup/advanced">
-          <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
-              associated-control="[[$$('#sync-setup')]]"
-              learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
-            <settings-sync-controls sync-status="[[syncStatus]]">
-            </settings-sync-controls>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/syncSetup/advanced">
+        <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
+            associated-control="[[$$('#sync-setup')]]"
+            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
+          <settings-sync-controls sync-status="[[syncStatus]]">
+          </settings-sync-controls>
+        </settings-subpage>
       </template>
 
       <template is="dom-if" route-path="/lockScreen">

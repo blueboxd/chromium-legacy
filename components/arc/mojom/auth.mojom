@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 22
+// Next MinVersion: 23
 
 module arc.mojom;
 
@@ -103,6 +103,45 @@ enum AccountCheckStatus {
 
     // NOTE: If you add any entries to this enum, you must also update the
     // corresponding UMA callsite in Chrome arc::UpdateAuthAccountCheckStatus.
+};
+
+[Extensible]
+enum MainAccountResolutionStatus {
+    // No hash code was set for the main account. System contains no account of
+    // required type.
+    [MinVersion=22] NO_HASH_CODE_NO_ACCOUNT = 0,
+
+    // No hash code was set for the main account. System contains only single
+    // account of required type.
+    [MinVersion=22] NO_HASH_CODE_SINGLE_ACCOUNT = 1,
+
+    // No hash code was set for the main account. System contains multiple
+    // accounts of required type.
+    [MinVersion=22] NO_HASH_CODE_MULTIPLE_ACCOUNTS = 2,
+
+    // Hash code was set but no account currently available.
+    [MinVersion=22] HASH_CODE_NO_ACCOUNT = 3,
+
+    // Hash code was set but it does not match single account of required type.
+    [MinVersion=22] HASH_CODE_DO_NOT_MATCH_SINGLE_ACCOUNT = 4,
+
+    // Hash code was set but it does not match multiple accounts of required
+    // type.
+    [MinVersion=22] HASH_CODE_DO_NOT_MATCH_MULTIPLE_ACCOUNTS = 5,
+
+    // Hash code was set and it matches single account of required type.
+    [MinVersion=22] HASH_CODE_MATCH_SINGLE_ACCOUNT = 6,
+
+    // Hash code was set and it matches one of multiple accounts of required
+    // type.
+    [MinVersion=22] HASH_CODE_MATCH_MULTIPLE_ACCOUNTS = 7,
+
+    // Hash code collides with multiple accounts of required type.
+    [MinVersion=22] HASH_CODE_COLLIDE_FOR_MULTIPLE_ACCOUNTS = 8,
+
+    // NOTE: If you add any entries to this enum, you must also update the
+    // corresponding UMA ArcAuthMainAccountResolutionStatus at
+    // tools/metrics/histograms/enums.xml.
 };
 
 // These values describe the result of ARC attempting to change supervision
@@ -299,7 +338,7 @@ interface AuthHost {
   [MinVersion=20] HandleUpdateCredentialsRequest@17(string account_name);
 };
 
-// Next Method ID: 5
+// Next Method ID: 6
 interface AuthInstance {
   // DEPRECATED: Please use Init@2 instead.
   InitDeprecated@0(AuthHost host_ptr);
@@ -328,4 +367,8 @@ interface AuthInstance {
   // Gets the list of Google accounts in ARC. Called during the one-time
   // migration of accounts from ARC to Chrome OS Account Manager.
   [MinVersion=19] GetGoogleAccounts@4() => (array<ArcAccountInfo> accounts);
+
+  // Gets resolution status of main account for statistics reporting.
+  [MinVersion=22] GetMainAccountResolutionStatus@5()
+      => (MainAccountResolutionStatus status);
 };

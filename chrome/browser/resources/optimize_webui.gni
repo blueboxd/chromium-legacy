@@ -74,6 +74,11 @@ template("optimize_webui") {
         invoker.insert_in_head,
       ]
     }
+
+    if (defined(invoker.js_module_in_files)) {
+      inputs += [ "//chrome/browser/resources/tools/rollup_plugin.js" ]
+      args += [ "--js_module_in_files" ] + invoker.js_module_in_files
+    }
   }
 }
 

@@ -186,6 +186,10 @@ const base::Feature kParentalControlsSettings{
 const base::Feature kReleaseNotes{"ReleaseNotes",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables Release Notes notifications on Chrome OS.
+const base::Feature kReleaseNotesNotification{
+    "ReleaseNotesNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables long kill timeout for session manager daemon. When
 // enabled, session manager daemon waits for a longer time (e.g. 12s) for chrome
 // to exit before sending SIGABRT. Otherwise, it uses the default time out

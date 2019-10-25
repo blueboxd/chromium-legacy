@@ -12,12 +12,13 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/paint_preview/common/glyph_usage.h"
-#include "components/paint_preview/common/proto/paint_preview.pb.h"
+#include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/gurl.h"
 
 namespace paint_preview {
 
@@ -33,13 +34,6 @@ bool ShouldUseDenseGlyphUsage(SkTypeface* typeface) {
   // Generally, smaller fonts have a higher percentage of used glyphs so set a
   // maximum threshold for number of glyphs before using SparseGlyphUsage.
   return typeface->countGlyphs() < kMaxGlyphsForDenseGlyphUsage;
-}
-
-void RectToRectProto(RectProto* rect_proto, const gfx::Rect& rect) {
-  rect_proto->set_x(rect.x());
-  rect_proto->set_y(rect.y());
-  rect_proto->set_width(rect.width());
-  rect_proto->set_height(rect.height());
 }
 
 }  // namespace
@@ -91,12 +85,8 @@ void PaintPreviewTracker::AddGlyphs(const SkTextBlob* blob) {
   }
 }
 
-void PaintPreviewTracker::AnnotateLink(const std::string& url,
-                                       const gfx::Rect& rect) {
-  LinkDataProto link_data;
-  RectToRectProto(link_data.mutable_rect(), rect);
-  link_data.set_url(url);
-  links_.push_back(link_data);
+void PaintPreviewTracker::AnnotateLink(const GURL& url, const gfx::Rect& rect) {
+  links_.push_back(mojom::LinkData(url, rect));
 }
 
 void PaintPreviewTracker::CustomDataToSkPictureCallback(SkCanvas* canvas,

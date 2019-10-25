@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/util/android/jni_headers/UrlUtilities_jni.h"
+#include "chrome/browser/util/jni_headers/UrlUtilities_jni.h"
 #include "components/google/core/common/google_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"

@@ -30,6 +30,7 @@ class ReceiverCma : public Receiver {
 
  private:
   class Stream;
+  class UnusedSocket;
 
   // Receiver implementation:
   void CreateOutputStream(std::unique_ptr<MixerSocket> socket,
@@ -43,9 +44,13 @@ class ReceiverCma : public Receiver {
 
   void RemoveStream(Stream* stream);
 
+  void AddUnusedSocket(std::unique_ptr<MixerSocket> socket);
+  void RemoveUnusedSocket(UnusedSocket* unused_socket);
+
   MediaPipelineBackendManager* const backend_manager_;
 
   base::flat_map<Stream*, std::unique_ptr<Stream>> streams_;
+  base::flat_map<UnusedSocket*, std::unique_ptr<UnusedSocket>> unused_sockets_;
 
   DISALLOW_COPY_AND_ASSIGN(ReceiverCma);
 };

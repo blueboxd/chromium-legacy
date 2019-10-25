@@ -65,13 +65,13 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
-    "prefix": "threaded",
+    "prefix": "off-main-thread-css-paint",
     "base": "external/wpt/css/css-paint-api",
     "args": ["--enable-threaded-compositing",
              "--enable-blink-features=OffMainThreadCSSPaint"]
   },
   {
-    "prefix": "threaded",
+    "prefix": "off-main-thread-css-paint",
     "base": "http/tests/csspaint",
     "args": ["--enable-threaded-compositing",
              "--enable-blink-features=OffMainThreadCSSPaint"]
@@ -92,7 +92,7 @@
     "args": ["--enable-prefer-compositing-to-lcd-text"]
   },
   {
-    "prefix": "threaded",
+    "prefix": "threaded-no-composited-antialiasing",
     "base": "animations",
     "args": ["--enable-threaded-compositing",
              "--disable-composited-antialiasing"]
@@ -103,13 +103,13 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
-    "prefix": "threaded",
+    "prefix": "threaded-prefer-compositing",
     "base": "fast/scroll-behavior",
     "args": ["--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
-    "prefix": "threaded",
+    "prefix": "threaded-prefer-compositing",
     "base": "fast/scrolling",
     "args": ["--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text"]
@@ -377,57 +377,52 @@
     "args": ["--force-device-scale-factor=1.5"]
   },
   {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_block_frag",
     "base": "external/wpt/css/css-multicol",
     "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
   },
   {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_block_frag",
     "base": "fast/multicol",
     "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
   },
   {
-    "prefix": "layout_ng_experimental",
-    "base": "fast/pagination",
-    "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
-  },
-  {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_block_frag",
     "base": "fragmentation",
     "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
   },
   {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_block_frag",
     "base": "printing",
     "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
   },
   {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_flex_box",
     "base": "css3/flexbox",
     "args": ["--enable-blink-features=LayoutNGFlexBox"]
   },
   {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_flex_box",
     "base": "external/wpt/css/css-flexbox",
     "args": ["--enable-blink-features=LayoutNGFlexBox"]
   },
   {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_fieldset",
     "base": "external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements",
     "args": ["--enable-blink-features=LayoutNGFieldset"]
   },
   {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_fieldset",
     "base": "fast/forms/fieldset",
     "args": ["--enable-blink-features=LayoutNGFieldset"]
   },
   {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_fieldset",
     "base": "external/wpt/css/css-contain",
     "args": ["--enable-blink-features=LayoutNGFieldset"]
   },
   {
-    "prefix": "layout_ng_experimental",
+    "prefix": "layout_ng_fieldset",
     "base": "external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain",
     "args": ["--enable-blink-features=LayoutNGFieldset"]
   },
@@ -437,47 +432,42 @@
     "args": ["--enable-print-browser"]
   },
   {
-    "prefix": "dark-mode",
+    "prefix": "dark-mode-grayscale-images",
     "base": "paint/dark-mode/grayscale-images",
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=0,darkModeImageStyle=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
-    "prefix": "dark-mode",
+    "prefix": "dark-mode-image-filter-all",
     "base": "paint/dark-mode/image-filter-all",
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
-    "prefix": "dark-mode",
+    "prefix": "dark-mode-image-filter-none",
     "base": "paint/dark-mode/image-filter-none",
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
-    "prefix": "dark-mode",
-    "base": "paint/dark-mode/image-filter-smart",
-    "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=2,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
-  },
-  {
-    "prefix": "dark-mode",
+    "prefix": "dark-mode-native-theme-off",
     "base": "paint/dark-mode/native-theme-off",
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
-    "prefix": "dark-mode",
+    "prefix": "dark-mode-native-theme-on",
     "base": "paint/dark-mode/native-theme-on",
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
-    "prefix": "dark-mode",
+    "prefix": "dark-mode-page-policy-all",
     "base": "paint/dark-mode/page-policy-all",
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModePagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
-    "prefix": "dark-mode",
+    "prefix": "dark-mode-page-policy-background",
     "base": "paint/dark-mode/page-policy-background",
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModePagePolicy=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
-    "prefix": "dark-mode",
+    "prefix": "dark-mode-svg-invert-all",
     "base": "paint/dark-mode/svg-invert-all",
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
@@ -686,7 +676,7 @@
     "args": ["--enable-features=PlzDedicatedWorker"]
   },
   {
-    "prefix": "omt-worker-fetch",
+    "prefix": "omt-worker-fetch-cors-rfc1918",
     "base": "http/tests/security/cors-rfc1918",
     "args": ["--enable-features=PlzDedicatedWorker",
              "--enable-blink-features=CorsRFC1918"]
@@ -1022,12 +1012,12 @@
     "args": ["--enable-blink-features=ForcedColors"]
   },
   {
-    "prefix": "forced-colors",
+    "prefix": "forced-high-contrast-colors",
     "base": "external/wpt/forced-colors-mode",
     "args": ["--force-high-contrast", "--enable-blink-features=ForcedColors"]
   },
   {
-    "prefix": "forced-colors",
+    "prefix": "forced-high-contrast-colors",
     "base": "fast/css/forced-colors-mode",
     "args": ["--force-high-contrast", "--enable-blink-features=ForcedColors"]
   },

@@ -3989,8 +3989,17 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
 
       <!-- QR Code -->
-      <message name="IDS_QR_CODE_SHARE_ICON_LABEL" desc="Icon label for sharing qith QR Code activity.">
+      <message name="IDS_QR_CODE_SHARE_ICON_LABEL" desc="Icon label for sharing with QR Code activity.">
         QR Code
+      </message>
+
+      <message name="IDS_QR_CODE_SHARE_TAB_LABEL" desc="Share tab label for QR Code sharing activity."
+        meaning="Sharing QR code">
+        Share
+      </message>
+
+      <message name="IDS_QR_CODE_SCAN_TAB_LABEL" desc="Scan tab label for QR Code sharing activity.">
+        Scan
       </message>
 
       <!-- Chime DFM module strings -->

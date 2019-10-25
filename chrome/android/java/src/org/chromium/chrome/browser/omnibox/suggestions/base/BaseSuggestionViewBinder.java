@@ -13,8 +13,8 @@ import android.widget.ImageView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.ui.widget.RoundedCornerImageView;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
@@ -101,7 +101,7 @@ public class BaseSuggestionViewBinder
         view.setImageDrawable(sds.drawable);
         if (sds.allowTint) {
             ApiCompatibilityUtils.setImageTintList(
-                    view, ColorUtils.getIconTint(view.getContext(), !useDarkColors));
+                    view, ChromeColors.getIconTint(view.getContext(), !useDarkColors));
         }
     }
 }

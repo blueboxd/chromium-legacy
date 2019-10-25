@@ -8,8 +8,10 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -30,9 +32,11 @@ class GURL;
 
 namespace policy {
 class CloudPolicyClient;
+class DeviceManagementService;
 }
 
 namespace safe_browsing {
+class BinaryUploadService;
 class DlpDeepScanningVerdict;
 }
 
@@ -160,11 +164,27 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);
 
+ protected:
+  // Callback to report safe browsing event through real-time reporting channel,
+  // if the browser is authorized to do so. Declared as protected to be called
+  // directly by tests. Events are created lazily to avoid doing useless work if
+  // they are discarded.
+  using EventBuilder = base::OnceCallback<base::Value()>;
+  void ReportRealtimeEventCallback(const std::string& name,
+                                   EventBuilder event_builder,
+                                   bool authorized);
+
  private:
   // Initialize the real-time report client if needed.  This client is used only
   // if real-time reporting is enabled, the machine is properly reigistered
   // with CBCM and the appropriate policies are enabled.
   void InitRealtimeReportingClient();
+
+  // Initialize DeviceManagementService and |client_| after validating the
+  // browser can upload data.
+  void InitRealtimeReportingClientCallback(
+      policy::DeviceManagementService* device_management_service,
+      bool authorized);
 
   // Determines if the real-time reporting feature is enabled.
   bool IsRealtimeReportingEnabled();
@@ -173,7 +193,9 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   void RealtimeReportingPrefChanged(const std::string& pref);
 
   // Report safe browsing event through real-time reporting channel, if enabled.
-  void ReportRealtimeEvent(const char* name, base::Value event);
+  // Declared as virtual for tests.
+  virtual void ReportRealtimeEvent(const std::string&,
+                                   EventBuilder event_builder);
 
   // Returns the Gaia email address of the account signed in to the profile or
   // an empty string if the profile is not signed in.
@@ -182,9 +204,11 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   content::BrowserContext* context_;
   signin::IdentityManager* identity_manager_ = nullptr;
   EventRouter* event_router_ = nullptr;
+  safe_browsing::BinaryUploadService* binary_upload_service_;
   std::unique_ptr<policy::CloudPolicyClient> client_;
   PrefChangeRegistrar registrar_;
 
+  base::WeakPtrFactory<SafeBrowsingPrivateEventRouter> weakptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouter);
 };
 

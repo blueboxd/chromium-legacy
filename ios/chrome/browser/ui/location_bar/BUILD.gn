@@ -19,8 +19,8 @@ source_set("location_bar") {
   ]
   deps = [
     ":constants",
-    "resources:location_bar_dangerous",
-    "resources:location_bar_insecure",
+    "resources:location_bar_info",
+    "resources:location_bar_not_secure_warning",
     "resources:location_bar_offline",
     "resources:location_bar_secure",
     "resources:location_bar_share",
@@ -30,6 +30,7 @@ source_set("location_bar") {
     "//components/omnibox/browser",
     "//components/open_from_clipboard:",
     "//components/search_engines",
+    "//components/security_state/ios",
     "//components/strings",
     "//components/variations/net",
     "//ios/chrome/app/strings",
@@ -108,6 +109,7 @@ source_set("location_bar_model_delegate") {
     "//base",
     "//components/omnibox/browser",
     "//components/prefs",
+    "//components/security_state/ios",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/browser_state",

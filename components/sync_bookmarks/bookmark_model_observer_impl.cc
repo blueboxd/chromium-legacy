@@ -12,6 +12,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
@@ -95,10 +96,10 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   // Assign a temp server id for the entity. Will be overriden by the actual
   // server id upon receiving commit response.
   DCHECK(base::IsValidGUID(node->guid()));
-  // TODO(crbug.com/978430): Consider using |node->guid()| instead of generating
-  // a new random GUID. However, currently that can lead to crashes due to
-  // duplicate server IDs, see crbug.com/1004205.
-  const std::string sync_id = base::GenerateGUID();
+  const std::string sync_id =
+      base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)
+          ? node->guid()
+          : base::GenerateGUID();
   const int64_t server_version = syncer::kUncommittedVersion;
   const base::Time creation_time = base::Time::Now();
   const sync_pb::UniquePosition unique_position =

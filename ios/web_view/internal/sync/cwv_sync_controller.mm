@@ -7,8 +7,11 @@
 #import <UIKit/UIKit.h>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/password_manager/core/browser/password_store_default.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
@@ -115,6 +118,7 @@ class WebViewSyncControllerObserverBridge
   SigninErrorController* _signinErrorController;
   std::unique_ptr<ios_web_view::WebViewSyncControllerObserverBridge> _observer;
   autofill::PersonalDataManager* _personalDataManager;
+  password_manager::PasswordStore* _passwordStore;
 }
 
 @synthesize currentIdentity = _currentIdentity;
@@ -137,13 +141,15 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
       initWithSyncService:(syncer::SyncService*)syncService
           identityManager:(signin::IdentityManager*)identityManager
     signinErrorController:(SigninErrorController*)signinErrorController
-      personalDataManager:(autofill::PersonalDataManager*)personalDataManager {
+      personalDataManager:(autofill::PersonalDataManager*)personalDataManager
+            passwordStore:(password_manager::PasswordStore*)passwordStore {
   self = [super init];
   if (self) {
     _syncService = syncService;
     _identityManager = identityManager;
     _signinErrorController = signinErrorController;
     _personalDataManager = personalDataManager;
+    _passwordStore = passwordStore;
     _observer =
         std::make_unique<ios_web_view::WebViewSyncControllerObserverBridge>(
             self);
@@ -213,8 +219,16 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
 
-  // Clear all local data because we do not support data migration.
+  // Clear all data because we do not support data migration.
+  // It is important that this happens post logging out so that the deletions
+  // are only local to the device.
   _personalDataManager->ClearAllLocalData();
+  // Clearing server data would usually result in data being deleted from the
+  // user's data on sync servers, but because this is called after the user has
+  // been logged out, this merely clears the left over, local copies.
+  _personalDataManager->ClearAllServerData();
+  _passwordStore->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
+                                             base::Closure());
 
   _currentIdentity = nil;
 }

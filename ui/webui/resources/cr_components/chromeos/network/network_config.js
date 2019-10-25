@@ -93,8 +93,11 @@ Polymer({
       notify: true,
     },
 
-    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
-    managedProperties_: Object,
+    /** @private {?chromeos.networkConfig.mojom.ManagedProperties} */
+    managedProperties_: {
+      type: Object,
+      value: null,
+    },
 
     /**
      * Managed EAP properties used for determination of managed EAP fields.
@@ -346,7 +349,7 @@ Polymer({
   init: function() {
     this.mojoType_ = undefined;
     this.vpnType_ = undefined;
-    this.managedProperties_ = undefined;
+    this.managedProperties_ = null;
     this.configProperties_ = undefined;
     this.propertiesSent_ = false;
     this.selectedServerCaHash_ = undefined;

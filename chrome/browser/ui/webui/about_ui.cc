@@ -411,9 +411,9 @@ class ChromeOSCreditsHandler
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // If we fail to load Chrome OS credits from disk, load it from resources.
     if (contents_.empty() && path_ != kKeyboardUtilsPath) {
-      contents_ = ui::ResourceBundle::GetSharedInstance()
-                      .GetRawDataResource(IDR_OS_CREDITS_HTML)
-                      .as_string();
+      contents_ =
+          ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+              IDR_OS_CREDITS_HTML);
     }
     callback_.Run(base::RefCountedString::TakeString(&contents_));
   }
@@ -481,9 +481,9 @@ class LinuxCreditsHandler
     // resources.
     // TODO(rjwright): Add a linux-specific placeholder in resources.
     if (contents_.empty() && path_ != kKeyboardUtilsPath) {
-      contents_ = ui::ResourceBundle::GetSharedInstance()
-                      .GetRawDataResource(IDR_OS_CREDITS_HTML)
-                      .as_string();
+      contents_ =
+          ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+              IDR_OS_CREDITS_HTML);
     }
     callback_.Run(base::RefCountedString::TakeString(&contents_));
   }

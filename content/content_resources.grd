@@ -47,8 +47,6 @@
       <include name="IDR_UNGUESSABLE_TOKEN_MOJO_JS" file="${root_gen_dir}/mojo/public/mojom/base/unguessable_token.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_URL_MOJO_HTML" file="${root_gen_dir}/url/mojom/url.mojom.html" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_URL_MOJO_JS" file="${root_gen_dir}/url/mojom/url.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
-      <include name="IDR_WEBRTC_INTERNALS_HTML" file="browser/resources/media/webrtc_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
-      <include name="IDR_WEBRTC_INTERNALS_JS" file="browser/resources/media/webrtc_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
     </includes>
   </release>
 </grit>

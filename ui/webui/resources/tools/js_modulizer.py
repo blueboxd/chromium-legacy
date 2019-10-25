@@ -34,6 +34,7 @@
 #     polymer_modulizer.gni.
 
 import argparse
+import io
 import os
 import re
 import sys
@@ -118,9 +119,11 @@ def ProcessFile(filename, out_folder, namespace_rewrites):
   out_filename = os.path.splitext(os.path.basename(filename))[0] + '.m.js'
 
   # Reconstruct file.
-  with open(os.path.join(out_folder, out_filename), 'w') as f:
+  # Specify the newline character so that the exact same file is generated
+  # across platforms.
+  with io.open(os.path.join(out_folder, out_filename), 'w', newline='\n') as f:
     for l in lines:
-      f.write(l)
+      f.write(unicode(l, 'utf-8'))
   return
 
 def main(argv):

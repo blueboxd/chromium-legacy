@@ -1907,7 +1907,7 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
 }
 
 // Tests that app-specific URLs are not rewritten for renderer-initiated loads
-// unless requested by a page with app-specific url.
+// or reloads unless requested by a page with app-specific url.
 TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
   // URL should not be rewritten as there is no committed URL.
   GURL url1(url::SchemeHostPort(kSchemeToRewrite, "test", 0).Serialize());
@@ -1927,6 +1927,15 @@ TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
       web::NavigationInitiationType::RENDERER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   EXPECT_EQ(url2, navigation_manager()->GetPendingItem()->GetURL());
+
+  // URL should not be rewritten for user initiated reload navigations.
+  GURL url_reload(
+      url::SchemeHostPort(kSchemeToRewrite, "test-reload", 0).Serialize());
+  navigation_manager()->AddPendingItem(
+      url_reload, Referrer(), ui::PAGE_TRANSITION_RELOAD,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  EXPECT_EQ(url_reload, navigation_manager()->GetPendingItem()->GetURL());
 
   // URL should be rewritten for user initiated navigations.
   GURL url3(url::SchemeHostPort(kSchemeToRewrite, "test3", 0).Serialize());

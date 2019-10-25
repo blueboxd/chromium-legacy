@@ -11,11 +11,15 @@ import org.chromium.weblayer_private.aidl.IBrowserFragment;
 import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 
 interface IWebLayer {
-  // Initializes WebLayer and starts loading. It is expected that is called
-  // before anything else. |loadedCallback| is a ValueCallback that is called
-  // when load completes. |appContext| is a Context that refers to the
-  // Application using WebLayer.
+  // Initializes WebLayer and starts loading.
+  //
+  // It is expected that this method is called before anything else.
+  //
+  // @param appContext     A Context that refers to the Application using WebLayer.
+  // @param packageInfo    The PackageInfo for the package from which WebLayer is loaded. 
+  // @param loadedCallback A ValueCallback that will be called when load completes.
   void initAndLoadAsync(in IObjectWrapper appContext,
+                        in IObjectWrapper packageInfo,
                         in IObjectWrapper loadedCallback,
                         int resourcesPackageId) = 1;
 

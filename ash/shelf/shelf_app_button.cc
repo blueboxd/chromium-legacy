@@ -296,8 +296,9 @@ class ShelfAppButton::AppStatusIndicatorView
 // static
 const char ShelfAppButton::kViewClassName[] = "ash/ShelfAppButton";
 
-ShelfAppButton::ShelfAppButton(ShelfView* shelf_view)
-    : ShelfButton(shelf_view->shelf(), shelf_view),
+ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
+                               ShelfButtonDelegate* shelf_button_delegate)
+    : ShelfButton(shelf_view->shelf(), shelf_button_delegate),
       icon_view_(new views::ImageView()),
       shelf_view_(shelf_view),
       indicator_(new AppStatusIndicatorView()),

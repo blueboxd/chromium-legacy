@@ -102,9 +102,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::WallpaperHandler>(web_ui));
 
-  // TODO(msarda): Remove |unifiedConsentEnabled| from all settings resources.
-  html_source->AddBoolean("unifiedConsentEnabled", true);
-
   html_source->AddBoolean("showAppManagement", base::FeatureList::IsEnabled(
                                                    features::kAppManagement));
 

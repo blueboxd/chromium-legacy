@@ -14,12 +14,13 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/common/glyph_usage.h"
-#include "components/paint_preview/common/proto/paint_preview.pb.h"
+#include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "components/paint_preview/common/serial_utils.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/gurl.h"
 
 namespace paint_preview {
 
@@ -50,7 +51,7 @@ class PaintPreviewTracker {
   void AddGlyphs(const SkTextBlob* blob);
 
   // Adds |link| with bounding box |rect| to the list of links.
-  void AnnotateLink(const std::string& link, const gfx::Rect& rect);
+  void AnnotateLink(const GURL& link, const gfx::Rect& rect);
 
   // Data Serialization -------------------------------------------------------
   // NOTE: once any of these methods are called the PaintPreviewTracker should
@@ -68,14 +69,14 @@ class PaintPreviewTracker {
   TypefaceUsageMap* GetTypefaceUsageMap() { return &typeface_glyph_usage_; }
 
   // Expose links for serialization to a PaintPreviewFrameProto.
-  const std::vector<LinkDataProto>& GetLinks() const { return links_; }
+  const std::vector<mojom::LinkData>& GetLinks() const { return links_; }
 
  private:
   const base::UnguessableToken guid_;
   const int routing_id_;
   const bool is_main_frame_;
 
-  std::vector<LinkDataProto> links_;
+  std::vector<mojom::LinkData> links_;
   PictureSerializationContext content_id_to_proxy_id_;
   TypefaceUsageMap typeface_glyph_usage_;
   base::flat_map<uint32_t, sk_sp<SkPicture>> subframe_pics_;

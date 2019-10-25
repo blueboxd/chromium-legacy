@@ -143,7 +143,23 @@ class PLATFORM_EXPORT Visitor {
                               TraceDescriptorFor(backing_store));
   }
 
-  template <typename T>
+  template <bool HasWeakTraceDescriptor>
+  struct GetWeakTraceDescriptorDispatcher {
+    template <typename T>
+    static TraceDescriptor GetWeakTraceDescriptor(T* backing) {
+      return {backing, nullptr};
+    }
+  };
+
+  template <>
+  struct GetWeakTraceDescriptorDispatcher<true> {
+    template <typename T>
+    static TraceDescriptor GetWeakTraceDescriptor(T* backing) {
+      return TraceTrait<T>::GetWeakTraceDescriptor(backing);
+    }
+  };
+
+  template <typename HashTable, typename T>
   void TraceBackingStoreWeakly(T* backing_store,
                                T** backing_store_slot,
                                WeakCallback callback,
@@ -152,11 +168,18 @@ class PLATFORM_EXPORT Visitor {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    VisitBackingStoreWeakly(reinterpret_cast<void*>(backing_store),
-                            reinterpret_cast<void**>(backing_store_slot),
-                            TraceTrait<T>::GetTraceDescriptor(
-                                reinterpret_cast<void*>(backing_store)),
-                            callback, parameter);
+    VisitBackingStoreWeakly(
+        reinterpret_cast<void*>(backing_store),
+        reinterpret_cast<void**>(backing_store_slot),
+        TraceTrait<T>::GetTraceDescriptor(
+            reinterpret_cast<void*>(backing_store)),
+        GetWeakTraceDescriptorDispatcher <
+                (HashTable::ValueTraits::kWeakHandlingFlag ==
+                 WTF::kWeakHandling) &&
+            WTF::IsTraceableInCollectionTrait<
+                typename HashTable::ValueTraits>::value >
+                ::GetWeakTraceDescriptor(backing_store),
+        callback, parameter);
   }
 
   template <typename T>
@@ -244,6 +267,7 @@ class PLATFORM_EXPORT Visitor {
   virtual void VisitBackingStoreWeakly(void*,
                                        void**,
                                        TraceDescriptor,
+                                       TraceDescriptor,
                                        WeakCallback,
                                        void*) = 0;
   virtual void VisitBackingStoreOnly(void*, void**) = 0;
@@ -256,12 +280,6 @@ class PLATFORM_EXPORT Visitor {
   // updated.
   virtual void RegisterBackingStoreCallback(void* backing,
                                             MovingObjectCallback) = 0;
-
-  // Used to register ephemeron callbacks.
-  virtual bool RegisterWeakTable(const void* closure,
-                                 EphemeronCallback iteration_callback) {
-    return false;
-  }
 
   // |WeakCallback| will usually use |ObjectAliveTrait| to figure out liveness
   // of any children of |closure|. Upon return from the callback all references

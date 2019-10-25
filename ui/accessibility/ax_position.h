@@ -663,6 +663,50 @@ class AXPosition {
     return next_position->IsNullPosition();
   }
 
+  bool AtStartOfInlineBlock() const {
+    AXPositionInstance text_position = AsLeafTextPosition();
+    switch (text_position->kind_) {
+      case AXPositionKind::NULL_POSITION:
+        return false;
+      case AXPositionKind::TREE_POSITION:
+        NOTREACHED();
+        return false;
+      case AXPositionKind::TEXT_POSITION: {
+        if (text_position->AtStartOfAnchor()) {
+          AXPositionInstance previous_position =
+              text_position->CreatePreviousLeafTreePosition();
+
+          // Check that this position is not the start of the first anchor.
+          if (!previous_position->IsNullPosition()) {
+            previous_position = text_position->CreatePreviousLeafTreePosition(
+                base::BindRepeating(&AbortMoveAtStartOfInlineBlock));
+
+            // If we get a null position here it means we have crossed an inline
+            // block's start, thus this position is located at such start.
+            if (previous_position->IsNullPosition())
+              return true;
+          }
+        }
+        if (text_position->AtEndOfAnchor()) {
+          AXPositionInstance next_position =
+              text_position->CreateNextLeafTreePosition();
+
+          // Check that this position is not the end of the last anchor.
+          if (!next_position->IsNullPosition()) {
+            next_position = text_position->CreateNextLeafTreePosition(
+                base::BindRepeating(&AbortMoveAtStartOfInlineBlock));
+
+            // If we get a null position here it means we have crossed an inline
+            // block's start, thus this position is located at such start.
+            if (next_position->IsNullPosition())
+              return true;
+          }
+        }
+        return false;
+      }
+    }
+  }
+
   bool AtStartOfDocument() const {
     if (IsNullPosition())
       return false;
@@ -2746,6 +2790,37 @@ class AXPosition {
         // For Sibling moves, abort if at both of the siblings are a page
         // break, because that would mean exiting and/or entering a page break.
         return move_from_break && move_to_break;
+    }
+    NOTREACHED();
+    return false;
+  }
+
+  static bool AbortMoveAtStartOfInlineBlock(const AXPosition& move_from,
+                                            const AXPosition& move_to,
+                                            const AXMoveType move_type,
+                                            const AXMoveDirection direction) {
+    if (move_from.IsNullPosition() || move_to.IsNullPosition())
+      return true;
+
+    // These will only be available if AXMode has kHTML set.
+    const bool move_from_is_inline_block =
+        move_from.GetAnchor()->GetStringAttribute(
+            ax::mojom::StringAttribute::kDisplay) == "inline-block";
+    const bool move_to_is_inline_block =
+        move_to.GetAnchor()->GetStringAttribute(
+            ax::mojom::StringAttribute::kDisplay) == "inline-block";
+
+    switch (direction) {
+      case AXMoveDirection::kNextInTree:
+        // When moving forward, break if we enter an inline block.
+        return move_to_is_inline_block &&
+               (move_type == AXMoveType::kDescendant ||
+                move_type == AXMoveType::kSibling);
+      case AXMoveDirection::kPreviousInTree:
+        // When moving backward, break if we exit an inline block.
+        return move_from_is_inline_block &&
+               (move_type == AXMoveType::kAncestor ||
+                move_type == AXMoveType::kSibling);
     }
     NOTREACHED();
     return false;

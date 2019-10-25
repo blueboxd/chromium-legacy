@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -19,16 +18,6 @@ class PaintLayerClipperTest : public RenderingTest {
  public:
   PaintLayerClipperTest()
       : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()) {}
-
-  void SetUp() override {
-    WebTestSupport::SetMockThemeEnabledForTest(true);
-    RenderingTest::SetUp();
-  }
-
-  void TearDown() override {
-    RenderingTest::TearDown();
-    WebTestSupport::SetMockThemeEnabledForTest(false);
-  }
 };
 
 TEST_F(PaintLayerClipperTest, ParentBackgroundClipRectSubpixelAccumulation) {

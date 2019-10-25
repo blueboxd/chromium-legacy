@@ -32,7 +32,6 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/bindings/api_bindings_system.h"
-#include "extensions/renderer/css_native_handler.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/lazy_background_page_native_handler.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
@@ -104,9 +103,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "lazy_background_page",
       std::unique_ptr<NativeHandler>(
           new extensions::LazyBackgroundPageNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "css_natives", std::unique_ptr<NativeHandler>(
-                         new extensions::CssNativeHandler(context)));
 }
 
 void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(

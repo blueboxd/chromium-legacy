@@ -11,7 +11,8 @@ enum class SecurityStyle {
   kNeutral,
   kInsecure,
   kSecure,
-  kLast = kSecure
+  kInsecureBroken,
+  kLast = kInsecureBroken
 };
 }  // namespace blink
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_SECURITY_SECURITY_STYLE_H_"

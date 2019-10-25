@@ -33,8 +33,7 @@ class SendTabToSelfUrlChecker
   ~SendTabToSelfUrlChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
@@ -65,8 +64,7 @@ class SendTabToSelfUrlOpenedChecker
   ~SendTabToSelfUrlOpenedChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
@@ -100,8 +98,7 @@ class SendTabToSelfModelEqualityChecker
   ~SendTabToSelfModelEqualityChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
@@ -130,8 +127,7 @@ class SendTabToSelfActiveChecker
   ~SendTabToSelfActiveChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
@@ -156,8 +152,7 @@ class SendTabToSelfMultiDeviceActiveChecker
   ~SendTabToSelfMultiDeviceActiveChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // DeviceInfoTracker::Observer implementation.
   void OnDeviceInfoChange() override;
@@ -179,8 +174,7 @@ class SendTabToSelfUrlDeletedChecker
   ~SendTabToSelfUrlDeletedChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;

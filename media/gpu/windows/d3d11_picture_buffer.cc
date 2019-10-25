@@ -36,15 +36,13 @@ D3D11PictureBuffer::~D3D11PictureBuffer() {
 bool D3D11PictureBuffer::Init(GetCommandBufferHelperCB get_helper_cb,
                               ComD3D11VideoDevice video_device,
                               const GUID& decoder_guid,
-                              int textures_per_picture,
                               std::unique_ptr<MediaLog> media_log) {
   D3D11_VIDEO_DECODER_OUTPUT_VIEW_DESC view_desc = {};
   view_desc.DecodeProfile = decoder_guid;
   view_desc.ViewDimension = D3D11_VDOV_DIMENSION_TEXTURE2D;
   view_desc.Texture2D.ArraySlice = (UINT)level_;
 
-  if (!texture_wrapper_->Init(std::move(get_helper_cb), level_, size_,
-                              textures_per_picture)) {
+  if (!texture_wrapper_->Init(std::move(get_helper_cb), level_, size_)) {
     media_log->AddEvent(
         media_log->CreateStringEvent(MediaLogEvent::MEDIA_ERROR_LOG_ENTRY,
                                      "error", "Failed to Init the wrapper"));

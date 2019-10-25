@@ -72,6 +72,8 @@ ExtensionManagement::ExtensionManagement(Profile* profile)
   pref_change_registrar_.Add(pref_names::kAllowedTypes, pref_change_callback);
   pref_change_registrar_.Add(pref_names::kExtensionManagement,
                              pref_change_callback);
+  pref_change_registrar_.Add(prefs::kCloudExtensionRequestEnabled,
+                             pref_change_callback);
 #if !defined(OS_CHROMEOS)
   pref_change_registrar_.Add(prefs::kCloudReportingEnabled,
                              pref_change_callback);
@@ -357,6 +359,8 @@ void ExtensionManagement::Refresh() {
           LoadPreference(pref_names::kExtensionManagement,
                          true,
                          base::Value::Type::DICTIONARY));
+  const base::Value* extension_request_pref = LoadPreference(
+      prefs::kCloudExtensionRequestEnabled, false, base::Value::Type::BOOLEAN);
 
   // Reset all settings.
   global_settings_.reset(new internal::GlobalSettings());
@@ -365,8 +369,9 @@ void ExtensionManagement::Refresh() {
 
   // Parse default settings.
   const base::Value wildcard("*");
-  if (denied_list_pref &&
-      denied_list_pref->Find(wildcard) != denied_list_pref->end()) {
+  if ((denied_list_pref &&
+       denied_list_pref->Find(wildcard) != denied_list_pref->end()) ||
+      (extension_request_pref && extension_request_pref->GetBool())) {
     default_settings_->installation_mode = INSTALLATION_BLOCKED;
   }
 

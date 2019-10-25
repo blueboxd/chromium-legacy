@@ -24,10 +24,11 @@ if (!is_ios) {
       "//skia",
       "//third_party:freetype_harfbuzz",
       "//ui/gfx/geometry",
+      "//url",
     ]
 
     public_deps = [
-      "//components/paint_preview/common/proto",
+      "//components/paint_preview/common/mojom",
     ]
   }
 

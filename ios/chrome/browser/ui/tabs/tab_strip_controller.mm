@@ -41,7 +41,7 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
+#import "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_favicon_driver_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"

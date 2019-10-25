@@ -145,6 +145,7 @@ public final class BrowserFragment extends Fragment {
      */
     public BrowserFragment() {
         super();
+        ThreadCheck.ensureOnUiThread();
     }
 
     /**
@@ -153,6 +154,7 @@ public final class BrowserFragment extends Fragment {
      */
     @NonNull
     public BrowserFragmentController getController() {
+        ThreadCheck.ensureOnUiThread();
         if (mBrowserFragmentController == null) {
             throw new RuntimeException("BrowserFragmentController is available only between "
                     + "BrowserFragment's onCreate() and onDestroy().");
@@ -162,6 +164,7 @@ public final class BrowserFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnActivityResult(
                     requestCode, resultCode, ObjectWrapper.wrap(data));
@@ -173,6 +176,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onAttach(Context context) {
+        ThreadCheck.ensureOnUiThread();
         // This is the first lifecycle event and also the first time we can get app context (unless
         // the embedder has already called getController). So it's the latest and at the same time
         // the earliest moment when we can initialize WebLayer without missing any lifecycle events.
@@ -206,6 +210,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnCreate(ObjectWrapper.wrap(savedInstanceState));
             mBrowserFragmentController = new BrowserFragmentController(mImpl.getController(),
@@ -218,6 +223,7 @@ public final class BrowserFragment extends Fragment {
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ThreadCheck.ensureOnUiThread();
         try {
             return ObjectWrapper.unwrap(mImpl.asRemoteFragment().handleOnCreateView(), View.class);
         } catch (RemoteException e) {
@@ -228,6 +234,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnActivityCreated(
                     ObjectWrapper.wrap(savedInstanceState));
@@ -239,6 +246,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onStart() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnStart();
         } catch (RemoteException e) {
@@ -249,6 +257,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onResume() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnResume();
         } catch (RemoteException e) {
@@ -259,6 +268,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnSaveInstanceState(ObjectWrapper.wrap(outState));
         } catch (RemoteException e) {
@@ -269,6 +279,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onPause() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnPause();
         } catch (RemoteException e) {
@@ -279,6 +290,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onStop() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnStop();
         } catch (RemoteException e) {
@@ -289,6 +301,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onDestroyView() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnDestroyView();
         } catch (RemoteException e) {
@@ -299,6 +312,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onDestroy() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnDestroy();
             // The other side does the clean up automatically in handleOnDestroy()
@@ -311,6 +325,7 @@ public final class BrowserFragment extends Fragment {
     @SuppressWarnings("MissingSuperCall")
     @Override
     public void onDetach() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.asRemoteFragment().handleOnDetach();
         } catch (RemoteException e) {

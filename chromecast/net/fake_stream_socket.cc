@@ -73,6 +73,8 @@ class SocketBuffer {
   DISALLOW_COPY_AND_ASSIGN(SocketBuffer);
 };
 
+FakeStreamSocket::FakeStreamSocket() : FakeStreamSocket(net::IPEndPoint()) {}
+
 FakeStreamSocket::FakeStreamSocket(const net::IPEndPoint& local_address)
     : local_address_(local_address),
       buffer_(std::make_unique<SocketBuffer>()),

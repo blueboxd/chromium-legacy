@@ -9,13 +9,13 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_state/ios/security_state_utils.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/features.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
-#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -84,25 +84,13 @@ bool LocationBarModelDelegateIOS::ShouldDisplayURL() const {
 security_state::SecurityLevel LocationBarModelDelegateIOS::GetSecurityLevel()
     const {
   web::WebState* web_state = GetActiveWebState();
-  // If there is no active WebState (which can happen during toolbar
-  // initialization), assume no security style.
-  if (!web_state) {
-    return security_state::NONE;
-  }
-  auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
-  return client->GetSecurityLevel();
+  return security_state::GetSecurityLevelForWebState(web_state);
 }
 
 std::unique_ptr<security_state::VisibleSecurityState>
 LocationBarModelDelegateIOS::GetVisibleSecurityState() const {
   web::WebState* web_state = GetActiveWebState();
-  // If there is no active WebState (which can happen during toolbar
-  // initialization), assume no security style.
-  if (!web_state) {
-    return std::make_unique<security_state::VisibleSecurityState>();
-  }
-  auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
-  return client->GetVisibleSecurityState();
+  return security_state::GetVisibleSecurityStateForWebState(web_state);
 }
 
 scoped_refptr<net::X509Certificate>

@@ -40,10 +40,6 @@ namespace content {
 class IndexedDBConnection;
 class IndexedDBFactoryImpl;
 
-namespace indexed_db {
-class LevelDBFactory;
-}
-
 class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
  public:
   // Recorded in histograms, so append only.
@@ -153,8 +149,6 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
                                      const base::string16& database_name,
                                      const base::string16& object_store_name);
 
-  void SetLevelDBFactoryForTesting(indexed_db::LevelDBFactory* factory);
-
  protected:
   ~IndexedDBContextImpl() override;
 
@@ -197,7 +191,6 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   std::unique_ptr<std::set<url::Origin>> origin_set_;
   std::map<url::Origin, int64_t> origin_size_map_;
   base::ObserverList<Observer>::Unchecked observers_;
-  indexed_db::LevelDBFactory* leveldb_factory_for_testing_ = nullptr;
   base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);

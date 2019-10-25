@@ -4,9 +4,12 @@
 
 #include "content/browser/data_url_loader_factory.h"
 
+#include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
-#include "net/url_request/url_request_data_job.h"
+#include "net/base/data_url.h"
+#include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -47,11 +50,6 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  std::string mime_type;
-  std::string charset;
-  std::string data;
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
-
   const GURL* url = nullptr;
   if (!url_.is_empty() && request.url.is_empty()) {
     url = &url_;
@@ -59,8 +57,12 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
     url = &request.url;
   }
 
-  int result = net::URLRequestDataJob::BuildResponse(
-      *url, request.method, &mime_type, &charset, &data, headers.get());
+  std::string data;
+  scoped_refptr<net::HttpResponseHeaders> headers;
+  network::ResourceResponseHead response;
+  net::Error result =
+      net::DataURL::BuildResponse(*url, request.method, &response.mime_type,
+                                  &response.charset, &data, &response.headers);
   url_ = GURL();  // Don't need it anymore.
 
   if (result != net::OK) {
@@ -68,10 +70,6 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  network::ResourceResponseHead response;
-  response.mime_type = mime_type;
-  response.charset = charset;
-  response.headers = headers;
   client->OnReceiveResponse(response);
 
   mojo::ScopedDataPipeProducerHandle producer;

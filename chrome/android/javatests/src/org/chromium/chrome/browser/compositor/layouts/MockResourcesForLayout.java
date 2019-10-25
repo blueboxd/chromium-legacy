@@ -73,7 +73,7 @@ public class MockResourcesForLayout extends MockResources {
         mIntegers.put(R.color.modern_grey_100, 0xFFF1F3F4);
         mIntegers.put(R.color.modern_primary_color, Color.WHITE);
         mIntegers.put(R.color.default_primary_color, 0xFFF2F2F2);
-        mIntegers.put(R.color.incognito_modern_primary_color, 0xFF3C4043);
+        mIntegers.put(R.color.dark_primary_color, 0xFF3C4043);
     }
 
     @Override

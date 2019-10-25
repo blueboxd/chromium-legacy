@@ -130,20 +130,6 @@ DownloadManagerService* DownloadManagerService::GetInstance() {
 ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
     JNIEnv* env,
     download::DownloadItem* item) {
-  bool user_initiated =
-      (item->GetTransitionType() & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
-      PageTransitionCoreTypeIs(item->GetTransitionType(),
-                               ui::PAGE_TRANSITION_TYPED) ||
-      PageTransitionCoreTypeIs(item->GetTransitionType(),
-                               ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
-      PageTransitionCoreTypeIs(item->GetTransitionType(),
-                               ui::PAGE_TRANSITION_GENERATED) ||
-      PageTransitionCoreTypeIs(item->GetTransitionType(),
-                               ui::PAGE_TRANSITION_RELOAD) ||
-      PageTransitionCoreTypeIs(item->GetTransitionType(),
-                               ui::PAGE_TRANSITION_KEYWORD);
-  bool has_user_gesture = item->HasUserGesture() || user_initiated;
-
   base::TimeDelta time_delta;
   bool time_remaining_known = item->TimeRemaining(&time_delta);
   std::string original_url = item->GetOriginalUrl().SchemeIs(url::kDataScheme)
@@ -160,8 +146,8 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       item->GetReceivedBytes(), item->GetTotalBytes(),
       browser_context ? browser_context->IsOffTheRecord() : false,
       item->GetState(), item->PercentComplete(), item->IsPaused(),
-      has_user_gesture, item->CanResume(), item->IsParallelDownload(),
-      ConvertUTF8ToJavaString(env, original_url),
+      DownloadUtils::IsDownloadUserInitiated(item), item->CanResume(),
+      item->IsParallelDownload(), ConvertUTF8ToJavaString(env, original_url),
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
       time_remaining_known ? time_delta.InMilliseconds()
                            : kUnknownRemainingTime,

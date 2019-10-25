@@ -1404,6 +1404,13 @@ const char kOmniboxDisableInstantExtendedLimitName[] =
 const char kOmniboxDisableInstantExtendedLimitDescription[] =
     "Effectively doubles the max number of Google-provided search suggestions "
     "on Android by disabling the 'Instant Extended' check.";
+
+const char kOmniboxExperimentalSuggestScoringName[] =
+    "Omnibox Experimental Suggest Scoring";
+const char kOmniboxExperimentalSuggestScoringDescription[] =
+    "Enables an experimental scoring mode for suggestions when Google is the "
+    "default search engine.";
+
 const char kOmniboxGroupSuggestionsBySearchVsUrlName[] =
     "Omnibox Group Suggestions By Search vs URL";
 const char kOmniboxGroupSuggestionsBySearchVsUrlDescription[] =
@@ -2171,12 +2178,6 @@ const char kUnexpireFlagsM76Name[] = "Temporarily unexpire M76 flags.";
 const char kUnexpireFlagsM76Description[] =
     "Temporarily unexpire flags that are expired as of M76. These flags will "
     "be removed soon.";
-
-const char kUnifiedConsentName[] = "Unified Consent";
-const char kUnifiedConsentDescription[] =
-    "Enables a unified management of user consent for privacy-related "
-    "features. This includes new confirmation screens and improved settings "
-    "pages.";
 
 const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
 const char kUnsafeWebGPUDescription[] =
@@ -2965,7 +2966,7 @@ const char kOmniboxExperimentalKeywordModeName[] =
     "Omnibox Experimental Keyword Mode";
 const char kOmniboxExperimentalKeywordModeDescription[] =
     "Enables various experimental features related to keyword mode, its "
-    "suggestions and layout";
+    "suggestions and layout.";
 
 const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
 const char kOmniboxPedalSuggestionsDescription[] =
@@ -3631,8 +3632,13 @@ const char kReduceDisplayNotificationsDescription[] =
 
 const char kReleaseNotesName[] = "CrOS Release Notes.";
 const char kReleaseNotesDescription[] =
-    "Instructs OS to show notification about CrOS ReleaseNotes on login after "
-    "update, show webview describing new OS features.";
+    "Creates release notes app in settings menu that shows a webview "
+    "describing new OS features.";
+
+const char kReleaseNotesNotificationName[] = "CrOS Release Notes Notification.";
+const char kReleaseNotesNotificationDescription[] =
+    "Instructs OS to show notificationlogin after update that release notes "
+    "are now available.";
 
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =

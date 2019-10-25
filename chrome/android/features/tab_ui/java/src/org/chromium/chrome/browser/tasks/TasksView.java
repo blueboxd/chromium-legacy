@@ -18,7 +18,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.tab_ui.R;
 
 // The view of the tasks surface.
@@ -130,7 +130,7 @@ class TasksView extends CoordinatorLayoutForPointer {
      */
     void setIncognitoMode(boolean isIncognito) {
         Resources resources = mContext.getResources();
-        int backgroundColor = ColorUtils.getPrimaryBackgroundColor(resources, isIncognito);
+        int backgroundColor = ChromeColors.getPrimaryBackgroundColor(resources, isIncognito);
         setBackgroundColor(backgroundColor);
         mHeaderView.setBackgroundColor(backgroundColor);
         mSearchBox.setBackgroundResource(

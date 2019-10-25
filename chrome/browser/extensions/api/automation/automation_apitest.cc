@@ -420,6 +420,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, IgnoredNodesNotReturned) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, ForceLayout) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "force_layout.html"))
+      << message_;
+}
+
 #if defined(OS_CHROMEOS)
 
 class AutomationApiTestWithDeviceScaleFactor : public AutomationApiTest {

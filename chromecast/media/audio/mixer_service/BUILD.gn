@@ -82,6 +82,23 @@ cast_source_set("control_connection") {
   ]
 }
 
+cast_source_set("loopback_connection") {
+  sources = [
+    "loopback_connection.cc",
+    "loopback_connection.h",
+  ]
+
+  deps = [
+    ":common",
+    ":connection",
+    ":proto",
+    "//base",
+    "//chromecast/net:io_buffer_pool",
+    "//chromecast/public/media",
+    "//net",
+  ]
+}
+
 cast_source_set("audio_socket_service") {
   sources = [
     "audio_socket_service.cc",

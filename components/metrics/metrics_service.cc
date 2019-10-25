@@ -251,7 +251,8 @@ void MetricsService::InitializeMetricsRecordingState() {
       // MetricsServiceClient outlives MetricsService, and
       // MetricsRotationScheduler is tied to the lifetime of |this|.
       base::Bind(&MetricsServiceClient::GetUploadInterval,
-                 base::Unretained(client_))));
+                 base::Unretained(client_)),
+      client_->ShouldStartUpFastForTesting()));
 
   // Init() has to be called after LogCrash() in order for LogCrash() to work.
   delegating_provider_.Init();
@@ -593,17 +594,20 @@ void MetricsService::OpenNewLog() {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
 
+    base::TimeDelta initialization_delay = base::TimeDelta::FromSeconds(
+        client_->ShouldStartUpFastForTesting() ? 0
+                                               : kInitializationDelaySeconds);
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&MetricsService::StartInitTask,
                        self_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(kInitializationDelaySeconds));
+        initialization_delay);
 
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&MetricsService::PrepareProviderMetricsTask,
                        self_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(2 * kInitializationDelaySeconds));
+        2 * initialization_delay);
   }
 }
 

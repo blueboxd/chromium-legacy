@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tips.pb.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
+#include "chrome/browser/reputation/safety_tips.pb.h"
+#include "chrome/browser/reputation/safety_tips_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -101,7 +101,7 @@ void SafetyTipsComponentInstallerPolicy::ComponentReady(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&LoadSafetyTipsProtoFromDisk, pb_path),
-      base::BindOnce(&safety_tips::SetRemoteConfigProto));
+      base::BindOnce(&SetSafetyTipsRemoteConfigProto));
 }
 
 // Called during startup and installation before ComponentReady().

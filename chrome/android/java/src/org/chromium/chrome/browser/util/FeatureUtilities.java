@@ -516,12 +516,8 @@ public class FeatureUtilities {
     private static void cacheGridTabSwitcherEnabled() {
         ChromePreferenceManager.getInstance().writeBoolean(GRID_TAB_SWITCHER_ENABLED_KEY,
                 !DeviceClassManager.enableAccessibilityLayout()
-                        && (ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
-                                || ChromeFeatureList.isEnabled(
-                                        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID))
-                        && TabManagementModuleProvider.getDelegate() != null
-                        && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID));
+                        && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
+                        && TabManagementModuleProvider.getDelegate() != null);
     }
 
     /**
@@ -546,13 +542,8 @@ public class FeatureUtilities {
     private static void cacheTabGroupsAndroidEnabled() {
         ChromePreferenceManager.getInstance().writeBoolean(TAB_GROUPS_ANDROID_ENABLED_KEY,
                 !DeviceClassManager.enableAccessibilityLayout()
-                        && (ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
-                                || ChromeFeatureList.isEnabled(
-                                        ChromeFeatureList.TAB_GROUPS_ANDROID))
-                        && TabManagementModuleProvider.getDelegate() != null
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
-                        && isHighEndPhone());
+                        && TabManagementModuleProvider.getDelegate() != null && isHighEndPhone());
     }
 
     /**

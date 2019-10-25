@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "ios/web/public/deprecated/global_web_state_observer.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web/public/web_state_observer.h"
 
 namespace web {
@@ -47,7 +48,7 @@ class GlobalWebStateEventTracker : public WebStateObserver {
   ~GlobalWebStateEventTracker() override;
 
   // ScopedObserver used to track registration with WebState.
-  ScopedObserver<WebState, WebStateObserver> scoped_observer_;
+  ScopedObserver<WebState, WebStateObserver> scoped_observer_{this};
 
   // List of observers currently registered with the tracker.
   base::ObserverList<GlobalWebStateObserver, true>::Unchecked observer_list_;

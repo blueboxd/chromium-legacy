@@ -40,7 +40,8 @@ class HistoryDeleteDirectivesEqualityChecker
         fake_server_(fake_server),
         num_expected_directives_(num_expected_directives) {}
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting server side HISTORY_DELETE_DIRECTIVES to match expected.";
     const std::vector<sync_pb::SyncEntity> entities =
         fake_server_->GetSyncEntitiesByModelType(
             syncer::HISTORY_DELETE_DIRECTIVES);
@@ -54,10 +55,6 @@ class HistoryDeleteDirectivesEqualityChecker
     EXPECT_LT(entities.size(), num_expected_directives_)
         << "Entity set will never become equal";
     return false;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting server side HISTORY_DELETE_DIRECTIVES to match expected.";
   }
 
  private:

@@ -5,13 +5,18 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_UPLOAD_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_UPLOAD_SERVICE_H_
 
+#include <list>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/download_protection/multipart_uploader.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
@@ -114,10 +119,19 @@ class BinaryUploadService {
     Callback callback_;
   };
 
-  // Upload the given file contents for deep scanning. The results will be
-  // returned asynchronously by calling |request|'s |callback|. This must be
-  // called on the UI thread.
-  void UploadForDeepScanning(std::unique_ptr<Request> request);
+  // Upload the given file contents for deep scanning if the browser is
+  // authorized to upload data, otherwise queue the request.
+  void MaybeUploadForDeepScanning(std::unique_ptr<Request> request);
+
+  // Indicates whether the browser is allowed to upload data.
+  using AuthorizationCallback = base::OnceCallback<void(bool)>;
+  void IsAuthorized(AuthorizationCallback callback);
+
+  // Run every callback in |authorization_callbacks_| and empty it.
+  void RunAuthorizationCallbacks();
+
+  // Resets |can_upload_data_|. Called every 24 hour by |timer_|.
+  void ResetAuthorizationData();
 
   // Returns whether a download should be blocked based on file size alone. It
   // checks the enterprise policy BlockLargeFileTransfer to decide this.
@@ -125,6 +139,11 @@ class BinaryUploadService {
 
  private:
   friend class BinaryUploadServiceTest;
+
+  // Upload the given file contents for deep scanning. The results will be
+  // returned asynchronously by calling |request|'s |callback|. This must be
+  // called on the UI thread.
+  void UploadForDeepScanning(std::unique_ptr<Request> request);
 
   void OnGetInstanceID(Request* request, const std::string& token);
 
@@ -148,6 +167,13 @@ class BinaryUploadService {
 
   bool IsActive(Request* request);
 
+  void MaybeUploadForDeepScanningCallback(std::unique_ptr<Request> request,
+                                          bool authorized);
+
+  // Callback once the response from the backend is received.
+  void ValidateDataUploadRequestCallback(BinaryUploadService::Result result,
+                                         DeepScanningClientResponse response);
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<BinaryFCMService> binary_fcm_service_;
 
@@ -161,6 +187,24 @@ class BinaryUploadService {
       received_malware_verdicts_;
   base::flat_map<Request*, std::unique_ptr<DlpDeepScanningVerdict>>
       received_dlp_verdicts_;
+
+  // Indicates whether this browser can upload data.
+  // base::nullopt means the response from the backend has not been received
+  // yet.
+  // true means the response indicates data can be uploaded.
+  // false means the response indicates data cannot be uploaded.
+  base::Optional<bool> can_upload_data_ = base::nullopt;
+
+  // Callbacks waiting on IsAuthorized request.
+  std::list<base::OnceCallback<void(bool)>> authorization_callbacks_;
+
+  // Indicates if this service is waiting on the backend to validate event
+  // reporting. Used to avoid spamming the backend.
+  bool pending_validate_data_upload_request_ = false;
+
+  // Ensures we validate the browser is registered with the backend every 24
+  // hours.
+  base::RepeatingTimer timer_;
 
   base::WeakPtrFactory<BinaryUploadService> weakptr_factory_;
 };

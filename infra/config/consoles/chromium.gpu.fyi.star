@@ -24,6 +24,16 @@ luci.console_view(
             short_name = 'x64',
         ),
         luci.console_view_entry(
+            builder = 'ci/GPU FYI Win x64 DX12 Vulkan Builder',
+            category = 'Windows|Builder|dx12vk',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Win x64 DX12 Vulkan Builder (dbg)',
+            category = 'Windows|Builder|dx12vk',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
             builder = 'ci/GPU FYI Win Builder (dbg)',
             category = 'Windows|Builder|Debug',
             short_name = 'x86',
@@ -42,6 +52,16 @@ luci.console_view(
             builder = 'ci/Win10 FYI x64 Debug (NVIDIA)',
             category = 'Windows|10|x64|Nvidia',
             short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)',
+            category = 'Windows|10|x64|Nvidia|dx12vk',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Win10 FYI x64 DX12 Vulkan Release (NVIDIA)',
+            category = 'Windows|10|x64|Nvidia|dx12vk',
+            short_name = 'rel',
         ),
         luci.console_view_entry(
             builder = 'ci/Win10 FYI x64 Release (Intel HD 630)',

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_SAFETY_TIP_PAGE_INFO_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_SAFETY_TIP_PAGE_INFO_BUBBLE_VIEW_H_
 
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
+#include "chrome/browser/reputation/safety_tip_ui.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/views/controls/button/button.h"
@@ -45,8 +45,7 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
       security_state::SafetyTipStatus safety_tip_status,
       const GURL& url,
       const GURL& suggested_url,
-      base::OnceCallback<void(safety_tips::SafetyTipInteraction)>
-          close_callback);
+      base::OnceCallback<void(SafetyTipInteraction)> close_callback);
   ~SafetyTipPageInfoBubbleView() override;
 
   // views::WidgetObserver:
@@ -79,9 +78,8 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
   views::StyledLabel* info_button_;
   views::Button* ignore_button_;
   views::Button* leave_button_;
-  base::OnceCallback<void(safety_tips::SafetyTipInteraction)> close_callback_;
-  safety_tips::SafetyTipInteraction action_taken_ =
-      safety_tips::SafetyTipInteraction::kNoAction;
+  base::OnceCallback<void(SafetyTipInteraction)> close_callback_;
+  SafetyTipInteraction action_taken_ = SafetyTipInteraction::kNoAction;
 
   DISALLOW_COPY_AND_ASSIGN(SafetyTipPageInfoBubbleView);
 };
@@ -93,6 +91,6 @@ PageInfoBubbleViewBase* CreateSafetyTipBubbleForTesting(
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& virtual_url,
     const GURL& suggested_url,
-    base::OnceCallback<void(safety_tips::SafetyTipInteraction)> close_callback);
+    base::OnceCallback<void(SafetyTipInteraction)> close_callback);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_SAFETY_TIP_PAGE_INFO_BUBBLE_VIEW_H_

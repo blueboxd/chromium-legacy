@@ -1560,7 +1560,7 @@ void HostProcess::StartHost() {
   // Capture a single screen image to trigger OS permission checks which will
   // add our binary to the list of apps that can be granted permission. This
   // is only needed for OS X 10.15 and later.
-  if (!base::mac::IsAtLeastOS10_15()) {
+  if (base::mac::IsAtLeastOS10_15()) {
     capture_checker_.reset(new DesktopCapturerChecker());
     capture_checker_->TriggerSingleCapture();
   }

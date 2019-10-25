@@ -24,6 +24,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -628,6 +629,7 @@ public class TabPersistentStoreTest {
     @SmallTest
     @Feature({"TabPersistentStore"})
     @RetryOnFailure
+    @DisableIf.Build(sdk_is_greater_than = 25, message = "https://crbug.com/1017732")
     public void testUndoCloseAllTabsWritesTabListFile() throws Exception {
         final TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
         mMockDirectory.writeTabModelFiles(info, true);

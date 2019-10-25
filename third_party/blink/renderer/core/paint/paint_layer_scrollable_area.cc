@@ -1072,6 +1072,12 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
     SetHasHorizontalScrollbar(needs_horizontal_scrollbar);
     SetHasVerticalScrollbar(needs_vertical_scrollbar);
   }
+
+  // Recalculate the snap container data since the scrolling behaviour for this
+  // layout box changed (i.e. it either became the layout viewport or it
+  // is no longer the layout viewport).
+  GetLayoutBox()->GetDocument().GetSnapCoordinator().UpdateSnapContainerData(
+      *GetLayoutBox());
 }
 
 bool PaintLayerScrollableArea::ShouldPerformScrollAnchoring() const {

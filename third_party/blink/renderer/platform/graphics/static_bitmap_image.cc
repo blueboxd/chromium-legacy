@@ -82,49 +82,35 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
                                                    : nullptr);
 }
 
-bool StaticBitmapImage::ConvertToArrayBufferContents(
-    scoped_refptr<StaticBitmapImage> src_image,
-    WTF::ArrayBufferContents& dest_contents,
+size_t StaticBitmapImage::GetSizeInBytes(
     const IntRect& rect,
-    const CanvasColorParams& color_params,
-    bool is_accelerated) {
+    const CanvasColorParams& color_params) {
   uint8_t bytes_per_pixel = color_params.BytesPerPixel();
-  base::CheckedNumeric<int> data_size = bytes_per_pixel;
+  base::CheckedNumeric<size_t> data_size = bytes_per_pixel;
   data_size *= rect.Size().Area();
-  if (!data_size.IsValid() ||
-      data_size.ValueOrDie() > v8::TypedArray::kMaxLength)
+  return data_size.ValueOrDefault(0);
+}
+
+bool StaticBitmapImage::MayHaveStrayArea(
+    scoped_refptr<StaticBitmapImage> src_image,
+    const IntRect& rect) {
+  if (!src_image)
     return false;
 
-  int alloc_size_in_bytes = data_size.ValueOrDie();
-  if (!src_image) {
-    WTF::ArrayBufferContents result(alloc_size_in_bytes, 1,
-                                    WTF::ArrayBufferContents::kNotShared,
-                                    WTF::ArrayBufferContents::kZeroInitialize);
+  return rect.X() < 0 || rect.Y() < 0 ||
+         rect.MaxX() > src_image->Size().Width() ||
+         rect.MaxY() > src_image->Size().Height();
+}
 
-    // Check if the ArrayBuffer backing store was allocated correctly.
-    if (result.DataLength() != static_cast<size_t>(alloc_size_in_bytes)) {
-      return false;
-    }
-    result.Transfer(dest_contents);
+bool StaticBitmapImage::CopyToByteArray(
+    scoped_refptr<StaticBitmapImage> src_image,
+    base::span<uint8_t> dst,
+    const IntRect& rect,
+    const CanvasColorParams& color_params) {
+  DCHECK_EQ(dst.size(), GetSizeInBytes(rect, color_params));
+
+  if (!src_image)
     return true;
-  }
-
-  const bool may_have_stray_area =
-      is_accelerated  // GPU readback may fail silently
-      || rect.X() < 0 || rect.Y() < 0 ||
-      rect.MaxX() > src_image->Size().Width() ||
-      rect.MaxY() > src_image->Size().Height();
-  WTF::ArrayBufferContents::InitializationPolicy initialization_policy =
-      may_have_stray_area ? WTF::ArrayBufferContents::kZeroInitialize
-                          : WTF::ArrayBufferContents::kDontInitialize;
-
-  WTF::ArrayBufferContents result(alloc_size_in_bytes, 1,
-                                  WTF::ArrayBufferContents::kNotShared,
-                                  initialization_policy);
-  // Check if the ArrayBuffer backing store was allocated correctly.
-  if (result.DataLength() != static_cast<size_t>(alloc_size_in_bytes)) {
-    return false;
-  }
 
   SkColorType color_type =
       (color_params.GetSkColorType() == kRGBA_F16_SkColorType)
@@ -137,11 +123,10 @@ bool StaticBitmapImage::ConvertToArrayBufferContents(
   if (!sk_image)
     return false;
   bool read_pixels_successful = sk_image->readPixels(
-      info, result.Data(), info.minRowBytes(), rect.X(), rect.Y());
+      info, dst.data(), info.minRowBytes(), rect.X(), rect.Y());
   DCHECK(read_pixels_successful ||
          !sk_image->bounds().intersect(SkIRect::MakeXYWH(
              rect.X(), rect.Y(), info.width(), info.height())));
-  result.Transfer(dest_contents);
   return true;
 }
 

@@ -349,7 +349,9 @@ SamePasswordFormsChecker::SamePasswordFormsChecker()
 // set a flag to ask the current execution of IsExitConditionSatisfied() to be
 // re-run.  This ensures that the return value is always based on the most
 // up-to-date state.
-bool SamePasswordFormsChecker::IsExitConditionSatisfied() {
+bool SamePasswordFormsChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for matching passwords";
+
   if (in_progress_) {
     LOG(WARNING) << "Setting flag and returning early to prevent nesting.";
     needs_recheck_ = true;
@@ -367,10 +369,6 @@ bool SamePasswordFormsChecker::IsExitConditionSatisfied() {
   return result;
 }
 
-std::string SamePasswordFormsChecker::GetDebugMessage() const {
-  return "Waiting for matching passwords";
-}
-
 SamePasswordFormsAsVerifierChecker::SamePasswordFormsAsVerifierChecker(int i)
     : SingleClientStatusChangeChecker(
           sync_datatype_helper::test()->GetSyncService(i)),
@@ -381,7 +379,10 @@ SamePasswordFormsAsVerifierChecker::SamePasswordFormsAsVerifierChecker(int i)
 
 // This method uses the same re-entrancy prevention trick as
 // the SamePasswordFormsChecker.
-bool SamePasswordFormsAsVerifierChecker::IsExitConditionSatisfied() {
+bool SamePasswordFormsAsVerifierChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for passwords to match verifier";
+
   if (in_progress_) {
     LOG(WARNING) << "Setting flag and returning early to prevent nesting.";
     needs_recheck_ = true;
@@ -398,10 +399,6 @@ bool SamePasswordFormsAsVerifierChecker::IsExitConditionSatisfied() {
   } while (needs_recheck_);
   in_progress_ = false;
   return result;
-}
-
-std::string SamePasswordFormsAsVerifierChecker::GetDebugMessage() const {
-  return "Waiting for passwords to match verifier";
 }
 
 PasswordFormsChecker::PasswordFormsChecker(
@@ -423,9 +420,10 @@ PasswordFormsChecker::~PasswordFormsChecker() = default;
 
 // This method uses the same re-entrancy prevention trick as
 // the SamePasswordFormsChecker.
-bool PasswordFormsChecker::IsExitConditionSatisfied() {
+bool PasswordFormsChecker::IsExitConditionSatisfied(std::ostream* os) {
   if (in_progress_) {
     LOG(WARNING) << "Setting flag and returning early to prevent nesting.";
+    *os << "Setting flag and returning early to prevent nesting.";
     needs_recheck_ = true;
     return false;
   }
@@ -435,17 +433,13 @@ bool PasswordFormsChecker::IsExitConditionSatisfied() {
   in_progress_ = true;
   do {
     needs_recheck_ = false;
-    result = IsExitConditionSatisfiedImpl();
+    result = IsExitConditionSatisfiedImpl(os);
   } while (needs_recheck_);
   in_progress_ = false;
   return result;
 }
 
-std::string PasswordFormsChecker::GetDebugMessage() const {
-  return "Waiting for matching passwords";
-}
-
-bool PasswordFormsChecker::IsExitConditionSatisfiedImpl() {
+bool PasswordFormsChecker::IsExitConditionSatisfiedImpl(std::ostream* os) {
   std::vector<std::unique_ptr<PasswordForm>> forms =
       passwords_helper::GetLogins(passwords_helper::GetPasswordStore(index_));
   ClearSyncDateField(&forms);
@@ -454,9 +448,9 @@ bool PasswordFormsChecker::IsExitConditionSatisfiedImpl() {
   bool is_matching = password_manager::ContainsEqualPasswordFormsUnordered(
       expected_forms_, forms, &mismatch_details_stream);
   if (!is_matching) {
-    DLOG(ERROR) << "Profile " << index_
-                << " does not contain the same Password forms as expected.";
-    DLOG(ERROR) << mismatch_details_stream.str();
+    *os << "Profile " << index_
+        << " does not contain the same Password forms as expected. "
+        << mismatch_details_stream.str();
   }
   return is_matching;
 }

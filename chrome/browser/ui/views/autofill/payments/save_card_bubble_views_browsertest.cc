@@ -2042,11 +2042,19 @@ IN_PROC_BROWSER_TEST_F(
   SubmitFormAndWaitForCardUploadSaveBubble();
 }
 
+// TODO(crbug.com/1017819): Flaky-crashing on Linux
+#if defined(OS_LINUX)
+#define MAYBE_Logic_CanOfferToSaveDynamicForm \
+  DISABLED_Logic_CanOfferToSaveDynamicForm
+#else
+#define MAYBE_Logic_CanOfferToSaveDynamicForm Logic_CanOfferToSaveDynamicForm
+#endif
+
 // Tests the upload save logic. Ensures that Chrome offers a upload save for
 // dynamic change form.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
-    Logic_CanOfferToSaveDynamicForm) {
+    MAYBE_Logic_CanOfferToSaveDynamicForm) {
   // Start sync.
   harness_->SetupSync();
 

@@ -22,11 +22,8 @@ class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
 
 // ServiceWorkerRegistrationObjectHost has a 1:1 correspondence to
-// WebServiceWorkerRegistration in the renderer process.
-// The host stays alive while the WebServiceWorkerRegistration is alive, and
-// also initiates destruction of the WebServiceWorkerRegistration once detected
-// that it's no longer needed. See the class documentation in
-// WebServiceWorkerRegistrationImpl for details.
+// blink::ServiceWorkerRegistration in the renderer process.
+// The host stays alive while the blink::ServiceWorkerRegistration is alive.
 //
 // Has a reference to the corresponding ServiceWorkerRegistration in order to
 // ensure that the registration is alive while this object host is around.

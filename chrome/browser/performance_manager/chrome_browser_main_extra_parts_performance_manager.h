@@ -10,11 +10,13 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "components/performance_manager/process_node_source.h"
 #include "components/performance_manager/tab_helper_frame_node_source.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -33,7 +35,8 @@ class SharedWorkerWatcher;
 // classes that create/manage graph nodes.
 class ChromeBrowserMainExtraPartsPerformanceManager
     : public ChromeBrowserMainExtraParts,
-      public content::NotificationObserver {
+      public ProfileManagerObserver,
+      public ProfileObserver {
  public:
   ChromeBrowserMainExtraPartsPerformanceManager();
   ~ChromeBrowserMainExtraPartsPerformanceManager() override;
@@ -55,14 +58,12 @@ class ChromeBrowserMainExtraPartsPerformanceManager
   void PostCreateThreads() override;
   void PostMainMessageLoopRun() override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ProfileManagerObserver:
+  void OnProfileAdded(Profile* profile) override;
 
-  // Handlers for profile creation and destruction notifications.
-  void CreateSharedWorkerWatcher(Profile* profile);
-  void DeleteSharedWorkerWatcher(Profile* profile);
+  // ProfileObserver:
+  void OnOffTheRecordProfileCreated(Profile* off_the_record) override;
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
   std::unique_ptr<performance_manager::PerformanceManagerImpl>
       performance_manager_;
@@ -75,7 +76,7 @@ class ChromeBrowserMainExtraPartsPerformanceManager
   std::unique_ptr<performance_manager::BrowserChildProcessWatcher>
       browser_child_process_watcher_;
 
-  content::NotificationRegistrar notification_registrar_;
+  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
   // Needed by the worker watchers to access existing process nodes and frame
   // nodes.

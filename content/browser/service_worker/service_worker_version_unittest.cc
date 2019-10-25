@@ -32,7 +32,6 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_service.mojom.h"
 #include "content/public/test/test_utils.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
@@ -65,40 +64,6 @@ base::Time GetYesterday() {
   return base::Time::Now() - base::TimeDelta::FromDays(1) -
          base::TimeDelta::FromSeconds(1);
 }
-
-class TestServiceImpl : public mojom::TestService {
- public:
-  static void Create(mojo::InterfaceRequest<mojom::TestService> request) {
-    mojo::MakeStrongBinding(base::WrapUnique(new TestServiceImpl),
-                            std::move(request));
-  }
-
-  void DoSomething(DoSomethingCallback callback) override {
-    std::move(callback).Run();
-  }
-
-  void DoTerminateProcess(DoTerminateProcessCallback callback) override {
-    NOTREACHED();
-  }
-
-  void DoCrashImmediately(DoCrashImmediatelyCallback callback) override {
-    NOTREACHED();
-  }
-
-  void CreateFolder(CreateFolderCallback callback) override { NOTREACHED(); }
-
-  void GetRequestorName(GetRequestorNameCallback callback) override {
-    std::move(callback).Run("");
-  }
-
-  void CreateSharedBuffer(const std::string& message,
-                          CreateSharedBufferCallback callback) override {
-    NOTREACHED();
-  }
-
- private:
-  TestServiceImpl() {}
-};
 
 class ServiceWorkerVersionTest : public testing::Test {
  protected:

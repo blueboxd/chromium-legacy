@@ -190,6 +190,10 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
                    : nullptr;
 }
 
+- (web::WebState*)webState {
+  return _webState;
+}
+
 - (password_manager::PasswordManager*)passwordManager {
   return _passwordManager.get();
 }

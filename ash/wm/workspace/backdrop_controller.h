@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_observer.h"
@@ -94,7 +95,7 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
 
   void UpdateBackdropInternal();
 
-  void EnsureBackdropWidget();
+  void EnsureBackdropWidget(BackdropWindowMode mode);
 
   void UpdateAccessibilityMode();
 

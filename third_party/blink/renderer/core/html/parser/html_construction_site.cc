@@ -69,8 +69,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static const unsigned kMaximumHTMLParserDOMTreeDepth = 512;
 
 static inline void SetAttributes(Element* element,
@@ -86,11 +84,16 @@ static inline void SetAttributes(Element* element,
 }
 
 static bool HasImpliedEndTag(const HTMLStackItem* item) {
-  return item->HasTagName(kDdTag) || item->HasTagName(kDtTag) ||
-         item->HasTagName(kLiTag) || item->HasTagName(kOptionTag) ||
-         item->HasTagName(kOptgroupTag) || item->HasTagName(kPTag) ||
-         item->HasTagName(kRbTag) || item->HasTagName(kRpTag) ||
-         item->HasTagName(kRtTag) || item->HasTagName(kRTCTag);
+  return item->HasTagName(html_names::kDdTag) ||
+         item->HasTagName(html_names::kDtTag) ||
+         item->HasTagName(html_names::kLiTag) ||
+         item->HasTagName(html_names::kOptionTag) ||
+         item->HasTagName(html_names::kOptgroupTag) ||
+         item->HasTagName(html_names::kPTag) ||
+         item->HasTagName(html_names::kRbTag) ||
+         item->HasTagName(html_names::kRpTag) ||
+         item->HasTagName(html_names::kRtTag) ||
+         item->HasTagName(html_names::kRTCTag);
 }
 
 static bool ShouldUseLengthLimit(const ContainerNode& node) {
@@ -671,14 +674,14 @@ void HTMLConstructionSite::InsertCommentOnHTMLHtmlElement(
 void HTMLConstructionSite::InsertHTMLHeadElement(AtomicHTMLToken* token) {
   DCHECK(!ShouldFosterParent());
   head_ = MakeGarbageCollected<HTMLStackItem>(
-      CreateElement(token, xhtmlNamespaceURI), token);
+      CreateElement(token, html_names::xhtmlNamespaceURI), token);
   AttachLater(CurrentNode(), head_->GetElement());
   open_elements_.PushHTMLHeadElement(head_);
 }
 
 void HTMLConstructionSite::InsertHTMLBodyElement(AtomicHTMLToken* token) {
   DCHECK(!ShouldFosterParent());
-  Element* body = CreateElement(token, xhtmlNamespaceURI);
+  Element* body = CreateElement(token, html_names::xhtmlNamespaceURI);
   AttachLater(CurrentNode(), body);
   open_elements_.PushHTMLBodyElement(
       MakeGarbageCollected<HTMLStackItem>(body, token));
@@ -689,7 +692,7 @@ void HTMLConstructionSite::InsertHTMLBodyElement(AtomicHTMLToken* token) {
 void HTMLConstructionSite::InsertHTMLFormElement(AtomicHTMLToken* token,
                                                  bool is_demoted) {
   auto* form_element =
-      To<HTMLFormElement>(CreateElement(token, xhtmlNamespaceURI));
+      To<HTMLFormElement>(CreateElement(token, html_names::xhtmlNamespaceURI));
   if (!OpenElements()->HasTemplateInHTMLScope())
     form_ = form_element;
   if (is_demoted) {
@@ -701,7 +704,7 @@ void HTMLConstructionSite::InsertHTMLFormElement(AtomicHTMLToken* token,
 }
 
 void HTMLConstructionSite::InsertHTMLElement(AtomicHTMLToken* token) {
-  Element* element = CreateElement(token, xhtmlNamespaceURI);
+  Element* element = CreateElement(token, html_names::xhtmlNamespaceURI);
   AttachLater(CurrentNode(), element);
   open_elements_.Push(MakeGarbageCollected<HTMLStackItem>(element, token));
 }
@@ -712,7 +715,8 @@ void HTMLConstructionSite::InsertSelfClosingHTMLElementDestroyingToken(
   // Normally HTMLElementStack is responsible for calling finishParsingChildren,
   // but self-closing elements are never in the element stack so the stack
   // doesn't get a chance to tell them that we're done parsing their children.
-  AttachLater(CurrentNode(), CreateElement(token, xhtmlNamespaceURI), true);
+  AttachLater(CurrentNode(),
+              CreateElement(token, html_names::xhtmlNamespaceURI), true);
   // FIXME: Do we want to acknowledge the token's self-closing flag?
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/tokenization.html#acknowledge-self-closing-flag
 }
@@ -1066,11 +1070,11 @@ bool HTMLConstructionSite::InQuirksMode() {
 void HTMLConstructionSite::FindFosterSite(HTMLConstructionSiteTask& task) {
   // 2.1
   HTMLElementStack::ElementRecord* last_template =
-      open_elements_.Topmost(kTemplateTag.LocalName());
+      open_elements_.Topmost(html_names::kTemplateTag.LocalName());
 
   // 2.2
   HTMLElementStack::ElementRecord* last_table =
-      open_elements_.Topmost(kTableTag.LocalName());
+      open_elements_.Topmost(html_names::kTableTag.LocalName());
 
   // 2.3
   if (last_template && (!last_table || last_template->IsAbove(last_table))) {

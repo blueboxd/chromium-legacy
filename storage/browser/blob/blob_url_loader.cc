@@ -25,7 +25,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/constants.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
 
@@ -204,23 +204,23 @@ void BlobURLLoader::OnComplete(net::Error error_code,
 void BlobURLLoader::HeadersCompleted(net::HttpStatusCode status_code,
                                      uint64_t content_size,
                                      net::IOBufferWithSize* metadata) {
-  network::ResourceResponseHead response;
-  response.content_length = 0;
+  auto response = network::mojom::URLResponseHead::New();
+  response->content_length = 0;
   if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT)
-    response.content_length = content_size;
-  response.headers = GenerateHeaders(status_code, blob_handle_.get(),
-                                     &byte_range_, total_size_, content_size);
+    response->content_length = content_size;
+  response->headers = GenerateHeaders(status_code, blob_handle_.get(),
+                                      &byte_range_, total_size_, content_size);
 
   std::string mime_type;
-  response.headers->GetMimeType(&mime_type);
+  response->headers->GetMimeType(&mime_type);
   // Match logic in StreamURLRequestJob::HeadersCompleted.
   if (mime_type.empty())
     mime_type = "text/plain";
-  response.mime_type = mime_type;
+  response->mime_type = mime_type;
 
   // TODO(jam): some of this code can be shared with
   // services/network/url_loader.h
-  client_->OnReceiveResponse(response);
+  client_->OnReceiveResponse(std::move(response));
   sent_headers_ = true;
 
   if (metadata) {

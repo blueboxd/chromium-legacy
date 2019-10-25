@@ -97,7 +97,7 @@ public class TouchToFillViewTest {
     public void testVisibilityChangedByModel() {
         // After setting the visibility to true, the view should exist and be visible.
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
-        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+        pollUiThread(() -> getBottomSheetState() == SheetState.HALF);
         assertThat(mTouchToFillView.getContentView().isShown(), is(true));
 
         // After hiding the view, the view should still exist but be invisible.
@@ -118,7 +118,7 @@ public class TouchToFillViewTest {
                                     .build()));
             mModel.set(VISIBLE, true);
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+        pollUiThread(() -> getBottomSheetState() == SheetState.HALF);
         TextView subtitle =
                 mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_sheet_subtitle);
 
@@ -137,7 +137,7 @@ public class TouchToFillViewTest {
                                     .build()));
             mModel.set(VISIBLE, true);
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+        pollUiThread(() -> getBottomSheetState() == SheetState.HALF);
         TextView subtitle =
                 mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_sheet_subtitle);
 
@@ -154,7 +154,7 @@ public class TouchToFillViewTest {
                             buildCredentialItem(BOB)));
         });
 
-        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+        pollUiThread(() -> getBottomSheetState() == SheetState.HALF);
         assertThat(getCredentials().getChildCount(), is(3));
         assertThat(getCredentialOriginAt(0).getVisibility(), is(View.GONE));
         assertThat(getCredentialNameAt(0).getText(), is(ANA.getFormattedUsername()));
@@ -182,7 +182,7 @@ public class TouchToFillViewTest {
             mModel.get(SHEET_ITEMS).addAll(Collections.singletonList(buildCredentialItem(ANA)));
             mModel.set(VISIBLE, true);
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+        pollUiThread(() -> getBottomSheetState() == SheetState.HALF);
 
         assertNotNull(getCredentials().getChildAt(0));
 
@@ -199,7 +199,7 @@ public class TouchToFillViewTest {
             mModel.set(ON_CLICK_MANAGE, () -> manageButtonClicked.set(true));
             mModel.set(VISIBLE, true);
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+        pollUiThread(() -> getBottomSheetState() == SheetState.HALF);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { getActivity().getBottomSheet().setSheetState(SheetState.FULL, false); });
@@ -216,7 +216,7 @@ public class TouchToFillViewTest {
     @MediumTest
     public void testDismissesWhenHidden() {
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
-        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+        pollUiThread(() -> getBottomSheetState() == SheetState.HALF);
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, false));
         pollUiThread(() -> getBottomSheetState() == SheetState.HIDDEN);
         verify(mDismissHandler).onResult(StateChangeReason.NONE);

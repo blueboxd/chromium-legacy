@@ -1153,7 +1153,7 @@ void ClientControlledShellSurface::UpdateBackdrop() {
 
   ash::BackdropWindowMode target_backdrop_mode =
       enable_backdrop ? ash::BackdropWindowMode::kEnabled
-                      : ash::BackdropWindowMode::kAuto;
+                      : ash::BackdropWindowMode::kAutoOpaque;
 
   if (window->GetProperty(ash::kBackdropWindowMode) != target_backdrop_mode)
     window->SetProperty(ash::kBackdropWindowMode, target_backdrop_mode);

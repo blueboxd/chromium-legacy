@@ -33,11 +33,13 @@ bool DefaultTexture2DWrapper::ProcessTexture(const D3D11PictureBuffer* owner_pb,
 
 bool DefaultTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb,
                                    size_t array_slice,
-                                   gfx::Size size,
-                                   int textures_per_picture) {
+                                   gfx::Size size) {
   gpu_resources_ = std::make_unique<GpuResources>();
   if (!gpu_resources_)
     return false;
+
+  // We currently only bind NV12, which requires two GL textures.
+  const int textures_per_picture = 2;
 
   // Generate mailboxes and holders.
   std::vector<gpu::Mailbox> mailboxes;

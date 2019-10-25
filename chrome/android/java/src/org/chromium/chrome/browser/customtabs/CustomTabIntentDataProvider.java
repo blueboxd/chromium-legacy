@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -546,7 +547,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
      * Processes the color passed from the client app and updates {@link #mToolbarColor}.
      */
     private void retrieveToolbarColor(CustomTabColorSchemeParams schemeParams, Context context) {
-        int defaultColor = ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito());
+        int defaultColor = ChromeColors.getDefaultThemeColor(context.getResources(), isIncognito());
         if (isIncognito()) {
             mToolbarColor = defaultColor;
             return; // Don't allow toolbar color customization for incognito tabs.

@@ -221,10 +221,16 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
       }
       break;
     case TextUnit_Line:
-      start_ = start_->CreatePreviousLineStartPosition(
-          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-      end_ = start_->CreateNextLineEndPosition(
-          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      start_ = start_->CreateBoundaryStartPosition(
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary,
+          AXTextBoundaryDirection::kBackwards,
+          base::BindRepeating(&AtStartOfLinePredicate),
+          base::BindRepeating(&AtEndOfLinePredicate));
+      end_ = start_->CreateBoundaryEndPosition(
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary,
+          AXTextBoundaryDirection::kForwards,
+          base::BindRepeating(&AtStartOfLinePredicate),
+          base::BindRepeating(&AtEndOfLinePredicate));
       break;
     case TextUnit_Paragraph:
       start_ = start_->CreatePreviousParagraphStartPosition(
@@ -867,6 +873,20 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
   return S_OK;
 }
 
+// static
+bool AXPlatformNodeTextRangeProviderWin::AtStartOfLinePredicate(
+    const AXPositionInstance& position) {
+  return !position->IsIgnored() &&
+         (position->AtStartOfLine() || position->AtStartOfInlineBlock());
+}
+
+// static
+bool AXPlatformNodeTextRangeProviderWin::AtEndOfLinePredicate(
+    const AXPositionInstance& position) {
+  return !position->IsIgnored() &&
+         (position->AtEndOfLine() || position->AtStartOfInlineBlock());
+}
+
 base::string16 AXPlatformNodeTextRangeProviderWin::GetString(int max_count) {
   AXNodeRange range(start_->Clone(), end_->Clone());
   return range.GetText(AXTextConcatenationBehavior::kAsInnerText, max_count);
@@ -916,10 +936,42 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByLine(
     bool is_start_endpoint,
     const int count,
     int* units_moved) {
-  return MoveEndpointByUnitHelper(
-      std::move(endpoint),
-      is_start_endpoint ? AXTextBoundary::kLineStart : AXTextBoundary::kLineEnd,
-      count, units_moved);
+  DCHECK_NE(count, 0);
+  const bool going_forward = count > 0;
+
+  AXPositionInstance current_endpoint = endpoint->Clone();
+  for (int iteration = 0; iteration < std::abs(count); ++iteration) {
+    AXPositionInstance next_endpoint;
+    if (is_start_endpoint) {
+      next_endpoint = current_endpoint->CreateBoundaryStartPosition(
+          AXBoundaryBehavior::StopAtLastAnchorBoundary,
+          going_forward ? AXTextBoundaryDirection::kForwards
+                        : AXTextBoundaryDirection::kBackwards,
+          base::BindRepeating(&AtStartOfLinePredicate),
+          base::BindRepeating(&AtEndOfLinePredicate));
+    } else {
+      next_endpoint = current_endpoint->CreateBoundaryEndPosition(
+          AXBoundaryBehavior::StopAtLastAnchorBoundary,
+          going_forward ? AXTextBoundaryDirection::kForwards
+                        : AXTextBoundaryDirection::kBackwards,
+          base::BindRepeating(&AtStartOfLinePredicate),
+          base::BindRepeating(&AtEndOfLinePredicate));
+    }
+    DCHECK(!next_endpoint->IsNullPosition());
+
+    // Since AXBoundaryBehavior::StopAtLastAnchorBoundary forces the next text
+    // boundary position to be different than the input position, the only case
+    // where these are equal is when they're already located at the last anchor
+    // boundary. In such case, there is no next position to move to.
+    if (*current_endpoint == *next_endpoint) {
+      *units_moved = going_forward ? iteration : -iteration;
+      return current_endpoint;
+    }
+    current_endpoint = std::move(next_endpoint);
+  }
+
+  *units_moved = count;
+  return current_endpoint;
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance

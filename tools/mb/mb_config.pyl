@@ -25,10 +25,6 @@
       'win-google-rel': 'official_goma_x86',
     },
 
-    'internal.chrome.fyi': {
-      'win-celab-rel': 'official_celab_release_bot',
-    },
-
     'chromeos.chrome': {
       'chrome-tot-chromeos-amd64-generic': 'cros_chrome_sdk',
       'Chrome4CROS Packages': 'chromeos_with_codecs_release_bot',
@@ -397,10 +393,10 @@
       'Android FYI Release (Nexus 9)': 'gpu_tests_android_release_trybot_arm64',
       'Android FYI Release (NVIDIA Shield TV)': 'gpu_tests_android_release_trybot_arm64',
       'Android FYI Release (Pixel 2)': 'gpu_tests_android_release_trybot',
-      'Android FYI 32 Vk Release (Pixel 2)': 'gpu_tests_android_vulkan_release_trybot',
-      'Android FYI 64 Vk Release (Pixel 2)': 'gpu_tests_android_vulkan_release_trybot_arm64',
-      'Android FYI 32 dEQP Vk Release (Pixel 2)': 'deqp_android_vulkan_release_trybot',
-      'Android FYI 64 dEQP Vk Release (Pixel 2)': 'deqp_android_vulkan_release_trybot_arm64',
+      'Android FYI 32 Vk Release (Pixel 2)': 'gpu_tests_android_vulkan_ndk_release_trybot',
+      'Android FYI 64 Vk Release (Pixel 2)': 'gpu_tests_android_vulkan_ndk_release_trybot_arm64',
+      'Android FYI 32 dEQP Vk Release (Pixel 2)': 'deqp_android_vulkan_ndk_release_trybot',
+      'Android FYI 64 dEQP Vk Release (Pixel 2)': 'deqp_android_vulkan_ndk_release_trybot_arm64',
       'Android FYI SkiaRenderer GL (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
       'Android FYI SkiaRenderer Vulkan (Pixel 2)': 'gpu_tests_android_release_trybot',
       'GPU FYI Linux Builder': 'gpu_fyi_tests_release_trybot',
@@ -410,13 +406,15 @@
       'GPU FYI Mac Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Mac Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU FYI Mac dEQP Builder': 'deqp_release_trybot',
-      'GPU FYI Perf Android 64 Builder': 'gpu_tests_android_vulkan_release_trybot_arm64',
+      'GPU FYI Perf Android 64 Builder': 'gpu_tests_android_vulkan_ndk_release_trybot_arm64',
       'GPU FYI Win Builder': 'gpu_fyi_tests_release_trybot_x86',
       'GPU FYI Win Builder (dbg)': 'gpu_fyi_tests_debug_trybot_x86',
       'GPU FYI Win dEQP Builder': 'deqp_release_trybot_x86',
       'GPU FYI Win x64 Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Win x64 Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU FYI Win x64 dEQP Builder': 'deqp_release_trybot',
+      'GPU FYI Win x64 DX12 Vulkan Builder': 'gpu_fyi_tests_dx12vk_release_trybot',
+      'GPU FYI Win x64 DX12 Vulkan Builder (dbg)': 'gpu_fyi_tests_dx12vk_debug_trybot',
       'GPU FYI XR Win x64 Builder': 'gpu_fyi_tests_release_trybot',
       'Linux FYI GPU TSAN Release': 'gpu_fyi_tests_release_trybot_tsan',
       'Mac FYI GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
@@ -616,6 +614,10 @@
       'win-celab-builder-rel': 'celab_release_bot',
     },
 
+    'internal.chrome.fyi': {
+      'win-celab-rel': 'official_celab_release_bot',
+    },
+
     'internal.client.kitchensync': {
       'Linux Canary': 'debug_bot',
       'Linux Dev': 'debug_bot',
@@ -694,10 +696,10 @@
       'gpu-fyi-try-android-n-nvidia-shield-tv-64': 'gpu_tests_android_release_trybot_arm64',
       'gpu-fyi-try-android-p-pixel-2-32': 'gpu_tests_android_release_trybot',
       'gpu-fyi-try-android-p-pixel-2-skv-32': 'gpu_tests_android_release_trybot',
-      'gpu-fyi-try-android-q-pixel-2-deqp-vk-32': 'deqp_android_vulkan_release_trybot',
-      'gpu-fyi-try-android-q-pixel-2-deqp-vk-64': 'deqp_android_vulkan_release_trybot_arm64',
-      'gpu-fyi-try-android-q-pixel-2-vk-32': 'gpu_tests_android_vulkan_release_trybot',
-      'gpu-fyi-try-android-q-pixel-2-vk-64': 'gpu_tests_android_vulkan_release_trybot_arm64',
+      'gpu-fyi-try-android-q-pixel-2-deqp-vk-32': 'deqp_android_vulkan_ndk_release_trybot',
+      'gpu-fyi-try-android-q-pixel-2-deqp-vk-64': 'deqp_android_vulkan_ndk_release_trybot_arm64',
+      'gpu-fyi-try-android-q-pixel-2-vk-32': 'gpu_tests_android_vulkan_ndk_release_trybot',
+      'gpu-fyi-try-android-q-pixel-2-vk-64': 'gpu_tests_android_vulkan_ndk_release_trybot_arm64',
       'gpu-try-android-m-nexus-5x-64': 'gpu_tests_android_release_trybot_arm64',
       'linux_android_dbg_ng': 'android_debug_trybot',
       'try-nougat-phone-tester': 'android_debug_trybot_arm64',
@@ -707,11 +709,11 @@
 
     'tryserver.chromium.angle': {
       'android_angle_rel_ng': 'gpu_tests_android_release_trybot_arm64',
-      'android_angle_vk32_rel_ng': 'gpu_tests_android_vulkan_release_trybot',
-      'android_angle_vk64_rel_ng': 'gpu_tests_android_vulkan_release_trybot_arm64',
+      'android_angle_vk32_rel_ng': 'gpu_tests_android_vulkan_ndk_release_trybot',
+      'android_angle_vk64_rel_ng': 'gpu_tests_android_vulkan_ndk_release_trybot_arm64',
       'android_angle_deqp_rel_ng': 'deqp_android_release_trybot_arm64',
-      'android_angle_vk32_deqp_rel_ng': 'deqp_android_vulkan_release_trybot',
-      'android_angle_vk64_deqp_rel_ng': 'deqp_android_vulkan_release_trybot_arm64',
+      'android_angle_vk32_deqp_rel_ng': 'deqp_android_vulkan_ndk_release_trybot',
+      'android_angle_vk64_deqp_rel_ng': 'deqp_android_vulkan_ndk_release_trybot_arm64',
       'fuchsia-angle-rel': 'gpu_fyi_tests_release_trybot_fuchsia',
       'linux-angle-rel': 'gpu_fyi_tests_release_trybot',
       'linux_angle_ozone_rel_ng': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
@@ -895,6 +897,8 @@
       'gpu-fyi-try-win10-intel-rel-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-nvidia-dbg-64': 'gpu_fyi_tests_debug_trybot',
       'gpu-fyi-try-win10-nvidia-dqp-64': 'deqp_release_trybot',
+      'gpu-fyi-try-win10-nvidia-dx12vk-dbg-64': 'gpu_fyi_tests_dx12vk_debug_trybot',
+      'gpu-fyi-try-win10-nvidia-dx12vk-rel-64': 'gpu_fyi_tests_dx12vk_release_trybot',
       'gpu-fyi-try-win10-nvidia-exp-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-nvidia-rel-32': 'gpu_tests_release_trybot_x86_resource_whitelisting',
       'gpu-fyi-try-win10-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
@@ -1537,12 +1541,12 @@
       'angle_deqp_tests', 'android', 'release_trybot', 'arm64',
     ],
 
-    'deqp_android_vulkan_release_trybot': [
-      'angle_deqp_tests', 'android', 'vulkan', 'release_trybot',
+    'deqp_android_vulkan_ndk_release_trybot': [
+      'angle_deqp_tests', 'android', 'vulkan_ndk', 'release_trybot',
     ],
 
-    'deqp_android_vulkan_release_trybot_arm64': [
-      'angle_deqp_tests', 'android', 'vulkan', 'release_trybot', 'arm64',
+    'deqp_android_vulkan_ndk_release_trybot_arm64': [
+      'angle_deqp_tests', 'android', 'vulkan_ndk', 'release_trybot', 'arm64',
     ],
 
     'deqp_release_trybot_x86': [
@@ -1555,6 +1559,10 @@
 
     'gpu_fyi_tests_debug_trybot': [
       'gpu_fyi_tests', 'debug_trybot',
+    ],
+
+    'gpu_fyi_tests_dx12vk_debug_trybot': [
+      'gpu_fyi_tests', 'dx12vk', 'debug_trybot',
     ],
 
     'gpu_fyi_tests_debug_trybot_x86': [
@@ -1585,6 +1593,10 @@
       'gpu_fyi_tests', 'release_trybot', 'fuchsia',
     ],
 
+    'gpu_fyi_tests_dx12vk_release_trybot': [
+      'gpu_fyi_tests', 'dx12vk',
+    ],
+
     'gpu_tests_android_release_bot_minimal_symbols_arm64': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
       'resource_whitelisting', 'static_angle',
@@ -1607,12 +1619,12 @@
       'use_java_coverage', 'partial_code_coverage_instrumentation',
     ],
 
-    'gpu_tests_android_vulkan_release_trybot': [
-      'gpu_tests', 'android', 'vulkan', 'release_trybot', 'static_angle',
+    'gpu_tests_android_vulkan_ndk_release_trybot': [
+      'gpu_tests', 'android', 'vulkan_ndk', 'release_trybot', 'static_angle',
     ],
 
-    'gpu_tests_android_vulkan_release_trybot_arm64': [
-      'gpu_tests', 'android', 'vulkan', 'release_trybot', 'arm64', 'static_angle',
+    'gpu_tests_android_vulkan_ndk_release_trybot_arm64': [
+      'gpu_tests', 'android', 'vulkan_ndk', 'release_trybot', 'arm64', 'static_angle',
     ],
 
     'gpu_tests_debug_bot': [
@@ -2186,6 +2198,11 @@
       'gn_args': 'archive_seed_corpus=false',
     },
 
+    'dx12vk': {
+      # TODO(https://crbug.com/1010584): Explicitly enable DirectX 12.
+      'mixins': ['enable_vulkan'],
+    },
+
     'enable_blink_animation_use_time_delta': {
       'gn_args': 'blink_animation_use_time_delta=true',
     },
@@ -2199,6 +2216,10 @@
     # times.
     'enable_archive_compression': {
       'gn_args': 'skip_archive_compression=false',
+    },
+
+    'enable_vulkan': {
+      'gn_args': 'enable_vulkan=true',
     },
 
     # This mixin is used to force configs that use it to fail. It
@@ -2504,7 +2525,7 @@
       'gn_args': 'enable_vr=true',
     },
 
-    'vulkan': {
+    'vulkan_ndk': {
       'gn_args': 'android32_ndk_api_level=26 android64_ndk_api_level=26',
     },
 

@@ -193,6 +193,7 @@ class GC_PLUGIN_IGNORE(
   void VisitBackingStoreWeakly(void*,
                                void**,
                                TraceDescriptor,
+                               TraceDescriptor,
                                WeakCallback,
                                void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}

@@ -28,6 +28,7 @@ class MarkingVerifier final : public Visitor {
   void VisitBackingStoreWeakly(void*,
                                void**,
                                TraceDescriptor,
+                               TraceDescriptor,
                                WeakCallback,
                                void*) final;
 

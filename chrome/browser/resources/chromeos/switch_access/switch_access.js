@@ -7,6 +7,15 @@
  * @implements {SwitchAccessInterface}
  */
 class SwitchAccess {
+  static initialize() {
+    window.switchAccess = new SwitchAccess();
+  }
+
+  static get() {
+    return window.switchAccess;
+  }
+
+  /** @private */
   constructor() {
     console.log('Switch access is enabled');
 

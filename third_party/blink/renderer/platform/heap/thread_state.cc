@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
@@ -143,16 +144,11 @@ class ThreadState::IncrementalMarkingScheduler {
   }
 
   // Cancels incremental marking task in case there is any pending.
-  void Cancel() {
-    if (!pending_task_) {
-      return;
-    }
-    pending_task_->Cancel();
-  }
+  void Cancel() { task_.Cancel(); }
 
  private:
   void Init(BlinkGC::GCReason reason) {
-    DCHECK(!pending_task_);
+    DCHECK(!task_.IsActive());
     reason_ = reason;
     next_incremental_marking_step_duration_ =
         kDefaultIncrementalMarkingStepDuration;
@@ -160,46 +156,12 @@ class ThreadState::IncrementalMarkingScheduler {
   }
 
   void ScheduleTask() {
-    if (pending_task_) {
-      return;
-    }
-    auto task = std::make_unique<Task>(this);
-    pending_task_ = task.get();
-    ThreadScheduler::Current()->V8TaskRunner()->PostNonNestableTask(
-        FROM_HERE, WTF::Bind(&Task::Run, std::move(task)));
+    // Reassigning to the task will cancel the currently scheduled one.
+    task_ = PostNonNestableCancellableTask(
+        *ThreadScheduler::Current()->V8TaskRunner(), FROM_HERE,
+        WTF::Bind(&IncrementalMarkingScheduler::Dispatch,
+                  WTF::Unretained(this)));
   }
-
-  // TODO(bikineev): Replace with PostNonNestableCancelableTask when
-  // implemented.
-  class Task {
-   public:
-    explicit Task(IncrementalMarkingScheduler* scheduler)
-        : scheduler_(scheduler) {}
-    ~Task() {
-      if (cancelled_) {
-        return;
-      }
-      Cancel();
-    }
-
-    void Run() {
-      // Bail out if the ThreadState has been cancelled/destroyed.
-      if (cancelled_) {
-        return;
-      }
-      Cancel();
-      scheduler_->Dispatch();
-    }
-
-    void Cancel() {
-      cancelled_ = true;
-      scheduler_->pending_task_ = nullptr;
-    }
-
-   private:
-    IncrementalMarkingScheduler* scheduler_;
-    bool cancelled_ = false;
-  };
 
   void Dispatch() {
     switch (thread_state_->GetGCState()) {
@@ -241,7 +203,7 @@ class ThreadState::IncrementalMarkingScheduler {
       kDefaultIncrementalMarkingStepDuration;
   base::TimeDelta previous_incremental_marking_time_left_ =
       base::TimeDelta::Max();
-  Task* pending_task_ = nullptr;
+  TaskHandle task_;
 };
 
 ThreadState::ThreadState()

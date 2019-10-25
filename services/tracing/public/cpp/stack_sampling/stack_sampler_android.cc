@@ -13,9 +13,10 @@ namespace {
 constexpr size_t kMaxFrameDepth = 48;
 }  // namespace
 
-StackSamplerAndroid::StackSamplerAndroid(base::PlatformThreadId tid,
-                                         base::ModuleCache* module_cache)
-    : tid_(tid), module_cache_(module_cache) {}
+StackSamplerAndroid::StackSamplerAndroid(
+    base::SamplingProfilerThreadToken thread_token,
+    base::ModuleCache* module_cache)
+    : thread_token_(thread_token), module_cache_(module_cache) {}
 
 StackSamplerAndroid::~StackSamplerAndroid() = default;
 
@@ -35,7 +36,8 @@ void StackSamplerAndroid::RecordStackFrames(
     unwinder_.Initialize();
   }
   const void* pcs[kMaxFrameDepth];
-  size_t depth = unwinder_.TraceStack(tid_, stack_buffer, pcs, kMaxFrameDepth);
+  size_t depth =
+      unwinder_.TraceStack(thread_token_.id, stack_buffer, pcs, kMaxFrameDepth);
   std::vector<base::Frame> frames;
   frames.reserve(depth);
   for (size_t i = 0; i < depth; ++i) {

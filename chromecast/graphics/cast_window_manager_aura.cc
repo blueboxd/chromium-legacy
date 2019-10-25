@@ -15,6 +15,7 @@
 #include "chromecast/graphics/cast_window_tree_host_aura.h"
 #include "chromecast/graphics/gestures/cast_system_gesture_event_handler.h"
 #include "chromecast/graphics/gestures/side_swipe_detector.h"
+#include "chromecast/graphics/rounded_window_corners.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -257,6 +258,10 @@ void CastWindowManagerAura::Setup() {
         system_gesture_dispatcher_.get(), root_window);
   }
 
+  // Add rounded corners, but defaulted to hidden until explicitly asked for by
+  // a component.
+  rounded_window_corners_ = RoundedWindowCorners::Create(this);
+
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
   if (base::FeatureList::IsEnabled(kReduceHeadlessFrameRate)) {
     ui::Compositor* compositor = window_tree_host_->compositor();
@@ -371,6 +376,14 @@ void CastWindowManagerAura::AddTouchActivityObserver(
 void CastWindowManagerAura::RemoveTouchActivityObserver(
     CastTouchActivityObserver* observer) {
   event_gate_->RemoveObserver(observer);
+}
+
+void CastWindowManagerAura::SetEnableRoundedCorners(bool enable) {
+  rounded_window_corners_->SetEnabled(enable);
+}
+
+void CastWindowManagerAura::NotifyColorInversionEnabled(bool enabled) {
+  rounded_window_corners_->SetColorInversion(enabled);
 }
 
 }  // namespace chromecast

@@ -55,9 +55,6 @@ CWV_EXPORT
 // Deletes the password.
 - (void)deletePassword:(CWVPassword*)password;
 
-// Deletes all locally saved data.
-- (void)clearAllLocalData;
-
 @end
 
 NS_ASSUME_NONNULL_END

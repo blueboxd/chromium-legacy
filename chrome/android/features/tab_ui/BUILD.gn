@@ -5,6 +5,7 @@
 import("//build/config/android/rules.gni")
 import("//chrome/android/features/tab_ui/buildflags.gni")
 import("//chrome/common/features.gni")
+import("//components/module_installer/android/module_desc_java.gni")
 
 java_strings_grd("java_strings_grd") {
   defines = chrome_grit_defines
@@ -159,8 +160,9 @@ android_library("java") {
     "//chrome/android/features/start_surface/internal:java",
     "//chrome/android/public/profiles:java",
     "//chrome/app:java_strings_grd",
+    "//chrome/browser/ui/android/styles:java",
     "//chrome/browser/ui/android/widget:java",
-    "//chrome/browser/util/android:java",
+    "//chrome/browser/util:java",
     "//chrome/lib/lifecycle/public/android:java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/feature_engagement:feature_engagement_java",
@@ -178,4 +180,8 @@ android_library("java") {
     "//third_party/android_deps:com_android_support_support_v13_java",
     "//ui/android:ui_java",
   ]
+}
+
+module_desc_java("module_desc_java") {
+  module_name = "tab_management"
 }

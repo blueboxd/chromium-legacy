@@ -35,13 +35,14 @@
 #include <utility>
 
 #include "net/base/url_util.h"
+#include "third_party/blink/renderer/platform/blob/blob_url.h"
+#include "third_party/blink/renderer/platform/blob/blob_url_null_origin_map.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
-#include "third_party/blink/renderer/platform/weborigin/url_security_origin_map.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -63,15 +64,6 @@ const String& EnsureNonNull(const String& string) {
 
 }  // namespace
 
-static URLSecurityOriginMap* g_blob_url_null_origin_map = nullptr;
-
-static SecurityOrigin* GetNullOriginFromBlobURL(const KURL& blob_url) {
-  DCHECK(blob_url.ProtocolIs("blob"));
-  if (g_blob_url_null_origin_map)
-    return g_blob_url_null_origin_map->GetOrigin(blob_url);
-  return nullptr;
-}
-
 bool SecurityOrigin::ShouldUseInnerURL(const KURL& url) {
   // FIXME: Blob URLs don't have inner URLs. Their form is
   // "blob:<inner-origin>/<UUID>", so treating the part after "blob:" as a URL
@@ -92,12 +84,6 @@ KURL SecurityOrigin::ExtractInnerURL(const KURL& url) {
   // FIXME: Update this callsite to use the innerURL member function when
   // we finish implementing it.
   return KURL(url.GetPath());
-}
-
-void SecurityOrigin::SetBlobURLNullOriginMap(
-    URLSecurityOriginMap* blob_url_null_origin_map) {
-  DCHECK(!g_blob_url_null_origin_map);
-  g_blob_url_null_origin_map = blob_url_null_origin_map;
 }
 
 static bool ShouldTreatAsOpaqueOrigin(const KURL& url) {
@@ -205,8 +191,9 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other,
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateWithReferenceOrigin(
     const KURL& url,
     const SecurityOrigin* reference_origin) {
-  if (url.ProtocolIs("blob")) {
-    if (scoped_refptr<SecurityOrigin> origin = GetNullOriginFromBlobURL(url))
+  if (url.ProtocolIs("blob") && BlobURL::GetOrigin(url) == "null") {
+    if (scoped_refptr<SecurityOrigin> origin =
+            BlobURLNullOriginMap::GetInstance()->Get(url))
       return origin;
   }
 
@@ -421,8 +408,10 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
     // with |this|.
     // TODO(nhiroki): Probably we should check the equality by
     // SecurityOrigin::IsSameSchemeHostPort().
-    if (url.ProtocolIs("blob") && GetNullOriginFromBlobURL(url) == this)
+    if (url.ProtocolIs("blob") && BlobURL::GetOrigin(url) == "null" &&
+        BlobURLNullOriginMap::GetInstance()->Get(url) == this) {
       return true;
+    }
     return false;
   }
 

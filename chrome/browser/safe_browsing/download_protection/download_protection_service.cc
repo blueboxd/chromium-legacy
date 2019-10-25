@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -546,7 +548,7 @@ void DownloadProtectionService::UploadForDeepScanning(
     Profile* profile,
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sb_service_->GetBinaryUploadService(profile)->UploadForDeepScanning(
+  sb_service_->GetBinaryUploadService(profile)->MaybeUploadForDeepScanning(
       std::move(request));
 }
 

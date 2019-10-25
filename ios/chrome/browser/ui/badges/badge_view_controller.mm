@@ -89,7 +89,7 @@ const CGFloat kUnreadIndicatorViewHeight = 6.0;
   if (displayedBadgeItem) {
     BadgeButton* newButton = [self.buttonFactory
         getBadgeButtonForBadgeType:displayedBadgeItem.badgeType];
-    [newButton setAccepted:displayedBadgeItem.badgeState == BadgeStateAccepted
+    [newButton setAccepted:displayedBadgeItem.badgeState & BadgeStateAccepted
                   animated:NO];
     self.displayedBadge = newButton;
   }
@@ -116,12 +116,12 @@ const CGFloat kUnreadIndicatorViewHeight = 6.0;
     if (self.displayedBadge &&
         self.displayedBadge.badgeType == displayedBadgeItem.badgeType) {
       [self.displayedBadge
-          setAccepted:displayedBadgeItem.badgeState == BadgeStateAccepted
+          setAccepted:displayedBadgeItem.badgeState & BadgeStateAccepted
              animated:YES];
     } else {
       BadgeButton* newButton = [self.buttonFactory
           getBadgeButtonForBadgeType:displayedBadgeItem.badgeType];
-      [newButton setAccepted:displayedBadgeItem.badgeState == BadgeStateAccepted
+      [newButton setAccepted:displayedBadgeItem.badgeState & BadgeStateAccepted
                     animated:NO];
       self.displayedBadge = newButton;
     }

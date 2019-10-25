@@ -277,11 +277,10 @@ TEST_F(LevelDBScopesTasksTest, ErrorsDuringCleanupArePropogated) {
   const int64_t kNumOpsBeforeFlakesStop =
       kNumOpsBeforeFlakesStart + kNumFlakeOps;
   for (int i = kNumOpsBeforeFlakesStart; i < kNumOpsBeforeFlakesStop + 1; ++i) {
-    indexed_db::FakeLevelDBFactory::FlakePoint flake = {
+    FakeLevelDBFactory::FlakePoint flake = {
         i, leveldb::Status::IOError(base::StringPrintf("io error %d", i)), ""};
 
-    SetUpFlakyDB(
-        std::queue<indexed_db::FakeLevelDBFactory::FlakePoint>({flake}));
+    SetUpFlakyDB(std::queue<FakeLevelDBFactory::FlakePoint>({flake}));
     CreateBasicScopeScenario(kScopeNumber, /*ignore_cleanup_tasks=*/false);
 
     {
@@ -310,11 +309,10 @@ TEST_F(LevelDBScopesTasksTest, ErrorsDuringRevertArePropogated) {
   const int64_t kNumOpsBeforeFlakesStop =
       kNumOpsBeforeFlakesStart + kNumFlakeOps;
   for (int i = kNumOpsBeforeFlakesStart; i < kNumOpsBeforeFlakesStop + 1; ++i) {
-    indexed_db::FakeLevelDBFactory::FlakePoint flake = {
+    FakeLevelDBFactory::FlakePoint flake = {
         i, leveldb::Status::IOError(base::StringPrintf("io error %d", i)), ""};
 
-    SetUpFlakyDB(
-        std::queue<indexed_db::FakeLevelDBFactory::FlakePoint>({flake}));
+    SetUpFlakyDB(std::queue<FakeLevelDBFactory::FlakePoint>({flake}));
     // This tests that the cleanup tasks are executed when the mode is
     // kExecuteCleanupTasks.
     CreateBasicScopeScenario(kScopeNumber, /*ignore_cleanup_tasks=*/false);

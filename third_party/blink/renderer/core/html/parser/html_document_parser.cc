@@ -70,8 +70,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 // This is a direct transcription of step 4 from:
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
 static HTMLTokenizer::State TokenizerStateForContextElement(
@@ -83,18 +81,22 @@ static HTMLTokenizer::State TokenizerStateForContextElement(
 
   const QualifiedName& context_tag = context_element->TagQName();
 
-  if (context_tag.Matches(kTitleTag) || context_tag.Matches(kTextareaTag))
+  if (context_tag.Matches(html_names::kTitleTag) ||
+      context_tag.Matches(html_names::kTextareaTag))
     return HTMLTokenizer::kRCDATAState;
-  if (context_tag.Matches(kStyleTag) || context_tag.Matches(kXmpTag) ||
-      context_tag.Matches(kIFrameTag) || context_tag.Matches(kNoembedTag) ||
-      (context_tag.Matches(kNoscriptTag) && options.script_enabled) ||
-      context_tag.Matches(kNoframesTag))
+  if (context_tag.Matches(html_names::kStyleTag) ||
+      context_tag.Matches(html_names::kXmpTag) ||
+      context_tag.Matches(html_names::kIFrameTag) ||
+      context_tag.Matches(html_names::kNoembedTag) ||
+      (context_tag.Matches(html_names::kNoscriptTag) &&
+       options.script_enabled) ||
+      context_tag.Matches(html_names::kNoframesTag))
     return report_errors ? HTMLTokenizer::kRAWTEXTState
                          : HTMLTokenizer::kPLAINTEXTState;
-  if (context_tag.Matches(kScriptTag))
+  if (context_tag.Matches(html_names::kScriptTag))
     return report_errors ? HTMLTokenizer::kScriptDataState
                          : HTMLTokenizer::kPLAINTEXTState;
-  if (context_tag.Matches(kPlaintextTag))
+  if (context_tag.Matches(html_names::kPlaintextTag))
     return HTMLTokenizer::kPLAINTEXTState;
   return HTMLTokenizer::kDataState;
 }

@@ -44,7 +44,7 @@ TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPicture) {
   PictureSerializationContext* context =
       tracker.GetPictureSerializationContext();
   EXPECT_TRUE(context->count(content_id));
-  EXPECT_EQ((*context)[content_id], kRoutingId);
+  EXPECT_EQ((*context)[content_id], static_cast<uint32_t>(kRoutingId));
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(100, 100);
@@ -77,25 +77,25 @@ TEST(PaintPreviewTrackerTest, TestGlyphRunList) {
 TEST(PaintPreviewTrackerTest, TestAnnotateLinks) {
   PaintPreviewTracker tracker(base::UnguessableToken::Create(), kRoutingId,
                               true);
-  const std::string url_1 = "https://www.chromium.org";
+  const GURL url_1("https://www.chromium.org");
   const gfx::Rect rect_1(10, 20, 30, 40);
   tracker.AnnotateLink(url_1, rect_1);
 
-  const std::string url_2 = "https://www.w3.org";
+  const GURL url_2("https://www.w3.org");
   const gfx::Rect rect_2(15, 25, 35, 45);
   tracker.AnnotateLink(url_2, rect_2);
 
   auto links = tracker.GetLinks();
-  EXPECT_EQ(links[0].url(), url_1);
-  EXPECT_EQ(links[0].rect().width(), rect_1.width());
-  EXPECT_EQ(links[0].rect().height(), rect_1.height());
-  EXPECT_EQ(links[0].rect().x(), rect_1.x());
-  EXPECT_EQ(links[0].rect().y(), rect_1.y());
-  EXPECT_EQ(links[1].url(), url_2);
-  EXPECT_EQ(links[1].rect().width(), rect_2.width());
-  EXPECT_EQ(links[1].rect().height(), rect_2.height());
-  EXPECT_EQ(links[1].rect().x(), rect_2.x());
-  EXPECT_EQ(links[1].rect().y(), rect_2.y());
+  EXPECT_EQ(links[0].url, url_1);
+  EXPECT_EQ(links[0].rect.width(), rect_1.width());
+  EXPECT_EQ(links[0].rect.height(), rect_1.height());
+  EXPECT_EQ(links[0].rect.x(), rect_1.x());
+  EXPECT_EQ(links[0].rect.y(), rect_1.y());
+  EXPECT_EQ(links[1].url, url_2);
+  EXPECT_EQ(links[1].rect.width(), rect_2.width());
+  EXPECT_EQ(links[1].rect.height(), rect_2.height());
+  EXPECT_EQ(links[1].rect.x(), rect_2.x());
+  EXPECT_EQ(links[1].rect.y(), rect_2.y());
 }
 
 }  // namespace paint_preview

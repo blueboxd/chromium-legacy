@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.android_webview.services.IVariationsSeedServer;
+import org.chromium.android_webview.common.services.IVariationsSeedServer;
 import org.chromium.android_webview.services.VariationsSeedServer;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;

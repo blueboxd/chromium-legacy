@@ -22,7 +22,7 @@ class JsModulizerTest(unittest.TestCase):
 
   def _read_out_file(self, file_name):
     assert self._out_folder
-    return open(os.path.join(self._out_folder, file_name), 'r').read()
+    return open(os.path.join(self._out_folder, file_name), 'rb').read()
 
   def _run_test_(self, js_file, js_file_expected, namespace_rewrites=None):
     assert not self._out_folder
@@ -40,7 +40,7 @@ class JsModulizerTest(unittest.TestCase):
     js_out_file = os.path.basename(js_file).replace('.js', '.m.js')
     actual_js = self._read_out_file(js_out_file)
     expected_js = open(
-        os.path.join(_HERE_DIR, 'tests', js_file_expected), 'r').read()
+        os.path.join(_HERE_DIR, 'tests', js_file_expected), 'rb').read()
     self.assertEquals(expected_js, actual_js)
 
   def testSuccess_WithoutCrDefine(self):

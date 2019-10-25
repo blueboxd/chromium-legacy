@@ -8,11 +8,12 @@ import("//chrome/android/modules/buildflags.gni")
 android_library("module_installer_java") {
   java_files = [
     "java/src/org/chromium/components/module_installer/builder/Module.java",
+    "java/src/org/chromium/components/module_installer/builder/ModuleDescriptor.java",
     "java/src/org/chromium/components/module_installer/builder/ModuleEngine.java",
     "java/src/org/chromium/components/module_installer/engine/ApkEngine.java",
+    "java/src/org/chromium/components/module_installer/engine/EngineFactory.java",
     "java/src/org/chromium/components/module_installer/engine/FakeEngine.java",
     "java/src/org/chromium/components/module_installer/engine/InstallEngine.java",
-    "java/src/org/chromium/components/module_installer/engine/EngineFactory.java",
     "java/src/org/chromium/components/module_installer/engine/InstallListener.java",
     "java/src/org/chromium/components/module_installer/engine/SplitCompatEngine.java",
     "java/src/org/chromium/components/module_installer/engine/SplitCompatEngineFacade.java",
@@ -87,13 +88,9 @@ source_set("native") {
   ]
 
   # The method used to load and register JNI for native libraries depends
-  # heavily on build type.
+  # on build type.
   if (use_native_partitions) {
     defines = [ "LOAD_FROM_PARTITIONS" ]
-  } else if (is_component_build) {
-    defines = [ "LOAD_FROM_COMPONENTS" ]
-  } else {
-    defines = [ "LOAD_FROM_BASE_LIBRARY" ]
   }
 }
 

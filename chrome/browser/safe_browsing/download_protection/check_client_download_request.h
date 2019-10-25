@@ -59,9 +59,9 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
                                   const std::string& request_data,
                                   const std::string& response_body) override;
 
-  // Returns true if the CheckClientDownloadRequest should return the
+  // Returns true if the CheckClientDownloadRequest returned the
   // ASYNC_SCANNING result while it does deep scanning.
-  bool ShouldReturnAsynchronousVerdict(
+  bool MaybeReturnAsynchronousVerdict(
       DownloadCheckResultReason reason) override;
 
   // Uploads the binary for deep scanning if the reason and policies indicate
@@ -80,11 +80,6 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
   // Returns true when the file should be uploaded for a malware scan. This
   // consults the SendFilesForMalwareCheck enterprise policy.
   bool ShouldUploadForMalwareScan(DownloadCheckResultReason reason);
-
-  // Returns true when the downloads UX should prevent access to the file until
-  // the deep scanning verdict has been received. This consults the
-  // DelayDeliveryUntilVerdict enterprise policy.
-  bool ShouldDelayVerdicts();
 
   // Called when deep scanning is complete. Where appropriate, it updates the
   // download UX, and sends a real time report about the download.

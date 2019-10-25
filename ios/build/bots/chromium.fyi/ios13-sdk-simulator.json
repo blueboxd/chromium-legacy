@@ -23,7 +23,7 @@
       "device type": "iPhone 6s Plus",
       "xcode build version": "11a1027",
       "os": "13.1",
-      "pool":"Chrome",
+      "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -32,7 +32,7 @@
       "device type": "iPhone 6s",
       "xcode build version": "11a1027",
       "os": "13.1",
-      "pool":"Chrome",
+      "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -41,7 +41,7 @@
       "device type": "iPhone 6s",
       "xcode build version": "11a1027",
       "os": "13.1",
-      "pool":"Chrome",
+      "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -50,7 +50,7 @@
       "device type": "iPhone 7",
       "xcode build version": "11a1027",
       "os": "13.1",
-      "pool":"Chrome",
+      "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -59,7 +59,7 @@
       "device type": "iPad Air 2",
       "xcode build version": "11a1027",
       "os": "13.1",
-      "pool":"Chrome",
+      "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -68,7 +68,7 @@
       "device type": "iPhone X",
       "xcode build version": "11a1027",
       "os": "13.1",
-      "pool":"Chrome",
+      "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -77,7 +77,7 @@
       "device type": "iPhone X",
       "xcode build version": "11a1027",
       "os": "13.1",
-      "pool":"Chrome",
+      "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -86,7 +86,7 @@
       "device type": "iPad Air 2",
       "xcode build version": "11a1027",
       "os": "13.1",
-      "pool":"Chrome",
+      "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
     }

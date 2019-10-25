@@ -69,7 +69,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   TestableIndexedDBBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
       IndexedDBFactory* indexed_db_factory,
-      indexed_db::LevelDBFactory* leveldb_factory,
+      TransactionalLevelDBFactory* leveldb_factory,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
@@ -142,7 +142,6 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit TestIDBFactory(IndexedDBContextImpl* idb_context)
       : IndexedDBFactoryImpl(idb_context,
-                             indexed_db::LevelDBFactory::Get(),
                              IndexedDBClassFactory::Get(),
                              base::DefaultClock::GetInstance()) {}
   ~TestIDBFactory() override = default;
@@ -150,7 +149,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
  protected:
   std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
-      indexed_db::LevelDBFactory* leveldb_factory,
+      TransactionalLevelDBFactory* leveldb_factory,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,

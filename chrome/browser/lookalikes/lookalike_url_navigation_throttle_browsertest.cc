@@ -34,13 +34,9 @@
 
 namespace {
 
-using lookalikes::LookalikeUrlNavigationThrottle;
-using lookalikes::LookalikeUrlService;
 using security_interstitials::MetricsHelper;
 using security_interstitials::SecurityInterstitialCommand;
 using UkmEntry = ukm::builders::LookalikeUrl_NavigationSuggestion;
-using NavigationSuggestionEvent =
-    lookalikes::LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
 
 using MatchType = LookalikeUrlInterstitialPage::MatchType;
 using UserAction = LookalikeUrlInterstitialPage::UserAction;
@@ -258,10 +254,12 @@ class LookalikeUrlNavigationThrottleBrowserTest
     if (!ui_enabled()) {
       return false;
     }
-    if (expected_event == NavigationSuggestionEvent::kMatchSiteEngagement) {
+    if (expected_event == LookalikeUrlNavigationThrottle::
+                              NavigationSuggestionEvent::kMatchSiteEngagement) {
       return true;
     }
-    if (expected_event == NavigationSuggestionEvent::kMatchTopSite &&
+    if (expected_event == LookalikeUrlNavigationThrottle::
+                              NavigationSuggestionEvent::kMatchTopSite &&
         ui_status() == UIStatus::kEnabledForSiteEngagementAndTopDomains) {
       return true;
     }
@@ -443,7 +441,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   TestMetricsRecordedAndMaybeInterstitialShown(
       browser(), kNavigatedUrl, kExpectedSuggestedUrl,
-      NavigationSuggestionEvent::kMatchTopSite);
+      LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::kMatchTopSite);
 
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kTopSite);
 }
@@ -461,8 +459,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   TestInterstitialNotShown(browser(), kNavigatedUrl);
   histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
                               1);
-  histograms.ExpectBucketCount(LookalikeUrlNavigationThrottle::kHistogramName,
-                               NavigationSuggestionEvent::kMatchTopSite, 1);
+  histograms.ExpectBucketCount(
+      LookalikeUrlNavigationThrottle::kHistogramName,
+      LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::kMatchTopSite,
+      1);
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kTopSite);
 }
 
@@ -480,7 +480,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   TestMetricsRecordedAndMaybeInterstitialShown(
       browser(), kNavigatedUrl, kExpectedSuggestedUrl,
-      NavigationSuggestionEvent::kMatchTopSite);
+      LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::kMatchTopSite);
 
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kTopSite);
 }
@@ -539,7 +539,9 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                               1);
   histograms.ExpectBucketCount(
       LookalikeUrlNavigationThrottle::kHistogramName,
-      NavigationSuggestionEvent::kMatchEditDistanceSiteEngagement, 1);
+      LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+          kMatchEditDistanceSiteEngagement,
+      1);
 
   CheckUkm({kNavigatedUrl}, "MatchType",
            MatchType::kEditDistanceSiteEngagement);
@@ -562,9 +564,11 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   TestInterstitialNotShown(browser(), kNavigatedUrl);
   histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
                               1);
-  histograms.ExpectBucketCount(LookalikeUrlNavigationThrottle::kHistogramName,
-                               NavigationSuggestionEvent::kMatchEditDistance,
-                               1);
+  histograms.ExpectBucketCount(
+      LookalikeUrlNavigationThrottle::kHistogramName,
+      LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+          kMatchEditDistance,
+      1);
 
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kEditDistance);
 }
@@ -689,7 +693,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
     TestMetricsRecordedAndMaybeInterstitialShown(
         browser(), kNavigatedUrl, kExpectedSuggestedUrl,
-        NavigationSuggestionEvent::kMatchSiteEngagement);
+        LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+            kMatchSiteEngagement);
 
     ukm_urls.push_back(kNavigatedUrl);
     CheckUkm(ukm_urls, "MatchType", MatchType::kSiteEngagement);
@@ -724,7 +729,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   SetEngagementScore(browser(), kExpectedSuggestedUrl, kHighEngagement);
   TestMetricsRecordedAndMaybeInterstitialShown(
       browser(), kNavigatedUrl, kExpectedSuggestedUrl,
-      NavigationSuggestionEvent::kMatchSiteEngagement);
+      LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+          kMatchSiteEngagement);
 }
 
 // Tests negative examples for all heuristics.
@@ -766,7 +772,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   TestMetricsRecordedAndMaybeInterstitialShown(
       browser(), kNavigatedUrl, kExpectedSuggestedUrl,
-      NavigationSuggestionEvent::kMatchSiteEngagement);
+      LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+          kMatchSiteEngagement);
 
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kSiteEngagement);
 }
@@ -795,7 +802,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
     test_clock()->Advance(base::TimeDelta::FromHours(1));
     TestMetricsRecordedAndMaybeInterstitialShown(
         browser(), kNavigatedUrl, kEngagedUrl,
-        NavigationSuggestionEvent::kMatchSiteEngagement);
+        LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+            kMatchSiteEngagement);
 
     ukm_urls.push_back(kNavigatedUrl);
     CheckUkm(ukm_urls, "MatchType", MatchType::kSiteEngagement);
@@ -821,7 +829,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
     TestMetricsRecordedAndMaybeInterstitialShown(
         incognito, kNavigatedUrl, kEngagedUrl,
-        NavigationSuggestionEvent::kMatchSiteEngagement);
+        LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+            kMatchSiteEngagement);
     ukm_urls.push_back(kNavigatedUrl);
     CheckUkm(ukm_urls, "MatchType", MatchType::kSiteEngagement);
   }
@@ -901,7 +910,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   TestHistogramEventsRecordedWhenInterstitialIgnored(
       browser(), &histograms, kNavigatedUrl,
-      NavigationSuggestionEvent::kMatchSiteEngagement);
+      LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+          kMatchSiteEngagement);
 
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kSiteEngagement);
 }
@@ -1069,4 +1079,3 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   TestInterstitialNotShown(browser(),
                            embedded_test_server()->GetURL("example.net", "/"));
 }
-

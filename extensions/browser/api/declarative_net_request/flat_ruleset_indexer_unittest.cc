@@ -270,25 +270,34 @@ void VerifyExtensionMetadata(
   }
 }
 
+const flat::ExtensionIndexedRuleset* AddRuleAndGetRuleset(
+    const std::vector<IndexedRule>& rules_to_index,
+    FlatRulesetIndexer* indexer) {
+  for (const auto& rule : rules_to_index)
+    indexer->AddUrlRule(rule);
+  indexer->Finish();
+
+  base::span<const uint8_t> data = indexer->GetData();
+  EXPECT_EQ(rules_to_index.size(), indexer->indexed_rules_count());
+  flatbuffers::Verifier verifier(data.data(), data.size());
+  if (!flat::VerifyExtensionIndexedRulesetBuffer(verifier))
+    return nullptr;
+
+  return flat::GetExtensionIndexedRuleset(data.data());
+}
+
 // Helper which:
 //    - Constructs an ExtensionIndexedRuleset flatbuffer from the passed
 //      IndexedRule(s) using FlatRulesetIndexer.
 //    - Verifies that the ExtensionIndexedRuleset created is valid.
+// Note: this does not test regex rules which are part of the
+// ExtensionIndexedRuleset.
 void AddRulesAndVerifyIndex(const std::vector<IndexedRule>& rules_to_index,
                             const std::vector<const IndexedRule*>
                                 expected_index_lists[flat::ActionIndex_count]) {
   FlatRulesetIndexer indexer;
-  for (const auto& rule : rules_to_index)
-    indexer.AddUrlRule(rule);
-  indexer.Finish();
-
-  base::span<const uint8_t> data = indexer.GetData();
-  EXPECT_EQ(rules_to_index.size(), indexer.indexed_rules_count());
-  flatbuffers::Verifier verifier(data.data(), data.size());
-  ASSERT_TRUE(flat::VerifyExtensionIndexedRulesetBuffer(verifier));
-
   const flat::ExtensionIndexedRuleset* ruleset =
-      flat::GetExtensionIndexedRuleset(data.data());
+      AddRuleAndGetRuleset(rules_to_index, &indexer);
   ASSERT_TRUE(ruleset);
 
   for (size_t i = 0; i < flat::ActionIndex_count; ++i) {
@@ -410,6 +419,82 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
       &rules_to_index[8], &rules_to_index[9]};
 
   AddRulesAndVerifyIndex(rules_to_index, expected_index_lists);
+}
+
+// Verify that the serialized flatbuffer data is valid for regex rules.
+TEST_F(FlatRulesetIndexerTest, RegexRules) {
+  std::vector<IndexedRule> rules_to_index;
+
+  // Blocking rule.
+  rules_to_index.push_back(CreateIndexedRule(
+      7, kMinValidPriority, flat_rule::OptionFlag_NONE,
+      flat_rule::ElementType_OBJECT, flat_rule::ActivationType_NONE,
+      flat_rule::UrlPatternType_REGEXP, flat_rule::AnchorType_NONE,
+      flat_rule::AnchorType_NONE, R"(^https://(abc|def))", {"a.com"},
+      {"x.a.com"}, base::nullopt, dnr_api::RULE_ACTION_TYPE_BLOCK, {}));
+  // Redirect rule.
+  rules_to_index.push_back(CreateIndexedRule(
+      15, 2, flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY,
+      flat_rule::ElementType_IMAGE, flat_rule::ActivationType_NONE,
+      flat_rule::UrlPatternType_REGEXP, flat_rule::AnchorType_NONE,
+      flat_rule::AnchorType_NONE, R"(^(http|https))", {}, {},
+      "http://example1.com", dnr_api::RULE_ACTION_TYPE_REDIRECT, {}));
+  // Remove headers rule.
+  rules_to_index.push_back(CreateIndexedRule(
+      20, kMinValidPriority, flat_rule::OptionFlag_IS_CASE_INSENSITIVE,
+      flat_rule::ElementType_SUBDOCUMENT, flat_rule::ActivationType_NONE,
+      flat_rule::UrlPatternType_REGEXP, flat_rule::AnchorType_NONE,
+      flat_rule::AnchorType_NONE, "*", {}, {}, base::nullopt,
+      dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS,
+      {dnr_api::REMOVE_HEADER_TYPE_COOKIE,
+       dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE}));
+
+  FlatRulesetIndexer indexer;
+  const flat::ExtensionIndexedRuleset* ruleset =
+      AddRuleAndGetRuleset(rules_to_index, &indexer);
+  ASSERT_TRUE(ruleset);
+
+  // All the indices should be empty, since we only have regex rules.
+  for (size_t i = 0; i < flat::ActionIndex_count; ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing index %" PRIuS, i));
+    VerifyIndexEquality({}, ruleset->index_list()->Get(i));
+  }
+
+  // We should have metadata for the redirect rule.
+  {
+    SCOPED_TRACE("Testing extension metadata");
+    VerifyExtensionMetadata({&rules_to_index[1]},
+                            ruleset->extension_metadata());
+  }
+
+  ASSERT_TRUE(ruleset->regex_rules());
+  ASSERT_EQ(3u, ruleset->regex_rules()->size());
+
+  const flat::RegexRule* blocking_rule = nullptr;
+  const flat::RegexRule* redirect_rule = nullptr;
+  const flat::RegexRule* remove_header_rule = nullptr;
+  for (const auto* regex_rule : *ruleset->regex_rules()) {
+    if (regex_rule->action_type() == flat::ActionType_block)
+      blocking_rule = regex_rule;
+    else if (regex_rule->action_type() == flat::ActionType_redirect)
+      redirect_rule = regex_rule;
+    else if (regex_rule->action_type() == flat::ActionType_remove_headers)
+      remove_header_rule = regex_rule;
+  }
+
+  ASSERT_TRUE(blocking_rule);
+  EXPECT_TRUE(AreRulesEqual(&rules_to_index[0], blocking_rule->url_rule()));
+  EXPECT_EQ(0u, blocking_rule->remove_headers_mask());
+
+  ASSERT_TRUE(redirect_rule);
+  EXPECT_TRUE(AreRulesEqual(&rules_to_index[1], redirect_rule->url_rule()));
+  EXPECT_EQ(0u, redirect_rule->remove_headers_mask());
+
+  ASSERT_TRUE(remove_header_rule);
+  EXPECT_TRUE(
+      AreRulesEqual(&rules_to_index[2], remove_header_rule->url_rule()));
+  EXPECT_EQ(flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_set_cookie,
+            remove_header_rule->remove_headers_mask());
 }
 
 }  // namespace

@@ -29,12 +29,15 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/tab_strip_resources.h"
 #include "chrome/grit/tab_strip_resources_map.h"
 #include "components/favicon_base/favicon_url_parser.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/url_data_source.h"
@@ -454,6 +457,23 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "showDemoOptions",
       base::FeatureList::IsEnabled(features::kWebUITabStripDemoOptions));
+
+  static constexpr LocalizedString kStrings[] = {
+      {"closeTab", IDS_ACCNAME_CLOSE},
+      {"tabCrashed", IDS_TAB_AX_LABEL_CRASHED_FORMAT},
+      {"tabNetworkError", IDS_TAB_AX_LABEL_NETWORK_ERROR_FORMAT},
+      {"audioPlaying", IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT},
+      {"usbConnected", IDS_TAB_AX_LABEL_USB_CONNECTED_FORMAT},
+      {"bluetoothConnected", IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT},
+      {"serialConnected", IDS_TAB_AX_LABEL_SERIAL_CONNECTED_FORMAT},
+      {"mediaRecording", IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT},
+      {"audioMuting", IDS_TAB_AX_LABEL_AUDIO_MUTING_FORMAT},
+      {"tabCapturing", IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT},
+      {"pipPlaying", IDS_TAB_AX_LABEL_PIP_PLAYING_FORMAT},
+      {"desktopCapturing", IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT},
+      {"vrPresenting", IDS_TAB_AX_LABEL_VR_PRESENTING},
+  };
+  AddLocalizedStringsBulk(html_source, kStrings, base::size(kStrings));
   html_source->UseStringsJs();
 
   content::WebUIDataSource::Add(profile, html_source);

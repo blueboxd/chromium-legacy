@@ -53,6 +53,7 @@ source_set("tabs_internal") {
     "//components/language/ios/browser",
     "//components/navigation_metrics",
     "//components/profile_metrics",
+    "//components/security_state/ios",
     "//components/sessions",
     "//components/strings",
     "//ios/chrome/app/strings",

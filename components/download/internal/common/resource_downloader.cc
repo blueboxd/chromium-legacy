@@ -230,6 +230,8 @@ void ResourceDownloader::OnResponseStarted(
   download_create_info->render_frame_id = render_frame_id_;
   download_create_info->has_user_gesture = resource_request_->has_user_gesture;
   download_create_info->is_content_initiated = is_content_initiated_;
+  download_create_info->transition_type =
+      ui::PageTransitionFromInt(resource_request_->transition_type);
 
   delegate_task_runner_->PostTask(
       FROM_HERE,

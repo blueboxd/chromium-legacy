@@ -15,12 +15,12 @@
 namespace base {
 
 std::unique_ptr<StackSampler> StackSampler::Create(
-    PlatformThreadId thread_id,
+    SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
     StackSamplerTestDelegate* test_delegate) {
   return std::make_unique<StackSamplerImpl>(
       std::make_unique<StackCopierSignal>(
-          std::make_unique<ThreadDelegatePosix>(thread_id)),
+          std::make_unique<ThreadDelegatePosix>(thread_token)),
       std::make_unique<NativeUnwinderAndroid>(), module_cache, test_delegate);
 }
 

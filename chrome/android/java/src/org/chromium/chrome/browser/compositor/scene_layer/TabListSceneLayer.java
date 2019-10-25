@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.ResourceManager;
@@ -94,7 +95,7 @@ public class TabListSceneLayer extends SceneLayer {
             int urlBarBackgroundId = R.drawable.modern_location_bar;
             boolean useIncognitoColors = t.isIncognito() && !isHTSEnabled;
 
-            int defaultThemeColor = ColorUtils.getDefaultThemeColor(res, useIncognitoColors);
+            int defaultThemeColor = ChromeColors.getDefaultThemeColor(res, useIncognitoColors);
 
             // In the modern design, the text box is always drawn opaque in the compositor.
             float textBoxAlpha = 1.f;
@@ -149,7 +150,7 @@ public class TabListSceneLayer extends SceneLayer {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                 || FeatureUtilities.isGridTabSwitcherEnabled()) {
             if (mTabModelSelector != null && mTabModelSelector.isIncognitoSelected()) {
-                colorId = R.color.incognito_modern_primary_color;
+                colorId = R.color.dark_primary_color;
             } else {
                 colorId = R.color.modern_primary_color;
             }

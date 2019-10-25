@@ -14,15 +14,6 @@
 namespace chromecast {
 namespace media {
 
-void CastMediaShlib::AddLoopbackAudioObserver(LoopbackAudioObserver* observer) {
-  StreamMixer::Get()->AddLoopbackAudioObserver(observer);
-}
-
-void CastMediaShlib::RemoveLoopbackAudioObserver(
-    LoopbackAudioObserver* observer) {
-  StreamMixer::Get()->RemoveLoopbackAudioObserver(observer);
-}
-
 void CastMediaShlib::ResetPostProcessors(CastMediaShlib::ResultCallback cb) {
   StreamMixer::Get()->ResetPostProcessors(std::move(cb));
 }

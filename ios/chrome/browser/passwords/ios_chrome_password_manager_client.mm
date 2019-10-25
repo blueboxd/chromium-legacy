@@ -21,11 +21,11 @@
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/password_manager/ios/credential_manager_util.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/passwords/credential_manager_util.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/ios_password_requirements_service_factory.h"
 #include "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
@@ -148,7 +148,7 @@ IOSChromePasswordManagerClient::GetPasswordFeatureManager() const {
 }
 
 bool IOSChromePasswordManagerClient::IsMainFrameSecure() const {
-  return WebStateContentIsSecureHtml(delegate_.webState);
+  return password_manager::WebStateContentIsSecureHtml(delegate_.webState);
 }
 
 PrefService* IOSChromePasswordManagerClient::GetPrefs() const {

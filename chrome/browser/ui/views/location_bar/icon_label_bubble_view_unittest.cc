@@ -65,9 +65,8 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   const gfx::Rect& GetLabelBounds() const { return label()->bounds(); }
 
   State state() const {
-    const double kOpenFraction =
-        static_cast<double>(kOpenTimeMS) / kAnimationDurationMS;
-    double state = value_ / (double)kNumberOfSteps;
+    const double kOpenFraction = double{kOpenTimeMS} / kAnimationDurationMS;
+    double state = double{value_} / kNumberOfSteps;
     if (state < kOpenFraction)
       return GROWING;
     if (state > (1.0 - kOpenFraction))
@@ -95,17 +94,17 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
              2 * GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING)));
   }
 
-  double WidthMultiplier() const override {
+  int GetWidthBetween(int min, int max) const override {
     const double kOpenFraction =
         static_cast<double>(kOpenTimeMS) / kAnimationDurationMS;
-    double fraction = value_ / (double)kNumberOfSteps;
+    double fraction = static_cast<double>(value_) / kNumberOfSteps;
     switch (state()) {
       case GROWING:
-        return fraction / kOpenFraction;
+        return min + (max - min) * (fraction / kOpenFraction);
       case STEADY:
-        return 1.0;
+        return max;
       case SHRINKING:
-        return (1.0 - fraction) / kOpenFraction;
+        return min + (max - min) * ((1.0 - fraction) / kOpenFraction);
     }
     NOTREACHED();
     return 1.0;

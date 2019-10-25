@@ -315,4 +315,28 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, ExpiryHidesFlag) {
   EXPECT_TRUE(IsFlagPresent(contents, kExpiredFlagName));
 }
 
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_ExpiredFlagDoesntApply) {
+  set_expiration_enabled(false);
+  NavigateToFlagsPage();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsFlagPresent(contents, kExpiredFlagName));
+  EXPECT_FALSE(IsDropdownEnabled(contents, kExpiredFlagName));
+
+  ToggleEnableDropdown(contents, kExpiredFlagName, true);
+}
+
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, ExpiredFlagDoesntApply) {
+  set_expiration_enabled(true);
+  NavigateToFlagsPage();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(IsFlagPresent(contents, kExpiredFlagName));
+
+  EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kExpiredFlagSwitchName));
+}
+#endif
+
 }  // namespace

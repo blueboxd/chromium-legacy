@@ -10,11 +10,11 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -37,7 +37,7 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   virtual ~NavigationLoaderInterceptor() = default;
 
   using LoaderCallback =
-      base::OnceCallback<void(SingleRequestURLLoaderFactory::RequestHandler)>;
+      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>;
   using FallbackCallback =
       base::OnceCallback<void(bool /* reset_subresource_loader_params */)>;
 

@@ -519,7 +519,8 @@ bool AutofillWalletChecker::Wait() {
   return StatusChangeChecker::Wait();
 }
 
-bool AutofillWalletChecker::IsExitConditionSatisfied() {
+bool AutofillWalletChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for matching autofill wallet cards and addresses";
   autofill::PersonalDataManager* pdm_a =
       wallet_helper::GetPersonalDataManager(profile_a_);
   autofill::PersonalDataManager* pdm_b =
@@ -530,10 +531,6 @@ bool AutofillWalletChecker::IsExitConditionSatisfied() {
                                     pdm_b->GetServerProfiles()) &&
          // If data matches, it suffices to check addresses from profile_a_.
          AddressesHaveConverted(pdm_a->GetServerProfiles());
-}
-
-std::string AutofillWalletChecker::GetDebugMessage() const {
-  return "Waiting for matching autofill wallet cards and addresses";
 }
 
 void AutofillWalletChecker::OnPersonalDataChanged() {
@@ -557,13 +554,11 @@ bool AutofillWalletConversionChecker::Wait() {
   return StatusChangeChecker::Wait();
 }
 
-bool AutofillWalletConversionChecker::IsExitConditionSatisfied() {
+bool AutofillWalletConversionChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for converted autofill wallet addresses";
   return AddressesHaveConverted(
       wallet_helper::GetPersonalDataManager(profile_)->GetServerProfiles());
-}
-
-std::string AutofillWalletConversionChecker::GetDebugMessage() const {
-  return "Waiting for converted autofill wallet addresses";
 }
 
 void AutofillWalletConversionChecker::OnPersonalDataChanged() {
@@ -583,22 +578,21 @@ AutofillWalletMetadataSizeChecker::~AutofillWalletMetadataSizeChecker() {
   wallet_helper::GetPersonalDataManager(profile_b_)->RemoveObserver(this);
 }
 
-bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied() {
+bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for matching autofill wallet metadata sizes";
   // This checker used to be flaky (crbug.com/921386) because of using RunLoops
   // to load synchronously data from the DB in IsExitConditionSatisfiedImpl.
   // Such a waiting RunLoop often processed another OnPersonalDataChanged() call
   // resulting in nested RunLoops. This should be avoided now by blocking using
   // WaitableEvent, instead. This check enforces that we do not nest it anymore.
   DCHECK(!checking_exit_condition_in_flight_)
-      << "There should be no nested calls for IsExitConditionSatisfied()";
+      << "There should be no nested calls for "
+         "IsExitConditionSatisfied(std::ostream* os)";
   checking_exit_condition_in_flight_ = true;
   bool exit_condition_is_satisfied = IsExitConditionSatisfiedImpl();
   checking_exit_condition_in_flight_ = false;
   return exit_condition_is_satisfied;
-}
-
-std::string AutofillWalletMetadataSizeChecker::GetDebugMessage() const {
-  return "Waiting for matching autofill wallet metadata sizes";
 }
 
 void AutofillWalletMetadataSizeChecker::OnPersonalDataChanged() {

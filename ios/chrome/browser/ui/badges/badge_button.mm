@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 
+#import "base/logging.h"
+#import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 
@@ -45,6 +47,7 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
   self.accepted = accepted;
   void (^changeTintColor)() = ^{
     self.tintColor = accepted ? nil : [UIColor colorNamed:kToolbarButtonColor];
+    self.accessibilityIdentifier = [self getAccessibilityIdentifier:accepted];
   };
   if (animated) {
     [UIView animateWithDuration:kButtonAnimationDuration
@@ -72,6 +75,31 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
 }
 
 #pragma mark - Private
+
+- (NSString*)getAccessibilityIdentifier:(BOOL)accepted {
+  switch (self.badgeType) {
+    case BadgeType::kBadgeTypeNone:
+      NOTREACHED() << "A badge should not have kBadgeTypeNone";
+      return nil;
+    case BadgeType::kBadgeTypePasswordSave:
+      return accepted ? kBadgeButtonSavePasswordAcceptedAccessibilityIdentifier
+                      : kBadgeButtonSavePasswordAccessibilityIdentifier;
+    case BadgeType::kBadgeTypePasswordUpdate:
+      return accepted
+                 ? kBadgeButtonUpdatePasswordAccpetedAccessibilityIdentifier
+                 : kBadgeButtonUpdatePasswordAccessibilityIdentifier;
+    case BadgeType::kBadgeTypeIncognito:
+      return kBadgeButtonIncognitoAccessibilityIdentifier;
+    case BadgeType::kBadgeTypeOverflow:
+      return kBadgeButtonOverflowAccessibilityIdentifier;
+    case BadgeType::kBadgeTypeSaveCard:
+      return accepted ? kBadgeButtonSaveCardAcceptedAccessibilityIdentifier
+                      : kBadgeButtonSaveCardAccessibilityIdentifier;
+    case BadgeType::kBadgeTypeTranslate:
+      return accepted ? kBadgeButtonTranslateAcceptedAccessibilityIdentifier
+                      : kBadgeButtonTranslateAccessibilityIdentifier;
+  }
+}
 
 - (void)configureImage {
   if (self.fullScreenOn && self.fullScreenImage) {

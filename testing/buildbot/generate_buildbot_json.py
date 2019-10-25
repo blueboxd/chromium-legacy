@@ -1007,7 +1007,7 @@ class BBJSONGenerator(object):
                      '..', '..', 'infra', 'config'))
     milo_configs = [
         os.path.join(infra_config_dir, 'generated', 'luci-milo.cfg'),
-        os.path.join(infra_config_dir, 'luci-milo-dev.cfg'),
+        os.path.join(infra_config_dir, 'generated', 'luci-milo-dev.cfg'),
     ]
     for c in milo_configs:
       for l in self.read_file(c).splitlines():

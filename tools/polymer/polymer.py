@@ -50,6 +50,7 @@
 #     encountering any dependency to that file.
 
 import argparse
+import io
 import os
 import re
 import sys
@@ -478,9 +479,11 @@ def main(argv):
     result = _process_v3_ready(js_file, html_file)
 
   # Reconstruct file.
-  with open(os.path.join(out_folder, result[1]), 'w') as f:
+  # Specify the newline character so that the exact same file is generated
+  # across platforms.
+  with io.open(os.path.join(out_folder, result[1]), 'w', newline='\n') as f:
     for l in result[0]:
-      f.write(l)
+      f.write(unicode(l, 'utf-8'))
   return
 
 

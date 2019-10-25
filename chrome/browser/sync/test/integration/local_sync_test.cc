@@ -27,12 +27,11 @@ class SyncTransportActiveChecker : public SingleClientStatusChangeChecker {
   explicit SyncTransportActiveChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sync transport to become active";
     return service()->GetTransportState() ==
            syncer::SyncService::TransportState::ACTIVE;
   }
-
-  std::string GetDebugMessage() const override { return "Sync Active"; }
 };
 
 // This test verifies some basic functionality of local sync, used for roaming

@@ -5,17 +5,14 @@
 #include "ash/assistant/test/assistant_ash_test_base.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/views/app_list_main_view.h"
-#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/assistant/assistant_main_view.h"
 #include "ash/app_list/views/assistant/assistant_page_view.h"
-#include "ash/app_list/views/contents_view.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
-#include "ash/session/session_controller_impl.h"
+#include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
@@ -43,34 +40,10 @@ bool CanProcessEvents(const views::View* view) {
   return true;
 }
 
-views::View* GetDescendantViewWithNameOrNull(views::View* parent,
-                                             const std::string& name) {
-  for (views::View* child : parent->children()) {
-    if (child->GetClassName() == name)
-      return child;
-
-    views::View* descendant = GetDescendantViewWithNameOrNull(child, name);
-    if (descendant)
-      return descendant;
-  }
-  return nullptr;
-}
-
-// Recursively search for a descendant view with the given name.
-// Asserts if no such view exists.
-views::View* GetDescendantViewWithName(views::View* parent,
-                                       const std::string& name) {
-  views::View* descendant_maybe = GetDescendantViewWithNameOrNull(parent, name);
-  if (descendant_maybe == nullptr) {
-    ADD_FAILURE() << "View " << parent->GetClassName()
-                  << " has no descendant with name '" << name << "'.";
-  }
-  return descendant_maybe;
-}
-
 }  // namespace
 
-AssistantAshTestBase::AssistantAshTestBase() = default;
+AssistantAshTestBase::AssistantAshTestBase()
+    : test_api_(AssistantTestApi::Create()) {}
 
 AssistantAshTestBase::~AssistantAshTestBase() = default;
 
@@ -88,8 +61,7 @@ void AssistantAshTestBase::SetUp() {
   UpdateDisplay("1024x768");
 
   // Enable Assistant in settings.
-  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
-      chromeos::assistant::prefs::kAssistantEnabled, true);
+  test_api_->EnableAssistant();
 
   // Cache controller.
   controller_ = Shell::Get()->assistant_controller();
@@ -99,7 +71,7 @@ void AssistantAshTestBase::SetUp() {
   // Indicate this by changing status from NOT_READY to READY.
   AssistantState::Get()->NotifyStatusChanged(mojom::AssistantState::READY);
 
-  DisableAnimations();
+  test_api_->DisableAnimations();
 
   // Wait for virtual keyboard to load.
   SetTouchKeyboardEnabled(true);
@@ -110,7 +82,6 @@ void AssistantAshTestBase::TearDown() {
   SetTouchKeyboardEnabled(false);
   AshTestBase::TearDown();
   scoped_feature_list_.Reset();
-  ReenableAnimations();
 }
 
 void AssistantAshTestBase::ShowAssistantUi(AssistantEntryPoint entry_point) {
@@ -135,22 +106,19 @@ void AssistantAshTestBase::CloseLauncher() {
 }
 
 void AssistantAshTestBase::SetTabletMode(bool enable) {
-  ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enable);
+  test_api_->SetTabletMode(enable);
 }
 
 void AssistantAshTestBase::SetPreferVoice(bool prefer_voice) {
-  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
-      chromeos::assistant::prefs::kAssistantLaunchWithMicOpen, prefer_voice);
+  test_api_->SetPreferVoice(prefer_voice);
 }
 
-AssistantMainView* AssistantAshTestBase::main_view() {
-  return page_view()->GetMainViewForTest();
+views::View* AssistantAshTestBase::main_view() {
+  return test_api_->main_view();
 }
 
-AssistantPageView* AssistantAshTestBase::page_view() {
-  const int index = contents_view()->GetPageIndexForState(
-      AppListState::kStateEmbeddedAssistant);
-  return static_cast<AssistantPageView*>(contents_view()->GetPageView(index));
+views::View* AssistantAshTestBase::page_view() {
+  return test_api_->page_view();
 }
 
 void AssistantAshTestBase::MockAssistantInteractionWithResponse(
@@ -168,15 +136,7 @@ void AssistantAshTestBase::MockAssistantInteractionWithResponse(
 }
 
 void AssistantAshTestBase::SendQueryThroughTextField(const std::string& query) {
-  if (!input_text_field()->HasFocus()) {
-    ADD_FAILURE()
-        << "The TextField should be focussed before we can send a query";
-  }
-
-  input_text_field()->SetText(base::ASCIIToUTF16(query));
-  // Send <return> to commit the query.
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN,
-                                /*flags=*/ui::EF_NONE);
+  test_api_->SendTextQuery(query);
 }
 
 void AssistantAshTestBase::TapOnTextField() {
@@ -195,16 +155,15 @@ aura::Window* AssistantAshTestBase::SwitchToNewAppWindow() {
 }
 
 aura::Window* AssistantAshTestBase::window() {
-  return main_view()->GetWidget()->GetNativeWindow();
+  return test_api_->window();
 }
 
 views::Textfield* AssistantAshTestBase::input_text_field() {
-  views::View* result = GetDescendantViewWithName(main_view(), "Textfield");
-  return static_cast<views::Textfield*>(result);
+  return test_api_->input_text_field();
 }
 
 views::View* AssistantAshTestBase::mic_view() {
-  return GetDescendantViewWithName(main_view(), "MicView");
+  return test_api_->mic_view();
 }
 
 void AssistantAshTestBase::ShowKeyboard() {
@@ -216,35 +175,12 @@ bool AssistantAshTestBase::IsKeyboardShowing() const {
   return keyboard::IsKeyboardShowing();
 }
 
-ContentsView* AssistantAshTestBase::contents_view() {
-  auto* app_list_view =
-      Shell::Get()->app_list_controller()->presenter()->GetView();
-
-  DCHECK(app_list_view) << "AppListView has not been initialized yet. "
-                           "Be sure to call |ShowAssistantUI| first";
-
-  return app_list_view->app_list_main_view()->contents_view();
-}
-
 AssistantInteractionController* AssistantAshTestBase::interaction_controller() {
   return controller_->interaction_controller();
 }
 
 TestAssistantService* AssistantAshTestBase::assistant_service() {
   return ash_test_helper()->test_assistant_service();
-}
-
-void AssistantAshTestBase::DisableAnimations() {
-  AppListView::SetShortAnimationForTesting(true);
-
-  scoped_animation_duration_ =
-      std::make_unique<ui::ScopedAnimationDurationScaleMode>(
-          ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-}
-
-void AssistantAshTestBase::ReenableAnimations() {
-  scoped_animation_duration_ = nullptr;
-  AppListView::SetShortAnimationForTesting(false);
 }
 
 }  // namespace ash

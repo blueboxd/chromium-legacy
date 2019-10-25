@@ -48,7 +48,8 @@ class UserConsentEqualityChecker : public SingleClientStatusChangeChecker {
     }
   }
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting server side USER_CONSENTS to match expected.";
     std::vector<SyncEntity> entities =
         fake_server_->GetSyncEntitiesByModelType(syncer::USER_CONSENTS);
 
@@ -75,10 +76,6 @@ class UserConsentEqualityChecker : public SingleClientStatusChangeChecker {
     }
 
     return true;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting server side USER_CONSENTS to match expected.";
   }
 
  private:

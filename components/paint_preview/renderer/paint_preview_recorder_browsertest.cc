@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
-#include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
@@ -18,19 +17,16 @@ namespace paint_preview {
 
 namespace {
 
-// Checks that |status| == |expected_status| and loads |region| into |proto| if
-// |expected_status| == kOk. If |expected_status| != kOk |proto| can safely be
-// nullptr.
+// Checks that |status| == |expected_status| and loads |response| into
+// |out_response| if |expected_status| == kOk. If |expected_status| != kOk
+// |out_response| can safely be nullptr.
 void OnCaptureFinished(mojom::PaintPreviewStatus expected_status,
-                       PaintPreviewFrameProto* proto,
+                       mojom::PaintPreviewCaptureResponsePtr* out_response,
                        mojom::PaintPreviewStatus status,
-                       base::ReadOnlySharedMemoryRegion region) {
+                       mojom::PaintPreviewCaptureResponsePtr response) {
   EXPECT_EQ(status, expected_status);
-  if (expected_status == mojom::PaintPreviewStatus::kOk) {
-    EXPECT_TRUE(region.IsValid());
-    auto mapping = region.Map();
-    EXPECT_TRUE(proto->ParseFromArray(mapping.memory(), mapping.size()));
-  }
+  if (expected_status == mojom::PaintPreviewStatus::kOk)
+    *out_response = std::move(response);
 }
 
 }  // namespace
@@ -74,24 +70,20 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrame) {
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   params->file = std::move(skp_file);
 
-  PaintPreviewFrameProto out_proto;
+  auto out_response = mojom::PaintPreviewCaptureResponse::New();
   content::RenderFrame* frame = GetFrame();
   int routing_id = frame->GetRoutingID();
   PaintPreviewRecorderImpl paint_preview_recorder(frame);
   paint_preview_recorder.CapturePaintPreview(
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
-                     &out_proto));
+                     base::Unretained(&out_response)));
   // Here id() is just the routing ID.
-  EXPECT_EQ(static_cast<int>(out_proto.id()), routing_id);
-  EXPECT_TRUE(out_proto.is_main_frame());
-  EXPECT_EQ(out_proto.unguessable_token_low(), token.GetLowForSerialization());
-  EXPECT_EQ(out_proto.unguessable_token_high(),
-            token.GetHighForSerialization());
-  EXPECT_EQ(out_proto.content_id_proxy_id_map_size(), 0);
+  EXPECT_EQ(static_cast<int>(out_response->id), routing_id);
+  EXPECT_EQ(out_response->content_id_proxy_id_map.size(), 0U);
 
   // NOTE: should be non-zero once the Blink implementation is hooked up.
-  EXPECT_EQ(out_proto.links_size(), 0);
+  EXPECT_EQ(out_response->links.size(), 0U);
 }
 
 TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureInvalidFile) {

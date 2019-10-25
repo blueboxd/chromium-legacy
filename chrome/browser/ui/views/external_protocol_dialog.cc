@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
@@ -90,12 +89,6 @@ bool ExternalProtocolDialog::Cancel() {
 }
 
 bool ExternalProtocolDialog::Accept() {
-  // We record how long it takes the user to accept an external protocol.  If
-  // users start accepting these dialogs too quickly, we should worry about
-  // clickjacking.
-  UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
-                           base::TimeTicks::Now() - creation_time_);
-
   const bool remember = message_box_view_->IsCheckBoxSelected();
   ExternalProtocolHandler::RecordHandleStateMetrics(
       remember, ExternalProtocolHandler::DONT_BLOCK);
@@ -145,8 +138,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(
     : content::WebContentsObserver(web_contents),
       url_(url),
       program_name_(program_name),
-      initiating_origin_(initiating_origin),
-      creation_time_(base::TimeTicks::Now()) {
+      initiating_origin_(initiating_origin) {
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,

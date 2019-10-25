@@ -16,14 +16,20 @@
 
 namespace chromecast {
 
+class CastWindowManager;
+
 // This is a service that provides a GRPC interface to create and control
 // webviews. See the proto file for commands.
 class WebviewAsyncService : public base::PlatformThread::Delegate {
  public:
+  // If |cast_window_manager| is nullptr, rounded corner decorations will not be
+  // added to webviews.
+  // TODO(rdaum): Remove default nullptr once internal uses are updated.
   WebviewAsyncService(
       std::unique_ptr<webview::WebviewService::AsyncService> service,
       std::unique_ptr<grpc::ServerCompletionQueue> cq,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      CastWindowManager* cast_window_manager = nullptr);
   ~WebviewAsyncService() override;
 
  private:

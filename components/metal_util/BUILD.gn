@@ -13,6 +13,8 @@ component("metal_util") {
     "device.h",
     "device.mm",
     "metal_util_export.h",
+    "test_shader.h",
+    "test_shader.mm",
     "types.h",
   ]
 
@@ -20,5 +22,8 @@ component("metal_util") {
     "//base",
   ]
 
-  libs = [ "Metal.framework" ]
+  libs = [
+    "Cocoa.framework",
+    "Metal.framework",
+  ]
 }

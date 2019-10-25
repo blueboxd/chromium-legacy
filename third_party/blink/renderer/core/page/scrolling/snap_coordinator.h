@@ -53,6 +53,7 @@ class CORE_EXPORT SnapCoordinator final
   // Called by LocalFrameView::PerformPostLayoutTasks(), so that the snap data
   // are updated whenever a layout happens.
   void UpdateAllSnapContainerData();
+  void UpdateSnapContainerData(LayoutBox&);
 
 #ifndef NDEBUG
   void ShowSnapAreaMap();
@@ -62,8 +63,6 @@ class CORE_EXPORT SnapCoordinator final
 
  private:
   friend class SnapCoordinatorTest;
-
-  void UpdateSnapContainerData(LayoutBox&);
 
   HashSet<LayoutBox*> snap_containers_;
   DISALLOW_COPY_AND_ASSIGN(SnapCoordinator);

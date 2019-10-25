@@ -22,6 +22,7 @@
 #include "components/autofill/ios/browser/autofill_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/security_state/ios/security_state_utils.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "ios/chrome/browser/application_context.h"
@@ -34,7 +35,6 @@
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
@@ -177,14 +177,7 @@ AddressNormalizer* ChromeAutofillClientIOS::GetAddressNormalizer() {
 
 security_state::SecurityLevel
 ChromeAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
-  auto* ios_security_state_tab_helper =
-      IOSSecurityStateTabHelper::FromWebState(web_state_);
-
-  // If there is no helper, return SECURITY_LEVEL_COUNT which won't be logged.
-  if (!ios_security_state_tab_helper)
-    return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
-
-  return ios_security_state_tab_helper->GetSecurityLevel();
+  return security_state::GetSecurityLevelForWebState(web_state_);
 }
 
 std::string ChromeAutofillClientIOS::GetPageLanguage() const {

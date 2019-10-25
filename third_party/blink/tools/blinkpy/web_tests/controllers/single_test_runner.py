@@ -553,9 +553,10 @@ class SingleTestRunner(object):
         compare_text_failures = self._compare_output(
             expected_text_output, test_output)
 
-        # If the test crashed, or timed out, there's no point in running the reference at all.
-        # This can save a lot of execution time if we have a lot of crashes or timeouts.
-        if test_output.crash or test_output.timeout:
+        # If the test crashed, or timed out,  or a leak was detected, there's no point
+        # in running the reference at all. This can save a lot of execution time if we
+        # have a lot of crashes or timeouts.
+        if test_output.crash or test_output.timeout or test_output.leak:
             return build_test_result(
                 test_output, self._test_name, retry_attempt=self._retry_attempt,
                 failures=compare_text_failures, test_run_time=test_output.test_time,

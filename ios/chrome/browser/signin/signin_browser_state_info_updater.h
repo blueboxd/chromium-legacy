@@ -44,10 +44,10 @@ class SigninBrowserStateInfoUpdater : public KeyedService,
   signin::IdentityManager* identity_manager_ = nullptr;
   SigninErrorController* signin_error_controller_ = nullptr;
   const base::FilePath browser_state_path_;
-  ScopedObserver<signin::IdentityManager, SigninBrowserStateInfoUpdater>
-      identity_manager_observer_;
-  ScopedObserver<SigninErrorController, SigninBrowserStateInfoUpdater>
-      signin_error_controller_observer_;
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
+      identity_manager_observer_{this};
+  ScopedObserver<SigninErrorController, SigninErrorController::Observer>
+      signin_error_controller_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SigninBrowserStateInfoUpdater);
 };

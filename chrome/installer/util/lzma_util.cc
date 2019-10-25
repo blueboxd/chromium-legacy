@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/lzma_util.h"
 
+#include <windows.h>
+
 #include <stddef.h>
 
 #include <vector>
@@ -102,71 +104,62 @@ DWORD FilterPageError(const LzmaFileAllocator& file_allocator,
 
 }  // namespace
 
-DWORD UnPackArchive(const base::FilePath& archive,
-                    const base::FilePath& output_dir,
-                    base::FilePath* output_file,
-                    UnPackStatus* unpack_status,
-                    int32_t* ntstatus) {
+UnPackStatus UnPackArchive(const base::FilePath& archive,
+                           const base::FilePath& output_dir,
+                           base::FilePath* output_file,
+                           base::Optional<DWORD>* error_code,
+                           base::Optional<int32_t>* ntstatus) {
   VLOG(1) << "Opening archive " << archive.value();
   LzmaUtilImpl lzma_util;
-  DWORD ret;
-  if ((ret = lzma_util.OpenArchive(archive)) != ERROR_SUCCESS) {
+  UnPackStatus status;
+  if ((status = lzma_util.OpenArchive(archive)) != UNPACK_NO_ERROR) {
     PLOG(ERROR) << "Unable to open install archive: " << archive.value();
   } else {
     VLOG(1) << "Uncompressing archive to path " << output_dir.value();
-    if ((ret = lzma_util.UnPack(output_dir, output_file)) != ERROR_SUCCESS)
+    if ((status = lzma_util.UnPack(output_dir, output_file)) != UNPACK_NO_ERROR)
       PLOG(ERROR) << "Unable to uncompress archive: " << archive.value();
-    lzma_util.CloseArchive();
   }
-  if (unpack_status)
-    *unpack_status = lzma_util.GetUnPackStatus();
+  if (error_code)
+    *error_code = lzma_util.GetErrorCode();
   if (ntstatus)
     *ntstatus = lzma_util.GetNTSTATUSCode();
-  return ret;
+  return status;
 }
 
-LzmaUtilImpl::LzmaUtilImpl() {}
-LzmaUtilImpl::~LzmaUtilImpl() {
-  CloseArchive();
-}
+LzmaUtilImpl::LzmaUtilImpl() = default;
+LzmaUtilImpl::~LzmaUtilImpl() = default;
 
-DWORD LzmaUtilImpl::OpenArchive(const base::FilePath& archivePath) {
+UnPackStatus LzmaUtilImpl::OpenArchive(const base::FilePath& archivePath) {
   // Make sure file is not already open.
   CloseArchive();
 
-  DWORD ret = ERROR_SUCCESS;
-  archive_handle_ =
-      CreateFile(archivePath.value().c_str(), GENERIC_READ, FILE_SHARE_READ,
-                 NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-  if (archive_handle_ == INVALID_HANDLE_VALUE) {
-    archive_handle_ = NULL;  // The rest of the code only checks for NULL.
-    ret = GetLastError();
-    if (ret == ERROR_FILE_NOT_FOUND)
-      unpack_status_ = UNPACK_ARCHIVE_NOT_FOUND;
-    else
-      unpack_status_ = UNPACK_ARCHIVE_CANNOT_OPEN;
-  }
-  return ret;
+  archive_file_.Initialize(archivePath, base::File::FLAG_OPEN |
+                                            base::File::FLAG_READ |
+                                            base::File::FLAG_EXCLUSIVE_WRITE);
+  if (archive_file_.IsValid())
+    return UNPACK_NO_ERROR;
+  error_code_ = ::GetLastError();
+  return archive_file_.error_details() == base::File::FILE_ERROR_NOT_FOUND
+             ? UNPACK_ARCHIVE_NOT_FOUND
+             : UNPACK_ARCHIVE_CANNOT_OPEN;
 }
 
-DWORD LzmaUtilImpl::UnPack(const base::FilePath& location) {
+UnPackStatus LzmaUtilImpl::UnPack(const base::FilePath& location) {
   return UnPack(location, NULL);
 }
 
-DWORD LzmaUtilImpl::UnPack(const base::FilePath& location,
-                           base::FilePath* output_file) {
-  if (!archive_handle_)
-    return ERROR_INVALID_HANDLE;
+UnPackStatus LzmaUtilImpl::UnPack(const base::FilePath& location,
+                                  base::FilePath* output_file) {
+  DCHECK(archive_file_.IsValid());
 
   CFileInStream archiveStream;
   CLookToRead lookStream;
   CSzArEx db;
   ISzAlloc allocImp;
   ISzAlloc allocTempImp;
-  DWORD ret = ERROR_SUCCESS;
   SRes sz_res = SZ_OK;
 
-  archiveStream.file.handle = archive_handle_;
+  archiveStream.file.handle = archive_file_.GetPlatformFile();
   archiveStream.s.Read = SzFileReadImp;
   archiveStream.s.Seek = SzFileSeekImp;
   LookToRead_CreateVTable(&lookStream, false);
@@ -179,12 +172,14 @@ DWORD LzmaUtilImpl::UnPack(const base::FilePath& location,
 
   CrcGenerateTable();
   SzArEx_Init(&db);
+  ::SetLastError(ERROR_SUCCESS);
   if ((sz_res = SzArEx_Open(&db, &lookStream.s, &allocImp, &allocTempImp)) !=
       SZ_OK) {
     LOG(ERROR) << L"Error returned by SzArchiveOpen: " << sz_res;
-
-    unpack_status_ = UNPACK_SZAREX_OPEN_ERROR;
-    return ERROR_INVALID_HANDLE;
+    auto error_code = ::GetLastError();
+    if (error_code != ERROR_SUCCESS)
+      error_code_ = error_code;
+    return UNPACK_SZAREX_OPEN_ERROR;
   }
 
   Byte* outBuffer = 0;  // it must be 0 before first call for each new archive
@@ -193,41 +188,40 @@ DWORD LzmaUtilImpl::UnPack(const base::FilePath& location,
 
   LzmaFileAllocator fileAllocator(location);
 
-  unpack_status_ = UNPACK_NO_ERROR;
-
+  UnPackStatus status = UNPACK_NO_ERROR;
   for (unsigned int i = 0; i < db.NumFiles; i++) {
     DWORD written;
     size_t offset = 0;
     size_t outSizeProcessed = 0;
 
-    int32_t status = 0;  // STATUS_SUCCESS
+    int32_t ntstatus = 0;  // STATUS_SUCCESS
+    ::SetLastError(ERROR_SUCCESS);
     __try {
       if ((sz_res =
                SzArEx_Extract(&db, &lookStream.s, i, &blockIndex, &outBuffer,
                               &outBufferSize, &offset, &outSizeProcessed,
                               &fileAllocator, &allocTempImp)) != SZ_OK) {
         LOG(ERROR) << L"Error returned by SzExtract: " << sz_res;
-
-        ret = ERROR_INVALID_HANDLE;
-        unpack_status_ = UNPACK_EXTRACT_ERROR;
+        auto error_code = ::GetLastError();
+        if (error_code != ERROR_SUCCESS)
+          error_code_ = error_code;
+        status = UNPACK_EXTRACT_ERROR;
       }
     } __except(FilterPageError(fileAllocator, GetExceptionCode(),
-                                GetExceptionInformation(), &status)) {
-      ret = ERROR_IO_DEVICE;
-      ntstatus_ = status;
+                                GetExceptionInformation(), &ntstatus)) {
+      ntstatus_ = ntstatus;
+      status = UNPACK_EXTRACT_EXCEPTION;
       LOG(ERROR) << L"EXCEPTION_IN_PAGE_ERROR while accessing mapped memory; "
                     L"NTSTATUS = "
-                 << ntstatus_;
-      unpack_status_ = UNPACK_EXTRACT_EXCEPTION;
+                 << ntstatus;
     }
-    if (ret != ERROR_SUCCESS)
+    if (status != UNPACK_NO_ERROR)
       break;
 
     size_t file_name_length = SzArEx_GetFileNameUtf16(&db, i, NULL);
     if (file_name_length < 1) {
       LOG(ERROR) << L"Couldn't get file name";
-      ret = ERROR_INVALID_HANDLE;
-      unpack_status_ = UNPACK_NO_FILENAME_ERROR;
+      status = UNPACK_NO_FILENAME_ERROR;
       break;
     }
 
@@ -242,7 +236,11 @@ DWORD LzmaUtilImpl::UnPack(const base::FilePath& location,
 
     // If archive entry is directory create it and move on to the next entry.
     if (SzArEx_IsDir(&db, i)) {
-      CreateDirectory(file_path);
+      if (!CreateDirectory(file_path)) {
+        error_code_ = ::GetLastError();
+        status = UNPACK_CREATE_FILE_ERROR;
+        break;
+      }
       continue;
     }
 
@@ -252,9 +250,9 @@ DWORD LzmaUtilImpl::UnPack(const base::FilePath& location,
     hFile = CreateFile(file_path.value().c_str(), GENERIC_WRITE, 0, NULL,
                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
-      ret = GetLastError();
-      LOG(ERROR) << L"Error returned by CreateFile: " << ret;
-      unpack_status_ = UNPACK_CREATE_FILE_ERROR;
+      error_code_ = ::GetLastError();
+      status = UNPACK_CREATE_FILE_ERROR;
+      PLOG(ERROR) << L"CreateFile failed";
       break;
     }
 
@@ -268,57 +266,56 @@ DWORD LzmaUtilImpl::UnPack(const base::FilePath& location,
       if ((!WriteFile(hFile, outBuffer + offset + total_written,
                       static_cast<DWORD>(write_amount), &written, nullptr)) ||
           (written != write_amount)) {
-        ret = GetLastError();
+        error_code_ = ::GetLastError();
+        status = UNPACK_WRITE_FILE_ERROR;
         PLOG(ERROR) << L"Error returned by WriteFile";
         CloseHandle(hFile);
-        unpack_status_ = UNPACK_WRITE_FILE_ERROR;
         break;
       }
       total_written += write_amount;
     }
 
     // Break out of the file loop if the write loop failed.
-    if (unpack_status_ != UNPACK_NO_ERROR)
+    if (status != UNPACK_NO_ERROR)
       break;
 
     if (SzBitWithVals_Check(&db.MTime, i)) {
       if (!SetFileTime(hFile, NULL, NULL,
                        (const FILETIME*)(&db.MTime.Vals[i]))) {
-        ret = GetLastError();
+        error_code_ = ::GetLastError();
+        status = UNPACK_SET_FILE_TIME_ERROR;
         PLOG(ERROR) << L"Error returned by SetFileTime";
         CloseHandle(hFile);
-        unpack_status_ = UNPACK_SET_FILE_TIME_ERROR;
         break;
       }
     }
     if (!CloseHandle(hFile)) {
-      ret = GetLastError();
+      error_code_ = ::GetLastError();
+      status = UNPACK_CLOSE_FILE_ERROR;
       PLOG(ERROR) << L"Error returned by CloseHandle";
-      unpack_status_ = UNPACK_CLOSE_FILE_ERROR;
       break;
     }
   }  // for loop
   IAlloc_Free(&fileAllocator, outBuffer);
   SzArEx_Free(&db, &allocImp);
-  DCHECK_EQ(ret == static_cast<DWORD>(ERROR_SUCCESS),
-            unpack_status_ == UNPACK_NO_ERROR);
+  DCHECK(status != UNPACK_NO_ERROR || !error_code_.has_value());
+  DCHECK(status != UNPACK_NO_ERROR || !ntstatus_.has_value());
 
-  return ret;
+  return status;
 }
 
 void LzmaUtilImpl::CloseArchive() {
-  if (archive_handle_) {
-    CloseHandle(archive_handle_);
-    archive_handle_ = NULL;
-  }
+  archive_file_.Close();
+  error_code_ = base::nullopt;
+  ntstatus_ = base::nullopt;
 }
 
 bool LzmaUtilImpl::CreateDirectory(const base::FilePath& dir) {
-  bool ret = true;
-  if (directories_created_.find(dir.value()) == directories_created_.end()) {
-    ret = base::CreateDirectory(dir);
-    if (ret)
-      directories_created_.insert(dir.value());
+  bool result = true;
+  if (directories_created_.find(dir) == directories_created_.end()) {
+    result = base::CreateDirectory(dir);
+    if (result)
+      directories_created_.insert(dir);
   }
-  return ret;
+  return result;
 }

@@ -39,6 +39,7 @@
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "content/browser/indexed_db/scopes/leveldb_scope.h"
@@ -517,14 +518,14 @@ bool IndexCursorOptions(
 IndexedDBBackingStore::IndexedDBBackingStore(
     Mode backing_store_mode,
     IndexedDBFactory* indexed_db_factory,
-    indexed_db::LevelDBFactory* leveldb_factory,
+    TransactionalLevelDBFactory* transactional_leveldb_factory,
     const Origin& origin,
     const FilePath& blob_path,
     std::unique_ptr<TransactionalLevelDBDatabase> db,
     base::SequencedTaskRunner* task_runner)
     : backing_store_mode_(backing_store_mode),
       indexed_db_factory_(indexed_db_factory),
-      leveldb_factory_(leveldb_factory),
+      transactional_leveldb_factory_(transactional_leveldb_factory),
       origin_(origin),
       blob_path_(blob_path),
       origin_identifier_(ComputeOriginIdentifier(origin)),
@@ -1643,7 +1644,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
   bool all_blobs = blob_key == DatabaseMetaDataKey::kAllBlobsKey;
   DCHECK(all_blobs || DatabaseMetaDataKey::IsValidBlobKey(blob_key));
   std::unique_ptr<LevelDBDirectTransaction> transaction =
-      leveldb_factory_->CreateLevelDBDirectTransaction(db_.get());
+      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(db_.get());
 
   BlobJournalType live_blob_journal, primary_journal;
   if (!GetLiveBlobJournal(transaction.get(), &live_blob_journal).ok())
@@ -1765,7 +1766,7 @@ Status IndexedDBBackingStore::CleanUpBlobJournal(
   IDB_TRACE("IndexedDBBackingStore::CleanUpBlobJournal");
   DCHECK(!committing_transaction_count_);
   std::unique_ptr<LevelDBDirectTransaction> journal_transaction =
-      leveldb_factory_->CreateLevelDBDirectTransaction(db_.get());
+      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(db_.get());
   BlobJournalType journal;
 
   Status s = GetBlobJournal(level_db_key, journal_transaction.get(), &journal);
@@ -2862,8 +2863,9 @@ IndexedDBBackingStore::Transaction::Transaction(
     IndexedDBBackingStore* backing_store,
     blink::mojom::IDBTransactionDurability durability)
     : backing_store_(backing_store),
-      leveldb_factory_(backing_store ? backing_store->leveldb_factory_
-                                     : nullptr),
+      transactional_leveldb_factory_(
+          backing_store ? backing_store->transactional_leveldb_factory_
+                        : nullptr),
       database_id_(-1),
       committing_(false),
       durability_(durability) {}
@@ -2875,7 +2877,7 @@ IndexedDBBackingStore::Transaction::~Transaction() {
 void IndexedDBBackingStore::Transaction::Begin(std::vector<ScopeLock> locks) {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Begin");
   DCHECK(!transaction_.get());
-  transaction_ = leveldb_factory_->CreateLevelDBTransaction(
+  transaction_ = transactional_leveldb_factory_->CreateLevelDBTransaction(
       backing_store_->db_.get(),
       backing_store_->db_->scopes()->CreateScope(
           std::move(locks), std::vector<LevelDBScopes::EmptyRange>()));
@@ -3051,7 +3053,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
     // Read the persisted states of the primary/live blob journals,
     // so that they can be updated correctly by the transaction.
     std::unique_ptr<LevelDBDirectTransaction> journal_transaction =
-        leveldb_factory_->CreateLevelDBDirectTransaction(
+        transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
             backing_store_->db_.get());
     s = GetPrimaryBlobJournal(journal_transaction.get(), &primary_journal);
     if (!s.ok())
@@ -3127,7 +3129,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   }
 
   std::unique_ptr<LevelDBDirectTransaction> update_journal_transaction =
-      leveldb_factory_->CreateLevelDBDirectTransaction(
+      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
           backing_store_->db_.get());
   UpdatePrimaryBlobJournal(update_journal_transaction.get(),
                            saved_primary_journal);

@@ -2991,10 +2991,12 @@ void LocalFrameView::ForceLayoutForPagination(
                                        ? document_rect.Width()
                                        : document_rect.Height();
     if (doc_logical_width > page_logical_width) {
+      // ResizePageRectsKeepingRatio would truncate the expected page size,
+      // while we want it rounded -- so make sure it's rounded here.
       FloatSize expected_page_size(
-          std::min<float>(document_rect.Width().ToFloat(),
+          std::min<float>(document_rect.Width().Round(),
                           page_size.Width() * maximum_shrink_factor),
-          std::min<float>(document_rect.Height().ToFloat(),
+          std::min<float>(document_rect.Height().Round(),
                           page_size.Height() * maximum_shrink_factor));
       FloatSize max_page_size = frame_->ResizePageRectsKeepingRatio(
           FloatSize(original_page_size.Width(), original_page_size.Height()),

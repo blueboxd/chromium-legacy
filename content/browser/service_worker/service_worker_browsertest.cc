@@ -36,7 +36,10 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
+#include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
+#include "content/browser/renderer_host/code_cache_host_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -46,6 +49,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/public/browser/browser_context.h"
@@ -92,10 +96,12 @@
 #include "storage/browser/blob/blob_handle.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/test/blob_test_utils.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -110,38 +116,6 @@ namespace {
 // timestamp).
 const int kV8CacheTimeStampDataSize =
     sizeof(uint32_t) + sizeof(uint32_t) + sizeof(double);
-
-// TODO(falken): This is identical to the code in
-// cache_storage_cache_unittest.cc and
-// background_fetch_data_manager_unittest.cc for copying
-// a blob to a string. Factor it out somewhere.
-class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
- public:
-  DataPipeDrainerClient(std::string* output) : output_(output) {}
-  void Run() { run_loop_.Run(); }
-
-  void OnDataAvailable(const void* data, size_t num_bytes) override {
-    output_->append(reinterpret_cast<const char*>(data), num_bytes);
-  }
-  void OnDataComplete() override { run_loop_.Quit(); }
-
- private:
-  base::RunLoop run_loop_;
-  std::string* output_;
-};
-
-std::string BlobToString(blink::mojom::Blob* actual_blob) {
-  std::string output;
-  mojo::ScopedDataPipeProducerHandle producer;
-  mojo::ScopedDataPipeConsumerHandle consumer;
-  CHECK_EQ(MOJO_RESULT_OK,
-           mojo::CreateDataPipe(/*options=*/nullptr, &producer, &consumer));
-  actual_blob->ReadAll(std::move(producer), mojo::NullRemote());
-  DataPipeDrainerClient client(&output);
-  mojo::DataPipeDrainer drainer(&client, std::move(consumer));
-  client.Run();
-  return output;
-}
 
 size_t BlobSideDataLength(blink::mojom::Blob* actual_blob) {
   size_t result = 0;
@@ -1492,7 +1466,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
 
   mojo::Remote<blink::mojom::Blob> blob(std::move(response->blob->blob));
   EXPECT_EQ("This resource is gone. Gone, gone, gone.",
-            BlobToString(blob.get()));
+            storage::BlobToString(blob.get()));
 }
 
 // Tests for response type when a service worker does respondWith(fetch()).
@@ -3477,6 +3451,143 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageNoneTest,
   WaitUntilSideDataSizeIs(0);
 }
 
+namespace {
+
+class CodeCacheHostInterceptor
+    : public blink::mojom::CodeCacheHostInterceptorForTesting,
+      public RenderProcessHostObserver {
+ public:
+  CodeCacheHostInterceptor(RenderProcessHost* rph,
+                           CodeCacheHostImpl* code_cache_host_impl)
+      : render_process_host_(rph), code_cache_host_impl_(code_cache_host_impl) {
+    // Intercept messages for the CodeCacheHost.
+    code_cache_host_impl_->receiver().SwapImplForTesting(this);
+
+    // Register with the RenderProcessHost so we can cleanup properly.
+    render_process_host_->AddObserver(this);
+  }
+
+  ~CodeCacheHostInterceptor() override {
+    if (render_process_host_)
+      render_process_host_->RemoveObserver(this);
+  }
+
+  CodeCacheHost* GetForwardingInterface() override {
+    return code_cache_host_impl_;
+  }
+
+  void RenderProcessExited(RenderProcessHost* host,
+                           const ChildProcessTerminationInfo& info) override {
+    DCHECK(host == render_process_host_);
+
+    // The CodeCacheHostImpl will be destroyed when the renderer exits.
+    // Drop our reference to avoid holding a stale pointer.
+    code_cache_host_impl_ = nullptr;
+
+    render_process_host_->RemoveObserver(this);
+    render_process_host_ = nullptr;
+  }
+
+  void DidGenerateCacheableMetadataInCacheStorage(
+      const GURL& url,
+      base::Time expected_response_time,
+      mojo_base::BigBuffer data,
+      const url::Origin& cache_storage_origin,
+      const std::string& cache_storage_cache_name) override {
+    // Send the message with an overriden, bad origin.
+    GetForwardingInterface()->DidGenerateCacheableMetadataInCacheStorage(
+        url, expected_response_time, std::move(data),
+        url::Origin::Create(GURL("https://bad.com")), cache_storage_cache_name);
+  }
+
+ private:
+  // These can be held as raw pointers since we use the
+  // RenderProcessHostObserver interface to clear them before they are
+  // destroyed.
+  RenderProcessHost* render_process_host_;
+  CodeCacheHostImpl* code_cache_host_impl_;
+};
+
+class CacheStorageContextForBadOrigin : public CacheStorageContextImpl {
+ public:
+  CacheStorageContextForBadOrigin() : CacheStorageContextImpl(nullptr) {}
+
+  scoped_refptr<CacheStorageManager> CacheManager() override {
+    // The CodeCacheHostImpl should not try to access the CacheManager()
+    // if the origin is bad.
+    NOTREACHED();
+    return nullptr;
+  }
+
+ private:
+  ~CacheStorageContextForBadOrigin() override = default;
+};
+
+}  // namespace
+
+// Test that forces a bad origin to be sent to CodeCacheHost's
+// DidGenerateCacheableMetadataInCacheStorage method.
+class ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest
+    : public ServiceWorkerV8CodeCacheForCacheStorageTest {
+ public:
+  ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest() {
+    // Register a callback to be notified of new CodeCacheHostImpl objects.
+    RenderProcessHostImpl::SetCodeCacheHostReceiverHandlerForTesting(
+        base::BindRepeating(
+            &ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest::
+                CreateTestCodeCacheHost,
+            base::Unretained(this)));
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ServiceWorkerV8CodeCacheForCacheStorageTest::SetUpCommandLine(command_line);
+    // The purpose of this test is to verify how CodeCacheHostImpl behaves
+    // when it receives an origin that is different from the site locked to the
+    // process.  In order for this to work properly on platforms like android
+    // we must explicitly enable site isolation.
+    IsolateAllSitesForTesting(command_line);
+  }
+
+  ~ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest() override {
+    // Disable the callback now that this object is being destroyed.
+    RenderProcessHostImpl::SetCodeCacheHostReceiverHandlerForTesting(
+        RenderProcessHostImpl::CodeCacheHostReceiverHandler());
+  }
+
+  void CreateTestCodeCacheHost(RenderProcessHost* rph,
+                               CodeCacheHostImpl* code_cache_host_impl) {
+    // Override the cache_storage context to assert that CodeCacheHostImpl
+    // does not try to access it when given a bad origin.
+    code_cache_host_impl->SetCacheStorageContextForTesting(
+        base::MakeRefCounted<CacheStorageContextForBadOrigin>());
+
+    // Create an interceptor that passes a bad origin to CodeCacheHostImpl.
+    interceptors_.push_back(
+        std::make_unique<CodeCacheHostInterceptor>(rph, code_cache_host_impl));
+  }
+
+ private:
+  // Track the CodeCacheHostIntercptor objects so we can delete them in
+  // the test destructor.
+  std::vector<std::unique_ptr<CodeCacheHostInterceptor>> interceptors_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest,
+                       V8CacheOnCacheStorage) {
+  RegisterAndActivateServiceWorker();
+
+  // First load: fetch_event_response_via_cache.js returns |cloned_response|.
+  // The V8 code cache should not be stored in CacheStorage.
+  NavigateToTestPage();
+  WaitUntilSideDataSizeIs(0);
+
+  // Second load: The V8 code cache should still be zero.  When a bad origin
+  // is received by CodeCacheHost it should ignore the provided metadata.
+  // TODO(crbug/925035): In the future this should instead kill the renderer.
+  NavigateToTestPage();
+  WaitUntilSideDataSizeIs(0);
+}
+
 // ServiceWorkerDisableWebSecurityTests check the behavior when the web security
 // is disabled. If '--disable-web-security' flag is set, we don't check the
 // origin equality in Blink. So the Service Worker related APIs should succeed
@@ -3809,7 +3920,7 @@ class CacheStorageEagerReadingTestBase
     mojo::Remote<blink::mojom::Blob> blob(std::move(response->blob->blob));
 
     // The blob should contain the expected body content.
-    EXPECT_EQ(BlobToString(blob.get()).length(), 1075u);
+    EXPECT_EQ(storage::BlobToString(blob.get()).length(), 1075u);
 
     // Since this js response was stored in the install event it should have
     // code cache stored in the blob side data.

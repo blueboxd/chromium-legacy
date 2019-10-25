@@ -6,18 +6,12 @@
 
 namespace ui {
 
-namespace {
-
-constexpr gfx::Size kDefaultWindowSize(800, 600);
-
-}  // namespace
-
 HeadlessScreen::HeadlessScreen() {
-  DCHECK_LE(next_display_id_, std::numeric_limits<int64_t>::max());
-
-  display::Display display(next_display_id_++);
-  display.SetScaleAndBounds(1.0f,
-                            gfx::Rect(gfx::Point(0, 0), kDefaultWindowSize));
+  static constexpr int64_t kHeadlessDisplayId = 1;
+  static constexpr float kHeadlessDisplayScale = 1.0f;
+  static constexpr gfx::Rect kHeadlessDisplayBounds(gfx::Size(1, 1));
+  display::Display display(kHeadlessDisplayId);
+  display.SetScaleAndBounds(kHeadlessDisplayScale, kHeadlessDisplayBounds);
   display_list_.AddDisplay(display, display::DisplayList::Type::PRIMARY);
 }
 

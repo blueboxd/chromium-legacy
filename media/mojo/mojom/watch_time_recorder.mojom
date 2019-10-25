@@ -83,8 +83,14 @@ interface WatchTimeRecorder {
   // 10s, and 15s will become 20s. May be called any number of times.
   OnDurationChanged(mojo_base.mojom.TimeDelta duration);
 
+  // Updates the total number of frames decoded and dropped. As with other
+  // values, these are absolute and not relative since the last call.
+  UpdateVideoDecodeStats(uint32 frames_decoded, uint32 frames_dropped);
+
   // Indicates that an underflow event has occurred while collecting watch time.
   // Used to report mean values for rebuffering metrics. As with watch time,
   // this is an absolute count and not relative since the last call.
-  UpdateUnderflowCount(int32 count);
+  UpdateUnderflowCount(int32 total_count);
+  UpdateUnderflowDuration(int32 total_completed_count,
+                          mojo_base.mojom.TimeDelta total_duration);
 };

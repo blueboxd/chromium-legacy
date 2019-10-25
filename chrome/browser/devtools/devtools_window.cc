@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 
 #include <algorithm>
+#include <set>
 #include <utility>
 
 #include "base/base64.h"
@@ -170,8 +171,8 @@ content::WebContents* DevToolsToolboxDelegate::OpenURLFromTab(
   DCHECK(source == web_contents());
   if (!params.url.SchemeIs(content::kChromeDevToolsScheme))
     return NULL;
-  content::NavigationController::LoadURLParams load_url_params(params.url);
-  source->GetController().LoadURLWithParams(load_url_params);
+  source->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(params));
   return source;
 }
 
@@ -218,7 +219,7 @@ GURL DecorateFrontendURL(const GURL& base_url) {
   std::string url_string(
       frontend_url +
       ((frontend_url.find("?") == std::string::npos) ? "?" : "&") +
-      "dockSide=undocked"); // TODO(dgozman): remove this support in M38.
+      "dockSide=undocked");  // TODO(dgozman): remove this support in M38.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDevToolsExperiments))
     url_string += "&experiments=true";
@@ -810,7 +811,7 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
                                     &inspected_browser,
                                     &inspected_tab_index);
     DCHECK(inspected_browser);
-    DCHECK(inspected_tab_index != -1);
+    DCHECK_NE(-1, inspected_tab_index);
 
     RegisterModalDialogManager(inspected_browser);
 

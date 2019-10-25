@@ -132,7 +132,7 @@ class TemplateURLParsingContext {
   typedef std::pair<std::string, std::string> Param;
 
   explicit TemplateURLParsingContext(
-      TemplateURLParser::ParameterFilter* parameter_filter);
+      const TemplateURLParser::ParameterFilter& parameter_filter);
 
   static void StartElementImpl(void* ctx,
                                const xmlChar* name,
@@ -173,7 +173,7 @@ class TemplateURLParsingContext {
   // Character content for the current element.
   base::string16 string_;
 
-  TemplateURLParser::ParameterFilter* parameter_filter_;
+  const TemplateURLParser::ParameterFilter& parameter_filter_;
 
   // The list of parameters parsed in the Param nodes of a Url node.
   std::vector<Param> extra_params_;
@@ -202,7 +202,7 @@ TemplateURLParsingContext::ElementNameToElementTypeMap*
     TemplateURLParsingContext::kElementNameToElementTypeMap = nullptr;
 
 TemplateURLParsingContext::TemplateURLParsingContext(
-    TemplateURLParser::ParameterFilter* parameter_filter)
+    const TemplateURLParser::ParameterFilter& parameter_filter)
     : image_is_valid_for_favicon_(false),
       parameter_filter_(parameter_filter),
       method_(GET),
@@ -428,12 +428,12 @@ void TemplateURLParsingContext::ParseParam(const xmlChar** atts) {
   }
 
   if (!key.empty() &&
-      (!parameter_filter_ || parameter_filter_->KeepParameter(key, value)))
+      (parameter_filter_.is_null() || parameter_filter_.Run(key, value)))
     extra_params_.push_back(Param(key, value));
 }
 
 void TemplateURLParsingContext::ProcessURLParams() {
-  if (!parameter_filter_ && extra_params_.empty())
+  if (parameter_filter_.is_null() && extra_params_.empty())
     return;
 
   GURL url(is_suggest_url_ ? data_.suggestions_url : data_.url());
@@ -444,14 +444,14 @@ void TemplateURLParsingContext::ProcessURLParams() {
   // unwanted parameter.
   std::string new_query;
   bool modified = false;
-  if (parameter_filter_) {
+  if (!parameter_filter_.is_null()) {
     url::Component query = url.parsed_for_possibly_invalid_spec().query;
     url::Component key, value;
     const char* url_spec = url.spec().c_str();
     while (url::ExtractQueryKeyValue(url_spec, &query, &key, &value)) {
       std::string key_str(url_spec, key.begin, key.len);
       std::string value_str(url_spec, value.begin, value.len);
-      if (parameter_filter_->KeepParameter(key_str, value_str)) {
+      if (parameter_filter_.Run(key_str, value_str)) {
         AppendParamToQuery(key_str, value_str, &new_query);
       } else {
         modified = true;
@@ -497,7 +497,7 @@ std::unique_ptr<TemplateURL> TemplateURLParser::Parse(
     const SearchTermsData& search_terms_data,
     const char* data,
     size_t length,
-    TemplateURLParser::ParameterFilter* param_filter) {
+    const TemplateURLParser::ParameterFilter& param_filter) {
   // xmlSubstituteEntitiesDefault(1) makes it so that &amp; isn't mapped to
   // &#38; . Unfortunately xmlSubstituteEntitiesDefault affects global state.
   // If this becomes problematic we'll need to provide our own entity

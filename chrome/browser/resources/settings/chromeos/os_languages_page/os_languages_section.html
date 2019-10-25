@@ -25,18 +25,14 @@
     <settings-animated-pages id="pages" section="languages"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <div id="languagesSubpageTrigger" class="settings-box first two-line"
-            on-click="onLanguagesTap_" actionable>
-          <div class="start">
-            <div>$i18n{osLanguagesPageTitle}</div>
-            <div class="secondary">
-              [[getLanguageDisplayName_(languages.prospectiveUILanguage)]],
-              [[getInputMethodDisplayName_(languages.inputMethods.currentId)]]
-            </div>
-          </div>
-          <cr-icon-button class="subpage-arrow"
-              aria-label="$i18n{osLanguagesPageTitle}"></cr-icon-button>
-        </div>
+        <cr-link-row
+            id="languagesSubpageTrigger"
+            label="$i18n{osLanguagesPageTitle}"
+            sub-label="[[getSubLabel_(languages.prospectiveUILanguage,
+                languages.inputMethods.currentId)]]"
+            on-click="onLanguagesTap_"
+            role-description="$i18n{subpageArrowRoleDescription}">
+        </cr-link-row>
       </div>
 
       <!-- "Language and input" sub-page. -->

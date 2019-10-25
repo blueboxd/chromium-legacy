@@ -62,6 +62,8 @@ table UrlRuleMetadata {
 
 /// This provides a mapping from an action to its index within the |index_list|
 /// vector.
+/// TODO(crbug.com/1017868): This should be unified with ActionType once generic
+/// priorities are implemented.
 enum ActionIndex : ubyte {
   block = 0,
   allow,
@@ -74,12 +76,46 @@ enum ActionIndex : ubyte {
   count
 }
 
+/// The type of an action. Corresponds to
+/// extensions::api::declarative_net_request::RuleActionType.
+enum ActionType : ubyte {
+  block,
+  allow,
+  redirect,
+  upgrade_scheme,
+  remove_headers
+}
+
+/// The type of header to remove. Corresponds to
+/// extensions::api::declarative_net_request::RemoveHeaderType.
+enum RemoveHeaderType : ubyte (bit_flags) {
+  cookie,
+  referer,
+  set_cookie
+}
+
+/// Completely represents a rule with a regex filter.
+table RegexRule {
+  /// The underlying UrlRule.
+  url_rule: url_pattern_index.flat.UrlRule;
+
+  /// The action to take.
+  action_type: ActionType;
+
+  /// The headers to be removed. Mask of RemoveHeaderType.
+  remove_headers_mask: ubyte;
+}
+
 /// The top-level data structure used to store extensions URL rules for the
 /// Declarative Net Request API.
 table ExtensionIndexedRuleset {
   /// Vector of UrlPatternIndex for different action types. This will consist
   /// of ActionIndex_count indices.
   index_list : [url_pattern_index.flat.UrlPatternIndex];
+
+  // Regex rules are not matched by UrlPatternIndex and so we don't build an
+  // index for them.
+  regex_rules: [RegexRule];
 
   /// Extension related metadata. Sorted by id, to support fast lookup.
   /// Currently this is only used for redirect rules.

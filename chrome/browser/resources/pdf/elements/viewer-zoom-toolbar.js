@@ -42,7 +42,6 @@ Polymer({
     /** @private */
     showOnLeft_: {
       type: Boolean,
-      computed: 'computeShowOnLeft_(isPrintPreview)',
       reflectToAttribute: true,
     },
   },
@@ -89,15 +88,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether to show the zoom toolbar on the left side of the
-   *     viewport.
-   * @private
-   */
-  computeShowOnLeft_: function() {
-    return isRTL() !== this.isPrintPreview;
-  },
-
-  /**
    * Change button tooltips to match any changes to localized strings.
    * @param {!{tooltipFitToPage: string,
    *           tooltipFitToWidth: string,
@@ -109,6 +99,7 @@ Polymer({
         [strings.tooltipFitToPage, strings.tooltipFitToWidth];
     this.$['zoom-in-button'].tooltips = [strings.tooltipZoomIn];
     this.$['zoom-out-button'].tooltips = [strings.tooltipZoomOut];
+    this.showOnLeft_ = isRTL() !== this.isPrintPreview;
   },
 
   /** Handle clicks of the fit-button. */

@@ -19,6 +19,7 @@
 #include "base/test/bind_test_util.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "content/browser/indexed_db/scopes/leveldb_scope.h"
@@ -57,7 +58,7 @@ class TransactionalLevelDBTransactionTest : public LevelDBScopesTestBase {
     s = scopes_system->StartRecoveryAndCleanupTasks(
         LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
     ASSERT_TRUE(s.ok()) << s.ToString();
-    leveldb_database_ = leveldb_factory_->CreateLevelDBDatabase(
+    leveldb_database_ = transactional_leveldb_factory_.CreateLevelDBDatabase(
         leveldb_, std::move(scopes_system),
         base::SequencedTaskRunnerHandle::Get(), kTestingMaxOpenCursors);
   }
@@ -134,7 +135,7 @@ class TransactionalLevelDBTransactionTest : public LevelDBScopesTestBase {
   TransactionalLevelDBDatabase* db() { return leveldb_database_.get(); }
 
   scoped_refptr<TransactionalLevelDBTransaction> CreateTransaction() {
-    return indexed_db::LevelDBFactory::Get()->CreateLevelDBTransaction(
+    return transactional_leveldb_factory_.CreateLevelDBTransaction(
         db(),
         db()->scopes()->CreateScope(
             AcquireLocksSync(&lock_manager_, {CreateSimpleSharedLock()}), {}));
@@ -143,6 +144,7 @@ class TransactionalLevelDBTransactionTest : public LevelDBScopesTestBase {
   leveldb::Status failure_status_;
 
  private:
+  DefaultTransactionalLevelDBFactory transactional_leveldb_factory_;
   std::unique_ptr<TransactionalLevelDBDatabase> leveldb_database_;
   DisjointRangeLockManager lock_manager_ = {3};
 

@@ -701,8 +701,8 @@ int GetInstallAge(const InstallerState& installer_state) {
 }
 
 void RecordUnPackMetrics(UnPackStatus unpack_status,
-                         int32_t status,
-                         DWORD lzma_result,
+                         base::Optional<int32_t> ntstatus,
+                         base::Optional<DWORD> error_code,
                          UnPackConsumer consumer) {
   std::string consumer_name = "";
 
@@ -725,11 +725,16 @@ void RecordUnPackMetrics(UnPackStatus unpack_status,
       std::string(std::string(kUnPackStatusMetricsName) + "_" + consumer_name),
       unpack_status, UNPACK_STATUS_COUNT);
 
-  base::UmaHistogramSparse(
-      std::string(kUnPackResultMetricsName) + "_" + consumer_name, lzma_result);
-
-  base::UmaHistogramSparse(
-      std::string(kUnPackNTSTATUSMetricsName) + "_" + consumer_name, status);
+  if (error_code.has_value()) {
+    base::UmaHistogramSparse(
+        std::string(kUnPackResultMetricsName) + "_" + consumer_name,
+        *error_code);
+  }
+  if (ntstatus.has_value()) {
+    base::UmaHistogramSparse(
+        std::string(kUnPackNTSTATUSMetricsName) + "_" + consumer_name,
+        *ntstatus);
+  }
 }
 
 void RegisterEventLogProvider(const base::FilePath& install_directory,

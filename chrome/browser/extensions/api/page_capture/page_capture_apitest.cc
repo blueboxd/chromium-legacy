@@ -76,8 +76,8 @@ class PageCaptureSaveAsMHTMLDelegate
 #endif
 
 // TODO(crbug.com/961017): Fix memory leaks in tests and re-enable on LSAN.
-// Also flaky-failing on Linux Tests (dbg): https://crbug.com/1017305
-#if defined(LEAK_SANITIZER) || (defined(OS_LINUX) && !defined(NDEBUG))
+// Also flaky-failing on slow (debug) bots: https://crbug.com/1017305
+#if defined(LEAK_SANITIZER) || !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
 #define MAYBE_SaveAsMHTML DISABLED_SaveAsMHTML
 #else
 #define MAYBE_SaveAsMHTML SaveAsMHTML

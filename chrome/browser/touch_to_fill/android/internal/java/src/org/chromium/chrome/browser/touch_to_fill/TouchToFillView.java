@@ -39,6 +39,15 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
             mDismissHandler.onResult(reason);
             mBottomSheetController.getBottomSheet().removeObserver(mBottomSheetObserver);
         }
+
+        @Override
+        public void onSheetStateChanged(int newState) {
+            super.onSheetStateChanged(newState);
+            if (newState != BottomSheet.SheetState.HIDDEN) return;
+            // This is a fail-safe for cases where onSheetClosed isn't triggered.
+            mDismissHandler.onResult(BottomSheet.StateChangeReason.NONE);
+            mBottomSheetController.getBottomSheet().removeObserver(mBottomSheetObserver);
+        }
     };
 
     /**
@@ -129,8 +138,14 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
 
     @Override
     public int getPeekHeight() {
+        return BottomSheet.HeightMode.DISABLED;
+    }
+
+    @Override
+    public float getCustomHalfRatio() {
         return Math.min(mContext.getResources().getDimensionPixelSize(getDesiredSheetHeight()),
-                (int) mBottomSheetController.getBottomSheet().getSheetContainerHeight());
+                       (int) mBottomSheetController.getBottomSheet().getSheetContainerHeight())
+                / mBottomSheetController.getBottomSheet().getSheetContainerHeight();
     }
 
     @Override

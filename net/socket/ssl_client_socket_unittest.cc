@@ -5363,60 +5363,68 @@ TEST_F(SSLClientSocketTest, Tag) {
 #endif  // OS_ANDROID
 }
 
-// Test downgrade enforcement behaves as expected.
-// Failed on macOS. See https://crbug.com/1017036
-#if defined(OS_MACOSX)
-#define MAYBE_TLS13DowngradeEnforced DISABLED_TLS13DowngradeEnforced
-#else
-#define MAYBE_TLS13DowngradeEnforced TLS13DowngradeEnforced
-#endif
-TEST_F(SSLClientSocketTest, MAYBE_TLS13DowngradeEnforced) {
-  for (auto tls_max_version :
-       {SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0,
-        SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1,
-        SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2}) {
-    for (bool downgrade : {false, true}) {
-      SCOPED_TRACE(downgrade);
-      SCOPED_TRACE(tls_max_version);
-      SpawnedTestServer::SSLOptions ssl_options;
-      ssl_options.simulate_tls13_downgrade = downgrade;
-      ssl_options.tls_max_version = tls_max_version;
-      ASSERT_TRUE(StartTestServer(ssl_options));
-      scoped_refptr<X509Certificate> server_cert =
-          spawned_test_server()->GetCertificate();
+class TLS13DowngradeTest
+    : public SSLClientSocketTest,
+      public ::testing::WithParamInterface<
+          std::tuple<SpawnedTestServer::SSLOptions::TLSMaxVersion,
+                     /* simulate_tls13_downgrade */ bool,
+                     /* enable_for_local_anchors */ bool,
+                     /* known_root */ bool>> {
+ public:
+  TLS13DowngradeTest() {}
+  ~TLS13DowngradeTest() {}
 
-      for (bool enable_for_local_anchors : {false, true}) {
-        SCOPED_TRACE(enable_for_local_anchors);
-        SSLContextConfig config;
-        config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-        config.tls13_hardening_for_local_anchors_enabled =
-            enable_for_local_anchors;
-        ssl_config_service_->UpdateSSLConfigAndNotify(config);
+  SpawnedTestServer::SSLOptions::TLSMaxVersion tls_max_version() const {
+    return std::get<0>(GetParam());
+  }
 
-        for (bool known_root : {false, true}) {
-          SCOPED_TRACE(known_root);
-          CertVerifyResult verify_result;
-          verify_result.is_issued_by_known_root = known_root;
-          verify_result.verified_cert = server_cert;
-          cert_verifier_->ClearRules();
-          cert_verifier_->AddResultForCert(server_cert.get(), verify_result,
-                                           OK);
+  bool simulate_tls13_downgrade() const { return std::get<1>(GetParam()); }
+  bool enable_for_local_anchors() const { return std::get<2>(GetParam()); }
+  bool known_root() const { return std::get<3>(GetParam()); }
+};
 
-          bool should_enforce = known_root || enable_for_local_anchors;
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    TLS13DowngradeTest,
+    ::testing::Combine(
+        ::testing::Values(
+            SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0,
+            SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1,
+            SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2),
+        ::testing::Values(false, true),
+        ::testing::Values(false, true),
+        ::testing::Values(false, true)));
 
-          ssl_client_session_cache_->Flush();
-          int rv;
-          ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-          if (should_enforce && downgrade) {
-            EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
-            EXPECT_FALSE(sock_->IsConnected());
-          } else {
-            EXPECT_THAT(rv, IsOk());
-            EXPECT_TRUE(sock_->IsConnected());
-          }
-        }
-      }
-    }
+TEST_P(TLS13DowngradeTest, DowngradeEnforced) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.simulate_tls13_downgrade = simulate_tls13_downgrade();
+  ssl_options.tls_max_version = tls_max_version();
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  SSLContextConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  config.tls13_hardening_for_local_anchors_enabled = enable_for_local_anchors();
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = known_root();
+  verify_result.verified_cert = server_cert;
+  cert_verifier_->ClearRules();
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  bool should_enforce = known_root() || enable_for_local_anchors();
+
+  ssl_client_session_cache_->Flush();
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  if (should_enforce && simulate_tls13_downgrade()) {
+    EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
+    EXPECT_FALSE(sock_->IsConnected());
+  } else {
+    EXPECT_THAT(rv, IsOk());
+    EXPECT_TRUE(sock_->IsConnected());
   }
 }
 

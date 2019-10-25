@@ -29,7 +29,6 @@ crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.htm
 # OOR-CORS, but with different texts. Just mark them as Failure.
 crbug.com/870173 external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
-crbug.com/870173 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]

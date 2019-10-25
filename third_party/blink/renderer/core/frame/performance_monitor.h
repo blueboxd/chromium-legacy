@@ -42,7 +42,7 @@ class CORE_EXPORT PerformanceMonitor final
       public base::sequence_manager::TaskTimeObserver {
  public:
   enum Violation : size_t {
-    kLongTask,
+    kLongTask = 0,
     kLongLayout,
     kBlockedEvent,
     kBlockedParser,
@@ -111,7 +111,10 @@ class CORE_EXPORT PerformanceMonitor final
   friend class WindowPerformanceTest;
 
   static PerformanceMonitor* Monitor(const ExecutionContext*);
-  static PerformanceMonitor* InstrumentingMonitor(const ExecutionContext*);
+  // Returns the monitor of the ExecutionContext if its
+  // |enabled_| is set, nullptr otherwise.
+  static PerformanceMonitor* InstrumentingMonitorExcludingLongTasks(
+      const ExecutionContext*);
 
   void UpdateInstrumentation();
 
@@ -136,6 +139,8 @@ class CORE_EXPORT PerformanceMonitor final
       const HeapHashSet<Member<Frame>>& frame_contexts,
       Frame* observer_frame);
 
+  // This boolean is used to track whether there is any subscription to any
+  // Violation other than longtasks.
   bool enabled_ = false;
   base::TimeDelta per_task_style_and_layout_time_;
   unsigned script_depth_ = 0;

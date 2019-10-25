@@ -287,6 +287,19 @@ void ArcAuthService::OnConnectionReady() {
 
   if (pending_get_arc_accounts_callback_)
     DispatchAccountsInArc(std::move(pending_get_arc_accounts_callback_));
+
+  // Report main account resolution status for provisioned devices.
+  if (!IsArcProvisioned(profile_))
+    return;
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
+                                               GetMainAccountResolutionStatus);
+  if (!instance)
+    return;
+
+  instance->GetMainAccountResolutionStatus(
+      base::BindOnce(&ArcAuthService::OnMainAccountResolutionStatus,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcAuthService::OnConnectionClosed() {
@@ -799,6 +812,11 @@ void ArcAuthService::DispatchAccountsInArc(
   }
 
   instance->GetGoogleAccounts(std::move(callback));
+}
+
+void ArcAuthService::OnMainAccountResolutionStatus(
+    mojom::MainAccountResolutionStatus status) {
+  UpdateMainAccountResolutionStatus(profile_, status);
 }
 
 }  // namespace arc

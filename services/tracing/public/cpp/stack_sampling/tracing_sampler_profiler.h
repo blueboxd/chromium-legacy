@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
@@ -116,7 +117,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   static void StartTracingForTesting(tracing::PerfettoProducer* producer);
   static void StopTracingForTesting();
 
-  explicit TracingSamplerProfiler(base::PlatformThreadId sampled_thread_id);
+  explicit TracingSamplerProfiler(
+      base::SamplingProfilerThreadToken sampled_thread_token);
   virtual ~TracingSamplerProfiler();
 
   void StartTracing(std::unique_ptr<perfetto::TraceWriter> trace_writer,
@@ -124,7 +126,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   void StopTracing();
 
  private:
-  const base::PlatformThreadId sampled_thread_id_;
+  const base::SamplingProfilerThreadToken sampled_thread_token_;
 
   base::Lock lock_;
   std::unique_ptr<base::StackSamplingProfiler> profiler_;  // under |lock_|

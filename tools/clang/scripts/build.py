@@ -148,7 +148,9 @@ def GetLatestLLVMCommit():
 
 
 def GetCommitCount(commit):
-  """Get the number of commits from FIRST_LLVM_COMMIT to commit."""
+  """Get the number of commits from FIRST_LLVM_COMMIT to commit.
+
+  Needs to be called from inside the git repository dir."""
   return subprocess.check_output(['git', 'rev-list', '--count',
                                   FIRST_LLVM_COMMIT + '..' + commit]).rstrip()
 

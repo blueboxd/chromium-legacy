@@ -16,6 +16,7 @@ class RoundedWindowCornersDefault : public RoundedWindowCorners {
   RoundedWindowCornersDefault() {}
   ~RoundedWindowCornersDefault() override {}
 
+  void SetEnabled(bool enable) override {}
   void SetColorInversion(bool enable) override {}
 
  private:

@@ -18,7 +18,7 @@ class BackButtonNode extends SAChildNode {
     this.group_ = group;
 
     /** @private {chrome.automation.AutomationNode} */
-    this.node_ = window.switchAccess.getBackButtonAutomationNode();
+    this.node_ = SwitchAccess.get().getBackButtonAutomationNode();
   }
 
   /** @override */

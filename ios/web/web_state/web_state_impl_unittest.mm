@@ -40,7 +40,7 @@
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/security/web_interstitial_impl.h"
 #import "ios/web/test/fakes/mock_interstitial_delegate.h"
-#include "ios/web/web_state/global_web_state_event_tracker.h"
+#import "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"

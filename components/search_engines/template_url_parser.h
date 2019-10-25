@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 
 class SearchTermsData;
@@ -19,16 +20,12 @@ class TemplateURL;
 // from OpenSearch description documents.
 class TemplateURLParser {
  public:
-  class ParameterFilter {
-   public:
-    // Invoked for each parameter of the template URL while parsing.  If this
-    // methods returns false, the parameter is not included.
-    virtual bool KeepParameter(const std::string& key,
-                               const std::string& value) = 0;
-
-   protected:
-    virtual ~ParameterFilter() {}
-  };
+  // A ParameterFilter is called for every URL paramter encountered during
+  // Parse(). It passes the parameter key as the first argument and the value
+  // as the second. The callback should return true if the parameter should be
+  // kept, and false if it should be discarded.
+  using ParameterFilter =
+      base::RepeatingCallback<bool(const std::string&, const std::string&)>;
 
   // Decodes the chunk of data representing a TemplateURL, creates the
   // TemplateURL, and returns it.  Returns null if the data does not describe a
@@ -42,7 +39,7 @@ class TemplateURLParser {
       const SearchTermsData& search_terms_data,
       const char* data,
       size_t length,
-      ParameterFilter* parameter_filter);
+      const ParameterFilter& parameter_filter);
 
  private:
   // No one should create one of these.

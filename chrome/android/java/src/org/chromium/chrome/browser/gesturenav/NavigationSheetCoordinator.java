@@ -149,18 +149,23 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     }
 
     // Transition to either peeked or expanded state.
-    private void openSheet(boolean fullyExpand, boolean animate) {
+    private boolean openSheet(boolean fullyExpand, boolean animate) {
         mContentView =
                 (NavigationSheetView) mLayoutInflater.inflate(R.layout.navigation_sheet, null);
         ListView listview = (ListView) mContentView.findViewById(R.id.navigation_entries);
         listview.setAdapter(mModelAdapter);
         NavigationHistory history = mDelegate.getHistory(mForward);
         mMediator.populateEntries(history);
-        mBottomSheetController.get().requestShowContent(this, true);
+        if (!mBottomSheetController.get().requestShowContent(this, true)) {
+            close(false);
+            mContentView = null;
+            return false;
+        }
         mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
         mSheetTriggered = true;
         mFullyExpand = fullyExpand;
         if (fullyExpand || history.getEntryCount() <= SKIP_PEEK_COUNT) expandSheet();
+        return true;
     }
 
     private void expandSheet() {
@@ -179,9 +184,9 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     }
 
     @Override
-    public void startAndExpand(boolean forward, boolean animate) {
+    public boolean startAndExpand(boolean forward, boolean animate) {
         start(forward, /* showCloseIndicator= */ false);
-        openSheet(/* fullyExpand= */ true, animate);
+        return openSheet(/* fullyExpand= */ true, animate);
     }
 
     @Override
@@ -218,11 +223,8 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         if (isPeeked()) expandSheet();
     }
 
-    /**
-     * Hide the sheet and reset its model.
-     * @param animation {@code true} if animation effect is to be made.
-     */
-    private void close(boolean animate) {
+    @Override
+    public void close(boolean animate) {
         if (!isHidden()) mBottomSheetController.get().hideContent(this, animate);
         mBottomSheetController.get().getBottomSheet().removeObserver(mSheetObserver);
         mMediator.clear();

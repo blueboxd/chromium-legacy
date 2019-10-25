@@ -179,7 +179,7 @@ TEST_F(OmniboxTextFieldTest, CopyInPreedit) {
   [textfield_ becomeFirstResponder];
   [textfield_ enterPreEditState];
   EXPECT_TRUE([textfield_ canPerformAction:@selector(copy:) withSender:nil]);
-  OCMExpect([delegateMock onCopy]).andReturn(YES);
+  [delegateMock onCopy];
   [textfield_ copy:nil];
   EXPECT_TRUE([textfield_.text isEqualToString:testString]);
   [delegateMock verify];
@@ -193,7 +193,7 @@ TEST_F(OmniboxTextFieldTest, CutInPreedit) {
   [textfield_ becomeFirstResponder];
   [textfield_ enterPreEditState];
   EXPECT_TRUE([textfield_ canPerformAction:@selector(cut:) withSender:nil]);
-  OCMExpect([delegateMock onCopy]).andReturn(YES);
+  [delegateMock onCopy];
   [textfield_ cut:nil];
   EXPECT_TRUE([textfield_.text isEqualToString:@""]);
   [delegateMock verify];

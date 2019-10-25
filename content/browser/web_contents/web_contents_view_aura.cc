@@ -215,17 +215,13 @@ void PrepareDragForDownload(
 
   // Provide the data as file (CF_HDROP). A temporary download file with the
   // Zone.Identifier ADS (Alternate Data Stream) attached will be created.
-  scoped_refptr<DragDownloadFile> download_file =
-      new DragDownloadFile(
-          download_path,
-          base::File(),
-          download_url,
-          Referrer(page_url, drop_data.referrer_policy),
-          page_encoding,
-          web_contents);
+  auto download_file = std::make_unique<DragDownloadFile>(
+      download_path, base::File(), download_url,
+      Referrer(page_url, drop_data.referrer_policy), page_encoding,
+      web_contents);
   ui::OSExchangeData::DownloadFileInfo file_download(base::FilePath(),
-                                                     download_file.get());
-  provider->SetDownloadFileInfo(file_download);
+                                                     std::move(download_file));
+  provider->SetDownloadFileInfo(&file_download);
 }
 #endif  // defined(OS_WIN)
 

@@ -38,12 +38,10 @@ function currentNode() {
 
 TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
   const website =
-      `data:text/html;charset=utf-8,
-      <button id="test" aria-pressed="false">First Button</button>
-      <button>Second Button</button>
+      `<button id="test" aria-pressed=false>First Button</button>
       <script>
-        var state = false;
-        var button = document.getElementById("test");
+        let state = false;
+        let button = document.getElementById("test");
         button.onclick = () => {
           state = !state;
           button.setAttribute("aria-pressed", state);
@@ -54,13 +52,18 @@ TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
     moveToPageContents();
 
     let node = currentNode().automationNode;
-    assertTrue(!!node);
-    assertEquals(node.name, "First Button");
+    assertTrue(!!node, 'Node is invalid');
+    assertEquals(node.name, 'First Button', 'Did not find the right node');
 
     node.addEventListener(
       chrome.automation.EventType.CHECKED_STATE_CHANGED,
-      this.newCallback((event) => assertEquals(node.name, event.target.name)));
+      this.newCallback((event) => {
+        assertEquals(node.name, event.target.name,
+            'Checked state changed on unexpected node');
+      }));
 
-    switchAccess.selectCurrentNode();
+    // The event listener is not set instantaneously. Set a timeout of 0 to
+    // yield to pending processes.
+    setTimeout(this.newCallback(switchAccess.selectCurrentNode), 0);
   });
 });

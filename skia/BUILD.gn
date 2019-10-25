@@ -26,6 +26,7 @@ skia_support_skottie = true
 declare_args() {
   enable_skia_wuffs_gif = false
   skia_whitelist_serialized_typefaces = false
+  skia_use_dawn = false
 }
 
 # External-facing config for dependent code.
@@ -63,6 +64,9 @@ config("skia_config") {
       "SK_VULKAN_HEADER=\"../../skia/config/SkVulkanConfig.h\"",
       "SK_VULKAN=1",
     ]
+  }
+  if (skia_use_dawn) {
+    defines += [ "SK_DAWN" ]
   }
 
   if (is_component_build) {
@@ -488,6 +492,13 @@ component("skia") {
   public_deps = [
     ":skia_core_and_effects",
   ]
+  if (skia_use_dawn) {
+    public_deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
+    deps += [
+      "//third_party/dawn:libdawn_native",
+      "//third_party/dawn/src/dawn:libdawn",
+    ]
+  }
 
   if (!is_ios) {
     deps += [
@@ -528,7 +539,9 @@ component("skia") {
       "Foundation.framework",
     ]
   }
-
+  if (skia_use_dawn) {
+    sources += skia_dawn_sources
+  }
   if (is_ios) {
     libs = [ "ImageIO.framework" ]
     set_sources_assignment_filter([])
@@ -620,6 +633,9 @@ skia_source_set("skia_core_and_effects") {
     deps = [
       "//gpu/config:workaround_list",
     ]
+  }
+  if (skia_use_dawn) {
+    deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
   }
 
   visibility = [ ":skia" ]
@@ -768,6 +784,9 @@ if (is_mac) {
     deps = [
       "//gpu/config:workaround_list",
     ]
+    if (skia_use_dawn) {
+      deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
+    }
   }
 }
 

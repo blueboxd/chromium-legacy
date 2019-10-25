@@ -215,10 +215,6 @@ class WebViewPasswordStoreConsumer
   _passwordStore->RemoveLogin(*[password internalPasswordForm]);
 }
 
-- (void)clearAllLocalData {
-  _personalDataManager->ClearAllLocalData();
-}
-
 #pragma mark - Private Methods
 
 - (void)handlePasswordStoreResults:(NSArray<CWVPassword*>*)passwords {

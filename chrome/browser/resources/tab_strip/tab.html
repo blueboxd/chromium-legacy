@@ -9,7 +9,7 @@
     width: var(--tabstrip-tab-width);
   }
 
-  #dragImage {
+  #tab {
     background: var(--tabstrip-tab-background-color);
     border-radius: var(--tabstrip-tab-border-radius);
     box-shadow: 0 0 0 1px var(--tabstrip-tab-separator-color);
@@ -21,7 +21,7 @@
     width: 100%;
   }
 
-  :host([active]) #dragImage {
+  :host([active]) #tab {
     box-shadow: 0 0 0 2px var(--tabstrip-tab-active-border-color);
     outline: none;
   }
@@ -258,7 +258,7 @@
 
   /* When being dragged, the contents of the drag image needs to be off-screen
    * with nothing else on top or below obscuring it. */
-  :host([dragging_]) #dragImage {
+  :host([dragging_]) #tab {
     box-shadow: none;
     position: absolute;
     top: -999px;
@@ -267,16 +267,17 @@
 
 <div id="dragPlaceholder"></div>
 
-<div id="dragImage">
+<div id="tab" role="tab" tabindex="0"
+    aria-labelledby="titleText alertIndicators">
   <header id="title">
-    <div id="faviconContainer">
+    <div id="faviconContainer" aria-hidden="true">
       <div id="progressSpinner"></div>
       <div id="favicon"></div>
       <div id="crashedIcon"></div>
       <div id="blocked"></div>
     </div>
     <h2 id="titleText"></h2>
-    <tabstrip-alert-indicators></tabstrip-alert-indicators>
+    <tabstrip-alert-indicators id="alertIndicators"></tabstrip-alert-indicators>
     <button id="close">
       <span id="closeIcon"></span>
     </button>

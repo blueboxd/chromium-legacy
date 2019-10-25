@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/memory/shared_memory.h"
 #include "base/task_runner.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
@@ -26,13 +25,12 @@ mojom::PaintPreviewStatus FinishRecording(
     const gfx::Rect& bounds,
     PaintPreviewTracker* tracker,
     base::File skp_file,
-    base::ReadOnlySharedMemoryRegion* region) {
+    mojom::PaintPreviewCaptureResponse* response) {
   ParseGlyphs(recording.get(), tracker);
   if (!SerializeAsSkPicture(recording, tracker, bounds, std::move(skp_file)))
     return mojom::PaintPreviewStatus::kCaptureFailed;
 
-  if (!BuildAndSerializeProto(tracker, region))
-    return mojom::PaintPreviewStatus::kProtoSerializationFailed;
+  BuildResponse(tracker, response);
   return mojom::PaintPreviewStatus::kOk;
 }
 
@@ -63,15 +61,16 @@ void PaintPreviewRecorderImpl::CapturePaintPreview(
   // might happen due to it being tied to a RenderFrame rather than
   // RenderWidget and we don't want to crash the renderer as this is
   // recoverable.
+  auto response = mojom::PaintPreviewCaptureResponse::New();
   if (is_painting_preview_) {
     status = mojom::PaintPreviewStatus::kAlreadyCapturing;
-    std::move(callback).Run(status, std::move(region));
+    std::move(callback).Run(status, std::move(response));
     return;
   }
   base::AutoReset<bool>(&is_painting_preview_, true);
 
-  CapturePaintPreviewInternal(params, &region, &status);
-  std::move(callback).Run(status, std::move(region));
+  CapturePaintPreviewInternal(params, response.get(), &status);
+  std::move(callback).Run(status, std::move(response));
 }
 
 void PaintPreviewRecorderImpl::OnDestruct() {
@@ -86,7 +85,7 @@ void PaintPreviewRecorderImpl::BindPaintPreviewRecorder(
 
 void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
     const mojom::PaintPreviewCaptureParamsPtr& params,
-    base::ReadOnlySharedMemoryRegion* region,
+    mojom::PaintPreviewCaptureResponse* response,
     mojom::PaintPreviewStatus* status) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   // Warm up paint for an out-of-lifecycle paint phase.
@@ -114,7 +113,7 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
 
   // TODO(crbug/1011896): Determine if making this async would be beneficial.
   *status = FinishRecording(recorder.finishRecordingAsPicture(), bounds,
-                            &tracker, std::move(params->file), region);
+                            &tracker, std::move(params->file), response);
 }
 
 }  // namespace paint_preview

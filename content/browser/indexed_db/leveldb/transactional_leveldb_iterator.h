@@ -24,10 +24,6 @@ class TransactionalLevelDBDatabase;
 class TransactionalLevelDBTransaction;
 class LevelDBSnapshot;
 
-namespace indexed_db {
-class DefaultLevelDBFactory;
-}
-
 // This iterator is meant to stay 'live' to the data on disk for a given
 // transaction, and be evict-able for saving memory. Specifically, it supports:
 // * Staying up to date with the data on disk as long as the NotifyModified
@@ -60,7 +56,7 @@ class CONTENT_EXPORT TransactionalLevelDBIterator {
   bool IsEvicted() const { return iterator_state_ != IteratorState::kActive; }
 
  protected:
-  friend class indexed_db::DefaultLevelDBFactory;
+  friend class DefaultTransactionalLevelDBFactory;
 
   TransactionalLevelDBIterator(
       std::unique_ptr<leveldb::Iterator> iterator,

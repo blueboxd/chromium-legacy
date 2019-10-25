@@ -49,6 +49,7 @@ public final class Navigation extends IClientNavigation.Stub {
     }
 
     public State getState() {
+        ThreadCheck.ensureOnUiThread();
         try {
             return ipcStateToState(mNavigationImpl.getState());
         } catch (RemoteException e) {
@@ -62,6 +63,7 @@ public final class Navigation extends IClientNavigation.Stub {
      */
     @NonNull
     public Uri getUri() {
+        ThreadCheck.ensureOnUiThread();
         try {
             return Uri.parse(mNavigationImpl.getUri());
         } catch (RemoteException e) {
@@ -75,6 +77,7 @@ public final class Navigation extends IClientNavigation.Stub {
      */
     @NonNull
     public List<Uri> getRedirectChain() {
+        ThreadCheck.ensureOnUiThread();
         try {
             List<Uri> redirects = new ArrayList<Uri>();
             for (String r : mNavigationImpl.getRedirectChain()) redirects.add(Uri.parse(r));

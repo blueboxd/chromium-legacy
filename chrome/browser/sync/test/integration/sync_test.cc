@@ -217,11 +217,10 @@ class EncryptionChecker : public SingleClientStatusChangeChecker {
   explicit EncryptionChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for encryption to complete";
     return IsEncryptionComplete(service());
   }
-
-  std::string GetDebugMessage() const override { return "Encryption"; }
 };
 
 }  // namespace
@@ -998,7 +997,12 @@ void SyncTest::ResetSyncForPrimaryAccount() {
     int old_use_new_user_data_dir = use_new_user_data_dir_;
     use_new_user_data_dir_ = true;
     num_clients_ = 1;
-    SetupSyncInternal(/*setup_mode=*/WAIT_FOR_SYNC_SETUP_TO_COMPLETE);
+    // Do not wait for sync complete. Some tests set passphrase and sync
+    // will fail. NO_WAITING mode gives access token and birthday so
+    // ProfileSyncServiceHarness::ResetSyncForPrimaryAccount() can succeed.
+    // The passphrase will be reset together with the rest of the sync data
+    // clearing.
+    SetupSyncNoWaitingForCompletion();
     GetClient(0)->ResetSyncForPrimaryAccount();
     GetClient(0)->StopSyncServiceAndClearData();
     ClearProfiles();

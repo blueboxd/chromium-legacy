@@ -32,4 +32,13 @@ suite('cr-link-row', function() {
     linkRow.external = true;
     assertEquals('cr:open-in-new', iconButton.ironIcon);
   });
+
+  test('role description', () => {
+    const iconButton = linkRow.$.icon;
+    assertEquals(undefined, linkRow.roleDescription);
+    assertEquals(null, iconButton.getAttribute('aria-roledescription'));
+    const description = 'self destruct button';
+    linkRow.roleDescription = description;
+    assertEquals(description, iconButton.getAttribute('aria-roledescription'));
+  });
 });

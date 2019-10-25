@@ -9,6 +9,7 @@
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/base/stack_layout.h"
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
@@ -99,6 +100,7 @@ bool IsLayerVisible(views::View* view) {
 AppListAssistantMainStage::AppListAssistantMainStage(
     ash::AssistantViewDelegate* delegate)
     : delegate_(delegate) {
+  SetID(AssistantViewID::kMainStage);
   InitLayout();
 
   // The view hierarchy will be destructed before AssistantController in Shell,

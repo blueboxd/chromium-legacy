@@ -12,6 +12,7 @@
 #include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -402,17 +403,19 @@ class PrefetchedNavigationLoaderInterceptor
     if (state_ == State::kInitial &&
         tentative_resource_request.url == exchange_->outer_url()) {
       state_ = State::kOuterRequestRequested;
-      std::move(callback).Run(base::BindOnce(
-          &PrefetchedNavigationLoaderInterceptor::StartRedirectResponse,
-          weak_factory_.GetWeakPtr()));
+      std::move(callback).Run(
+          base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
+              &PrefetchedNavigationLoaderInterceptor::StartRedirectResponse,
+              weak_factory_.GetWeakPtr())));
       return;
     }
     if (tentative_resource_request.url == exchange_->inner_url()) {
       DCHECK_EQ(State::kOuterRequestRequested, state_);
       state_ = State::kInnerResponseRequested;
-      std::move(callback).Run(base::BindOnce(
-          &PrefetchedNavigationLoaderInterceptor::StartInnerResponse,
-          weak_factory_.GetWeakPtr()));
+      std::move(callback).Run(
+          base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
+              &PrefetchedNavigationLoaderInterceptor::StartInnerResponse,
+              weak_factory_.GetWeakPtr())));
       return;
     }
     NOTREACHED();
@@ -687,14 +690,7 @@ PrefetchedSignedExchangeCache::GetExchanges() {
 }
 
 void PrefetchedSignedExchangeCache::RecordHistograms() {
-  BrowserThread::ID thread_id = BrowserThread::UI;
-  if (!BrowserThread::CurrentlyOn(thread_id)) {
-    base::PostTask(
-        FROM_HERE, {thread_id},
-        base::BindOnce(&PrefetchedSignedExchangeCache::RecordHistograms, this));
-    return;
-  }
-  DCHECK_CURRENTLY_ON(thread_id);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (exchanges_.empty())
     return;
   UMA_HISTOGRAM_COUNTS_100("PrefetchedSignedExchangeCache.Count",

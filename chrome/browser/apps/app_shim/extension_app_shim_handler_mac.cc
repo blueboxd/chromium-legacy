@@ -970,6 +970,7 @@ void ExtensionAppShimHandler::OnGotProfilesForApp(
   if (found_app == apps_.end())
     return;
   AppState* app_state = found_app->second.get();
+  DCHECK(app_state->IsMultiProfile());
   app_state->installed_profiles.clear();
   for (const auto& profile_path : profiles)
     app_state->installed_profiles.insert(profile_path);
@@ -1043,10 +1044,12 @@ ExtensionAppShimHandler::GetOrCreateProfileState(
     // ideally this should be done when when |multi_profile_host| is created
     // above, and should be updated when apps are installed or uninstalled
     // (but do not).
-    UpdateProfileMenuItems();
-    GetProfilesForAppAsync(
-        app_id, base::BindOnce(&ExtensionAppShimHandler::OnGotProfilesForApp,
-                               weak_factory_.GetWeakPtr(), app_id));
+    if (app_state->IsMultiProfile()) {
+      UpdateProfileMenuItems();
+      GetProfilesForAppAsync(
+          app_id, base::BindOnce(&ExtensionAppShimHandler::OnGotProfilesForApp,
+                                 weak_factory_.GetWeakPtr(), app_id));
+    }
   }
   return found_profile->second.get();
 }

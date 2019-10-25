@@ -781,9 +781,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
 IPC_MESSAGE_ROUTED1(FrameMsg_AddContentSecurityPolicies,
                     std::vector<content::ContentSecurityPolicyHeader>)
 
-// Resets ContentSecurityPolicy in a frame proxy / in RemoteSecurityContext.
-IPC_MESSAGE_ROUTED0(FrameMsg_ResetContentSecurityPolicy)
-
 // Update a proxy's replicated enforcement of insecure request policy.
 // Used when the frame's policy is changed in another process.
 IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,

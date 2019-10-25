@@ -1024,24 +1024,18 @@ BookmarksMatchChecker::BookmarksMatchChecker()
     : MultiClientStatusChangeChecker(
           sync_datatype_helper::test()->GetSyncServices()) {}
 
-bool BookmarksMatchChecker::IsExitConditionSatisfied() {
+bool BookmarksMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for matching models";
   return bookmarks_helper::AllModelsMatch();
-}
-
-std::string BookmarksMatchChecker::GetDebugMessage() const {
-  return "Waiting for matching models";
 }
 
 BookmarksMatchVerifierChecker::BookmarksMatchVerifierChecker()
     : MultiClientStatusChangeChecker(
           sync_datatype_helper::test()->GetSyncServices()) {}
 
-bool BookmarksMatchVerifierChecker::IsExitConditionSatisfied() {
+bool BookmarksMatchVerifierChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for model to match verifier";
   return bookmarks_helper::AllModelsMatchVerifier();
-}
-
-std::string BookmarksMatchVerifierChecker::GetDebugMessage() const {
-  return "Waiting for model to match verifier";
 }
 
 BookmarksTitleChecker::BookmarksTitleChecker(int profile_index,
@@ -1055,14 +1049,11 @@ BookmarksTitleChecker::BookmarksTitleChecker(int profile_index,
   DCHECK_GE(expected_count, 0) << "expected_count must be non-negative.";
 }
 
-bool BookmarksTitleChecker::IsExitConditionSatisfied() {
+bool BookmarksTitleChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for bookmark count to match";
   int actual_count = bookmarks_helper::CountBookmarksWithTitlesMatching(
       profile_index_, title_);
   return expected_count_ == actual_count;
-}
-
-std::string BookmarksTitleChecker::GetDebugMessage() const {
-  return "Waiting for bookmark count to match";
 }
 
 ServerBookmarksEqualityChecker::ServerBookmarksEqualityChecker(
@@ -1075,7 +1066,10 @@ ServerBookmarksEqualityChecker::ServerBookmarksEqualityChecker(
       cryptographer_(cryptographer),
       expected_bookmarks_(expected_bookmarks) {}
 
-bool ServerBookmarksEqualityChecker::IsExitConditionSatisfied() {
+bool ServerBookmarksEqualityChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for server-side bookmarks to match expected.";
+
   std::vector<sync_pb::SyncEntity> entities =
       fake_server_->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
   if (expected_bookmarks_.size() != entities.size()) {
@@ -1121,10 +1115,6 @@ bool ServerBookmarksEqualityChecker::IsExitConditionSatisfied() {
   }
 
   return true;
-}
-
-std::string ServerBookmarksEqualityChecker::GetDebugMessage() const {
-  return "Waiting for server-side bookmarks to match expected.";
 }
 
 ServerBookmarksEqualityChecker::~ServerBookmarksEqualityChecker() {}

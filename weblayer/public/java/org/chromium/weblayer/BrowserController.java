@@ -49,6 +49,7 @@ public final class BrowserController {
     }
 
     public void setDownloadDelegate(@Nullable DownloadDelegate delegate) {
+        ThreadCheck.ensureOnUiThread();
         try {
             if (delegate != null) {
                 mDownloadDelegateClient = new DownloadDelegateClientImpl(delegate);
@@ -63,6 +64,7 @@ public final class BrowserController {
     }
 
     public void setFullscreenDelegate(@Nullable FullscreenDelegate delegate) {
+        ThreadCheck.ensureOnUiThread();
         try {
             if (delegate != null) {
                 mFullscreenDelegateClient = new FullscreenDelegateClientImpl(delegate);
@@ -77,6 +79,7 @@ public final class BrowserController {
     }
 
     public DownloadDelegate getDownloadDelegate() {
+        ThreadCheck.ensureOnUiThread();
         return mDownloadDelegateClient != null ? mDownloadDelegateClient.getDelegate() : null;
     }
 
@@ -87,6 +90,7 @@ public final class BrowserController {
      */
     public void executeScript(
             @NonNull String script, @Nullable ValueCallback<JSONObject> callback) {
+        ThreadCheck.ensureOnUiThread();
         try {
             ValueCallback<String> stringCallback = (String result) -> {
                 if (callback == null) {
@@ -109,6 +113,7 @@ public final class BrowserController {
 
     @Nullable
     public FullscreenDelegate getFullscreenDelegate() {
+        ThreadCheck.ensureOnUiThread();
         return mFullscreenDelegateClient != null ? mFullscreenDelegateClient.getDelegate() : null;
     }
 
@@ -119,14 +124,17 @@ public final class BrowserController {
 
     @NonNull
     public NavigationController getNavigationController() {
+        ThreadCheck.ensureOnUiThread();
         return mNavigationController;
     }
 
     public void addObserver(@Nullable BrowserObserver observer) {
+        ThreadCheck.ensureOnUiThread();
         mObservers.addObserver(observer);
     }
 
     public void removeObserver(@Nullable BrowserObserver observer) {
+        ThreadCheck.ensureOnUiThread();
         mObservers.removeObserver(observer);
     }
 
@@ -144,7 +152,7 @@ public final class BrowserController {
         }
     }
 
-    private final class DownloadDelegateClientImpl extends IDownloadDelegateClient.Stub {
+    private static final class DownloadDelegateClientImpl extends IDownloadDelegateClient.Stub {
         private final DownloadDelegate mDelegate;
 
         DownloadDelegateClientImpl(DownloadDelegate delegate) {
@@ -163,7 +171,7 @@ public final class BrowserController {
         }
     }
 
-    private final class FullscreenDelegateClientImpl extends IFullscreenDelegateClient.Stub {
+    private static final class FullscreenDelegateClientImpl extends IFullscreenDelegateClient.Stub {
         private FullscreenDelegate mDelegate;
 
         /* package */ FullscreenDelegateClientImpl(FullscreenDelegate delegate) {

@@ -10,7 +10,6 @@
 #include "base/format_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -117,14 +116,14 @@ QuiesceStatusChangeChecker::QuiesceStatusChangeChecker(
 
 QuiesceStatusChangeChecker::~QuiesceStatusChangeChecker() {}
 
-bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
+bool QuiesceStatusChangeChecker::IsExitConditionSatisfied(std::ostream* os) {
   // Check that all progress markers are up to date.
   std::vector<syncer::ProfileSyncService*> enabled_services;
   for (const auto& checker : checkers_) {
     enabled_services.push_back(checker->service());
 
-    if (!checker->IsExitConditionSatisfied()) {
-      DVLOG(1) << "Not quiesced: Progress markers are old.";
+    if (!checker->IsExitConditionSatisfied(os)) {
+      *os << "Not quiesced: Progress markers are old.";
       return false;
     }
   }
@@ -132,15 +131,10 @@ bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
   for (size_t i = 1; i < enabled_services.size(); ++i) {
     // Return false if there is a progress marker mismatch.
     if (!ProgressMarkersMatch(enabled_services[i - 1], enabled_services[i])) {
-      DVLOG(1) << "Not quiesced: Progress marker mismatch.";
+      *os << "Not quiesced: Progress marker mismatch.";
       return false;
     }
   }
 
   return true;
-}
-
-std::string QuiesceStatusChangeChecker::GetDebugMessage() const {
-  return base::StringPrintf("Waiting for quiescence of %" PRIuS " clients",
-                            checkers_.size());
 }

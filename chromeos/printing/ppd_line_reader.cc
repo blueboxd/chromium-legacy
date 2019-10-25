@@ -180,13 +180,13 @@ constexpr int PpdLineReaderImpl::kReadBufCapacity;
 // static
 std::unique_ptr<PpdLineReader> PpdLineReader::Create(
     const std::string& contents,
-    int max_line_length) {
+    size_t max_line_length) {
   return std::make_unique<PpdLineReaderImpl>(contents, max_line_length);
 }
 
 // static
 bool PpdLineReader::ContainsMagicNumber(const std::string& contents,
-                                        int max_line_length) {
+                                        size_t max_line_length) {
   auto line_reader = PpdLineReader::Create(contents, max_line_length);
   std::string line;
   return line_reader->NextLine(&line) &&

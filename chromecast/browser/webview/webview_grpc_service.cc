@@ -15,10 +15,12 @@ namespace chromecast {
 WebviewAsyncService::WebviewAsyncService(
     std::unique_ptr<webview::WebviewService::AsyncService> service,
     std::unique_ptr<grpc::ServerCompletionQueue> cq,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    CastWindowManager* cast_window_manager)
     : ui_task_runner_(std::move(ui_task_runner)),
       cq_(std::move(cq)),
-      service_(std::move(service)) {
+      service_(std::move(service)),
+      window_manager_(cast_window_manager) {
   base::PlatformThread::Create(0, this, &rpc_thread_);
 }
 

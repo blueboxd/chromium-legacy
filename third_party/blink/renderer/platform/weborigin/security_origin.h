@@ -47,7 +47,6 @@ struct UrlOriginAdapter;
 namespace blink {
 
 class KURL;
-class URLSecurityOriginMap;
 struct SecurityOriginHash;
 
 // An identifier which defines the source of content (e.g. a document) and
@@ -94,10 +93,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
                                               uint16_t port);
   static scoped_refptr<SecurityOrigin> CreateFromUrlOrigin(const url::Origin&);
   url::Origin ToUrlOrigin() const;
-
-  // Sets the map to look up a SecurityOrigin instance serialized to "null" from
-  // a blob URL.
-  static void SetBlobURLNullOriginMap(URLSecurityOriginMap*);
 
   // Some URL schemes use nested URLs for their security context. For example,
   // filesystem URLs look like the following:

@@ -316,7 +316,7 @@ ACTION_P5(VerifyDataFinishedContext,
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
-  EXPECT_TRUE((*context)->HasCommitted());
+  EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());

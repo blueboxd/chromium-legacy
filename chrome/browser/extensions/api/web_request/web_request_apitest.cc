@@ -2995,4 +2995,57 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       0);
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, AppCacheRequests) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  GURL main_url = embedded_test_server()->GetURL(
+      "/appcache/simple_page_with_manifest.html");
+
+  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+
+  // Load the main page first to make sure it is cached. After the first
+  // navigation, load the extension, then navigate again.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"({
+        "name": "Web Request Appcache Test",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest"]
+      })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
+        window.numMainResourceRequests = 0;
+        window.numSubresourceRequests = 0;
+        chrome.webRequest.onBeforeRequest.addListener(function(details) {
+          if (details.url.includes('logo.png'))
+            window.numSubresourceRequests++;
+          else if (details.url.includes('simple_page_with_manifest.html'))
+            window.numMainResourceRequests++;
+        }, {urls: ['<all_urls>']}, []);
+
+        chrome.test.sendMessage('ready');
+      )");
+
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // This navigation should go through appcache.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+
+  EXPECT_EQ(GetCountFromBackgroundPage(extension, profile(),
+                                       "window.numSubresourceRequests"),
+            1);
+  EXPECT_EQ(GetCountFromBackgroundPage(extension, profile(),
+                                       "window.numMainResourceRequests"),
+            1);
+}
+
 }  // namespace extensions

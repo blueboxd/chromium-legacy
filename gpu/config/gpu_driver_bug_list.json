@@ -3377,6 +3377,19 @@
       "features": [
         "max_msaa_sample_count_2"
       ]
+    },
+    {
+      "id": 318,
+      "cr_bugs": [995396],
+      "description": "Direct composition caused performance issues on AMD GPUs",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x694c"],
+      "features": [
+        "disable_direct_composition"
+      ]
     }
   ]
 }

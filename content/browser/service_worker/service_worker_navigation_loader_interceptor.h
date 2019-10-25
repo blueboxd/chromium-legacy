@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"

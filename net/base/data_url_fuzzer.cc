@@ -30,14 +30,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::string mime_type2;
   std::string charset2;
   std::string body2;
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      base::MakeRefCounted<net::HttpResponseHeaders>(std::string()));
+  scoped_refptr<net::HttpResponseHeaders> headers;
 
   // Run the URL through DataURL::Parse() and DataURL::BuildResponse(). They
   // should succeed and fail in exactly the same cases.
-  CHECK_EQ(
-      net::DataURL::Parse(url, &mime_type, &charset, &body),
-      net::OK == net::DataURL::BuildResponse(url, method, &mime_type2,
-                                             &charset2, &body2, headers.get()));
+  CHECK_EQ(net::DataURL::Parse(url, &mime_type, &charset, &body),
+           net::OK == net::DataURL::BuildResponse(url, method, &mime_type2,
+                                                  &charset2, &body2, &headers));
   return 0;
 }

@@ -5,15 +5,9 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.doAnswer;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -28,15 +22,10 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.browserservices.OriginVerifier;
-import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
@@ -47,12 +36,10 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.NavigationHandle;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
 
 /**
- * Tests for {@link TrustedWebActivityVerifier}.
+ * Tests for {@link Verifier}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -73,36 +60,27 @@ public class TrustedWebActivityVerifierTest {
     @Rule
     public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
 
-    @Mock ClientAppDataRecorder mClientAppDataRecorder;
-    @Mock CustomTabsConnection mCustomTabsConnection;
-    @Mock CustomTabIntentDataProvider mIntentDataProvider;
     @Mock TabObserverRegistrar mTabObserverRegistrar;
     @Mock ActivityLifecycleDispatcher mLifecycleDispatcher;
-    @Mock OriginVerifier.Factory mOriginVerifierFactory;
     @Mock CustomTabActivityTabProvider mTabProvider;
+    @Mock CustomTabIntentDataProvider mIntentDataProvider;
     @Mock Tab mTab;
-    @Mock NotificationPermissionUpdater mNotificationPermissionUpdater;
-    @Mock ChromeActivity mChromeActivity;
+    @Mock TwaRegistrar mTwaRegistrar;
     @Captor ArgumentCaptor<TabObserver> mTabObserverCaptor;
 
-    private final FakeOriginVerifier mOriginVerifier = new FakeOriginVerifier();
+    TestVerifierDelegate mVerifierDelegate = new TestVerifierDelegate(PACKAGE_NAME);
 
     private TrustedWebActivityVerifier mVerifier;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(mCustomTabsConnection.getClientPackageNameForSession(any())).thenReturn(PACKAGE_NAME);
-        when(mOriginVerifierFactory.create(any(), anyInt(), any()))
-                .thenReturn(mOriginVerifier.mock);
         when(mTabProvider.getTab()).thenReturn(mTab);
-        when(mIntentDataProvider.getTrustedWebActivityAdditionalOrigins()).thenReturn(
-                Arrays.asList("https://www.origin2.com/"));
         doNothing().when(mTabObserverRegistrar).registerTabObserver(mTabObserverCaptor.capture());
-        mVerifier = new TrustedWebActivityVerifier(() -> mClientAppDataRecorder,
-                mIntentDataProvider, mCustomTabsConnection, mLifecycleDispatcher,
-                mTabObserverRegistrar, mOriginVerifierFactory,
-                mTabProvider, mChromeActivity, mNotificationPermissionUpdater);
+        when(mIntentDataProvider.getTrustedWebActivityAdditionalOrigins())
+                .thenReturn(Collections.singletonList("https://www.origin2.com/"));
+        mVerifier = new TrustedWebActivityVerifier(mLifecycleDispatcher, mTabObserverRegistrar,
+                mTabProvider, mIntentDataProvider, mVerifierDelegate, mTwaRegistrar);
         // TODO(peconn): Add check on permission updated being updated.
     }
 
@@ -124,7 +102,7 @@ public class TrustedWebActivityVerifierTest {
     public void statusIsSuccess_WhenVerificationSucceeds() {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(TRUSTED_ORIGIN_PAGE1));
         assertStatus(VerificationStatus.SUCCESS);
     }
 
@@ -132,7 +110,7 @@ public class TrustedWebActivityVerifierTest {
     public void statusIsFail_WhenVerificationFails() {
         setInitialUrl(UNTRUSTED_PAGE);
         mVerifier.onFinishNativeInitialization();
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.failVerification(new Origin(UNTRUSTED_PAGE));
         assertStatus(VerificationStatus.FAILURE);
     }
 
@@ -140,9 +118,8 @@ public class TrustedWebActivityVerifierTest {
     public void usesCache_whenNavigatingWithinPreviouslyVerifiedOrigin() {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(TRUSTED_ORIGIN_PAGE1));
 
-        clearInvocations(mOriginVerifier.mock);
         navigateToUrl(TRUSTED_ORIGIN_PAGE2);
         verifyUsesCache();
     }
@@ -151,9 +128,8 @@ public class TrustedWebActivityVerifierTest {
     public void verifies_WhenNavigatingToOtherTrustedOrigin() {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(TRUSTED_ORIGIN_PAGE1));
 
-        clearInvocations(mOriginVerifier.mock);
         navigateToUrl(OTHER_TRUSTED_ORIGIN_PAGE1);
         verifyStartsVerification(OTHER_TRUSTED_ORIGIN_PAGE1);
     }
@@ -162,11 +138,10 @@ public class TrustedWebActivityVerifierTest {
     public void usesCache_WhenReturningBackToFirstVerifiedOrigin() {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(TRUSTED_ORIGIN_PAGE1));
         navigateToUrl(OTHER_TRUSTED_ORIGIN_PAGE1);
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(OTHER_TRUSTED_ORIGIN_PAGE1));
 
-        clearInvocations(mOriginVerifier.mock);
         navigateToUrl(TRUSTED_ORIGIN_PAGE2);
         verifyUsesCache();
     }
@@ -175,12 +150,11 @@ public class TrustedWebActivityVerifierTest {
     public void usesCache_WhenReturningBackToSecondVerifiedOrigin() {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(TRUSTED_ORIGIN_PAGE1));
         navigateToUrl(OTHER_TRUSTED_ORIGIN_PAGE1);
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(OTHER_TRUSTED_ORIGIN_PAGE1));
         navigateToUrl(TRUSTED_ORIGIN_PAGE1);
 
-        clearInvocations(mOriginVerifier.mock);
         navigateToUrl(OTHER_TRUSTED_ORIGIN_PAGE2);
         verifyUsesCache();
     }
@@ -189,9 +163,8 @@ public class TrustedWebActivityVerifierTest {
     public void usesCache_WhenNavigatesToUntrustedOrigin() {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(TRUSTED_ORIGIN_PAGE1));
 
-        clearInvocations(mOriginVerifier.mock);
         navigateToUrl(UNTRUSTED_PAGE);
         verifyUsesCache();
     }
@@ -201,7 +174,8 @@ public class TrustedWebActivityVerifierTest {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
         navigateToUrl(UNTRUSTED_PAGE);
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.failVerification(new Origin(UNTRUSTED_PAGE));
+
         assertStatus(VerificationStatus.FAILURE);
     }
 
@@ -210,9 +184,9 @@ public class TrustedWebActivityVerifierTest {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
         navigateToUrl(OTHER_TRUSTED_ORIGIN_PAGE1);
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(OTHER_TRUSTED_ORIGIN_PAGE1));
         navigateToUrl(TRUSTED_ORIGIN_PAGE1);
-        mOriginVerifier.finishCurrentVerification();
+        mVerifierDelegate.passVerification(new Origin(TRUSTED_ORIGIN_PAGE1));
         assertStatus(VerificationStatus.SUCCESS);
     }
 
@@ -221,12 +195,11 @@ public class TrustedWebActivityVerifierTest {
     }
 
     private void verifyUsesCache() {
-        verify(mOriginVerifier.mock).wasPreviouslyVerified(any());
-        verify(mOriginVerifier.mock, never()).start(any(), any());
+        assertFalse(mVerifierDelegate.hasAnyPendingVerifications());
     }
 
-    private void verifyStartsVerification(String urlToVerify) {
-        verify(mOriginVerifier.mock).start(any(), argThat(new Origin(urlToVerify)::equals));
+    private void verifyStartsVerification(String url) {
+        assertTrue(mVerifierDelegate.hasPendingVerification(new Origin(url)));
     }
 
     private void setInitialUrl(String url) {
@@ -249,48 +222,6 @@ public class TrustedWebActivityVerifierTest {
                 200 /* httpStatusCode*/);
         for (TabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
             tabObserver.onDidFinishNavigation(mTab, navigation);
-        }
-    }
-
-    private static class FakeOriginVerifier {
-
-        public final OriginVerifier mock = mock(OriginVerifier.class);
-        private final Set<Origin> mPreviouslyVerifiedOrigins = new HashSet<>();
-
-        private OriginVerificationListener mCurrentListener;
-        private Origin mCurrentOrigin;
-
-        public FakeOriginVerifier() {
-            doAnswer(invocation -> {
-                start(invocation.getArgument(0), invocation.getArgument(1));
-                return null;
-            }).when(mock).start(any(), any());
-
-            doAnswer(invocation -> wasPreviouslyVerified(invocation.getArgument(0)))
-                    .when(mock).wasPreviouslyVerified(any());
-        }
-
-        private void start(OriginVerificationListener listener, Origin origin) {
-            mCurrentListener = listener;
-            mCurrentOrigin = origin;
-        }
-
-        private boolean wasPreviouslyVerified(Origin origin) {
-            return mPreviouslyVerifiedOrigins.contains(origin);
-        }
-
-        public void finishCurrentVerification() {
-            if (mCurrentListener == null) {
-                return;
-            }
-            boolean verified = mCurrentOrigin.equals(TRUSTED_ORIGIN)
-                    || mCurrentOrigin.equals(OTHER_TRUSTED_ORIGIN);
-            if (verified) {
-                mPreviouslyVerifiedOrigins.add(mCurrentOrigin);
-            }
-            mCurrentListener.onOriginVerified(PACKAGE_NAME, mCurrentOrigin, verified, true);
-            mCurrentListener = null;
-            mCurrentOrigin = null;
         }
     }
 }

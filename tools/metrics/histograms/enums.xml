@@ -2538,6 +2538,18 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Account check failed"/>
 </enum>
 
+<enum name="ArcAuthMainAccountResolutionStatus">
+  <int value="0" label="No hash code no account"/>
+  <int value="1" label="No hash code for single account"/>
+  <int value="2" label="No hash code for multiple accounts"/>
+  <int value="3" label="Hash code set but no account"/>
+  <int value="4" label="Hash code set but does not match single account"/>
+  <int value="5" label="Hash code set but does not any account"/>
+  <int value="6" label="Hash code set and matches single account"/>
+  <int value="7" label="Hash code set and matches one of multiple accounts"/>
+  <int value="8" label="Hash code collides with multiple accounts"/>
+</enum>
+
 <enum name="ArcBootContinueCodeInstallationResult">
   <int value="0" label="Success"/>
   <int value="1" label="Host side code is not ready"/>
@@ -31528,6 +31540,25 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
 </enum>
 
+<enum name="ImeHandwritingActions">
+  <int value="0" label="InsertCreatedByUnknown"/>
+  <int value="1" label="InsertCreatedAfterDelete"/>
+  <int value="2" label="InsertCreatedByTouchTap"/>
+  <int value="3" label="InsertCreatedByPenTap"/>
+  <int value="4" label="InsertCreatedByUpCaret"/>
+  <int value="5" label="InsertCreatedByDownCaret"/>
+  <int value="6" label="EmptyInsertRangeClosed"/>
+  <int value="7" label="InsertRangeWithTextClosed"/>
+  <int value="8" label="DeletedSingleWord"/>
+  <int value="9" label="UndoInsertCreatedByUnknown"/>
+  <int value="10" label="UndoInsertCreatedAfterDelete"/>
+  <int value="11" label="UndoInsertCreatedByTouchTap"/>
+  <int value="12" label="UndoInsertCreatedByPenTap"/>
+  <int value="13" label="UndoInsertCreatedByUpCaret"/>
+  <int value="14" label="UndoInsertCreatedByDownCaret"/>
+  <int value="15" label="UndoDeletedSingleWord"/>
+</enum>
+
 <enum name="ImeMenuButtonType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Emoji"/>
@@ -37282,6 +37313,7 @@ from previous Chrome versions.
   <int value="460475728" label="wake-on-wifi-packet"/>
   <int value="463582989" label="CompositorThreadedScrollbarScrolling:disabled"/>
   <int value="464226051" label="CrOSComponent:enabled"/>
+  <int value="464773709" label="OmniboxExperimentalSuggestScoring:enabled"/>
   <int value="466248382" label="disable-push-api-background-mode"/>
   <int value="468665559" label="TrilinearFiltering:disabled"/>
   <int value="468959230"
@@ -38547,6 +38579,7 @@ from previous Chrome versions.
   <int value="2123183411" label="BlinkHeapIncrementalMarking:enabled"/>
   <int value="2123567684" label="OptimizeLoadingIPCForSmallResources:enabled"/>
   <int value="2126203058" label="force-show-update-menu-badge"/>
+  <int value="2127648677" label="OmniboxExperimentalSuggestScoring:disabled"/>
   <int value="2129184006" label="NTPOfflinePageDownloadSuggestions:enabled"/>
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2132595171" label="OmniboxSearchEngineLogo:enabled"/>

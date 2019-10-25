@@ -20,6 +20,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
@@ -109,6 +110,7 @@ class IndexedDBFactoryTest : public testing::Test {
     }
     if (temp_dir_.IsValid())
       ASSERT_TRUE(temp_dir_.Delete());
+    IndexedDBClassFactory::Get()->SetLevelDBFactoryForTesting(nullptr);
   }
 
   void SetupContext() {
@@ -127,13 +129,13 @@ class IndexedDBFactoryTest : public testing::Test {
         base::SequencedTaskRunnerHandle::Get());
   }
 
-  void SetupContextWithFactories(indexed_db::LevelDBFactory* factory,
-                                 base::Clock* clock) {
+  void SetupContextWithFactories(LevelDBFactory* factory, base::Clock* clock) {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
         base::SequencedTaskRunnerHandle::Get());
-    context_->SetLevelDBFactoryForTesting(factory);
+    if (factory)
+      IndexedDBClassFactory::Get()->SetLevelDBFactoryForTesting(factory);
   }
 
   // Runs through the upgrade flow to create a basic database connection. There
@@ -299,7 +301,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   base::test::ScopedFeatureList feature_list;
   base::SimpleTestClock clock;
   clock.SetNow(base::Time::Now());
-  SetupContextWithFactories(indexed_db::LevelDBFactory::Get(), &clock);
+  SetupContextWithFactories(nullptr, &clock);
 
   const Origin origin = Origin::Create(GURL("http://localhost:81"));
 
@@ -705,7 +707,8 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
 };
 
 TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
-  indexed_db::FakeLevelDBFactory fake_ldb_factory;
+  FakeLevelDBFactory fake_ldb_factory(
+      IndexedDBClassFactory::GetLevelDBOptions(), "indexed-db");
   fake_ldb_factory.EnqueueNextOpenLevelDBStateResult(
       nullptr, leveldb::Status::IOError("Disk is full."), true);
   SetupContextWithFactories(&fake_ldb_factory,

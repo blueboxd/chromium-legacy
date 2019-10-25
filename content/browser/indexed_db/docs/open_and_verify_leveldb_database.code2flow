@@ -37,7 +37,6 @@ switch(Read corruption info from disk) {
 }
 
 block Open LevelDB {
-  |Read free disk space|;
   switch (leveldb_env::OpenDB) {
     case Status Not OK:{
       Histogram(LevelDBOpenErrors);
@@ -46,12 +45,11 @@ block Open LevelDB {
       }
       goto open-loop-restart;
     }
-    case Status OK: {
-      Histogram(LevelDB.OpenTime);
-    }
+    case Status OK:
   }
 }
 
+Histogram(LevelDB.OpenTime);
 Create LevelDB Scopes;
 switch (Initialize LevelDB Scopes) {
   case Failure:
@@ -61,8 +59,8 @@ switch (Initialize LevelDB Scopes) {
   case Success:
 }
 
-block Open LevelDBDatabase {
-  Create LevelDBDatabase;
+block Open TransactionalLevelDBDatabase {
+  Create TransactionalLevelDBDatabase;
   switch (Try to read schema) {
     case Corruption -
          Failure reading schema:

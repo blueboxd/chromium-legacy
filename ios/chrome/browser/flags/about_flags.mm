@@ -13,6 +13,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -636,7 +637,7 @@ bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
 
 flags_ui::FlagsState& GetGlobalFlagsState() {
   static base::NoDestructor<flags_ui::FlagsState> flags_state(
-      kFeatureEntries, base::size(kFeatureEntries));
+      kFeatureEntries, base::size(kFeatureEntries), base::NullCallback());
   return *flags_state;
 }
 }  // namespace

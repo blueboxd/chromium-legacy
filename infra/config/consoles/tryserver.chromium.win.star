@@ -13,6 +13,8 @@ luci.list_view(
         'try/gpu-fyi-try-win10-intel-rel-64',
         'try/gpu-fyi-try-win10-nvidia-dbg-64',
         'try/gpu-fyi-try-win10-nvidia-dqp-64',
+        'try/gpu-fyi-try-win10-nvidia-dx12vk-dbg-64',
+        'try/gpu-fyi-try-win10-nvidia-dx12vk-rel-64',
         'try/gpu-fyi-try-win10-nvidia-exp-64',
         'try/gpu-fyi-try-win10-nvidia-rel-32',
         'try/gpu-fyi-try-win10-nvidia-rel-64',

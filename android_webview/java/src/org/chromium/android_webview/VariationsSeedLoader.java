@@ -16,9 +16,9 @@ import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.android_webview.common.ServiceNames;
+import org.chromium.android_webview.common.services.IVariationsSeedServer;
+import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.common.variations.VariationsUtils;
-import org.chromium.android_webview.services.IVariationsSeedServer;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;

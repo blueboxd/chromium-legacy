@@ -97,12 +97,9 @@ class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
         fake_server_(fake_server) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for URLs to be commited to the server";
     return fake_server_->GetCommittedHistoryURLs().count(url_) != 0;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for URLs to be commited to the server";
   }
 
  private:
@@ -122,7 +119,8 @@ class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
         fake_server_(fake_server) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for URLs to be commited to the server";
     std::vector<sync_pb::SyncEntity> sessions =
         fake_server_->GetSyncEntitiesByModelType(syncer::SESSIONS);
     for (const auto& entity : sessions) {
@@ -141,10 +139,6 @@ class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
       }
     }
     return false;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for URLs to be commited to the server";
   }
 
  private:

@@ -12,6 +12,7 @@
 #include "base/message_loop/work_id_provider.h"
 #include "base/no_destructor.h"
 #include "base/profiler/sample_metadata.h"
+#include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/rand_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -237,7 +238,7 @@ ThreadProfiler::ThreadProfiler(
     return;
 
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
-      base::PlatformThread::CurrentId(), kSamplingParams,
+      base::GetSamplingProfilerCurrentThreadToken(), kSamplingParams,
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread,
                                  CallStackProfileParams::PROCESS_STARTUP),
@@ -297,7 +298,7 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // NB: Destroys the previous profiler as side effect.
   periodic_profiler_ = std::make_unique<StackSamplingProfiler>(
-      base::PlatformThread::CurrentId(), kSamplingParams,
+      base::GetSamplingProfilerCurrentThreadToken(), kSamplingParams,
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread_,
                                  CallStackProfileParams::PERIODIC_COLLECTION),

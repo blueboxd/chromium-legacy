@@ -66,7 +66,6 @@ source_set("dns") {
       "host_resolver_mdns_task.h",
       "host_resolver_proc.cc",
       "host_resolver_proc.h",
-      "host_resolver_source.h",
       "mapped_host_resolver.cc",
       "notify_watcher_mac.cc",
       "notify_watcher_mac.h",
@@ -196,6 +195,7 @@ source_set("host_resolver") {
       "esni_content.h",
       "host_cache.h",
       "host_resolver.h",
+      "host_resolver_source.h",
       "mapped_host_resolver.h",
     ]
   }

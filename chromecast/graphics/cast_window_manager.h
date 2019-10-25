@@ -103,6 +103,12 @@ class CastWindowManager {
   // disabled.
   virtual void RemoveTouchActivityObserver(
       CastTouchActivityObserver* observer) = 0;
+
+  // Turns on and off the root window rounded window corners decoration.
+  virtual void SetEnableRoundedCorners(bool enable) = 0;
+
+  // Called when color inversion is turned on or off.
+  virtual void NotifyColorInversionEnabled(bool enabled) = 0;
 };
 
 }  // namespace chromecast

@@ -773,8 +773,8 @@ AXObject::InOrderTraversalIterator AXObjectCacheImpl::InOrderTraversalEnd() {
 
 void AXObjectCacheImpl::DeferTreeUpdateInternal(Node* node,
                                                 base::OnceClosure callback) {
-  tree_update_callback_queue_.push_back(
-      MakeGarbageCollected<TreeUpdateParams>(node, std::move(callback)));
+  tree_update_callback_queue_.push_back(MakeGarbageCollected<TreeUpdateParams>(
+      node, ComputeEventFrom(), std::move(callback)));
 }
 
 void AXObjectCacheImpl::DeferTreeUpdate(
@@ -990,10 +990,15 @@ void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
     base::OnceClosure& callback = tree_update->callback;
     if (node->GetDocument() != document) {
       tree_update_callback_queue_.push_back(
-          MakeGarbageCollected<TreeUpdateParams>(node, std::move(callback)));
+          MakeGarbageCollected<TreeUpdateParams>(node, tree_update->event_from,
+                                                 std::move(callback)));
       continue;
     }
+    bool saved_is_handling_action = is_handling_action_;
+    if (tree_update->event_from == ax::mojom::EventFrom::kAction)
+      is_handling_action_ = true;
     std::move(callback).Run();
+    is_handling_action_ = saved_is_handling_action;
   }
 }
 
@@ -1637,23 +1642,13 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(
   if (!page)
     return;
 
-  if (RuntimeEnabledFeatures::AccessibilityExposeDisplayNoneEnabled()) {
-    if (old_focused_element) {
-      DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeLostFocusWithCleanLayout,
-                      old_focused_element);
-    }
-
-    DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeGainedFocusWithCleanLayout,
-                    this->FocusedElement());
-  } else {
-    AXObject* focused_object = this->FocusedObject();
-    if (!focused_object)
-      return;
-
-    AXObject* old_focused_object = Get(old_focused_element);
-    PostNotification(old_focused_object, ax::mojom::Event::kBlur);
-    PostNotification(focused_object, ax::mojom::Event::kFocus);
+  if (old_focused_element) {
+    DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeLostFocusWithCleanLayout,
+                    old_focused_element);
   }
+
+  DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeGainedFocusWithCleanLayout,
+                  this->FocusedElement());
 }
 
 void AXObjectCacheImpl::HandleInitialFocus() {

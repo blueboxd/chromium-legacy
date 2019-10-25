@@ -42,12 +42,13 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   AppCacheURLLoaderJob(
       AppCacheRequest* appcache_request,
       AppCacheStorage* storage,
-      NavigationLoaderInterceptor::LoaderCallback loader_callback);
+      AppCacheRequestHandler::AppCacheLoaderCallback loader_callback);
 
   ~AppCacheURLLoaderJob() override;
 
   // Sets up the bindings.
-  void Start(const network::ResourceRequest& resource_request,
+  void Start(base::OnceClosure continuation,
+             const network::ResourceRequest& resource_request,
              network::mojom::URLLoaderRequest request,
              network::mojom::URLLoaderClientPtr client);
 
@@ -76,11 +77,13 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
 
  protected:
   // Invokes the loader callback which is expected to setup the mojo binding.
-  void CallLoaderCallback();
+  void CallLoaderCallback(base::OnceClosure continuation);
 
   // AppCacheStorage::Delegate methods
   void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
                             int64_t response_id) override;
+  void ContinueOnResponseInfoLoaded(
+      scoped_refptr<AppCacheResponseInfo> response_info);
 
   // AppCacheResponseReader completion callback.
   void OnReadComplete(int result);
@@ -125,7 +128,7 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
 
   // The Callback to be invoked in the network service land to indicate if
   // the resource request can be serviced via the AppCache.
-  NavigationLoaderInterceptor::LoaderCallback loader_callback_;
+  AppCacheRequestHandler::AppCacheLoaderCallback loader_callback_;
 
   // The AppCacheRequest instance, used to inform the loader job about range
   // request headers. Not owned by this class.

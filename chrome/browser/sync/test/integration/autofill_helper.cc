@@ -384,12 +384,9 @@ AutofillKeysChecker::AutofillKeysChecker(int profile_a, int profile_b)
       profile_a_(profile_a),
       profile_b_(profile_b) {}
 
-bool AutofillKeysChecker::IsExitConditionSatisfied() {
+bool AutofillKeysChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for matching autofill keys";
   return autofill_helper::KeysMatch(profile_a_, profile_b_);
-}
-
-std::string AutofillKeysChecker::GetDebugMessage() const {
-  return "Waiting for matching autofill keys";
 }
 
 AutofillProfileChecker::AutofillProfileChecker(int profile_a, int profile_b)
@@ -439,17 +436,14 @@ bool AutofillProfileChecker::Wait() {
   return StatusChangeChecker::Wait();
 }
 
-bool AutofillProfileChecker::IsExitConditionSatisfied() {
+bool AutofillProfileChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for matching autofill profiles";
   const std::vector<AutofillProfile*>& autofill_profiles_a =
       autofill_helper::GetPersonalDataManager(profile_a_)->GetProfiles();
   const std::vector<AutofillProfile*>& autofill_profiles_b =
       autofill_helper::GetPersonalDataManager(profile_b_)->GetProfiles();
   return ProfilesMatchImpl(profile_a_, autofill_profiles_a, profile_b_,
                            autofill_profiles_b);
-}
-
-std::string AutofillProfileChecker::GetDebugMessage() const {
-  return "Waiting for matching autofill profiles";
 }
 
 void AutofillProfileChecker::OnPersonalDataChanged() {

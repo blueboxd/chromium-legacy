@@ -279,9 +279,9 @@
       <include name="IDR_PREDICTORS_JS" file="resources\predictors\predictors.js" flattenhtml="true" type="BINDATA" compress="gzip" />
 
       <if expr="enable_service_discovery">
-        <include name="IDR_LOCAL_DISCOVERY_HTML" file="resources\local_discovery\local_discovery.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_LOCAL_DISCOVERY_CSS" file="resources\local_discovery\local_discovery.css" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_LOCAL_DISCOVERY_JS" file="resources\local_discovery\local_discovery.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_LOCAL_DISCOVERY_HTML" file="resources\local_discovery\local_discovery.html" compress="gzip" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_LOCAL_DISCOVERY_CSS" file="resources\local_discovery\local_discovery.css" compress="gzip" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_LOCAL_DISCOVERY_JS" file="resources\local_discovery\local_discovery.js" compress="gzip" flattenhtml="true" type="BINDATA" />
       </if>
 
       <include name="IDR_LOCAL_STATE_HTML" file="resources\local_state\local_state.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
@@ -406,7 +406,7 @@
         <include name="IDR_MOBILE_SETUP_PORTAL_PAGE_HTML" file="resources\chromeos\mobile_setup_portal.html" flattenhtml="true" type="BINDATA" compress="gzip" />
 
         <include name="IDR_ECHO_MANIFEST" file="resources\chromeos\echo\manifest.json" type="BINDATA" />
-        <include name="IDR_OS_CREDITS_HTML" file="resources\chromeos\about_os_credits.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_OS_CREDITS_HTML" file="resources\chromeos\about_os_credits.html" flattenhtml="true" type="BINDATA" compress="gzip" />
         <if expr="optimize_webui">
           <then>
             <include name="IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_config_dialog\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />

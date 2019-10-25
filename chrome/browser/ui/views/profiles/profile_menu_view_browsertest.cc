@@ -79,11 +79,9 @@ class UnconsentedPrimaryAccountChecker
   }
 
   // StatusChangeChecker overrides:
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for unconsented primary account";
     return identity_manager_->HasUnconsentedPrimaryAccount();
-  }
-  std::string GetDebugMessage() const override {
-    return "Unconsented primary account checker";
   }
 
   // signin::IdentityManager::Observer overrides:

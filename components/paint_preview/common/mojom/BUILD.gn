@@ -10,8 +10,8 @@ mojom("mojom") {
   ]
 
   public_deps = [
-    "//components/discardable_memory/public/mojom",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",
+    "//url/mojom:url_mojom_gurl",
   ]
 }

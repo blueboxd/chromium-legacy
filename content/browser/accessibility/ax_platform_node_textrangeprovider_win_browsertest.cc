@@ -1745,6 +1745,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                             "text</span> and text after.",
                             {L"a ", L"and ", L"text ", L"after."});
 
+  // The following test should be enabled when crbug.com/1015100 is fixed.
   // AssertMoveByUnitForMarkup(
   //     TextUnit_Word, "<ul><li>item one</li><li>item two</li></ul>",
   //     {L"* ", L"item ", L"one\n", L"* ", L"item ", L"two"});
@@ -1806,6 +1807,32 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       "before <span style='font-weight:bold'>bold text</span><span "
       "style='font-style: italic'>italic text</span> after",
       {L"before ", L"bold text", L"italic text", L" after"});
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       EntireMarkupSuccessiveMoveByLine) {
+  AssertMoveByUnitForMarkup(TextUnit_Line, "<div style='width:0'>one two</div>",
+                            {L"one ", L"two"});
+
+  AssertMoveByUnitForMarkup(TextUnit_Line, "line one<br>line two",
+                            {L"line one", L"line two"});
+
+  AssertMoveByUnitForMarkup(TextUnit_Line,
+                            "<div>line one</div><div><div>line two</div></div>",
+                            {L"line one", L"line two"});
+
+  AssertMoveByUnitForMarkup(
+      TextUnit_Line, "<div style='display:inline-block'>a</div>", {L"a"});
+
+  AssertMoveByUnitForMarkup(TextUnit_Line,
+                            "a<div style='display:inline-block'>b</div>c",
+                            {L"a", L"b"});
+
+  // The following test should be enabled when crbug.com/1015100 is fixed.
+  // AssertMoveByUnitForMarkup(
+  //     TextUnit_Line,
+  //     "<h1>line one</h1><ul><li>line two</li><li>line three</li></ul>",
+  //     {L"line one\n", L"* line two\n", L"* line three"});
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,

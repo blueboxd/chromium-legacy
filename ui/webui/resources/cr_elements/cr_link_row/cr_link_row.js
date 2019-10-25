@@ -44,6 +44,8 @@ Polymer({
       value: false,
     },
 
+    roleDescription: String,
+
     /** @private */
     hideLabelWrapper_: {
       type: Boolean,

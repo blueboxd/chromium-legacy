@@ -14,7 +14,8 @@ import org.chromium.chrome.browser.share.ShareActivity;
 public class QrCodeShareActivity extends ShareActivity {
     @Override
     protected void handleShareAction(ChromeActivity triggeringActivity) {
-        // TODO(crbug.com/993920): Open QR code share/scan activity.
+        QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(triggeringActivity);
+        qrCodeCoordinator.show();
     }
 
     public static boolean featureIsAvailable() {

@@ -2650,6 +2650,8 @@
       'GPU FYI Win dEQP Builder': {},
       'GPU FYI Win x64 Builder' : {},
       'GPU FYI Win x64 Builder (dbg)' : {},
+      'GPU FYI Win x64 DX12 Vulkan Builder': {},
+      'GPU FYI Win x64 DX12 Vulkan Builder (dbg)': {},
       'GPU FYI Win x64 dEQP Builder' : {},
       'Linux FYI Debug (NVIDIA)': {
         'browser_config': 'debug',
@@ -3072,6 +3074,26 @@
         'use_multi_dimension_trigger_script': True,
       },
       # END Fake builder used as mirror targets for Optional GPU tryservers
+      'Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'debug_x64',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+        },
+      },
+      'Win10 FYI x64 DX12 Vulkan Release (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+        },
+      },
       'Win10 FYI x64 Debug (NVIDIA)': {
         'os_type': 'win',
         'browser_config': 'debug_x64',

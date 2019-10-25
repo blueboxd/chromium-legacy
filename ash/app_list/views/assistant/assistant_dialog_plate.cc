@@ -7,6 +7,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/base/assistant_button.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/assistant/ui/dialog_plate/mic_view.h"
@@ -66,6 +67,7 @@ AssistantDialogPlate::AssistantDialogPlate(ash::AssistantViewDelegate* delegate)
               base::Unretained(this)))),
       query_history_iterator_(
           delegate_->GetInteractionModel()->query_history().GetIterator()) {
+  SetID(AssistantViewID::kDialogPlate);
   InitLayout();
 
   // The AssistantViewDelegate should outlive AssistantDialogPlate.
@@ -266,6 +268,7 @@ void AssistantDialogPlate::InitLayout() {
 
   // Molecule icon.
   molecule_icon_ = ash::LogoView::Create();
+  molecule_icon_->SetID(AssistantViewID::kModuleIcon);
   molecule_icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   molecule_icon_->SetState(ash::LogoView::State::kMoleculeWavy,
                            /*animate=*/false);
@@ -310,6 +313,7 @@ void AssistantDialogPlate::InitKeyboardLayoutContainer() {
 
   // Textfield.
   textfield_ = new views::Textfield();
+  textfield_->SetID(AssistantViewID::kTextQueryField);
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
   textfield_->SetBorder(views::NullBorder());
   textfield_->set_controller(this);
@@ -332,6 +336,7 @@ void AssistantDialogPlate::InitKeyboardLayoutContainer() {
       IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME,
       ash::AssistantButtonId::kVoiceInputToggle,
       IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_TOOLTIP);
+  voice_input_toggle_->SetID(AssistantViewID::kVoiceInputToggle);
   keyboard_layout_container_->AddChildView(voice_input_toggle_);
 
   input_modality_layout_container_->AddChildView(keyboard_layout_container_);
@@ -369,6 +374,7 @@ void AssistantDialogPlate::InitVoiceLayoutContainer() {
   // Animated voice input toggle.
   animated_voice_input_toggle_ = new ash::MicView(
       this, delegate_, ash::AssistantButtonId::kVoiceInputToggle);
+  animated_voice_input_toggle_->SetID(AssistantViewID::kMicView);
   animated_voice_input_toggle_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
   voice_layout_container_->AddChildView(animated_voice_input_toggle_);
@@ -384,6 +390,7 @@ void AssistantDialogPlate::InitVoiceLayoutContainer() {
       IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
       ash::AssistantButtonId::kKeyboardInputToggle,
       IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_TOOLTIP);
+  keyboard_input_toggle_->SetID(AssistantViewID::kKeyboardInputToggle);
   voice_layout_container_->AddChildView(keyboard_input_toggle_);
 
   input_modality_layout_container_->AddChildView(voice_layout_container_);

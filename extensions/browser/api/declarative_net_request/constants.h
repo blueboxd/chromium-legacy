@@ -46,6 +46,10 @@ enum class ParseResult {
   ERROR_INVALID_TRANSFORM_FRAGMENT,
   ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED,
   ERROR_JAVASCRIPT_REDIRECT,
+  ERROR_EMPTY_REGEX_FILTER,
+  ERROR_NON_ASCII_REGEX_FILTER,
+  ERROR_INVALID_REGEX_FILTER,
+  ERROR_MULTIPLE_FILTERS_SPECIFIED,
 };
 
 // Describes the ways in which updating dynamic rules can fail.
@@ -100,7 +104,7 @@ extern const char kErrorEmptyUpgradeRulePriority[];
 extern const char kErrorInvalidRuleKey[];
 extern const char kErrorNoApplicableResourceTypes[];
 extern const char kErrorEmptyList[];
-extern const char kErrorEmptyUrlFilter[];
+extern const char kErrorEmptyKey[];
 extern const char kErrorInvalidRedirectUrl[];
 extern const char kErrorDuplicateIDs[];
 extern const char kErrorPersisting[];
@@ -110,6 +114,7 @@ extern const char kErrorInvalidKey[];
 extern const char kErrorInvalidTransformScheme[];
 extern const char kErrorQueryAndTransformBothSpecified[];
 extern const char kErrorJavascriptRedirect[];
+extern const char kErrorMultipleFilters[];
 
 extern const char kErrorListNotPassed[];
 

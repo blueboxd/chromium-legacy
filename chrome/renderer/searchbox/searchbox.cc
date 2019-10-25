@@ -210,9 +210,14 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
   mojo::AssociatedRemote<chrome::mojom::EmbeddedSearchConnector> connector;
   render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&connector);
   chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo embedded_search_client;
-  binding_.Bind(mojo::MakeRequest(&embedded_search_client));
-  connector->Connect(mojo::MakeRequest(&embedded_search_service_),
-                     std::move(embedded_search_client));
+  binding_.Bind(mojo::MakeRequest(&embedded_search_client),
+                render_frame->GetTaskRunner(
+                    blink::TaskType::kInternalNavigationAssociated));
+  connector->Connect(
+      mojo::MakeRequest(&embedded_search_service_,
+                        render_frame->GetTaskRunner(
+                            blink::TaskType::kInternalNavigationAssociated)),
+      std::move(embedded_search_client));
 }
 
 SearchBox::~SearchBox() = default;

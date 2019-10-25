@@ -757,10 +757,6 @@
       origin_trial_feature_name: "WebComponentsV0",
       status: "stable",
     },
-    // Allow import only chrome internal resources.
-    {
-      name: "HTMLImportsOnlyChrome",
-    },
     {
       name: "IDBObserver",
       status: "experimental",
@@ -1100,6 +1096,7 @@
     },
     {
       name: "OffMainThreadCSSPaint",
+      status: "stable",
     },
     {
       name: "OffscreenCanvasCommit",

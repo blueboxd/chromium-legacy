@@ -686,6 +686,8 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
 }
 
 base::TimeDelta SearchProvider::GetSuggestQueryDelay() const {
+  // TODO(manukh): Reuse AutocompleteProviderDebouncer which duplicates all
+  //  this logic and would avoid polling field trial params repeatedly.
   bool from_last_keystroke;
   int polling_delay_ms;
   OmniboxFieldTrial::GetSuggestPollingStrategy(&from_last_keystroke,

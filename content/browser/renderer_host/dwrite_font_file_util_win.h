@@ -15,17 +15,24 @@
 
 namespace content {
 
-bool FontFilePathAndTtcIndex(IDWriteFontFace* font,
-                             base::string16& file_path,
-                             uint32_t& ttc_index);
-bool FontFilePathAndTtcIndex(IDWriteFont* font,
-                             base::string16& file_path,
-                             uint32_t& ttc_index);
-bool AddFilesForFont(IDWriteFont* font,
-                     const base::string16& windows_fonts_path,
-                     std::set<base::string16>* path_set,
-                     std::set<base::string16>* custom_font_path_set,
-                     uint32_t* ttc_index);
+// Custom error codes potentially emitted from FontFilePathAndTtcIndex and
+// AddFilesForFont.
+const HRESULT kErrorFontFileUtilTooManyFilesPerFace =
+    MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF, 0xD001);
+const HRESULT kErrorFontFileUtilEmptyFilePath =
+    MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF, 0xD002);
+
+HRESULT FontFilePathAndTtcIndex(IDWriteFontFace* font,
+                                base::string16& file_path,
+                                uint32_t& ttc_index);
+HRESULT FontFilePathAndTtcIndex(IDWriteFont* font,
+                                base::string16& file_path,
+                                uint32_t& ttc_index);
+HRESULT AddFilesForFont(IDWriteFont* font,
+                        const base::string16& windows_fonts_path,
+                        std::set<base::string16>* path_set,
+                        std::set<base::string16>* custom_font_path_set,
+                        uint32_t* ttc_index);
 
 base::string16 GetWindowsFontsPath();
 

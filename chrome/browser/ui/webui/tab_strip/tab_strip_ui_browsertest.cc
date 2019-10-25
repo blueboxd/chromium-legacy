@@ -95,7 +95,8 @@ class TabStripUIBrowserTest : public InProcessBrowserTest {
 // static
 const std::string TabStripUIBrowserTest::tab_query_js(
     "document.querySelector('tabstrip-tab-list')"
-    "    .shadowRoot.querySelector('tabstrip-tab')");
+    "    .shadowRoot.querySelector('tabstrip-tab')"
+    "    .shadowRoot.querySelector('#tab')");
 
 IN_PROC_BROWSER_TEST_F(TabStripUIBrowserTest, ActivatingTabClosesEmbedder) {
   const std::string activate_tab_js = tab_query_js + ".click()";

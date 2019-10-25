@@ -1594,8 +1594,6 @@ ImageData* BaseRenderingContext2D::getImageData(
     return result;
   }
 
-  WTF::ArrayBufferContents contents;
-
   const CanvasColorParams& color_params = ColorParams();
   // Deferred offscreen canvases might have recorded commands, make sure
   // that those get drawn here
@@ -1606,9 +1604,32 @@ ImageData* BaseRenderingContext2D::getImageData(
   if (IsAccelerated())
     DisableAcceleration();
 
-  if (!StaticBitmapImage::ConvertToArrayBufferContents(
-          snapshot, contents, image_data_rect, color_params, IsAccelerated())) {
+  size_t size_in_bytes =
+      StaticBitmapImage::GetSizeInBytes(image_data_rect, color_params);
+  if (size_in_bytes > v8::TypedArray::kMaxLength)
+    return nullptr;
+
+  bool may_have_stray_area =
+      IsAccelerated()  // GPU readback may fail silently.
+      || StaticBitmapImage::MayHaveStrayArea(snapshot, image_data_rect);
+  WTF::ArrayBufferContents::InitializationPolicy initialization_policy =
+      may_have_stray_area ? WTF::ArrayBufferContents::kZeroInitialize
+                          : WTF::ArrayBufferContents::kDontInitialize;
+
+  WTF::ArrayBufferContents contents(size_in_bytes, 1,
+                                    WTF::ArrayBufferContents::kNotShared,
+                                    initialization_policy);
+  if (contents.DataLength() != size_in_bytes) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
+    return nullptr;
+  }
+
+  if (!StaticBitmapImage::CopyToByteArray(
+          snapshot,
+          base::span<uint8_t>(reinterpret_cast<uint8_t*>(contents.Data()),
+                              contents.DataLength()),
+          image_data_rect, color_params)) {
+    exception_state.ThrowRangeError("Failed to copy image data");
     return nullptr;
   }
 

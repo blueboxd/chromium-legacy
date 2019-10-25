@@ -65,12 +65,9 @@ class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
   explicit SyncUnrecoverableErrorChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for a Sync Unrecoverable Error";
     return service()->HasUnrecoverableError();
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Sync Unrecoverable Error";
   }
 };
 

@@ -81,7 +81,7 @@ std::string ParseInfo::GetErrorDescription() const {
       break;
     case ParseResult::ERROR_EMPTY_URL_FILTER:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyUrlFilter, base::NumberToString(*rule_id_), kUrlFilterKey);
+          kErrorEmptyKey, base::NumberToString(*rule_id_), kUrlFilterKey);
       break;
     case ParseResult::ERROR_INVALID_REDIRECT_URL:
       error = ErrorUtils::FormatErrorMessage(kErrorInvalidRedirectUrl,
@@ -155,6 +155,23 @@ std::string ParseInfo::GetErrorDescription() const {
       error = ErrorUtils::FormatErrorMessage(kErrorJavascriptRedirect,
                                              base::NumberToString(*rule_id_),
                                              kRedirectUrlPath);
+      break;
+    case ParseResult::ERROR_EMPTY_REGEX_FILTER:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorEmptyKey, base::NumberToString(*rule_id_), kRegexFilterKey);
+      break;
+    case ParseResult::ERROR_NON_ASCII_REGEX_FILTER:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorNonAscii, base::NumberToString(*rule_id_), kRegexFilterKey);
+      break;
+    case ParseResult::ERROR_INVALID_REGEX_FILTER:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidKey, base::NumberToString(*rule_id_), kRegexFilterKey);
+      break;
+    case ParseResult::ERROR_MULTIPLE_FILTERS_SPECIFIED:
+      error = ErrorUtils::FormatErrorMessage(kErrorMultipleFilters,
+                                             base::NumberToString(*rule_id_),
+                                             kUrlFilterKey, kRegexFilterKey);
       break;
   }
   return error;

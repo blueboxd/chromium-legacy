@@ -50,6 +50,7 @@ component("ui") {
     "assistant_notification_view.h",
     "assistant_overlay.h",
     "assistant_view_delegate.h",
+    "assistant_view_ids.h",
     "assistant_web_container_view.cc",
     "assistant_web_container_view.h",
     "assistant_web_view.cc",

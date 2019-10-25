@@ -5,9 +5,9 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 
 #include <algorithm>
-#include <memory>
 #include <numeric>
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
@@ -567,7 +567,7 @@ void DeepScanningDialogDelegate::UploadTextForDeepScanning(
       g_browser_process->safe_browsing_service()->GetBinaryUploadService(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
   if (upload_service)
-    upload_service->UploadForDeepScanning(std::move(request));
+    upload_service->MaybeUploadForDeepScanning(std::move(request));
 }
 
 void DeepScanningDialogDelegate::UploadFileForDeepScanning(
@@ -580,7 +580,7 @@ void DeepScanningDialogDelegate::UploadFileForDeepScanning(
       g_browser_process->safe_browsing_service()->GetBinaryUploadService(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
   if (upload_service)
-    upload_service->UploadForDeepScanning(std::move(request));
+    upload_service->MaybeUploadForDeepScanning(std::move(request));
 }
 
 bool DeepScanningDialogDelegate::CloseTabModalDialog() {

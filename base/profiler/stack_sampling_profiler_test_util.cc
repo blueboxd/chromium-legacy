@@ -61,7 +61,7 @@ TargetThread::TargetThread(OnceClosure to_run) : to_run_(std::move(to_run)) {}
 TargetThread::~TargetThread() = default;
 
 void TargetThread::ThreadMain() {
-  id_ = PlatformThread::CurrentId();
+  thread_token_ = GetSamplingProfilerCurrentThreadToken();
   std::move(to_run_).Run();
 }
 
@@ -144,7 +144,7 @@ void WithTargetThread(UnwindScenario* scenario,
 
   events.ready_for_sample.Wait();
 
-  std::move(profile_callback).Run(target_thread.id());
+  std::move(profile_callback).Run(target_thread.thread_token());
 
   events.sample_finished.Signal();
 
@@ -160,24 +160,26 @@ std::vector<Frame> SampleScenario(UnwindScenario* scenario,
 
   std::vector<Frame> sample;
   WithTargetThread(
-      scenario, BindLambdaForTesting([&](PlatformThreadId target_thread_id) {
-        WaitableEvent sampling_thread_completed(
-            WaitableEvent::ResetPolicy::MANUAL,
-            WaitableEvent::InitialState::NOT_SIGNALED);
-        StackSamplingProfiler profiler(
-            target_thread_id, params,
-            std::make_unique<TestProfileBuilder>(
-                module_cache,
-                BindLambdaForTesting([&sample, &sampling_thread_completed](
-                                         std::vector<Frame> result_sample) {
-                  sample = std::move(result_sample);
-                  sampling_thread_completed.Signal();
-                })));
-        if (aux_unwinder_factory)
-          profiler.AddAuxUnwinder(std::move(aux_unwinder_factory).Run());
-        profiler.Start();
-        sampling_thread_completed.Wait();
-      }));
+      scenario,
+      BindLambdaForTesting(
+          [&](SamplingProfilerThreadToken target_thread_token) {
+            WaitableEvent sampling_thread_completed(
+                WaitableEvent::ResetPolicy::MANUAL,
+                WaitableEvent::InitialState::NOT_SIGNALED);
+            StackSamplingProfiler profiler(
+                target_thread_token, params,
+                std::make_unique<TestProfileBuilder>(
+                    module_cache,
+                    BindLambdaForTesting([&sample, &sampling_thread_completed](
+                                             std::vector<Frame> result_sample) {
+                      sample = std::move(result_sample);
+                      sampling_thread_completed.Signal();
+                    })));
+            if (aux_unwinder_factory)
+              profiler.AddAuxUnwinder(std::move(aux_unwinder_factory).Run());
+            profiler.Start();
+            sampling_thread_completed.Wait();
+          }));
 
   return sample;
 }

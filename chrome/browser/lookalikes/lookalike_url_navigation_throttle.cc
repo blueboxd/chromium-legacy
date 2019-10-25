@@ -36,12 +36,8 @@ namespace {
 const base::FeatureParam<bool> kEnableInterstitialForTopSites{
     &features::kLookalikeUrlNavigationSuggestionsUI, "topsites", false};
 
-using lookalikes::LookalikeUrlNavigationThrottle;
 using MatchType = LookalikeUrlInterstitialPage::MatchType;
 using UserAction = LookalikeUrlInterstitialPage::UserAction;
-using NavigationSuggestionEvent =
-    lookalikes::LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
-using lookalikes::DomainInfo;
 using url_formatter::TopDomainEntry;
 
 typedef content::NavigationThrottle::ThrottleCheckResult ThrottleCheckResult;
@@ -91,9 +87,8 @@ std::string GetSimilarDomainFromTop500(const DomainInfo& navigated_domain) {
   for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
     for (const char* const top_domain_skeleton :
          top500_domains::kTop500EditDistanceSkeletons) {
-      if (lookalikes::IsEditDistanceAtMostOne(
-              base::UTF8ToUTF16(navigated_skeleton),
-              base::UTF8ToUTF16(top_domain_skeleton))) {
+      if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
+                                  base::UTF8ToUTF16(top_domain_skeleton))) {
         const std::string top_domain =
             url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton)
                 .domain;
@@ -129,9 +124,8 @@ std::string GetSimilarDomainFromEngagedSites(
         continue;
       }
       for (const std::string& engaged_skeleton : engaged_site.skeletons) {
-        if (lookalikes::IsEditDistanceAtMostOne(
-                base::UTF8ToUTF16(navigated_skeleton),
-                base::UTF8ToUTF16(engaged_skeleton))) {
+        if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
+                                    base::UTF8ToUTF16(engaged_skeleton))) {
           // If the only difference between the navigated and engaged
           // domain is the registry part, this is unlikely to be a spoofing
           // attempt. Ignore this match and continue. E.g. If the navigated
@@ -159,16 +153,20 @@ bool IsInterstitialReload(const GURL& current_url,
 void RecordUMAFromMatchType(MatchType match_type) {
   switch (match_type) {
     case MatchType::kTopSite:
-      RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
+      RecordEvent(LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+                      kMatchTopSite);
       break;
     case MatchType::kSiteEngagement:
-      RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
+      RecordEvent(LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+                      kMatchSiteEngagement);
       break;
     case MatchType::kEditDistance:
-      RecordEvent(NavigationSuggestionEvent::kMatchEditDistance);
+      RecordEvent(LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+                      kMatchEditDistance);
       break;
     case MatchType::kEditDistanceSiteEngagement:
-      RecordEvent(NavigationSuggestionEvent::kMatchEditDistanceSiteEngagement);
+      RecordEvent(LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+                      kMatchEditDistanceSiteEngagement);
       break;
     case MatchType::kNone:
       break;
@@ -176,8 +174,6 @@ void RecordUMAFromMatchType(MatchType match_type) {
 }
 
 }  // namespace
-
-namespace lookalikes {
 
 // static
 const char LookalikeUrlNavigationThrottle::kHistogramName[] =
@@ -592,5 +588,3 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
 
   return content::NavigationThrottle::PROCEED;
 }
-
-}  // namespace lookalikes

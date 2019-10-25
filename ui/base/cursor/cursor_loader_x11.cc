@@ -81,7 +81,14 @@ CursorLoaderX11::ImageCursor::~ImageCursor() {
 
 CursorLoaderX11::CursorLoaderX11()
     : display_(gfx::GetXDisplay()),
-      invisible_cursor_(CreateInvisibleCursor(), gfx::GetXDisplay()) {}
+      invisible_cursor_(CreateInvisibleCursor(), gfx::GetXDisplay()) {
+  auto* cursor_theme_manager = CursorThemeManagerLinux::GetInstance();
+  if (cursor_theme_manager) {
+    cursor_theme_observer_.Add(cursor_theme_manager);
+    OnCursorThemeNameChanged(cursor_theme_manager->GetCursorThemeName());
+    OnCursorThemeSizeChanged(cursor_theme_manager->GetCursorThemeSize());
+  }
+}
 
 CursorLoaderX11::~CursorLoaderX11() {
   UnloadAll();
@@ -152,14 +159,23 @@ const XcursorImage* CursorLoaderX11::GetXcursorImageForTest(CursorType id) {
   return test::GetCachedXcursorImage(image_cursors_[id]->cursor);
 }
 
+void CursorLoaderX11::OnCursorThemeNameChanged(
+    const std::string& cursor_theme_name) {
+  XcursorSetTheme(display_, cursor_theme_name.c_str());
+  ClearThemeCursors();
+}
+
+void CursorLoaderX11::OnCursorThemeSizeChanged(int cursor_theme_size) {
+  XcursorSetDefaultSize(display_, cursor_theme_size);
+  ClearThemeCursors();
+}
+
 bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
   CursorType type = native_cursor.native_type();
   return image_cursors_.count(type) || animated_cursors_.count(type);
 }
 
 ::Cursor CursorLoaderX11::CursorFromId(CursorType id) {
-  const char* css_name = CursorCssNameFromId(id);
-
   auto font_it = font_cursors_.find(id);
   if (font_it != font_cursors_.end())
     return font_it->second;
@@ -174,6 +190,7 @@ bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
   }
 
   // First try to load the cursor directly.
+  const char* css_name = CursorCssNameFromId(id);
   ::Cursor cursor = XcursorLibraryLoadCursor(display_, css_name);
   if (cursor == x11::None) {
     // Try a similar cursor supplied by the native cursor theme.
@@ -206,6 +223,11 @@ bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
   DCHECK(cursor);
   font_cursors_[id] = cursor;
   return cursor;
+}
+
+void CursorLoaderX11::ClearThemeCursors() {
+  font_cursors_.clear();
+  image_cursors_.clear();
 }
 
 }  // namespace ui

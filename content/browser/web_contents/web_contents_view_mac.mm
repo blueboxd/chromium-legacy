@@ -536,15 +536,16 @@ bool WebContentsViewMac::DragPromisedFileTo(const base::FilePath& file_path,
   }
 
   if (download_url.is_valid() && web_contents_) {
-    scoped_refptr<DragDownloadFile> drag_file_downloader(new DragDownloadFile(
+    auto drag_file_downloader = std::make_unique<DragDownloadFile>(
         *out_file_path, std::move(file), download_url,
         content::Referrer(web_contents_->GetLastCommittedURL(),
                           drop_data.referrer_policy),
-        web_contents_->GetEncoding(), web_contents_));
+        web_contents_->GetEncoding(), web_contents_);
 
+    DragDownloadFile* downloader = drag_file_downloader.get();
     // The finalizer will take care of closing and deletion.
-    drag_file_downloader->Start(
-        new PromiseFileFinalizer(drag_file_downloader.get()));
+    downloader->Start(
+        new PromiseFileFinalizer(std::move(drag_file_downloader)));
   } else {
     // The writer will take care of closing and deletion.
     base::PostTask(

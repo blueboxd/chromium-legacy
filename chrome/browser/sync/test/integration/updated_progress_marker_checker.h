@@ -27,8 +27,7 @@ class UpdatedProgressMarkerChecker : public SingleClientStatusChangeChecker {
   ~UpdatedProgressMarkerChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // syncer::SyncServiceObserver implementation.
   void OnSyncCycleCompleted(syncer::SyncService* sync) override;

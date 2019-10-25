@@ -35,18 +35,9 @@ class DataObjectImpl : public DownloadFileObserver,
                        public IDataObject,
                        public IDataObjectAsyncCapability {
  public:
-  class Observer {
-   public:
-    virtual void OnWaitForData() = 0;
-    virtual void OnDataObjectDisposed() = 0;
-   protected:
-    virtual ~Observer() { }
-  };
-
   DataObjectImpl();
 
   // Accessors.
-  void set_observer(Observer* observer) { observer_ = observer; }
   void set_in_drag_loop(bool in_drag_loop) { in_drag_loop_ = in_drag_loop; }
 
   // Number of known formats.
@@ -106,7 +97,7 @@ class DataObjectImpl : public DownloadFileObserver,
     FORMATETC format_etc;
     STGMEDIUM* medium;
     bool owns_medium;
-    scoped_refptr<DownloadFileProvider> downloader;
+    std::unique_ptr<DownloadFileProvider> downloader;
 
     StoredDataInfo(const FORMATETC& format_etc, STGMEDIUM* medium);
     ~StoredDataInfo();
@@ -121,7 +112,6 @@ class DataObjectImpl : public DownloadFileObserver,
   bool in_drag_loop_;
   bool in_async_mode_;
   bool async_operation_started_;
-  Observer* observer_;
 };
 
 class UI_BASE_EXPORT OSExchangeDataProviderWin
@@ -192,7 +182,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   bool HasHtml() const override;
   bool HasCustomFormat(const ClipboardFormatType& format) const override;
   void SetDownloadFileInfo(
-      const OSExchangeData::DownloadFileInfo& download_info) override;
+      OSExchangeData::DownloadFileInfo* download_info) override;
   void SetDragImage(const gfx::ImageSkia& image_skia,
                     const gfx::Vector2d& cursor_offset) override;
   gfx::ImageSkia GetDragImage() const override;

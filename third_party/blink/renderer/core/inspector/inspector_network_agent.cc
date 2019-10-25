@@ -552,6 +552,9 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
     case SecurityStyle::kSecure:
       security_state = protocol::Security::SecurityStateEnum::Secure;
       break;
+    case SecurityStyle::kInsecureBroken:
+      security_state = protocol::Security::SecurityStateEnum::InsecureBroken;
+      break;
   }
 
   // Use mime type from cached resource in case the one in response is empty.

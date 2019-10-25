@@ -162,6 +162,34 @@ class IncrementalMarkingTestDriver {
   ThreadState* const thread_state_;
 };
 
+class IntegerObject : public GarbageCollected<IntegerObject> {
+ public:
+  void Trace(blink::Visitor* visitor) {}
+
+  int Value() const { return x_; }
+
+  bool operator==(const IntegerObject& other) const {
+    return other.Value() == Value();
+  }
+
+  unsigned GetHash() { return IntHash<int>::GetHash(x_); }
+
+  explicit IntegerObject(int x) : x_(x) {}
+
+ private:
+  int x_;
+};
+
+struct IntegerObjectHash {
+  static unsigned GetHash(const IntegerObject& key) {
+    return WTF::HashInt(static_cast<uint32_t>(key.Value()));
+  }
+
+  static bool Equal(const IntegerObject& a, const IntegerObject& b) {
+    return a == b;
+  }
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TEST_UTILITIES_H_

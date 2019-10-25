@@ -152,6 +152,12 @@ class FakeAuthInstance : public mojom::AuthInstance {
     std::move(callback).Run(std::move(accounts));
   }
 
+  void GetMainAccountResolutionStatus(
+      GetMainAccountResolutionStatusCallback callback) override {
+    std::move(callback).Run(
+        mojom::MainAccountResolutionStatus::HASH_CODE_MATCH_SINGLE_ACCOUNT);
+  }
+
   mojom::AccountInfo* account_info() { return account_info_.get(); }
 
   mojom::ArcSignInStatus sign_in_status() const { return status_; }

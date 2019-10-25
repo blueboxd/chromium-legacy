@@ -119,7 +119,7 @@ void AddOsStrings(unsigned bitmask, base::ListValue* list) {
 
 // Confirms that an entry is valid, used in a DCHECK in
 // SanitizeList below.
-bool ValidateFeatureEntry(const FeatureEntry& e) {
+bool IsValidFeatureEntry(const FeatureEntry& e) {
   switch (e.type) {
     case FeatureEntry::SINGLE_VALUE:
     case FeatureEntry::SINGLE_DISABLE_VALUE:
@@ -348,11 +348,14 @@ struct FlagsState::SwitchEntry {
   SwitchEntry() : feature_state(false) {}
 };
 
-FlagsState::FlagsState(const FeatureEntry* feature_entries,
-                       size_t num_feature_entries)
+FlagsState::FlagsState(
+    const FeatureEntry* feature_entries,
+    size_t num_feature_entries,
+    base::RepeatingCallback<bool(const FeatureEntry&)> exclude_predicate)
     : feature_entries_(feature_entries),
       num_feature_entries_(num_feature_entries),
-      needs_restart_(false) {}
+      needs_restart_(false),
+      exclude_predicate_(exclude_predicate) {}
 
 FlagsState::~FlagsState() {}
 
@@ -836,17 +839,9 @@ std::set<std::string> FlagsState::SanitizeList(
   // an O(n^2) search, this is more efficient than creating a set from
   // |feature_entries_| first because |feature_entries_| is large and
   // |enabled_entries| should generally be small/empty.
-  const FeatureEntry* features_end = feature_entries_ + num_feature_entries_;
   for (const std::string& entry_name : enabled_entries) {
-    if (features_end !=
-        std::find_if(feature_entries_, features_end,
-                     [entry_name, platform_mask](const FeatureEntry& e) {
-                       DCHECK(ValidateFeatureEntry(e));
-                       return (e.supported_platforms & platform_mask) &&
-                              e.InternalNameMatches(entry_name);
-                     })) {
+    if (IsSupportedFeature(entry_name, platform_mask))
       new_enabled_entries.insert(entry_name);
-    }
   }
 
   return new_enabled_entries;
@@ -946,6 +941,23 @@ const FeatureEntry* FlagsState::FindFeatureEntryByName(
     }
   }
   return nullptr;
+}
+
+bool FlagsState::IsSupportedFeature(const std::string& name,
+                                    int platform_mask) const {
+  base::span<const FeatureEntry> features(feature_entries_,
+                                          num_feature_entries_);
+  for (const auto& e : features) {
+    DCHECK(IsValidFeatureEntry(e));
+    if (!(e.supported_platforms & platform_mask))
+      continue;
+    if (!e.InternalNameMatches(name))
+      continue;
+    if (exclude_predicate_ && exclude_predicate_.Run(e))
+      continue;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace flags_ui

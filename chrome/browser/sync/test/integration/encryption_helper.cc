@@ -148,7 +148,10 @@ ServerNigoriChecker::ServerNigoriChecker(
       fake_server_(fake_server),
       expected_passphrase_type_(expected_passphrase_type) {}
 
-bool ServerNigoriChecker::IsExitConditionSatisfied() {
+bool ServerNigoriChecker::IsExitConditionSatisfied(std::ostream* os) {
+  *os << "Waiting for a Nigori node with the proper passphrase type to become "
+         "available on the server.";
+
   std::vector<sync_pb::SyncEntity> nigori_entities =
       fake_server_->GetPermanentSyncEntitiesByModelType(syncer::NIGORI);
   EXPECT_LE(nigori_entities.size(), 1U);
@@ -158,25 +161,18 @@ bool ServerNigoriChecker::IsExitConditionSatisfied() {
              expected_passphrase_type_;
 }
 
-std::string ServerNigoriChecker::GetDebugMessage() const {
-  return "Waiting for a Nigori node with the proper passphrase type to become "
-         "available on the server.";
-}
-
 PassphraseRequiredStateChecker::PassphraseRequiredStateChecker(
     syncer::ProfileSyncService* service,
     bool desired_state)
     : SingleClientStatusChangeChecker(service), desired_state_(desired_state) {}
 
-bool PassphraseRequiredStateChecker::IsExitConditionSatisfied() {
+bool PassphraseRequiredStateChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting until decryption passphrase is " +
+             std::string(desired_state_ ? "required" : "not required");
   return service()
              ->GetUserSettings()
              ->IsPassphraseRequiredForPreferredDataTypes() == desired_state_;
-}
-
-std::string PassphraseRequiredStateChecker::GetDebugMessage() const {
-  return "Waiting until decryption passphrase is " +
-         std::string(desired_state_ ? "required" : "not required");
 }
 
 TrustedVaultKeyRequiredStateChecker::TrustedVaultKeyRequiredStateChecker(
@@ -184,16 +180,14 @@ TrustedVaultKeyRequiredStateChecker::TrustedVaultKeyRequiredStateChecker(
     bool desired_state)
     : SingleClientStatusChangeChecker(service), desired_state_(desired_state) {}
 
-bool TrustedVaultKeyRequiredStateChecker::IsExitConditionSatisfied() {
+bool TrustedVaultKeyRequiredStateChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting until trusted vault keys are " +
+             std::string(desired_state_ ? "required" : "not required");
   return service()
              ->GetUserSettings()
              ->IsTrustedVaultKeyRequiredForPreferredDataTypes() ==
          desired_state_;
-}
-
-std::string TrustedVaultKeyRequiredStateChecker::GetDebugMessage() const {
-  return "Waiting until trusted vault keys are " +
-         std::string(desired_state_ ? "required" : "not required");
 }
 
 ScopedScryptFeatureToggler::ScopedScryptFeatureToggler(

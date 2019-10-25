@@ -270,16 +270,6 @@ void ExtensionsMenuView::Hide() {
     g_extensions_dialog->GetWidget()->Close();
 }
 
-// static
-std::unique_ptr<views::ImageView>
-ExtensionsMenuView::CreateFixedSizeIconView() {
-  // Note that this size is larger than the 16dp extension icons as it needs to
-  // accommodate 24dp click-to-script badging and surrounding shadows.
-  auto image_view = std::make_unique<views::ImageView>();
-  image_view->SetPreferredSize(kExtensionsMenuIconSize);
-  return image_view;
-}
-
 ExtensionsMenuView* ExtensionsMenuView::GetExtensionsMenuViewForTesting() {
   return g_extensions_dialog;
 }

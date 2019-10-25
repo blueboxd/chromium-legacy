@@ -153,6 +153,24 @@ body.hide-fakebox #fakebox {
   max-width: 584px;
 }
 
+.google-g-icon {
+  background-image:
+      url(../../../../ui/webui/resources/images/200-logo_googleg.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 14px;
+  bottom: 0;
+  left: 16px;
+  position: absolute;
+  top: 0;
+  width: 24px;
+}
+
+[dir=rtl] .google-g-icon {
+  left: auto;
+  right: 16px;
+}
+
 #fakebox {
   cursor: text;
 }
@@ -195,7 +213,7 @@ body.hide-fakebox #fakebox {
 
 #realbox-matches {
   background: white;
-  border-radius: 8px;
+  border-radius: 16px;
   display: none;
   left: 0;
   overflow: hidden;
@@ -245,6 +263,7 @@ body.hide-fakebox #fakebox {
 .search-icon {
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 16px;
   background-color: rgb(117, 117, 117);
   bottom: 0;
   left: 16px;
@@ -255,13 +274,11 @@ body.hide-fakebox #fakebox {
 
 .clock-icon {
   -webkit-mask-image: url(icons/clock.svg);
-  -webkit-mask-size: 16px;
 }
 
 .search-icon {
   -webkit-mask-image:
       url(../../../../ui/webui/resources/images/icon_search.svg);
-  -webkit-mask-size: 20px;
 }
 
 html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
@@ -404,7 +421,7 @@ html[dir=rtl] .microphone-icon {
   right: auto;
 }
 
-#realbox-input-wrapper :-webkit-any(.search-icon, .microphone-icon) {
+#realbox-input-wrapper :-webkit-any(.google-g-icon, .microphone-icon) {
   z-index: 3;
 }
 

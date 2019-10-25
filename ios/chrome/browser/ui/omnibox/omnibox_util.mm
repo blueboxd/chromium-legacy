@@ -91,13 +91,13 @@ LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
   switch (security_level) {
     case security_state::NONE:
     case security_state::WARNING:
-      return INSECURE;
+      return INFO;
     case security_state::EV_SECURE:
     case security_state::SECURE:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return SECURE;
     case security_state::DANGEROUS:
-      return DANGEROUS;
+      return NOT_SECURE_WARNING;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       return LOCATION_BAR_SECURITY_ICON_TYPE_COUNT;

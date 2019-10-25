@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/rappor/public/rappor_utils.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -30,36 +29,6 @@ constexpr base::TimeDelta kMinimumHeadsetSessionDuration(
     base::TimeDelta::FromSecondsD(0));
 constexpr base::TimeDelta kMaximumHeadsetSessionGap(
     base::TimeDelta::FromSecondsD(0));
-
-void SendRapporEnteredMode(const GURL& origin, Mode mode) {
-  switch (mode) {
-    case Mode::kVrBrowsingFullscreen:
-      rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
-                                              "VR.FullScreenMode", origin);
-      break;
-    default:
-      break;
-  }
-}
-
-void SendRapporEnteredVideoMode(const GURL& origin, Mode mode) {
-  switch (mode) {
-    case Mode::kVrBrowsingRegular:
-      rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
-                                              "VR.Video.Browser", origin);
-      break;
-    case Mode::kWebXrVrPresentation:
-      rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
-                                              "VR.Video.WebVR", origin);
-      break;
-    case Mode::kVrBrowsingFullscreen:
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor::GetDefaultService(), "VR.Video.FullScreenMode", origin);
-      break;
-    default:
-      break;
-  }
-}
 
 // Handles the lifetime of the helper which is attached to a WebContents.
 class SessionMetricsHelperData : public base::SupportsUserData::Data {
@@ -438,10 +407,7 @@ void SessionMetricsHelper::SetVrMode(Mode new_mode) {
     mode_timer_->StartSession(switch_time);
     if (num_videos_playing_ > 0) {
       mode_video_timer_->StartSession(switch_time);
-      SendRapporEnteredVideoMode(origin_, new_mode);
     }
-
-    SendRapporEnteredMode(origin_, new_mode);
   }
 
   mode_ = new_mode;
@@ -570,7 +536,6 @@ void SessionMetricsHelper::MediaStartedPlaying(
     if (mode_ != Mode::kNoVr) {
       session_video_timer_->StartSession(start_time);
       mode_video_timer_->StartSession(start_time);
-      SendRapporEnteredVideoMode(origin_, mode_);
     }
   }
 

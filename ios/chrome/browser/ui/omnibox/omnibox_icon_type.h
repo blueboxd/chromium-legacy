@@ -9,9 +9,9 @@
 
 // All available icons for security states.
 enum LocationBarSecurityIconType {
-  INSECURE = 0,
+  INFO = 0,
   SECURE,
-  DANGEROUS,
+  NOT_SECURE_WARNING,
   LOCATION_BAR_SECURITY_ICON_TYPE_COUNT,
 };
 

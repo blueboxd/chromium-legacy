@@ -647,7 +647,6 @@ void WebRuntimeFeatures::EnableCustomElementsV0(bool enable) {
 
 void WebRuntimeFeatures::EnableHTMLImports(bool enable) {
   RuntimeEnabledFeatures::SetHTMLImportsEnabled(enable);
-  RuntimeEnabledFeatures::SetHTMLImportsOnlyChromeEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableSignedExchangePrefetchCacheForNavigations(

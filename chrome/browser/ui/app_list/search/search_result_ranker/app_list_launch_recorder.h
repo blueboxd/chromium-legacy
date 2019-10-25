@@ -7,8 +7,11 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback_list.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
@@ -17,72 +20,71 @@
 
 namespace app_list {
 
-class SearchController;
+class AppListLaunchMetricsProvider;
 
-// AppListLaunchRecorder is a singleton that can be called to send hashed
-// logging events to UMA. Typical usage is:
-//
-//   AppListLaunchRecorder::GetInstance()->Record(my_data);
-//
-// This should only be called from the browser UI thread.
+// TODO(crbug.com/1016655): add comments and documentation once the API has been
+// finalized.
 class AppListLaunchRecorder {
  public:
-  // Stores information about a single launch event to be logged by a call to
-  // Record.
+  // Lists all clients using thie logging system. Each project should have an
+  // entry here. These values are persisted to logs. Entries should not be
+  // renumbered and numeric values should never be reused.
+  // TODO(crbug.com/1016655): add additional explanation for what it means to
+  // add a separate project (eg. different IDs) once the design has been
+  // finalized.
+  enum class Client {
+    kUnspecified = 0,
+    kTesting = 1,
+    kLauncher = 2,
+  };
+
   struct LaunchInfo {
-    LaunchInfo(metrics::ChromeOSAppListLaunchEventProto::LaunchType launch_type,
-               metrics::ChromeOSAppListLaunchEventProto::SearchProviderType
-                   search_provider_type,
-               const std::string& target,
-               const std::string& query,
-               const std::string& domain,
-               const std::string& app);
+    LaunchInfo();
     LaunchInfo(const LaunchInfo& other);
     ~LaunchInfo();
 
-    // Specifies which UI component this event was launched from.
-    metrics::ChromeOSAppListLaunchEventProto::LaunchType launch_type;
-    // Specifies which search provider created this event's result.
-    metrics::ChromeOSAppListLaunchEventProto::SearchProviderType
-        search_provider_type;
-    // A string identifier of the item being launched, eg. an app ID or
-    // filepath.
-    std::string target;
-    // The search query at the time of launch. If this is a zero-state launch
-    // (eg. from the suggested chips), this should be the empty string.
-    std::string query;
-    // The last-visited domain at the time of launch.
-    std::string domain;
-    // The app ID of the last-opened app at the time of launch.
-    std::string app;
+    AppListLaunchRecorder::Client client;
+    std::vector<std::pair<int, std::string>> hashed;
+    std::vector<std::pair<int, int>> unhashed;
   };
 
-  using LaunchEventCallback =
-      base::RepeatingCallback<void(const AppListLaunchRecorder::LaunchInfo&)>;
-  using LaunchEventSubscription = base::CallbackList<void(
-      const AppListLaunchRecorder::LaunchInfo&)>::Subscription;
-
-  // Returns the instance of AppListLaunchRecorder.
   static AppListLaunchRecorder* GetInstance();
-
-  // Registers a callback to be invoked on a call to Record().
-  std::unique_ptr<LaunchEventSubscription> RegisterCallback(
-      const LaunchEventCallback& callback);
 
  private:
   friend class base::NoDestructor<AppListLaunchRecorder>;
+  friend class app_list::AppListLaunchMetricsProvider;
 
-  // These are the clients of hashed logging:
-  friend class SearchController;
-
-  // Adds |launch_info| to the cache of launches to be hashed and provided to
-  // the metrics service on a call to ProvideCurrentSessionData.
-  void Record(const LaunchInfo& launch_info);
+  using EventFn = void(const LaunchInfo&);
+  using LaunchEventCallback = base::RepeatingCallback<EventFn>;
+  using LaunchEventCallbackList = base::CallbackList<EventFn>;
+  using LaunchEventSubscription = LaunchEventCallbackList::Subscription;
 
   AppListLaunchRecorder();
   ~AppListLaunchRecorder();
 
-  base::CallbackList<void(const LaunchInfo&)> callback_list_;
+  template <typename T>
+  void Log(Client client,
+           const std::vector<std::pair<T, std::string>>& hashed,
+           const std::vector<std::pair<T, int>>& unhashed) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    static_assert(std::is_enum<T>::value,
+                  "Non enum passed to AppListLaunchRecorder::Log");
+
+    LaunchInfo event;
+    event.client = client;
+    for (const auto& pair : hashed)
+      event.hashed.push_back({static_cast<int>(pair.first), pair.second});
+    for (const auto& pair : unhashed)
+      event.unhashed.push_back({static_cast<int>(pair.first), pair.second});
+
+    callback_list_.Notify(event);
+  }
+
+  // Registers a callback to be invoked on a call to Log().
+  std::unique_ptr<LaunchEventSubscription> RegisterCallback(
+      const LaunchEventCallback& callback);
+
+  LaunchEventCallbackList callback_list_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

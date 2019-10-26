@@ -13,6 +13,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/watch_time_recorder.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +49,7 @@ class MediaMetricsProviderTest : public testing::Test {
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(),
         MediaMetricsProvider::GetLearningSessionCallback(),
-        mojo::MakeRequest(&provider_));
+        provider_.BindNewPipeAndPassReceiver());
     provider_->Initialize(is_mse, scheme);
   }
 
@@ -64,7 +65,7 @@ class MediaMetricsProviderTest : public testing::Test {
   base::TestMessageLoop message_loop_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
   ukm::SourceId source_id_;
-  mojom::MediaMetricsProviderPtr provider_;
+  mojo::Remote<mojom::MediaMetricsProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaMetricsProviderTest);
 };

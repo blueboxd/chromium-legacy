@@ -168,12 +168,12 @@ void MediaMetricsProvider::Create(
     GetOriginCallback get_origin_cb,
     VideoDecodePerfHistory::SaveCallback save_cb,
     GetLearningSessionCallback learning_session_cb,
-    mojom::MediaMetricsProviderRequest request) {
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mojom::MediaMetricsProvider> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<MediaMetricsProvider>(
           is_incognito, is_top_frame, get_source_id_cb.Run(),
           get_origin_cb.Run(), std::move(save_cb), learning_session_cb),
-      std::move(request));
+      std::move(receiver));
 }
 
 void MediaMetricsProvider::SetHasPlayed() {

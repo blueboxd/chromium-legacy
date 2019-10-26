@@ -393,7 +393,6 @@ source_set("blink_headers") {
     "web/modules/webrtc/webrtc_audio_device_impl.h",
     "web/modules/webrtc/webrtc_audio_device_not_impl.h",
     "web/modules/webrtc/webrtc_audio_renderer.h",
-    "web/web_active_fling_parameters.h",
     "web/web_array_buffer.h",
     "web/web_array_buffer_converter.h",
     "web/web_associated_url_loader.h",

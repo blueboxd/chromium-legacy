@@ -23,6 +23,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/watch_time_keys.h"
 #include "media/mojo/services/media_metrics_provider.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +68,7 @@ class WatchTimeRecorderTest : public testing::Test {
             []() { return learning::FeatureValue(0); }) /* origin callback */,
         VideoDecodePerfHistory::SaveCallback(),
         MediaMetricsProvider::GetLearningSessionCallback(),
-        mojo::MakeRequest(&provider_));
+        provider_.BindNewPipeAndPassReceiver());
   }
 
   ~WatchTimeRecorderTest() override { base::RunLoop().RunUntilIdle(); }
@@ -172,7 +173,7 @@ class WatchTimeRecorderTest : public testing::Test {
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  mojom::MediaMetricsProviderPtr provider_;
+  mojo::Remote<mojom::MediaMetricsProvider> provider_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
   ukm::SourceId source_id_;

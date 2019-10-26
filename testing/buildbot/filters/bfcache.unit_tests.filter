@@ -1,27 +1,5 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
 
-# Tests below are failing on android only.
-# Need to be triaged, see https://crbug.com/1007276.
-
-# Crashing with:
-# [FATAL:deferred_sequenced_task_runner.cc(83)] Check failed: !target_task_runner_
--ChromeBrowserMainExtraPartsMetricsTest.VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart
--ChromeMetricsServiceClientTest.TestRegisterUKMProviders
--ServicesTest.ConnectToFilePatch
--SoundContentSettingObserverTest.*
--SupervisedUserWhitelistInstallerTest.*
-
-# Crashing with:
-# [FATAL:navigation_url_loader.cc(55)] Check failed: g_loader_factory == nullptr || factory == nullptr
--AddressAccessoryControllerTest.*
--AutofillCreditCardFillingInfoBarDelegateMobileTest.Metrics
--CreditCardAccessoryControllerTest.PreventsFillingInsecureContexts
--CreditCardAccessoryControllerTest.ServerCardUnmask
-
-# Other failures
--OfflinePageUtilsTest.*
--PreviewsUKMObserverTest.TestPageEndReasonUMA
-
 # https://crbug.com/1015328
 -DownloadRequestLimiterTest.HistoryBack
 -DownloadRequestLimiterTest.HistoryForwardBack

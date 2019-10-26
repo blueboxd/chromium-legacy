@@ -179,9 +179,7 @@ bool ChildProcessHostImpl::InitChannel() {
   // here since the |delegate_| has already been initialized and this is the
   // first potential use of the interface.
   mojo::Remote<mojom::ChildProcess> bootstrap;
-  content::BindInterface(
-      this,
-      mojom::ChildProcessRequest(child_process_.BindNewPipeAndPassReceiver()));
+  content::BindInterface(this, child_process_.BindNewPipeAndPassReceiver());
   child_process_->Initialize(bootstrap_receiver_.BindNewPipeAndPassRemote());
 
   // Make sure these messages get sent first.

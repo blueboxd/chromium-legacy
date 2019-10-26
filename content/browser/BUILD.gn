@@ -1339,6 +1339,8 @@ jumbo_source_set("browser") {
     "push_messaging/push_messaging_router.h",
     "quota_dispatcher_host.cc",
     "quota_dispatcher_host.h",
+    "renderer_host/agent_metrics_collector.cc",
+    "renderer_host/agent_metrics_collector.h",
     "renderer_host/clipboard_host_impl.cc",
     "renderer_host/clipboard_host_impl.h",
     "renderer_host/clipboard_host_impl_mac.mm",

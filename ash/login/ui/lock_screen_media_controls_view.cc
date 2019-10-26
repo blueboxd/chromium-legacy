@@ -743,7 +743,9 @@ void LockScreenMediaControlsView::HideArtwork() {
 }
 
 void LockScreenMediaControlsView::SetShown(Shown shown) {
-  DCHECK(!shown_);
+  if (shown_ == shown)
+    return;
+
   shown_ = shown;
 
   base::UmaHistogramEnumeration(kMediaControlsShownHistogramName, shown);

@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4812325d6c2c0de1cf44e7b1669e23b86eacfd52',
+  'v8_revision': '0e9cc93898c0f838c29b5040a18bbbaca389a46c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -183,7 +183,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '76763cb90a431b7fa3a9dcfefe6b71436a8e48a1',
+  'angle_revision': 'e7c8e80dbb2eb3d5311bdda74e757dd12b80a8a0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '4b1db19bd4262b8289266d0e753d6d4f247bf94d',
+  'catapult_revision': '7568fa8a28d974cdbbae590232915e1283937736',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd3ddd33257c2f1f0e9730922464511f039f03a9b',
+  'devtools_frontend_revision': 'c20eb36aa74460b2cd476e2ec4af675e66e62f00',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1509,7 +1509,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '2701c130839edbeb226735b0775966b6423d9e83',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'e95fc85cb76d6bec8b06300774efc97309b5947a',
+    Var('webrtc_git') + '/src.git' + '@' + 'e38e11986f0037818df79abc120024420e901074',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.

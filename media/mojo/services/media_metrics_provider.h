@@ -58,13 +58,14 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   // returns.  The intention is that they'll be run to produce the constructor
   // arguments for MediaMetricsProvider synchronously.  They should not be
   // copied or moved for later.
-  static void Create(BrowsingMode is_incognito,
-                     FrameStatus is_top_frame,
-                     GetSourceIdCallback get_source_id_cb,
-                     GetOriginCallback get_origin_cb,
-                     VideoDecodePerfHistory::SaveCallback save_cb,
-                     GetLearningSessionCallback learning_session_cb,
-                     mojom::MediaMetricsProviderRequest request);
+  static void Create(
+      BrowsingMode is_incognito,
+      FrameStatus is_top_frame,
+      GetSourceIdCallback get_source_id_cb,
+      GetOriginCallback get_origin_cb,
+      VideoDecodePerfHistory::SaveCallback save_cb,
+      GetLearningSessionCallback learning_session_cb,
+      mojo::PendingReceiver<mojom::MediaMetricsProvider> receiver);
 
  private:
   struct PipelineInfo {

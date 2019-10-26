@@ -23,6 +23,7 @@
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -213,8 +214,9 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
     // tries to query the renderer. It doesn't matter that the pipe isn't
     // connected on the other end, as we really don't want it to respond
     // anyways.
-    viz::mojom::InputTargetClientPtr input_target_client;
-    service_manager::InterfaceProvider().GetInterface(&input_target_client);
+    mojo::Remote<viz::mojom::InputTargetClient> input_target_client;
+    service_manager::InterfaceProvider().GetInterface(
+        input_target_client.BindNewPipeAndPassReceiver());
     widget_host_root_->SetInputTargetClient(std::move(input_target_client));
 
     EXPECT_EQ(view_root_.get(),

@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_AGENT_METRICS_COLLECTOR_H_
 
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/agents/agent_metrics.mojom-blink.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace base {
@@ -55,8 +57,12 @@ class AgentMetricsCollector final
 
  private:
   void AddTimeToTotalAgents(int time_delta_to_add);
+  void ReportToBrowser();
 
   void ReportingTimerFired(TimerBase*);
+
+  mojo::Remote<blink::mojom::blink::AgentMetricsCollectorHost>&
+  GetAgentMetricsCollectorHost();
 
   std::unique_ptr<TaskRunnerTimer<AgentMetricsCollector>> reporting_timer_;
   base::TimeTicks time_last_reported_;
@@ -70,6 +76,9 @@ class AgentMetricsCollector final
   AgentToDocumentsMap agent_to_documents_map_;
 
   const base::TickClock* clock_;
+
+  mojo::Remote<blink::mojom::blink::AgentMetricsCollectorHost>
+      agent_metrics_collector_host_;
 };
 
 }  // namespace blink

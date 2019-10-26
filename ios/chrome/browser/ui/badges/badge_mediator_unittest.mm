@@ -152,6 +152,14 @@ class BadgeMediatorTest : public PlatformTest {
   FakeWebStateListDelegate web_state_list_delegate_;
 };
 
+// Test that the BadgeMediator responds with no displayed and fullscreen badge
+// when there are no Infobars added and the BrowserState is not OffTheRecord.
+TEST_F(BadgeMediatorTest, BadgeMediatorTestNoInfobar) {
+  AddAndActivateWebState(0, false);
+  EXPECT_FALSE(badge_consumer_.displayedBadge);
+  EXPECT_FALSE(badge_consumer_.hasIncognitoBadge);
+}
+
 // Test that the BadgeMediator responds with one new badge when an infobar is
 // added
 TEST_F(BadgeMediatorTest, BadgeMediatorTestAddInfobar) {

@@ -41,7 +41,7 @@
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
@@ -363,8 +363,9 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   DCHECK_EQ(static_cast<FrameFetchContext*>(fetch_context_.get())->frame(),
             web_frame);
 
-  media::mojom::MediaMetricsProviderPtr metrics_provider;
-  remote_interfaces_->GetInterface(mojo::MakeRequest(&metrics_provider));
+  mojo::PendingRemote<media::mojom::MediaMetricsProvider> metrics_provider;
+  remote_interfaces_->GetInterface(
+      metrics_provider.InitWithNewPipeAndPassReceiver());
 
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;

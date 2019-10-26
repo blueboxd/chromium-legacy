@@ -44,6 +44,7 @@
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -346,7 +347,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     factory_selector->StartRequestRemotePlayStateCB(base::DoNothing());
 #endif
 
-    mojom::MediaMetricsProviderPtr provider;
+    mojo::Remote<mojom::MediaMetricsProvider> provider;
     MediaMetricsProvider::Create(
         MediaMetricsProvider::BrowsingMode::kNormal,
         MediaMetricsProvider::FrameStatus::kNotTopFrame,
@@ -354,7 +355,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(),
         MediaMetricsProvider::GetLearningSessionCallback(),
-        mojo::MakeRequest(&provider));
+        provider.BindNewPipeAndPassReceiver());
 
     // Initialize provider since none of the tests below actually go through the
     // full loading/pipeline initialize phase. If this ever changes the provider
@@ -372,7 +373,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::BindRepeating(&WebMediaPlayerImplTest::OnAdjustAllocatedMemory,
                             base::Unretained(this)),
         nullptr, RequestRoutingTokenCallback(), nullptr, false, false,
-        std::move(provider),
+        provider.Unbind(),
         base::BindOnce(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                        base::Unretained(this)),
         viz::TestContextProvider::Create(),

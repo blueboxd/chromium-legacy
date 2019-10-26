@@ -57,7 +57,6 @@
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -709,7 +708,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   }
 
   void SetInputTargetClient(
-      viz::mojom::InputTargetClientPtr input_target_client);
+      mojo::Remote<viz::mojom::InputTargetClient> input_target_client);
 
   // InputRouterImplClient overrides.
   mojom::WidgetInputHandler* GetWidgetInputHandler() override;
@@ -1270,7 +1269,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojo::AssociatedRemote<mojom::WidgetInputHandler>
       associated_widget_input_handler_;
   mojo::Remote<mojom::WidgetInputHandler> widget_input_handler_;
-  viz::mojom::InputTargetClientPtr input_target_client_;
+  mojo::Remote<viz::mojom::InputTargetClient> input_target_client_;
 
   base::Optional<uint16_t> screen_orientation_angle_for_testing_;
   base::Optional<ScreenOrientationValues> screen_orientation_type_for_testing_;

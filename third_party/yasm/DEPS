@@ -14,5 +14,5 @@ vars = {
 }
 
 deps = {
-  'source/patched-yasm': '{chromium_git}/chromium/deps/yasm/patched-yasm.git@{jsoncpp_revision}'
+  'source/patched-yasm': '{chromium_git}/chromium/deps/yasm/patched-yasm.git@{patched_yasm_revision}'
 }

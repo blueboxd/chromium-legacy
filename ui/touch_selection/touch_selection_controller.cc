@@ -253,13 +253,21 @@ gfx::RectF TouchSelectionController::GetRectBetweenBounds() const {
   if (active_status_ == INACTIVE)
     return gfx::RectF();
 
-  if (start_.visible() && !end_.visible())
+  if (start_.visible() && !end_.visible()) {
+    // This BoundingRect is actually a line unless the selection is rotated.
     return gfx::BoundingRect(start_.edge_top(), start_.edge_bottom());
+  }
 
-  if (end_.visible() && !start_.visible())
+  if (end_.visible() && !start_.visible()) {
+    // This BoundingRect is actually a line unless the selection is rotated.
     return gfx::BoundingRect(end_.edge_top(), end_.edge_bottom());
+  }
 
   // If both handles are visible, or both are invisible, use the entire rect.
+  // Specifically, if both handles are on the same horizontal line for
+  // writing-mode: vertical-*, or both are on the same vertical line for
+  // writing-mode: horizontal, the entire rect is actually a line unless the
+  // selection is rotated.
   return RectFBetweenSelectionBounds(start_, end_);
 }
 

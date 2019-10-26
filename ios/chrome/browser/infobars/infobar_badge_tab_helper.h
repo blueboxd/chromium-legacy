@@ -42,6 +42,8 @@ class InfobarBadgeTabHelper
   void UpdateBadgeForInfobarBannerDismissed(InfobarType infobar_type);
 
   // Returns all BadgeItems for the TabHelper Webstate.
+  // TODO(crbug.com/1016360): Consider changing to return an array instead of a
+  // vector here.
   std::vector<id<BadgeItem>> GetInfobarBadgeItems();
 
   ~InfobarBadgeTabHelper() override;

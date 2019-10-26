@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
@@ -44,7 +45,7 @@
 #include "components/update_client/update_client.h"
 
 #if defined(OS_WIN)
-#include "chrome/updater/win/setup/setup.h"
+#include "chrome/updater/win/install_app.h"
 #include "chrome/updater/win/setup/uninstall.h"
 #endif
 
@@ -59,19 +60,12 @@ namespace updater {
 
 namespace {
 
-// For now, use a specific app ID.
-const char kOmaha4AppId[] = "{44FC7FE2-65CE-487C-93F4-EDEE46EEAAAB}";
-
 void ThreadPoolStart() {
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Updater");
 }
 
 void ThreadPoolStop() {
   base::ThreadPoolInstance::Get()->Shutdown();
-}
-
-void QuitLoop(base::OnceClosure quit_closure) {
-  std::move(quit_closure).Run();
 }
 
 class Observer : public update_client::UpdateClient::Observer {
@@ -131,10 +125,13 @@ void TerminateUpdaterMain() {
   ThreadPoolStop();
 }
 
-int UpdaterInstall() {
+int UpdaterInstallApp() {
 #if defined(OS_WIN)
-  return Setup();
+  // TODO(sorin): pick up the app id from the tag. https://crbug.com/1014298
+  // For now, use Omaha4 app id, just to get a CRX for testing of the UI.
+  return InstallApp({kUpdaterAppId});
 #else
+  NOTREACHED();
   return -1;
 #endif
 }
@@ -148,7 +145,7 @@ int UpdaterUninstall() {
 }
 
 int UpdaterUpdateApps() {
-  auto installer = base::MakeRefCounted<Installer>(kOmaha4AppId);
+  auto installer = base::MakeRefCounted<Installer>(kUpdaterAppId);
   installer->FindInstallOfApp();
   const auto component = installer->MakeCrxComponent();
 
@@ -176,11 +173,15 @@ int UpdaterUpdateApps() {
               return {component};
             },
             component),
-        true,
+        false,
         base::BindOnce(
             [](base::OnceClosure closure, update_client::Error error) {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
-                  FROM_HERE, base::BindOnce(&QuitLoop, std::move(closure)));
+                  FROM_HERE, base::BindOnce(
+                                 [](base::OnceClosure quit_closure) {
+                                   std::move(quit_closure).Run();
+                                 },
+                                 std::move(closure)));
             },
             runloop.QuitWhenIdleClosure()));
 
@@ -226,17 +227,14 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
     return *ptr;
   }
 
-  if (command_line->HasSwitch(kInstallSwitch)) {
-    return UpdaterInstall();
-  }
+  if (command_line->HasSwitch(kInstallSwitch))
+    return UpdaterInstallApp();
 
-  if (command_line->HasSwitch(kUninstallSwitch)) {
+  if (command_line->HasSwitch(kUninstallSwitch))
     return UpdaterUninstall();
-  }
 
-  if (command_line->HasSwitch(kUpdateAppsSwitch)) {
+  if (command_line->HasSwitch(kUpdateAppsSwitch))
     return UpdaterUpdateApps();
-  }
 
   VLOG(1) << "Unknown command line switch.";
   return -1;

@@ -15,9 +15,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * Unit tests for {@link GlobalNightModeStateProviderHolder}.

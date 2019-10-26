@@ -212,7 +212,7 @@ export class TabElement extends CustomElement {
       const animation = this.animate(
           [
             {maxWidth: 0, opacity: 0},
-            {maxWidth: '280px', opacity: 1},
+            {maxWidth: 'var(--tabstrip-tab-width)', opacity: 1},
           ],
           {
             duration: DEFAULT_ANIMATION_DURATION,
@@ -229,7 +229,7 @@ export class TabElement extends CustomElement {
     return new Promise(resolve => {
       const animation = this.animate(
           [
-            {maxWidth: '280px', opacity: 1},
+            {maxWidth: 'var(--tabstrip-tab-width)', opacity: 1},
             {maxWidth: 0, opacity: 0},
           ],
           {

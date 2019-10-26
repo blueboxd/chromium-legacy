@@ -550,14 +550,14 @@ void HTMLCanvasElement::Reset() {
   bool had_resource_provider = HasResourceProvider();
 
   unsigned w = 0;
-  AtomicString value = getAttribute(html_names::kWidthAttr);
+  AtomicString value = FastGetAttribute(html_names::kWidthAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, w) ||
       w > 0x7fffffffu) {
     w = kDefaultCanvasWidth;
   }
 
   unsigned h = 0;
-  value = getAttribute(html_names::kHeightAttr);
+  value = FastGetAttribute(html_names::kHeightAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, h) ||
       h > 0x7fffffffu) {
     h = kDefaultCanvasHeight;

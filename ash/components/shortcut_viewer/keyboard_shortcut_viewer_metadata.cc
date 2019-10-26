@@ -1380,6 +1380,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {},
        // |shortcut_key_codes|
        {ui::VKEY_LMENU, ui::VKEY_UNKNOWN, ui::VKEY_E, ui::VKEY_F}},
+
+      {// |categories|
+       {ShortcutCategory::kPopular},
+       IDS_KSV_DESCRIPTION_OPEN_GOOGLE_ASSISTANT,
+       IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_A, ui::EF_COMMAND_DOWN}}},
   });
 
   static bool is_initialized = false;

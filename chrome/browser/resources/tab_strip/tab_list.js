@@ -73,6 +73,8 @@ class TabListElement extends CustomElement {
         /** @type {!Element} */ (
             this.shadowRoot.querySelector('#tabsContainer'));
 
+    addWebUIListener(
+        'layout-changed', layout => this.applyCSSDictionary_(layout));
     addWebUIListener('theme-changed', () => this.fetchAndUpdateColors_());
     this.tabStripEmbedderProxy_.observeThemeChanges();
 
@@ -114,8 +116,21 @@ class TabListElement extends CustomElement {
     this.animationPromises = this.animationPromises.then(() => promise);
   }
 
+  /**
+   * @param {!Object<string, string>} dictionary
+   * @private
+   */
+  applyCSSDictionary_(dictionary) {
+    for (const [cssVariable, value] of Object.entries(dictionary)) {
+      this.style.setProperty(cssVariable, value);
+    }
+  }
+
   connectedCallback() {
+    this.tabStripEmbedderProxy_.getLayout().then(
+        layout => this.applyCSSDictionary_(layout));
     this.fetchAndUpdateColors_();
+
     this.tabsApi_.getTabs().then(tabs => {
       tabs.forEach(tab => this.onTabCreated_(tab));
       this.moveOrScrollToActiveTab_();
@@ -153,11 +168,8 @@ class TabListElement extends CustomElement {
 
   /** @private */
   fetchAndUpdateColors_() {
-    this.tabStripEmbedderProxy_.getColors().then(colors => {
-      for (const [cssVariable, rgbaValue] of Object.entries(colors)) {
-        this.style.setProperty(cssVariable, rgbaValue);
-      }
-    });
+    this.tabStripEmbedderProxy_.getColors().then(
+        colors => this.applyCSSDictionary_(colors));
   }
 
   /**

@@ -56,10 +56,10 @@ class CONTENT_EXPORT MediaPlayerRenderer
   // media::Renderer implementation
   void Initialize(media::MediaResource* media_resource,
                   media::RendererClient* client,
-                  const media::PipelineStatusCB& init_cb) override;
+                  media::PipelineStatusCallback init_cb) override;
   void SetCdm(media::CdmContext* cdm_context,
               const media::CdmAttachedCB& cdm_attached_cb) override;
-  void Flush(const base::Closure& flush_cb) override;
+  void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
 
   // N.B: MediaPlayerBridge doesn't support variable playback rates (but it
@@ -97,7 +97,7 @@ class CONTENT_EXPORT MediaPlayerRenderer
 
  private:
   void CreateMediaPlayer(const media::MediaUrlParams& params,
-                         const media::PipelineStatusCB& init_cb);
+                         media::PipelineStatusCallback init_cb);
 
   // Cancels the pending request started by InitiateScopedSurfaceRequest(), if
   // it exists. No-ops otherwise.

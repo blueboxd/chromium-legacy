@@ -67,13 +67,14 @@ void OnSafetyTipClosed(security_state::SafetyTipStatus safety_tip_status,
 
 }  // namespace
 
-ReputationWebContentsObserver::~ReputationWebContentsObserver() {}
+ReputationWebContentsObserver::~ReputationWebContentsObserver() = default;
 
 void ReputationWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument() ||
-      !navigation_handle->HasCommitted()) {
+      !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage()) {
+    MaybeCallReputationCheckCallback();
     return;
   }
 

@@ -958,17 +958,17 @@ class ChunkDemuxerTest : public ::testing::Test {
     return nullptr;
   }
 
-  void Read(DemuxerStream::Type type, const DemuxerStream::ReadCB& read_cb) {
-    GetStream(type)->Read(read_cb);
+  void Read(DemuxerStream::Type type, DemuxerStream::ReadCB read_cb) {
+    GetStream(type)->Read(std::move(read_cb));
     base::RunLoop().RunUntilIdle();
   }
 
-  void ReadAudio(const DemuxerStream::ReadCB& read_cb) {
-    Read(DemuxerStream::AUDIO, read_cb);
+  void ReadAudio(DemuxerStream::ReadCB read_cb) {
+    Read(DemuxerStream::AUDIO, std::move(read_cb));
   }
 
-  void ReadVideo(const DemuxerStream::ReadCB& read_cb) {
-    Read(DemuxerStream::VIDEO, read_cb);
+  void ReadVideo(DemuxerStream::ReadCB read_cb) {
+    Read(DemuxerStream::VIDEO, std::move(read_cb));
   }
 
   void GenerateExpectedReads(int timecode, int block_count) {
@@ -1082,8 +1082,8 @@ class ChunkDemuxerTest : public ::testing::Test {
 
     *last_timestamp = kNoTimestamp;
     do {
-      stream->Read(base::Bind(&ChunkDemuxerTest::StoreStatusAndBuffer,
-                              base::Unretained(this), status, &buffer));
+      stream->Read(base::BindOnce(&ChunkDemuxerTest::StoreStatusAndBuffer,
+                                  base::Unretained(this), status, &buffer));
       base::RunLoop().RunUntilIdle();
       if (*status == DemuxerStream::kOk && !buffer->end_of_stream())
         *last_timestamp = buffer->timestamp();
@@ -1093,7 +1093,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   void ExpectEndOfStream(DemuxerStream::Type type) {
     EXPECT_CALL(*this, ReadDone(DemuxerStream::kOk, IsEndOfStream()));
     GetStream(type)->Read(
-        base::Bind(&ChunkDemuxerTest::ReadDone, base::Unretained(this)));
+        base::BindOnce(&ChunkDemuxerTest::ReadDone, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1101,14 +1101,14 @@ class ChunkDemuxerTest : public ::testing::Test {
     EXPECT_CALL(*this, ReadDone(DemuxerStream::kOk,
                                 HasTimestamp(timestamp_in_ms)));
     GetStream(type)->Read(
-        base::Bind(&ChunkDemuxerTest::ReadDone, base::Unretained(this)));
+        base::BindOnce(&ChunkDemuxerTest::ReadDone, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
   void ExpectConfigChanged(DemuxerStream::Type type) {
     EXPECT_CALL(*this, ReadDone(DemuxerStream::kConfigChanged, _));
     GetStream(type)->Read(
-        base::Bind(&ChunkDemuxerTest::ReadDone, base::Unretained(this)));
+        base::BindOnce(&ChunkDemuxerTest::ReadDone, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1123,8 +1123,8 @@ class ChunkDemuxerTest : public ::testing::Test {
       // left to return.
       DemuxerStream::Status status = DemuxerStream::kAborted;
       scoped_refptr<DecoderBuffer> buffer;
-      stream->Read(base::Bind(&ChunkDemuxerTest::StoreStatusAndBuffer,
-                              base::Unretained(this), &status, &buffer));
+      stream->Read(base::BindOnce(&ChunkDemuxerTest::StoreStatusAndBuffer,
+                                  base::Unretained(this), &status, &buffer));
       base::RunLoop().RunUntilIdle();
       if (status != DemuxerStream::kOk || buffer->end_of_stream())
         break;
@@ -1192,18 +1192,18 @@ class ChunkDemuxerTest : public ::testing::Test {
       bool video_read_done = false;
 
       if (timestamps[i].audio_time_ms != kSkip) {
-        ReadAudio(base::Bind(&OnReadDone,
-                             base::TimeDelta::FromMilliseconds(
-                                 timestamps[i].audio_time_ms),
-                             &audio_read_done));
+        ReadAudio(base::BindOnce(
+            &OnReadDone,
+            base::TimeDelta::FromMilliseconds(timestamps[i].audio_time_ms),
+            &audio_read_done));
         EXPECT_TRUE(audio_read_done);
       }
 
       if (timestamps[i].video_time_ms != kSkip) {
-        ReadVideo(base::Bind(&OnReadDone,
-                             base::TimeDelta::FromMilliseconds(
-                                 timestamps[i].video_time_ms),
-                             &video_read_done));
+        ReadVideo(base::BindOnce(
+            &OnReadDone,
+            base::TimeDelta::FromMilliseconds(timestamps[i].video_time_ms),
+            &video_read_done));
         EXPECT_TRUE(video_read_done);
       }
     }
@@ -1441,8 +1441,8 @@ TEST_F(ChunkDemuxerTest, Shutdown_EndOfStreamWhileWaitingForData) {
 
   bool audio_read_done = false;
   bool video_read_done = false;
-  audio_stream->Read(base::Bind(&OnReadDone_EOSExpected, &audio_read_done));
-  video_stream->Read(base::Bind(&OnReadDone_EOSExpected, &video_read_done));
+  audio_stream->Read(base::BindOnce(&OnReadDone_EOSExpected, &audio_read_done));
+  video_stream->Read(base::BindOnce(&OnReadDone_EOSExpected, &video_read_done));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(audio_read_done);
@@ -1540,12 +1540,10 @@ TEST_F(ChunkDemuxerTest, Read) {
 
   bool audio_read_done = false;
   bool video_read_done = false;
-  ReadAudio(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &audio_read_done));
-  ReadVideo(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &video_read_done));
+  ReadAudio(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &audio_read_done));
+  ReadVideo(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &video_read_done));
 
   EXPECT_TRUE(audio_read_done);
   EXPECT_TRUE(video_read_done);
@@ -1748,8 +1746,10 @@ class EndOfStreamHelper {
     EXPECT_FALSE(audio_read_done_);
     EXPECT_FALSE(video_read_done_);
 
-    audio_stream_->Read(base::Bind(&OnEndOfStreamReadDone, &audio_read_done_));
-    video_stream_->Read(base::Bind(&OnEndOfStreamReadDone, &video_read_done_));
+    audio_stream_->Read(
+        base::BindOnce(&OnEndOfStreamReadDone, &audio_read_done_));
+    video_stream_->Read(
+        base::BindOnce(&OnEndOfStreamReadDone, &video_read_done_));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1792,12 +1792,10 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWithPendingReads) {
   EndOfStreamHelper end_of_stream_helper_1(audio_stream, video_stream);
   EndOfStreamHelper end_of_stream_helper_2(audio_stream, video_stream);
 
-  ReadAudio(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &audio_read_done_1));
-  ReadVideo(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &video_read_done_1));
+  ReadAudio(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &audio_read_done_1));
+  ReadVideo(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &video_read_done_1));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(audio_read_done_1);
@@ -1830,12 +1828,10 @@ TEST_F(ChunkDemuxerTest, ReadsAfterEndOfStream) {
   EndOfStreamHelper end_of_stream_helper_2(audio_stream, video_stream);
   EndOfStreamHelper end_of_stream_helper_3(audio_stream, video_stream);
 
-  ReadAudio(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &audio_read_done_1));
-  ReadVideo(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &video_read_done_1));
+  ReadAudio(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &audio_read_done_1));
+  ReadVideo(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &video_read_done_1));
 
   end_of_stream_helper_1.RequestReads();
 
@@ -2057,12 +2053,10 @@ TEST_F(ChunkDemuxerTest, IncrementalClusterParsing) {
 
   bool audio_read_done = false;
   bool video_read_done = false;
-  ReadAudio(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &audio_read_done));
-  ReadVideo(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &video_read_done));
+  ReadAudio(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &audio_read_done));
+  ReadVideo(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &video_read_done));
 
   // Make sure the reads haven't completed yet.
   EXPECT_FALSE(audio_read_done);
@@ -2081,12 +2075,10 @@ TEST_F(ChunkDemuxerTest, IncrementalClusterParsing) {
 
   audio_read_done = false;
   video_read_done = false;
-  ReadAudio(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(23),
-                       &audio_read_done));
-  ReadVideo(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(33),
-                       &video_read_done));
+  ReadAudio(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(23),
+                           &audio_read_done));
+  ReadVideo(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(33),
+                           &video_read_done));
 
   // Make sure the reads haven't completed yet.
   EXPECT_FALSE(audio_read_done);
@@ -2270,7 +2262,7 @@ TEST_F(ChunkDemuxerTest, RemoveId) {
 
   // Read() from audio should return "end of stream" buffers.
   bool audio_read_done = false;
-  audio_stream->Read(base::Bind(&OnReadDone_EOSExpected, &audio_read_done));
+  audio_stream->Read(base::BindOnce(&OnReadDone_EOSExpected, &audio_read_done));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(audio_read_done);
 
@@ -2305,8 +2297,8 @@ TEST_F(ChunkDemuxerTest, SeekCanceled) {
   // Attempt to read in unbuffered area; should not fulfill the read.
   bool audio_read_done = false;
   bool video_read_done = false;
-  ReadAudio(base::Bind(&OnReadDone_AbortExpected, &audio_read_done));
-  ReadVideo(base::Bind(&OnReadDone_AbortExpected, &video_read_done));
+  ReadAudio(base::BindOnce(&OnReadDone_AbortExpected, &audio_read_done));
+  ReadVideo(base::BindOnce(&OnReadDone_AbortExpected, &video_read_done));
   EXPECT_FALSE(audio_read_done);
   EXPECT_FALSE(video_read_done);
 
@@ -2341,8 +2333,8 @@ TEST_F(ChunkDemuxerTest, SeekCanceledWhileWaitingForSeek) {
   // Read requests should be fulfilled with empty buffers.
   bool audio_read_done = false;
   bool video_read_done = false;
-  ReadAudio(base::Bind(&OnReadDone_AbortExpected, &audio_read_done));
-  ReadVideo(base::Bind(&OnReadDone_AbortExpected, &video_read_done));
+  ReadAudio(base::BindOnce(&OnReadDone_AbortExpected, &audio_read_done));
+  ReadVideo(base::BindOnce(&OnReadDone_AbortExpected, &video_read_done));
   EXPECT_TRUE(audio_read_done);
   EXPECT_TRUE(video_read_done);
 
@@ -2367,12 +2359,10 @@ TEST_F(ChunkDemuxerTest, SeekAudioAndVideoSources) {
   // Read() should return buffers at 0.
   bool audio_read_done = false;
   bool video_read_done = false;
-  ReadAudio(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &audio_read_done));
-  ReadVideo(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(0),
-                       &video_read_done));
+  ReadAudio(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &audio_read_done));
+  ReadVideo(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(0),
+                           &video_read_done));
   EXPECT_TRUE(audio_read_done);
   EXPECT_TRUE(video_read_done);
 
@@ -2381,12 +2371,10 @@ TEST_F(ChunkDemuxerTest, SeekAudioAndVideoSources) {
 
   audio_read_done = false;
   video_read_done = false;
-  ReadAudio(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromSeconds(3),
-                       &audio_read_done));
-  ReadVideo(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromSeconds(3),
-                       &video_read_done));
+  ReadAudio(base::BindOnce(&OnReadDone, base::TimeDelta::FromSeconds(3),
+                           &audio_read_done));
+  ReadVideo(base::BindOnce(&OnReadDone, base::TimeDelta::FromSeconds(3),
+                           &video_read_done));
   // Read()s should not return until after data is appended at the Seek point.
   EXPECT_FALSE(audio_read_done);
   EXPECT_FALSE(video_read_done);
@@ -3475,12 +3463,10 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
 
   bool audio_read_done = false;
   bool video_read_done = false;
-  ReadAudio(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(138),
-                       &audio_read_done));
-  ReadVideo(base::Bind(&OnReadDone,
-                       base::TimeDelta::FromMilliseconds(138),
-                       &video_read_done));
+  ReadAudio(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(138),
+                           &audio_read_done));
+  ReadVideo(base::BindOnce(&OnReadDone, base::TimeDelta::FromMilliseconds(138),
+                           &video_read_done));
 
   // Verify that the reads didn't complete
   EXPECT_FALSE(audio_read_done);
@@ -3511,10 +3497,8 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
   // Verify that reads block because the append cleared the end of stream state.
   audio_read_done = false;
   video_read_done = false;
-  ReadAudio(base::Bind(&OnReadDone_EOSExpected,
-                       &audio_read_done));
-  ReadVideo(base::Bind(&OnReadDone_EOSExpected,
-                       &video_read_done));
+  ReadAudio(base::BindOnce(&OnReadDone_EOSExpected, &audio_read_done));
+  ReadVideo(base::BindOnce(&OnReadDone_EOSExpected, &video_read_done));
 
   // Verify that the reads don't complete.
   EXPECT_FALSE(audio_read_done);
@@ -4465,11 +4449,11 @@ TEST_F(ChunkDemuxerTest, StreamStatusNotifications) {
 
   // Verify stream status changes with pending read.
   bool read_done = false;
-  audio_stream->Read(base::Bind(&OnReadDone_EOSExpected, &read_done));
+  audio_stream->Read(base::BindOnce(&OnReadDone_EOSExpected, &read_done));
   DisableAndEnableDemuxerTracks(demuxer_.get(), &task_environment_);
   EXPECT_TRUE(read_done);
   read_done = false;
-  video_stream->Read(base::Bind(&OnReadDone_EOSExpected, &read_done));
+  video_stream->Read(base::BindOnce(&OnReadDone_EOSExpected, &read_done));
   DisableAndEnableDemuxerTracks(demuxer_.get(), &task_environment_);
   EXPECT_TRUE(read_done);
 }

@@ -1257,7 +1257,7 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
     if (GetNode()->parentNode() &&
         IsA<HTMLDetailsElement>(GetNode()->parentNode()))
       return To<Element>(GetNode()->parentNode())
-                     ->hasAttribute(html_names::kOpenAttr)
+                     ->FastHasAttribute(html_names::kOpenAttr)
                  ? kExpandedExpanded
                  : kExpandedCollapsed;
   }
@@ -2503,7 +2503,6 @@ bool AXNodeObject::CanHaveChildren() const {
     return false;  // Does not have a role, so check here
 
   switch (native_role_) {
-    case ax::mojom::Role::kButton:
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kImage:
     case ax::mojom::Role::kListBoxOption:
@@ -2534,7 +2533,6 @@ bool AXNodeObject::CanHaveChildren() const {
   switch (AriaRoleAttribute()) {
     case ax::mojom::Role::kImage:
       return false;
-    case ax::mojom::Role::kButton:
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kMath:  // role="math" is flat, unlike <math>
@@ -2936,8 +2934,8 @@ String AXNodeObject::NativeTextAlternative(
            ++label_index) {
         Element* label = labels->item(label_index);
         if (name_sources) {
-          if (!label->getAttribute(html_names::kForAttr).IsEmpty() &&
-              label->getAttribute(html_names::kForAttr) ==
+          if (!label->FastGetAttribute(html_names::kForAttr).IsEmpty() &&
+              label->FastGetAttribute(html_names::kForAttr) ==
                   html_element->GetIdAttribute()) {
             name_sources->back().native_source = kAXTextFromNativeHTMLLabelFor;
           } else {

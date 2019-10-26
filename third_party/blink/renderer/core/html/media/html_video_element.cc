@@ -267,7 +267,7 @@ bool HTMLVideoElement::IsURLAttribute(const Attribute& attribute) const {
 }
 
 const AtomicString HTMLVideoElement::ImageSourceURL() const {
-  const AtomicString& url = getAttribute(html_names::kPosterAttr);
+  const AtomicString& url = FastGetAttribute(html_names::kPosterAttr);
   if (!StripLeadingAndTrailingHTMLSpaces(url).IsEmpty())
     return url;
   return default_poster_url_;

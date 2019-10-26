@@ -54,7 +54,7 @@ class PaymentHandlerHost : public payments::PaymentHandlerHost::Delegate {
 
   // Notifies the payment handler that the merchant has updated the payment
   // details. The |response_buffer| should be a serialization of a valid
-  // PaymentMethodChangeResponse.java object.
+  // PaymentRequestDetailsUpdate.java object.
   void UpdateWith(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& response_buffer);
 

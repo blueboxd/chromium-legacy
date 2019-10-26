@@ -47,7 +47,7 @@ std::string SecurityLevelToProtocolSecurityState(
     case security_state::SECURE:
       return protocol::Security::SecurityStateEnum::Secure;
     case security_state::DANGEROUS:
-      return protocol::Security::SecurityStateEnum::Insecure;
+      return protocol::Security::SecurityStateEnum::InsecureBroken;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       return protocol::Security::SecurityStateEnum::Neutral;

@@ -12,9 +12,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/threading/sequence_bound.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/cache_storage_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
 
@@ -24,7 +28,6 @@ class SequencedTaskRunner;
 }
 
 namespace storage {
-class BlobStorageContext;
 class QuotaManagerProxy;
 }
 
@@ -118,11 +121,11 @@ class CONTENT_EXPORT CacheStorageContextImpl
 
   void ShutdownOnTaskRunner();
 
-  void GetBlobStorageContextWeakPtrOnIOThread(
+  void GetBlobStorageMojoContextOnIOThread(
       ChromeBlobStorageContext* blob_storage_context);
 
   void SetBlobParametersForCacheOnTaskRunner(
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
+      scoped_refptr<BlobStorageContextWrapper> blob_storage_context);
 
   void CreateQuotaClientsOnIOThread(
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);

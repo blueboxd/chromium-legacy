@@ -46,7 +46,7 @@ void ArcAppLaunchThrottleObserver::OnAppLaunchRequested(
   SetActive(true);
   current_requests_.insert(app_info.package_name);
   base::PostDelayedTask(
-      FROM_HERE,
+      FROM_HERE, {base::CurrentThread()},
       base::BindOnce(&ArcAppLaunchThrottleObserver::OnLaunchedOrRequestExpired,
                      weak_ptr_factory_.GetWeakPtr(), app_info.package_name),
       kAppLaunchTimeout);

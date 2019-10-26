@@ -213,9 +213,11 @@ class TestNetworkContext : public mojom::NetworkContext {
       bool allow_credentials,
       const net::NetworkIsolationKey& network_isolation_key) override {}
   void CreateP2PSocketManager(
-      mojom::P2PTrustedSocketManagerClientPtr client,
-      mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
-      mojom::P2PSocketManagerRequest socket_manager_request) override {}
+      mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient> client,
+      mojo::PendingReceiver<mojom::P2PTrustedSocketManager>
+          trusted_socket_manager,
+      mojo::PendingReceiver<mojom::P2PSocketManager> socket_manager_receiver)
+      override {}
   void CreateMdnsResponder(
       mojo::PendingReceiver<mojom::MdnsResponder> responder_receiver) override {
   }
@@ -232,6 +234,8 @@ class TestNetworkContext : public mojom::NetworkContext {
       AddDomainReliabilityContextForTestingCallback callback) override {}
   void ForceDomainReliabilityUploadsForTesting(
       ForceDomainReliabilityUploadsForTestingCallback callback) override {}
+  void SetSplitAuthCacheByNetworkIsolationKey(
+      bool split_auth_cache_by_network_isolation_key) override {}
   void SaveHttpAuthCacheProxyEntries(
       SaveHttpAuthCacheProxyEntriesCallback callback) override {}
   void LoadHttpAuthCacheProxyEntries(

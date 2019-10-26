@@ -101,7 +101,7 @@ void SVGPoint::Add(SVGPropertyBase* other, SVGElement*) {
 }
 
 void SVGPoint::CalculateAnimatedValue(
-    SVGAnimationElement* animation_element,
+    const SVGAnimationElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,

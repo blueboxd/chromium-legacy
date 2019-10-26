@@ -88,7 +88,7 @@ class SVGTransform final : public SVGPropertyBase {
   String ValueAsString() const override;
 
   void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(SVGAnimationElement*,
+  void CalculateAnimatedValue(const SVGAnimationElement&,
                               float percentage,
                               unsigned repeat_count,
                               SVGPropertyBase* from,

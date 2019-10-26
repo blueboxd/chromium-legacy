@@ -101,9 +101,6 @@ struct NavigateParams {
   // Usually empty.
   std::vector<GURL> redirect_chain;
 
-  // Indicates whether this navigation will be sent using POST.
-  bool uses_post = false;
-
   // The post data when the navigation uses POST.
   scoped_refptr<network::ResourceRequestBody> post_data;
 

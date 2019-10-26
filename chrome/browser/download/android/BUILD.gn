@@ -9,10 +9,36 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/DirectoryOption.java",
     "java/src/org/chromium/chrome/browser/download/DownloadFilter.java",
     "java/src/org/chromium/chrome/browser/download/DownloadDirectoryProvider.java",
+    "java/src/org/chromium/chrome/browser/download/DownloadInfo.java",
+    "java/src/org/chromium/chrome/browser/download/MimeUtils.java",
   ]
 
   deps = [
     "//base:base_java",
+    "//components/download/public/common:public_java",
+    "//components/offline_items_collection/core:core_java",
     "//content/public/android:content_java",
+  ]
+}
+
+generate_jni("jni_headers") {
+  sources = [
+    "java/src/org/chromium/chrome/browser/download/DownloadInfo.java",
+    "java/src/org/chromium/chrome/browser/download/MimeUtils.java",
+  ]
+}
+
+android_library("download_java_tests") {
+  testonly = true
+
+  java_files = [
+    "javatests/src/org/chromium/chrome/browser/download/MimeUtilsTest.java",
+  ]
+
+  deps = [
+    ":java",
+    "//base:base_java_test_support",
+    "//chrome/test/android:chrome_java_test_support",
+    "//third_party/junit",
   ]
 }

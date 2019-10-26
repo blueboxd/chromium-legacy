@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "url/gurl.h"
 
@@ -40,53 +41,39 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
     kReadableDataHandle,
   };
 
-  // The DataHandle class is used to persist resources that are needed for
+  // The DataHandle class is used to persist an interface and resources for
   // reading this BlobDataItem. This object will stay around while any reads are
   // pending. If all blobs with this item are deleted or the item is swapped for
   // a different backend version (mem-to-disk or the reverse), then the item
   // will be destructed after all pending reads are complete.
-  //
-  // A DataHandle can also be "readable" if it overrides the size and reading
-  // virtual methods.  If the DataHandle provides this kind of encapsulated
-  // implementation then it can be added to the item using the
-  // AppendReadableDataHandle() method.
   class COMPONENT_EXPORT(STORAGE_BROWSER) DataHandle
       : public base::RefCounted<DataHandle> {
    public:
-    // Must return the main blob data size.  Returns 0 by default.
-    virtual uint64_t GetSize() const;
+    // Returns the size of the main blob data.
+    virtual uint64_t GetSize() const = 0;
 
-    // Reads the given data range into the given buffer.  If the read is
-    // completed synchronously then the number of bytes read should be returned
-    // directly.  If the read must be performed asynchronously then this
-    // method must return net::ERR_IO_PENDING and invoke the callback with the
-    // result at a later time.  The default implementation returns
-    // net::ERR_FILE_NOT_FOUND.
-    virtual int Read(scoped_refptr<net::IOBuffer> dst_buffer,
-                     uint64_t src_offset,
-                     int bytes_to_read,
-                     base::OnceCallback<void(int)> callback);
+    // Reads the given data range into the given |producer|.
+    // Returns the net::Error from the read operation to the callback.
+    virtual void Read(mojo::ScopedDataPipeProducerHandle producer,
+                      uint64_t src_offset,
+                      uint64_t bytes_to_read,
+                      base::OnceCallback<void(int)> callback) = 0;
 
-    // Must return the side data size.  If there is no side data, then 0 should
-    // be returned.  Returns 0 by default.
-    virtual uint64_t GetSideDataSize() const;
+    // Returns the side data size.  If there is no side data, then 0 should
+    // be returned.
+    virtual uint64_t GetSideDataSize() const = 0;
 
-    // Reads the entire side data into the given buffer.  The buffer must be
-    // large enough to contain the entire side data.  If the read is completed
-    // synchronously then the number of bytes read should be returned directly.
-    // If the read must be performed asynchronously then this method must
-    // return net::ERR_IO_PENDING and invoke the callback with the result at a
-    // later time.  The default implementation returns net::ERR_FILE_NOT_FOUND.
-    virtual int ReadSideData(scoped_refptr<net::IOBuffer> dst_buffer,
-                             base::OnceCallback<void(int)> callback);
+    // Returns the entire side data as a BigBuffer and the net::Error from
+    // reading.  The number of bytes read is the size of the BigBuffer.
+    virtual void ReadSideData(
+        base::OnceCallback<void(int, mojo_base::BigBuffer)> callback) = 0;
 
     // Print a description of the readable DataHandle for debugging.
-    virtual void PrintTo(::std::ostream* os) const;
+    virtual void PrintTo(::std::ostream* os) const = 0;
 
     // Return the histogram label to use when calling RecordBytesRead().  If
-    // nullptr is returned then nothing will be recorded.  Returns nullptr by
-    // default.
-    virtual const char* BytesReadHistogramLabel() const;
+    // nullptr is returned then nothing will be recorded.
+    virtual const char* BytesReadHistogramLabel() const = 0;
 
    protected:
     virtual ~DataHandle();
@@ -117,6 +104,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
       scoped_refptr<DataHandle> data_handle,
       uint64_t offset,
       uint64_t length);
+  static scoped_refptr<BlobDataItem> CreateMojoDataItem(
+      mojom::BlobDataItemPtr item);
 
   Type type() const { return type_; }
   uint64_t offset() const { return offset_; }

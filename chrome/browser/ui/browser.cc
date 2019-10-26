@@ -173,6 +173,7 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/triggers/ad_redirect_trigger.h"
 #include "components/search/search.h"
@@ -222,6 +223,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "net/base/filename_util.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
@@ -639,7 +641,7 @@ FindBarController* Browser::GetFindBarController() {
         find_bar_controller_.get());
     find_bar_controller_->ChangeWebContents(
         tab_strip_model_->GetActiveWebContents());
-    find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect());
+    find_bar_controller_->find_bar()->MoveWindowIfNecessary();
   }
   return find_bar_controller_.get();
 }
@@ -1533,6 +1535,18 @@ void Browser::SetContentsBounds(WebContents* source, const gfx::Rect& bounds) {
   if (is_type_normal())
     return;
 
+  page_load_metrics::mojom::PageLoadFeatures features;
+  features.features.push_back(blink::mojom::WebFeature::kMovedOrResizedPopup);
+  if (creation_timer_.Elapsed() > base::TimeDelta::FromSeconds(2)) {
+    // Additionally measure whether a popup was moved after creation, to
+    // distinguish between popups that reposition themselves after load and
+    // those which move popups continuously.
+    features.features.push_back(
+        blink::mojom::WebFeature::kMovedOrResizedPopup2sAfterCreation);
+  }
+
+  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+      source->GetMainFrame(), features);
   window_->SetBounds(bounds);
 }
 
@@ -2230,7 +2244,7 @@ void Browser::OnActiveTabChanged(WebContents* old_contents,
 
   if (HasFindBarController()) {
     find_bar_controller_->ChangeWebContents(new_contents);
-    find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect());
+    find_bar_controller_->find_bar()->MoveWindowIfNecessary();
   }
 
   // Update sessions (selected tab index and last active time). Don't force

@@ -3736,6 +3736,73 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                         UIA_UnderlineColorAttributeId);
 }
 
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderGetAttributeValueWithAncestorTextPosition) {
+  ui::AXTreeUpdate initial_state;
+  ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  initial_state.tree_data.tree_id = tree_id;
+  initial_state.has_tree_data = true;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(5);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2};
+  initial_state.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].child_ids = {3};
+  initial_state.nodes[1].role = ax::mojom::Role::kGenericContainer;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].child_ids = {4, 5};
+  initial_state.nodes[2].role = ax::mojom::Role::kGenericContainer;
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kStaticText;
+  initial_state.nodes[3].SetName("some text");
+  initial_state.nodes[3].AddIntAttribute(
+      ax::mojom::IntAttribute::kBackgroundColor, 0xDEADBEEFU);
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kStaticText;
+  initial_state.nodes[4].SetName("more text");
+  initial_state.nodes[4].AddIntAttribute(
+      ax::mojom::IntAttribute::kBackgroundColor, 0xDEADBEEFU);
+
+  Init(initial_state);
+  AXNodePosition::SetTree(tree_.get());
+
+  ComPtr<AXPlatformNodeTextRangeProviderWin> text_range_provider_win;
+  {
+    // Making |owner| AXID:2 so that |TestAXNodeWrapper::BuildAllWrappers|
+    // will build the entire subtree, and not only AXID:3 for example.
+    AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
+        AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 2)));
+
+    AXNodePosition::AXPositionInstance range_start =
+        AXNodePosition::CreateTextPosition(
+            tree_id, /*anchor_id=*/4, /*text_offset=*/0,
+            ax::mojom::TextAffinity::kDownstream);
+    AXNodePosition::AXPositionInstance range_end =
+        AXNodePosition::CreateTextPosition(
+            tree_id, /*anchor_id=*/2, /*text_offset=*/17,
+            ax::mojom::TextAffinity::kDownstream);
+
+    ComPtr<ITextRangeProvider> text_range_provider =
+        AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+            owner, std::move(range_start), std::move(range_end));
+    text_range_provider->QueryInterface(IID_PPV_ARGS(&text_range_provider_win));
+  }
+
+  ASSERT_TRUE(GetStart(text_range_provider_win.Get())->IsTextPosition());
+  ASSERT_EQ(4, GetStart(text_range_provider_win.Get())->anchor_id());
+  ASSERT_EQ(0, GetStart(text_range_provider_win.Get())->text_offset());
+  ASSERT_TRUE(GetEnd(text_range_provider_win.Get())->IsTextPosition());
+  ASSERT_EQ(2, GetEnd(text_range_provider_win.Get())->anchor_id());
+  ASSERT_EQ(17, GetEnd(text_range_provider_win.Get())->text_offset());
+
+  base::win::ScopedVariant expected_variant;
+  // SkColor is ARGB, COLORREF is 0BGR
+  expected_variant.Set(static_cast<int32_t>(0x00EFBEADU));
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider_win,
+                              UIA_BackgroundColorAttributeId, expected_variant);
+}
+
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
   Init(BuildTextDocument({"some text", "more text2"}));
   AXNodePosition::SetTree(tree_.get());

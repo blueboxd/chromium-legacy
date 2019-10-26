@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 
+#include "base/containers/flat_set.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
@@ -243,7 +244,7 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
   std::unique_ptr<MockMediaNotificationContainerObserver> observer_;
 
   // Set of actions currently enabled.
-  std::set<MediaSessionAction> actions_;
+  base::flat_set<MediaSessionAction> actions_;
 
   FakeCursorLocationScreen fake_screen_;
   display::test::ScopedScreenOverride screen_override_;

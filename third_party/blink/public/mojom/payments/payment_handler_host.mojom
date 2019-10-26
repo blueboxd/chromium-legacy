@@ -30,13 +30,17 @@ struct PaymentHandlerModifier {
 
 // Constructed by the browser based on PaymentDetails from the Merchant
 // renderer. The browser sends this to the Payment Handler renderer.
-struct PaymentMethodChangeResponse {
+struct PaymentRequestDetailsUpdate {
   PaymentCurrencyAmount? total;
   array<PaymentShippingOption>? shipping_options;
   array<PaymentHandlerModifier>? modifiers;
   string error = "";
   string? stringified_payment_method_errors;
   AddressErrors? shipping_address_errors;
+};
+
+// TODO(sahel): remove this stub after updating clank code. crbug.com/984694
+struct PaymentMethodChangeResponse {
 };
 
 // The interface for a PaymentRequest object in the browser, so a PaymentHandler
@@ -69,13 +73,11 @@ interface PaymentHandlerHost {
   //
   // The browser validates the |details| from the Merchant renderer and sends
   // their subset to the Payment Handler renderer as
-  // |PaymentMethodChangeResponse|, so it can show the updated details.
-  // Todo(sahel): Rename PaymentMethodChangeResponse to
-  // PaymentRequestDetailsUpdate which is a more generic name. crbug.com/984694
+  // |PaymentRequestDetailsUpdate|, so it can show the updated details.
   ChangePaymentMethod(PaymentHandlerMethodData method_data) =>
-      (PaymentMethodChangeResponse response_data);
+      (PaymentRequestDetailsUpdate response_data);
   ChangeShippingOption(string shipping_option_id) =>
-      (PaymentMethodChangeResponse response_data);
+      (PaymentRequestDetailsUpdate response_data);
   ChangeShippingAddress(PaymentAddress shipping_address) =>
-      (PaymentMethodChangeResponse response_data);
+      (PaymentRequestDetailsUpdate response_data);
 };

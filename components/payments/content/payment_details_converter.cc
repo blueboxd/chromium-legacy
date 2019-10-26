@@ -13,14 +13,14 @@ namespace payments {
 
 // Keep in sync with PaymentDetailsConverter.java.
 
-mojom::PaymentMethodChangeResponsePtr
-PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
+mojom::PaymentRequestDetailsUpdatePtr
+PaymentDetailsConverter::ConvertToPaymentRequestDetailsUpdate(
     const mojom::PaymentDetailsPtr& details,
     bool handles_shipping,
     const MethodChecker& method_checker) {
   DCHECK(details);
 
-  auto response = mojom::PaymentMethodChangeResponse::New();
+  auto response = mojom::PaymentRequestDetailsUpdate::New();
   response->error = details->error;
   response->stringified_payment_method_errors =
       details->stringified_payment_method_errors;

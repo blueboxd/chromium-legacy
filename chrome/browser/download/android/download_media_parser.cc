@@ -266,15 +266,16 @@ void DownloadMediaParser::RenderVideoFrame(
 media::mojom::InterfaceFactory*
 DownloadMediaParser::GetMediaInterfaceFactory() {
   if (!media_interface_factory_) {
-    service_manager::mojom::InterfaceProviderPtr interfaces;
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
     media_interface_provider_ = std::make_unique<media::MediaInterfaceProvider>(
-        mojo::MakeRequest(&interfaces));
+        interfaces.InitWithNewPipeAndPassReceiver());
     media::mojom::MediaServicePtr media_service;
     content::GetSystemConnector()->BindInterface(
         media::mojom::kMediaServiceName, &media_service);
     media_service->CreateInterfaceFactory(
-        MakeRequest(&media_interface_factory_), std::move(interfaces));
-    media_interface_factory_.set_connection_error_handler(
+        media_interface_factory_.BindNewPipeAndPassReceiver(),
+        std::move(interfaces));
+    media_interface_factory_.set_disconnect_handler(
         base::BindOnce(&DownloadMediaParser::OnDecoderConnectionError,
                        base::Unretained(this)));
   }

@@ -80,16 +80,16 @@ void VideoDecoderProxy::CreateCdmProxy(
 media::mojom::InterfaceFactory* VideoDecoderProxy::GetMediaInterfaceFactory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!interface_factory_ptr_)
+  if (!interface_factory_remote_)
     ConnectToMediaService();
 
-  return interface_factory_ptr_.get();
+  return interface_factory_remote_.get();
 }
 
 void VideoDecoderProxy::ConnectToMediaService() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!interface_factory_ptr_);
+  DCHECK(!interface_factory_remote_);
 
   media::mojom::MediaServicePtr media_service;
   // TODO(slan): Use the BrowserContext Connector instead.
@@ -97,12 +97,13 @@ void VideoDecoderProxy::ConnectToMediaService() {
   GetSystemConnector()->BindInterface(media::mojom::kMediaServiceName,
                                       &media_service);
 
-  // TODO(sandersd): Do we need to bind an empty |interfaces| implementation?
-  service_manager::mojom::InterfaceProviderPtr interfaces;
-  media_service->CreateInterfaceFactory(MakeRequest(&interface_factory_ptr_),
-                                        std::move(interfaces));
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
+  ignore_result(interfaces.InitWithNewPipeAndPassReceiver());
+  media_service->CreateInterfaceFactory(
+      interface_factory_remote_.BindNewPipeAndPassReceiver(),
+      std::move(interfaces));
 
-  interface_factory_ptr_.set_connection_error_handler(
+  interface_factory_remote_.set_disconnect_handler(
       base::BindOnce(&VideoDecoderProxy::OnMediaServiceConnectionError,
                      base::Unretained(this)));
 }
@@ -111,7 +112,7 @@ void VideoDecoderProxy::OnMediaServiceConnectionError() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  interface_factory_ptr_.reset();
+  interface_factory_remote_.reset();
 }
 
 }  // namespace content

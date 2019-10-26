@@ -259,6 +259,12 @@ views::LabelButton* DialogDelegate::GetCancelButton() {
   return client ? client->cancel_button() : nullptr;
 }
 
+views::View* DialogDelegate::GetExtraView() {
+  DCHECK(GetWidget()) << "Don't call this before OnDialogInitialized";
+  auto* client = GetDialogClientView();
+  return client ? client->extra_view() : nullptr;
+}
+
 void DialogDelegate::AddObserver(DialogObserver* observer) {
   observer_list_.AddObserver(observer);
 }

@@ -11,7 +11,6 @@ import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
-import("//chrome/browser/media/router/features.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
 import("//components/feature_engagement/features.gni")
@@ -1225,6 +1224,7 @@ if (!is_android) {
       "../browser/ui/javascript_dialogs/javascript_dialog_browsertest.cc",
       "../browser/ui/login/login_handler_browsertest.cc",
       "../browser/ui/native_window_tracker_browsertest.cc",
+      "../browser/ui/omnibox/alternate_nav_infobar_delegate_browsertest.cc",
       "../browser/ui/passwords/manage_passwords_test.cc",
       "../browser/ui/passwords/password_generation_popup_view_browsertest.cc",
       "../browser/ui/passwords/password_generation_popup_view_tester.h",
@@ -1266,6 +1266,8 @@ if (!is_android) {
       "../browser/ui/test/test_browser_dialog_mac.mm",
       "../browser/ui/test/test_browser_ui.cc",
       "../browser/ui/test/test_browser_ui.h",
+      "../browser/ui/test/test_infobar.cc",
+      "../browser/ui/test/test_infobar.h",
       "../browser/ui/toolbar/browser_actions_bar_browsertest.cc",
       "../browser/ui/toolbar/browser_actions_bar_browsertest.h",
       "../browser/ui/update_chrome_dialog_browsertest.cc",
@@ -3028,17 +3030,6 @@ test("unit_tests") {
     "../browser/media/media_storage_id_salt_unittest.cc",
     "../browser/media/midi_permission_context_unittest.cc",
     "../browser/media/midi_sysex_permission_context_unittest.cc",
-    "../browser/media/router/issue_manager_unittest.cc",
-    "../browser/media/router/media_router_base_unittest.cc",
-    "../browser/media/router/media_router_dialog_controller_unittest.cc",
-    "../browser/media/router/media_router_factory_unittest.cc",
-    "../browser/media/router/media_router_metrics_unittest.cc",
-    "../browser/media/router/media_sinks_observer_unittest.cc",
-    "../browser/media/router/presentation/browser_presentation_connection_proxy_unittest.cc",
-    "../browser/media/router/presentation/local_presentation_manager_factory_unittest.cc",
-    "../browser/media/router/presentation/local_presentation_manager_unittest.cc",
-    "../browser/media/router/presentation/presentation_media_sinks_observer_unittest.cc",
-    "../browser/media/router/presentation/presentation_service_delegate_impl_unittest.cc",
     "../browser/media/webrtc/media_stream_device_permission_context_unittest.cc",
     "../browser/metrics/antivirus_metrics_provider_win_unittest.cc",
     "../browser/metrics/chrome_browser_main_extra_parts_metrics_unittest.cc",
@@ -3477,7 +3468,7 @@ test("unit_tests") {
     "//chrome:child_dependencies",
     "//chrome:resources",
     "//chrome:strings",
-    "//chrome/browser/media/router:test_support",
+    "//chrome/browser/media/router:unittests",
     "//chrome/browser/notifications:unit_tests",
     "//chrome/common:test_support",
     "//chrome/common/media_router:test_support",
@@ -3718,11 +3709,6 @@ test("unit_tests") {
 
       # Media remoting is not supported on Android for now.
       "../browser/media/cast_remoting_connector_unittest.cc",
-
-      # In-browser discovery is not used by Android for now.
-      "../browser/media/router/discovery/discovery_network_list_unittest.cc",
-      "../browser/media/router/discovery/discovery_network_monitor_metric_observer_unittest.cc",
-      "../browser/media/router/discovery/discovery_network_monitor_unittest.cc",
       "../browser/media/unified_autoplay_config_unittest.cc",
       "../browser/media/webrtc/desktop_capture_access_handler_unittest.cc",
       "../browser/media/webrtc/desktop_media_picker_controller_unittest.cc",
@@ -4007,47 +3993,6 @@ test("unit_tests") {
       "../browser/devtools/protocol/cast_handler_unittest.cc",
       "../browser/devtools/serialize_host_descriptions_unittest.cc",
       "../browser/download/download_dir_policy_handler_unittest.cc",
-      "../browser/media/router/discovery/dial/device_description_fetcher_unittest.cc",
-      "../browser/media/router/discovery/dial/device_description_service_unittest.cc",
-      "../browser/media/router/discovery/dial/dial_app_discovery_service_unittest.cc",
-      "../browser/media/router/discovery/dial/dial_device_data_unittest.cc",
-      "../browser/media/router/discovery/dial/dial_media_sink_service_impl_unittest.cc",
-      "../browser/media/router/discovery/dial/dial_registry_unittest.cc",
-      "../browser/media/router/discovery/dial/dial_service_unittest.cc",
-      "../browser/media/router/discovery/dial/dial_url_fetcher_unittest.cc",
-      "../browser/media/router/discovery/dial/safe_dial_app_info_parser_unittest.cc",
-      "../browser/media/router/discovery/dial/safe_dial_device_description_parser_unittest.cc",
-      "../browser/media/router/discovery/mdns/cast_media_sink_service_impl_unittest.cc",
-      "../browser/media/router/discovery/mdns/cast_media_sink_service_unittest.cc",
-      "../browser/media/router/discovery/mdns/dns_sd_registry_unittest.cc",
-      "../browser/media/router/discovery/media_sink_discovery_metrics_unittest.cc",
-      "../browser/media/router/event_page_request_manager_unittest.cc",
-      "../browser/media/router/media_router_feature_unittest.cc",
-      "../browser/media/router/mojo/media_router_desktop_unittest.cc",
-      "../browser/media/router/mojo/media_router_mojo_impl_unittest.cc",
-      "../browser/media/router/mojo/media_router_mojo_metrics_unittest.cc",
-      "../browser/media/router/mojo/media_sink_service_status_unittest.cc",
-      "../browser/media/router/providers/cast/cast_activity_manager_unittest.cc",
-      "../browser/media/router/providers/cast/cast_activity_record_unittest.cc",
-      "../browser/media/router/providers/cast/cast_app_availability_tracker_unittest.cc",
-      "../browser/media/router/providers/cast/cast_app_discovery_service_unittest.cc",
-      "../browser/media/router/providers/cast/cast_internal_message_util_unittest.cc",
-      "../browser/media/router/providers/cast/cast_media_controller_unittest.cc",
-      "../browser/media/router/providers/cast/cast_media_route_provider_metrics_unittest.cc",
-      "../browser/media/router/providers/cast/cast_media_route_provider_unittest.cc",
-      "../browser/media/router/providers/cast/cast_session_client_unittest.cc",
-      "../browser/media/router/providers/cast/cast_session_tracker_unittest.cc",
-      "../browser/media/router/providers/cast/dual_media_sink_service_unittest.cc",
-      "../browser/media/router/providers/cast/mirroring_activity_record_unittest.cc",
-      "../browser/media/router/providers/cast/mock_activity_record.cc",
-      "../browser/media/router/providers/cast/mock_activity_record.h",
-      "../browser/media/router/providers/cast/test_util.cc",
-      "../browser/media/router/providers/cast/test_util.h",
-      "../browser/media/router/providers/dial/dial_activity_manager_unittest.cc",
-      "../browser/media/router/providers/dial/dial_internal_message_util_unittest.cc",
-      "../browser/media/router/providers/dial/dial_media_route_provider_unittest.cc",
-      "../browser/media/router/providers/extension/extension_media_route_provider_proxy_unittest.cc",
-      "../browser/media/router/providers/wired_display/wired_display_media_route_provider_unittest.cc",
       "../browser/media/webrtc/webrtc_log_uploader_unittest.cc",
       "../browser/media/webrtc/webrtc_rtp_dump_handler_unittest.cc",
       "../browser/media/webrtc/webrtc_rtp_dump_writer_unittest.cc",
@@ -5226,15 +5171,6 @@ test("unit_tests") {
   if (enable_widevine_cdm_component && is_desktop_linux) {
     sources +=
         [ "../common/media/component_widevine_cdm_hint_file_linux_unittest.cc" ]
-  }
-
-  if (enable_openscreen) {
-    include_dirs = [ "//third_party/openscreen/src" ]
-
-    sources += [
-      "../browser/media/router/providers/openscreen/discovery/open_screen_listener_unittest.cc",
-      "../browser/media/router/providers/openscreen/network_service_quic_packet_writer_unittest.cc",
-    ]
   }
 
   if (enable_webui_tab_strip) {

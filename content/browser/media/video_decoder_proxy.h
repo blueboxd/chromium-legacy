@@ -11,10 +11,13 @@
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
@@ -22,7 +25,7 @@ namespace content {
 // RenderProcessHostImpl. Unlike MediaInterfaceProxy, only
 // CreateVideoDecoder() is implemented. This allows WebRTC to create
 // MojoVideoDecoder instances without a RenderFrame.
-class VideoDecoderProxy : public media::mojom::InterfaceFactory {
+class CONTENT_EXPORT VideoDecoderProxy : public media::mojom::InterfaceFactory {
  public:
   VideoDecoderProxy();
   ~VideoDecoderProxy() final;
@@ -66,7 +69,7 @@ class VideoDecoderProxy : public media::mojom::InterfaceFactory {
   void OnMediaServiceConnectionError();
 
   // Connection to the remote media InterfaceFactory.
-  media::mojom::InterfaceFactoryPtr interface_factory_ptr_;
+  mojo::Remote<media::mojom::InterfaceFactory> interface_factory_remote_;
 
   // Connections to the renderer.
   mojo::BindingSet<media::mojom::InterfaceFactory> bindings_;

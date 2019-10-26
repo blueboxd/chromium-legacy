@@ -342,12 +342,6 @@ interface NetworkService {
   // |environment| array.
   SetEnvironment(array<EnvironmentVariable> environment);
 
-  // Sets whether the HTTP auth cache will be split the NetworkIsolationKey.
-  // Only affects server (not proxy) credentials. May only be called before any
-  // NetworkContexts have been created. Defaults to false.
-  SetSplitAuthCacheByNetworkIsolationKey(
-      bool split_auth_cache_by_network_isolation_key);
-
   // Calls base::debug::DumpWithoutCrashing for the network process.
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer
   // hangs.

@@ -916,6 +916,9 @@
 "linktext"
 "visitedtext"
 "back-button"
+"activetext"
+"field"
+"fieldtext"
 
 # at-rules
 "@charset"

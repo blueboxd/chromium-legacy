@@ -60,6 +60,46 @@ public class PrefServiceBridgeTest {
     }
 
     @Test
+    public void testGetInteger() {
+        int expected = 26;
+
+        PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
+        doReturn(expected).when(mNativeMock).getInteger(prefServiceBridge, PREF);
+
+        assertEquals(expected, prefServiceBridge.getInteger(PREF));
+    }
+
+    @Test
+    public void testSetInteger() {
+        int value = 62;
+
+        PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
+        prefServiceBridge.setInteger(PREF, value);
+
+        verify(mNativeMock).setInteger(eq(prefServiceBridge), eq(PREF), eq(value));
+    }
+
+    @Test
+    public void testGetString() {
+        String expected = "foo";
+
+        PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
+        doReturn(expected).when(mNativeMock).getString(prefServiceBridge, PREF);
+
+        assertEquals(expected, prefServiceBridge.getString(PREF));
+    }
+
+    @Test
+    public void testSetString() {
+        String value = "bar";
+
+        PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
+        prefServiceBridge.setString(PREF, value);
+
+        verify(mNativeMock).setString(eq(prefServiceBridge), eq(PREF), eq(value));
+    }
+
+    @Test
     public void testIsManaged() {
         boolean expected = true;
 

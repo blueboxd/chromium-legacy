@@ -79,7 +79,7 @@ void SVGNumberList::Add(SVGPropertyBase* other, SVGElement* context_element) {
 }
 
 void SVGNumberList::CalculateAnimatedValue(
-    SVGAnimationElement* animation_element,
+    const SVGAnimationElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,
@@ -97,7 +97,7 @@ void SVGNumberList::CalculateAnimatedValue(
       to_at_end_of_duration_list->length();
 
   if (!AdjustFromToListValues(from_list, to_list, percentage,
-                              animation_element->GetAnimationMode()))
+                              animation_element.GetAnimationMode()))
     return;
 
   for (uint32_t i = 0; i < to_list_size; ++i) {
@@ -108,9 +108,9 @@ void SVGNumberList::CalculateAnimatedValue(
                                     : 0;
 
     float animated = at(i)->Value();
-    animation_element->AnimateAdditiveNumber(percentage, repeat_count,
-                                             effective_from, effective_to,
-                                             effective_to_at_end, animated);
+    animation_element.AnimateAdditiveNumber(percentage, repeat_count,
+                                            effective_from, effective_to,
+                                            effective_to_at_end, animated);
     at(i)->SetValue(animated);
   }
 }

@@ -65,8 +65,8 @@ void StandaloneConnectorImpl::Clone(mojom::ConnectorRequest request) {
 void StandaloneConnectorImpl::FilterInterfaces(
     const std::string& spec,
     const Identity& source,
-    mojom::InterfaceProviderRequest source_request,
-    mojom::InterfaceProviderPtr target) {
+    mojo::PendingReceiver<mojom::InterfaceProvider> source_receiver,
+    mojo::PendingRemote<mojom::InterfaceProvider> target) {
   NOTIMPLEMENTED()
       << "FilterInterfaces is not supported by StandaloneConnectorImpl.";
 }

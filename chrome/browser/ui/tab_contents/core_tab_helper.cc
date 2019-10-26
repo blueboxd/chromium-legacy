@@ -272,7 +272,6 @@ void CoreTabHelper::DoSearchByImageInNewTab(
   const std::string& post_data = post_content.second;
   if (!post_data.empty()) {
     DCHECK(!content_type.empty());
-    open_url_params.uses_post = true;
     open_url_params.post_data = network::ResourceRequestBody::CreateFromBytes(
         post_data.data(), post_data.size());
     open_url_params.extra_headers += base::StringPrintf(

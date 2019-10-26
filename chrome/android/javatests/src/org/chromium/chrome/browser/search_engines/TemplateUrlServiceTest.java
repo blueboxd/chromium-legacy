@@ -279,8 +279,9 @@ public class TemplateUrlServiceTest {
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return templateUrlService.setPlayAPISearchEngine(
-                        "SearchEngine1", "keyword1", PLAY_API_SEARCH_URL, "https://fav.icon");
+                return templateUrlService.setPlayAPISearchEngine("SearchEngine1", "keyword1",
+                        PLAY_API_SEARCH_URL, "https://suggest.engine?q={searchTerms}",
+                        "https://fav.icon");
             }
         }));
         TemplateUrl defaultSearchEngine =
@@ -309,8 +310,9 @@ public class TemplateUrlServiceTest {
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return templateUrlService.setPlayAPISearchEngine(
-                        "SearchEngine1", "keyword1", PLAY_API_SEARCH_URL, "https://fav.icon");
+                return templateUrlService.setPlayAPISearchEngine("SearchEngine1", "keyword1",
+                        PLAY_API_SEARCH_URL, "https://suggest.engine?q={searchTerms}",
+                        "https://fav.icon");
             }
         }));
         TemplateUrl defaultSearchEngine =
@@ -330,7 +332,8 @@ public class TemplateUrlServiceTest {
                     @Override
                     public Boolean call() {
                         return templateUrlService.setPlayAPISearchEngine("SearchEngine2",
-                                "keyword2", PLAY_API_SEARCH_URL, "https://fav.icon");
+                                "keyword2", PLAY_API_SEARCH_URL,
+                                "https://suggest.engine?q={searchTerms}", "https://fav.icon");
                     }
                 }));
 

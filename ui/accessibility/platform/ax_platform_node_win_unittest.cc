@@ -2688,10 +2688,12 @@ TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageRoleDescription) {
   tree.nodes[1].id = 2;
   tree.nodes[1].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+  tree.nodes[1].role = ax::mojom::Role::kImage;
 
   tree.nodes[2].id = 3;
   tree.nodes[2].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation);
+  tree.nodes[2].role = ax::mojom::Role::kImage;
 
   Init(tree);
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -2722,10 +2724,12 @@ TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageAttributes) {
   tree.nodes[1].id = 2;
   tree.nodes[1].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+  tree.nodes[1].role = ax::mojom::Role::kImage;
 
   tree.nodes[2].id = 3;
   tree.nodes[2].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation);
+  tree.nodes[2].role = ax::mojom::Role::kImage;
 
   Init(tree);
   ComPtr<IAccessible> root_obj(GetRootIAccessible());

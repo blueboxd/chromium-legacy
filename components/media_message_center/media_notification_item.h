@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ITEM_H_
 #define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ITEM_H_
 
-#include <set>
 #include <string>
 
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -137,7 +137,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
 
   media_session::MediaMetadata session_metadata_;
 
-  std::set<media_session::mojom::MediaSessionAction> session_actions_;
+  base::flat_set<media_session::mojom::MediaSessionAction> session_actions_;
 
   base::Optional<gfx::ImageSkia> session_artwork_;
 

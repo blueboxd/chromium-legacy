@@ -13,11 +13,13 @@
         <structure name="IDR_SIGNIN_SHARED_OLD_CSS_HTML" file="resources\signin\signin_shared_old_css.html" preprocess="true" allowexternalscript="true" type="chrome_html" />
       </if>
       <if expr="not is_android">
-        <structure name="IDR_INCOGNITO_TAB_HTML" file="resources\ntp4\incognito_tab.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_GUEST_TAB_HTML" file="resources\ntp4\guest_tab.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\ntp4\new_incognito_tab_theme.css" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="chrome_html" />
+        <!-- New Tab Page WebUI. -->
+        <structure name="IDR_INCOGNITO_TAB_HTML" file="resources\ntp4\incognito_tab.html" compress="gzip" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_GUEST_TAB_HTML" file="resources\ntp4\guest_tab.html" compress="gzip" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\ntp4\new_incognito_tab_theme.css" compress="gzip" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" compress="gzip" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" compress="gzip" flattenhtml="true" type="chrome_html" />
+
         <!-- Bookmarks WebUI. -->
         <if expr="optimize_webui">
           <then>
@@ -267,9 +269,11 @@
       <include name="IDR_INLINE_LOGIN_CSS" file="resources\inline_login\inline_login.css" flattenhtml="true" type="BINDATA" preprocess="true" />
       <include name="IDR_INLINE_LOGIN_JS" file="resources\inline_login\inline_login.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_AUTHENTICATOR_JS" file="resources\gaia_auth_host\authenticator.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_INSPECT_CSS" file="resources\inspect\inspect.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_INSPECT_HTML" file="resources\inspect\inspect.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_INSPECT_JS" file="resources\inspect\inspect.js" flattenhtml="true" type="BINDATA" />
+
+      <include name="IDR_INSPECT_CSS" file="resources\inspect\inspect.css" compress="gzip" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_INSPECT_HTML" file="resources\inspect\inspect.html" compress="gzip" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_INSPECT_JS" file="resources\inspect\inspect.js" compress="gzip" flattenhtml="true" type="BINDATA" />
+
       <include name="IDR_INTERVENTIONS_INTERNALS_INDEX_HTML" file="resources\interventions_internals\index.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_INTERVENTIONS_INTERNALS_INDEX_JS" file="resources\interventions_internals\index.js" type="BINDATA" compress="gzip" />
       <include name="IDR_INTERVENTIONS_INTERNALS_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\interventions_internals\interventions_internals.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />

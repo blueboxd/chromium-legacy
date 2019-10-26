@@ -127,8 +127,16 @@ function mallocBuffer(buf) {
   return dataHeap;
 }
 
-function freeBuffer(buf) {
-  Module._free(buf.byteOffset);
+var _Open = null;
+function Open(name) {
+  if (_Open === null) {
+    _Open = Module.cwrap('Open', 'number', ['string']);
+  }
+  let stringPtr = _Open(name);
+  // Something has gone wrong if we get back a string longer than 67MB.
+  let ret = JSON.parse(Module.UTF8ToString(stringPtr, 2 ** 26));
+  console.log(ret);
+  return ret;
 }
 
 // Placeholder input name until supplied via setInput()
@@ -144,7 +152,40 @@ async function buildTree(
   let start_time = Date.now();
   console.log(LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength));
   console.log('Loaded size file in ' + (Date.now() - start_time)/1000.0 + ' seconds');
-  freeBuffer(heapBuffer);
+  Module._free(heapBuffer.byteOffset);
+
+  /**
+   * Creates data to post to the UI thread. Defaults will be used for the root
+   * and percent values if not specified.
+   * @param {{root?:TreeNode,percent?:number,error?:Error}} data Default data
+   * values to post.
+   */
+  function createProgressMessage(data = {}) {
+    let {percent} = data;
+    if (percent == null) {
+      if (meta == null) {
+        percent = 0;
+      } else {
+        percent = Math.max(builder.rootNode.size / meta.total, 0.1);
+      }
+    }
+
+    const message = {
+      root: builder.formatNode(data.root || builder.rootNode),
+      percent,
+      diffMode: meta && meta.diff_mode,
+    };
+    if (data.error) {
+      message.error = data.error.message;
+    }
+    return message;
+  }
+
+  return {
+    root: Open(''),
+    percent: 1.0,
+    diffMode: 0, // diff mode
+  };
 }
 
 /**
@@ -192,9 +233,7 @@ const actions = {
   },
   /** @param {string} path */
   async open(path) {
-    if (!builder) throw new Error('Called open before load');
-    const node = builder.find(path);
-    return builder.formatNode(node);
+    return Open(path);
   },
 };
 

@@ -3234,7 +3234,7 @@ if (enable_java_templates) {
         if (_proguard_enabled) {
           args += [ "--show-proguard-warning" ]
         }
-        if (_native_libs_deps != []) {
+        if (defined(_native_libs_file_arg)) {
           args += [ "--native-libs=$_native_libs_file_arg" ]
           deps += [ _native_libs_file_arg_dep ]
         }

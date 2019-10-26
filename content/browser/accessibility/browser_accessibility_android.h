@@ -60,6 +60,9 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   // focusable or clickable aren't interesting.
   bool IsInterestingOnAndroid() const;
 
+  // Is a heading whose only child is a link.
+  bool IsHeadingLink() const;
+
   // If this node is interesting (IsInterestingOnAndroid() returns true),
   // returns |this|. If not, it recursively checks all of the
   // platform children of this node, and if just a single one is

@@ -1415,13 +1415,14 @@ void NetworkContext::PreconnectSockets(
 }
 
 void NetworkContext::CreateP2PSocketManager(
-    mojom::P2PTrustedSocketManagerClientPtr client,
-    mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
-    mojom::P2PSocketManagerRequest socket_manager_request) {
+    mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient> client,
+    mojo::PendingReceiver<mojom::P2PTrustedSocketManager>
+        trusted_socket_manager,
+    mojo::PendingReceiver<mojom::P2PSocketManager> socket_manager_receiver) {
   std::unique_ptr<P2PSocketManager> socket_manager =
       std::make_unique<P2PSocketManager>(
           std::move(client), std::move(trusted_socket_manager),
-          std::move(socket_manager_request),
+          std::move(socket_manager_receiver),
           base::Bind(&NetworkContext::DestroySocketManager,
                      base::Unretained(this)),
           url_request_context_);
@@ -1458,6 +1459,15 @@ void NetworkContext::ForceDomainReliabilityUploadsForTesting(
     ForceDomainReliabilityUploadsForTestingCallback callback) {
   domain_reliability_monitor_->ForceUploadsForTesting();
   std::move(callback).Run();
+}
+
+void NetworkContext::SetSplitAuthCacheByNetworkIsolationKey(
+    bool split_auth_cache_by_network_isolation_key) {
+  url_request_context_->http_transaction_factory()
+      ->GetSession()
+      ->http_auth_cache()
+      ->SetKeyServerEntriesByNetworkIsolationKey(
+          split_auth_cache_by_network_isolation_key);
 }
 
 void NetworkContext::SaveHttpAuthCacheProxyEntries(
@@ -1826,6 +1836,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     session_params.key_auth_cache_server_entries_by_network_isolation_key =
         network_service_->split_auth_cache_by_network_isolation_key();
   }
+
+  session_params.key_auth_cache_server_entries_by_network_isolation_key =
+      base::FeatureList::IsEnabled(
+          features::kSplitAuthCacheByNetworkIsolationKey);
 
   builder.set_http_network_session_params(session_params);
 

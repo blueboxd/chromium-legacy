@@ -89,8 +89,8 @@ void MojoRendererService::Initialize(
       media_url_params->is_hls));
   renderer_->Initialize(
       media_resource_.get(), this,
-      base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,
-                 base::Passed(&callback)));
+      base::BindOnce(&MojoRendererService::OnRendererInitializeDone, weak_this_,
+                     base::Passed(&callback)));
 }
 
 void MojoRendererService::Flush(FlushCallback callback) {
@@ -99,8 +99,8 @@ void MojoRendererService::Flush(FlushCallback callback) {
 
   state_ = STATE_FLUSHING;
   CancelPeriodicMediaTimeUpdates();
-  renderer_->Flush(base::Bind(&MojoRendererService::OnFlushCompleted,
-                              weak_this_, base::Passed(&callback)));
+  renderer_->Flush(base::BindOnce(&MojoRendererService::OnFlushCompleted,
+                                  weak_this_, base::Passed(&callback)));
 }
 
 void MojoRendererService::StartPlayingFrom(base::TimeDelta time_delta) {
@@ -202,8 +202,8 @@ void MojoRendererService::OnStreamReady(
 
   renderer_->Initialize(
       media_resource_.get(), this,
-      base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,
-                 base::Passed(&callback)));
+      base::BindOnce(&MojoRendererService::OnRendererInitializeDone, weak_this_,
+                     base::Passed(&callback)));
 }
 
 void MojoRendererService::OnRendererInitializeDone(

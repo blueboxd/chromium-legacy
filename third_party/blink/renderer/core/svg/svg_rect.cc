@@ -95,15 +95,14 @@ void SVGRect::Add(SVGPropertyBase* other, SVGElement*) {
 }
 
 void SVGRect::CalculateAnimatedValue(
-    SVGAnimationElement* animation_element,
+    const SVGAnimationElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,
     SVGPropertyBase* to_value,
     SVGPropertyBase* to_at_end_of_duration_value,
     SVGElement*) {
-  DCHECK(animation_element);
-  SVGRect* from_rect = animation_element->GetAnimationMode() == kToAnimation
+  SVGRect* from_rect = animation_element.GetAnimationMode() == kToAnimation
                            ? this
                            : ToSVGRect(from_value);
   SVGRect* to_rect = ToSVGRect(to_value);
@@ -113,16 +112,16 @@ void SVGRect::CalculateAnimatedValue(
   float animated_y = Y();
   float animated_width = Width();
   float animated_height = Height();
-  animation_element->AnimateAdditiveNumber(
+  animation_element.AnimateAdditiveNumber(
       percentage, repeat_count, from_rect->X(), to_rect->X(),
       to_at_end_of_duration_rect->X(), animated_x);
-  animation_element->AnimateAdditiveNumber(
+  animation_element.AnimateAdditiveNumber(
       percentage, repeat_count, from_rect->Y(), to_rect->Y(),
       to_at_end_of_duration_rect->Y(), animated_y);
-  animation_element->AnimateAdditiveNumber(
+  animation_element.AnimateAdditiveNumber(
       percentage, repeat_count, from_rect->Width(), to_rect->Width(),
       to_at_end_of_duration_rect->Width(), animated_width);
-  animation_element->AnimateAdditiveNumber(
+  animation_element.AnimateAdditiveNumber(
       percentage, repeat_count, from_rect->Height(), to_rect->Height(),
       to_at_end_of_duration_rect->Height(), animated_height);
 

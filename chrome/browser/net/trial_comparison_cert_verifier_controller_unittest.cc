@@ -128,19 +128,20 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
     reporting_service_test_helper()->SetFailureMode(
         certificate_reporting_test_utils::REPORTS_SUCCESSFUL);
 
-    // Creating the profile before the SafeBrowsingService ensures the
-    // ServiceManagerConnection is initialized.
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
     ASSERT_TRUE(g_browser_process->profile_manager());
-    profile_ = profile_manager_->CreateTestingProfile("profile1");
 
     sb_service_ =
         base::MakeRefCounted<safe_browsing::TestSafeBrowsingService>();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
         sb_service_.get());
     g_browser_process->safe_browsing_service()->Initialize();
+
+    // SafeBrowsingService expects to be initialized before any profiles are
+    // created.
+    profile_ = profile_manager_->CreateTestingProfile("profile1");
 
     // Initialize CertificateReportingService for |profile_|.
     ASSERT_TRUE(reporting_service());

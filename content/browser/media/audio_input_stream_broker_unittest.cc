@@ -94,7 +94,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
     bool requested = false;
     mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver;
     mojo::Remote<media::mojom::AudioInputStreamClient> client;
-    media::mojom::AudioInputStreamObserverPtr observer;
+    mojo::Remote<media::mojom::AudioInputStreamObserver> observer;
     mojo::Remote<media::mojom::AudioLog> log;
     const std::string device_id;
     const media::AudioParameters params;

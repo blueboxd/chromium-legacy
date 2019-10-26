@@ -489,6 +489,9 @@ let kRTCTransportStats = new RTCStats(null, {
   selectedCandidatePairId: 'string',
   localCertificateId: 'string',
   remoteCertificateId: 'string',
+  tlsVersion: 'string',
+  dtlsCipher: 'string',
+  srtpCipher: 'string',
   selectedCandidatePairChanges: 'number',
 });
 addRTCStatsToWhitelist(Presence.MANDATORY, 'transport', kRTCTransportStats);

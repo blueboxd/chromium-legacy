@@ -8,6 +8,7 @@
 #include "base/sequence_checker.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
@@ -30,7 +31,7 @@ class TextureVirtualDeviceMojoAdapter : public mojom::TextureVirtualDevice,
       media::mojom::MailboxBufferHandleSetPtr mailbox_handles) override;
   void OnFrameReadyInBuffer(
       int32_t buffer_id,
-      mojom::ScopedAccessPermissionPtr access_permission,
+      mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int buffer_id) override;
 

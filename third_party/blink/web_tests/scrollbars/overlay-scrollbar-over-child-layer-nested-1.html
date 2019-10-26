@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<script>
+if (window.internals)
+  internals.useMockOverlayScrollbars();
+</script>
 <div style="position: relative; width: 200px; height: 200px; overflow: scroll">
   <!-- the intermediate div doesn't have layout overflow. -->
   <div style="position: relative; width: 210px; height: 80px; overflow: scroll">
@@ -6,9 +10,3 @@
   </div>
   <div style="height: 210px"></div>
 </div>
-<script>
-if (window.internals) {
-  internals.runtimeFlags.overlayScrollbarsEnabled = true;
-  internals.settings.setMockScrollbarsEnabled(true);
-}
-</script>

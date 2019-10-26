@@ -130,6 +130,17 @@ public class BookmarkTest {
         BookmarkTestUtil.waitForBookmarkModelLoaded();
     }
 
+    /**
+     * Loads an empty partner bookmarks folder for testing. The partner bookmarks folder will appear
+     * in the mobile bookmarks folder.
+     *
+     */
+    protected void loadEmptyPartnerBookmarksForTesting() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting(); });
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
+    }
+
     @After
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
@@ -305,6 +316,9 @@ public class BookmarkTest {
         syncDelegate.setMasterSyncAutomatically(true);
         AndroidSyncSettings.overrideForTests(syncDelegate, null);
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        // Force empty partner bookmark folder to keep set of bookmark items consistent across
+        // devices.
+        loadEmptyPartnerBookmarksForTesting();
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
         openBookmarkManager();
@@ -354,6 +368,9 @@ public class BookmarkTest {
     @MediumTest
     public void testSearchBookmarks_Delete() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_NONE);
+        // Force empty partner bookmark folder to keep set of bookmark items consistent across
+        // devices.
+        loadEmptyPartnerBookmarksForTesting();
         BookmarkId testFolder = addFolder(TEST_FOLDER_TITLE);
         BookmarkId testBookmark = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);

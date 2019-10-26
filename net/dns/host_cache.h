@@ -30,6 +30,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
@@ -46,24 +47,25 @@ namespace net {
 class NET_EXPORT HostCache {
  public:
   struct NET_EXPORT Key {
+    // TODO(mmenke): Make |network_isolation_key| mandatory.
     Key(const std::string& hostname,
         DnsQueryType dns_query_type,
         HostResolverFlags host_resolver_flags,
-        HostResolverSource host_resolver_source);
+        HostResolverSource host_resolver_source,
+        const NetworkIsolationKey& network_isolation_key =
+            NetworkIsolationKey());
     Key();
+    Key(const Key& key);
+    Key(Key&& key);
 
     // This is a helper used in comparing keys. The order of comparisons of
     // |Key| fields is arbitrary, but the tuple is constructed with
     // |dns_query_type| and |host_resolver_flags| before |hostname| under the
     // assumption that integer comparisons are faster than string comparisons.
-    std::tuple<DnsQueryType,
-               HostResolverFlags,
-               const std::string&,
-               HostResolverSource,
-               bool>
-    GetTuple(const Key* key) const {
+    auto GetTuple(const Key* key) const {
       return std::tie(key->dns_query_type, key->host_resolver_flags,
-                      key->hostname, key->host_resolver_source, key->secure);
+                      key->hostname, key->host_resolver_source,
+                      key->network_isolation_key, key->secure);
     }
 
     bool operator==(const Key& other) const {
@@ -78,6 +80,7 @@ class NET_EXPORT HostCache {
     DnsQueryType dns_query_type = DnsQueryType::UNSPECIFIED;
     HostResolverFlags host_resolver_flags = 0;
     HostResolverSource host_resolver_source = HostResolverSource::ANY;
+    NetworkIsolationKey network_isolation_key;
     bool secure = false;
   };
 
@@ -320,7 +323,13 @@ class NET_EXPORT HostCache {
 
   // Fills the provided base::ListValue with the contents of the cache for
   // serialization. |entry_list| must be non-null and will be cleared before
-  // adding the cache contents.
+  // adding the cache contents. Entries with ephemeral NetworkIsolationKeys will
+  // not be written to the resulting list.
+  //
+  // TODO(mmenke): This is used both in combination with RestoreFromListValue()
+  // and for NetLog. Update the NetLogViewer's display to handle
+  // NetworkIsolationKeys, and add some way for to get a result with ephemeral
+  // NIKs included.
   void GetAsListValue(base::ListValue* entry_list,
                       bool include_staleness) const;
   // Takes a base::ListValue representing cache entries and stores them in the

@@ -13,30 +13,9 @@
 #include <vector>
 
 #include "base/callback_list.h"
-#include "device/gamepad/public/cpp/gamepads.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "device/vr/util/gamepad_builder.h"
 
 namespace device {
-
-enum class ButtonName {
-  kSelect,
-  kGrip,
-  kTouchpad,
-  kThumbstick,
-};
-
-struct ParsedInputState {
-  mojom::XRInputSourceStatePtr source_state;
-  std::unordered_map<ButtonName, GamepadBuilder::ButtonData> button_data;
-  GamepadPose gamepad_pose;
-  uint16_t vendor_id = 0;
-  uint16_t product_id = 0;
-  ParsedInputState();
-  ~ParsedInputState();
-  ParsedInputState(ParsedInputState&& other);
-};
 
 class WMRCoordinateSystem;
 class WMRInputManager;
@@ -56,16 +35,14 @@ class MixedRealityInputHelper {
       const WMRCoordinateSystem* origin,
       const WMRTimestamp* timestamp);
 
-  mojom::XRGamepadDataPtr GetWebVRGamepadData(const WMRCoordinateSystem* origin,
-                                              const WMRTimestamp* timestamp);
-
   void Dispose();
 
  private:
   bool EnsureSpatialInteractionManager();
 
-  ParsedInputState ParseWindowsSourceState(const WMRInputSourceState* state,
-                                           const WMRCoordinateSystem* origin);
+  mojom::XRInputSourceStatePtr ParseWindowsSourceState(
+      const WMRInputSourceState* state,
+      const WMRCoordinateSystem* origin);
 
   // These event subscriptions can come back on a different thread, while
   // everything else is expected to come back on the same thread.

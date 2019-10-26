@@ -15,8 +15,6 @@
 
 goog.provide('cvox.ExtensionBridge');
 
-goog.require('cvox.ChromeVoxJSON');
-
 /**
  * @constructor
  */

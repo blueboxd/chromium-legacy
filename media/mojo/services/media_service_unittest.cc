@@ -32,6 +32,7 @@
 #include "media/mojo/services/media_manifest.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
@@ -156,16 +157,18 @@ class MediaServiceTest : public testing::Test {
   service_manager::Connector* connector() { return test_service_.connector(); }
 
   void SetUp() override {
-    service_manager::mojom::InterfaceProviderPtr host_interfaces;
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        host_interfaces;
     auto provider = std::make_unique<MediaInterfaceProvider>(
-        mojo::MakeRequest(&host_interfaces));
+        host_interfaces.InitWithNewPipeAndPassReceiver());
 
     connector()->BindInterface(mojom::kMediaServiceName, &media_service_);
     media_service_.set_connection_error_handler(
         base::BindRepeating(&MediaServiceTest::MediaServiceConnectionClosed,
                             base::Unretained(this)));
     media_service_->CreateInterfaceFactory(
-        mojo::MakeRequest(&interface_factory_), std::move(host_interfaces));
+        interface_factory_.BindNewPipeAndPassReceiver(),
+        std::move(host_interfaces));
   }
 
   MOCK_METHOD3(OnCdmInitialized,
@@ -282,7 +285,7 @@ class MediaServiceTest : public testing::Test {
   service_manager::TestService test_service_;
 
   mojom::MediaServicePtr media_service_;
-  mojom::InterfaceFactoryPtr interface_factory_;
+  mojo::Remote<mojom::InterfaceFactory> interface_factory_;
   mojom::ContentDecryptionModulePtr cdm_;
   mojo::Remote<mojom::CdmProxy> cdm_proxy_;
   mojom::RendererPtr renderer_;

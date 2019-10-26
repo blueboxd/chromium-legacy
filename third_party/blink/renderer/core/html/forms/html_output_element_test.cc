@@ -16,9 +16,9 @@ TEST(HTMLLinkElementSizesAttributeTest,
      setHTMLForProperty_updatesForAttribute) {
   auto* document = MakeGarbageCollected<Document>();
   auto* element = MakeGarbageCollected<HTMLOutputElement>(*document);
-  EXPECT_EQ(g_null_atom, element->getAttribute(html_names::kForAttr));
+  EXPECT_EQ(g_null_atom, element->FastGetAttribute(html_names::kForAttr));
   element->htmlFor()->setValue("  strawberry ");
-  EXPECT_EQ("  strawberry ", element->getAttribute(html_names::kForAttr));
+  EXPECT_EQ("  strawberry ", element->FastGetAttribute(html_names::kForAttr));
 }
 
 TEST(HTMLOutputElementTest, setForAttribute_updatesHTMLForPropertyValue) {

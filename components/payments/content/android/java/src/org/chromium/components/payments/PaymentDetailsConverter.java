@@ -7,7 +7,7 @@ package org.chromium.components.payments;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentHandlerMethodData;
 import org.chromium.payments.mojom.PaymentHandlerModifier;
-import org.chromium.payments.mojom.PaymentMethodChangeResponse;
+import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
 import org.chromium.payments.mojom.PaymentShippingOption;
 
 import java.util.ArrayList;
@@ -47,13 +47,13 @@ public class PaymentDetailsConverter {
      *                      valid for the given payment method identifier. Should not be null.
      * @return The data structure that can be sent to the invoked payment handler.
      */
-    public static PaymentMethodChangeResponse convertToPaymentMethodChangeResponse(
+    public static PaymentRequestDetailsUpdate convertToPaymentRequestDetailsUpdate(
             PaymentDetails details, boolean handlesShipping, MethodChecker methodChecker) {
         // Keep in sync with components/payments/content/payment_details_converter.cc.
         assert details != null;
         assert methodChecker != null;
 
-        PaymentMethodChangeResponse response = new PaymentMethodChangeResponse();
+        PaymentRequestDetailsUpdate response = new PaymentRequestDetailsUpdate();
         response.error = details.error;
         response.stringifiedPaymentMethodErrors = details.stringifiedPaymentMethodErrors;
         if (handlesShipping) response.shippingAddressErrors = details.shippingAddressErrors;

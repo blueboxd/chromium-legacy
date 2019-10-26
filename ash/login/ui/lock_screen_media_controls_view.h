@@ -5,9 +5,8 @@
 #ifndef ASH_LOGIN_UI_LOCK_SCREEN_MEDIA_CONTROLS_VIEW_H_
 #define ASH_LOGIN_UI_LOCK_SCREEN_MEDIA_CONTROLS_VIEW_H_
 
-#include <set>
-
 #include "ash/ash_export.h"
+#include "base/containers/flat_set.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -237,7 +236,7 @@ class ASH_EXPORT LockScreenMediaControlsView
   base::string16 accessible_name_;
 
   // Set of enabled actions.
-  std::set<media_session::mojom::MediaSessionAction> enabled_actions_;
+  base::flat_set<media_session::mojom::MediaSessionAction> enabled_actions_;
 
   // Contains the visible and draggable UI of the media controls.
   views::View* contents_view_ = nullptr;

@@ -80,6 +80,7 @@
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
+#include "components/games/core/games_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/nacl/common/buildflags.h"
@@ -4718,6 +4719,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaInspectorLoggingName,
      flag_descriptions::kMediaInspectorLoggingDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kMediaInspectorLogging)},
+
+#if defined(OS_ANDROID)
+    {"enable-games-hub", flag_descriptions::kGamesHubName,
+     flag_descriptions::kGamesHubDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(games::features::kGamesHub)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

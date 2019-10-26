@@ -12,7 +12,6 @@
 #include "base/optional.h"
 
 #include "device/vr/openxr/openxr_controller.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 
 namespace device {
 
@@ -27,8 +26,6 @@ class OpenXRInputHelper {
   OpenXRInputHelper(XrSession session, XrSpace local_space);
 
   ~OpenXRInputHelper();
-
-  mojom::XRGamepadDataPtr GetGamepadData(XrTime predicted_display_time);
 
   std::vector<mojom::XRInputSourceStatePtr> GetInputState(
       XrTime predicted_display_time);

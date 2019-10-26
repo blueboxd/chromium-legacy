@@ -174,6 +174,8 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -388,11 +390,11 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
   }
 
  private:
-  void Create(media::mojom::RemotingSourcePtr source,
-              media::mojom::RemoterRequest request) final {
+  void Create(mojo::PendingRemote<media::mojom::RemotingSource> source,
+              mojo::PendingReceiver<media::mojom::Remoter> receiver) final {
     if (auto* host = RenderFrameHostImpl::FromID(process_id_, routing_id_)) {
       GetContentClient()->browser()->CreateMediaRemoter(host, std::move(source),
-                                                        std::move(request));
+                                                        std::move(receiver));
     }
   }
 
@@ -2510,10 +2512,10 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
                validated_url.possibly_invalid_spec());
 
   frame_tree_node_->navigator()->RequestOpenURL(
-      this, validated_url, params.initiator_origin, params.uses_post,
-      params.resource_request_body, params.extra_headers, params.referrer,
-      params.disposition, params.should_replace_current_entry,
-      params.user_gesture, params.triggering_event_info, params.href_translate,
+      this, validated_url, params.initiator_origin, params.post_body,
+      params.extra_headers, params.referrer, params.disposition,
+      params.should_replace_current_entry, params.user_gesture,
+      params.triggering_event_info, params.href_translate,
       std::move(blob_url_loader_factory));
 }
 
@@ -7676,8 +7678,8 @@ void RenderFrameHostImpl::AddMessageToConsoleImpl(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message,
     bool discard_duplicates) {
-  Send(new FrameMsg_AddMessageToConsole(routing_id_, level, message,
-                                        discard_duplicates));
+  GetAssociatedLocalFrame()->AddMessageToConsole(level, message,
+                                                 discard_duplicates);
 }
 
 void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(

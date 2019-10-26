@@ -209,11 +209,9 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
         // Update preference to show prompt based on whether checkbox is checked only when the user
         // click the positive button.
         if (dontShowAgain) {
-            PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
-                    DownloadPromptStatus.DONT_SHOW);
+            DownloadUtils.setPromptForDownloadAndroid(DownloadPromptStatus.DONT_SHOW);
         } else {
-            PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
-                    DownloadPromptStatus.SHOW_PREFERENCE);
+            DownloadUtils.setPromptForDownloadAndroid(DownloadPromptStatus.SHOW_PREFERENCE);
         }
     }
 

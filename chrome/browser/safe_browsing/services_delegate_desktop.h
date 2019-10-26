@@ -65,10 +65,6 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   IncidentReportingService* CreateIncidentReportingService();
   ResourceRequestDetector* CreateResourceRequestDetector();
 
-  void CreateTelemetryService(Profile* profile) override;
-  void RemoveTelemetryService() override;
-  TelemetryService* GetTelemetryService() const override;
-
   void CreateBinaryUploadService(Profile* profile) override;
   void RemoveBinaryUploadService(Profile* profile) override;
   BinaryUploadService* GetBinaryUploadService(Profile* profile) const override;

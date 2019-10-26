@@ -47,7 +47,7 @@ ExternalVkImageDawnRepresentation::~ExternalVkImageDawnRepresentation() {
   dawn_procs_.deviceRelease(device_);
 }
 
-DawnTexture ExternalVkImageDawnRepresentation::BeginAccess(
+WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
     WGPUTextureUsage usage) {
   std::vector<SemaphoreHandle> handles;
 

@@ -56,7 +56,7 @@ Polymer({
       type: String,
       notify: true,
       reflectToAttribute: true,
-      computed: 'getItemName_(item)',
+      computed: 'getAriaLabel_(item, networkState)',
     },
 
     /**
@@ -127,6 +127,21 @@ Polymer({
     }
     return OncMojo.getNetworkStateDisplayName(
         /** @type {!OncMojo.NetworkStateProperties} */ (this.item));
+  },
+
+  /**
+   * Label for the row, used for accessibility announcement.
+   * @return {string}
+   * @private
+   */
+  getAriaLabel_: function() {
+    const status = this.getNetworkStateText_();
+    if (status) {
+      return CrOncStrings.networkListItemLabelTemplate
+          .replace('$1', this.getItemName_())
+          .replace('$2', status);
+    }
+    return this.getItemName_();
   },
 
   /**

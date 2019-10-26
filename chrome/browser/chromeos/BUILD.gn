@@ -2837,6 +2837,8 @@ source_set("unit_tests") {
     "printing/synced_printers_manager_unittest.cc",
     "printing/test_cups_print_job_manager.cc",
     "printing/test_cups_print_job_manager.h",
+    "printing/test_cups_printers_manager.cc",
+    "printing/test_cups_printers_manager.h",
     "printing/usb_printer_detector_unittest.cc",
     "printing/zeroconf_printer_detector_unittest.cc",
     "proxy_config_service_impl_unittest.cc",

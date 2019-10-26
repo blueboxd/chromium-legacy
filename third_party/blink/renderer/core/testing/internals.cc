@@ -300,6 +300,7 @@ void Internals::ResetToConsistentState(Page* page) {
       OverrideCapsLockState::kDefault);
 
   IntersectionObserver::SetThrottleDelayEnabledForTesting(true);
+  ScrollbarTheme::SetMockScrollbarsEnabled(false);
 }
 
 Internals::Internals(ExecutionContext* context)
@@ -3497,6 +3498,15 @@ String Internals::getDocumentAgentId(Document* document) {
   // it works. Is there any utility to dump a number in a hexadecimal form?
   // I couldn't find one in WTF.
   return String::Number(process_id) + ":" + String::Number(agent_address);
+}
+
+void Internals::useMockOverlayScrollbars() {
+  ScrollbarTheme::SetMockScrollbarsEnabled(true);
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
+}
+
+bool Internals::overlayScrollbarsEnabled() const {
+  return RuntimeEnabledFeatures::OverlayScrollbarsEnabled();
 }
 
 }  // namespace blink

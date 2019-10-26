@@ -8,7 +8,7 @@ import org.chromium.base.Promise;
 import org.chromium.chrome.browser.browserservices.Origin;
 
 /**
- * A Delegate for the {@link TrustedWebActivityVerifier} that provides implementation specific to
+ * A Delegate for the {@link Verifier} that provides implementation specific to
  * Trusted Web Activities, WebAPKs or A2HS as appropriate.
  */
 public interface VerifierDelegate {

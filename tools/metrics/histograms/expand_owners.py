@@ -303,9 +303,10 @@ def ExpandHistogramsOWNERS(histograms):
     Error: Raised if the OWNERS file with the given path does not exist.
   """
   email_pattern = re.compile(_EMAIL_PATTERN)
+  iter_matches = extract_histograms.IterElementsWithTag
 
-  for histogram in histograms.getElementsByTagName('histogram'):
-    owners = histogram.getElementsByTagName('owner')
+  for histogram in iter_matches(histograms, 'histogram'):
+    owners = [owner for owner in iter_matches(histogram, 'owner', 1)]
 
     # owner is a DOM Element with a single child, which is a DOM Text Node.
     emails_with_dom_elements = set([
@@ -316,12 +317,10 @@ def ExpandHistogramsOWNERS(histograms):
     # component is a DOM Element with a single child, which is a DOM Text Node.
     components_with_dom_elements = set([
       extract_histograms.NormalizeString(component.childNodes[0].data)
-      for component in histogram.getElementsByTagName('component')])
+      for component in iter_matches(histogram, 'component', 1)])
 
-    for index in range(len(owners)):
-      owner = owners[index]
+    for index, owner in enumerate(owners):
       owner_text = owner.childNodes[0].data
-
       name = histogram.getAttribute('name')
       if _IsEmailOrPlaceholder(index == 0, owner_text, name):
         continue

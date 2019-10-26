@@ -121,10 +121,10 @@
     [SameObject, Replaceable] readonly attribute Screen screen;
 
     // browsing context
-    void moveTo(long x, long y);
-    void moveBy(long x, long y);
-    void resizeTo(long x, long y);
-    void resizeBy(long x, long y);
+    [MeasureAs=WindowMove] void moveTo(long x, long y);
+    [MeasureAs=WindowMove] void moveBy(long x, long y);
+    [MeasureAs=WindowResize] void resizeTo(long x, long y);
+    [MeasureAs=WindowResize] void resizeBy(long x, long y);
 
     // viewport
     [Affects=Nothing, HighEntropy, MeasureAs=WindowInnerWidth, Replaceable] readonly attribute long innerWidth;

@@ -54,7 +54,7 @@ class FindBarHost : public DropdownBarHost,
   void SetFocusAndSelection() override;
   void ClearResults(const FindNotificationDetails& results) override;
   void StopAnimation() override;
-  void MoveWindowIfNecessary(const gfx::Rect& selection_rect) override;
+  void MoveWindowIfNecessary() override;
   void SetFindTextAndSelectedRange(const base::string16& find_text,
                                    const gfx::Range& selected_range) override;
   base::string16 GetFindText() override;
@@ -128,6 +128,14 @@ class FindBarHost : public DropdownBarHost,
 
   // Allows implementation to tweak widget position.
   void GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect);
+
+  // If the find bar obscures the search results we need to move the window. To
+  // do that we need to know what is selected on the page. We simply calculate
+  // where it would be if we place it on the left of the selection and if it
+  // doesn't fit on the screen we try the right side. The parameter
+  // |selection_rect| is expected to have coordinates relative to the top of
+  // the web page area.
+  void MoveWindowIfNecessaryWithRect(const gfx::Rect& selection_rect);
 
   // Returns the FindBarView.
   FindBarView* find_bar_view() { return static_cast<FindBarView*>(view()); }

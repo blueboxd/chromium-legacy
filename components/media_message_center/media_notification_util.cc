@@ -50,11 +50,11 @@ base::string16 GetAccessibleNameFromMetadata(
   return accessible_name;
 }
 
-std::set<MediaSessionAction> GetTopVisibleActions(
-    const std::set<MediaSessionAction>& enabled_actions,
-    const std::set<MediaSessionAction>& ignored_actions,
+base::flat_set<MediaSessionAction> GetTopVisibleActions(
+    const base::flat_set<MediaSessionAction>& enabled_actions,
+    const base::flat_set<MediaSessionAction>& ignored_actions,
     size_t max_actions) {
-  std::set<MediaSessionAction> visible_actions;
+  base::flat_set<MediaSessionAction> visible_actions;
 
   for (auto& action : kPreferredActions) {
     if (visible_actions.size() >= max_actions)

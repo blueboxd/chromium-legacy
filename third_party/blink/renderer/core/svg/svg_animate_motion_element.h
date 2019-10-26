@@ -50,7 +50,7 @@ class SVGAnimateMotionElement final : public SVGAnimationElement {
                                 const String& by_string) override;
   void CalculateAnimatedValue(float percentage,
                               unsigned repeat_count,
-                              SVGSMILElement* result_element) override;
+                              SVGSMILElement* result_element) const override;
   void ApplyResultsToTarget() override;
   float CalculateDistance(const String& from_string,
                           const String& to_string) override;

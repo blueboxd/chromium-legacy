@@ -65,6 +65,10 @@ _DEFAULT_COVERAGE_EXCLUSION_LIST = []
 # If no target OS is defined, or one is defined that doesn't have a specific
 # entry, use _DEFAULT_COVERAGE_EXCLUSION_LIST.
 _COVERAGE_EXCLUSION_LIST_MAP = {
+    'android': [
+        # This file caused webview native library failed on arm64.
+        '../../device/gamepad/dualshock4_controller.cc',
+    ],
     'linux': [
         # These files caused a static initializer to be generated, which
         # shouldn't.

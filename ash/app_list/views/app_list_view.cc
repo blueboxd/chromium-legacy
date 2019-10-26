@@ -1884,11 +1884,11 @@ ash::AppListViewState AppListView::CalculateStateAfterShelfDrag(
           kDragVelocityFromShelfThreshold) {
     // If the scroll sequence terminates with a fling, show the fullscreen app
     // list if the fling was fast enough and in the correct direction, otherwise
-    // go to peeking.
+    // close it.
     app_list_state =
         event_in_screen.AsGestureEvent()->details().velocity_y() < 0
             ? ash::AppListViewState::kFullscreenAllApps
-            : ash::AppListViewState::kPeeking;
+            : ash::AppListViewState::kClosed;
   } else {
     // Snap the app list to corresponding state according to the snapping
     // thresholds.
@@ -2117,9 +2117,14 @@ bool AppListView::CloseKeyboardIfVisible() {
 }
 
 void AppListView::OnParentWindowBoundsChanged() {
+  const gfx::Rect new_target_bounds =
+      GetPreferredWidgetBoundsForState(app_list_state_);
+  aura::Window* window = GetWidget()->GetNativeView();
+  if (new_target_bounds == window->GetTargetBounds())
+    return;
+
   // Set the widget size to fit the new display metrics.
-  GetWidget()->GetNativeView()->SetBounds(
-      GetPreferredWidgetBoundsForState(app_list_state_));
+  GetWidget()->GetNativeView()->SetBounds(new_target_bounds);
 
   // Update the widget bounds to accomodate the new work
   // area.

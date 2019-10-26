@@ -123,6 +123,9 @@ enum ShelfAction {
 
   // The app list launcher menu was dismissed.
   SHELF_ACTION_APP_LIST_DISMISSED,
+
+  // The back action was performed on the app list.
+  SHELF_ACTION_APP_LIST_BACK,
 };
 
 // The type of a shelf item.

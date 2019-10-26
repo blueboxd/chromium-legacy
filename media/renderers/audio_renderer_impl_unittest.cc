@@ -130,10 +130,10 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
 
   // Mock out demuxer reads.
   void ConfigureDemuxerStream(bool supports_config_changes) {
-    EXPECT_CALL(demuxer_stream_, Read(_))
-        .WillRepeatedly(
-            RunCallback<0>(DemuxerStream::kOk,
-                           scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
+    EXPECT_CALL(demuxer_stream_, OnRead(_))
+        .WillRepeatedly(RunOnceCallback<0>(
+            DemuxerStream::kOk,
+            scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
     EXPECT_CALL(demuxer_stream_, SupportsConfigChanges())
         .WillRepeatedly(Return(supports_config_changes));
   }
@@ -352,9 +352,9 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     DCHECK(decode_cb_);
 
     // Return EOS buffer to trigger EOS frame.
-    EXPECT_CALL(demuxer_stream_, Read(_))
-        .WillOnce(RunCallback<0>(DemuxerStream::kOk,
-                                 DecoderBuffer::CreateEOSBuffer()));
+    EXPECT_CALL(demuxer_stream_, OnRead(_))
+        .WillOnce(RunOnceCallback<0>(DemuxerStream::kOk,
+                                     DecoderBuffer::CreateEOSBuffer()));
 
     // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
     main_thread_task_runner_->PostTask(

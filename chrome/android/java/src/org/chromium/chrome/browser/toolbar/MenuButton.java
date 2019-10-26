@@ -26,11 +26,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.ui.widget.highlight.PulseDrawable;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**

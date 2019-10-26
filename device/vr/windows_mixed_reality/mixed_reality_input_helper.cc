@@ -4,20 +4,13 @@
 
 #include "device/vr/windows_mixed_reality/mixed_reality_input_helper.h"
 
-#include <windows.perception.spatial.h>
-#include <windows.ui.input.spatial.h>
-
-#include <wrl.h>
 #include <wrl/event.h>
 
-#include <unordered_map>
+#include <utility>
 #include <vector>
 
-#include "base/strings/safe_sprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/gamepad/public/cpp/gamepads.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
-#include "device/vr/util/gamepad_builder.h"
 #include "device/vr/util/xr_standard_gamepad_builder.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_renderloop.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_location.h"
@@ -46,245 +39,37 @@ using SourceKind =
 using PositionAccuracy =
     ABI::Windows::UI::Input::Spatial::SpatialInteractionSourcePositionAccuracy;
 
-ParsedInputState::ParsedInputState() = default;
-ParsedInputState::~ParsedInputState() = default;
-ParsedInputState::ParsedInputState(ParsedInputState&& other) = default;
-
 MixedRealityInputHelper::ControllerState::ControllerState() = default;
 MixedRealityInputHelper::ControllerState::~ControllerState() = default;
 
 namespace {
-
-// Helpers for WebVR Gamepad
-constexpr double kThumbstickDeadzone = 0.15;
-
-double ApplyAxisDeadzone(double value, double deadzone) {
-  return std::fabs(value) < deadzone ? 0 : value;
-}
-
-void AddButton(mojom::XRGamepadPtr& gamepad,
-               const GamepadBuilder::ButtonData* data) {
-  if (data) {
-    auto button = mojom::XRGamepadButton::New();
-    button->pressed = data->pressed;
-    button->touched = data->touched;
-    button->value = data->value;
-
-    gamepad->buttons.push_back(std::move(button));
-  } else {
-    gamepad->buttons.push_back(mojom::XRGamepadButton::New());
-  }
-}
-
-// These methods are only called for the thumbstick and touchpad, which both
-// have an X and Y.
-void AddAxes(mojom::XRGamepadPtr& gamepad,
-             const GamepadBuilder::ButtonData& data) {
-  const double deadzone =
-      data.type == GamepadBuilder::ButtonData::Type::kThumbstick
-          ? kThumbstickDeadzone
-          : 0.0;
-  gamepad->axes.push_back(ApplyAxisDeadzone(data.x_axis, deadzone));
-  gamepad->axes.push_back(ApplyAxisDeadzone(data.y_axis, deadzone));
-}
-
-void AddButtonWithAxes(mojom::XRGamepadPtr& gamepad,
-                       const GamepadBuilder::ButtonData& data) {
-  AddButton(gamepad, &data);
-  AddAxes(gamepad, data);
-}
-
-gfx::Point3F ConvertToPoint3F(const GamepadVector& vector) {
-  return gfx::Point3F(vector.x, vector.y, vector.z);
-}
-
-gfx::Vector3dF ConvertToVector3dF(const GamepadVector& vector) {
-  return gfx::Vector3dF(vector.x, vector.y, vector.z);
-}
-
-gfx::Quaternion ConvertToQuaternion(const GamepadQuaternion& quat) {
-  return gfx::Quaternion(quat.x, quat.y, quat.z, quat.w);
-}
-
-mojom::VRPosePtr ConvertToVRPose(const GamepadPose& gamepad_pose) {
-  if (!gamepad_pose.not_null)
-    return nullptr;
-
-  auto pose = mojom::VRPose::New();
-  if (gamepad_pose.orientation.not_null)
-    pose->orientation = ConvertToQuaternion(gamepad_pose.orientation);
-
-  if (gamepad_pose.position.not_null)
-    pose->position = ConvertToPoint3F(gamepad_pose.position);
-
-  if (gamepad_pose.angular_velocity.not_null)
-    pose->angular_velocity = ConvertToVector3dF(gamepad_pose.angular_velocity);
-
-  if (gamepad_pose.linear_velocity.not_null)
-    pose->linear_velocity = ConvertToVector3dF(gamepad_pose.linear_velocity);
-
-  if (gamepad_pose.angular_acceleration.not_null)
-    pose->angular_acceleration =
-        ConvertToVector3dF(gamepad_pose.angular_acceleration);
-
-  if (gamepad_pose.linear_acceleration.not_null)
-    pose->linear_acceleration =
-        ConvertToVector3dF(gamepad_pose.linear_acceleration);
-
-  return pose;
-}
-
-GamepadQuaternion ConvertToGamepadQuaternion(const WFN::Quaternion& quat) {
-  GamepadQuaternion gamepad_quaternion;
-  gamepad_quaternion.not_null = true;
-  gamepad_quaternion.x = quat.X;
-  gamepad_quaternion.y = quat.Y;
-  gamepad_quaternion.z = quat.Z;
-  gamepad_quaternion.w = quat.W;
-  return gamepad_quaternion;
-}
-
-GamepadVector ConvertToGamepadVector(const WFN::Vector3& vec3) {
-  GamepadVector gamepad_vector;
-  gamepad_vector.not_null = true;
-  gamepad_vector.x = vec3.X;
-  gamepad_vector.y = vec3.Y;
-  gamepad_vector.z = vec3.Z;
-  return gamepad_vector;
-}
-
-GamepadPose GetGamepadPose(const WMRInputLocation* location) {
-  GamepadPose gamepad_pose;
-
-  WFN::Quaternion quat;
-  if (location->TryGetOrientation(&quat)) {
-    gamepad_pose.not_null = true;
-    gamepad_pose.orientation = ConvertToGamepadQuaternion(quat);
-  }
-
-  WFN::Vector3 vec3;
-  if (location->TryGetPosition(&vec3)) {
-    gamepad_pose.not_null = true;
-    gamepad_pose.position = ConvertToGamepadVector(vec3);
-  }
-
-  if (location->TryGetVelocity(&vec3)) {
-    gamepad_pose.not_null = true;
-    gamepad_pose.linear_velocity = ConvertToGamepadVector(vec3);
-  }
-
-  if (location->TryGetAngularVelocity(&vec3)) {
-    gamepad_pose.not_null = true;
-    gamepad_pose.angular_velocity = ConvertToGamepadVector(vec3);
-  }
-
-  return gamepad_pose;
-}
-
-mojom::XRGamepadPtr GetWebVRGamepad(ParsedInputState input_state) {
-  auto gamepad = mojom::XRGamepad::New();
-  // This matches the order of button trigger events from Edge.  Note that we
-  // use the polled button state for select here.  Voice (which we cannot get
-  // via polling), lacks enough data to be considered a "Gamepad", and if we
-  // used eventing the pressed state may be inconsistent.
-  AddButtonWithAxes(gamepad, input_state.button_data[ButtonName::kThumbstick]);
-  AddButton(gamepad, &input_state.button_data[ButtonName::kSelect]);
-  AddButton(gamepad, &input_state.button_data[ButtonName::kGrip]);
-  AddButton(gamepad, nullptr);  // Nothing seems to trigger this button in Edge.
-  AddButtonWithAxes(gamepad, input_state.button_data[ButtonName::kTouchpad]);
-
-  auto handedness = input_state.source_state->description->handedness;
-
-  gamepad->timestamp = base::TimeTicks::Now();
-  gamepad->hand = handedness;
-  gamepad->controller_id = input_state.source_state->source_id;
-
-  // We need to ensure that we have a VRPose so that we can attach input_states
-  // and therefore a gamepad to plumb up the Gamepad Id with VendorId/ProductId.
-  if (input_state.gamepad_pose.not_null) {
-    gamepad->pose = ConvertToVRPose(input_state.gamepad_pose);
-    gamepad->can_provide_position = input_state.gamepad_pose.position.not_null;
-    gamepad->can_provide_orientation =
-        input_state.gamepad_pose.orientation.not_null;
-  } else {
-    gamepad->can_provide_orientation = false;
-    gamepad->can_provide_position = false;
-    gamepad->pose = mojom::VRPose::New();
-  }
-
-  // Build the gamepad id, this prefix is used for all controller types and
-  // VendorId-ProductId is appended after it, padded with leading 0's.
-  char gamepad_id[Gamepad::kIdLengthCap];
-  base::strings::SafeSPrintf(
-      gamepad_id, "Spatial Controller (Spatial Interaction Source) %04X-%04X",
-      input_state.vendor_id, input_state.product_id);
-
-  // We have to use the GamepadBuilder because the mojom serialization complains
-  // if some of the values are missing/invalid.
-  GamepadBuilder builder(gamepad_id, GamepadMapping::kNone, handedness);
-
-  auto input_source_state = mojom::XRInputSourceState::New();
-  input_source_state->gamepad = builder.GetGamepad();
-
-  // Typical chromium style would be to use the initializer list, but that
-  // doesn't seem to be compatible with the explicitly deleted move/copy
-  // constructors for the vector.
-  std::vector<mojom::XRInputSourceStatePtr> input_source_vector;
-  input_source_vector.push_back(std::move(input_source_state));
-  gamepad->pose->input_state = std::move(input_source_vector);
-
-  return gamepad;
-}
-
-// Helpers for WebXRGamepad
-base::Optional<Gamepad> GetWebXRGamepad(ParsedInputState& input_state) {
-  device::mojom::XRHandedness handedness = device::mojom::XRHandedness::NONE;
-  if (input_state.source_state && input_state.source_state->description)
-    handedness = input_state.source_state->description->handedness;
-
+base::Optional<Gamepad> GetWebXRGamepad(const WMRInputSourceState* source_state,
+                                        const mojom::XRHandedness& handedness) {
   XRStandardGamepadBuilder builder(handedness);
-  builder.SetPrimaryButton(input_state.button_data[ButtonName::kSelect]);
-  builder.SetSecondaryButton(input_state.button_data[ButtonName::kGrip]);
 
-  // button_data will either have both kTouchpad and kThumbstick, or neither.
-  if (input_state.button_data.find(ButtonName::kTouchpad) !=
-      input_state.button_data.end()) {
-    builder.SetTouchpadData(input_state.button_data[ButtonName::kTouchpad]);
-    builder.SetThumbstickData(input_state.button_data[ButtonName::kThumbstick]);
-  }
-
-  return builder.GetGamepad();
-}
-
-// Note that since this is built by polling, and so eventing changes are not
-// accounted for here.
-std::unordered_map<ButtonName, GamepadBuilder::ButtonData> ParseButtonState(
-    const WMRInputSourceState* source_state) {
-  std::unordered_map<ButtonName, GamepadBuilder::ButtonData> button_map;
-
-  // Add the select button
-  GamepadBuilder::ButtonData data = button_map[ButtonName::kSelect];
+  // Add the Select button
+  GamepadBuilder::ButtonData data = {};
   data.pressed = source_state->IsSelectPressed();
   data.touched = data.pressed;
   data.value = source_state->SelectPressedValue();
   data.type = GamepadBuilder::ButtonData::Type::kButton;
-  button_map[ButtonName::kSelect] = data;
+  builder.SetPrimaryButton(data);
 
   // Add the grip button
-  data = button_map[ButtonName::kGrip];
+  data = {};
   data.pressed = source_state->IsGrasped();
   data.touched = data.pressed;
   data.value = data.pressed ? 1.0 : 0.0;
   data.type = GamepadBuilder::ButtonData::Type::kButton;
-  button_map[ButtonName::kGrip] = data;
+  builder.SetSecondaryButton(data);
 
   // Select and grip are the only two required buttons, if we can't get the
   // others, we can safely return just them.
   if (!source_state->SupportsControllerProperties())
-    return button_map;
+    return builder.GetGamepad();
 
-  // Add the thumbstick
-  data = button_map[ButtonName::kThumbstick];
+  // Add the Thumbstick
+  data = {};
   data.pressed = source_state->IsThumbstickPressed();
   data.touched = data.pressed;
   data.value = data.pressed ? 1.0 : 0.0;
@@ -293,11 +78,10 @@ std::unordered_map<ButtonName, GamepadBuilder::ButtonData> ParseButtonState(
   data.type = GamepadBuilder::ButtonData::Type::kThumbstick;
   data.x_axis = source_state->ThumbstickX();
   data.y_axis = -source_state->ThumbstickY();
+  builder.SetThumbstickData(data);
 
-  button_map[ButtonName::kThumbstick] = data;
-
-  // Add the touchpad
-  data = button_map[ButtonName::kTouchpad];
+  // Add the Touchpad
+  data = {};
   data.pressed = source_state->IsTouchpadPressed();
   data.touched = source_state->IsTouchpadTouched() || data.pressed;
   data.value = data.pressed ? 1.0 : 0.0;
@@ -313,20 +97,20 @@ std::unordered_map<ButtonName, GamepadBuilder::ButtonData> ParseButtonState(
     data.y_axis = 0;
   }
 
-  button_map[ButtonName::kTouchpad] = data;
+  builder.SetTouchpadData(data);
 
-  return button_map;
+  return builder.GetGamepad();
 }
 
-gfx::Transform CreateTransform(GamepadVector position,
-                               GamepadQuaternion rotation) {
+gfx::Transform CreateTransform(const WFN::Vector3& position,
+                               const WFN::Quaternion& rotation) {
   gfx::DecomposedTransform decomposed_transform;
-  decomposed_transform.translate[0] = position.x;
-  decomposed_transform.translate[1] = position.y;
-  decomposed_transform.translate[2] = position.z;
+  decomposed_transform.translate[0] = position.X;
+  decomposed_transform.translate[1] = position.Y;
+  decomposed_transform.translate[2] = position.Z;
 
   decomposed_transform.quaternion =
-      gfx::Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+      gfx::Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W);
   return gfx::ComposeTransform(decomposed_transform);
 }
 
@@ -366,19 +150,18 @@ base::Optional<gfx::Transform> TryGetGripFromPointer(
     pos = pointer_pose->HeadForward();
   }
 
-  gfx::Transform origin_from_pointer = CreateTransform(
-      ConvertToGamepadVector(pos), ConvertToGamepadQuaternion(rot));
+  gfx::Transform origin_from_pointer = CreateTransform(pos, rot);
   return (grip_from_origin * origin_from_pointer);
 }
 
-device::mojom::XRHandedness WindowsToMojoHandedness(Handedness handedness) {
+mojom::XRHandedness WindowsToMojoHandedness(Handedness handedness) {
   switch (handedness) {
     case Handedness::SpatialInteractionSourceHandedness_Left:
-      return device::mojom::XRHandedness::LEFT;
+      return mojom::XRHandedness::LEFT;
     case Handedness::SpatialInteractionSourceHandedness_Right:
-      return device::mojom::XRHandedness::RIGHT;
+      return mojom::XRHandedness::RIGHT;
     default:
-      return device::mojom::XRHandedness::NONE;
+      return mojom::XRHandedness::NONE;
   }
 }
 
@@ -389,13 +172,13 @@ uint32_t GetSourceId(const WMRInputSource* source) {
   // the hash table used on the blink side.  To ensure that we don't have any
   // collisions with other ids, increment all of the ids by one.
   id++;
-  DCHECK(id != 0);
+  DCHECK_NE(id, 0u);
 
   return id;
 }
 
-const unsigned short kSamsungVendorId = 1118;
-const unsigned short kSamsungOdysseyProductId = 1629;
+const uint16_t kSamsungVendorId = 1118;
+const uint16_t kSamsungOdysseyProductId = 1629;
 
 }  // namespace
 
@@ -447,42 +230,19 @@ MixedRealityInputHelper::GetInputState(const WMRCoordinateSystem* origin,
   for (const auto& state : source_states) {
     auto parsed_source_state = ParseWindowsSourceState(state.get(), origin);
 
-    if (parsed_source_state.source_state) {
-      input_states.push_back(std::move(parsed_source_state.source_state));
+    if (parsed_source_state) {
+      input_states.push_back(std::move(parsed_source_state));
     }
   }
 
   return input_states;
 }
 
-mojom::XRGamepadDataPtr MixedRealityInputHelper::GetWebVRGamepadData(
-    const WMRCoordinateSystem* origin,
-    const WMRTimestamp* timestamp) {
-  auto ret = mojom::XRGamepadData::New();
-
-  if (!timestamp || !origin || !EnsureSpatialInteractionManager())
-    return ret;
-
-  auto source_states =
-      input_manager_->GetDetectedSourcesAtTimestamp(timestamp->GetRawPtr());
-
-  for (const auto& state : source_states) {
-    auto parsed_source_state = ParseWindowsSourceState(state.get(), origin);
-
-    // If we have a source_state, then we should have enough data.
-    if (parsed_source_state.source_state)
-      ret->gamepads.push_back(GetWebVRGamepad(std::move(parsed_source_state)));
-  }
-
-  return ret;
-}
-
-ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
+mojom::XRInputSourceStatePtr MixedRealityInputHelper::ParseWindowsSourceState(
     const WMRInputSourceState* state,
     const WMRCoordinateSystem* origin) {
-  ParsedInputState input_state;
   if (!origin)
-    return input_state;
+    return nullptr;
 
   std::unique_ptr<WMRInputSource> source = state->GetSource();
   SourceKind source_kind = source->Kind();
@@ -493,7 +253,7 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
       (source_kind == SourceKind::SpatialInteractionSourceKind_Voice);
 
   if (!(is_controller || is_voice))
-    return input_state;
+    return nullptr;
 
   // Hands may not have the same id especially if they are lost but since we
   // are only tracking controllers/voice, this id should be consistent.
@@ -506,16 +266,17 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
   gfx::Transform origin_from_grip;
   bool is_tracked = false;
   bool emulated_position = false;
+  uint16_t product_id = 0;
+  uint16_t vendor_id = 0;
   if (is_controller) {
-    input_state.button_data = ParseButtonState(state);
     std::unique_ptr<WMRInputLocation> location_in_origin =
         state->TryGetLocation(origin);
     if (location_in_origin) {
-      auto gamepad_pose = GetGamepadPose(location_in_origin.get());
-      if (gamepad_pose.not_null && gamepad_pose.position.not_null &&
-          gamepad_pose.orientation.not_null) {
-        origin_from_grip =
-            CreateTransform(gamepad_pose.position, gamepad_pose.orientation);
+      WFN::Vector3 pos;
+      WFN::Quaternion rot;
+      if (location_in_origin->TryGetPosition(&pos) &&
+          location_in_origin->TryGetOrientation(&rot)) {
+        origin_from_grip = CreateTransform(pos, rot);
         is_tracked = true;
       }
 
@@ -527,14 +288,12 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
         // Controller lost precise tracking or has its position estimated.
         emulated_position = true;
       }
-
-      input_state.gamepad_pose = gamepad_pose;
     }
 
     std::unique_ptr<WMRController> controller = source->Controller();
     if (controller) {
-      input_state.product_id = controller->ProductId();
-      input_state.vendor_id = controller->VendorId();
+      product_id = controller->ProductId();
+      vendor_id = controller->VendorId();
     }
   }
 
@@ -550,34 +309,33 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
   }
 
   // Now that we have calculated information for the object, build it.
-  device::mojom::XRInputSourceStatePtr source_state =
-      device::mojom::XRInputSourceState::New();
+  mojom::XRInputSourceStatePtr input_state = mojom::XRInputSourceState::New();
 
-  source_state->source_id = id;
-  source_state->primary_input_pressed = controller_states_[id].pressed;
-  source_state->primary_input_clicked = controller_states_[id].clicked;
+  input_state->source_id = id;
+  input_state->primary_input_pressed = controller_states_[id].pressed;
+  input_state->primary_input_clicked = controller_states_[id].clicked;
 
   // Grip position should *only* be specified if the controller is tracked.
   if (is_tracked)
-    source_state->grip = origin_from_grip;
+    input_state->grip = origin_from_grip;
 
-  device::mojom::XRInputSourceDescriptionPtr description =
-      device::mojom::XRInputSourceDescription::New();
+  mojom::XRInputSourceDescriptionPtr description =
+      mojom::XRInputSourceDescription::New();
 
-  source_state->emulated_position = emulated_position;
+  input_state->emulated_position = emulated_position;
   description->pointer_offset = grip_from_pointer;
 
   if (is_voice) {
-    description->target_ray_mode = device::mojom::XRTargetRayMode::GAZING;
-    description->handedness = device::mojom::XRHandedness::NONE;
+    description->target_ray_mode = mojom::XRTargetRayMode::GAZING;
+    description->handedness = mojom::XRHandedness::NONE;
   } else if (is_controller) {
-    description->target_ray_mode = device::mojom::XRTargetRayMode::POINTING;
+    description->target_ray_mode = mojom::XRTargetRayMode::POINTING;
     description->handedness = WindowsToMojoHandedness(source->Handedness());
 
     // If we know the particular headset/controller model, add this to the
     // profiles array.
-    if (input_state.vendor_id == kSamsungVendorId &&
-        input_state.product_id == kSamsungOdysseyProductId) {
+    if (vendor_id == kSamsungVendorId &&
+        product_id == kSamsungOdysseyProductId) {
       description->profiles.push_back("samsung-odyssey");
     }
 
@@ -589,13 +347,12 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
     description->profiles.push_back(
         "generic-trigger-squeeze-touchpad-thumbstick");
 
-    source_state->gamepad = GetWebXRGamepad(input_state);
+    input_state->gamepad = GetWebXRGamepad(state, description->handedness);
   } else {
     NOTREACHED();
   }
 
-  source_state->description = std::move(description);
-  input_state.source_state = std::move(source_state);
+  input_state->description = std::move(description);
   return input_state;
 }
 
@@ -645,9 +402,8 @@ void MixedRealityInputHelper::ProcessSourceEvent(
     return;
 
   auto parsed_source_state = ParseWindowsSourceState(state.get(), origin);
-  if (parsed_source_state.source_state) {
-    weak_render_loop_->OnInputSourceEvent(
-        std::move(parsed_source_state.source_state));
+  if (parsed_source_state) {
+    weak_render_loop_->OnInputSourceEvent(std::move(parsed_source_state));
   }
 
   // We've sent up the click, so clear it.

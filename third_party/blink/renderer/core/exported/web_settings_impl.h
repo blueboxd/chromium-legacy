@@ -120,7 +120,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetImmersiveModeEnabled(bool) override;
   void SetMinimumFontSize(int) override;
   void SetMinimumLogicalFontSize(int) override;
-  void SetMockScrollbarsEnabled(bool) override;
   void SetHideScrollbars(bool) override;
   void SetOfflineWebApplicationCacheEnabled(bool) override;
   void SetPassiveEventListenerDefault(PassiveEventListenerDefault) override;

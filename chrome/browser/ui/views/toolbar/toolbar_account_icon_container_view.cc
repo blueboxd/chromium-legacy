@@ -92,3 +92,7 @@ SkColor ToolbarAccountIconContainerView::GetIconColor() const {
   return GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 }
+
+const views::View::Views& ToolbarAccountIconContainerView::GetChildren() const {
+  return page_action_icon_container_view_->children();
+}

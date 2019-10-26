@@ -28,6 +28,9 @@ table ApplicationConfig {
   /// URLs. Networking will be disabled if any directories are set.
   6: vector<fuchsia.web.ContentDirectoryProvider>
       content_directories_for_isolated_application;
+
+  /// The URL of the agent to handle this application.
+  7: string agent_url;
 };
 
 /// Service interface for working with application configurations.

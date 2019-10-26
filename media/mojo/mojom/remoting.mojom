@@ -8,9 +8,10 @@ import "media/mojo/mojom/remoting_common.mojom";
 
 interface RemoterFactory {
   // Create a new Remoter associated with the given RemotingSource and bind it
-  // to the given interface request. The RemotingSource will be notified when
+  // to the given interface receiver. The RemotingSource will be notified when
   // the Remoter becomes available for use (or becomes unavailable).
-  Create(RemotingSource source, Remoter& remoter);
+  Create(pending_remote<RemotingSource> source,
+         pending_receiver<Remoter> remoter);
 };
 
 // Interface used by the source to control when media bitstream data is read

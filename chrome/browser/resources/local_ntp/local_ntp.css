@@ -356,6 +356,10 @@ html[dir=rtl] #fakebox > input {
   right: 0;
 }
 
+#fakebox .search-icon {
+  -webkit-mask-size: 20px;
+}
+
 #fakebox-text {
   bottom: 0;
   color: rgb(117, 117, 117);

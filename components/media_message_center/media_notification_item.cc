@@ -106,7 +106,7 @@ void MediaNotificationItem::MediaSessionMetadataChanged(
 
 void MediaNotificationItem::MediaSessionActionsChanged(
     const std::vector<media_session::mojom::MediaSessionAction>& actions) {
-  session_actions_ = std::set<media_session::mojom::MediaSessionAction>(
+  session_actions_ = base::flat_set<media_session::mojom::MediaSessionAction>(
       actions.begin(), actions.end());
 
   if (view_ && !frozen_) {

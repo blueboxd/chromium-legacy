@@ -14,8 +14,10 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "media/base/media_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "weblayer/browser/content_browser_client_impl.h"
@@ -57,6 +59,34 @@ void InitLogging(MainParams* params) {
                        true /* Timestamp */, false /* Tick count */);
 }
 
+// Disables each feature in |features_to_disable| unless it is already set in
+// the command line.
+void DisableFeaturesIfNotSet(
+    const std::vector<base::Feature>& features_to_disable) {
+  auto* cl = base::CommandLine::ForCurrentProcess();
+  std::vector<std::string> enabled_features;
+  for (const auto& f : base::FeatureList::SplitFeatureListString(
+           cl->GetSwitchValueASCII(switches::kEnableFeatures))) {
+    enabled_features.emplace_back(f);
+  }
+
+  std::vector<std::string> disabled_features;
+  for (const auto& f : base::FeatureList::SplitFeatureListString(
+           cl->GetSwitchValueASCII(switches::kDisableFeatures))) {
+    disabled_features.emplace_back(f);
+  }
+
+  for (const auto& feature : features_to_disable) {
+    if (!base::Contains(disabled_features, feature.name) &&
+        !base::Contains(enabled_features, feature.name)) {
+      disabled_features.push_back(feature.name);
+    }
+  }
+
+  cl->AppendSwitchASCII(switches::kDisableFeatures,
+                        base::JoinString(disabled_features, ","));
+}
+
 }  // namespace
 
 ContentMainDelegateImpl::ContentMainDelegateImpl(MainParams params)
@@ -68,6 +98,27 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   int dummy;
   if (!exit_code)
     exit_code = &dummy;
+
+  // Disable features which are not currently supported in WebLayer. This allows
+  // sites to do feature detection, and prevents crashes in some not fully
+  // implemented features.
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  cl->AppendSwitch(switches::kDisableNotifications);
+  cl->AppendSwitch(switches::kDisableSpeechSynthesisAPI);
+  cl->AppendSwitch(switches::kDisableSpeechAPI);
+  cl->AppendSwitch(switches::kDisablePermissionsAPI);
+  cl->AppendSwitch(switches::kDisablePresentationAPI);
+  cl->AppendSwitch(switches::kDisableRemotePlaybackAPI);
+#if defined(OS_ANDROID)
+  cl->AppendSwitch(switches::kDisableMediaSessionAPI);
+#endif
+  DisableFeaturesIfNotSet({
+    ::features::kWebPayments, ::features::kWebAuth, ::features::kSmsReceiver,
+        ::features::kWebXr,
+#if defined(OS_ANDROID)
+        media::kPictureInPictureAPI,
+#endif
+  });
 
 #if defined(OS_ANDROID)
   content::Compositor::Initialize();

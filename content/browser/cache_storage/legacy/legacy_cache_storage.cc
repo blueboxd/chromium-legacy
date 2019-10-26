@@ -93,14 +93,14 @@ class LegacyCacheStorage::CacheLoader {
   CacheLoader(base::SequencedTaskRunner* cache_task_runner,
               scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
               storage::QuotaManagerProxy* quota_manager_proxy,
-              base::WeakPtr<storage::BlobStorageContext> blob_context,
+              scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
               LegacyCacheStorage* cache_storage,
               const url::Origin& origin,
               CacheStorageOwner owner)
       : cache_task_runner_(cache_task_runner),
         scheduler_task_runner_(std::move(scheduler_task_runner)),
         quota_manager_proxy_(quota_manager_proxy),
-        blob_context_(blob_context),
+        blob_storage_context_(std::move(blob_storage_context)),
         cache_storage_(cache_storage),
         origin_(origin),
         owner_(owner) {
@@ -148,7 +148,7 @@ class LegacyCacheStorage::CacheLoader {
   // Owned by CacheStorage which owns this.
   storage::QuotaManagerProxy* quota_manager_proxy_;
 
-  base::WeakPtr<storage::BlobStorageContext> blob_context_;
+  scoped_refptr<BlobStorageContextWrapper> blob_storage_context_;
 
   // Raw pointer is safe because this object is owned by cache_storage_.
   LegacyCacheStorage* cache_storage_;
@@ -167,14 +167,14 @@ class LegacyCacheStorage::MemoryLoader
   MemoryLoader(base::SequencedTaskRunner* cache_task_runner,
                scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
                storage::QuotaManagerProxy* quota_manager_proxy,
-               base::WeakPtr<storage::BlobStorageContext> blob_context,
+               scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
                LegacyCacheStorage* cache_storage,
                const url::Origin& origin,
                CacheStorageOwner owner)
       : CacheLoader(cache_task_runner,
                     std::move(scheduler_task_runner),
                     quota_manager_proxy,
-                    blob_context,
+                    std::move(blob_storage_context),
                     cache_storage,
                     origin,
                     owner) {}
@@ -186,7 +186,8 @@ class LegacyCacheStorage::MemoryLoader
       std::unique_ptr<SymmetricKey> cache_padding_key) override {
     return LegacyCacheStorageCache::CreateMemoryCache(
         origin_, owner_, cache_name, cache_storage_, scheduler_task_runner_,
-        quota_manager_proxy_, blob_context_, storage::CopyDefaultPaddingKey());
+        quota_manager_proxy_, blob_storage_context_,
+        storage::CopyDefaultPaddingKey());
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,
@@ -238,14 +239,14 @@ class LegacyCacheStorage::SimpleCacheLoader
       base::SequencedTaskRunner* cache_task_runner,
       scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
-      base::WeakPtr<storage::BlobStorageContext> blob_context,
+      scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
       LegacyCacheStorage* cache_storage,
       const url::Origin& origin,
       CacheStorageOwner owner)
       : CacheLoader(cache_task_runner,
                     std::move(scheduler_task_runner),
                     quota_manager_proxy,
-                    blob_context,
+                    std::move(blob_storage_context),
                     cache_storage,
                     origin,
                     owner),
@@ -263,8 +264,8 @@ class LegacyCacheStorage::SimpleCacheLoader
     base::FilePath cache_path = origin_path_.AppendASCII(cache_dir);
     return LegacyCacheStorageCache::CreatePersistentCache(
         origin_, owner_, cache_name, cache_storage_, cache_path,
-        scheduler_task_runner_, quota_manager_proxy_, blob_context_, cache_size,
-        cache_padding, std::move(cache_padding_key));
+        scheduler_task_runner_, quota_manager_proxy_, blob_storage_context_,
+        cache_size, cache_padding, std::move(cache_padding_key));
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,
@@ -555,7 +556,7 @@ LegacyCacheStorage::LegacyCacheStorage(
     base::SequencedTaskRunner* cache_task_runner,
     scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    base::WeakPtr<storage::BlobStorageContext> blob_context,
+    scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
     LegacyCacheStorageManager* cache_storage_manager,
     const url::Origin& origin,
     CacheStorageOwner owner)
@@ -569,18 +570,19 @@ LegacyCacheStorage::LegacyCacheStorage(
       origin_path_(path),
       cache_task_runner_(cache_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
+      blob_storage_context_(std::move(blob_storage_context)),
       owner_(owner),
       cache_storage_manager_(cache_storage_manager) {
   if (memory_only) {
     cache_loader_.reset(new MemoryLoader(
         cache_task_runner_.get(), std::move(scheduler_task_runner),
-        quota_manager_proxy.get(), blob_context, this, origin, owner));
+        quota_manager_proxy.get(), blob_storage_context_, this, origin, owner));
     return;
   }
 
   cache_loader_.reset(new SimpleCacheLoader(
       origin_path_, cache_task_runner_.get(), std::move(scheduler_task_runner),
-      quota_manager_proxy.get(), blob_context, this, origin, owner));
+      quota_manager_proxy.get(), blob_storage_context_, this, origin, owner));
 
 #if defined(OS_ANDROID)
   app_status_listener_ = base::android::ApplicationStatusListener::New(

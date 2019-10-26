@@ -141,9 +141,11 @@ function updateSlider(position) {
   document.documentElement.style.setProperty(
       '--fontSizePercent', (position / 9 * 100) + '%');
   for (let i = 0; i < supportedTextSizes.length; i++) {
-    let optionClasses =
-        document.querySelector('.tickmarks option[value="' + i + '"]')
-            .classList;
+    let option = document.querySelector('.tickmarks option[value="' + i + '"]');
+    if (!option)
+      continue;
+
+    let optionClasses = option.classList;
     removeAll(optionClasses, ['beforeThumb', 'afterThumb']);
     if (i < position) {
       optionClasses.add('beforeThumb');
@@ -151,6 +153,11 @@ function updateSlider(position) {
       optionClasses.add('afterThumb');
     }
   }
+}
+
+function updateSliderFromElement(element) {
+  if (element)
+    updateSlider(element.value);
 }
 
 // Add a listener to the "View Original" link to report opt-outs.
@@ -163,6 +170,7 @@ document.getElementById('closeReaderView')
 
 updateToolbarColor();
 maybeSetWebFont();
+updateSliderFromElement(document.querySelector('#fontSizeSelection'));
 
 var pincher = (function() {
   'use strict';
@@ -407,15 +415,19 @@ window.addEventListener(
 
 document.querySelector('#settingsToggle').addEventListener('click', (e) => {
   let dialog = document.querySelector('#settingsDialog');
+  let toggle = document.querySelector('#settingsToggle');
   if (dialog.open) {
+    toggle.classList.remove('activated');
     dialog.close();
   } else {
+    toggle.classList.add('activated');
     dialog.show();
   }
 });
 
 document.querySelector('#closeSettingsButton')
     .addEventListener('click', (e) => {
+      document.querySelector('#settingsToggle').classList.remove('activated');
       document.querySelector('#settingsDialog').close();
     });
 

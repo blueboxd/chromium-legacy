@@ -25,7 +25,7 @@ import javax.inject.Inject;
 import androidx.browser.customtabs.CustomTabsService;
 
 /**
- * Provides Trusted Web Activity specific behaviour for the {@link TrustedWebActivityVerifier}.
+ * Provides Trusted Web Activity specific behaviour for the {@link Verifier}.
  */
 public class TwaVerifierDelegate implements VerifierDelegate, Destroyable, NativeInitObserver,
         SaveInstanceStateObserver {

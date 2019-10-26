@@ -13,7 +13,6 @@ goog.provide('cvox.NavDescription');
 
 goog.require('cvox.AbstractTts');
 goog.require('cvox.ChromeVox');
-goog.require('cvox.CursorSelection');
 goog.require('cvox.QueueMode');
 
 /**

@@ -167,11 +167,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'webrtc_nonparallel_tests',
   'xmllite_xmpp_unittests',
 
-  # isolate is currently too slow for this target.
-  # http://crbug.com/524758
-  'webkit_layout_tests',
-  'webkit_layout_tests_exparchive',
-
   # These are only run on V8 CI.
   'pdfium_test',
   'postmortem-metadata',

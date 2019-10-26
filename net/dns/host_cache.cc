@@ -38,6 +38,7 @@ const char kDnsQueryTypeKey[] = "dns_query_type";
 const char kFlagsKey[] = "flags";
 const char kHostResolverSourceKey[] = "host_resolver_source";
 const char kSecureKey[] = "secure";
+const char kNetworkIsolationKeyKey[] = "network_isolation_key";
 const char kExpirationKey[] = "expiration";
 const char kTtlKey[] = "ttl";
 const char kNetworkChangesKey[] = "network_changes";
@@ -118,13 +119,17 @@ enum HostCache::EraseReason : int {
 HostCache::Key::Key(const std::string& hostname,
                     DnsQueryType dns_query_type,
                     HostResolverFlags host_resolver_flags,
-                    HostResolverSource host_resolver_source)
+                    HostResolverSource host_resolver_source,
+                    const NetworkIsolationKey& network_isolation_key)
     : hostname(hostname),
       dns_query_type(dns_query_type),
       host_resolver_flags(host_resolver_flags),
-      host_resolver_source(host_resolver_source) {}
+      host_resolver_source(host_resolver_source),
+      network_isolation_key(network_isolation_key) {}
 
 HostCache::Key::Key() = default;
+HostCache::Key::Key(const Key& key) = default;
+HostCache::Key::Key(Key&& key) = default;
 
 HostCache::Entry::Entry(int error, Source source, base::TimeDelta ttl)
     : error_(error), source_(source), ttl_(ttl) {
@@ -604,6 +609,11 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
     const Key& key = pair.first;
     const Entry& entry = pair.second;
 
+    base::Value network_isolation_key_value;
+    // Don't save entries associated with ephemeral NetworkIsolationKeys.
+    if (!key.network_isolation_key.ToValue(&network_isolation_key_value))
+      continue;
+
     auto entry_dict = std::make_unique<base::DictionaryValue>(
         entry.GetAsValue(include_staleness));
 
@@ -613,6 +623,8 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
     entry_dict->SetInteger(kFlagsKey, key.host_resolver_flags);
     entry_dict->SetInteger(kHostResolverSourceKey,
                            static_cast<int>(key.host_resolver_source));
+    entry_dict->SetKey(kNetworkIsolationKeyKey,
+                       std::move(network_isolation_key_value));
     entry_dict->SetBoolean(kSecureKey, static_cast<bool>(key.secure));
 
     entry_list->Append(std::move(entry_dict));
@@ -665,6 +677,15 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
     if (!entry_dict->GetInteger(kHostResolverSourceKey,
                                 &host_resolver_source)) {
       host_resolver_source = static_cast<int>(HostResolverSource::ANY);
+    }
+
+    const base::Value* network_isolation_key_value =
+        entry_dict->FindKey(kNetworkIsolationKeyKey);
+    NetworkIsolationKey network_isolation_key;
+    if (!network_isolation_key_value ||
+        !NetworkIsolationKey::FromValue(*network_isolation_key_value,
+                                        &network_isolation_key)) {
+      return false;
     }
 
     bool secure;
@@ -740,7 +761,8 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
     }
 
     Key key(hostname, dns_query_type, flags,
-            static_cast<HostResolverSource>(host_resolver_source));
+            static_cast<HostResolverSource>(host_resolver_source),
+            network_isolation_key);
     key.secure = secure;
 
     // If the key is already in the cache, assume it's more recent and don't

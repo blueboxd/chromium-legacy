@@ -107,7 +107,7 @@ SVGLength* SVGLengthList::CreatePaddingItem() const {
 }
 
 void SVGLengthList::CalculateAnimatedValue(
-    SVGAnimationElement* animation_element,
+    const SVGAnimationElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,
@@ -121,7 +121,7 @@ void SVGLengthList::CalculateAnimatedValue(
 
   SVGLengthContext length_context(context_element);
   DCHECK_EQ(mode_, SVGLength::LengthModeForAnimatedLengthAttribute(
-                       animation_element->AttributeName()));
+                       animation_element.AttributeName()));
 
   uint32_t from_length_list_size = from_list->length();
   uint32_t to_length_list_size = to_list->length();
@@ -129,7 +129,7 @@ void SVGLengthList::CalculateAnimatedValue(
       to_at_end_of_duration_list->length();
 
   if (!AdjustFromToListValues(from_list, to_list, percentage,
-                              animation_element->GetAnimationMode()))
+                              animation_element.GetAnimationMode()))
     return;
 
   for (uint32_t i = 0; i < to_length_list_size; ++i) {
@@ -148,7 +148,7 @@ void SVGLengthList::CalculateAnimatedValue(
             ? to_at_end_of_duration_list->at(i)->Value(length_context)
             : 0;
 
-    animation_element->AnimateAdditiveNumber(
+    animation_element.AnimateAdditiveNumber(
         percentage, repeat_count, effective_from, effective_to,
         effective_to_at_end, animated_number);
     // |animated_number| is in user units.

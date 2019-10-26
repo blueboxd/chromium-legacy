@@ -9,17 +9,25 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
     super([
       'closeContainer',
       'getColors',
+      'getLayout',
       'isVisible',
       'observeThemeChanges',
       'showTabContextMenu',
     ]);
 
+    this.colors_ = {};
+    this.layout_ = {};
     this.visible_ = false;
   }
 
   getColors() {
     this.methodCalled('getColors');
     return Promise.resolve(this.colors_);
+  }
+
+  getLayout() {
+    this.methodCalled('getLayout');
+    return Promise.resolve(this.layout_);
   }
 
   isVisible() {
@@ -29,6 +37,10 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
 
   setColors(colors) {
     this.colors_ = colors;
+  }
+
+  setLayout(layout) {
+    this.layout_ = layout;
   }
 
   setVisible(visible) {

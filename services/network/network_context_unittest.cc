@@ -1685,7 +1685,6 @@ base::Optional<net::AuthCredentials> GetAuthCredentials(
 }
 
 TEST_F(NetworkContextTest, LookupServerBasicAuthCredentials) {
-  network_service_->SetSplitAuthCacheByNetworkIsolationKey(true);
   GURL origin("http://foo.test");
   GURL origin2("http://bar.test");
   GURL origin3("http://baz.test");
@@ -1695,6 +1694,7 @@ TEST_F(NetworkContextTest, LookupServerBasicAuthCredentials) {
                                                   url::Origin::Create(origin2));
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
+  network_context->SetSplitAuthCacheByNetworkIsolationKey(true);
   net::HttpAuthCache* cache = network_context->url_request_context()
                                   ->http_transaction_factory()
                                   ->GetSession()
@@ -5896,10 +5896,9 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
 }
 
 TEST_F(NetworkContextTest, AddHttpAuthCacheEntryWithNetworkIsolationKey) {
-  network_service()->SetSplitAuthCacheByNetworkIsolationKey(true);
-
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
+  network_context->SetSplitAuthCacheByNetworkIsolationKey(true);
 
   net::HttpAuthCache* cache = network_context->url_request_context()
                                   ->http_transaction_factory()
@@ -6016,6 +6015,75 @@ TEST_F(NetworkContextTest, CopyHttpAuthCacheProxyEntries) {
             entry->credentials().username());
   EXPECT_EQ(base::ASCIIToUTF16(kProxyPassword),
             entry->credentials().password());
+}
+
+TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::HttpAuthCache* cache = network_context->url_request_context()
+                                  ->http_transaction_factory()
+                                  ->GetSession()
+                                  ->http_auth_cache();
+
+  EXPECT_FALSE(cache->key_server_entries_by_network_isolation_key());
+
+  // Add proxy credentials, which should never be deleted.
+  net::AuthChallengeInfo challenge;
+  challenge.is_proxy = true;
+  challenge.challenger = kOrigin;
+  challenge.scheme = "basic";
+  challenge.realm = "testrealm";
+  const char kProxyUsername[] = "proxy_user";
+  const char kProxyPassword[] = "proxy_pass";
+  base::RunLoop run_loop1;
+  network_context->AddAuthCacheEntry(
+      challenge, net::NetworkIsolationKey(),
+      net::AuthCredentials(base::ASCIIToUTF16(kProxyUsername),
+                           base::ASCIIToUTF16(kProxyPassword)),
+      run_loop1.QuitClosure());
+  run_loop1.Run();
+
+  // Set up challenge to add server credentials.
+  challenge.is_proxy = false;
+
+  for (bool set_split_cache_by_network_isolation_key : {true, false}) {
+    // In each loop iteration, the setting should change, which should clear
+    // server credentials.
+    EXPECT_NE(set_split_cache_by_network_isolation_key,
+              cache->key_server_entries_by_network_isolation_key());
+
+    // Add server credentials.
+    const char kServerUsername[] = "server_user";
+    const char kServerPassword[] = "server_pass";
+    base::RunLoop run_loop2;
+    network_context->AddAuthCacheEntry(
+        challenge, net::NetworkIsolationKey(),
+        net::AuthCredentials(base::ASCIIToUTF16(kServerUsername),
+                             base::ASCIIToUTF16(kServerPassword)),
+        run_loop2.QuitClosure());
+    run_loop2.Run();
+
+    // Toggle setting.
+    network_context->SetSplitAuthCacheByNetworkIsolationKey(
+        set_split_cache_by_network_isolation_key);
+    EXPECT_EQ(set_split_cache_by_network_isolation_key,
+              cache->key_server_entries_by_network_isolation_key());
+
+    // The server credentials should have been deleted.
+    EXPECT_FALSE(cache->Lookup(
+        kURL, net::HttpAuth::AUTH_SERVER, challenge.realm,
+        net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey()));
+
+    // The proxy credentials should still be in the cache.
+    net::HttpAuthCache::Entry* entry = cache->Lookup(
+        kURL, net::HttpAuth::AUTH_PROXY, challenge.realm,
+        net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey());
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(base::ASCIIToUTF16(kProxyUsername),
+              entry->credentials().username());
+    EXPECT_EQ(base::ASCIIToUTF16(kProxyPassword),
+              entry->credentials().password());
+  }
 }
 
 TEST_F(NetworkContextTest, HSTSPolicyBypassList) {

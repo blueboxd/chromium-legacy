@@ -8,6 +8,8 @@ Provides functions to process intermediate results, and the entry point to
 the standalone version of Results Processor.
 """
 
+from __future__ import print_function
+
 import datetime
 import json
 import logging
@@ -84,9 +86,10 @@ def ProcessResults(options):
     logging.info('Processing format: %s', output_format)
     formatter = formatters.FORMATTERS[output_format]
     if output_format in FORMATS_WITH_METRICS:
-      formatter.ProcessHistogramDicts(histogram_dicts, options)
+      output_file = formatter.ProcessHistogramDicts(histogram_dicts, options)
     else:
-      formatter.ProcessIntermediateResults(test_results, options)
+      output_file = formatter.ProcessIntermediateResults(test_results, options)
+    print('View results at file://', output_file, sep='')
 
   return GenerateExitCode(test_results)
 

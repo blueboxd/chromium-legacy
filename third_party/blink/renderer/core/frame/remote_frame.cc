@@ -256,6 +256,11 @@ void RemoteFrame::ResetReplicatedContentSecurityPolicy() {
   GetSecurityContext()->ResetReplicatedContentSecurityPolicy();
 }
 
+void RemoteFrame::EnforceInsecureNavigationsSet(
+    const WTF::Vector<uint32_t>& set) {
+  GetSecurityContext()->SetInsecureNavigationsSet(set);
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())

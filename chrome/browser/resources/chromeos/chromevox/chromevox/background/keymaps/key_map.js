@@ -24,7 +24,6 @@ goog.provide('cvox.KeyMap');
 
 // TODO(dtseng): Only needed for sticky mode.
 goog.require('cvox.KeyUtil');
-goog.require('cvox.PlatformUtil');
 
 /**
  * @param {Array<Object<{command: string, sequence: cvox.KeySequence}>>}
@@ -68,10 +67,7 @@ cvox.KeyMap.KEYMAP_PATH = 'chromevox/background/keymaps/';
  * @const
  */
 cvox.KeyMap.AVAILABLE_MAP_INFO = {
-  'keymap_classic': {'file': 'classic_keymap.json'},
-  'keymap_flat': {'file': 'flat_keymap.json'},
-  'keymap_next': {'file': 'next_keymap.json'},
-  'keymap_experimental': {'file': 'experimental.json'}
+  'keymap_next': {'file': 'next_keymap.json'}
 };
 
 
@@ -314,7 +310,7 @@ cvox.KeyMap.prototype.bind_ = function(command, newKey) {
 cvox.KeyMap.fromDefaults = function() {
   return /** @type {!cvox.KeyMap} */ (cvox.KeyMap.fromPath(
       cvox.KeyMap.KEYMAP_PATH +
-      cvox.KeyMap.AVAILABLE_MAP_INFO['keymap_classic'].file));
+      cvox.KeyMap.AVAILABLE_MAP_INFO['keymap_next'].file));
 };
 
 
@@ -341,10 +337,6 @@ cvox.KeyMap.fromJSON = function(json) {
         /** @type {Array<Object<{command: string,
          *                       sequence: cvox.KeySequence}>>} */
         (JSON.parse(json).bindings);
-    commandsAndKeySequences = commandsAndKeySequences.filter(function(value) {
-      return value.sequence.platformFilter === undefined ||
-          cvox.PlatformUtil.matchesPlatform(value.sequence.platformFilter);
-    });
   } catch (e) {
     console.error('Failed to load key map from JSON');
     console.error(e);

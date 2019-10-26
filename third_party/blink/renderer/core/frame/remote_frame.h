@@ -76,6 +76,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   // blink::mojom::LocalFrame overrides:
   void WillEnterFullscreen() override;
   void ResetReplicatedContentSecurityPolicy() override;
+  void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;
 
  private:
   // Frame protected overrides:

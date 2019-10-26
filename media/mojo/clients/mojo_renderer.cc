@@ -43,20 +43,20 @@ MojoRenderer::~MojoRenderer() {
 
 void MojoRenderer::Initialize(MediaResource* media_resource,
                               media::RendererClient* client,
-                              const PipelineStatusCB& init_cb) {
+                              PipelineStatusCallback init_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(media_resource);
 
   if (encountered_error_) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(init_cb, PIPELINE_ERROR_INITIALIZATION_FAILED));
+        FROM_HERE, base::BindOnce(std::move(init_cb),
+                                  PIPELINE_ERROR_INITIALIZATION_FAILED));
     return;
   }
 
   media_resource_ = media_resource;
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
 
   switch (media_resource_->GetType()) {
     case MediaResource::Type::STREAM:
@@ -157,7 +157,7 @@ void MojoRenderer::SetCdm(CdmContext* cdm_context,
       cdm_id, base::Bind(&MojoRenderer::OnCdmAttached, base::Unretained(this)));
 }
 
-void MojoRenderer::Flush(const base::Closure& flush_cb) {
+void MojoRenderer::Flush(base::OnceClosure flush_cb) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(remote_renderer_.is_bound());
@@ -165,7 +165,7 @@ void MojoRenderer::Flush(const base::Closure& flush_cb) {
   DCHECK(!flush_cb_);
 
   if (encountered_error_) {
-    task_runner_->PostTask(FROM_HERE, flush_cb);
+    task_runner_->PostTask(FROM_HERE, std::move(flush_cb));
     return;
   }
 
@@ -175,7 +175,7 @@ void MojoRenderer::Flush(const base::Closure& flush_cb) {
       media_time_interpolator_.StopInterpolating();
   }
 
-  flush_cb_ = flush_cb;
+  flush_cb_ = std::move(flush_cb);
   remote_renderer_->Flush(
       base::Bind(&MojoRenderer::OnFlushed, base::Unretained(this)));
 }

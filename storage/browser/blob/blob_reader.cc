@@ -26,6 +26,7 @@
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/storage_histograms.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace storage {
 namespace {
@@ -122,39 +123,38 @@ bool BlobReader::has_side_data() const {
   return item.data_handle()->GetSideDataSize() > 0;
 }
 
-BlobReader::Status BlobReader::ReadSideData(StatusCallback done) {
+void BlobReader::ReadSideData(StatusCallback done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!has_side_data())
-    return ReportError(net::ERR_FILE_NOT_FOUND);
+  side_data_.reset();
+  if (!has_side_data()) {
+    std::move(done).Run(ReportError(net::ERR_FILE_NOT_FOUND));
+    return;
+  }
   BlobDataItem* item = blob_data_->items()[0].get();
   const int side_data_size = item->data_handle()->GetSideDataSize();
-  side_data_ = base::MakeRefCounted<net::IOBufferWithSize>(side_data_size);
-  net_error_ = net::OK;
-  const int result = item->data_handle()->ReadSideData(
-      side_data_.get(),
+  item->data_handle()->ReadSideData(
       base::BindOnce(&BlobReader::DidReadSideData, weak_factory_.GetWeakPtr(),
                      std::move(done), side_data_size));
-  if (result >= 0) {
-    DCHECK_EQ(side_data_size, result);
-    return Status::DONE;
-  }
-  if (result == net::ERR_IO_PENDING)
-    return Status::IO_PENDING;
-  return ReportError(result);
+}
+
+base::Optional<mojo_base::BigBuffer> BlobReader::TakeSideData() {
+  return std::move(side_data_);
 }
 
 void BlobReader::DidReadSideData(StatusCallback done,
                                  int expected_size,
-                                 int result) {
+                                 int result,
+                                 mojo_base::BigBuffer data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result >= 0) {
     DCHECK_EQ(expected_size, result);
+    DCHECK_EQ(static_cast<size_t>(expected_size), data.size());
     RecordBytesReadFromDataHandle(/* item_index= */ 0, result);
+    side_data_ = std::move(data);
     std::move(done).Run(Status::DONE);
     return;
   }
-  side_data_ = nullptr;
   std::move(done).Run(ReportError(result));
 }
 
@@ -187,11 +187,14 @@ BlobReader::Status BlobReader::SetReadRange(uint64_t offset, uint64_t length) {
   if (current_item_offset_ == 0)
     return Status::DONE;
 
-  // Adjust the offset of the first stream if it is of file type.
+  // Adjust the offset of the first stream if it is a file or data handle.
   const BlobDataItem& item = *items.at(current_item_index_);
   if (IsFileType(item.type())) {
     SetFileReaderAtIndex(current_item_index_,
                          CreateFileStreamReader(item, offset));
+  }
+  if (item.type() == BlobDataItem::Type::kReadableDataHandle) {
+    SetDataPipeAtIndex(current_item_index_, CreateDataPipe(item, offset));
   }
   return Status::DONE;
 }
@@ -236,10 +239,34 @@ BlobReader::Status BlobReader::Read(net::IOBuffer* buffer,
   return status;
 }
 
+bool BlobReader::IsSingleMojoDataItem() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(total_size_calculated_);
+  if (!blob_data_.get())
+    return false;
+  if (blob_data_->items().size() != 1)
+    return false;
+  if (blob_data_->items()[0]->type() != BlobDataItem::Type::kReadableDataHandle)
+    return false;
+  return true;
+}
+
+void BlobReader::ReadSingleMojoDataItem(
+    mojo::ScopedDataPipeProducerHandle producer,
+    net::CompletionOnceCallback done) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsSingleMojoDataItem());
+
+  // Read the entire data item.
+  auto item = blob_data_->items()[0];
+  item->data_handle()->Read(std::move(producer), item->offset(), item->length(),
+                            std::move(done));
+}
+
 void BlobReader::Kill() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DeleteCurrentFileReader();
+  DeleteItemReaders();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -492,8 +519,8 @@ BlobReader::Status BlobReader::ReadItem() {
 void BlobReader::AdvanceItem() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Close the file if the current item is a file.
-  DeleteCurrentFileReader();
+  // Close any files or data pipes.
+  DeleteItemReaders();
 
   // Advance to the next item.
   current_item_index_++;
@@ -577,9 +604,11 @@ void BlobReader::ContinueAsyncReadLoop() {
   }
 }
 
-void BlobReader::DeleteCurrentFileReader() {
+void BlobReader::DeleteItemReaders() {
   SetFileReaderAtIndex(current_item_index_,
                        std::unique_ptr<FileStreamReader>());
+  SetDataPipeAtIndex(current_item_index_,
+                     std::unique_ptr<network::DataPipeToSourceStream>());
 }
 
 BlobReader::Status BlobReader::ReadReadableDataHandle(const BlobDataItem& item,
@@ -590,11 +619,14 @@ BlobReader::Status BlobReader::ReadReadableDataHandle(const BlobDataItem& item,
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
   DCHECK_EQ(item.type(), BlobDataItem::Type::kReadableDataHandle);
 
-  const int result = item.data_handle()->Read(
-      read_buf_, item.offset() + current_item_offset_, bytes_to_read,
-      base::BindOnce(&BlobReader::DidReadReadableDataHandle,
-                     weak_factory_.GetWeakPtr()));
+  network::DataPipeToSourceStream* const pipe =
+      GetOrCreateDataPipeAtIndex(current_item_index_);
+  if (!pipe)
+    return ReportError(net::ERR_UNEXPECTED);
 
+  int result = pipe->Read(read_buf_.get(), bytes_to_read,
+                          base::BindOnce(&BlobReader::DidReadReadableDataHandle,
+                                         weak_factory_.GetWeakPtr()));
   if (result >= 0) {
     AdvanceBytesRead(result);
     return Status::DONE;
@@ -721,6 +753,72 @@ void BlobReader::SetFileReaderAtIndex(
     index_to_reader_[index] = std::move(reader);
   else
     index_to_reader_.erase(index);
+}
+
+network::DataPipeToSourceStream* BlobReader::GetOrCreateDataPipeAtIndex(
+    size_t index) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const auto& items = blob_data_->items();
+  DCHECK_LT(index, items.size());
+  const BlobDataItem& item = *items.at(index);
+  if (item.type() != BlobDataItem::Type::kReadableDataHandle)
+    return nullptr;
+  auto it = index_to_pipe_.find(index);
+  if (it != index_to_pipe_.end()) {
+    DCHECK(it->second);
+    return it->second.get();
+  }
+  auto pipe = CreateDataPipe(item, 0);
+  auto* ret_value = pipe.get();
+  index_to_pipe_[index] = std::move(pipe);
+  return ret_value;
+}
+
+void BlobReader::SetDataPipeAtIndex(
+    size_t index,
+    std::unique_ptr<network::DataPipeToSourceStream> pipe) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (pipe)
+    index_to_pipe_[index] = std::move(pipe);
+  else
+    index_to_pipe_.erase(index);
+}
+
+std::unique_ptr<network::DataPipeToSourceStream> BlobReader::CreateDataPipe(
+    const BlobDataItem& item,
+    uint64_t additional_offset) {
+  DCHECK_EQ(item.type(), BlobDataItem::Type::kReadableDataHandle);
+
+  uint64_t blob_size = item.length();
+  uint64_t max_bytes_to_read = blob_size - additional_offset;
+  mojo::ScopedDataPipeProducerHandle producer;
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes =
+      blink::BlobUtils::GetDataPipeCapacity(max_bytes_to_read);
+
+  MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
+
+  if (result != MOJO_RESULT_OK)
+    return nullptr;
+
+  auto adapter =
+      std::make_unique<network::DataPipeToSourceStream>(std::move(consumer));
+  item.data_handle()->Read(
+      std::move(producer), additional_offset + item.offset(), max_bytes_to_read,
+      base::BindOnce(
+          [](base::WeakPtr<BlobReader> reader, int result) {
+            if (!reader || result >= 0)
+              return;
+            reader->InvalidateCallbacksAndDone(
+                result, std::move(reader->read_callback_));
+          },
+          weak_factory_.GetWeakPtr()));
+  return adapter;
 }
 
 void BlobReader::RecordBytesReadFromDataHandle(int item_index, int result) {

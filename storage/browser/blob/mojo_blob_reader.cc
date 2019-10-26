@@ -132,11 +132,8 @@ void MojoBlobReader::DidCalculateSize(int result) {
     if (!blob_reader_->has_side_data()) {
       DidReadSideData(BlobReader::Status::DONE);
     } else {
-      BlobReader::Status read_status =
-          blob_reader_->ReadSideData(base::BindOnce(
-              &MojoBlobReader::DidReadSideData, base::Unretained(this)));
-      if (read_status != BlobReader::Status::IO_PENDING)
-        DidReadSideData(BlobReader::Status::DONE);
+      blob_reader_->ReadSideData(base::BindOnce(
+          &MojoBlobReader::DidReadSideData, base::Unretained(this)));
     }
   } else {
     StartReading();
@@ -150,12 +147,37 @@ void MojoBlobReader::DidReadSideData(BlobReader::Status status) {
     NotifyCompletedAndDeleteIfNeeded(blob_reader_->net_error());
     return;
   }
-  delegate_->DidReadSideData(blob_reader_->side_data());
+  delegate_->DidReadSideData(blob_reader_->TakeSideData());
   StartReading();
 }
 
 void MojoBlobReader::StartReading() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Optimized path for reading a single data item.  The data pipe for
+  // the read is passed directly to the MojoDataItem.
+  if (blob_reader_->IsSingleMojoDataItem()) {
+    uint64_t num_bytes = blob_reader_->remaining_bytes();
+    blob_reader_->ReadSingleMojoDataItem(
+        std::move(response_body_stream_),
+        base::BindOnce(
+            [](base::WeakPtr<MojoBlobReader> reader, uint64_t num_bytes,
+               int result) {
+              if (!reader)
+                return;
+              // NotifyCompletedAndDeleteIfNeeded takes a net error that
+              // doesn't include bytes read, so pass along the net error
+              // and not the |result| from the callback.
+              if (result == net::OK) {
+                reader->total_written_bytes_ += num_bytes;
+                reader->delegate_->DidRead(num_bytes);
+              }
+              auto error = reader->blob_reader_->net_error();
+              reader->NotifyCompletedAndDeleteIfNeeded(error);
+            },
+            weak_factory_.GetWeakPtr(), num_bytes));
+    return;
+  }
 
   peer_closed_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,

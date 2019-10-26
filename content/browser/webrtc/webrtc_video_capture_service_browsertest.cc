@@ -23,7 +23,8 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
@@ -138,12 +139,13 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
       return;
     }
 
-    video_capture::mojom::ScopedAccessPermissionPtr access_permission_proxy;
-    mojo::MakeStrongBinding<video_capture::mojom::ScopedAccessPermission>(
+    mojo::PendingRemote<video_capture::mojom::ScopedAccessPermission>
+        access_permission_proxy;
+    mojo::MakeSelfOwnedReceiver<video_capture::mojom::ScopedAccessPermission>(
         std::make_unique<InvokeClosureOnDelete>(
             base::BindOnce(&TextureDeviceExerciser::OnFrameConsumptionFinished,
                            weak_factory_.GetWeakPtr(), dummy_frame_index_)),
-        mojo::MakeRequest(&access_permission_proxy));
+        access_permission_proxy.InitWithNewPipeAndPassReceiver());
 
     media::VideoFrameMetadata metadata;
     metadata.SetDouble(media::VideoFrameMetadata::FRAME_RATE, kDummyFrameRate);

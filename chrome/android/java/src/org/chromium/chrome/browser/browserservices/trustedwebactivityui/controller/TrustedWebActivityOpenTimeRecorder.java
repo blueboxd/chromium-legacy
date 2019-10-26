@@ -8,8 +8,8 @@ import android.os.SystemClock;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationState;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
@@ -21,7 +21,7 @@ import javax.inject.Inject;
  */
 @ActivityScope
 public class TrustedWebActivityOpenTimeRecorder implements PauseResumeWithNativeObserver {
-    private final TrustedWebActivityVerifier mVerifier;
+    private final Verifier mVerifier;
     private final TrustedWebActivityUmaRecorder mRecorder;
     private final ActivityTabProvider mTabProvider;
 
@@ -34,7 +34,7 @@ public class TrustedWebActivityOpenTimeRecorder implements PauseResumeWithNative
     @Inject
     TrustedWebActivityOpenTimeRecorder(
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            TrustedWebActivityVerifier verifier,
+            Verifier verifier,
             TrustedWebActivityUmaRecorder recorder,
             ActivityTabProvider provider) {
         mVerifier = verifier;

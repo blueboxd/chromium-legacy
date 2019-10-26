@@ -369,8 +369,20 @@ void FakeShillManagerClient::ConfigureService(
     return;
   }
 
-  if (type == shill::kTypeWifi)
+  if (type == shill::kTypeWifi) {
     properties.GetString(shill::kSSIDProperty, &name);
+
+    if (name.empty()) {
+      std::string hex_name;
+      properties.GetString(shill::kWifiHexSsid, &hex_name);
+      if (!hex_name.empty()) {
+        std::vector<uint8_t> bytes;
+        if (base::HexStringToBytes(hex_name, &bytes)) {
+          name.assign(reinterpret_cast<const char*>(&bytes[0]), bytes.size());
+        }
+      }
+    }
+  }
   if (name.empty())
     properties.GetString(shill::kNameProperty, &name);
   if (name.empty())

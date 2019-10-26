@@ -191,7 +191,6 @@ class WebSettings {
   virtual void SetImmersiveModeEnabled(bool) = 0;
   virtual void SetMinimumFontSize(int) = 0;
   virtual void SetMinimumLogicalFontSize(int) = 0;
-  virtual void SetMockScrollbarsEnabled(bool) = 0;
   virtual void SetHideScrollbars(bool) = 0;
   virtual void SetOfflineWebApplicationCacheEnabled(bool) = 0;
   virtual void SetPassiveEventListenerDefault(PassiveEventListenerDefault) = 0;

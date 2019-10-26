@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
 #include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -103,7 +102,7 @@ class RenderingTestChromeClient : public EmptyChromeClient {
   TransformationMatrix device_emulation_transform_;
 };
 
-class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
+class RenderingTest : public PageTestBase {
   USING_FAST_MALLOC(RenderingTest);
 
  public:

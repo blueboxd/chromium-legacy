@@ -475,8 +475,7 @@ class IndexedDBConnectionCoordinator::DeleteRequest
     int64_t old_version = db_->metadata_.version;
     db_->metadata_.id = kInvalidDatabaseId;
     db_->metadata_.version = IndexedDBDatabaseMetadata::NO_VERSION;
-    db_->metadata_.max_object_store_id =
-        blink::IndexedDBObjectStoreMetadata::kInvalidId;
+    db_->metadata_.max_object_store_id = 0;
     db_->metadata_.object_stores.clear();
     // Unittests (specifically the IndexedDBDatabase unittests) can have the
     // backing store be a nullptr, so report deleted here.

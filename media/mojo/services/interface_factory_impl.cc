@@ -43,7 +43,8 @@
 namespace media {
 
 InterfaceFactoryImpl::InterfaceFactoryImpl(
-    service_manager::mojom::InterfaceProviderPtr host_interfaces,
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        host_interfaces,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
     MojoMediaClient* mojo_media_client)
     : host_interfaces_(std::move(host_interfaces)),

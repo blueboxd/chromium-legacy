@@ -132,6 +132,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kCompositeCrossOriginIframes;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
 
+BLINK_COMMON_EXPORT extern const base::Feature kSetLowPriorityForBeacon;
+
 }  // namespace features
 }  // namespace blink
 

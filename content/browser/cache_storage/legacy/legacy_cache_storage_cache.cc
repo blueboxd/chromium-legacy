@@ -449,13 +449,13 @@ LegacyCacheStorageCache::CreateMemoryCache(
     LegacyCacheStorage* cache_storage,
     scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    base::WeakPtr<storage::BlobStorageContext> blob_context,
+    scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
   LegacyCacheStorageCache* cache = new LegacyCacheStorageCache(
       origin, owner, cache_name, base::FilePath(), cache_storage,
       std::move(scheduler_task_runner), std::move(quota_manager_proxy),
-      std::move(blob_context), 0 /* cache_size */, 0 /* cache_padding */,
-      std::move(cache_padding_key));
+      std::move(blob_storage_context), 0 /* cache_size */,
+      0 /* cache_padding */, std::move(cache_padding_key));
   cache->SetObserver(cache_storage);
   cache->InitBackend();
   return base::WrapUnique(cache);
@@ -471,14 +471,14 @@ LegacyCacheStorageCache::CreatePersistentCache(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    base::WeakPtr<storage::BlobStorageContext> blob_context,
+    scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
     int64_t cache_size,
     int64_t cache_padding,
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
   LegacyCacheStorageCache* cache = new LegacyCacheStorageCache(
       origin, owner, cache_name, path, cache_storage,
       std::move(scheduler_task_runner), std::move(quota_manager_proxy),
-      std::move(blob_context), cache_size, cache_padding,
+      std::move(blob_storage_context), cache_size, cache_padding,
       std::move(cache_padding_key));
   cache->SetObserver(cache_storage);
   cache->InitBackend();
@@ -916,7 +916,7 @@ LegacyCacheStorageCache::LegacyCacheStorageCache(
     LegacyCacheStorage* cache_storage,
     scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    base::WeakPtr<storage::BlobStorageContext> blob_context,
+    scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
     int64_t cache_size,
     int64_t cache_padding,
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key)
@@ -937,7 +937,7 @@ LegacyCacheStorageCache::LegacyCacheStorageCache(
       cache_entry_handler_(
           CacheStorageCacheEntryHandler::CreateCacheEntryHandler(
               owner,
-              std::move(blob_context))),
+              std::move(blob_storage_context))),
       memory_only_(path.empty()) {
   DCHECK(!origin_.opaque());
   DCHECK(quota_manager_proxy_.get());

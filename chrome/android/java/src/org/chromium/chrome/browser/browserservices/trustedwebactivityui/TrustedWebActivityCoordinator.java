@@ -8,8 +8,8 @@ import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityDisclosureController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -31,7 +31,7 @@ import dagger.Lazy;
 @ActivityScope
 public class TrustedWebActivityCoordinator implements InflationObserver {
 
-    private final TrustedWebActivityVerifier mVerifier;
+    private final Verifier mVerifier;
     private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final Lazy<ImmersiveModeController> mImmersiveModeController;
@@ -43,7 +43,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             TrustedWebActivityDisclosureController disclosureController,
             TrustedWebActivityDisclosureView disclosureView,
             TrustedWebActivityOpenTimeRecorder openTimeRecorder,
-            TrustedWebActivityVerifier verifier,
+            Verifier verifier,
             CustomTabActivityNavigationController navigationController,
             Lazy<TwaSplashController> splashController,
             CustomTabIntentDataProvider intentDataProvider,
@@ -96,7 +96,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     }
 
     private void onVerificationUpdate() {
-        TrustedWebActivityVerifier.VerificationState state = mVerifier.getState();
+        Verifier.VerificationState state = mVerifier.getState();
         boolean inTwaMode = state == null || state.status != VerificationStatus.FAILURE;
         if (inTwaMode == mInTwaMode) return;
         mInTwaMode = inTwaMode;

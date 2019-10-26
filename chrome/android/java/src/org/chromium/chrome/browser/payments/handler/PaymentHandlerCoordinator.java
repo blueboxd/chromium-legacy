@@ -26,16 +26,6 @@ import java.net.URI;
  */
 public class PaymentHandlerCoordinator {
     private Runnable mHider;
-    private WebContents mWebContents;
-
-    /** Observer for the dismissal of the payment-handler UI. */
-    public interface DismissObserver {
-        /**
-         * Called after the user has dismissed the payment-handler UI by swiping it down or tapping
-         * on the scrim behind the UI.
-         */
-        void onDismissed();
-    }
 
     /** Constructs the payment-handler component coordinator. */
     public PaymentHandlerCoordinator() {
@@ -46,37 +36,38 @@ public class PaymentHandlerCoordinator {
      * Shows the payment-handler UI.
      *
      * @param chromeActivity The activity where the UI should be shown.
-     * @param dismissObserver The observer to be notified when the user has dismissed the UI.
      * @param url The url of the payment handler app, i.e., that of
      *         "PaymentRequestEvent.openWindow(url)".
      * @param isIncognito Whether the tab is in incognito mode.
      * @return Whether the payment-handler UI was shown. Can be false if the UI was suppressed.
      */
-    public boolean show(ChromeActivity activity, DismissObserver dismissObserver, URI url,
-            boolean isIncognito) {
+    public boolean show(ChromeActivity activity, URI url, boolean isIncognito) {
         assert mHider == null : "Already showing payment-handler UI";
-        PropertyModel model = new PropertyModel.Builder(PaymentHandlerProperties.ALL_KEYS).build();
-        PaymentHandlerMediator mediator =
-                new PaymentHandlerMediator(model, this::hide, dismissObserver);
-        BottomSheetController bottomSheetController = activity.getBottomSheetController();
-        bottomSheetController.getBottomSheet().addObserver(mediator);
 
-        mWebContents = WebContentsFactory.createWebContents(isIncognito, /*initiallyHidden=*/false);
-        ContentView webContentView = ContentView.createContentView(activity, mWebContents);
-        mWebContents.initialize(ChromeVersionInfo.getProductVersion(),
+        WebContents webContents =
+                WebContentsFactory.createWebContents(isIncognito, /*initiallyHidden=*/false);
+        ContentView webContentView = ContentView.createContentView(activity, webContents);
+        webContents.initialize(ChromeVersionInfo.getProductVersion(),
                 ViewAndroidDelegate.createBasicDelegate(webContentView), webContentView,
                 activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
-        mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url.toString()));
+        webContents.getNavigationController().loadUrl(new LoadUrlParams(url.toString()));
+
+        PropertyModel model = new PropertyModel.Builder(PaymentHandlerProperties.ALL_KEYS).build();
+        PaymentHandlerMediator mediator =
+                new PaymentHandlerMediator(model, this::hide, webContents);
+        BottomSheetController bottomSheetController = activity.getBottomSheetController();
+        bottomSheetController.getBottomSheet().addObserver(mediator);
+        webContents.addObserver(mediator);
 
         PaymentHandlerView view = new PaymentHandlerView(
-                activity, bottomSheetController.getBottomSheet(), mWebContents, webContentView);
+                activity, bottomSheetController.getBottomSheet(), webContents, webContentView);
         PropertyModelChangeProcessor changeProcessor =
                 PropertyModelChangeProcessor.create(model, view, PaymentHandlerViewBinder::bind);
         mHider = () -> {
             changeProcessor.destroy();
             bottomSheetController.getBottomSheet().removeObserver(mediator);
             bottomSheetController.hideContent(/*content=*/view, /*animate=*/true);
-            mWebContents.destroy();
+            webContents.destroy();
         };
         boolean result = bottomSheetController.requestShowContent(view, /*animate=*/true);
         if (result) bottomSheetController.expandSheet();

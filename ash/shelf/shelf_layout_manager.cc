@@ -766,6 +766,7 @@ void ShelfLayoutManager::OnShelfItemSelected(ShelfAction action) {
     case SHELF_ACTION_NONE:
     case SHELF_ACTION_APP_LIST_SHOWN:
     case SHELF_ACTION_APP_LIST_DISMISSED:
+    case SHELF_ACTION_APP_LIST_BACK:
     case SHELF_ACTION_WINDOW_MINIMIZED:
       break;
     case SHELF_ACTION_NEW_WINDOW_CREATED:
@@ -1601,7 +1602,8 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
     int hotseat_y = 0;
     if (!Shell::Get()->overview_controller() ||
-        !Shell::Get()->overview_controller()->InOverviewSession()) {
+        !Shell::Get()->overview_controller()->InOverviewSession() ||
+        window_drag_controller_) {
       const int hotseat_extended_y =
           Shell::Get()->shelf_config()->hotseat_size() +
           Shell::Get()->shelf_config()->hotseat_bottom_padding();
@@ -2350,6 +2352,12 @@ void ShelfLayoutManager::MaybeStartDragWindowFromShelf(
       visibility_state() == SHELF_HIDDEN) {
     return;
   }
+
+  // If the start location is above the shelf (e.g., on the extended hotseat),
+  // do not allow the drag.
+  const gfx::Rect shelf_bounds = GetVisibleShelfBounds();
+  if (event_in_screen.location().y() < shelf_bounds.y())
+    return;
 
   aura::Window* window =
       GetWindowForDragToHomeOrOverview(event_in_screen.location());

@@ -103,7 +103,7 @@ void HTMLOptGroupElement::RemovedFrom(ContainerNode& insertion_point) {
 }
 
 String HTMLOptGroupElement::GroupLabelText() const {
-  String item_text = getAttribute(html_names::kLabelAttr);
+  String item_text = FastGetAttribute(html_names::kLabelAttr);
 
   // In WinIE, leading and trailing whitespace is ignored in options and
   // optgroups. We match this behavior.

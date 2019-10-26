@@ -49,7 +49,7 @@ blink::SecurityStyle SecurityLevelToSecurityStyle(
     case security_state::SECURE:
       return blink::SecurityStyle::kSecure;
     case security_state::DANGEROUS:
-      return blink::SecurityStyle::kInsecure;
+      return blink::SecurityStyle::kInsecureBroken;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       return blink::SecurityStyle::kNeutral;

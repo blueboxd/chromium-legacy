@@ -391,8 +391,6 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
 
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
-  is_compositing_test_ =
-      test_url_.spec().find("compositing/") != std::string::npos;
   initial_size_ = Shell::GetShellDefaultSize();
   if (!main_window_) {
     main_window_ = content::Shell::CreateNewWindow(
@@ -466,11 +464,6 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
           new DevToolsProtocolTestBindings(main_window_->web_contents()));
     }
 
-    // Compositing tests override the default preferences (see
-    // BlinkTestController::OverrideWebkitPrefs) so we force them to be
-    // calculated again to ensure is_compositing_test_ changes are picked up.
-    OverrideWebkitPrefs(&default_prefs_);
-
     render_view_host->UpdateWebkitPreferences(default_prefs_);
     HandleNewRenderFrameHost(render_view_host->GetMainFrame());
 
@@ -521,7 +514,6 @@ bool BlinkTestController::ResetAfterWebTest() {
   printer_->CloseStderr();
   did_send_initial_test_configuration_ = false;
   test_phase_ = BETWEEN_TESTS;
-  is_compositing_test_ = false;
   expected_pixel_hash_.clear();
   test_url_ = GURL();
   prefs_ = WebPreferences();
@@ -558,12 +550,6 @@ void BlinkTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
     *prefs = prefs_;
   } else {
     ApplyWebTestDefaultPreferences(prefs);
-    if (is_compositing_test_) {
-      base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-      if (!command_line.HasSwitch(switches::kDisableGpu))
-        prefs->accelerated_2d_canvas_enabled = true;
-      prefs->mock_scrollbars_enabled = true;
-    }
   }
 }
 

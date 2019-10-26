@@ -535,7 +535,7 @@ void LockScreenMediaControlsView::MediaSessionActionsChanged(
     return;
 
   enabled_actions_ =
-      std::set<MediaSessionAction>(actions.begin(), actions.end());
+      base::flat_set<MediaSessionAction>(actions.begin(), actions.end());
 
   UpdateActionButtonsVisibility();
 }
@@ -682,11 +682,11 @@ void LockScreenMediaControlsView::FlushForTesting() {
 }
 
 void LockScreenMediaControlsView::UpdateActionButtonsVisibility() {
-  std::set<MediaSessionAction> ignored_actions = {
+  base::flat_set<MediaSessionAction> ignored_actions = {
       media_message_center::GetPlayPauseIgnoredAction(
           media_message_center::GetActionFromButtonTag(*play_pause_button_))};
 
-  std::set<MediaSessionAction> visible_actions =
+  base::flat_set<MediaSessionAction> visible_actions =
       media_message_center::GetTopVisibleActions(enabled_actions_,
                                                  ignored_actions, kMaxActions);
 

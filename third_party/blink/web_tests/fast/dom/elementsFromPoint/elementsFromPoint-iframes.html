@@ -33,9 +33,6 @@ window.jsTestIsAsync = true;
 if (window.testRunner)
     testRunner.dumpAsText();
 
-if (window.internals)
-    internals.settings.setMockScrollbarsEnabled(true);
-
 onload = function() {
     checkElementsFromPointFourCorners('document', 'iframe');
     checkElementsFromPointFourCorners('document.getElementById(\'iframe\').contentDocument', 'document.getElementById(\'iframe\').contentDocument.getElementById(\'div\')');

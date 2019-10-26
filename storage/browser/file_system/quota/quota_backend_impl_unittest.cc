@@ -13,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/file_system/file_system_usage_cache.h"
@@ -152,7 +151,6 @@ class QuotaBackendImplTest : public testing::Test,
     return path;
   }
 
-  base::test::ScopedFeatureList feature_list_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;

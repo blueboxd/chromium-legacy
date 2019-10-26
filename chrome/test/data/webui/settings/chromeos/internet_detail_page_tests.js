@@ -50,6 +50,7 @@ suite('InternetDetailPage', function() {
       networkListItemConnected: 'networkListItemConnected',
       networkListItemConnecting: 'networkListItemConnecting',
       networkListItemConnectingTo: 'networkListItemConnectingTo',
+      networkListItemLabelTemplate: '%1 - %2',
       networkListItemNotConnected: 'networkListItemNotConnected',
       networkListItemNoNetwork: 'networkListItemNoNetwork',
       vpnNameTemplate: 'vpnNameTemplate',

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -95,7 +96,7 @@ class MockMediaNotificationContainer : public MediaNotificationContainer {
       void(const media_session::mojom::MediaSessionInfoPtr& session_info));
   MOCK_METHOD0(OnMediaSessionMetadataChanged, void());
   MOCK_METHOD1(OnVisibleActionsChanged,
-               void(const std::set<MediaSessionAction>& actions));
+               void(const base::flat_set<MediaSessionAction>& actions));
   MOCK_METHOD1(OnMediaArtworkChanged, void(const gfx::ImageSkia& image));
   MOCK_METHOD2(OnColorsChanged, void(SkColor foreground, SkColor background));
 
@@ -327,7 +328,7 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
 
   base::HistogramTester histogram_tester_;
 
-  std::set<MediaSessionAction> actions_;
+  base::flat_set<MediaSessionAction> actions_;
 
   std::unique_ptr<TestMediaController> media_controller_;
   MockMediaNotificationContainer container_;
@@ -661,7 +662,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, UpdateMetadata_AppName) {
 TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
   EXPECT_CALL(
       container(),
-      OnVisibleActionsChanged(std::set<MediaSessionAction>(
+      OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
            MediaSessionAction::kSeekForward})));
@@ -679,7 +680,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
 
   EXPECT_CALL(
       container(),
-      OnVisibleActionsChanged(std::set<MediaSessionAction>(
+      OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kSeekBackward,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekForward})));
   DisableAction(MediaSessionAction::kPreviousTrack);
@@ -688,7 +689,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
 
   EXPECT_CALL(
       container(),
-      OnVisibleActionsChanged(std::set<MediaSessionAction>(
+      OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
            MediaSessionAction::kSeekForward})));
@@ -696,7 +697,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
   testing::Mock::VerifyAndClearExpectations(&container());
   EXPECT_TRUE(IsActionButtonVisible(MediaSessionAction::kPreviousTrack));
 
-  EXPECT_CALL(container(), OnVisibleActionsChanged(std::set<MediaSessionAction>(
+  EXPECT_CALL(container(), OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
                                {MediaSessionAction::kPlay,
                                 MediaSessionAction::kPreviousTrack,
                                 MediaSessionAction::kNextTrack,
@@ -707,7 +708,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
 
   EXPECT_CALL(
       container(),
-      OnVisibleActionsChanged(std::set<MediaSessionAction>(
+      OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
            MediaSessionAction::kSeekForward})));
@@ -719,7 +720,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
 TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenExpanded) {
   EXPECT_CALL(
       container(),
-      OnVisibleActionsChanged(std::set<MediaSessionAction>(
+      OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
            MediaSessionAction::kSeekForward})));
@@ -728,7 +729,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenExpanded) {
 
   EXPECT_CALL(
       container(),
-      OnVisibleActionsChanged(std::set<MediaSessionAction>(
+      OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
           {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
            MediaSessionAction::kNextTrack, MediaSessionAction::kSeekBackward,
            MediaSessionAction::kSeekForward})));

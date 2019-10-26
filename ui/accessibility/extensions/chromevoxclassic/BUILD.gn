@@ -598,7 +598,6 @@ js2gtest("chromevox_unitjs_tests") {
     "common/math_semantic_tree_test.unitjs",
     "common/page_selection_test.unitjs",
     "common/selection_util_test.unitjs",
-    "common/spannable_test.unitjs",
     "common/string_util_test.unitjs",
     "walkers/character_walker_test.unitjs",
     "walkers/group_walker_test.unitjs",
@@ -613,7 +612,7 @@ js2gtest("chromevox_unitjs_tests") {
   gen_include_files = [
     "//chrome/browser/resources/chromeos/chromevox/testing/assert_additions.js",
     "//chrome/browser/resources/chromeos/chromevox/testing/callback_helper.js",
-    "testing/chromevox_unittest_base.js",
+    "//ui/accessibility/extensions/chromevoxclassic/testing/chromevox_unittest_base.js",
   ]
 
   test_deps_js_outputs = get_target_outputs(":chromevox_test_deps_js")

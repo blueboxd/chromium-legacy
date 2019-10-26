@@ -451,26 +451,13 @@
     {
       "command": "toggleStickyMode",
       "sequence": {
-        "doubleTap": true,
-        "keys": {
-          "keyCode": [
-            45
-          ]
-        },
-        "platformFilter": 5
-      }
-    },
-    {
-      "command": "toggleStickyMode",
-      "sequence": {
         "skipStripping": false,
         "doubleTap": true,
         "keys": {
           "keyCode": [
             91
           ]
-        },
-        "platformFilter": 10
+        }
       }
     },
     {

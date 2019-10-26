@@ -15,6 +15,7 @@
 #include "base/util/type_safety/pass_key.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/scoped_writable_entry.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -66,11 +67,9 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
  public:
   // The DiskCacheBlobEntry is a ref-counted object containing both
   // a disk_cache Entry and a Handle to the cache in which it lives.  This
-  // blob entry can then be used to create a BlobDataItem::DataHandle by
-  // calling CacheStorageCacheEntryHandle's MakeDataHandle().  This ensures
-  // both the cache and the disk_cache entry live as long as the blob.
+  // blob entry can then be used to create an |EntryReaderImpl|.
   //
-  // The blob DataHandle always lives on the IO thread.  The DiskCacheBlobEntry
+  // |EntryReaderImpl| always lives on the IO thread.  The DiskCacheBlobEntry
   // is held cross-sequence, but is always created and destroyed on the
   // cache_storage scheduler sequence. This ensure both the cache and the
   // disk_cache entry live as long as the blob.
@@ -169,14 +168,14 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
 
   static std::unique_ptr<CacheStorageCacheEntryHandler> CreateCacheEntryHandler(
       CacheStorageOwner owner,
-      base::WeakPtr<storage::BlobStorageContext> blob_context);
+      scoped_refptr<BlobStorageContextWrapper> blob_storage_context);
 
   void InvalidateDiskCacheBlobEntrys();
   void EraseDiskCacheBlobEntry(DiskCacheBlobEntry* blob_entry);
 
  protected:
   CacheStorageCacheEntryHandler(
-      base::WeakPtr<storage::BlobStorageContext> blob_context);
+      scoped_refptr<BlobStorageContextWrapper> blob_storage_context);
 
   // Create a serialized blob from the given entry and disk_cache index.  This
   // blob will not have any side data.
@@ -190,7 +189,8 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
       CacheStorageCache::EntryIndex disk_cache_index,
       CacheStorageCache::EntryIndex side_data_disk_cache_index);
 
-  base::WeakPtr<storage::BlobStorageContext> blob_context_;
+  // IO thread wrapper for storage::mojom::BlobStorageContext.
+  scoped_refptr<BlobStorageContextWrapper> blob_storage_context_;
 
   // Every subclass should provide its own implementation to avoid partial
   // destruction.
@@ -198,7 +198,8 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
 
   // We keep track of the DiskCacheBlobEntry instances to allow us to invalidate
   // them if the cache has to be deleted while there are still references to
-  // data in it.
+  // data in it.  DiskCacheBlobEntries are owned by EntryReaderImpl, which
+  // are owned by their mojo remote (which indirectly is is owned by some blob).
   std::set<DiskCacheBlobEntry*> blob_entries_;
 
   SEQUENCE_CHECKER(sequence_checker_);

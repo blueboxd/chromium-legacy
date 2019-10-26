@@ -11,7 +11,8 @@
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/scoped_access_permission_media_to_mojo_adapter.h"
 
@@ -136,11 +137,11 @@ void SharedMemoryVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
     auto access_permission = std::make_unique<
         media::ScopedBufferPoolReservation<media::ConsumerReleaseTraits>>(
         buffer_pool_, buffer_id);
-    mojom::ScopedAccessPermissionPtr access_permission_proxy;
-    mojo::MakeStrongBinding<mojom::ScopedAccessPermission>(
+    mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission_proxy;
+    mojo::MakeSelfOwnedReceiver<mojom::ScopedAccessPermission>(
         std::make_unique<ScopedAccessPermissionMediaToMojoAdapter>(
             std::move(access_permission)),
-        mojo::MakeRequest(&access_permission_proxy));
+        access_permission_proxy.InitWithNewPipeAndPassReceiver());
     receiver_->OnFrameReadyInBuffer(buffer_id, 0 /* frame_feedback_id */,
                                     std::move(access_permission_proxy),
                                     std::move(frame_info));

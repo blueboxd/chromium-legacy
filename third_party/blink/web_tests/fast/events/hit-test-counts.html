@@ -27,10 +27,9 @@ html {
 <script src="../../resources/js-test.js"></script>
 <script>
 setPrintTestResultsLazily();
-if (window.internals) {
+if (window.internals)
     internals.settings.setViewportEnabled(true);
-    internals.settings.setMockScrollbarsEnabled(true);
-}
+
 var unique_event_id = 1;
 description("Count how many hit tests are required for various event scenarios.  Hit tests can be expensive and it's often tempting to add more.  These values should only ever be changed to go down, not up.");
 

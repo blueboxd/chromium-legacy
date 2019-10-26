@@ -961,12 +961,11 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
                          params);
       break;
     case DrawQuad::Material::kStreamVideoContent:
-      // TODO(michaelludwig) - Support video quads bypassing a renderpass
-      DCHECK(rpdq_params == nullptr);
-      DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), params);
+      DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), rpdq_params,
+                          params);
       break;
     case DrawQuad::Material::kTextureContent:
-      // TODO(michaelludwig) - Support video quads bypassing a renderpass
+      // TODO(michaelludwig) - Support texture quads bypassing a renderpass
       DCHECK(rpdq_params == nullptr);
       DrawTextureQuad(TextureDrawQuad::MaterialCast(quad), params);
       break;
@@ -974,14 +973,11 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
       DrawTileDrawQuad(TileDrawQuad::MaterialCast(quad), rpdq_params, params);
       break;
     case DrawQuad::Material::kYuvVideoContent:
-      // TODO(michaelludwig) - Support yuv video quads bypassing a renderpass
-      DCHECK(rpdq_params == nullptr);
-      DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), params);
+      DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), rpdq_params,
+                       params);
       break;
     case DrawQuad::Material::kInvalid:
-      // TODO(michaelludwig) - Support unsupported quads bypassing a renderpass
-      DCHECK(rpdq_params == nullptr);
-      DrawUnsupportedQuad(quad, params);
+      DrawUnsupportedQuad(quad, rpdq_params, params);
       NOTREACHED();
       break;
     case DrawQuad::Material::kVideoHole:
@@ -991,14 +987,12 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
       // Quad and the quad would then reach here unexpectedly. Therefore
       // we should skip NOTREACHED() so an untrusted render is not capable
       // of causing a crash.
-      DCHECK(rpdq_params == nullptr);
-      DrawUnsupportedQuad(quad, params);
+      DrawUnsupportedQuad(quad, rpdq_params, params);
       break;
     default:
       // If we've reached here, it's a new quad type that needs a
       // dedicated implementation
-      DCHECK(rpdq_params == nullptr);
-      DrawUnsupportedQuad(quad, params);
+      DrawUnsupportedQuad(quad, rpdq_params, params);
       NOTREACHED();
       break;
   }
@@ -1274,11 +1268,8 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
 }
 
 const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
-  // TODO(michaelludwig) - For now, this only supports opaque, src-over
-  // TileDrawQuads and SolidColor quads with invertable transforms.
-  // It will be updated to select more quad material types as their
-  // corresponding DrawXQuad() functions are updated to accept DrawRPDQParams
-  // as well.
+  // TODO(michaelludwig) - For now, this only supports opaque, src-over quads
+  // with invertible transforms and simple content (image or color only).
   // Can only collapse a single tile quad.
   if (pass->quad_list.size() != 1)
     return nullptr;
@@ -1288,10 +1279,11 @@ const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
     return nullptr;
 
   const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
-  // TODO(michaelludwig) - The set of supported material types can be expanded
-  // by passing the DrawRPDQParams to the other DrawXQuad() functions.
-  if (quad->material != DrawQuad::Material::kTiledContent &&
-      quad->material != DrawQuad::Material::kSolidColor)
+  // TODO(michaelludwig) - With additional caveats, kTexture can be drawn direct
+  if (quad->material == DrawQuad::Material::kRenderPass ||
+      quad->material == DrawQuad::Material::kDebugBorder ||
+      quad->material == DrawQuad::Material::kPictureContent ||
+      quad->material == DrawQuad::Material::kTextureContent)
     return nullptr;
 
   // In order to concatenate the bypass'ed quads transform with RP itself, it
@@ -1696,8 +1688,9 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 }
 
 void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
+                                       const DrawRPDQParams* rpdq_params,
                                        DrawQuadParams* params) {
-  DCHECK(!MustFlushBatchedQuads(quad, nullptr, *params));
+  DCHECK(!MustFlushBatchedQuads(quad, rpdq_params, *params));
 
   ScopedSkImageBuilder builder(this, quad->resource_id(),
                                kUnpremul_SkAlphaType);
@@ -1718,7 +1711,12 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
           ? gfx::RectF(image->width(), image->height())
           : gfx::RectF(gfx::SizeF(quad->resource_size_in_pixels()));
 
-  AddQuadToBatch(image, valid_texel_bounds, params);
+  if (rpdq_params) {
+    SkPaint paint = params->paint();
+    DrawSingleImage(image, valid_texel_bounds, rpdq_params, &paint, params);
+  } else {
+    AddQuadToBatch(image, valid_texel_bounds, params);
+  }
 }
 
 void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
@@ -1874,6 +1872,7 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
 }
 
 void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
+                                    const DrawRPDQParams* rpdq_params,
                                     DrawQuadParams* params) {
   // Since YUV quads always use a color filter, they require a complex skPaint
   // that precludes batching. If this changes, we could add YUV quads that don't
@@ -1911,15 +1910,16 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // Use provided, unclipped texture coordinates as the content area, which will
   // force coord clamping unless the geometry was clipped, or they span the
   // entire YUV image.
-  DrawSingleImage(image, quad->ya_tex_coord_rect, nullptr, &paint, params);
+  DrawSingleImage(image, quad->ya_tex_coord_rect, rpdq_params, &paint, params);
 }
 
 void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad,
+                                       const DrawRPDQParams* rpdq_params,
                                        DrawQuadParams* params) {
 #ifdef NDEBUG
-  DrawColoredQuad(SK_ColorWHITE, nullptr, params);
+  DrawColoredQuad(SK_ColorWHITE, rpdq_params, params);
 #else
-  DrawColoredQuad(SK_ColorMAGENTA, nullptr, params);
+  DrawColoredQuad(SK_ColorMAGENTA, rpdq_params, params);
 #endif
 }
 

@@ -845,6 +845,13 @@ void WebContentsAccessibilityAndroid::Click(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj,
                                             jint unique_id) {
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
+
+  // If it's a heading consisting of only a link, click the link.
+  if (node->IsHeadingLink()) {
+    node = static_cast<BrowserAccessibilityAndroid*>(
+        node->InternalChildrenBegin().get());
+  }
+
   if (node)
     node->manager()->DoDefaultAction(*node);
 }

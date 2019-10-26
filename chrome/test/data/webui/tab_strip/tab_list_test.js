@@ -107,6 +107,10 @@ suite('TabList', () => {
       '--background-color': 'white',
       '--foreground-color': 'black',
     });
+    testTabStripEmbedderProxy.setLayout({
+      '--height': '100px',
+      '--width': '150px',
+    });
     TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
 
     tabList = document.createElement('tabstrip-tab-list');
@@ -135,6 +139,38 @@ suite('TabList', () => {
     await testTabStripEmbedderProxy.whenCalled('getColors');
     assertEquals(tabList.style.getPropertyValue('--background-color'), 'pink');
     assertEquals(tabList.style.getPropertyValue('--foreground-color'), 'blue');
+  });
+
+  test('sets layout variables on init', async () => {
+    await testTabStripEmbedderProxy.whenCalled('getLayout');
+    assertEquals(tabList.style.getPropertyValue('--height'), '100px');
+    assertEquals(tabList.style.getPropertyValue('--width'), '150px');
+  });
+
+  test('updates layout variables when layout changes', async () => {
+    webUIListenerCallback('layout-changed', {
+      '--height': '10000px',
+      '--width': '10px',
+    });
+    await testTabStripEmbedderProxy.whenCalled('getLayout');
+    assertEquals(tabList.style.getPropertyValue('--height'), '10000px');
+    assertEquals(tabList.style.getPropertyValue('--width'), '10px');
+  });
+
+  test('calculates the correct unpinned tab width and height', async () => {
+    webUIListenerCallback('layout-changed', {
+      '--tabstrip-tab-thumbnail-height': '132px',
+      '--tabstrip-tab-thumbnail-width': '200px',
+      '--tabstrip-tab-title-height': '15px',
+    });
+    await testTabStripEmbedderProxy.whenCalled('getLayout');
+
+    const tabListStyle = window.getComputedStyle(tabList);
+    assertEquals(
+        tabListStyle.getPropertyValue('--tabstrip-tab-height').trim(),
+        'calc(15px + 132px)');
+    assertEquals(
+        tabListStyle.getPropertyValue('--tabstrip-tab-width').trim(), '200px');
   });
 
   test('creates a tab element for each tab', () => {

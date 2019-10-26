@@ -2262,7 +2262,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 #endif
     IPC_MESSAGE_HANDLER(FrameMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(FrameMsg_SaveImageAt, OnSaveImageAt)
-    IPC_MESSAGE_HANDLER(FrameMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
@@ -2585,13 +2584,6 @@ void RenderFrameImpl::OnSaveImageAt(int x, int y) {
   blink::WebFloatRect viewport_position(x, y, 0, 0);
   GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
   frame_->SaveImageAt(WebPoint(viewport_position.x, viewport_position.y));
-}
-
-void RenderFrameImpl::OnAddMessageToConsole(
-    blink::mojom::ConsoleMessageLevel level,
-    const std::string& message,
-    bool discard_duplicates) {
-  AddMessageToConsoleImpl(level, message, discard_duplicates);
 }
 
 void RenderFrameImpl::JavaScriptExecuteRequest(
@@ -6591,9 +6583,8 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   FrameHostMsg_OpenURL_Params params;
   params.url = info->url_request.Url();
   params.initiator_origin = info->url_request.RequestorOrigin();
-  params.uses_post = IsHttpPost(info->url_request);
-  params.resource_request_body =
-      GetRequestBodyForWebURLRequest(info->url_request);
+  params.post_body = GetRequestBodyForWebURLRequest(info->url_request);
+  DCHECK_EQ(!!params.post_body, IsHttpPost(info->url_request));
   params.extra_headers = GetWebURLRequestHeadersAsString(info->url_request);
   params.referrer =
       RenderViewImpl::GetReferrerFromRequest(frame_, info->url_request);

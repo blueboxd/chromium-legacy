@@ -21,6 +21,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -55,11 +56,11 @@ class TestOverviewObserver : public OverviewObserver {
 
   // OverviewObserver:
   void OnOverviewModeStarting() override {
-    UpdateLastAnimationWasSlide(
+    UpdateLastAnimationStates(
         Shell::Get()->overview_controller()->overview_session());
   }
   void OnOverviewModeEnding(OverviewSession* overview_session) override {
-    UpdateLastAnimationWasSlide(overview_session);
+    UpdateLastAnimationStates(overview_session);
   }
   void OnOverviewModeStartingAnimationComplete(bool canceled) override {
     if (!should_monitor_animation_state_)
@@ -108,20 +109,30 @@ class TestOverviewObserver : public OverviewObserver {
     return ending_animation_state_;
   }
   bool last_animation_was_slide() const { return last_animation_was_slide_; }
+  bool last_animation_was_fade() const { return last_animation_was_fade_; }
 
  private:
-  void UpdateLastAnimationWasSlide(OverviewSession* selector) {
+  void UpdateLastAnimationStates(OverviewSession* selector) {
     DCHECK(selector);
+    const OverviewSession::EnterExitOverviewType enter_exit_type =
+        selector->enter_exit_overview_type();
+
     last_animation_was_slide_ =
-        selector->enter_exit_overview_type() ==
+        enter_exit_type ==
             OverviewSession::EnterExitOverviewType::kSlideInEnter ||
-        selector->enter_exit_overview_type() ==
+        enter_exit_type ==
             OverviewSession::EnterExitOverviewType::kSlideOutExit;
+
+    last_animation_was_fade_ =
+        enter_exit_type ==
+            OverviewSession::EnterExitOverviewType::kFadeInEnter ||
+        enter_exit_type == OverviewSession::EnterExitOverviewType::kFadeOutExit;
   }
 
   AnimationState starting_animation_state_ = UNKNOWN;
   AnimationState ending_animation_state_ = UNKNOWN;
   bool last_animation_was_slide_ = false;
+  bool last_animation_was_fade_ = false;
   // If false, skips the checks in OnOverviewMode Starting/Ending
   // AnimationComplete.
   bool should_monitor_animation_state_;
@@ -322,59 +333,6 @@ TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
   EXPECT_FALSE(overview_controller->HasBlurForTest());
   EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
 }
-
-// Tests the slide animation for overview is never used in clamshell.
-TEST_F(OverviewControllerTest, OverviewEnterExitAnimationClamshell) {
-  TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
-
-  const gfx::Rect bounds(200, 200);
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(bounds));
-
-  Shell::Get()->overview_controller()->StartOverview();
-  EXPECT_FALSE(observer.last_animation_was_slide());
-
-  Shell::Get()->overview_controller()->EndOverview();
-  EXPECT_FALSE(observer.last_animation_was_slide());
-
-  // Even with all window minimized, there should not be a slide animation.
-  ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
-  WindowState::Get(window.get())->Minimize();
-  Shell::Get()->overview_controller()->StartOverview();
-  EXPECT_FALSE(observer.last_animation_was_slide());
-}
-
-// Tests the slide animation for overview is used in tablet if all windows
-// are minimized, and that if overview is exited from the home launcher all
-// windows are minimized.
-TEST_F(OverviewControllerTest, OverviewEnterExitAnimationTablet) {
-  TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
-
-  // Ensure calls to SetEnabledForTest complete.
-  base::RunLoop().RunUntilIdle();
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  base::RunLoop().RunUntilIdle();
-
-  const gfx::Rect bounds(200, 200);
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(bounds));
-
-  Shell::Get()->overview_controller()->StartOverview();
-  EXPECT_FALSE(observer.last_animation_was_slide());
-
-  // Exit to home launcher. Slide animation should be used, and all windows
-  // should be minimized.
-  Shell::Get()->overview_controller()->EndOverview(
-      OverviewSession::EnterExitOverviewType::kSlideOutExit);
-  EXPECT_TRUE(observer.last_animation_was_slide());
-  ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
-
-  // All windows are minimized, so we should use the slide animation.
-  Shell::Get()->overview_controller()->StartOverview();
-  EXPECT_TRUE(observer.last_animation_was_slide());
-}
-
 TEST_F(OverviewControllerTest, OcclusionTest) {
   using OcclusionState = aura::Window::OcclusionState;
 
@@ -463,6 +421,113 @@ TEST_F(OverviewControllerTest, SelectingHidesAppList) {
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 }
+
+// Parameterized test depending on whether kHomerviewGesture is enabled.
+class OverviewControllerTestWithHomerviewGesture
+    : public OverviewControllerTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  OverviewControllerTestWithHomerviewGesture() {
+    if (GetParam())
+      scoped_feature_list_.InitAndEnableFeature(features::kHomerviewGesture);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kHomerviewGesture);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests which animation for overview is used in tablet if all windows
+// are minimized, and that if overview is exited from the home launcher all
+// windows are minimized.
+TEST_P(OverviewControllerTestWithHomerviewGesture,
+       OverviewEnterExitAnimationTablet) {
+  TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  // Ensure calls to SetEnabledForTest complete.
+  base::RunLoop().RunUntilIdle();
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(bounds));
+
+  Shell::Get()->overview_controller()->StartOverview();
+  EXPECT_FALSE(observer.last_animation_was_fade());
+  EXPECT_FALSE(observer.last_animation_was_slide());
+
+  // Exit to home launcher using either fade out or slide out animation. This
+  // should minimize all windows.
+  const bool is_homerview_enabled = GetParam();
+  Shell::Get()->overview_controller()->EndOverview(
+      is_homerview_enabled
+          ? OverviewSession::EnterExitOverviewType::kFadeOutExit
+          : OverviewSession::EnterExitOverviewType::kSlideOutExit);
+
+  EXPECT_EQ(is_homerview_enabled, observer.last_animation_was_fade());
+  EXPECT_EQ(!is_homerview_enabled, observer.last_animation_was_slide());
+
+  ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
+
+  // All windows are minimized, so we should use the slide in or the fade in
+  // animation to enter overview.
+  Shell::Get()->overview_controller()->StartOverview();
+  EXPECT_EQ(is_homerview_enabled, observer.last_animation_was_fade());
+  EXPECT_EQ(!is_homerview_enabled, observer.last_animation_was_slide());
+}
+
+// Tests that the slide and fade animations are not used to enter or exit
+// overview in clamshell.
+TEST_P(OverviewControllerTestWithHomerviewGesture,
+       OverviewEnterExitAnimationClamshell) {
+  TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(bounds));
+
+  Shell::Get()->overview_controller()->StartOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+  EXPECT_FALSE(observer.last_animation_was_fade());
+
+  Shell::Get()->overview_controller()->EndOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+  EXPECT_FALSE(observer.last_animation_was_fade());
+
+  // Even with all window minimized, overview should not use slide, nor fade
+  // animation to enter.
+  ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  WindowState::Get(window.get())->Minimize();
+  Shell::Get()->overview_controller()->StartOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+  EXPECT_FALSE(observer.last_animation_was_fade());
+}
+
+TEST_P(OverviewControllerTestWithHomerviewGesture, WallpaperAnimationTiming) {
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(bounds));
+  WindowState::Get(window.get())->Minimize();
+
+  ui::ScopedAnimationDurationScaleMode non_zero(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  const bool is_homerview_enabled = GetParam();
+  Shell::Get()->overview_controller()->StartOverview(
+      is_homerview_enabled
+          ? OverviewSession::EnterExitOverviewType::kFadeInEnter
+          : OverviewSession::EnterExitOverviewType::kSlideInEnter);
+  auto* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_EQ(is_homerview_enabled, overview_controller->HasBlurForTest());
+  EXPECT_EQ(is_homerview_enabled,
+            overview_controller->HasBlurAnimationForTest());
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         OverviewControllerTestWithHomerviewGesture,
+                         testing::Bool());
 
 class OverviewVirtualKeyboardTest : public OverviewControllerTest {
  protected:

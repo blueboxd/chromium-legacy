@@ -24,11 +24,11 @@ FakeTextTrackStream::~FakeTextTrackStream() {
   DCHECK(!read_cb_);
 }
 
-void FakeTextTrackStream::Read(const ReadCB& read_cb) {
+void FakeTextTrackStream::Read(ReadCB read_cb) {
   DCHECK(read_cb);
   DCHECK(!read_cb_);
   OnRead();
-  read_cb_ = read_cb;
+  read_cb_ = std::move(read_cb);
 
   if (stopping_) {
     task_runner_->PostTask(

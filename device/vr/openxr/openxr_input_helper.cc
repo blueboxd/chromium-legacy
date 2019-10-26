@@ -91,44 +91,6 @@ OpenXRInputHelper::OpenXRInputHelper(XrSession session, XrSpace local_space)
 
 OpenXRInputHelper::~OpenXRInputHelper() = default;
 
-mojom::XRGamepadDataPtr OpenXRInputHelper::GetGamepadData(
-    XrTime predicted_display_time) {
-  if (XR_FAILED(SyncActions(predicted_display_time)))
-    return nullptr;
-
-  mojom::XRGamepadDataPtr gamepad_data_ptr = mojom::XRGamepadData::New();
-  for (const OpenXrControllerState& controller_state : controller_states_) {
-    const OpenXrController& controller = controller_state.controller;
-    mojom::XRGamepadPtr gamepad_ptr = mojom::XRGamepad::New();
-    gamepad_ptr->controller_id = controller.GetId();
-    gamepad_ptr->timestamp = base::TimeTicks::Now();
-    gamepad_ptr->hand = controller.GetHandness();
-
-    std::vector<mojom::XRGamepadButtonPtr> buttons =
-        controller.GetWebVrButtons();
-    if (buttons.empty())
-      continue;
-    gamepad_ptr->buttons = std::move(buttons);
-
-    std::vector<double> axes = controller.GetWebVrAxes();
-    if (axes.empty())
-      continue;
-    gamepad_ptr->axes = std::move(axes);
-
-    gamepad_ptr->pose =
-        controller.GetPose(predicted_display_time, local_space_);
-    if (!gamepad_ptr->pose)
-      continue;
-    gamepad_ptr->can_provide_position = gamepad_ptr->pose->position.has_value();
-    gamepad_ptr->can_provide_orientation =
-        gamepad_ptr->pose->orientation.has_value();
-
-    gamepad_data_ptr->gamepads.push_back(std::move(gamepad_ptr));
-  }
-
-  return gamepad_data_ptr;
-}
-
 std::vector<mojom::XRInputSourceStatePtr> OpenXRInputHelper::GetInputState(
     XrTime predicted_display_time) {
   std::vector<mojom::XRInputSourceStatePtr> input_states;

@@ -27,6 +27,10 @@
             "mac": "system_health_desktop_040.wprgo",
             "win": "system_health_desktop_047.wprgo"
         },
+        "browse:media:youtube:2019": {
+            "DEFAULT": "system_health_desktop_d48f7fff0a.wprgo",
+            "linux": "system_health_desktop_d48f7fff0a.wprgo"
+        },
         "browse:media:youtubetv:2019": {
             "DEFAULT": "system_health_desktop_e53598d1f4.wprgo"
         },

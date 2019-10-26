@@ -20,7 +20,7 @@ class MediaStream;
 // The media stream provider for Media Remoting receiver.
 class StreamProvider final : public MediaResource {
  public:
-  StreamProvider(RpcBroker* rpc_broker, const base::Closure& error_callback);
+  StreamProvider(RpcBroker* rpc_broker, base::OnceClosure error_callback);
 
   ~StreamProvider() override;
 
@@ -52,8 +52,8 @@ class StreamProvider final : public MediaResource {
   // and audio streams are initialized or error occurs.
   base::Closure init_done_callback_;
 
-  // Run only once when first error occurs;
-  base::Closure error_callback_;
+  // Run when first error occurs;
+  base::OnceClosure error_callback_;
 
   base::WeakPtrFactory<StreamProvider> weak_factory_{this};
 

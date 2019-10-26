@@ -1264,6 +1264,9 @@
   <message name="IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
     <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
   </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_TEMPLATE" desc="Template for constructing the label for a network, to be read outloud by a screenreader or braile console.">
+    <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph> - <ph name="CONNECTION_STATUS">$2<ex>Connecting</ex></ph>
+  </message>
 
   <!-- Other Network UI strings -->
   <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">

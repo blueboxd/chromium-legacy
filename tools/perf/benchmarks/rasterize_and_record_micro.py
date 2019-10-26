@@ -44,7 +44,9 @@ class _RasterizeAndRecordMicro(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Info(
-    emails=['vmpstr@chromium.org'],
+    emails=['pdr@chromium.org',
+             'wangxianzhu@chromium.org',
+             'vmpstr@chromium.org'],
     component='Internals>Compositing>Rasterization',
     documentation_url='https://bit.ly/rasterize-and-record-benchmark')
 class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
@@ -59,7 +61,9 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
 
 
 @benchmark.Info(
-    emails=['vmpstr@chromium.org'],
+    emails=['pdr@chromium.org',
+             'wangxianzhu@chromium.org',
+             'vmpstr@chromium.org'],
     component='Internals>Compositing>Rasterization',
     documentation_url='https://bit.ly/rasterize-and-record-benchmark')
 class RasterizeAndRecordMicroPartialInvalidation(_RasterizeAndRecordMicro):

@@ -88,6 +88,9 @@ class FindBarView::MatchCountLabel : public views::Label {
   }
 
   void SetResult(const FindNotificationDetails& result) {
+    if (last_result_ && result == *last_result_)
+      return;
+
     last_result_ = result;
     SetText(l10n_util::GetStringFUTF16(
         IDS_FIND_IN_PAGE_COUNT,
@@ -419,7 +422,7 @@ void FindBarView::Find(const base::string16& search_text) {
   } else {
     find_tab_helper->StopFinding(FindOnPageSelectionAction::kClear);
     UpdateForResult(find_tab_helper->find_result(), base::string16());
-    find_bar_host_->MoveWindowIfNecessary(gfx::Rect());
+    find_bar_host_->MoveWindowIfNecessary();
 
     // Clearing the text box should clear the prepopulate state so that when
     // we close and reopen the Find box it doesn't show the search we just

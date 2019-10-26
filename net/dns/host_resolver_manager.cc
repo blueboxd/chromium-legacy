@@ -2229,6 +2229,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       proc_task_ = nullptr;
       KillDnsTask();
       mdns_task_ = nullptr;
+      job_running_ = false;
 
       if (dispatcher_) {
         // Signal dispatcher that a slot has opened.

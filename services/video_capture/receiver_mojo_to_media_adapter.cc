@@ -33,11 +33,11 @@ void ReceiverMojoToMediaAdapter::OnFrameReadyInBuffer(
         media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
         access_permission,
     media::mojom::VideoFrameInfoPtr frame_info) {
-  mojom::ScopedAccessPermissionPtr access_permission_proxy;
+  mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission_proxy;
   mojo::MakeStrongBinding<mojom::ScopedAccessPermission>(
       std::make_unique<ScopedAccessPermissionMediaToMojoAdapter>(
           std::move(access_permission)),
-      mojo::MakeRequest(&access_permission_proxy));
+      access_permission_proxy.InitWithNewPipeAndPassReceiver());
   receiver_->OnFrameReadyInBuffer(buffer_id, frame_feedback_id,
                                   std::move(access_permission_proxy),
                                   std::move(frame_info));

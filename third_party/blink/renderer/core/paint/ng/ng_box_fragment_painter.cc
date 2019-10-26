@@ -238,7 +238,28 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
     info.phase = PaintPhase::kDescendantOutlinesOnly;
   } else if (ShouldPaintSelfBlockBackground(original_phase)) {
     info.phase = PaintPhase::kSelfBlockBackgroundOnly;
-    PaintObject(info, paint_offset);
+    // With CompositeAfterPaint we need to call PaintObject twice: once for the
+    // background painting that does not scroll, and a second time for the
+    // background painting that scrolls.
+    // Without CompositeAfterPaint, this happens as the main graphics layer
+    // paints the background, and then the scrolling contents graphics layer
+    // paints the background.
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      auto paint_location = ToLayoutBox(*box_fragment_.GetLayoutObject())
+                                .GetBackgroundPaintLocation();
+      if (!(paint_location & kBackgroundPaintInGraphicsLayer))
+        info.SetSkipsBackground(true);
+      PaintObject(info, paint_offset);
+      info.SetSkipsBackground(false);
+
+      if (paint_location & kBackgroundPaintInScrollingContents) {
+        info.SetIsPaintingScrollingBackground(true);
+        PaintObject(info, paint_offset);
+        info.SetIsPaintingScrollingBackground(false);
+      }
+    } else {
+      PaintObject(info, paint_offset);
+    }
     if (ShouldPaintDescendantBlockBackgrounds(original_phase))
       info.phase = PaintPhase::kDescendantBlockBackgroundsOnly;
   }
@@ -1213,6 +1234,9 @@ void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info) {
 
 bool NGBoxFragmentPainter::IsPaintingScrollingBackground(
     const PaintInfo& paint_info) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return paint_info.IsPaintingScrollingBackground();
+
   // TODO(layout-dev): Change paint_info.PaintContainer to accept fragments
   // once LayoutNG supports scrolling containers.
   return paint_info.PaintFlags() & kPaintLayerPaintingOverflowContents &&

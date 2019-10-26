@@ -60,7 +60,7 @@ class CONTENT_EXPORT MediaPlayerRendererClient
   // and do not support encrypted media.
   void Initialize(media::MediaResource* media_resource,
                   media::RendererClient* client,
-                  const media::PipelineStatusCB& init_cb) override;
+                  media::PipelineStatusCallback init_cb) override;
   void SetCdm(media::CdmContext* cdm_context,
               const media::CdmAttachedCB& cdm_attached_cb) override;
 
@@ -97,7 +97,7 @@ class CONTENT_EXPORT MediaPlayerRendererClient
   // VideoFrames to |sink_| on the right thread.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
-  media::PipelineStatusCB init_cb_;
+  media::PipelineStatusCallback init_cb_;
 
   // This class is constructed on the main task runner, and used on
   // |media_task_runner_|. These member are used to delay calls to Bind() for

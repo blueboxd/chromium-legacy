@@ -73,16 +73,4 @@ public class ChromeDownloadDelegateTest {
         Assert.assertFalse(delegate.shouldInterceptContextMenuDownload("http://test/test.dd"));
         Assert.assertTrue(delegate.shouldInterceptContextMenuDownload("https://test/test.dm"));
     }
-
-    @Test
-    @SmallTest
-    @Feature({"Download"})
-    public void testGetFileExtension() {
-        Assert.assertEquals("ext", ChromeDownloadDelegate.getFileExtension("", "file.ext"));
-        Assert.assertEquals("ext", ChromeDownloadDelegate.getFileExtension("http://file.ext", ""));
-        Assert.assertEquals(
-                "txt", ChromeDownloadDelegate.getFileExtension("http://file.ext", "file.txt"));
-        Assert.assertEquals(
-                "txt", ChromeDownloadDelegate.getFileExtension("http://file.ext", "file name.txt"));
-    }
 }

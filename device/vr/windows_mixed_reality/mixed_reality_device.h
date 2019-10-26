@@ -22,14 +22,11 @@ namespace device {
 class DEVICE_VR_EXPORT MixedRealityDevice
     : public VRDeviceBase,
       public mojom::XRSessionController,
-      public mojom::IsolatedXRGamepadProviderFactory,
       public mojom::XRCompositorHost {
  public:
   MixedRealityDevice();
   ~MixedRealityDevice() override;
 
-  mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
-  BindGamepadFactory();
   mojo::PendingRemote<mojom::XRCompositorHost> BindCompositorHost();
 
  private:
@@ -40,11 +37,6 @@ class DEVICE_VR_EXPORT MixedRealityDevice
 
   // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
-
-  // mojom::IsolatedXRGamepadProviderFactory
-  void GetIsolatedXRGamepadProvider(
-      mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver)
-      override;
 
   // XRCompositorHost
   void CreateImmersiveOverlay(
@@ -59,10 +51,6 @@ class DEVICE_VR_EXPORT MixedRealityDevice
                               mojom::XRSessionPtr session);
 
   std::unique_ptr<XRCompositorCommon> render_loop_;
-
-  mojo::Receiver<mojom::IsolatedXRGamepadProviderFactory>
-      gamepad_provider_factory_receiver_{this};
-  mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver_;
 
   mojo::Receiver<mojom::XRCompositorHost> compositor_host_receiver_{this};
   mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver_;

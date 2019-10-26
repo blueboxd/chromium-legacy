@@ -279,8 +279,12 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
     }
     proxy->AppRegistryCache().ForEachApp([this, apps_vector](
                                              const apps::AppUpdate& update) {
-      if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)
+      if ((update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) ||
+          (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue &&
+           !(update.Recommendable() == apps::mojom::OptionalBool::kTrue &&
+             update.AppType() == apps::mojom::AppType::kBuiltIn))) {
         return;
+      }
 
       if (!std::strcmp(update.AppId().c_str(),
                        ash::kInternalAppIdContinueReading)) {

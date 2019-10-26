@@ -244,10 +244,8 @@ class FFmpegDemuxerTest : public testing::Test {
     struct ReadExpectation read_expectation(
         size, timestamp_us, discard_front_padding, is_key_frame, status);
 
-    return base::Bind(&FFmpegDemuxerTest::OnReadDone,
-                      base::Unretained(this),
-                      location,
-                      read_expectation);
+    return base::BindOnce(&FFmpegDemuxerTest::OnReadDone,
+                          base::Unretained(this), location, read_expectation);
   }
 
   MOCK_METHOD2(OnEncryptedMediaInitData,
@@ -293,7 +291,7 @@ class FFmpegDemuxerTest : public testing::Test {
     bool got_eos_buffer = false;
     const int kMaxBuffers = 170;
     for (int i = 0; !got_eos_buffer && i < kMaxBuffers; i++) {
-      stream->Read(base::Bind(&EosOnReadDone, &got_eos_buffer));
+      stream->Read(base::BindOnce(&EosOnReadDone, &got_eos_buffer));
       base::RunLoop().Run();
     }
 
@@ -1254,7 +1252,7 @@ static void ValidateAnnexB(DemuxerStream* stream,
     return;
   }
 
-  stream->Read(base::Bind(&ValidateAnnexB, stream));
+  stream->Read(base::BindOnce(&ValidateAnnexB, stream));
 }
 
 TEST_F(FFmpegDemuxerTest, IsValidAnnexB) {
@@ -1273,7 +1271,7 @@ TEST_F(FFmpegDemuxerTest, IsValidAnnexB) {
     ASSERT_TRUE(stream);
     stream->EnableBitstreamConverter();
 
-    stream->Read(base::Bind(&ValidateAnnexB, stream));
+    stream->Read(base::BindOnce(&ValidateAnnexB, stream));
     base::RunLoop().Run();
 
     demuxer_->Stop();
@@ -1759,8 +1757,8 @@ TEST_F(FFmpegDemuxerTest, StreamStatusNotifications) {
 
   audio_stream->FlushBuffers(true);
   video_stream->FlushBuffers(true);
-  audio_stream->Read(base::Bind(&OnReadDoneExpectEos));
-  video_stream->Read(base::Bind(&OnReadDoneExpectEos));
+  audio_stream->Read(base::BindOnce(&OnReadDoneExpectEos));
+  video_stream->Read(base::BindOnce(&OnReadDoneExpectEos));
 
   DisableAndEnableDemuxerTracks(demuxer_.get(), &task_environment_);
 }

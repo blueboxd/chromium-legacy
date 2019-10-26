@@ -78,7 +78,6 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
 
   EXPECT_EQ(input, body->FirstChild());
   EXPECT_EQ(button, body->LastChild());
-  EXPECT_EQ(button, body->DeepestLastChild());
 
   ASSERT_NE(nullptr, paragraph->FirstChild());
   EXPECT_EQ(ax::mojom::Role::kStaticText, paragraph->FirstChild()->RoleValue());
@@ -97,6 +96,14 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
   EXPECT_EQ(ax::mojom::Role::kStaticText, br->NextSibling()->RoleValue());
   ASSERT_NE(nullptr, br->PreviousSibling());
   EXPECT_EQ(ax::mojom::Role::kStaticText, br->PreviousSibling()->RoleValue());
+
+  ASSERT_NE(nullptr, button->FirstChild());
+  EXPECT_EQ(ax::mojom::Role::kStaticText, button->FirstChild()->RoleValue());
+  ASSERT_NE(nullptr, button->LastChild());
+  EXPECT_EQ(ax::mojom::Role::kStaticText, button->LastChild()->RoleValue());
+  ASSERT_NE(nullptr, button->DeepestFirstChild());
+  EXPECT_EQ(ax::mojom::Role::kStaticText,
+            paragraph->DeepestFirstChild()->RoleValue());
 }
 
 TEST_F(AccessibilityTest, TreeNavigationWithIgnoredContainer) {
@@ -233,23 +240,23 @@ TEST_F(AccessibilityTest, AXObjectAncestorsIterator) {
 }
 
 TEST_F(AccessibilityTest, AXObjectInOrderTraversalIterator) {
-  SetBodyInnerHTML(R"HTML(<button id="button">Button</button>)HTML");
+  SetBodyInnerHTML(R"HTML(<input type="checkbox" id="checkbox">)HTML");
 
   AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
-  AXObject* button = GetAXObjectByElementId("button");
-  ASSERT_NE(nullptr, button);
+  AXObject* checkbox = GetAXObjectByElementId("checkbox");
+  ASSERT_NE(nullptr, checkbox);
 
   AXObject::InOrderTraversalIterator iter = root->GetInOrderTraversalIterator();
   EXPECT_EQ(*root, *iter);
   ++iter;  // Skip the generic container which is an ignored object.
   EXPECT_NE(GetAXObjectCache().InOrderTraversalEnd(), iter);
-  EXPECT_EQ(*button, *++iter);
-  EXPECT_EQ(ax::mojom::Role::kButton, iter->RoleValue());
-  EXPECT_EQ(*button, *iter++);
+  EXPECT_EQ(*checkbox, *++iter);
+  EXPECT_EQ(ax::mojom::Role::kCheckBox, iter->RoleValue());
+  EXPECT_EQ(*checkbox, *iter++);
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalEnd(), iter);
-  EXPECT_EQ(*button, *--iter);
-  EXPECT_EQ(*button, *iter--);
+  EXPECT_EQ(*checkbox, *--iter);
+  EXPECT_EQ(*checkbox, *iter--);
   --iter;  // Skip the generic container which is an ignored object.
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, iter->RoleValue());
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalBegin(), iter);

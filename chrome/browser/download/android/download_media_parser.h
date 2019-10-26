@@ -23,6 +23,7 @@
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 #include "media/base/media_log.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 class GpuVideoAcceleratorFactories;
@@ -123,7 +124,7 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
   // MojoVideoDecoder.
   media::VideoDecoderConfig config_;
   std::unique_ptr<media::VideoThumbnailDecoder> decoder_;
-  media::mojom::InterfaceFactoryPtr media_interface_factory_;
+  mojo::Remote<media::mojom::InterfaceFactory> media_interface_factory_;
   std::unique_ptr<media::MediaInterfaceProvider> media_interface_provider_;
   std::unique_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
   bool decode_done_;

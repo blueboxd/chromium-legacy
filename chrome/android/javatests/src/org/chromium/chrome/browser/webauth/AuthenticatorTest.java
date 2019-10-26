@@ -62,6 +62,12 @@ public class AuthenticatorTest {
                 RenderFrameHost frameHost, HandlerResponseCallback callback) {
             callback.onError(AuthenticatorStatus.NOT_IMPLEMENTED);
         }
+
+        @Override
+        protected void isUserVerifyingPlatformAuthenticatorAvailable(
+                RenderFrameHost frameHost, HandlerResponseCallback callback) {
+            callback.onIsUserVerifyingPlatformAuthenticatorAvailableResponse(false);
+        }
     }
 
     /** Waits until the JavaScript code supplies a result. */
@@ -153,6 +159,7 @@ public class AuthenticatorTest {
     @Feature({"WebAuth"})
     public void testIsUserVerifyingPlatformAuthenticatorAvailable() throws Exception {
         mActivityTestRule.loadUrl(mUrl);
+        Fido2ApiHandler.overrideInstanceForTesting(mMockHandler);
         mActivityTestRule.runJavaScriptCodeInCurrentTab(
                 "doIsUserVerifyingPlatformAuthenticatorAvailable()");
         Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());

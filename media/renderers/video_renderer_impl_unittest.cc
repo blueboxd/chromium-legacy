@@ -37,7 +37,6 @@
 #include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::base::test::RunCallback;
 using ::base::test::RunClosure;
 using ::base::test::RunOnceCallback;
 using ::testing::_;
@@ -103,9 +102,10 @@ class VideoRendererImplTest : public testing::Test {
     demuxer_stream_.set_video_decoder_config(TestVideoConfig::Normal());
 
     // We expect these to be called but we don't care how/when.
-    EXPECT_CALL(demuxer_stream_, Read(_)).WillRepeatedly(
-        RunCallback<0>(DemuxerStream::kOk,
-                       scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
+    EXPECT_CALL(demuxer_stream_, OnRead(_))
+        .WillRepeatedly(RunOnceCallback<0>(
+            DemuxerStream::kOk,
+            scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
   }
 
   ~VideoRendererImplTest() override = default;
@@ -270,9 +270,9 @@ class VideoRendererImplTest : public testing::Test {
     DCHECK(decode_cb_);
 
     // Return EOS buffer to trigger EOS frame.
-    EXPECT_CALL(demuxer_stream_, Read(_))
-        .WillOnce(RunCallback<0>(DemuxerStream::kOk,
-                                 DecoderBuffer::CreateEOSBuffer()));
+    EXPECT_CALL(demuxer_stream_, OnRead(_))
+        .WillOnce(RunOnceCallback<0>(DemuxerStream::kOk,
+                                     DecoderBuffer::CreateEOSBuffer()));
 
     // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
     task_environment_.GetMainThreadTaskRunner()->PostTask(
@@ -912,8 +912,8 @@ TEST_F(VideoRendererImplTest, VideoConfigChange) {
       .WillRepeatedly(Return(true));
 
   // Signal a config change at the next DemuxerStream::Read().
-  EXPECT_CALL(demuxer_stream_, Read(_))
-      .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged, nullptr));
+  EXPECT_CALL(demuxer_stream_, OnRead(_))
+      .WillOnce(RunOnceCallback<0>(DemuxerStream::kConfigChanged, nullptr));
 
   // Use LargeEncrypted config (non-default) to ensure its plumbed through to
   // callback.

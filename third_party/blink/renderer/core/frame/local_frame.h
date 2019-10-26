@@ -457,6 +457,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
       GetTextSurroundingSelectionCallback callback) final;
   void SendInterventionReport(const String& id, const String& message) final;
   void NotifyUserActivation() final;
+  void AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
+                           const WTF::String& message,
+                           bool discard_duplicates) final;
 
  private:
   friend class FrameNavigationDisabler;

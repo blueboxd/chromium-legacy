@@ -532,14 +532,15 @@ MediaFactory::CreateRendererFactorySelector(
   }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  media::mojom::RemotingSourcePtr remoting_source;
-  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
-  media::mojom::RemoterPtr remoter;
+  mojo::PendingRemote<media::mojom::RemotingSource> remoting_source;
+  auto remoting_source_receiver =
+      remoting_source.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<media::mojom::Remoter> remoter;
   GetRemoterFactory()->Create(std::move(remoting_source),
-                              mojo::MakeRequest(&remoter));
+                              remoter.InitWithNewPipeAndPassReceiver());
   using RemotingController = media::remoting::RendererController;
   auto remoting_controller = std::make_unique<RemotingController>(
-      std::move(remoting_source_request), std::move(remoter));
+      std::move(remoting_source_receiver), std::move(remoter));
   *out_media_observer = remoting_controller->GetWeakPtr();
 
   auto courier_factory =

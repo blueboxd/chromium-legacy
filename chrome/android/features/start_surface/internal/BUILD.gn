@@ -123,4 +123,11 @@ android_library("java") {
   } else {
     java_files += [ "dummy/java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceCoordinator.java" ]
   }
+
+  if (!is_java_debug) {
+    if (!defined(proguard_configs)) {
+      proguard_configs = []
+    }
+    proguard_configs += [ "proguard.flags" ]
+  }
 }

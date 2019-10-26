@@ -621,6 +621,7 @@ TemplateURL* TemplateURLService::CreateOrUpdateTemplateURLFromPlayAPIData(
     const base::string16& title,
     const base::string16& keyword,
     const std::string& search_url,
+    const std::string& suggestions_url,
     const std::string& favicon_url) {
   TemplateURL* existing_turl = FindNonExtensionTemplateURLForKeyword(keyword);
   TemplateURLData data;
@@ -629,6 +630,7 @@ TemplateURL* TemplateURLService::CreateOrUpdateTemplateURLFromPlayAPIData(
   data.SetShortName(title);
   data.SetKeyword(keyword);
   data.SetURL(search_url);
+  data.suggestions_url = suggestions_url;
   data.favicon_url = GURL(favicon_url);
   data.safe_for_autoreplace = true;
   data.created_from_play_api = true;

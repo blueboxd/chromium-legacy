@@ -8,9 +8,9 @@ import android.support.v7.app.AppCompatDelegate;
 
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 
 import java.util.Arrays;

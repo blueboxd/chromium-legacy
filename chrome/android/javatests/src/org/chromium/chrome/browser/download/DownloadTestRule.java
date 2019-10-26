@@ -19,7 +19,6 @@ import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -244,8 +243,7 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
         mActivityStart.customMainActivityStart();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
-                    DownloadPromptStatus.DONT_SHOW);
+            DownloadUtils.setPromptForDownloadAndroid(DownloadPromptStatus.DONT_SHOW);
         });
 
         cleanUpAllDownloads();

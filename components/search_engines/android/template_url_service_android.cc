@@ -244,6 +244,7 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
     const base::android::JavaParamRef<jstring>& jname,
     const base::android::JavaParamRef<jstring>& jkeyword,
     const base::android::JavaParamRef<jstring>& jsearch_url,
+    const base::android::JavaParamRef<jstring>& jsuggest_url,
     const base::android::JavaParamRef<jstring>& jfavicon_url) {
   // Check if there is already a search engine created from Play API.
   TemplateURLService::TemplateURLVector template_urls =
@@ -258,12 +259,18 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
       base::android::ConvertJavaStringToUTF16(env, jkeyword);
   base::string16 name = base::android::ConvertJavaStringToUTF16(env, jname);
   std::string search_url = base::android::ConvertJavaStringToUTF8(jsearch_url);
-  std::string favicon_url =
-      base::android::ConvertJavaStringToUTF8(jfavicon_url);
+  std::string suggest_url;
+  if (jsuggest_url) {
+    suggest_url = base::android::ConvertJavaStringToUTF8(jsuggest_url);
+  }
+  std::string favicon_url;
+  if (jfavicon_url) {
+    favicon_url = base::android::ConvertJavaStringToUTF8(jfavicon_url);
+  }
 
   TemplateURL* t_url =
       template_url_service_->CreateOrUpdateTemplateURLFromPlayAPIData(
-          name, keyword, search_url, favicon_url);
+          name, keyword, search_url, suggest_url, favicon_url);
 
   if (template_url_service_->CanMakeDefault(t_url))
     template_url_service_->SetUserSelectedDefaultSearchProvider(t_url);

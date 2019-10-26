@@ -10,8 +10,8 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * Fragment that allows the user to configure homepage related preferences.

@@ -488,7 +488,7 @@ class ContextualSearchPolicy {
         // TODO(donnd) use dependency injection for the PrefServiceBridge instead!
         if (mDidOverrideDecidedStateForTesting) return !mDecidedStateForTesting;
 
-        return PrefServiceBridge.getInstance().isContextualSearchUninitialized();
+        return ContextualSearchManager.isContextualSearchUninitialized();
     }
 
     /**

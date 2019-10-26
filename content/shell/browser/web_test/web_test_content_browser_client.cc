@@ -41,6 +41,7 @@
 #include "content/test/mock_platform_notification_service.h"
 #include "device/bluetooth/test/fake_bluetooth.h"
 #include "gpu/config/gpu_switches.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "url/origin.h"
 
@@ -49,9 +50,9 @@ namespace {
 
 WebTestContentBrowserClient* g_web_test_browser_client;
 
-void BindWebTestHelper(mojom::MojoWebTestHelperRequest request,
+void BindWebTestHelper(mojo::PendingReceiver<mojom::MojoWebTestHelper> receiver,
                        RenderFrameHost* render_frame_host) {
-  MojoWebTestHelper::Create(std::move(request));
+  MojoWebTestHelper::Create(std::move(receiver));
 }
 
 class TestOverlayWindow : public OverlayWindow {

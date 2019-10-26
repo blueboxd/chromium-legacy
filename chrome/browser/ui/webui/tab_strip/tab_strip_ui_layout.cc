@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -42,11 +43,14 @@ TabStripUILayout TabStripUILayout::CalculateForWebViewportSize(
 
 base::Value TabStripUILayout::AsDictionary() const {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetIntKey("--tabstrip-tab-list-padding", padding_around_tab_list);
-  dict.SetIntKey("--tabstrip-tab-title-height", tab_title_height);
-  dict.SetIntKey("--tabstrip-tab-thumbnail-width", tab_thumbnail_size.width());
-  dict.SetIntKey("--tabstrip-tab-thumbnail-height",
-                 tab_thumbnail_size.height());
+  dict.SetStringKey("--tabstrip-tab-list-padding",
+                    base::NumberToString(padding_around_tab_list) + "px");
+  dict.SetStringKey("--tabstrip-tab-title-height",
+                    base::NumberToString(tab_title_height) + "px");
+  dict.SetStringKey("--tabstrip-tab-thumbnail-width",
+                    base::NumberToString(tab_thumbnail_size.width()) + "px");
+  dict.SetStringKey("--tabstrip-tab-thumbnail-height",
+                    base::NumberToString(tab_thumbnail_size.height()) + "px");
   return dict;
 }
 

@@ -150,12 +150,38 @@ static void JNI_PrefServiceBridge_SetBoolean(JNIEnv* env,
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index), j_value);
 }
 
+static jint JNI_PrefServiceBridge_GetInteger(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj,
+                                             const jint j_pref_index) {
+  return GetPrefService()->GetInteger(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index));
+}
+
 static void JNI_PrefServiceBridge_SetInteger(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj,
                                              const jint j_pref_index,
                                              const jint j_value) {
   GetPrefService()->SetInteger(
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index), j_value);
+}
+
+static ScopedJavaLocalRef<jstring> JNI_PrefServiceBridge_GetString(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const jint j_pref_index) {
+  return ConvertUTF8ToJavaString(
+      env, GetPrefService()->GetString(
+               PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index)));
+}
+
+static void JNI_PrefServiceBridge_SetString(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const jint j_pref_index,
+    const JavaParamRef<jstring>& j_value) {
+  GetPrefService()->SetString(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index),
+      ConvertJavaStringToUTF8(env, j_value));
 }
 
 static jboolean JNI_PrefServiceBridge_IsManagedPreference(
@@ -952,28 +978,6 @@ static jboolean JNI_PrefServiceBridge_GetMicManagedByCustodian(
              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
 }
 
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetContextualSearchPreference(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kContextualSearchEnabled));
-}
-
-static jboolean JNI_PrefServiceBridge_GetContextualSearchPreferenceIsManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(prefs::kContextualSearchEnabled);
-}
-
-static void JNI_PrefServiceBridge_SetContextualSearchPreference(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& pref) {
-  GetPrefService()->SetString(prefs::kContextualSearchEnabled,
-      ConvertJavaStringToUTF8(env, pref));
-}
-
 static void JNI_PrefServiceBridge_SetNetworkPredictionEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -1316,19 +1320,6 @@ static void JNI_PrefServiceBridge_SetDownloadAndSaveFileDefaultDirectory(
   base::FilePath path(ConvertJavaStringToUTF8(env, directory));
   GetPrefService()->SetFilePath(prefs::kDownloadDefaultDirectory, path);
   GetPrefService()->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
-}
-
-static jint JNI_PrefServiceBridge_GetPromptForDownloadAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetInteger(prefs::kPromptForDownloadAndroid);
-}
-
-static void JNI_PrefServiceBridge_SetPromptForDownloadAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const jint status) {
-  GetPrefService()->SetInteger(prefs::kPromptForDownloadAndroid, status);
 }
 
 static jboolean JNI_PrefServiceBridge_GetExplicitLanguageAskPromptShown(

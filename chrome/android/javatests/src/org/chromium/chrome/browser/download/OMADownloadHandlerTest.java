@@ -170,12 +170,12 @@ public class OMADownloadHandlerTest {
         info.addAttributeValue("type", "text/html");
         Assert.assertEquals(info.getDrmType(), null);
 
-        info.addAttributeValue("type", OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
-        Assert.assertEquals(info.getDrmType(), OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
+        info.addAttributeValue("type", MimeUtils.OMA_DRM_MESSAGE_MIME);
+        Assert.assertEquals(info.getDrmType(), MimeUtils.OMA_DRM_MESSAGE_MIME);
 
         // Test that only the first DRM MIME type is returned.
-        info.addAttributeValue("type", OMADownloadHandler.OMA_DRM_CONTENT_MIME);
-        Assert.assertEquals(info.getDrmType(), OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
+        info.addAttributeValue("type", MimeUtils.OMA_DRM_CONTENT_MIME);
+        Assert.assertEquals(info.getDrmType(), MimeUtils.OMA_DRM_MESSAGE_MIME);
     }
 
     /**
@@ -189,8 +189,7 @@ public class OMADownloadHandlerTest {
         Assert.assertEquals(OMADownloadHandler.getOpennableType(info), null);
 
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE, "application/octet-stream");
-        info.addAttributeValue(OMADownloadHandler.OMA_TYPE,
-                OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
+        info.addAttributeValue(OMADownloadHandler.OMA_TYPE, MimeUtils.OMA_DRM_MESSAGE_MIME);
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE, "text/html");
         Assert.assertEquals(OMADownloadHandler.getOpennableType(info), null);
 
@@ -235,8 +234,8 @@ public class OMADownloadHandlerTest {
         Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_DESCRIPTION), "testjpg");
         Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_NEXT_URL), "http://nexturl.html");
         List<String> types = info.getTypes();
-        Assert.assertThat(types,
-                Matchers.containsInAnyOrder("image/jpeg", OMADownloadHandler.OMA_DRM_MESSAGE_MIME));
+        Assert.assertThat(
+                types, Matchers.containsInAnyOrder("image/jpeg", MimeUtils.OMA_DRM_MESSAGE_MIME));
     }
 
     /**

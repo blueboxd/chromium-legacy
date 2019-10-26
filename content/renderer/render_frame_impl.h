@@ -1127,9 +1127,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSelectRange(const gfx::Point& base, const gfx::Point& extent);
   void OnCopyImageAt(int x, int y);
   void OnSaveImageAt(int x, int y);
-  void OnAddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
-                             const std::string& message,
-                             bool discard_duplicates);
   void OnVisualStateRequest(uint64_t key);
   // TODO(https://crbug.com/995428): Deprecated.
   void OnReload();

@@ -359,10 +359,8 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // code calls back into us to find the bounding box the find bar
   // must be laid out within, and that code depends on the
   // TabContentsContainer's bounds being up to date.
-  if (browser()->HasFindBarController()) {
-    browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
-        gfx::Rect());
-  }
+  if (browser()->HasFindBarController())
+    browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary();
 
   // Adjust the fullscreen exit bubble bounds for |top_container_|'s new bounds.
   // This makes the fullscreen exit bubble look like it animates with

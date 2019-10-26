@@ -77,8 +77,8 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/url_util.h"
 
@@ -460,13 +460,13 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
       // chunk of HTML.
 
       // Leave cache headers out of generated background page jobs.
-      network::ResourceResponseHead head;
+      auto head = network::mojom::URLResponseHead::New();
       const bool send_cors_headers = false;
-      head.headers = BuildHttpHeaders(content_security_policy,
-                                      send_cors_headers, base::Time());
+      head->headers = BuildHttpHeaders(content_security_policy,
+                                       send_cors_headers, base::Time());
       std::string contents;
-      GenerateBackgroundPageContents(extension.get(), &head.mime_type,
-                                     &head.charset, &contents);
+      GenerateBackgroundPageContents(extension.get(), &head->mime_type,
+                                     &head->charset, &contents);
       uint32_t size = base::saturated_cast<uint32_t>(contents.size());
       mojo::DataPipe pipe(size);
       MojoResult result = pipe.producer_handle->WriteData(
@@ -476,7 +476,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
         return;
       }
 
-      client->OnReceiveResponse(head);
+      client->OnReceiveResponse(std::move(head));
       client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
       client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
       return;

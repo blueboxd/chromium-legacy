@@ -996,7 +996,7 @@
   },
   {
     "prefix": "controls-refresh-high-contrast",
-    "base": "fast/forms/controls-new-ui-high-contrast",
+    "base": "fast/forms/controls-new-ui/color-scheme-validation",
     "args": ["--enable-features=FormControlsRefresh",
              "--force-high-contrast",
              "--enable-blink-features=ForcedColors"]
@@ -1020,6 +1020,11 @@
     "prefix": "forced-high-contrast-colors",
     "base": "fast/css/forced-colors-mode",
     "args": ["--force-high-contrast", "--enable-blink-features=ForcedColors"]
+  },
+  {
+    "prefix": "forced-high-contrast-colors",
+    "base": "html/details_summary/color-scheme-validation",
+    "args": [ "--force-high-contrast", "--enable-blink-features=ForcedColors"]
   },
   {
     "prefix": "force-defer-script",
@@ -1140,5 +1145,15 @@
     "prefix": "import-maps-without-builtin-modules",
     "base": "external/wpt/import-maps",
     "args": ["--enable-blink-features=ImportMaps", "--disable-blink-features=ExperimentalProductivityFeatures"]
+  },
+  {
+    "prefix": "overlay-scrollbar",
+    "base": "tests",
+    "args": ["--enable-features=OverlayScrollbar"]
+  },
+  {
+    "prefix": "non-overlay-scrollbar",
+    "base": "tests",
+    "args": ["--disable-features=OverlayScrollbar"]
   }
 ]

@@ -27,6 +27,9 @@ class TaskRunner;
 
 namespace storage {
 class BlobStorageContext;
+namespace mojom {
+class BlobStorageContext;
+}
 }
 
 namespace content {
@@ -54,6 +57,10 @@ class CONTENT_EXPORT ChromeBlobStorageContext
                             scoped_refptr<base::TaskRunner> file_task_runner);
 
   storage::BlobStorageContext* context() const;
+
+  // Return a BlobStorageContext mojo interface to be used by storage apis.
+  // This interface should not be exposed to renderers.
+  mojo::PendingRemote<storage::mojom::BlobStorageContext> MojoContext() const;
 
   // Returns a NULL scoped_ptr on failure.
   std::unique_ptr<BlobHandle> CreateMemoryBackedBlob(

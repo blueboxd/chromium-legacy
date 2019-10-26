@@ -81,6 +81,10 @@ constexpr SkColor kInkDropRippleColor = SkColorSetARGB(0x14, 0xFF, 0xFF, 0xFF);
 constexpr SkColor kFocusRingColor = gfx::kGoogleBlue300;
 constexpr int kFocusRingWidth = 2;
 
+// THe bounds for the tap target of the expand arrow button.
+constexpr int kTapTargetWidth = 156;
+constexpr int kTapTargetHeight = 72;
+
 }  // namespace
 
 ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
@@ -392,10 +396,10 @@ bool ExpandArrowView::DoesIntersectRect(const views::View* target,
   gfx::Rect button_bounds = GetLocalBounds();
   // Increase clickable area for the button from
   // (kTileWidth x height) to
-  // (3 * height - width).
-  int horizontal_padding =
-      button_bounds.width() - (button_bounds.height() * 1.5);
-  button_bounds.Inset(gfx::Insets(0, horizontal_padding));
+  // (kTapTargetWidth x kTapTargetHeight).
+  const int horizontal_padding = (kTapTargetWidth - button_bounds.width()) / 2;
+  const int vertical_padding = (kTapTargetHeight - button_bounds.height()) / 2;
+  button_bounds.Inset(-horizontal_padding, -vertical_padding);
   return button_bounds.Intersects(rect);
 }
 

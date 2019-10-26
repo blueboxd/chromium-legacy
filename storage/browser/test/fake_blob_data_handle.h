@@ -12,33 +12,29 @@
 
 namespace storage {
 
+// All callbacks in the FakeBlobDataHandle are called synchronously.
 class FakeBlobDataHandle : public BlobDataItem::DataHandle {
  public:
   FakeBlobDataHandle(std::string body_data, std::string side_data);
 
-  void EnableDelayedReading();
-  bool HasPendingReadCallbacks() const;
-  void RunPendingReadCallbacks();
-
+  // BlobDataItem::DataHandle implementation.
   uint64_t GetSize() const override;
-  int Read(scoped_refptr<net::IOBuffer> dst_buffer,
-           uint64_t src_offset,
-           int bytes_to_read,
-           base::OnceCallback<void(int)> callback) override;
+  void Read(mojo::ScopedDataPipeProducerHandle producer,
+            uint64_t src_offset,
+            uint64_t bytes_to_read,
+            base::OnceCallback<void(int)> callback) override;
 
   uint64_t GetSideDataSize() const override;
-  int ReadSideData(scoped_refptr<net::IOBuffer> dst_buffer,
-                   base::OnceCallback<void(int)> callback) override;
+  void ReadSideData(
+      base::OnceCallback<void(int, mojo_base::BigBuffer)> callback) override;
+  void PrintTo(::std::ostream* os) const override {}
+  const char* BytesReadHistogramLabel() const override;
 
  private:
   ~FakeBlobDataHandle() override;
 
-  int PendingCallback(base::OnceCallback<void(int)> callback, int result);
-
   const std::string body_data_;
   const std::string side_data_;
-  std::vector<base::OnceClosure> pending_read_callbacks_;
-  bool delayed_reading_ = false;
 };
 
 }  // namespace storage

@@ -69,7 +69,10 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
   }
 
  private:
+  class Border;
+
   UnifiedSystemTray* const tray_;
+  std::unique_ptr<Border> border_;
 
   views::Widget* bubble_widget_ = nullptr;
   TrayBubbleView* bubble_view_ = nullptr;

@@ -1,4 +1,10 @@
 <!DOCTYPE HTML>
+<script>
+if (window.internals) {
+    internals.useMockOverlayScrollbars();
+    internals.settings.setPreferCompositingToLCDTextEnabled(false);
+}
+</script>
 <style>
 #container {
     -webkit-box-reflect: below;
@@ -33,12 +39,6 @@
     background: green;
 }
 </style>
-<script>
-if (window.internals) {
-    internals.runtimeFlags.overlayScrollbarsEnabled = true;
-    internals.settings.setPreferCompositingToLCDTextEnabled(false);
-}
-</script>
 <div id="container">
   <div id="clipper">
     <div id="scroller">

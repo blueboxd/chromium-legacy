@@ -103,11 +103,8 @@ void SetSecFetchSiteHeader(
 // Sec-Fetch-Mode
 void SetSecFetchModeHeader(net::URLRequest* request,
                            network::mojom::RequestMode mode) {
-  std::string header_value = "no-cors";
-  header_value = RequestModeToString(mode);
-  if (mode == network::mojom::RequestMode::kNavigateNestedFrame) {
-    header_value = "nested-navigate";
-  } else if (mode == network::mojom::RequestMode::kNavigateNestedObject) {
+  std::string header_value = RequestModeToString(mode);
+  if (mode == network::mojom::RequestMode::kNavigateNestedObject) {
     // TODO(mkwst): We might want this to be something more specific:
     // https://github.com/w3c/webappsec-fetch-metadata/issues/37.
     header_value = "no-cors";

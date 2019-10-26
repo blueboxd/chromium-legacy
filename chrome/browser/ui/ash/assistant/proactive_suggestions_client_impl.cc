@@ -118,6 +118,14 @@ void ProactiveSuggestionsClientImpl::DidStartNavigation(
   SetActiveUrl(active_contents_->GetURL());
 }
 
+void ProactiveSuggestionsClientImpl::OnAssistantFeatureAllowedChanged(
+    ash::mojom::AssistantAllowedState state) {
+  // When the Assistant feature is allowed/disallowed we may need to resume/
+  // pause observation of the browser. We accomplish this by updating active
+  // state.
+  UpdateActiveState();
+}
+
 void ProactiveSuggestionsClientImpl::OnAssistantSettingsEnabled(bool enabled) {
   // When Assistant is enabled/disabled in settings we may need to resume/pause
   // observation of the browser. We accomplish this by updating active state.
@@ -209,10 +217,12 @@ void ProactiveSuggestionsClientImpl::UpdateActiveState() {
   auto* tab_strip_model = active_browser_->tab_strip_model();
 
   // We never observe browsers that are off the record and we never observe
-  // browsers when the user has disabled either Assistant or screen context. We
-  // also don't observe the browser when the user has disabled history sync or
-  // is using a sync passphrase.
+  // browsers when the Assistant feature is not allowed. We also don't observe
+  // the browser when the user has disabled either Assistant or screen context
+  // or when the user has disabled history sync or is using a sync passphrase.
   if (active_browser_->profile()->IsOffTheRecord() ||
+      ash::AssistantState::Get()->allowed_state() !=
+          ash::mojom::AssistantAllowedState::ALLOWED ||
       !ash::AssistantState::Get()->settings_enabled().value_or(false) ||
       !ash::AssistantState::Get()->context_enabled().value_or(false) ||
       !IsHistorySyncEnabledWithoutPassphrase(profile_)) {

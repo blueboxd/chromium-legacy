@@ -96,6 +96,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult ValidatePath(XrPath path) const;
   XrResult ValidatePredictedDisplayTime(XrTime time) const;
   XrResult ValidateXrPosefIsIdentity(const XrPosef& pose) const;
+  XrResult ValidateViews(uint32_t view_capacity_input, XrView* views) const;
 
   // Properties of the mock OpenXR runtime that does not change are created
   // as static variables.

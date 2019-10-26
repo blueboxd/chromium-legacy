@@ -337,7 +337,7 @@ void MediaNotificationView::UpdateWithMediaMetadata(
 }
 
 void MediaNotificationView::UpdateWithMediaActions(
-    const std::set<media_session::mojom::MediaSessionAction>& actions) {
+    const base::flat_set<media_session::mojom::MediaSessionAction>& actions) {
   enabled_actions_ = actions;
 
   header_row_->SetExpandButtonEnabled(IsExpandable());
@@ -367,10 +367,10 @@ void MediaNotificationView::UpdateWithMediaArtwork(
 }
 
 void MediaNotificationView::UpdateActionButtonsVisibility() {
-  std::set<MediaSessionAction> ignored_actions = {
+  base::flat_set<MediaSessionAction> ignored_actions = {
       GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};
 
-  std::set<MediaSessionAction> visible_actions =
+  base::flat_set<MediaSessionAction> visible_actions =
       GetTopVisibleActions(enabled_actions_, ignored_actions,
                            GetMaxNumActions(IsActuallyExpanded()));
 
@@ -461,7 +461,7 @@ bool MediaNotificationView::IsExpandable() const {
   if (forced_expanded_state_.has_value())
     return false;
 
-  std::set<MediaSessionAction> ignored_actions = {
+  base::flat_set<MediaSessionAction> ignored_actions = {
       GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};
 
   // If we can show more notifications if we were expanded then we should be

@@ -69,7 +69,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
                                 const String& by_string) final;
   void CalculateAnimatedValue(float percentage,
                               unsigned repeat_count,
-                              SVGSMILElement* result_element) final;
+                              SVGSMILElement* result_element) const final;
   void ApplyResultsToTarget() final;
   float CalculateDistance(const String& from_string,
                           const String& to_string) final;

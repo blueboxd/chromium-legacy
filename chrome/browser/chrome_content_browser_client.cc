@@ -4124,10 +4124,10 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 void ChromeContentBrowserClient::CreateMediaRemoter(
     content::RenderFrameHost* render_frame_host,
-    media::mojom::RemotingSourcePtr source,
-    media::mojom::RemoterRequest request) {
+    mojo::PendingRemote<media::mojom::RemotingSource> source,
+    mojo::PendingReceiver<media::mojom::Remoter> receiver) {
   CastRemotingConnector::CreateMediaRemoter(
-      render_frame_host, std::move(source), std::move(request));
+      render_frame_host, std::move(source), std::move(receiver));
 }
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 

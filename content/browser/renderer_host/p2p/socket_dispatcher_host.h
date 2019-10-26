@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "content/public/browser/render_process_host.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/p2p.mojom.h"
 #include "services/network/public/mojom/p2p_trusted.mojom.h"
 
@@ -55,7 +55,7 @@ class P2PSocketDispatcherHost
   bool dump_outgoing_rtp_packet_ = false;
   RenderProcessHost::WebRtcRtpPacketCallback packet_callback_;
 
-  mojo::Binding<network::mojom::P2PTrustedSocketManagerClient> binding_;
+  mojo::Receiver<network::mojom::P2PTrustedSocketManagerClient> receiver_{this};
   network::mojom::P2PTrustedSocketManagerPtr trusted_socket_manager_;
 
   network::mojom::P2PNetworkNotificationClientPtr network_notification_client_;

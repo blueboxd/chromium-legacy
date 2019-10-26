@@ -3033,6 +3033,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="kVoiceInput"/>
   <int value="6" label="kProactiveSuggestions"/>
   <int value="7" label="kLibAssistantInitiated"/>
+  <int value="8" label="kWarmerWelcome"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">
@@ -25187,6 +25188,11 @@ Called by update_net_error_codes.py.-->
   <int value="3064" label="V8RegExpExecCalledOnSlowRegExp"/>
   <int value="3065" label="V8RegExpReplaceCalledOnSlowRegExp"/>
   <int value="3066" label="HasMarkerPseudoElement"/>
+  <int value="3067" label="WindowMove"/>
+  <int value="3068" label="WindowResize"/>
+  <int value="3069" label="MovedOrResizedPopup"/>
+  <int value="3070" label="MovedOrResizedPopup2sAfterCreation"/>
+  <int value="3071" label="DOMWindowOpenPositioningFeatures"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35309,6 +35315,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2106960993" label="HarfBuzzPDFSubsetter:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
   <int value="-2104950596" label="HandwritingGesture:enabled"/>
+  <int value="-2104654357" label="GamesHub:enabled"/>
   <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
   <int value="-2101337189" label="AutofillOffNoServerData:disabled"/>
   <int value="-2099457894" label="Mash:enabled"/>
@@ -38191,6 +38198,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentWhiteBackgroundOnBlur:disabled"/>
   <int value="1617187093" label="enable-improved-a2hs"/>
   <int value="1618633341" label="MashOopViz:enabled"/>
+  <int value="1619516032" label="GamesHub:disabled"/>
   <int value="1620369597" label="enable-unsafe-webgpu"/>
   <int value="1621298798" label="VrBrowserKeyboard:enabled"/>
   <int value="1622131033" label="ozone-test-single-overlay-support"/>

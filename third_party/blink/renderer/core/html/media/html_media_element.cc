@@ -691,7 +691,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::InsertedInto(
   HTMLElement::InsertedInto(insertion_point);
   if (insertion_point.isConnected()) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLMediaElementInDocument);
-    if ((!getAttribute(html_names::kSrcAttr).IsEmpty() || src_object_) &&
+    if ((!FastGetAttribute(html_names::kSrcAttr).IsEmpty() || src_object_) &&
         network_state_ == kNetworkEmpty) {
       ignore_preload_none_ = false;
       InvokeLoadAlgorithm();

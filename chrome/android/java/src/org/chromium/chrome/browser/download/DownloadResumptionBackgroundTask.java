@@ -8,7 +8,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 
 /**

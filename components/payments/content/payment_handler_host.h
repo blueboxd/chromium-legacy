@@ -23,7 +23,7 @@ class WebContents;
 namespace payments {
 
 using ChangePaymentRequestDetailsCallback =
-    base::OnceCallback<void(mojom::PaymentMethodChangeResponsePtr)>;
+    base::OnceCallback<void(mojom::PaymentRequestDetailsUpdatePtr)>;
 
 // Handles the communication from the payment handler renderer process to the
 // merchant renderer process.
@@ -90,7 +90,7 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // Notifies the payment handler of the updated details, such as updated total,
   // in response to the change of any of the following: payment method, shipping
   // address, or shipping option.
-  void UpdateWith(mojom::PaymentMethodChangeResponsePtr response);
+  void UpdateWith(mojom::PaymentRequestDetailsUpdatePtr response);
 
   // Notifies the payment handler that the merchant did not handle the payment
   // method, shipping option, or shipping address change events, so the payment

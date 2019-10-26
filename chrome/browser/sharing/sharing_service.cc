@@ -35,6 +35,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
+#include "components/sync_device_info/local_device_info_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -130,6 +131,7 @@ std::unique_ptr<syncer::DeviceInfo> CloneDevice(
       device->last_updated_timestamp(),
       device->send_tab_to_self_receiving_enabled(), device->sharing_info());
 }
+
 }  // namespace
 
 SharingService::SharingService(
@@ -154,7 +156,7 @@ SharingService::SharingService(
       backoff_entry_(&kRetryBackoffPolicy),
       state_(State::DISABLED),
       is_observing_device_info_tracker_(false) {
-  // Remove old encryption info with empty authrozed_entity to avoid DCHECK.
+  // Remove old encryption info with empty authorized_entity to avoid DCHECK.
   // See http://crbug/987591
   if (gcm_driver) {
     gcm::GCMEncryptionProvider* encryption_provider =
@@ -222,6 +224,14 @@ SharingService::SharingService(
     // and only doing clean up via UnregisterDevice().
     UnregisterDevice();
   }
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(syncer::GetPersonalizableDeviceNameBlocking),
+      base::BindOnce(&SharingService::InitPersonalizableLocalDeviceName,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 SharingService::~SharingService() {
@@ -242,7 +252,8 @@ std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
 
 SharingService::SharingDeviceList SharingService::GetDeviceCandidates(
     sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
-  if (IsSyncDisabled() || !local_device_info_provider_->GetLocalDeviceInfo())
+  if (IsSyncDisabled() || !local_device_info_provider_->GetLocalDeviceInfo() ||
+      !personalizable_local_device_name_)
     return {};
 
   SharingDeviceList device_candidates =
@@ -640,6 +651,8 @@ SharingService::SharingDeviceList SharingService::RenameAndDeduplicateDevices(
   full_device_names.insert(
       GetDeviceNames(local_device_info_provider_->GetLocalDeviceInfo())
           .full_name);
+  // To prevent M78- instances of Chrome with same device model from showing up.
+  full_device_names.insert(*personalizable_local_device_name_);
 
   for (const auto& device : devices) {
     DeviceNames device_names = GetDeviceNames(device.get());
@@ -669,4 +682,10 @@ SharingService::SharingDeviceList SharingService::RenameAndDeduplicateDevices(
   }
 
   return device_candidates;
+}
+
+void SharingService::InitPersonalizableLocalDeviceName(
+    std::string personalizable_local_device_name) {
+  personalizable_local_device_name_ =
+      std::move(personalizable_local_device_name);
 }

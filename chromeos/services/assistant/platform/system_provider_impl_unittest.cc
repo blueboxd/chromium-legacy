@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "base/test/task_environment.h"
-#include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
+#include "chromeos/services/assistant/test_support/fake_client.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -230,10 +230,11 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   // Returns |true| if this Connector instance is already bound to a thread.
   bool IsBound() const;
 
-  void FilterInterfaces(const std::string& spec,
-                        const Identity& source_identity,
-                        mojom::InterfaceProviderRequest request,
-                        mojom::InterfaceProviderPtr target);
+  void FilterInterfaces(
+      const std::string& spec,
+      const Identity& source_identity,
+      mojo::PendingReceiver<mojom::InterfaceProvider> receiver,
+      mojo::PendingRemote<mojom::InterfaceProvider> target);
 
   // Binds a Connector request to the other end of this Connector.
   void BindConnectorRequest(mojom::ConnectorRequest request);

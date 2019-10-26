@@ -330,7 +330,7 @@ const QualifiedName& HTMLObjectElement::SubResourceAttributeName() const {
 }
 
 const AtomicString HTMLObjectElement::ImageSourceURL() const {
-  return getAttribute(html_names::kDataAttr);
+  return FastGetAttribute(html_names::kDataAttr);
 }
 
 void HTMLObjectElement::ReattachFallbackContent() {
@@ -390,14 +390,14 @@ bool HTMLObjectElement::IsExposed() const {
 
 bool HTMLObjectElement::ContainsJavaApplet() const {
   if (MIMETypeRegistry::IsJavaAppletMIMEType(
-          getAttribute(html_names::kTypeAttr)))
+          FastGetAttribute(html_names::kTypeAttr)))
     return true;
 
   for (HTMLElement& child : Traversal<HTMLElement>::ChildrenOf(*this)) {
     if (IsHTMLParamElement(child) &&
         DeprecatedEqualIgnoringCase(child.GetNameAttribute(), "type") &&
         MIMETypeRegistry::IsJavaAppletMIMEType(
-            child.getAttribute(html_names::kValueAttr).GetString()))
+            child.FastGetAttribute(html_names::kValueAttr).GetString()))
       return true;
     if (IsHTMLObjectElement(child) &&
         ToHTMLObjectElement(child).ContainsJavaApplet())

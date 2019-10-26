@@ -191,7 +191,7 @@ bool HTMLButtonElement::IsURLAttribute(const Attribute& attribute) const {
 }
 
 const AtomicString& HTMLButtonElement::Value() const {
-  return getAttribute(html_names::kValueAttr);
+  return FastGetAttribute(html_names::kValueAttr);
 }
 
 bool HTMLButtonElement::RecalcWillValidate() const {

@@ -12,9 +12,9 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
 /**
@@ -78,8 +78,7 @@ public class DownloadPreferences
         if (mLocationPromptEnabledPref != null) {
             // Location prompt is marked enabled if the prompt status is not DONT_SHOW.
             boolean isLocationPromptEnabled =
-                    PrefServiceBridge.getInstance().getPromptForDownloadAndroid()
-                    != DownloadPromptStatus.DONT_SHOW;
+                    DownloadUtils.getPromptForDownloadAndroid() != DownloadPromptStatus.DONT_SHOW;
             mLocationPromptEnabledPref.setChecked(isLocationPromptEnabled);
         }
 
@@ -114,14 +113,12 @@ public class DownloadPreferences
         if (PREF_LOCATION_PROMPT_ENABLED.equals(preference.getKey())) {
             if ((boolean) newValue) {
                 // Only update if the interstitial has been shown before.
-                if (PrefServiceBridge.getInstance().getPromptForDownloadAndroid()
+                if (DownloadUtils.getPromptForDownloadAndroid()
                         != DownloadPromptStatus.SHOW_INITIAL) {
-                    PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
-                            DownloadPromptStatus.SHOW_PREFERENCE);
+                    DownloadUtils.setPromptForDownloadAndroid(DownloadPromptStatus.SHOW_PREFERENCE);
                 }
             } else {
-                PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
-                        DownloadPromptStatus.DONT_SHOW);
+                DownloadUtils.setPromptForDownloadAndroid(DownloadPromptStatus.DONT_SHOW);
             }
         } else if (PREF_PREFETCHING_ENABLED.equals(preference.getKey())) {
             PrefetchConfiguration.setPrefetchingEnabledInSettings((boolean) newValue);

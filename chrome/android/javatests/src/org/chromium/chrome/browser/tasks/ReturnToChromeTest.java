@@ -27,7 +27,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.MenuUtils;

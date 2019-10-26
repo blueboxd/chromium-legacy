@@ -123,6 +123,8 @@
             loadTimeData.getString('networkListItemConnectingTo'),
         networkListItemInitializing:
             loadTimeData.getString('networkListItemInitializing'),
+        networkListItemLabelTemplate:
+            loadTimeData.getString('networkListItemLabelTemplate'),
         networkListItemNotAvailable:
             loadTimeData.getString('networkListItemNotAvailable'),
         networkListItemScanning:

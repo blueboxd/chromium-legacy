@@ -144,9 +144,11 @@ class P2PSocketManager::DnsRequest {
 };
 
 P2PSocketManager::P2PSocketManager(
-    mojom::P2PTrustedSocketManagerClientPtr trusted_socket_manager_client,
-    mojom::P2PTrustedSocketManagerRequest trusted_socket_manager_request,
-    mojom::P2PSocketManagerRequest socket_manager_request,
+    mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient>
+        trusted_socket_manager_client,
+    mojo::PendingReceiver<mojom::P2PTrustedSocketManager>
+        trusted_socket_manager_receiver,
+    mojo::PendingReceiver<mojom::P2PSocketManager> socket_manager_receiver,
     DeleteCallback delete_callback,
     net::URLRequestContext* url_request_context)
     : delete_callback_(std::move(delete_callback)),
@@ -155,13 +157,13 @@ P2PSocketManager::P2PSocketManager(
           base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                            base::TaskPriority::USER_VISIBLE})),
       trusted_socket_manager_client_(std::move(trusted_socket_manager_client)),
-      trusted_socket_manager_binding_(
+      trusted_socket_manager_receiver_(
           this,
-          std::move(trusted_socket_manager_request)),
-      socket_manager_binding_(this, std::move(socket_manager_request)) {
-  trusted_socket_manager_binding_.set_connection_error_handler(
+          std::move(trusted_socket_manager_receiver)),
+      socket_manager_receiver_(this, std::move(socket_manager_receiver)) {
+  trusted_socket_manager_receiver_.set_disconnect_handler(
       base::Bind(&P2PSocketManager::OnConnectionError, base::Unretained(this)));
-  socket_manager_binding_.set_connection_error_handler(
+  socket_manager_receiver_.set_disconnect_handler(
       base::Bind(&P2PSocketManager::OnConnectionError, base::Unretained(this)));
 }
 

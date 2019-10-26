@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_context.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/quota/quota_client.h"
 #include "url/origin.h"
 
@@ -82,7 +83,7 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
                         CacheStorageOwner owner) override;
 
   void SetBlobParametersForCache(
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context) override;
+      scoped_refptr<BlobStorageContextWrapper> blob_storage_context) override;
 
   void NotifyCacheListChanged(const url::Origin& origin);
   void NotifyCacheContentChanged(const url::Origin& origin,
@@ -123,10 +124,6 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
                             std::unique_ptr<LegacyCacheStorage> cache_storage,
                             int64_t origin_size);
 
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context() const {
-    return blob_context_;
-  }
-
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner() const {
     return cache_task_runner_;
   }
@@ -153,7 +150,7 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
 
   scoped_refptr<CacheStorageContextImpl::ObserverList> observers_;
 
-  base::WeakPtr<storage::BlobStorageContext> blob_context_;
+  scoped_refptr<BlobStorageContextWrapper> blob_storage_context_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 

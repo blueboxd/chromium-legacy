@@ -455,7 +455,13 @@ TEST(CookieUtilTest, ComputeSameSiteContextForSet) {
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
             cookie_util::ComputeSameSiteContextForResponse(
                 GURL("http://example.com"), GURL("http://notexample.com"),
-                base::nullopt));
+                base::nullopt, false /* attach_same_site_cookies */));
+
+  // Same as above except |attach_same_site_cookies| makes it return LAX.
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+            cookie_util::ComputeSameSiteContextForResponse(
+                GURL("http://example.com"), GURL("http://notexample.com"),
+                base::nullopt, true /* attach_same_site_cookies */));
 
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
             cookie_util::ComputeSameSiteContextForScriptSet(
@@ -464,17 +470,31 @@ TEST(CookieUtilTest, ComputeSameSiteContextForSet) {
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
             cookie_util::ComputeSameSiteContextForResponse(
                 GURL("http://example.com/dir"), GURL("http://sub.example.com"),
-                base::nullopt));
+                base::nullopt, false /* attach_same_site_cookies */));
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+            cookie_util::ComputeSameSiteContextForResponse(
+                GURL("http://example.com/dir"), GURL("http://sub.example.com"),
+                base::nullopt, true /* attach_same_site_cookies */));
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::
                 SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
             cookie_util::ComputeSameSiteContextForResponse(
                 GURL("http://example.com/dir"), GURL("https://sub.example.com"),
-                base::nullopt));
+                base::nullopt, false /* attach_same_site_cookies */));
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
+            cookie_util::ComputeSameSiteContextForResponse(
+                GURL("http://example.com/dir"), GURL("https://sub.example.com"),
+                base::nullopt, true /* attach_same_site_cookies */));
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::
                 SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
             cookie_util::ComputeSameSiteContextForResponse(
                 GURL("https://example.com/dir"), GURL("http://sub.example.com"),
-                base::nullopt));
+                base::nullopt, false /* attach_same_site_cookies */));
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
+            cookie_util::ComputeSameSiteContextForResponse(
+                GURL("https://example.com/dir"), GURL("http://sub.example.com"),
+                base::nullopt, true /* attach_same_site_cookies */));
 
   EXPECT_EQ(
       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,

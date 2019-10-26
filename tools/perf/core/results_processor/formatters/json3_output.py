@@ -23,8 +23,10 @@ OUTPUT_FILENAME = 'test-results.json'
 def ProcessIntermediateResults(test_results, options):
   """Process intermediate results and write output in output_dir."""
   results = Convert(test_results, options.output_dir)
-  with open(os.path.join(options.output_dir, OUTPUT_FILENAME), 'w') as f:
+  output_file = os.path.join(options.output_dir, OUTPUT_FILENAME)
+  with open(output_file, 'w') as f:
     json.dump(results, f, sort_keys=True, indent=4, separators=(',', ': '))
+  return output_file
 
 
 def Convert(test_results, base_dir):

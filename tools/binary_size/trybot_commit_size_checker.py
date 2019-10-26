@@ -114,12 +114,25 @@ Refer to Mutable Constants Diff for list of symbols.
 
 
 def _CreateMethodCountDelta(symbols):
-  symbols = symbols.WhereInSection(models.SECTION_DEX_METHOD)
-  lines, net_added = _SymbolDiffHelper(symbols)
-  details = 'Refer to Dex Method Diff for list of added/removed methods.'
+  method_symbols = symbols.WhereInSection(models.SECTION_DEX_METHOD)
+  method_lines, net_method_added = _SymbolDiffHelper(method_symbols)
+  class_symbols = symbols.WhereInSection(
+      models.SECTION_DEX).WhereNameMatches('#').Inverted()
+  class_lines, _ = _SymbolDiffHelper(class_symbols)
+  details = (
+      'Refer to Dex Class and Method Diff for list of added/removed methods.')
+  lines = []
+  if class_lines:
+    lines.append('===== Classes Added & Removed =====')
+    lines.extend(class_lines)
+    lines.extend(['', ''])  # empty lines added for clarity
+  if method_lines:
+    lines.append('===== Methods Added & Removed =====')
+    lines.extend(method_lines)
 
   return lines, _SizeDelta('Dex Methods Count', 'methods',
-                           _MAX_DEX_METHOD_COUNT_INCREASE, net_added, details)
+                           _MAX_DEX_METHOD_COUNT_INCREASE, net_method_added,
+                           details)
 
 
 def _CreateResourceSizesDelta(apk_name, before_dir, after_dir):
@@ -156,6 +169,14 @@ def _CreateUncompressedPakSizeDeltas(symbols):
                  _MAX_PAK_INCREASE, pak.after_symbol.size, None)
       for pak in pak_symbols
   ]
+
+
+def _CreateTestingSymbolssDeltas(symbols):
+  testing_symbols = symbols.WhereNameMatches('ForTest').WhereDiffStatusIs(
+      models.DIFF_STATUS_ADDED)
+  lines = list(describe.GenerateLines(testing_symbols, summarize=False))
+  return lines, _SizeDelta('Added symbols named "ForTest"', 'symbols', 0,
+                           len(testing_symbols), None)
 
 
 def _FormatSign(number):
@@ -213,6 +234,12 @@ def main():
   mutable_constants_lines, mutable_constants_delta = (
       _CreateMutableConstantsDelta(changed_symbols))
   size_deltas.add(mutable_constants_delta)
+
+  # Look for symbols with 'ForTesting' in their name.
+  logging.info('Checking for symbols named "ForTest"')
+  testing_symbols_lines, test_symbols_delta = (
+      _CreateTestingSymbolssDeltas(changed_symbols))
+  size_deltas.add(test_symbols_delta)
 
   # Check for uncompressed .pak file entries being added to avoid unnecessary
   # bloat.
@@ -273,7 +300,11 @@ PASSING:
           'lines': mutable_constants_lines,
       },
       {
-          'name': '>>> Dex Method Diff <<<',
+          'name': '>>> "ForTest" Symbols Diff <<<',
+          'lines': testing_symbols_lines,
+      },
+      {
+          'name': '>>> Dex Class and Method Diff <<<',
           'lines': dex_delta_lines,
       },
       {
@@ -285,7 +316,7 @@ PASSING:
           'url': _HTML_REPORT_BASE_URL + '{{' + _NDJSON_FILENAME + '}}',
       },
   ]
-  # Remove empty diffs (Mutable Constants or Dex Method).
+  # Remove empty diffs (Mutable Constants, Dex Method, ...).
   links_json = [o for o in links_json if o.get('lines') or o.get('url')]
 
   binary_size_listings = []

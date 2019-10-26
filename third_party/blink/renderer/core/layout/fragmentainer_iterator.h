@@ -60,6 +60,8 @@ class FragmentainerIterator {
   LayoutUnit logical_top_in_flow_thread_;
   LayoutUnit logical_bottom_in_flow_thread_;
 
+  bool bounding_box_is_empty_;
+
   const MultiColumnFragmentainerGroup& CurrentGroup() const;
   void MoveToNextFragmentainerGroup();
   bool SetFragmentainersOfInterest();

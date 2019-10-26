@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 
 import java.util.Locale;
 

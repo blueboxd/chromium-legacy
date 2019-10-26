@@ -105,6 +105,23 @@ public class IdentityManager {
     }
 
     /**
+     * Provides access to the core information of the user's primary account.
+     * Returns null if no such info is available, either because there
+     * is no primary account yet or because the user signed out.
+     */
+    public @Nullable CoreAccountInfo getPrimaryAccountInfo() {
+        return IdentityManagerJni.get().getPrimaryAccountInfo(mNativeIdentityManager);
+    }
+
+    /**
+     * Provides access to the account ID of the user's primary account. Returns null if no such info
+     * is available.
+     */
+    public @Nullable CoreAccountId getPrimaryAccountId() {
+        return IdentityManagerJni.get().getPrimaryAccountId(mNativeIdentityManager);
+    }
+
+    /**
      * Looks up and returns information for account with given |email_address|. If the account
      * cannot be found, return a null value.
      */
@@ -117,6 +134,8 @@ public class IdentityManager {
 
     @NativeMethods
     interface Natives {
+        public @Nullable CoreAccountInfo getPrimaryAccountInfo(long nativeIdentityManager);
+        public @Nullable CoreAccountId getPrimaryAccountId(long nativeIdentityManager);
         public boolean hasPrimaryAccount(long nativeIdentityManager);
         public @Nullable CoreAccountInfo
         findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(

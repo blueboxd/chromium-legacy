@@ -7,10 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 
+@protocol MainControllerGuts;
+
 // The controller object for a scene. Reacts to scene state changes.
-@interface SceneController : NSObject <SceneStateObserver>
+@interface SceneController : NSObject <SceneStateObserver, ApplicationCommands>
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithSceneState:(SceneState*)sceneState
@@ -18,6 +21,13 @@
 
 // The state of the scene controlled by this object.
 @property(nonatomic, weak, readonly) SceneState* sceneState;
+
+// Returns whether the scene is showing or partially showing the
+// incognito panel.
+@property(nonatomic, assign, readonly) BOOL incognitoContentVisible;
+
+// A temporary pointer to MainController.
+@property(nonatomic, weak) id<MainControllerGuts> mainController;
 
 @end
 

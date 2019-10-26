@@ -238,9 +238,11 @@ XrSpace OpenXrTestHelper::CreateReferenceSpace(XrReferenceSpaceType type) {
     case XR_REFERENCE_SPACE_TYPE_LOCAL:
       reference_spaces_[cur_space] = "/reference_space/local";
       break;
+    case XR_REFERENCE_SPACE_TYPE_STAGE:
+      reference_spaces_[cur_space] = "/reference_space/stage";
+      break;
     default:
-      NOTREACHED() << "Test currently only supports to create View space and "
-                      "local space";
+      NOTREACHED() << "Unsupported XrReferenceSpaceType: " << type;
   }
   return cur_space;
 }
@@ -750,6 +752,17 @@ XrResult OpenXrTestHelper::ValidateXrPosefIsIdentity(
   is_identity &= pose.position.z == identity.position.z;
   RETURN_IF_FALSE(is_identity, XR_ERROR_VALIDATION_FAILURE,
                   "XrPosef is not an identity");
+
+  return XR_SUCCESS;
+}
+
+XrResult OpenXrTestHelper::ValidateViews(uint32_t view_capacity_input,
+                                         XrView* views) const {
+  for (uint32_t i = 0; i < view_capacity_input; i++) {
+    XrView view = views[i];
+    RETURN_IF_FALSE(view.type == XR_TYPE_VIEW, XR_ERROR_VALIDATION_FAILURE,
+                    "XrView type invalid");
+  }
 
   return XR_SUCCESS;
 }

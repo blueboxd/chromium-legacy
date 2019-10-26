@@ -133,7 +133,6 @@ class NetExportFileWriter {
   // (1) The NetExportFileWriter is not initialized.
   // (2) The log file does not exist.
   // (3) The NetExportFileWriter is currently logging.
-  // (4) The log file's permissions could not be set to all.
   //
   // |path_callback| will be executed at the end of GetFilePathToCompletedLog()
   // asynchronously.

@@ -56,7 +56,7 @@ class MediaAuthorizationWrapperImpl : public MediaAuthorizationWrapper {
 
   NSInteger AuthorizationStatusForMediaType(NSString* media_type) final {
     if (@available(macOS 10.14, *)) {
-      AVCaptureDevice* target = [AVCaptureDevice class];
+      Class target = [AVCaptureDevice class];
       SEL selector = @selector(authorizationStatusForMediaType:);
       NSInteger auth_status = 0;
       if ([target respondsToSelector:selector]) {
@@ -77,7 +77,7 @@ class MediaAuthorizationWrapperImpl : public MediaAuthorizationWrapper {
                                  base::RepeatingClosure callback,
                                  const base::TaskTraits& traits) final {
     if (@available(macOS 10.14, *)) {
-      AVCaptureDevice* target = [AVCaptureDevice class];
+      Class target = [AVCaptureDevice class];
       SEL selector = @selector(requestAccessForMediaType:completionHandler:);
       if ([target respondsToSelector:selector]) {
         [target performSelector:selector

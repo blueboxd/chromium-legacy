@@ -2,7 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import("//build/config/jumbo.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
+
+mojom("mojom") {
+  sources = [
+    "blob/mojom/blob_storage_context.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//third_party/blink/public/mojom:mojom_core",
+  ]
+
+  overridden_deps = [ "//third_party/blink/public/mojom:mojom_core" ]
+  component_deps = [ "//third_party/blink/public/common" ]
+}
 
 jumbo_component("browser") {
   output_name = "storage_browser"
@@ -209,6 +224,7 @@ jumbo_component("browser") {
   ]
 
   public_deps = [
+    ":mojom",
     "//components/services/filesystem/public/mojom",
     "//storage/common",
   ]
@@ -369,6 +385,7 @@ jumbo_static_library("test_support") {
 
   deps = [
     ":browser",
+    ":mojom",
     "//base/test:test_support",
     "//net:test_support",
     "//services/network:network_service",

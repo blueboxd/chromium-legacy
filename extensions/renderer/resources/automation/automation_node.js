@@ -1201,7 +1201,7 @@ var intAttributes = [
 var nodeRefAttributes = [
     ['activedescendantId', 'activeDescendant', 'activeDescendantFor'],
     ['detailsId', 'details', 'detailsFor'],
-    ['errorMessageId', 'errorMessage', 'errorMessageFor'],
+    ['errormessageId', 'errorMessage', 'errorMessageFor'],
     ['inPageLinkTargetId', 'inPageLinkTarget', null],
     ['nextFocusId', 'nextFocus', null],
     ['nextOnLineId', 'nextOnLine', null],

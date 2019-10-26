@@ -89,7 +89,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
       const media_session::mojom::MediaSessionInfoPtr& session_info);
   void UpdateWithMediaMetadata(const media_session::MediaMetadata& metadata);
   void UpdateWithMediaActions(
-      const std::set<media_session::mojom::MediaSessionAction>& actions);
+      const base::flat_set<media_session::mojom::MediaSessionAction>& actions);
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image);
 
   const views::Label* title_label_for_testing() const { return title_label_; }
@@ -141,7 +141,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
   base::Optional<bool> forced_expanded_state_;
 
   // Set of enabled actions.
-  std::set<media_session::mojom::MediaSessionAction> enabled_actions_;
+  base::flat_set<media_session::mojom::MediaSessionAction> enabled_actions_;
 
   // Stores the text to be read by screen readers describing the notification.
   // Contains the title, artist and album separated by hypens.

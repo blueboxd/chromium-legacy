@@ -25,8 +25,6 @@ goog.require('cvox.CompositeTts');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.InjectedScriptLoader');
 goog.require('cvox.NavBraille');
-goog.require('cvox.PlatformFilter');
-goog.require('cvox.PlatformUtil');
 goog.require('cvox.QueueMode');
 goog.require('cvox.TabsApiHandler');
 goog.require('cvox.TtsBackground');
@@ -216,7 +214,7 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
   // the manifest files.
   if (COMPILED) {
     listOfFiles =
-        ['chromeVoxChromePageScript.js', 'chromeVox2ChromePageScript.js'];
+        ['chromeVox2ChromePageScript.js'];
   } else {
     listOfFiles = [
       'closure/closure_preinit.js', 'closure/base.js', 'deps.js',

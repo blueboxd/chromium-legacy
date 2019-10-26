@@ -1918,6 +1918,20 @@ class ServiceManifestOwnerTest(unittest.TestCase):
 
 class BannedTypeCheckTest(unittest.TestCase):
 
+  def testBannedCppFunctions(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('some/cpp/problematic/file.cc',
+               ['using namespace std;']),
+      MockFile('some/cpp/ok/file.cc',
+               ['using std::string;']),
+    ]
+
+    errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertTrue('some/cpp/problematic/file.c' in errors[0].message)
+    self.assertTrue('some/cpp/ok/file.cc' not in errors[0].message)
+
   def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()
     input_api.files = [

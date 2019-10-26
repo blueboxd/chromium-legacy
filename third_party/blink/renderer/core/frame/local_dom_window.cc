@@ -1519,6 +1519,13 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if (!result.frame)
     return nullptr;
 
+  if (window_features.x_set || window_features.y_set) {
+    // This runs after FindOrCreateFrameForNavigation() so blocked popups are
+    // not counted.
+    UseCounter::Count(*active_document,
+                      WebFeature::kDOMWindowOpenPositioningFeatures);
+  }
+
   if (!completed_url.IsEmpty() || result.new_window)
     result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
 

@@ -4,6 +4,8 @@
 
 package org.chromium.components.signin.identitymanager;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.metrics.SignoutDelete;
@@ -59,7 +61,7 @@ public class IdentityMutator {
      * Reloads the accounts in the token service from the system accounts. This API calls
      * ProfileOAuth2TokenServiceDelegate::ReloadAllAccountsFromSystemWithPrimaryAccount.
      */
-    public void reloadAllAccountsFromSystemWithPrimaryAccount(CoreAccountId accountId) {
+    public void reloadAllAccountsFromSystemWithPrimaryAccount(@Nullable CoreAccountId accountId) {
         IdentityMutatorJni.get().reloadAllAccountsFromSystemWithPrimaryAccount(
                 mNativeIdentityMutator, accountId);
     }
@@ -71,6 +73,6 @@ public class IdentityMutator {
                 @ClearAccountsAction int action, @SignoutReason int sourceMetric,
                 @SignoutDelete int deleteMetric);
         public void reloadAllAccountsFromSystemWithPrimaryAccount(
-                long nativeJniIdentityMutator, CoreAccountId accountId);
+                long nativeJniIdentityMutator, @Nullable CoreAccountId accountId);
     }
 }

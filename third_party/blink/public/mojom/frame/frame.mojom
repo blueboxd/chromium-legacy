@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
+import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -83,6 +84,10 @@ interface LocalFrame {
   // Notifies the RenderFrame about a user activation detected in the browser side
   // (e.g. during Android voice search).
   NotifyUserActivation();
+
+  // Add message to the frame console.
+  AddMessageToConsole(ConsoleMessageLevel level, string message,
+                    bool discard_duplicates);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -104,4 +109,9 @@ interface RemoteFrame {
   // SecurityContext. Used to reset CSP from the previous document on
   // a cross-document navigation.
   ResetReplicatedContentSecurityPolicy();
+
+  // Update replicated set for enforcement of insecure navigations. |set|
+  // is a hashed set of host/port pairs. See
+  // SecurityContext::SetInsecureNavigationsSet.
+  EnforceInsecureNavigationsSet(array<uint32> set);
 };

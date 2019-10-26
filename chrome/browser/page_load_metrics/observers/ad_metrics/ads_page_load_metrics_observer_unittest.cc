@@ -46,6 +46,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/fake_local_frame.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
@@ -324,7 +325,7 @@ class ErrorPageWaiter : public content::WebContentsObserver {
 
 // Mock frame remote. Processes calls to SendInterventionReport and waits
 // for all pending messages to be sent.
-class FrameRemoteTester : public blink::mojom::LocalFrame {
+class FrameRemoteTester : public content::FakeLocalFrame {
  public:
   FrameRemoteTester() = default;
   ~FrameRemoteTester() override = default;
@@ -349,12 +350,6 @@ class FrameRemoteTester : public blink::mojom::LocalFrame {
     last_message_ = message;
     had_message_ = true;
   }
-
-  void GetTextSurroundingSelection(
-      uint32_t max_length,
-      GetTextSurroundingSelectionCallback callback) override {}
-
-  void NotifyUserActivation() override {}
 
   // Sends an empty message and waits for it to be received. Returns true if any
   // other messages were received.

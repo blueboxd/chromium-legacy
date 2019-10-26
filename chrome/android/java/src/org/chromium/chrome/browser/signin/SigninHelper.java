@@ -185,7 +185,7 @@ public class SigninHelper {
         if (accountsChanged) {
             // Account details have changed so inform the token service that credentials
             // should now be available.
-            mOAuth2TokenService.updateAccountList();
+            mSigninManager.reloadAllAccountsFromSystem();
         }
     }
 

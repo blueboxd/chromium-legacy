@@ -8,17 +8,13 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "content/browser/blob_storage/blob_storage_context_wrapper.h"
 #include "content/browser/cache_storage/cache_storage_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_context.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "storage/browser/quota/quota_client.h"
-
-namespace storage {
-class BlobStorageContext;
-}
 
 namespace url {
 class Origin;
@@ -74,7 +70,7 @@ class CONTENT_EXPORT CacheStorageManager
 
   // This must be called before any of the public Cache functions above.
   virtual void SetBlobParametersForCache(
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context) = 0;
+      scoped_refptr<BlobStorageContextWrapper> blob_storage_context) = 0;
 
   static bool IsValidQuotaOrigin(const url::Origin& origin);
 

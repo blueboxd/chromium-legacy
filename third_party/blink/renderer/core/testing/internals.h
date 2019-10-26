@@ -601,6 +601,9 @@ class Internals final : public ScriptWrappable {
 
   String getDocumentAgentId(Document*);
 
+  void useMockOverlayScrollbars();
+  bool overlayScrollbarsEnabled() const;
+
  private:
   Document* ContextDocument() const;
   Vector<String> IconURLs(Document*, int icon_types_mask) const;

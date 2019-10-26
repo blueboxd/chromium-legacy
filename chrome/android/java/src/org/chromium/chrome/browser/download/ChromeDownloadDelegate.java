@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Pair;
-import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 
 import org.chromium.base.Log;
@@ -26,8 +25,6 @@ import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 
 /**
  * Chrome implementation of the ContentViewDownloadDelegate interface.
@@ -42,13 +39,6 @@ public class ChromeDownloadDelegate implements UserData {
     private static final String TAG = "Download";
 
     private static final Class<ChromeDownloadDelegate> USER_DATA_KEY = ChromeDownloadDelegate.class;
-
-    // Mime types that Android can't handle when tries to open the file. Chrome may deduct a better
-    // mime type based on file extension.
-    private static final HashSet<String> GENERIC_MIME_TYPES = new HashSet<String>(Arrays.asList(
-            "text/plain", "application/octet-stream", "binary/octet-stream", "octet/stream",
-            "application/download", "application/force-download", "application/unknown"));
-
     private Tab mTab;
 
     public static ChromeDownloadDelegate from(Tab tab) {
@@ -81,8 +71,8 @@ public class ChromeDownloadDelegate implements UserData {
     protected void onDownloadStartNoStream(final DownloadInfo downloadInfo) {
         final String fileName = downloadInfo.getFileName();
         assert !TextUtils.isEmpty(fileName);
-        final String newMimeType =
-                remapGenericMimeType(downloadInfo.getMimeType(), downloadInfo.getUrl(), fileName);
+        final String newMimeType = MimeUtils.remapGenericMimeType(
+                downloadInfo.getMimeType(), downloadInfo.getUrl(), fileName);
         new AsyncTask<Pair<String, File>>() {
             @Override
             protected Pair<String, File> doInBackground() {
@@ -194,53 +184,6 @@ public class ChromeDownloadDelegate implements UserData {
     }
 
     /**
-     * If the given MIME type is null, or one of the "generic" types (text/plain
-     * or application/octet-stream) map it to a type that Android can deal with.
-     * If the given type is not generic, return it unchanged.
-     *
-     * We have to implement this ourselves as
-     * MimeTypeMap.remapGenericMimeType() is not public.
-     * See http://crbug.com/407829.
-     *
-     * @param mimeType MIME type provided by the server.
-     * @param url URL of the data being loaded.
-     * @param filename file name obtained from content disposition header
-     * @return The MIME type that should be used for this data.
-     */
-    static String remapGenericMimeType(String mimeType, String url, String filename) {
-        // If we have one of "generic" MIME types, try to deduce
-        // the right MIME type from the file extension (if any):
-        if (mimeType == null || mimeType.isEmpty() || GENERIC_MIME_TYPES.contains(mimeType)) {
-            String extension = getFileExtension(url, filename);
-            String newMimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-            if (newMimeType != null) {
-                mimeType = newMimeType;
-            } else if (extension.equals("dm")) {
-                mimeType = OMADownloadHandler.OMA_DRM_MESSAGE_MIME;
-            } else if (extension.equals("dd")) {
-                mimeType = OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME;
-            }
-        }
-        return mimeType;
-    }
-
-    /**
-     * Retrieve the file extension from a given file name or url.
-     *
-     * @param url URL to extract the extension.
-     * @param filename File name to extract the extension.
-     * @return If extension can be extracted from file name, use that. Or otherwise, use the
-     *         extension extracted from the url.
-     */
-    static String getFileExtension(String url, String filename) {
-        if (!TextUtils.isEmpty(filename)) {
-            int index = filename.lastIndexOf(".");
-            if (index > 0) return filename.substring(index + 1);
-        }
-        return MimeTypeMap.getFileExtensionFromUrl(url);
-    }
-
-    /**
      * For certain download types(OMA for example), android DownloadManager should
      * handle them. Call this function to intercept those downloads.
      *
@@ -256,7 +199,7 @@ public class ChromeDownloadDelegate implements UserData {
         String path = uri.getPath();
         if (!OMADownloadHandler.isOMAFile(path)) return false;
         if (mTab == null) return true;
-        String fileName = URLUtil.guessFileName(url, null, OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
+        String fileName = URLUtil.guessFileName(url, null, MimeUtils.OMA_DRM_MESSAGE_MIME);
         final DownloadInfo downloadInfo =
                 new DownloadInfo.Builder().setUrl(url).setFileName(fileName).build();
         WindowAndroid window = mTab.getWindowAndroid();

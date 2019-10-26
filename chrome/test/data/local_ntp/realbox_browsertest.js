@@ -111,15 +111,11 @@ test.realbox.setUp = function() {
       queryAutocomplete(query) {
         test.realbox.queries.push(query);
       },
-      stopAutocomplete(clearResult) {
-        test.realbox.stops.push(clearResult);
-      },
     },
   };
 
   test.realbox.deletedLines = [];
   test.realbox.queries = [];
-  test.realbox.stops = [];
 
   initLocalNTP(/*isGooglePage=*/ true);
 
@@ -559,14 +555,6 @@ test.realbox.testSupportedDeletion = function() {
   test.realbox.realboxEl.dispatchEvent(shiftDelete);
   assertTrue(shiftDelete.defaultPrevented);
 
-  // Pretend like the focused match gets removed from DOM when deleted.
-  matchesEl.children[1].dispatchEvent(new Event('focusout', {bubbles: true}));
-
-  // stopAutocomplete() should not be called if the focused match gets removed
-  // from the DOM (and focus gets dropped). There's explicit code in the
-  // focusout handler to deal with this case.
-  assertEquals(0, test.realbox.stops.length);
-
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(1, test.realbox.deletedLines[0]);
 
@@ -628,15 +616,6 @@ test.realbox.testRemoveIcon = function() {
 
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(0, test.realbox.deletedLines[0]);
-
-  assertEquals(0, test.realbox.stops.length);
-  icon.dispatchEvent(new Event('focusout', {
-    bubbles: true,
-    cancelable: true,
-    target: icon,
-    relatedTarget: document.body,
-  }));
-  assertEquals(0, test.realbox.stops.length);
 
   chrome.embeddedSearch.searchBox.ondeleteautocompletematch(
       {success: true, matches: []});

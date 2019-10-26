@@ -21,6 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -34,7 +35,6 @@ import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 

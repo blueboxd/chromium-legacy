@@ -4,6 +4,13 @@
 
 import("//tools/polymer/polymer.gni")
 
+group("closure_compile") {
+  deps = [
+    "signin_email_confirmation:closure_compile",
+    "sync_confirmation:closure_compile",
+  ]
+}
+
 group("polymer3_elements") {
   deps = [
     ":signin_shared_css_module",

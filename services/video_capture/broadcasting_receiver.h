@@ -34,8 +34,8 @@ class BroadcastingReceiver : public mojom::Receiver {
     int32_t buffer_context_id() const { return buffer_context_id_; }
     int32_t buffer_id() const { return buffer_id_; }
     void set_access_permission(
-        mojom::ScopedAccessPermissionPtr access_permission) {
-      access_permission_ = std::move(access_permission);
+        mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission) {
+      access_permission_.Bind(std::move(access_permission));
     }
     void IncreaseConsumerCount();
     void DecreaseConsumerCount();
@@ -59,7 +59,7 @@ class BroadcastingReceiver : public mojom::Receiver {
     // |access_permission_|.
     int32_t consumer_hold_count_;
     bool is_retired_;
-    mojom::ScopedAccessPermissionPtr access_permission_;
+    mojo::Remote<mojom::ScopedAccessPermission> access_permission_;
   };
 
   BroadcastingReceiver();
@@ -90,7 +90,7 @@ class BroadcastingReceiver : public mojom::Receiver {
   void OnFrameReadyInBuffer(
       int32_t buffer_id,
       int32_t frame_feedback_id,
-      mojom::ScopedAccessPermissionPtr access_permission,
+      mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int32_t buffer_id) override;
   void OnError(media::VideoCaptureError error) override;

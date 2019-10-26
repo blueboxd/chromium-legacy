@@ -103,7 +103,6 @@ class CORE_EXPORT SVGElement : public Element {
   void ClearWebAnimatedAttributes();
 
   void SetAnimatedAttribute(const QualifiedName&, SVGPropertyBase*);
-  void InvalidateAnimatedAttribute(const QualifiedName&);
   void ClearAnimatedAttribute(const QualifiedName&);
 
   SVGSVGElement* ownerSVGElement() const;

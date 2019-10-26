@@ -577,9 +577,6 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   network_service->SetUpHttpAuth(CreateHttpAuthStaticParams(local_state_));
   network_service->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams(local_state_));
-  network_service->SetSplitAuthCacheByNetworkIsolationKey(
-      base::FeatureList::IsEnabled(
-          features::kSplitAuthCacheByNetworkIsolationKey));
 
   // TODO(lukasza): https://crbug.com/944162: Once
   // kMimeHandlerViewInCrossProcessFrame feature ships, unconditionally include

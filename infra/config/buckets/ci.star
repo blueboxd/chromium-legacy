@@ -1183,6 +1183,29 @@ fyi_builder(
 )
 
 
+def fyi_celab_builder(*, name, **kwargs):
+  return builder(
+      name = name,
+      mastername = 'chromium.fyi',
+      os = os.WINDOWS_ANY,
+      executable = luci.recipe(name = 'celab'),
+      properties = {
+          'exclude': 'chrome_only',
+          'pool_name': 'celab-chromium-ci',
+          'pool_size': 20,
+          'tests': '*',
+      },
+  )
+
+fyi_celab_builder(
+    name = 'win-celab-builder-rel',
+)
+
+fyi_celab_builder(
+    name = 'win-celab-tester-rel',
+)
+
+
 def fyi_coverage_builder(
     *,
     name,
@@ -2245,26 +2268,4 @@ win_builder(
     name = 'Windows deterministic',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-)
-
-
-def win_celab_builder(*, name, **kwargs):
-  return win_builder(
-      name = name,
-      executable = luci.recipe(name = 'celab'),
-      os = os.WINDOWS_ANY,
-      properties = {
-          'exclude': 'chrome_only',
-          'pool_name': 'celab-chromium-ci',
-          'pool_size': 20,
-          'tests': '*',
-      },
-  )
-
-win_celab_builder(
-    name = 'win-celab-builder-rel',
-)
-
-win_celab_builder(
-    name = 'win-celab-tester-rel',
 )

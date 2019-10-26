@@ -98,7 +98,7 @@ void HTMLTableColElement::setSpan(unsigned n) {
 }
 
 const AtomicString& HTMLTableColElement::Width() const {
-  return getAttribute(html_names::kWidthAttr);
+  return FastGetAttribute(html_names::kWidthAttr);
 }
 
 }  // namespace blink

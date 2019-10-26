@@ -28,7 +28,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;

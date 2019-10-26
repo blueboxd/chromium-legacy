@@ -14,7 +14,6 @@
 var scroll_test = async_test("Verify that two sibling cross-origin iframes " +
     "both correctly scroll on scrollbar mouse clicks.");
 
-  internals.settings.setMockScrollbarsEnabled(true);
 var last_frame_scrolled;
 var iframe1 = document.getElementById("target-iframe1");
 var iframe2 = document.getElementById("target-iframe2");

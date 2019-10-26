@@ -411,8 +411,8 @@ bool IsEditableElement(const Node& node) {
   }
 
   if (auto* element = DynamicTo<Element>(&node)) {
-    return EqualIgnoringASCIICase(element->getAttribute(html_names::kRoleAttr),
-                                  "textbox");
+    return EqualIgnoringASCIICase(
+        element->FastGetAttribute(html_names::kRoleAttr), "textbox");
   }
 
   return false;
@@ -1716,7 +1716,7 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   // TODO(editing-dev): This should probably be reconciled with
   // HitTestResult::absoluteImageURL.
   if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
-    return To<HTMLElement>(node).getAttribute(html_names::kSrcAttr);
+    return To<HTMLElement>(node).FastGetAttribute(html_names::kSrcAttr);
   if (IsSVGImageElement(node))
     return To<SVGElement>(node).ImageSourceURL();
   if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||

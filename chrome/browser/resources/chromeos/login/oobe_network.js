@@ -90,6 +90,25 @@ Polymer({
   },
 
   /**
+   * Returns element of the network list with the given name.
+   * Used to simplify testing.
+   * @param {string} name
+   * @return {?CrNetworkList.CrNetworkListItemType}
+   */
+  getNetworkListItemByNameForTest: function(name) {
+    let networkList =
+        this.$.networkSelectLogin.$$('#networkSelect').getNetworkListForTest();
+    assert(networkList);
+    for (const network of networkList.children) {
+      if (network.is === 'cr-network-list-item' &&
+          network.$$('#divText').children[0].innerText === name) {
+        return network;
+      }
+    }
+    return null;
+  },
+
+  /**
    * Called after dialog is shown. Refreshes the list of the networks.
    * @private
    */

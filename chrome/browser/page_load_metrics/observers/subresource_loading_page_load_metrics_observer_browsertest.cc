@@ -4,12 +4,19 @@
 
 #include "chrome/browser/page_load_metrics/observers/subresource_loading_page_load_metrics_observer.h"
 
+#include <memory>
+
+#include "base/command_line.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SubresourceLoadingPageLoadMetricsObserverBrowserTest
@@ -17,6 +24,11 @@ class SubresourceLoadingPageLoadMetricsObserverBrowserTest
  public:
   SubresourceLoadingPageLoadMetricsObserverBrowserTest() = default;
   ~SubresourceLoadingPageLoadMetricsObserverBrowserTest() override = default;
+
+  void EnableDataSaver() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        data_reduction_proxy::switches::kEnableDataReductionProxy);
+  }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -26,6 +38,8 @@ class SubresourceLoadingPageLoadMetricsObserverBrowserTest
     embedded_test_server()->ServeFilesFromSourceDirectory(
         "chrome/test/data/subresource_loading");
     ASSERT_TRUE(embedded_test_server()->Start());
+
+    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
   void NavigateToPath(const std::string& path) {
@@ -38,6 +52,36 @@ class SubresourceLoadingPageLoadMetricsObserverBrowserTest
     ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
     base::RunLoop().RunUntilIdle();
   }
+
+  void VerifyNoUKM() {
+    auto entries = ukm_recorder_->GetEntriesByName(
+        ukm::builders::PrefetchProxy::kEntryName);
+    EXPECT_TRUE(entries.empty());
+  }
+
+  void VerifyUKMEntry(const std::string& metric_name,
+                      base::Optional<int64_t> expected_value) {
+    auto entries = ukm_recorder_->GetEntriesByName(
+        ukm::builders::PrefetchProxy::kEntryName);
+    ASSERT_EQ(1U, entries.size());
+
+    const auto* entry = entries.front();
+
+    ukm_recorder_->ExpectEntrySourceHasUrl(
+        entry, embedded_test_server()->GetURL("origin.com", "/index.html"));
+
+    const int64_t* value =
+        ukm::TestUkmRecorder::GetEntryMetric(entry, metric_name);
+    EXPECT_EQ(value != nullptr, expected_value.has_value());
+
+    if (!expected_value.has_value())
+      return;
+
+    EXPECT_EQ(*value, expected_value.value());
+  }
+
+ private:
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 };
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
@@ -66,6 +110,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
   // Revisit and expect a 0 days-ago entry.
   NavigateToPath("/index.html");
   NavigateAway();
+
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
   histogram_tester.ExpectBucketCount(
@@ -77,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
-                       MainFrameHadCookies_None) {
+                       MainFrameHadCookies_NoUKM) {
   base::HistogramTester histogram_tester;
   NavigateToPath("/index.html");
   NavigateAway();
@@ -86,15 +131,38 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.CookiesQueryTime", 1);
+
+  VerifyNoUKM();
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
+                       MainFrameHadCookies_None) {
+  EnableDataSaver();
+  base::HistogramTester histogram_tester;
+
+  NavigateToPath("/index.html");
+  NavigateAway();
+
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.CookiesQueryTime", 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kmainpage_request_had_cookiesName, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        MainFrameHadCookies_CookiesOnNextPageLoad) {
-  base::HistogramTester histogram_tester;
   NavigateToPath("/set_cookies.html");
+  base::HistogramTester histogram_tester;
+
+  EnableDataSaver();
   NavigateToPath("/index.html");
   NavigateAway();
 
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kmainpage_request_had_cookiesName, 1);
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", true, 1);
   // From the first page load.
@@ -106,11 +174,15 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        MainFrameHadCookies_CookiesOnRedirect) {
-  base::HistogramTester histogram_tester;
   NavigateToPath("/set_cookies.html");
+  base::HistogramTester histogram_tester;
+
+  EnableDataSaver();
   NavigateToPath("/redirect_to_index.html");
   NavigateAway();
 
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kmainpage_request_had_cookiesName, 1);
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", true, 1);
   // From the first page load.
@@ -122,11 +194,13 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        RecordNothingOnUntrackedPage) {
+  EnableDataSaver();
   base::HistogramTester histogram_tester;
 
   NavigateAway();
   NavigateAway();
 
+  VerifyNoUKM();
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.CookiesQueryTime", 0);
   histogram_tester.ExpectTotalCount(

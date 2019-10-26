@@ -1,0 +1,28 @@
+# List of OWNERS files that can be used together with "set noparent". See
+# docs/code_reviews.md#owners-file-details for more details.
+
+# Overall project governance.
+file://ENG_REVIEW_OWNERS
+
+# Third-party dependency review, see //docs/adding_to_third_party.md
+file://third_party/OWNERS
+
+# Security reviews
+file://chromeos/SECURITY_OWNERS
+file://ipc/SECURITY_OWNERS
+file://sandbox/linux/OWNERS
+file://sandbox/mac/OWNERS
+file://sandbox/OWNERS
+file://sandbox/win/OWNERS
+file://third_party/blink/SECURITY_OWNERS
+
+# Privacy reviews
+file://tools/metrics/ukm/PRIVACY_OWNERS
+file://base/metrics/OWNERS
+
+# Blink API owners are responsible for decisions about what APIs Blink should
+# expose to the open web.
+file://third_party/blink/API_OWNERS
+
+# Extension API related files.
+file://extensions/common/api/API_OWNERS

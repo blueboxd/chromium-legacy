@@ -414,8 +414,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnAddContentSecurityPolicies)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)
-    IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureNavigationsSet,
-                        OnEnforceInsecureNavigationsSet)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
@@ -533,11 +531,6 @@ void RenderFrameProxy::OnAddContentSecurityPolicies(
 void RenderFrameProxy::OnEnforceInsecureRequestPolicy(
     blink::WebInsecureRequestPolicy policy) {
   web_frame_->SetReplicatedInsecureRequestPolicy(policy);
-}
-
-void RenderFrameProxy::OnEnforceInsecureNavigationsSet(
-    const std::vector<uint32_t>& set) {
-  web_frame_->SetReplicatedInsecureNavigationsSet(set);
 }
 
 void RenderFrameProxy::OnSetFrameOwnerProperties(
@@ -787,8 +780,8 @@ void RenderFrameProxy::Navigate(
   FrameHostMsg_OpenURL_Params params;
   params.url = request.Url();
   params.initiator_origin = request.RequestorOrigin();
-  params.uses_post = request.HttpMethod().Utf8() == "POST";
-  params.resource_request_body = GetRequestBodyForWebURLRequest(request);
+  params.post_body = GetRequestBodyForWebURLRequest(request);
+  DCHECK_EQ(!!params.post_body, request.HttpMethod().Utf8() == "POST");
   params.extra_headers = GetWebURLRequestHeadersAsString(request);
   // TODO(domfarolino): Retrieve the referrer in the form of a referrer member
   // instead of the header field. See https://crbug.com/850813.

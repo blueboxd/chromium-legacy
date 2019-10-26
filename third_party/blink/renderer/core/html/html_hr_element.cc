@@ -82,7 +82,7 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
     AddHTMLColorToStyle(style, CSSPropertyID::kBorderColor, value);
     AddHTMLColorToStyle(style, CSSPropertyID::kBackgroundColor, value);
   } else if (name == html_names::kNoshadeAttr) {
-    if (!hasAttribute(html_names::kColorAttr)) {
+    if (!FastHasAttribute(html_names::kColorAttr)) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kBorderStyle, CSSValueID::kSolid);
 

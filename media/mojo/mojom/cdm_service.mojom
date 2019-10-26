@@ -31,8 +31,8 @@ interface CdmService {
   // Requests an CdmFactory. |host_interfaces| can optionally be used to provide
   // interfaces hosted by the caller to the remote CdmFactory implementation.
   CreateCdmFactory(
-      CdmFactory& factory,
-      service_manager.mojom.InterfaceProvider? host_interfaces);
+      pending_receiver<CdmFactory> factory,
+      pending_remote<service_manager.mojom.InterfaceProvider> host_interfaces);
 };
 
 // An interface to provide a sandbox seatbelt extension token synchronously.

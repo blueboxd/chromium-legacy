@@ -10,11 +10,11 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceMediator.SurfaceMode;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyKey;

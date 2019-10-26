@@ -127,6 +127,8 @@ jumbo_static_library("test_support") {
     "../public/test/dump_accessibility_test_helper.h",
     "../public/test/fake_download_item.cc",
     "../public/test/fake_download_item.h",
+    "../public/test/fake_local_frame.cc",
+    "../public/test/fake_local_frame.h",
     "../public/test/fake_service_worker_context.cc",
     "../public/test/fake_service_worker_context.h",
     "../public/test/fake_speech_recognition_manager.cc",

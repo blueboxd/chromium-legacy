@@ -1099,7 +1099,7 @@ const AXObject* AXObject::InertRoot() const {
     element = FlatTreeTraversal::ParentElement(*node);
 
   while (element) {
-    if (element->hasAttribute(html_names::kInertAttr))
+    if (element->FastHasAttribute(html_names::kInertAttr))
       return AXObjectCache().GetOrCreate(element);
     element = FlatTreeTraversal::ParentElement(*element);
   }

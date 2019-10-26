@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_SYSTEM;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doNothing;
@@ -12,12 +16,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
-import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
-import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_SYSTEM;
-
 import android.content.Intent;
 import android.support.v7.app.AppCompatDelegate;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,13 +32,11 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
-import org.chromium.chrome.browser.util.FeatureUtilities;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Tests for {@link CustomTabNightModeStateController}.

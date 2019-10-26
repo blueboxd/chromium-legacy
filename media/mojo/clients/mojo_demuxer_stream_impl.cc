@@ -52,9 +52,9 @@ void MojoDemuxerStreamImpl::Initialize(InitializeCallback callback) {
 }
 
 void MojoDemuxerStreamImpl::Read(ReadCallback callback) {
-  stream_->Read(base::Bind(&MojoDemuxerStreamImpl::OnBufferReady,
-                           weak_factory_.GetWeakPtr(),
-                           base::Passed(&callback)));
+  stream_->Read(base::BindOnce(&MojoDemuxerStreamImpl::OnBufferReady,
+                               weak_factory_.GetWeakPtr(),
+                               base::Passed(&callback)));
 }
 
 void MojoDemuxerStreamImpl::EnableBitstreamConverter() {

@@ -261,6 +261,10 @@ bool CSSParser::ParseSystemColor(Color& color,
   if (!RuntimeEnabledFeatures::LinkSystemColorsEnabled() &&
       (id == CSSValueID::kLinktext || id == CSSValueID::kVisitedtext)) {
     return false;
+  } else if (!RuntimeEnabledFeatures::NewSystemColorsEnabled() &&
+             (id == CSSValueID::kActivetext || id == CSSValueID::kField ||
+              id == CSSValueID::kFieldtext)) {
+    return false;
   }
   color = LayoutTheme::GetTheme().SystemColor(id, color_scheme);
   return true;

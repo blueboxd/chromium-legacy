@@ -95,11 +95,11 @@ void HTMLStyleElement::ChildrenChanged(const ChildrenChange& change) {
 }
 
 const AtomicString& HTMLStyleElement::media() const {
-  return getAttribute(html_names::kMediaAttr);
+  return FastGetAttribute(html_names::kMediaAttr);
 }
 
 const AtomicString& HTMLStyleElement::type() const {
-  return getAttribute(html_names::kTypeAttr);
+  return FastGetAttribute(html_names::kTypeAttr);
 }
 
 void HTMLStyleElement::DispatchPendingEvent(

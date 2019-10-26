@@ -249,17 +249,16 @@ TEST_F(UnifiedMessageCenterViewTest, RemoveNotificationAtTail) {
   // The message center should autoscroll to the bottom of the list (with some
   // padding) after adding a new notification.
   auto id_to_remove = AddNotification();
+  int spacing = features::IsUnifiedMessageCenterRefactorEnabled()
+                    ? 0
+                    : kUnifiedNotificationCenterSpacing;
   int scroll_position = GetScroller()->GetVisibleRect().y();
-  EXPECT_EQ(GetMessageListView()->height() - GetScroller()->height() +
-                kUnifiedNotificationCenterSpacing,
+  EXPECT_EQ(GetMessageListView()->height() - GetScroller()->height() + spacing,
             scroll_position);
 
   // Remove the last notification.
   MessageCenter::Get()->RemoveNotification(id_to_remove, true /* by_user */);
-
-  // The scroll position should not change before sliding the notification out
-  // and instead should wait until the animation finishes.
-  EXPECT_EQ(scroll_position, GetScroller()->GetVisibleRect().y());
+  scroll_position = GetScroller()->GetVisibleRect().y();
 
   // The scroll position should be reduced by the height of the removed
   // notification after collapsing.
@@ -268,8 +267,7 @@ TEST_F(UnifiedMessageCenterViewTest, RemoveNotificationAtTail) {
             GetScroller()->GetVisibleRect().y());
 
   // Check that the list is still scrolled to the bottom (with some padding).
-  EXPECT_EQ(GetMessageListView()->height() - GetScroller()->height() +
-                kUnifiedNotificationCenterSpacing,
+  EXPECT_EQ(GetMessageListView()->height() - GetScroller()->height() + spacing,
             GetScroller()->GetVisibleRect().y());
 }
 
@@ -370,9 +368,11 @@ TEST_F(UnifiedMessageCenterViewTest, InitialPosition) {
   EXPECT_LT(GetMessageListView()->bounds().height(),
             message_center_view()->bounds().height());
 
-  EXPECT_EQ(kUnifiedNotificationCenterSpacing,
-            message_center_view()->bounds().bottom() -
-                GetMessageViewVisibleBounds(1).bottom());
+  if (!features::IsUnifiedMessageCenterRefactorEnabled()) {
+    EXPECT_EQ(kUnifiedNotificationCenterSpacing,
+              message_center_view()->bounds().bottom() -
+                  GetMessageViewVisibleBounds(1).bottom());
+  }
 }
 
 TEST_F(UnifiedMessageCenterViewTest, InitialPositionMaxOut) {
@@ -385,9 +385,11 @@ TEST_F(UnifiedMessageCenterViewTest, InitialPositionMaxOut) {
   EXPECT_GT(GetMessageListView()->bounds().height(),
             message_center_view()->bounds().height());
 
-  EXPECT_EQ(kUnifiedNotificationCenterSpacing,
-            message_center_view()->bounds().bottom() -
-                GetMessageViewVisibleBounds(5).bottom());
+  if (!features::IsUnifiedMessageCenterRefactorEnabled()) {
+    EXPECT_EQ(kUnifiedNotificationCenterSpacing,
+              message_center_view()->bounds().bottom() -
+                  GetMessageViewVisibleBounds(5).bottom());
+  }
 }
 
 TEST_F(UnifiedMessageCenterViewTest, InitialPositionWithLargeNotification) {
@@ -481,21 +483,16 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterMessageListScrolled) {
   EXPECT_FALSE(GetStackingCounterLabel()->GetVisible());
   EXPECT_TRUE(GetStackingCounterClearAllButton()->GetVisible());
 
-  gfx::Rect previous_bounds = GetMessageViewVisibleBounds(2);
-
-  // Scrolling past a notification should make the counter label visible.
-  const int scroll_amount = GetMessageViewVisibleBounds(0).height() + 1;
+  // Scrolling past 5 notifications should make the counter label visible.
+  const int scroll_amount = (GetMessageViewVisibleBounds(0).height() * 5) + 1;
   GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
 
   EXPECT_TRUE(GetStackingCounterLabel()->GetVisible());
-  // The offset change matches with the scroll amount.
-  EXPECT_EQ(previous_bounds - gfx::Vector2d(0, scroll_amount),
-            GetMessageViewVisibleBounds(2));
 
-  // Scrolling back a tiny bit to reveal the notification should make the
+  // Scrolling back to the top should make the
   // counter label invisible again.
-  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount - 2);
+  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
   message_center_view()->OnMessageCenterScrolled();
   EXPECT_TRUE(GetStackingCounter()->GetVisible());
   EXPECT_FALSE(GetStackingCounterLabel()->GetVisible());
@@ -525,9 +522,12 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterNotificationRemoval) {
 
   // The MessageCenterView should be tall enough to contain the bar, two
   // notifications, and extra padding.
-  EXPECT_EQ(kStackedNotificationBarHeight + GetMessageListView()->height() +
-                kUnifiedNotificationCenterSpacing,
-            message_center_view()->height());
+  int spacing = features::IsUnifiedMessageCenterRefactorEnabled()
+                    ? 0
+                    : kUnifiedNotificationCenterSpacing;
+  EXPECT_EQ(
+      kStackedNotificationBarHeight + GetMessageListView()->height() + spacing,
+      message_center_view()->height());
 
   // Dismiss until there is only 1 notification left. The bar should be
   // hidden after an animation.
@@ -556,30 +556,33 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterLabelRelaidOutOnScroll) {
   // Open the message center at the top of the notification list so the stacking
   // bar is hidden by default.
   std::string id = AddNotification();
-  for (size_t i = 0; i < 20; ++i)
+  for (size_t i = 0; i < 30; ++i)
     AddNotification();
   model()->SetTargetNotification(id);
 
   CreateMessageCenterView();
   EXPECT_FALSE(GetStackingCounterLabel()->GetVisible());
 
-  // Scroll past one notification to show the stacking bar.
-  int scroll_amount = GetMessageViewVisibleBounds(0).height() + 1;
+  // Scroll past 5 notifications so the count label becomes visible
+  int scroll_amount = (GetMessageViewVisibleBounds(0).height() * 5) + 1;
   GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
   EXPECT_TRUE(GetStackingCounterLabel()->GetVisible());
   int label_width = GetStackingCounterLabel()->bounds().width();
   EXPECT_GT(label_width, 0);
 
-  // Scroll past 10 more notifications so the label width must be expanded to
+  // Scroll past 14 notifications so the label width must be expanded to
   // contain longer 2-digit label.
-  scroll_amount = (GetMessageViewVisibleBounds(0).height() * 11) + 1;
+  scroll_amount = (GetMessageViewVisibleBounds(0).height() * 14) + 1;
   GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
   EXPECT_GT(GetStackingCounterLabel()->bounds().width(), label_width);
 }
 
 TEST_F(UnifiedMessageCenterViewTest, RectBelowScroll) {
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
+    return;
+
   for (size_t i = 0; i < 6; ++i)
     AddNotification();
   CreateMessageCenterView();
@@ -599,6 +602,9 @@ TEST_F(UnifiedMessageCenterViewTest, RectBelowScroll) {
 
 TEST_F(UnifiedMessageCenterViewTest,
        RectBelowScrollWithTargetingFirstNotification) {
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
+    return;
+
   std::vector<std::string> ids;
   for (size_t i = 0; i < 10; ++i)
     ids.push_back(AddNotification());
@@ -619,6 +625,9 @@ TEST_F(UnifiedMessageCenterViewTest,
 }
 
 TEST_F(UnifiedMessageCenterViewTest, RectBelowScrollWithTargetingNotification) {
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
+    return;
+
   std::vector<std::string> ids;
   for (size_t i = 0; i < 10; ++i)
     ids.push_back(AddNotification());
@@ -656,6 +665,8 @@ TEST_F(UnifiedMessageCenterViewTest,
 
 TEST_F(UnifiedMessageCenterViewTest,
        RectBelowScrollWithTargetingInvalidNotification) {
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
+    return;
   std::vector<std::string> ids;
   for (size_t i = 0; i < 10; ++i)
     ids.push_back(AddNotification());

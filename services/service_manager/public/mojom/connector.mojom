@@ -186,12 +186,12 @@ interface Connector {
   // |spec|.
   //
   // The flow is basically - remote service wishes to (generically) request
-  // interfaces from this service, and so sends us an InterfaceProvider request
-  // (|source_request|) which it would like us to bind. We forward this request
-  // to the Service Manager, passing our actual InterfaceProvider implementation
-  // in |target|. The Service Manager will only forward interface requests that
-  // were permitted by intersecting |source|'s manifest requirements with the
-  // contents of |spec|.
+  // interfaces from this service, and so sends us an
+  // pending_receiver<InterfaceProvider>(|source_receiver|) which it would like
+  // us to bind. We forward this receiver to the Service Manager, passing our
+  // actual InterfaceProvider implementation in |target|. The Service Manager
+  // will only forward interface requests that were permitted by intersecting
+  // |source|'s manifest requirements with thecontents of |spec|.
   //
   // DEPRECATED: Please do not introduce new uses of this API, as it will be
   // removed soon. Please instead avoid using InterfaceProvider altogether in
@@ -205,6 +205,6 @@ interface Connector {
   //
   FilterInterfaces(string spec,
                    Identity source,
-                   InterfaceProvider& source_request,
-                   InterfaceProvider target);
+                   pending_receiver<InterfaceProvider> source_receiver,
+                   pending_remote<InterfaceProvider> target);
 };

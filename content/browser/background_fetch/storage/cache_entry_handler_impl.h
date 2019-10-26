@@ -15,8 +15,7 @@ namespace background_fetch {
 class CacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
  public:
   explicit CacheEntryHandlerImpl(
-      base::WeakPtr<storage::BlobStorageContext> blob_context);
-
+      scoped_refptr<BlobStorageContextWrapper> blob_storage_context);
   ~CacheEntryHandlerImpl() override;
 
   // CacheStorageCacheEntryHandler implementation:

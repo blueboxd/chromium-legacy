@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;

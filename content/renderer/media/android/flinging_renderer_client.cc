@@ -25,10 +25,9 @@ FlingingRendererClient::FlingingRendererClient(
 
 FlingingRendererClient::~FlingingRendererClient() = default;
 
-void FlingingRendererClient::Initialize(
-    media::MediaResource* media_resource,
-    media::RendererClient* client,
-    const media::PipelineStatusCB& init_cb) {
+void FlingingRendererClient::Initialize(media::MediaResource* media_resource,
+                                        media::RendererClient* client,
+                                        media::PipelineStatusCallback init_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   client_ = client;
@@ -36,7 +35,7 @@ void FlingingRendererClient::Initialize(
   client_extension_binding_.Bind(
       std::move(delayed_bind_client_extension_request_), media_task_runner_);
 
-  MojoRendererWrapper::Initialize(media_resource, client, init_cb);
+  MojoRendererWrapper::Initialize(media_resource, client, std::move(init_cb));
 }
 
 void FlingingRendererClient::OnRemotePlayStateChange(

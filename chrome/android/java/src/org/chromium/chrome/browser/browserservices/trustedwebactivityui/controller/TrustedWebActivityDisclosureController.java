@@ -12,8 +12,8 @@ import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.T
 
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationState;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -28,7 +28,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
         TrustedWebActivityModel.DisclosureEventsCallback {
     private final ChromePreferenceManager mPreferenceManager;
     private final TrustedWebActivityModel mModel;
-    private final TrustedWebActivityVerifier mVerifier;
+    private final Verifier mVerifier;
     private final TrustedWebActivityUmaRecorder mRecorder;
 
     @Inject
@@ -36,7 +36,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
             ChromePreferenceManager preferenceManager,
             TrustedWebActivityModel model,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            TrustedWebActivityVerifier verifier,
+            Verifier verifier,
             TrustedWebActivityUmaRecorder recorder) {
         mVerifier = verifier;
         mPreferenceManager = preferenceManager;

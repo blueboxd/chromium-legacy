@@ -140,6 +140,9 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kGetGamepadsFromCrossOriginSubframe,
           WebFeature::kGetGamepadsFromInsecureContext,
           WebFeature::kGetGamepads,
+          WebFeature::kMovedOrResizedPopup,
+          WebFeature::kMovedOrResizedPopup2sAfterCreation,
+          WebFeature::kDOMWindowOpenPositioningFeatures,
       }));
   return *opt_in_features;
 }

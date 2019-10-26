@@ -98,7 +98,6 @@ WebPreferences::WebPreferences()
       flash_stage3d_baseline_enabled(false),
       privileged_webgl_extensions_enabled(false),
       webgl_errors_to_console_enabled(true),
-      mock_scrollbars_enabled(false),
       hide_scrollbars(false),
       accelerated_2d_canvas_enabled(false),
       antialiased_2d_canvas_disabled(false),

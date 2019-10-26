@@ -22,7 +22,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;

@@ -37,39 +37,44 @@ found in the LICENSE file.
                 Font Style
               </label>
               <select id="fontFamilySelection" name="fontFamily">
-                <option value="sans-serif" selected>Sans-Serif</option>
-                <option value="serif">Serif</option>
-                <option value="monospace">Monospace</option>
+                <option value="sans-serif" selected>Sans-serif font</option>
+                <option value="serif">Serif font</option>
+                <option value="monospace">Monospace font</option>
               </select>
             </div>
-            <fieldset id="themeSelection" class="setting">
-              <legend class="screenReaderOnly">
-                Page Theme
-              </legend>
-              <ul>
-                <li class="themeOption">
-                  <label for="themeOptionLight" class="screenReaderOnly">
-                    Light
-                  </label>
-                  <input type="radio" name="theme" value="light"
-                     id="themeOptionLight" class="light" checked/>
-                </li>
-                <li class="themeOption">
-                  <label for="themeOptionSepia" class="screenReaderOnly">
-                    Sepia
-                  </label>
-                  <input type="radio" name="theme" value="sepia"
-                     id="themeOptionSepia" class="sepia"/>
-                </li>
-                <li class="themeOption">
-                  <label for="themeOptionDark" class="screenReaderOnly">
-                    Dark
-                  </label>
-                  <input type="radio" name="theme" value="dark"
-                      id="themeOptionDark" class="dark"/>
-                </li>
-              </ul>
-            </fieldset>
+            <div class="setting">
+              <fieldset id="themeSelection">
+                <legend class="screenReaderOnly">
+                  Page Theme
+                </legend>
+                <ul>
+                  <li class="themeOption">
+                    <label for="themeOptionLight" class="screenReaderOnly">
+                      Light
+                    </label>
+                    <input type="radio" name="theme" value="light"
+                       id="themeOptionLight" class="light" checked/>
+                    <div class="checkmark"><i class="material-icons">check_circle</i></div>
+                  </li>
+                  <li class="themeOption">
+                    <label for="themeOptionSepia" class="screenReaderOnly">
+                      Sepia
+                    </label>
+                    <input type="radio" name="theme" value="sepia"
+                       id="themeOptionSepia" class="sepia"/>
+                    <div class="checkmark"><i class="material-icons">check_circle</i></div>
+                  </li>
+                  <li class="themeOption">
+                    <label for="themeOptionDark" class="screenReaderOnly">
+                      Dark
+                    </label>
+                    <input type="radio" name="theme" value="dark"
+                        id="themeOptionDark" class="dark"/>
+                    <div class="checkmark"><i class="material-icons">check_circle</i></div>
+                  </li>
+                </ul>
+              </fieldset>
+            </div>
             <div class="setting" id="fontSizeWrapper">
               <label for="fontSizeSelection" class="screenReaderOnly">
                 Font Size
@@ -82,16 +87,16 @@ found in the LICENSE file.
                      max="9"
                      value="2">
               <datalist class="tickmarks">
-                <option value="0" class="beforeThumb" aria-labelledby="slider-label-min"></option>
-                <option value="1" class="beforeThumb"></option>
-                <option value="2" class="afterThumb"></option>
-                <option value="3" class="afterThumb"></option>
-                <option value="4" class="afterThumb"></option>
-                <option value="5" class="afterThumb"></option>
-                <option value="6" class="afterThumb"></option>
-                <option value="7" class="afterThumb"></option>
-                <option value="8" class="afterThumb"></option>
-                <option value="9" class="afterThumb" aria-labelledby="slider-label-max"></option>
+                <option value="0" aria-labelledby="slider-label-min"></option>
+                <option value="1"></option>
+                <option value="2"></option>
+                <option value="3"></option>
+                <option value="4"></option>
+                <option value="5"></option>
+                <option value="6"></option>
+                <option value="7"></option>
+                <option value="8"></option>
+                <option value="9" aria-labelledby="slider-label-max"></option>
               </datalist>
               <div class="label-container">
                 <span id="slider-label-min">Small</span>

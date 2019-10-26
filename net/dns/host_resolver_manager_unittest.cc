@@ -623,7 +623,8 @@ TEST_F(HostResolverManagerTest, AsynchronousLookup) {
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
       GetCacheHit(HostCache::Key("just.testing", DnsQueryType::UNSPECIFIED,
                                  0 /* host_resolver_flags */,
-                                 HostResolverSource::ANY));
+                                 HostResolverSource::ANY,
+                                 NetworkIsolationKey()));
   EXPECT_TRUE(cache_result);
 }
 
@@ -820,7 +821,8 @@ TEST_F(HostResolverManagerTest, FailedAsynchronousLookup) {
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
       GetCacheHit(HostCache::Key("just.testing", DnsQueryType::UNSPECIFIED,
                                  0 /* host_resolver_flags */,
-                                 HostResolverSource::ANY));
+                                 HostResolverSource::ANY,
+                                 NetworkIsolationKey()));
   EXPECT_FALSE(cache_result);
 }
 
@@ -2246,9 +2248,9 @@ TEST_F(HostResolverManagerTest, NameCollisionIcann) {
   // for failed entries from proc-based resolver. That said, the fixed TTL is 0,
   // so it should never be cached.
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
-      GetCacheHit(HostCache::Key("single", DnsQueryType::UNSPECIFIED,
-                                 0 /* host_resolver_flags */,
-                                 HostResolverSource::ANY));
+      GetCacheHit(HostCache::Key(
+          "single", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+          HostResolverSource::ANY, NetworkIsolationKey()));
   EXPECT_FALSE(cache_result);
 
   ResolveHostResponseHelper multiple_response(resolver_->CreateRequest(
@@ -4919,9 +4921,10 @@ TEST_F(HostResolverManagerDnsTest, AAAACompletesFirst_AutomaticMode) {
   ASSERT_THAT(response.result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
-  HostCache::Key insecure_key = HostCache::Key(
-      "secure_slow_nx_insecure_4slow_ok", DnsQueryType::UNSPECIFIED,
-      0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key insecure_key =
+      HostCache::Key("secure_slow_nx_insecure_4slow_ok",
+                     DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+                     HostResolverSource::ANY, NetworkIsolationKey());
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
       GetCacheHit(insecure_key);
   EXPECT_TRUE(!!cache_result);
@@ -4946,9 +4949,9 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic) {
       response_secure.request()->GetAddressResults().value().endpoints(),
       testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                     CreateExpected("::1", 80)));
-  HostCache::Key secure_key =
-      HostCache::Key("automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key secure_key = HostCache::Key(
+      "automatic", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   cache_result = GetCacheHit(secure_key);
   EXPECT_TRUE(!!cache_result);
@@ -4965,7 +4968,8 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic) {
                                     CreateExpected("::1", 80)));
   HostCache::Key insecure_key =
       HostCache::Key("insecure_automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   cache_result = GetCacheHit(insecure_key);
   EXPECT_TRUE(!!cache_result);
 
@@ -4988,7 +4992,8 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_SecureCache) {
   // Populate cache with a secure entry.
   HostCache::Key cached_secure_key =
       HostCache::Key("automatic_cached", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   cached_secure_key.secure = true;
   IPEndPoint kExpectedSecureIP = CreateExpected("192.168.1.102", 80);
   PopulateCache(cached_secure_key, kExpectedSecureIP);
@@ -5014,7 +5019,8 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_InsecureCache) {
   // Populate cache with an insecure entry.
   HostCache::Key cached_insecure_key =
       HostCache::Key("insecure_automatic_cached", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   IPEndPoint kExpectedInsecureIP = CreateExpected("192.168.1.103", 80);
   PopulateCache(cached_insecure_key, kExpectedInsecureIP);
 
@@ -5045,13 +5051,15 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Downgrade) {
   // Populate cache with both secure and insecure entries.
   HostCache::Key cached_secure_key =
       HostCache::Key("automatic_cached", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   cached_secure_key.secure = true;
   IPEndPoint kExpectedSecureIP = CreateExpected("192.168.1.102", 80);
   PopulateCache(cached_secure_key, kExpectedSecureIP);
   HostCache::Key cached_insecure_key =
       HostCache::Key("insecure_automatic_cached", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   IPEndPoint kExpectedInsecureIP = CreateExpected("192.168.1.103", 80);
   PopulateCache(cached_insecure_key, kExpectedInsecureIP);
 
@@ -5085,9 +5093,9 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Downgrade) {
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                             CreateExpected("::1", 80)));
-  HostCache::Key key =
-      HostCache::Key("automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key key = HostCache::Key(
+      "automatic", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   cache_result = GetCacheHit(key);
   EXPECT_TRUE(!!cache_result);
 }
@@ -5109,17 +5117,17 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Unavailable) {
       response_automatic.request()->GetAddressResults().value().endpoints(),
       testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                     CreateExpected("::1", 80)));
-  HostCache::Key secure_key =
-      HostCache::Key("automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key secure_key = HostCache::Key(
+      "automatic", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
       GetCacheHit(secure_key);
   EXPECT_FALSE(!!cache_result);
 
-  HostCache::Key insecure_key =
-      HostCache::Key("automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key insecure_key = HostCache::Key(
+      "automatic", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   cache_result = GetCacheHit(insecure_key);
   EXPECT_TRUE(!!cache_result);
 }
@@ -5138,17 +5146,17 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Unavailable_Fail) {
       request_context_.get(), host_cache_.get()));
   ASSERT_THAT(response_secure.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
 
-  HostCache::Key secure_key =
-      HostCache::Key("secure", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key secure_key = HostCache::Key(
+      "secure", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
       GetCacheHit(secure_key);
   EXPECT_FALSE(!!cache_result);
 
-  HostCache::Key insecure_key =
-      HostCache::Key("secure", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key insecure_key = HostCache::Key(
+      "secure", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   cache_result = GetCacheHit(insecure_key);
   EXPECT_FALSE(!!cache_result);
 }
@@ -5160,9 +5168,9 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Stale) {
   resolver_->SetDnsConfigOverrides(overrides);
 
   // Populate cache with insecure entry.
-  HostCache::Key cached_stale_key =
-      HostCache::Key("automatic_stale", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key cached_stale_key = HostCache::Key(
+      "automatic_stale", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   IPEndPoint kExpectedStaleIP = CreateExpected("192.168.1.102", 80);
   PopulateCache(cached_stale_key, kExpectedStaleIP);
   MakeCacheStale();
@@ -5202,9 +5210,9 @@ TEST_F(HostResolverManagerDnsTest,
       response_secure.request()->GetAddressResults().value().endpoints(),
       testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                     CreateExpected("::1", 80)));
-  HostCache::Key secure_key =
-      HostCache::Key("automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key secure_key = HostCache::Key(
+      "automatic", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   cache_result = GetCacheHit(secure_key);
   EXPECT_TRUE(!!cache_result);
@@ -5221,13 +5229,15 @@ TEST_F(HostResolverManagerDnsTest,
       testing::ElementsAre(CreateExpected("192.168.1.100", 80)));
   HostCache::Key insecure_key =
       HostCache::Key("insecure_automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   cache_result = GetCacheHit(insecure_key);
   EXPECT_TRUE(!!cache_result);
 
   HostCache::Key cached_insecure_key =
       HostCache::Key("insecure_automatic_cached", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   IPEndPoint kExpectedInsecureIP = CreateExpected("192.168.1.101", 80);
   PopulateCache(cached_insecure_key, kExpectedInsecureIP);
 
@@ -5264,9 +5274,9 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_DotActive) {
       response_secure.request()->GetAddressResults().value().endpoints(),
       testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                     CreateExpected("::1", 80)));
-  HostCache::Key secure_key =
-      HostCache::Key("automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key secure_key = HostCache::Key(
+      "automatic", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   cache_result = GetCacheHit(secure_key);
   EXPECT_TRUE(!!cache_result);
@@ -5283,13 +5293,15 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_DotActive) {
       testing::ElementsAre(CreateExpected("192.168.1.100", 80)));
   HostCache::Key insecure_key =
       HostCache::Key("insecure_automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   cache_result = GetCacheHit(insecure_key);
   EXPECT_TRUE(!!cache_result);
 
   HostCache::Key cached_insecure_key =
       HostCache::Key("insecure_automatic_cached", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   IPEndPoint kExpectedInsecureIP = CreateExpected("192.168.1.101", 80);
   PopulateCache(cached_insecure_key, kExpectedInsecureIP);
 
@@ -5319,9 +5331,9 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Secure) {
       HostPortPair("secure", 80), NetLogWithSource(), base::nullopt,
       request_context_.get(), host_cache_.get()));
   ASSERT_THAT(response_secure.result_error(), IsOk());
-  HostCache::Key secure_key =
-      HostCache::Key("secure", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key secure_key = HostCache::Key(
+      "secure", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   cache_result = GetCacheHit(secure_key);
   EXPECT_TRUE(!!cache_result);
@@ -5330,9 +5342,9 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Secure) {
       HostPortPair("ok", 80), NetLogWithSource(), base::nullopt,
       request_context_.get(), host_cache_.get()));
   ASSERT_THAT(response_insecure.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
-  HostCache::Key insecure_key =
-      HostCache::Key("ok", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key insecure_key = HostCache::Key(
+      "ok", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   cache_result = GetCacheHit(insecure_key);
   EXPECT_FALSE(!!cache_result);
 
@@ -5360,9 +5372,9 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Secure_InsecureAsyncDisabled) {
       HostPortPair("secure", 80), NetLogWithSource(), base::nullopt,
       request_context_.get(), host_cache_.get()));
   ASSERT_THAT(response_secure.result_error(), IsOk());
-  HostCache::Key secure_key =
-      HostCache::Key("secure", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key secure_key = HostCache::Key(
+      "secure", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   cache_result = GetCacheHit(secure_key);
   EXPECT_TRUE(!!cache_result);
@@ -5378,9 +5390,9 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Secure_Local_CacheMiss) {
   source_none_parameters.source = HostResolverSource::LOCAL_ONLY;
 
   // Populate cache with an insecure entry.
-  HostCache::Key cached_insecure_key =
-      HostCache::Key("automatic", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key cached_insecure_key = HostCache::Key(
+      "automatic", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   IPEndPoint kExpectedInsecureIP = CreateExpected("192.168.1.102", 80);
   PopulateCache(cached_insecure_key, kExpectedInsecureIP);
 
@@ -5405,9 +5417,9 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Secure_Local_CacheHit) {
   source_none_parameters.source = HostResolverSource::LOCAL_ONLY;
 
   // Populate cache with a secure entry.
-  HostCache::Key cached_secure_key =
-      HostCache::Key("secure", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  HostCache::Key cached_secure_key = HostCache::Key(
+      "secure", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
+      HostResolverSource::ANY, NetworkIsolationKey());
   cached_secure_key.secure = true;
   IPEndPoint kExpectedSecureIP = CreateExpected("192.168.1.103", 80);
   PopulateCache(cached_secure_key, kExpectedSecureIP);
@@ -5888,7 +5900,7 @@ TEST_F(HostResolverManagerDnsTest, NotFoundTTL) {
   EXPECT_THAT(no_data_response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(no_data_response.request()->GetAddressResults());
   HostCache::Key key("empty", DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::EntryStaleness staleness;
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
       host_cache_->Lookup(key, base::TimeTicks::Now(),
@@ -5905,7 +5917,7 @@ TEST_F(HostResolverManagerDnsTest, NotFoundTTL) {
               IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(no_domain_response.request()->GetAddressResults());
   HostCache::Key nxkey("nodomain", DnsQueryType::UNSPECIFIED, 0,
-                       HostResolverSource::ANY);
+                       HostResolverSource::ANY, NetworkIsolationKey());
   cache_result = host_cache_->Lookup(nxkey, base::TimeTicks::Now(),
                                      false /* ignore_secure */);
   EXPECT_TRUE(!!cache_result);
@@ -5979,10 +5991,12 @@ TEST_F(HostResolverManagerDnsTest, CachedError_AutomaticMode) {
 
   HostCache::Key insecure_key =
       HostCache::Key("automatic_nodomain", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   HostCache::Key secure_key =
       HostCache::Key("automatic_nodomain", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   secure_key.secure = true;
 
   // Expect cache initially empty.
@@ -6018,10 +6032,12 @@ TEST_F(HostResolverManagerDnsTest, CachedError_SecureMode) {
 
   HostCache::Key insecure_key =
       HostCache::Key("automatic_nodomain", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   HostCache::Key secure_key =
       HostCache::Key("automatic_nodomain", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+                     0 /* host_resolver_flags */, HostResolverSource::ANY,
+                     NetworkIsolationKey());
   secure_key.secure = true;
 
   // Expect cache initially empty.

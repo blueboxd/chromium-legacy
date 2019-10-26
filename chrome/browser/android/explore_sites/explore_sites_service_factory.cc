@@ -85,7 +85,7 @@ KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
   auto history_stats_reporter = std::make_unique<HistoryStatisticsReporter>(
-      history_service, profile->GetPrefs(), base::DefaultClock::GetInstance());
+      history_service, profile->GetPrefs());
 
   return new ExploreSitesServiceImpl(std::move(explore_sites_store),
                                      std::move(url_loader_factory_getter),

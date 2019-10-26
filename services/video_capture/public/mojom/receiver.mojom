@@ -24,7 +24,7 @@ interface Receiver {
   // guarantees that the buffer and its contents stay alive and unchanged until
   // VideoFrameReceiver releases the given |access_permission|.
   OnFrameReadyInBuffer(int32 buffer_id, int32 frame_feedback_id,
-                       ScopedAccessPermission access_permission,
+                       pending_remote<ScopedAccessPermission> access_permission,
                        media.mojom.VideoFrameInfo frame_info);
 
   // Indicates that the producer is no longer going to use the buffer with id

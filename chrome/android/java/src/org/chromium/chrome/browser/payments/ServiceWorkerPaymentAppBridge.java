@@ -45,7 +45,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     private static boolean sCanMakePaymentForTesting;
 
     /** The interface for checking whether there is an installed SW payment app. */
-    static public interface HasServiceWorkerPaymentAppsCallback {
+    public static interface HasServiceWorkerPaymentAppsCallback {
         /**
          * Called to return checking result.
          *
@@ -55,7 +55,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     /** The interface for getting all installed SW payment apps' information. */
-    static public interface GetServiceWorkerPaymentAppsInfoCallback {
+    public static interface GetServiceWorkerPaymentAppsInfoCallback {
         /**
          * Called to return installed SW payment apps' information.
          *
@@ -272,18 +272,25 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
                 // Notify closing payment app window so as to abort payment if unsecure.
                 WebContents webContents = tab.getWebContents();
                 if (!SslValidityChecker.isValidPageInPaymentHandlerWindow(webContents)) {
-                    ServiceWorkerPaymentAppBridgeJni.get().onClosingPaymentAppWindow(webContents,
-                            PaymentEventResponseType.PAYMENT_HANDLER_INSECURE_NAVIGATION);
+                    onClosingPaymentAppWindowForInsecureNavigation(webContents);
                 }
             }
 
             @Override
             public void onDidAttachInterstitialPage(Tab tab) {
-                ServiceWorkerPaymentAppBridgeJni.get().onClosingPaymentAppWindow(
-                        tab.getWebContents(),
-                        PaymentEventResponseType.PAYMENT_HANDLER_INSECURE_NAVIGATION);
+                onClosingPaymentAppWindowForInsecureNavigation(tab.getWebContents());
             }
         });
+    }
+
+    /**
+     * Notify closing the opened payment app window for insecure navigation.
+     *
+     * @param webContents The web contents in the opened window.
+     */
+    public static void onClosingPaymentAppWindowForInsecureNavigation(WebContents webContents) {
+        ServiceWorkerPaymentAppBridgeJni.get().onClosingPaymentAppWindow(
+                webContents, PaymentEventResponseType.PAYMENT_HANDLER_INSECURE_NAVIGATION);
     }
 
     /**

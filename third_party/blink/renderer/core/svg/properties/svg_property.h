@@ -65,7 +65,7 @@ class SVGPropertyBase : public GarbageCollected<SVGPropertyBase> {
   // WebAnimations transition.
   virtual void Add(SVGPropertyBase*, SVGElement*) = 0;
   virtual void CalculateAnimatedValue(
-      SVGAnimationElement*,
+      const SVGAnimationElement&,
       float percentage,
       unsigned repeat_count,
       SVGPropertyBase* from,

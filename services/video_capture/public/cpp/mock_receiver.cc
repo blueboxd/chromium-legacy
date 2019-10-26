@@ -5,6 +5,7 @@
 #include "services/video_capture/public/cpp/mock_receiver.h"
 
 #include "base/stl_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 
 namespace video_capture {
@@ -38,9 +39,9 @@ void MockReceiver::OnNewBuffer(
 void MockReceiver::OnFrameReadyInBuffer(
     int32_t buffer_id,
     int32_t frame_feedback_id,
-    mojom::ScopedAccessPermissionPtr access_permission,
+    mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission,
     media::mojom::VideoFrameInfoPtr frame_info) {
-  DoOnFrameReadyInBuffer(buffer_id, frame_feedback_id, &access_permission,
+  DoOnFrameReadyInBuffer(buffer_id, frame_feedback_id, access_permission,
                          &frame_info);
   if (should_store_access_permissions_)
     access_permissions_.emplace_back(std::move(access_permission));

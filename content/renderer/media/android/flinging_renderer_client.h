@@ -43,7 +43,7 @@ class CONTENT_EXPORT FlingingRendererClient
   // media::MojoRendererWrapper overrides.
   void Initialize(media::MediaResource* media_resource,
                   media::RendererClient* client,
-                  const media::PipelineStatusCB& init_cb) override;
+                  media::PipelineStatusCallback init_cb) override;
 
   // media::mojom::FlingingRendererClientExtension implementation
   void OnRemotePlayStateChange(media::MediaStatus::State state) override;

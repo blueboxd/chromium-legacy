@@ -67,6 +67,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "key.icon",
     "laptop.icon",
     "launch.icon",
+    "media_toolbar_button.icon",
+    "media_toolbar_button_touch.icon",
     "mixed_content.icon",
     "my_location.icon",
     "navigate_home.icon",

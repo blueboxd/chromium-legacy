@@ -16,7 +16,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.UiThreadTaskTraits;

@@ -736,35 +736,35 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
     if (state == kNoSource) {
       // Check if the play button or overflow menu has the "disabled" attribute
       // set so we avoid unnecessarily resetting it.
-      if (!play_button_->hasAttribute(html_names::kDisabledAttr)) {
+      if (!play_button_->FastHasAttribute(html_names::kDisabledAttr)) {
         play_button_->setAttribute(html_names::kDisabledAttr, "");
         updated = true;
       }
 
       if (ShouldShowVideoControls() &&
-          !overflow_menu_->hasAttribute(html_names::kDisabledAttr)) {
+          !overflow_menu_->FastHasAttribute(html_names::kDisabledAttr)) {
         overflow_menu_->setAttribute(html_names::kDisabledAttr, "");
         updated = true;
       }
     } else {
-      if (play_button_->hasAttribute(html_names::kDisabledAttr)) {
+      if (play_button_->FastHasAttribute(html_names::kDisabledAttr)) {
         play_button_->removeAttribute(html_names::kDisabledAttr);
         updated = true;
       }
 
-      if (overflow_menu_->hasAttribute(html_names::kDisabledAttr)) {
+      if (overflow_menu_->FastHasAttribute(html_names::kDisabledAttr)) {
         overflow_menu_->removeAttribute(html_names::kDisabledAttr);
         updated = true;
       }
     }
 
     if (state == kNoSource || state == kNotLoaded) {
-      if (!timeline_->hasAttribute(html_names::kDisabledAttr)) {
+      if (!timeline_->FastHasAttribute(html_names::kDisabledAttr)) {
         timeline_->setAttribute(html_names::kDisabledAttr, "");
         updated = true;
       }
     } else {
-      if (timeline_->hasAttribute(html_names::kDisabledAttr)) {
+      if (timeline_->FastHasAttribute(html_names::kDisabledAttr)) {
         timeline_->removeAttribute(html_names::kDisabledAttr);
         updated = true;
       }
@@ -1195,7 +1195,7 @@ void MediaControlsImpl::ExitFullscreen() {
 
 bool MediaControlsImpl::IsFullscreenEnabled() const {
   return fullscreen_button_->IsWanted() &&
-         !fullscreen_button_->hasAttribute(html_names::kDisabledAttr);
+         !fullscreen_button_->FastHasAttribute(html_names::kDisabledAttr);
 }
 
 void MediaControlsImpl::RemotePlaybackStateChanged() {
@@ -1314,7 +1314,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
 
   // The overflow menu is always wanted if it has the "disabled" attr set.
   overflow_wanted = overflow_wanted ||
-                    overflow_menu_->hasAttribute(html_names::kDisabledAttr);
+                    overflow_menu_->FastHasAttribute(html_names::kDisabledAttr);
   overflow_menu_->SetDoesFit(overflow_wanted);
   overflow_menu_->SetIsWanted(overflow_wanted);
 

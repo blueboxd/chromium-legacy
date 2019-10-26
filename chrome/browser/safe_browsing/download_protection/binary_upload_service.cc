@@ -35,13 +35,13 @@ const int kScanningTimeoutSeconds = 5 * 60;           // 5 minutes
 const char kSbBinaryUploadUrl[] =
     "https://safebrowsing.google.com/safebrowsing/uploads/webprotect";
 
-std::string* GetDMTokenForTestingStorage() {
+std::string* GetTestingDMToken() {
   static std::string dm_token;
   return &dm_token;
 }
 
 std::string GetDMToken() {
-  std::string dm_token = *GetDMTokenForTestingStorage();
+  std::string dm_token = *GetTestingDMToken();
 
 #if !defined(OS_CHROMEOS)
   // This is not compiled on chromeos because

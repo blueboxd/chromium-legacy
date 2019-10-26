@@ -24,8 +24,7 @@ namespace media_router {
 class ChromeUdpSocket : public openscreen::platform::UdpSocket,
                         network::mojom::UDPSocketListener {
  public:
-  ChromeUdpSocket(openscreen::platform::TaskRunner* task_runner,
-                  Client* client,
+  ChromeUdpSocket(Client* client,
                   const openscreen::IPEndpoint& local_endpoint,
                   mojo::Remote<network::mojom::UDPSocket> udp_socket,
                   mojo::PendingReceiver<network::mojom::UDPSocketListener>
@@ -57,6 +56,9 @@ class ChromeUdpSocket : public openscreen::platform::UdpSocket,
                     const base::Optional<net::IPEndPoint>& address);
   void JoinGroupCallback(int32_t result);
   void SendCallback(int32_t result);
+
+  // Note: This can be null, per UdpSocket API header comments.
+  Client* const client_;
 
   // The local endpoint can change as a result of bind calls.
   openscreen::IPEndpoint local_endpoint_;

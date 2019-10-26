@@ -45,6 +45,7 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
       bool numeric,
       bool ipv6,
       DBusMethodCallback<std::vector<std::string>> callback) override;
+  void SetKstaledRatio(uint8_t val, KstaledRatioCallback callback) override;
   void GetNetworkStatus(DBusMethodCallback<std::string> callback) override;
   void GetNetworkInterfaces(DBusMethodCallback<std::string> callback) override;
   void GetPerfOutput(base::TimeDelta duration,

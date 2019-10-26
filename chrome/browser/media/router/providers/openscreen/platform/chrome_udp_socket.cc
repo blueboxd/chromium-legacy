@@ -43,7 +43,7 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(
 
   return ErrorOr<UdpSocketUniquePtr>(
       std::make_unique<media_router::ChromeUdpSocket>(
-          task_runner, client, local_endpoint, std::move(socket),
+          client, local_endpoint, std::move(socket),
           std::move(pending_listener)));
 }
 
@@ -129,13 +129,11 @@ const IPEndpoint ToOpenScreenEndpoint(const net::IPEndPoint& endpoint) {
 }  // namespace
 
 ChromeUdpSocket::ChromeUdpSocket(
-    TaskRunner* task_runner,
     Client* client,
     const IPEndpoint& local_endpoint,
     mojo::Remote<network::mojom::UDPSocket> udp_socket,
     mojo::PendingReceiver<network::mojom::UDPSocketListener> pending_listener)
-
-    : UdpSocket(task_runner, client),
+    : client_(client),
       local_endpoint_(local_endpoint),
       udp_socket_(std::move(udp_socket)),
       pending_listener_(std::move(pending_listener)) {}
@@ -199,8 +197,12 @@ void ChromeUdpSocket::OnReceived(
     int32_t net_result,
     const base::Optional<net::IPEndPoint>& source_endpoint,
     base::Optional<base::span<const uint8_t>> data) {
+  if (!client_) {
+    return;  // Ignore if there's no Client to receive the result.
+  }
+
   if (net_result != net::OK) {
-    OnRead(Error::Code::kSocketReadFailure);
+    client_->OnRead(this, Error::Code::kSocketReadFailure);
   } else if (data) {
     // TODO(jophba): fixup when UdpPacket provides a data copy constructor.
     UdpPacket packet;
@@ -211,7 +213,7 @@ void ChromeUdpSocket::OnReceived(
     if (source_endpoint) {
       packet.set_source(ToOpenScreenEndpoint(source_endpoint.value()));
     }
-    OnRead(std::move(packet));
+    client_->OnRead(this, std::move(packet));
   }
 
   udp_socket_->ReceiveMore(1);
@@ -221,14 +223,21 @@ void ChromeUdpSocket::BindCallback(
     int32_t result,
     const base::Optional<net::IPEndPoint>& address) {
   if (result != net::OK) {
-    OnError(Error(Error::Code::kSocketBindFailure, net::ErrorToString(result)));
+    if (client_) {
+      client_->OnError(this, Error(Error::Code::kSocketBindFailure,
+                                   net::ErrorToString(result)));
+    }
     return;
   }
 
-  // This is an approximate value for number of packets, and may need to be
-  // adjusted when we have real world data.
-  constexpr int kNumPacketsReadyFor = 30;
-  udp_socket_->ReceiveMore(kNumPacketsReadyFor);
+  // Enable packet receives only if there is a Client to dispatch them to.
+  if (client_) {
+    // This is an approximate value for number of packets, and may need to be
+    // adjusted when we have real world data.
+    constexpr int kNumPacketsReadyFor = 30;
+    udp_socket_->ReceiveMore(kNumPacketsReadyFor);
+  }
+
   if (address) {
     local_endpoint_ = ToOpenScreenEndpoint(address.value());
     if (pending_listener_.is_valid()) {
@@ -238,15 +247,16 @@ void ChromeUdpSocket::BindCallback(
 }
 
 void ChromeUdpSocket::JoinGroupCallback(int32_t result) {
-  if (result != net::OK) {
-    OnError(Error(Error::Code::kSocketOptionSettingFailure,
-                  net::ErrorToString(result)));
+  if (result != net::OK && client_) {
+    client_->OnError(this, Error(Error::Code::kSocketOptionSettingFailure,
+                                 net::ErrorToString(result)));
   }
 }
 
 void ChromeUdpSocket::SendCallback(int32_t result) {
-  if (result != net::OK) {
-    OnError(Error(Error::Code::kSocketSendFailure, net::ErrorToString(result)));
+  if (result != net::OK && client_) {
+    client_->OnSendError(this, Error(Error::Code::kSocketSendFailure,
+                                     net::ErrorToString(result)));
   }
 }
 

@@ -654,7 +654,7 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
     // it assumes that if the 'dir' attribute is present, then removing it will
     // suffice, and otherwise it sets the property in the inline style
     // declaration.
-    if (element->hasAttribute(html_names::kDirAttr)) {
+    if (element->FastHasAttribute(html_names::kDirAttr)) {
       // FIXME: If this is a BDO element, we should probably just remove it if
       // it has no other attributes, like we (should) do with B and I elements.
       RemoveElementAttribute(element, html_names::kDirAttr);

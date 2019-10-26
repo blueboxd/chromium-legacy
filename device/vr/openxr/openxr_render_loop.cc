@@ -81,10 +81,6 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
   return frame_data;
 }
 
-mojom::XRGamepadDataPtr OpenXrRenderLoop::GetNextGamepadData() {
-  return input_helper_->GetGamepadData(openxr_->GetPredictedDisplayTime());
-}
-
 bool OpenXrRenderLoop::StartRuntime() {
   DCHECK(!openxr_);
   DCHECK(!input_helper_);

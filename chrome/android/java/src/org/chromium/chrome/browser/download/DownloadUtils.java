@@ -48,6 +48,8 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -106,19 +108,17 @@ public class DownloadUtils {
             R.string.download_ui_kb, R.string.download_ui_mb, R.string.download_ui_gb};
 
     // Set will be more expensive to initialize, so use an ArrayList here.
-    private static final List<String> MIME_TYPES_TO_OPEN =
-            new ArrayList<String>(Arrays.asList(OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME,
-                    "application/pdf", "application/x-x509-ca-cert", "application/x-x509-user-cert",
-                    "application/x-x509-server-cert", "application/x-pkcs12",
-                    "application/application/x-pem-file", "application/pkix-cert",
-                    "application/x-wifi-config"));
+    private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
+            MimeUtils.OMA_DOWNLOAD_DESCRIPTOR_MIME, "application/pdf", "application/x-x509-ca-cert",
+            "application/x-x509-user-cert", "application/x-x509-server-cert",
+            "application/x-pkcs12", "application/application/x-pem-file", "application/pkix-cert",
+            "application/x-wifi-config"));
 
     private static final String TAG = "download";
 
     private static final String DEFAULT_MIME_TYPE = "*/*";
     private static final String MIME_TYPE_DELIMITER = "/";
     private static final String MIME_TYPE_SHARING_URL = "text/plain";
-    private static final String UNKNOWN_MIME_TYPE = "application/unknown";
 
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
@@ -389,32 +389,6 @@ public class DownloadUtils {
         return uri != null ? uri.toString() : new String();
     }
 
-    /**
-     * If the given MIME type is null, or one of the "generic" types (text/plain
-     * or application/octet-stream) map it to a type that Android can deal with.
-     * If the given type is not generic, return it unchanged.
-     * See {@code ChromeDownloadDelegate#remapGenericMimeType}.
-     *
-     * @param mimeType MIME type provided by the server.
-     * @param url URL of the data being loaded.
-     * @param filename file name obtained from content disposition header
-     * @return The MIME type that should be used for this data.
-     */
-    @CalledByNative
-    public static String remapGenericMimeType(String mimeType, String url, String filename) {
-        if (TextUtils.isEmpty(mimeType)) mimeType = UNKNOWN_MIME_TYPE;
-        return ChromeDownloadDelegate.remapGenericMimeType(mimeType, url, filename);
-    }
-
-    /**
-     * Returns true if the download is for OMA download description file.
-     *
-     * @param mimeType The mime type of the download.
-     * @return true if the downloaded is OMA download description, or false otherwise.
-     */
-    public static boolean isOMADownloadDescription(String mimeType) {
-        return OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(mimeType);
-    }
 
     /**
      * Determines if the download should be immediately opened after
@@ -1057,6 +1031,21 @@ public class DownloadUtils {
             }
         }
         return originalUri;
+    }
+
+    /**
+     * @return The status of prompt for download pref, defined by {@link DownloadPromptStatus}.
+     */
+    @DownloadPromptStatus
+    public static int getPromptForDownloadAndroid() {
+        return PrefServiceBridge.getInstance().getInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID);
+    }
+
+    /**
+     * @param status New status to update the prompt for download preference.
+     */
+    public static void setPromptForDownloadAndroid(@DownloadPromptStatus int status) {
+        PrefServiceBridge.getInstance().setInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID, status);
     }
 
     @NativeMethods

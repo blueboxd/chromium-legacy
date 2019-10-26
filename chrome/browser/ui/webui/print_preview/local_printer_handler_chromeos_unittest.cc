@@ -10,12 +10,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/containers/flat_set.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/printing/printers_map.h"
-#include "chrome/browser/chromeos/printing/printing_stubs.h"
+#include "chrome/browser/chromeos/printing/test_cups_printers_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -77,33 +75,6 @@ Printer CreateEnterprisePrinter(const std::string& id,
   return printer;
 }
 
-class TestCupsPrintersManager : public chromeos::StubCupsPrintersManager {
- public:
-  std::vector<Printer> GetPrinters(PrinterClass printer_class) const override {
-    return printers_.Get(printer_class);
-  }
-
-  bool IsPrinterInstalled(const Printer& printer) const override {
-    return installed_.contains(printer.id());
-  }
-
-  base::Optional<Printer> GetPrinter(const std::string& id) const override {
-    return printers_.Get(id);
-  }
-
-  // Add |printer| to the corresponding list in |printers_| bases on the given
-  // |printer_class|.
-  void AddPrinter(const Printer& printer, PrinterClass printer_class) {
-    printers_.Insert(printer_class, printer);
-  }
-
-  void InstallPrinter(const std::string& id) { installed_.insert(id); }
-
- private:
-  chromeos::PrintersMap printers_;
-  base::flat_set<std::string> installed_;
-};
-
 class TestPrinterConfigurer : public chromeos::StubPrinterConfigurer {
  public:
   void SetUpPrinter(const Printer& printer,
@@ -144,7 +115,7 @@ class LocalPrinterHandlerChromeosTest : public testing::Test {
   // Must outlive |printers_manager_|.
   TestingProfile profile_;
   scoped_refptr<TestPrintBackend> test_backend_;
-  TestCupsPrintersManager printers_manager_;
+  chromeos::TestCupsPrintersManager printers_manager_;
   std::unique_ptr<LocalPrinterHandlerChromeos> local_printer_handler_;
 
  private:

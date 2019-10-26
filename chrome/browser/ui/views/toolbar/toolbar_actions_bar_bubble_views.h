@@ -34,15 +34,16 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
 
   const views::Label* body_text() const { return body_text_; }
   const views::Label* item_list() const { return item_list_; }
-  views::ImageButton* learn_more_button() const { return image_button_; }
+  views::ImageButton* learn_more_button() const { return learn_more_button_; }
 
  private:
   friend class ToolbarActionsBarBubbleViewsTest;
 
+  std::unique_ptr<views::View> CreateExtraInfoView();
+
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
@@ -56,7 +57,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   bool delegate_notified_of_close_ = false;
   views::Label* body_text_ = nullptr;
   views::Label* item_list_ = nullptr;
-  views::ImageButton* image_button_ = nullptr;
+  views::ImageButton* learn_more_button_ = nullptr;
   const bool anchored_to_action_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarBubbleViews);

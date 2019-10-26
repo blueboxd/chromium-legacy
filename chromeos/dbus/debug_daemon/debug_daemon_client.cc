@@ -551,6 +551,17 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void SetKstaledRatio(uint8_t val, KstaledRatioCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kKstaledSetRatio);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendByte(val);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnSetKstaledRatio,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void SetSchedulerConfigurationV2(
       const std::string& config_name,
       bool lock_policy,
@@ -841,6 +852,25 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       dbus::MessageReader reader(response);
       reader.PopBool(&result);
     }
+    std::move(callback).Run(result);
+  }
+
+  void OnSetKstaledRatio(KstaledRatioCallback callback,
+                         dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to read debugd response";
+      std::move(callback).Run(false);
+      return;
+    }
+
+    bool result = false;
+    dbus::MessageReader reader(response);
+    if (!reader.PopBool(&result)) {
+      LOG(ERROR) << "Debugd response did not contain a bool";
+      std::move(callback).Run(false);
+      return;
+    }
+
     std::move(callback).Run(result);
   }
 

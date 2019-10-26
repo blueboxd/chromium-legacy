@@ -595,11 +595,11 @@ WTF::TextEncoding HTMLMetaElement::ComputeEncoding() const {
 }
 
 const AtomicString& HTMLMetaElement::Content() const {
-  return getAttribute(html_names::kContentAttr);
+  return FastGetAttribute(html_names::kContentAttr);
 }
 
 const AtomicString& HTMLMetaElement::HttpEquiv() const {
-  return getAttribute(html_names::kHttpEquivAttr);
+  return FastGetAttribute(html_names::kHttpEquivAttr);
 }
 
 const AtomicString& HTMLMetaElement::GetName() const {

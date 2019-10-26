@@ -280,6 +280,12 @@ ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {
 void ToplevelWindowEventHandler::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
+  // Cancel the left edge swipe back during screen rotation.
+  if (metrics & DISPLAY_METRIC_ROTATION) {
+    back_gesture_affordance_.reset();
+    going_back_started_ = false;
+  }
+
   if (!window_resizer_ || !(metrics & DISPLAY_METRIC_ROTATION))
     return;
 

@@ -735,6 +735,8 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
       return 0xFFFFFFFF;
     case CSSValueID::kActivecaption:
       return 0xFFCCCCCC;
+    case CSSValueID::kActivetext:
+      return 0xFFFF0000;
     case CSSValueID::kAppworkspace:
       return color_scheme == WebColorScheme::kDark ? 0xFF000000 : 0xFFFFFFFF;
     case CSSValueID::kBackground:
@@ -748,6 +750,10 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kButtontext:
       return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kCaptiontext:
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
+    case CSSValueID::kField:
+      return color_scheme == WebColorScheme::kDark ? 0xFF000000 : 0xFFFFFFFF;
+    case CSSValueID::kFieldtext:
       return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kGraytext:
       return 0xFF808080;

@@ -42,7 +42,7 @@ DecryptingRenderer::~DecryptingRenderer() {}
 // Encrypted  Other         InitializeRenderer()
 void DecryptingRenderer::Initialize(MediaResource* media_resource,
                                     RendererClient* client,
-                                    const PipelineStatusCB& init_cb) {
+                                    PipelineStatusCallback init_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(media_resource);
   DCHECK(client);
@@ -105,8 +105,8 @@ void DecryptingRenderer::SetCdm(CdmContext* cdm_context,
     InitializeRenderer(true);
 }
 
-void DecryptingRenderer::Flush(const base::Closure& flush_cb) {
-  renderer_->Flush(flush_cb);
+void DecryptingRenderer::Flush(base::OnceClosure flush_cb) {
+  renderer_->Flush(std::move(flush_cb));
 }
 
 void DecryptingRenderer::StartPlayingFrom(base::TimeDelta time) {

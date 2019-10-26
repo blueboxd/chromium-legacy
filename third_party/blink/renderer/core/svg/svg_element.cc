@@ -232,13 +232,7 @@ static void ForSelfAndInstances(SVGElement* element, T callback) {
 
 void SVGElement::SetWebAnimatedAttribute(const QualifiedName& attribute,
                                          SVGPropertyBase* value) {
-  ForSelfAndInstances(this, [&attribute, &value](SVGElement* element) {
-    if (SVGAnimatedPropertyBase* animated_property =
-            element->PropertyFromAttribute(attribute)) {
-      animated_property->SetAnimatedValue(value);
-      NotifyAnimValChanged(element, attribute);
-    }
-  });
+  SetAnimatedAttribute(attribute, value);
   EnsureSVGRareData()->WebAnimatedAttributes().insert(&attribute);
 }
 
@@ -247,13 +241,7 @@ void SVGElement::ClearWebAnimatedAttributes() {
     return;
   for (const QualifiedName* attribute :
        SvgRareData()->WebAnimatedAttributes()) {
-    ForSelfAndInstances(this, [&attribute](SVGElement* element) {
-      if (SVGAnimatedPropertyBase* animated_property =
-              element->PropertyFromAttribute(*attribute)) {
-        animated_property->AnimationEnded();
-        NotifyAnimValChanged(element, *attribute);
-      }
-    });
+    ClearAnimatedAttribute(*attribute);
   }
   SvgRareData()->WebAnimatedAttributes().clear();
 }
@@ -262,22 +250,20 @@ void SVGElement::SetAnimatedAttribute(const QualifiedName& attribute,
                                       SVGPropertyBase* value) {
   ForSelfAndInstances(this, [&attribute, &value](SVGElement* element) {
     if (SVGAnimatedPropertyBase* animated_property =
-            element->PropertyFromAttribute(attribute))
+            element->PropertyFromAttribute(attribute)) {
       animated_property->SetAnimatedValue(value);
-  });
-}
-
-void SVGElement::InvalidateAnimatedAttribute(const QualifiedName& attribute) {
-  ForSelfAndInstances(this, [&attribute](SVGElement* element) {
-    NotifyAnimValChanged(element, attribute);
+      NotifyAnimValChanged(element, attribute);
+    }
   });
 }
 
 void SVGElement::ClearAnimatedAttribute(const QualifiedName& attribute) {
   ForSelfAndInstances(this, [&attribute](SVGElement* element) {
     if (SVGAnimatedPropertyBase* animated_property =
-            element->PropertyFromAttribute(attribute))
+            element->PropertyFromAttribute(attribute)) {
       animated_property->AnimationEnded();
+      NotifyAnimValChanged(element, attribute);
+    }
   });
 }
 

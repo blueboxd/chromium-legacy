@@ -7,6 +7,12 @@
 
 namespace updater {
 
+// The updater specific app ID.
+extern const char kUpdaterAppId[];
+
+// Chrome's app ID.
+extern const char kChromeAppId[];
+
 // Command line switches.
 //
 // Crash the program for testing purposes.

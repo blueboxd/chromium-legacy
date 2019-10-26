@@ -91,11 +91,6 @@ OpenXrDevice::~OpenXrDevice() {
   }
 }
 
-mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
-OpenXrDevice::BindGamepadFactory() {
-  return gamepad_provider_factory_receiver_.BindNewPipeAndPassRemote();
-}
-
 mojo::PendingRemote<mojom::XRCompositorHost>
 OpenXrDevice::BindCompositorHost() {
   return compositor_host_receiver_.BindNewPipeAndPassRemote();
@@ -122,13 +117,6 @@ void OpenXrDevice::RequestSession(
     if (!render_loop_->IsRunning()) {
       std::move(callback).Run(nullptr, mojo::NullRemote());
       return;
-    }
-
-    if (provider_receiver_) {
-      render_loop_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                    base::Unretained(render_loop_.get()),
-                                    std::move(provider_receiver_)));
     }
 
     if (overlay_receiver_) {
@@ -201,19 +189,6 @@ void OpenXrDevice::OnPresentingControllerMojoConnectionError() {
 void OpenXrDevice::SetFrameDataRestricted(bool restricted) {
   // Presentation sessions can not currently be restricted.
   NOTREACHED();
-}
-
-void OpenXrDevice::GetIsolatedXRGamepadProvider(
-    mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver) {
-  EnsureRenderLoop();
-  if (render_loop_->IsRunning()) {
-    render_loop_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                  base::Unretained(render_loop_.get()),
-                                  std::move(provider_receiver)));
-  } else {
-    provider_receiver_ = std::move(provider_receiver);
-  }
 }
 
 void OpenXrDevice::CreateImmersiveOverlay(

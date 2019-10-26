@@ -20,8 +20,8 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -128,7 +128,7 @@ class WebRequestProxyingWebSocket
       receiver_as_header_client_{this};
 
   net::HttpRequestHeaders request_headers_;
-  network::ResourceResponseHead response_;
+  network::mojom::URLResponseHeadPtr response_;
   net::AuthCredentials auth_credentials_;
   OnAuthRequiredCallback auth_required_callback_;
   scoped_refptr<net::HttpResponseHeaders> override_headers_;

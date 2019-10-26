@@ -109,6 +109,12 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   virtual void SetStopAgentTracingTaskRunner(
       scoped_refptr<base::TaskRunner> task_runner) = 0;
 
+  using KstaledRatioCallback = base::OnceCallback<void(bool)>;
+
+  // Sets the kstaled ratio to the provided value, for more information
+  // see chromeos/memory/README.md.
+  virtual void SetKstaledRatio(uint8_t val, KstaledRatioCallback) = 0;
+
   // Called once TestICMP() is complete. Takes an optional string.
   // - The optional string has value if information was obtained successfully.
   // - The string value contains information about ICMP connectivity to a

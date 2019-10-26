@@ -2109,6 +2109,11 @@ Output.prototype = {
       return;
     }
 
+    // Undelayed hints.
+    if (node.errorMessage) {
+      this.format_(node, '$node(errorMessage)', buff, ruleStr, undefined, {});
+    }
+
     // Hints should be delayed.
     var hintProperties = new Output.SpeechProperties();
     hintProperties['delay'] = true;

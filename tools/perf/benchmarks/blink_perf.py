@@ -502,7 +502,7 @@ class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
     ])
 
 
-@benchmark.Info(emails=['wangxianzhu@chromium.org'],
+@benchmark.Info(emails=['pdr@chromium.org', 'wangxianzhu@chromium.org'],
                 component='Blink>Paint',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfPaint(_BlinkPerfBenchmark):
@@ -526,7 +526,7 @@ class BlinkPerfParser(_BlinkPerfBenchmark):
     return 'blink_perf.parser'
 
 
-@benchmark.Info(emails=['kouhei@chromium.org', 'fs@opera.com'],
+@benchmark.Info(emails=['fs@opera.com', 'pdr@chromium.org'],
                 component='Blink>SVG',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfSVG(_BlinkPerfBenchmark):

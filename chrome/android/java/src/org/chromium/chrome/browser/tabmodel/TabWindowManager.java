@@ -14,8 +14,8 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.VerifiesOnN;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;

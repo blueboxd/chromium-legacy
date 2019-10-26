@@ -36,6 +36,11 @@ class BrowserControllerImpl : public BrowserController,
                               public content::WebContentsDelegate,
                               public content::WebContentsObserver {
  public:
+  // TODO(sky): investigate a better way to not have so many ifdefs.
+#if defined(OS_ANDROID)
+  BrowserControllerImpl(ProfileImpl* profile,
+                        const base::android::JavaParamRef<jobject>& java_impl);
+#endif
   explicit BrowserControllerImpl(ProfileImpl* profile);
   ~BrowserControllerImpl() override;
 
@@ -69,6 +74,8 @@ class BrowserControllerImpl : public BrowserController,
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
   NavigationController* GetNavigationController() override;
+  void ExecuteScript(const base::string16& script,
+                     JavaScriptResultCallback callback) override;
 #if !defined(OS_ANDROID)
   void AttachToView(views::WebView* web_view) override;
 #endif
@@ -113,6 +120,7 @@ class BrowserControllerImpl : public BrowserController,
   base::ObserverList<BrowserObserver>::Unchecked observers_;
 #if defined(OS_ANDROID)
   TopControlsContainerView* top_controls_container_view_ = nullptr;
+  base::android::ScopedJavaGlobalRef<jobject> java_impl_;
 #endif
 
   bool is_fullscreen_ = false;

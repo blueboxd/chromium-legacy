@@ -361,8 +361,8 @@ class CacheStorageManagerTest : public testing::Test {
     // Wait for ChromeBlobStorageContext to finish initializing.
     base::RunLoop().RunUntilIdle();
 
-    blob_storage_context_ = blob_storage_context->context();
-
+    blob_storage_context_ = base::MakeRefCounted<BlobStorageContextWrapper>(
+        blob_storage_context->MojoContext());
     base::FilePath temp_dir_path;
     if (!MemoryOnly())
       temp_dir_path = temp_dir_.GetPath();
@@ -382,9 +382,7 @@ class CacheStorageManagerTest : public testing::Test {
     auto legacy_manager = LegacyCacheStorageManager::Create(
         temp_dir_path, base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(), quota_manager_proxy_, observers_);
-
-    legacy_manager->SetBlobParametersForCache(
-        blob_storage_context->context()->AsWeakPtr());
+    legacy_manager->SetBlobParametersForCache(blob_storage_context_);
 
     switch (ManagerType()) {
       case TestManager::kLegacy:
@@ -628,21 +626,14 @@ class CacheStorageManagerTest : public testing::Test {
       FetchResponseType response_type = FetchResponseType::kDefault,
       ResponseHeaderMap response_headers = ResponseHeaderMap()) {
     std::string blob_uuid = base::GenerateGUID();
-    std::unique_ptr<storage::BlobDataBuilder> blob_data(
-        new storage::BlobDataBuilder(blob_uuid));
-    blob_data->AppendData(request->url.spec());
-
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
-        blob_storage_context_->AddFinishedBlob(std::move(blob_data));
-
-    mojo::PendingRemote<blink::mojom::Blob> blob_remote;
-    storage::BlobImpl::Create(std::move(blob_data_handle),
-                              blob_remote.InitWithNewPipeAndPassReceiver());
 
     auto blob = blink::mojom::SerializedBlob::New();
     blob->uuid = blob_uuid;
     blob->size = request->url.spec().size();
-    blob->blob = std::move(blob_remote);
+    auto& str = request->url.spec();
+    blob_storage_context_->context()->RegisterFromMemory(
+        blob->blob.InitWithNewPipeAndPassReceiver(), blob_uuid,
+        std::vector<uint8_t>(str.begin(), str.end()));
 
     base::RunLoop loop;
     CachePutWithStatusCodeAndBlobInternal(cache, std::move(request),
@@ -809,7 +800,7 @@ class CacheStorageManagerTest : public testing::Test {
 
   BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
-  storage::BlobStorageContext* blob_storage_context_;
+  scoped_refptr<BlobStorageContextWrapper> blob_storage_context_;
 
   scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
   scoped_refptr<MockQuotaManager> mock_quota_manager_;

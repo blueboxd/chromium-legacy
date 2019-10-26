@@ -368,7 +368,7 @@ bool HTMLLinkElement::HasLegalLinkAttribute(const QualifiedName& name) const {
 
 const QualifiedName& HTMLLinkElement::SubResourceAttributeName() const {
   // If the link element is not css, ignore it.
-  if (DeprecatedEqualIgnoringCase(getAttribute(html_names::kTypeAttr),
+  if (DeprecatedEqualIgnoringCase(FastGetAttribute(html_names::kTypeAttr),
                                   "text/css")) {
     // FIXME: Add support for extracting links of sub-resources which
     // are inside style-sheet such as @import, @font-face, url(), etc.
@@ -378,18 +378,18 @@ const QualifiedName& HTMLLinkElement::SubResourceAttributeName() const {
 }
 
 KURL HTMLLinkElement::Href() const {
-  const String& url = getAttribute(html_names::kHrefAttr);
+  const String& url = FastGetAttribute(html_names::kHrefAttr);
   if (url.IsEmpty())
     return KURL();
   return GetDocument().CompleteURL(url);
 }
 
 const AtomicString& HTMLLinkElement::Rel() const {
-  return getAttribute(html_names::kRelAttr);
+  return FastGetAttribute(html_names::kRelAttr);
 }
 
 const AtomicString& HTMLLinkElement::GetType() const {
-  return getAttribute(html_names::kTypeAttr);
+  return FastGetAttribute(html_names::kTypeAttr);
 }
 
 bool HTMLLinkElement::Async() const {

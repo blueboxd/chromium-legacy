@@ -395,7 +395,7 @@ void DisplayLockContext::CommitForActivationWithSignal(
   StartCommit();
   // Since setting the attribute might trigger a commit if we are still locked,
   // we set it after we start the commit.
-  if (element_->hasAttribute(html_names::kRendersubtreeAttr))
+  if (element_->FastHasAttribute(html_names::kRendersubtreeAttr))
     element_->setAttribute(html_names::kRendersubtreeAttr, "");
 }
 

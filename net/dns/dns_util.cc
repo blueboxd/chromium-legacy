@@ -144,7 +144,7 @@ const std::vector<DohUpgradeEntry>& GetDohUpgradeList() {
   // DohProviderId histogram suffix list in
   // tools/metrics/histograms/histograms.xml.
   static const base::NoDestructor<std::vector<DohUpgradeEntry>>
-      upgradable_servers({
+      upgradable_servers{{
           DohUpgradeEntry(
               "CleanBrowsingAdult",
               {"185.228.168.10", "185.228.169.11", "2a0d:2a00:1::1",
@@ -174,6 +174,12 @@ const std::vector<DohUpgradeEntry>& GetDohUpgradeList() {
                "1dot1dot1dot1.cloudflare-dns.com"} /* DoT hostname */,
               {"https://chrome.cloudflare-dns.com/dns-query",
                true /* use-post */}),
+          DohUpgradeEntry("Comcast",
+                          {"75.75.75.75", "75.75.76.76", "2001:558:feed::1",
+                           "2001:558:feed::2"},
+                          {""} /* DoT hostname */,
+                          {"https://doh.xfinity.com/dns-query{?dns}",
+                           false /* use_post */}),
           DohUpgradeEntry(
               "Dnssb",
               {"185.222.222.222", "185.184.222.222", "2a09::", "2a09::1"},
@@ -215,7 +221,7 @@ const std::vector<DohUpgradeEntry>& GetDohUpgradeList() {
               {"9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9"},
               {"dns.quad9.net", "dns9.quad9.net"} /* DoT hostname */,
               {"https://dns.quad9.net/dns-query", true /* use_post */}),
-      });
+      }};
   return *upgradable_servers;
 }
 

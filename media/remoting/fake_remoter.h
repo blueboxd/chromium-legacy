@@ -9,6 +9,9 @@
 #include "media/mojo/common/mojo_data_pipe_read_write.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 namespace remoting {
@@ -51,7 +54,8 @@ class FakeRemotingDataStreamSender : public mojom::RemotingDataStreamSender {
 class FakeRemoter final : public mojom::Remoter {
  public:
   // |start_will_fail| indicates whether starting remoting will fail.
-  FakeRemoter(mojom::RemotingSourcePtr source, bool start_will_fail);
+  FakeRemoter(mojo::PendingRemote<mojom::RemotingSource> source,
+              bool start_will_fail);
   ~FakeRemoter() override;
 
   // mojom::Remoter implementations.
@@ -72,7 +76,7 @@ class FakeRemoter final : public mojom::Remoter {
   void StartFailed();
   void Stopped(mojom::RemotingStopReason reason);
 
-  mojom::RemotingSourcePtr source_;
+  mojo::Remote<mojom::RemotingSource> source_;
   bool start_will_fail_;
 
   std::unique_ptr<FakeRemotingDataStreamSender> audio_stream_sender_;
@@ -90,8 +94,8 @@ class FakeRemoterFactory final : public mojom::RemoterFactory {
   ~FakeRemoterFactory() override;
 
   // mojom::RemoterFactory implementation.
-  void Create(mojom::RemotingSourcePtr source,
-              mojom::RemoterRequest request) override;
+  void Create(mojo::PendingRemote<mojom::RemotingSource> source,
+              mojo::PendingReceiver<mojom::Remoter> receiver) override;
 
   static std::unique_ptr<RendererController> CreateController(
       bool start_will_fail);

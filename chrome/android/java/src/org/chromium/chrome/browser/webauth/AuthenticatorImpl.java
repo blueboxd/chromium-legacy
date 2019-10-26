@@ -32,6 +32,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
 
     private static final String GMSCORE_PACKAGE_NAME = "com.google.android.gms";
     private static final int GMSCORE_MIN_VERSION = 12800000;
+    private static final int GMSCORE_MIN_VERSION_ISUVPAA = 16200000;
 
     /** Ensures only one request is processed at a time. */
     private boolean mIsOperationPending;
@@ -97,18 +98,32 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
     public void isUserVerifyingPlatformAuthenticatorAvailable(
             IsUserVerifyingPlatformAuthenticatorAvailableResponse callback) {
         Context context = ChromeActivity.fromWebContents(mWebContents);
-        if (context == null
-                || PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
-                        < GMSCORE_MIN_VERSION
-                || Build.VERSION.SDK_INT < Build.VERSION_CODES.N
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_AUTH)) {
+        // ChromeActivity could be null.
+        if (context == null) {
             callback.call(false);
             return;
         }
 
-        FingerprintManager fingerprintManager =
-                (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
-        callback.call(fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints());
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_AUTH)) {
+            callback.call(false);
+            return;
+        }
+
+        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
+                >= GMSCORE_MIN_VERSION_ISUVPAA) {
+            mIsUserVerifyingPlatformAuthenticatorAvailableCallback = callback;
+            Fido2ApiHandler.getInstance().isUserVerifyingPlatformAuthenticatorAvailable(
+                    mRenderFrameHost, this);
+        } else if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
+                        >= GMSCORE_MIN_VERSION
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            FingerprintManager fingerprintManager =
+                    (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
+            callback.call(
+                    fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints());
+        } else {
+            callback.call(false);
+        }
     }
 
     @Override
@@ -132,6 +147,13 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         assert mGetAssertionCallback != null;
         mGetAssertionCallback.call(status, response);
         close();
+    }
+
+    @Override
+    public void onIsUserVerifyingPlatformAuthenticatorAvailableResponse(boolean isUVPAA) {
+        assert mIsUserVerifyingPlatformAuthenticatorAvailableCallback != null;
+        mIsUserVerifyingPlatformAuthenticatorAvailableCallback.call(isUVPAA);
+        mIsUserVerifyingPlatformAuthenticatorAvailableCallback = null;
     }
 
     @Override

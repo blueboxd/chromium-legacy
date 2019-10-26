@@ -56,20 +56,20 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void Navigate(std::unique_ptr<NavigationRequest> request,
                 ReloadType reload_type,
                 RestoreType restore_type) override;
-  void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
-                      const GURL& url,
-                      const base::Optional<url::Origin>& initiator_origin,
-                      bool uses_post,
-                      const scoped_refptr<network::ResourceRequestBody>& body,
-                      const std::string& extra_headers,
-                      const Referrer& referrer,
-                      WindowOpenDisposition disposition,
-                      bool should_replace_current_entry,
-                      bool user_gesture,
-                      blink::TriggeringEventInfo triggering_event_info,
-                      const std::string& href_translate,
-                      scoped_refptr<network::SharedURLLoaderFactory>
-                          blob_url_loader_factory) override;
+  void RequestOpenURL(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& url,
+      const base::Optional<url::Origin>& initiator_origin,
+      const scoped_refptr<network::ResourceRequestBody>& post_body,
+      const std::string& extra_headers,
+      const Referrer& referrer,
+      WindowOpenDisposition disposition,
+      bool should_replace_current_entry,
+      bool user_gesture,
+      blink::TriggeringEventInfo triggering_event_info,
+      const std::string& href_translate,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
+      override;
   void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,

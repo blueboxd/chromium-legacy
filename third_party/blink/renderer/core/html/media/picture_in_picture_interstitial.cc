@@ -73,7 +73,8 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
   background_image_->SetShadowPseudoId(
       AtomicString("-internal-media-interstitial-background-image"));
   background_image_->setAttribute(
-      html_names::kSrcAttr, videoElement.getAttribute(html_names::kPosterAttr));
+      html_names::kSrcAttr,
+      videoElement.FastGetAttribute(html_names::kPosterAttr));
   ParserAppendChild(background_image_);
 
   message_element_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
@@ -169,7 +170,7 @@ void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
 void PictureInPictureInterstitial::OnPosterImageChanged() {
   background_image_->setAttribute(
       html_names::kSrcAttr,
-      GetVideoElement().getAttribute(html_names::kPosterAttr));
+      GetVideoElement().FastGetAttribute(html_names::kPosterAttr));
 }
 
 void PictureInPictureInterstitial::Trace(Visitor* visitor) {

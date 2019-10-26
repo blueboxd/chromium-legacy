@@ -66,11 +66,11 @@ void FakeDemuxerStream::Initialize() {
   next_read_num_ = 0;
 }
 
-void FakeDemuxerStream::Read(const ReadCB& read_cb) {
+void FakeDemuxerStream::Read(ReadCB read_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb_);
 
-  read_cb_ = BindToCurrentLoop(read_cb);
+  read_cb_ = BindToCurrentLoop(std::move(read_cb));
 
   if (read_to_hold_ == next_read_num_)
     return;

@@ -327,9 +327,9 @@ TEST(HttpAuthCacheTest, SeparateByTarget) {
 // separately if |key_entries_by_network_isolation_key| is set to true.
 TEST(HttpAuthCacheTest, SeparateServersByNetworkIsolationKey) {
   const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
   const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
 
   GURL kPseudoOrigin("http://www.google.com");
   const char kPath[] = "/";
@@ -426,9 +426,9 @@ TEST(HttpAuthCacheTest, SeparateServersByNetworkIsolationKey) {
 // |key_entries_by_network_isolation_key| is set to true.
 TEST(HttpAuthCacheTest, NeverSeparateProxiesByNetworkIsolationKey) {
   const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
   const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
-  const net::NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
 
   GURL kPseudoOrigin("http://www.google.com");
   const char kPath[] = "/";
@@ -494,6 +494,67 @@ TEST(HttpAuthCacheTest, NeverSeparateProxiesByNetworkIsolationKey) {
                               kNetworkIsolationKey1));
     EXPECT_FALSE(cache.LookupByPath(kPseudoOrigin, HttpAuth::AUTH_PROXY,
                                     kNetworkIsolationKey1, kPath));
+  }
+}
+
+// Test that SetKeyServerEntriesByNetworkIsolationKey() deletes server
+// credentials when it toggles the setting. This test uses an empty
+// NetworkIsolationKey() for all entries, as the interesting part of this method
+// is what type entries are deleted, which doesn't depend on the
+// NetworkIsolationKey the entries use.
+TEST(HttpAuthCacheTest, SetKeyServerEntriesByNetworkIsolationKey) {
+  GURL kOrigin("http://www.google.com");
+  const char kPath[] = "/";
+
+  const base::string16 kUser1 = ASCIIToUTF16("user1");
+  const base::string16 kPass1 = ASCIIToUTF16("pass1");
+  const base::string16 kUser2 = ASCIIToUTF16("user2");
+  const base::string16 kPass2 = ASCIIToUTF16("pass2");
+
+  for (bool initially_key_entries_by_network_isolation_key : {false, true}) {
+    for (bool to_key_entries_by_network_isolation_key : {false, true}) {
+      HttpAuthCache cache(initially_key_entries_by_network_isolation_key);
+      EXPECT_EQ(initially_key_entries_by_network_isolation_key,
+                cache.key_server_entries_by_network_isolation_key());
+
+      cache.Add(kOrigin, HttpAuth::AUTH_PROXY, kRealm1,
+                HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
+                "Basic realm=Realm1", AuthCredentials(kUser1, kPass1), kPath);
+      cache.Add(kOrigin, HttpAuth::AUTH_SERVER, kRealm1,
+                HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
+                "Basic realm=Realm1", AuthCredentials(kUser2, kPass2), kPath);
+
+      EXPECT_TRUE(cache.Lookup(kOrigin, HttpAuth::AUTH_PROXY, kRealm1,
+                               HttpAuth::AUTH_SCHEME_BASIC,
+                               NetworkIsolationKey()));
+      EXPECT_TRUE(cache.Lookup(kOrigin, HttpAuth::AUTH_SERVER, kRealm1,
+                               HttpAuth::AUTH_SCHEME_BASIC,
+                               NetworkIsolationKey()));
+
+      cache.SetKeyServerEntriesByNetworkIsolationKey(
+          to_key_entries_by_network_isolation_key);
+      EXPECT_EQ(to_key_entries_by_network_isolation_key,
+                cache.key_server_entries_by_network_isolation_key());
+
+      // AUTH_PROXY credentials should always remain in the cache.
+      HttpAuthCache::Entry* entry = cache.LookupByPath(
+          kOrigin, HttpAuth::AUTH_PROXY, NetworkIsolationKey(), kPath);
+      ASSERT_TRUE(entry);
+      EXPECT_EQ(entry->credentials().username(), kUser1);
+      EXPECT_EQ(entry->credentials().password(), kPass1);
+
+      entry = cache.LookupByPath(kOrigin, HttpAuth::AUTH_SERVER,
+                                 NetworkIsolationKey(), kPath);
+      // AUTH_SERVER credentials should only remain in the cache if the proxy
+      // configuration changes.
+      EXPECT_EQ(initially_key_entries_by_network_isolation_key ==
+                    to_key_entries_by_network_isolation_key,
+                !!entry);
+      if (entry) {
+        EXPECT_EQ(entry->credentials().username(), kUser2);
+        EXPECT_EQ(entry->credentials().password(), kPass2);
+      }
+    }
   }
 }
 

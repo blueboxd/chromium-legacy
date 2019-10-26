@@ -36,6 +36,9 @@ suite('Tab', function() {
 
     document.body.innerHTML = '';
 
+    // Set CSS variable for animations
+    document.body.style.setProperty('--tabstrip-tab-width', '280px');
+
     testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
     TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
 

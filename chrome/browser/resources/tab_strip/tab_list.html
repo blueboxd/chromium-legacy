@@ -1,5 +1,9 @@
 <style>
   :host {
+    --tabstrip-tab-height: calc(var(--tabstrip-tab-title-height) +
+                                var(--tabstrip-tab-thumbnail-height));
+    --tabstrip-tab-width: var(--tabstrip-tab-thumbnail-width);
+
     background: var(--tabstrip-background-color);
     box-sizing: border-box;
     display: flex;

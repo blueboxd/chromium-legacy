@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 
@@ -47,6 +48,12 @@ void FakeDebugDaemonClient::DumpDebugLogs(bool is_compressed,
 void FakeDebugDaemonClient::SetDebugMode(const std::string& subsystem,
                                          VoidDBusMethodCallback callback) {
   std::move(callback).Run(false);
+}
+
+void FakeDebugDaemonClient::SetKstaledRatio(uint8_t val,
+                                            KstaledRatioCallback callback) {
+  // We just return true.
+  std::move(callback).Run(true /* success */);
 }
 
 std::string FakeDebugDaemonClient::GetTracingAgentName() {

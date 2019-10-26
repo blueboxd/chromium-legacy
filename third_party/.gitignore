@@ -119,7 +119,6 @@
 /jacoco/lib/
 /javalang/src/
 /jdk/current
-/jsoncpp/source
 /jsr-305/src
 /junit/src
 /khronos_glcts
@@ -248,5 +247,4 @@
 /xulrunner-sdk
 /yasm/binaries
 /yasm/generate_files.xml
-/yasm/source/patched-yasm
 /yasm/yasm.xml

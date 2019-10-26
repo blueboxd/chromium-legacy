@@ -31,7 +31,6 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -220,19 +219,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                     Class.forName("org.chromium.incrementalinstall.BootstrapApplication");
             DexFile[] incrementalInstallDexes =
                     (DexFile[]) bootstrapClass.getDeclaredField("sIncrementalDexFiles").get(null);
-            // The incremental install dex files contain directory paths in their names. e.g.:
-            //   third_party.android_deps.com_android_support_gridlayout_v7_java__classes.dex.jar
-            // Skipping application and system dex files speeds up test listing 12s -> 6s on my
-            // Pixel 1 running Q.
-            for (DexFile dexFile : incrementalInstallDexes) {
-                if (dexFile.getName().startsWith("/system")) {
-                    continue;
-                }
-                String baseName = new File(dexFile.getName()).getName();
-                if (baseName.contains("test") || baseName.contains("Test")) {
-                    dexFiles.add(dexFile);
-                }
-            }
+            dexFiles.addAll(Arrays.asList(incrementalInstallDexes));
         } catch (Exception e) {
             // Not an incremental apk.
             if (BuildConfig.IS_MULTIDEX_ENABLED

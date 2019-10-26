@@ -31,6 +31,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.download.DownloadTestRule;
 import org.chromium.chrome.browser.download.DownloadTestRule.CustomMainActivityStart;
@@ -387,8 +388,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_copy_link_text, R.id.contextmenu_copy_link_address,
                 R.id.contextmenu_share_link};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab};
-        expectedItems =
-                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
+        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -405,8 +405,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
                 R.id.contextmenu_share_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems =
-                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
+        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -424,8 +423,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_with_google_lens,
                 R.id.contextmenu_share_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems =
-                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
+        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -443,8 +441,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems =
-                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
+        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -464,8 +461,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems =
-                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
+        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -484,8 +480,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_share_image, R.id.contextmenu_share_link};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems =
-                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
+        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -507,8 +502,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_share_image, R.id.contextmenu_share_link};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems =
-                addItemsIfEnabled(ChromeFeatureList.EPHEMERAL_TAB, expectedItems, featureItems);
+        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -556,17 +550,17 @@ public class ContextMenuTest implements CustomMainActivityStart {
     }
 
     /**
-     * Adds items to the give baseItems if the given feature is enabled.
-     * @param featureName The feature to check for whether to add items or not.
+     * Adds items to the baseItems if the given condition is true.
+     * @param condition The condition to check for whether to add items or not.
      * @param baseItems The base list of items to add to.
      * @param additionalItems The additional items to add.
-     * @return An array of items that has the additional items added if the feature is enabled.
+     * @return An array of items that has the additional items added if the condition is true.
      */
-    private Integer[] addItemsIfEnabled(
-            String featureName, Integer[] baseItems, Integer[] additionalItems) {
-        List<Integer> variableItems = new ArrayList<Integer>();
+    private Integer[] addItemsIf(
+            boolean condition, Integer[] baseItems, Integer[] additionalItems) {
+        List<Integer> variableItems = new ArrayList<>();
         variableItems.addAll(Arrays.asList(baseItems));
-        if (ChromeFeatureList.isEnabled(featureName)) {
+        if (condition) {
             for (int i = 0; i < additionalItems.length; i++) variableItems.add(additionalItems[i]);
         }
         return variableItems.toArray(baseItems);

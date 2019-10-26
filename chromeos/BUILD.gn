@@ -44,6 +44,8 @@ component("chromeos") {
   sources = [
     "hugepage_text/hugepage_text.cc",
     "hugepage_text/hugepage_text.h",
+    "memory/kstaled.cc",
+    "memory/kstaled.h",
     "policy/weekly_time/time_utils.cc",
     "policy/weekly_time/time_utils.h",
     "policy/weekly_time/weekly_time.cc",

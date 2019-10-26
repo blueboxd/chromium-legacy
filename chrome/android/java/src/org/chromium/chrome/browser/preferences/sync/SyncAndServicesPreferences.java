@@ -39,6 +39,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
@@ -550,7 +551,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
                 UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled());
 
         if (mContextualSearch != null) {
-            boolean isContextualSearchEnabled = !mPrefServiceBridge.isContextualSearchDisabled();
+            boolean isContextualSearchEnabled =
+                    !ContextualSearchManager.isContextualSearchDisabled();
             mContextualSearch.setSummary(
                     isContextualSearchEnabled ? R.string.text_on : R.string.text_off);
         }

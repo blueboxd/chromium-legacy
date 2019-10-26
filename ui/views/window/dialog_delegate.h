@@ -164,6 +164,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // about DialogClientView. Do not call these before OnDialogInitialized.
   views::LabelButton* GetOkButton();
   views::LabelButton* GetCancelButton();
+  views::View* GetExtraView();
 
   // Add or remove an observer notified by calls to DialogModelChanged().
   void AddObserver(DialogObserver* observer);

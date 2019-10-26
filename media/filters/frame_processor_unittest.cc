@@ -222,8 +222,8 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
 
     do {
       read_callback_called_ = false;
-      stream->Read(base::Bind(&FrameProcessorTest::StoreStatusAndBuffer,
-                              base::Unretained(this)));
+      stream->Read(base::BindOnce(&FrameProcessorTest::StoreStatusAndBuffer,
+                                  base::Unretained(this)));
       base::RunLoop().RunUntilIdle();
     } while (++loop_count < 2 && read_callback_called_ &&
              last_read_status_ == DemuxerStream::kAborted);
@@ -248,8 +248,8 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
 
       do {
         read_callback_called_ = false;
-        stream->Read(base::Bind(&FrameProcessorTest::StoreStatusAndBuffer,
-                                base::Unretained(this)));
+        stream->Read(base::BindOnce(&FrameProcessorTest::StoreStatusAndBuffer,
+                                    base::Unretained(this)));
         base::RunLoop().RunUntilIdle();
         EXPECT_TRUE(read_callback_called_);
       } while (++loop_count < 2 &&

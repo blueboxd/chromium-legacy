@@ -68,7 +68,9 @@ _TEST_ONLY_WARNING = (
     'You might be calling functions intended only for testing from\n'
     'production code.  It is OK to ignore this warning if you know what\n'
     'you are doing, as the heuristics used to detect the situation are\n'
-    'not perfect.  The commit queue will not block on this warning.')
+    'not perfect.  The commit queue will not block on this warning,\n'
+    'however the android-binary-size trybot will block if the method\n'
+    'exists in the release apk.')
 
 
 _INCLUDE_ORDER_WARNING = (
@@ -497,6 +499,16 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,
       (),
+    ),
+    (
+      r'/\busing namespace ',
+      (
+       'Using directives ("using namespace x") are banned by the Google Style',
+       'Guide ( http://google.github.io/styleguide/cppguide.html#Namespaces ).',
+       'Explicitly qualify symbols or use using declarations ("using x::foo").',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     # Make sure that gtest's FRIEND_TEST() macro is not used; the
     # FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be

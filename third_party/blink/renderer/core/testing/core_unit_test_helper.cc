@@ -43,7 +43,7 @@ RenderingTestChromeClient& RenderingTest::GetChromeClient() const {
 }
 
 RenderingTest::RenderingTest(LocalFrameClient* local_frame_client)
-    : UseMockScrollbarSettings(), local_frame_client_(local_frame_client) {}
+    : local_frame_client_(local_frame_client) {}
 
 const Node* RenderingTest::HitTest(int x, int y) {
   HitTestLocation location(PhysicalOffset(x, y));

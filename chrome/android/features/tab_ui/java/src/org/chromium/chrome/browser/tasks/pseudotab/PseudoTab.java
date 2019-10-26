@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.tasks.pseudotab;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

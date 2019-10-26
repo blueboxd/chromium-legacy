@@ -90,10 +90,12 @@ CastRenderer::~CastRenderer() {
 
 void CastRenderer::Initialize(::media::MediaResource* media_resource,
                               ::media::RendererClient* client,
-                              const ::media::PipelineStatusCB& init_cb) {
+                              ::media::PipelineStatusCallback init_cb) {
   LOG(INFO) << __FUNCTION__ << ": " << this;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!application_media_info_manager_ptr_);
+
+  init_cb_ = std::move(init_cb);
 
   // Retrieve application_media_info_manager_ptr_ if it is available via
   // CastApplicationMediaInfoManager.
@@ -107,14 +109,13 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
   if (application_media_info_manager_ptr_) {
     application_media_info_manager_ptr_->GetCastApplicationMediaInfo(
         base::BindOnce(&CastRenderer::OnApplicationMediaInfoReceived,
-                       weak_factory_.GetWeakPtr(), media_resource, client,
-                       init_cb));
+                       weak_factory_.GetWeakPtr(), media_resource, client));
   } else {
     // If a CastRenderer is created for a purpose other than a web application,
     // the CastApplicationMediaInfoManager interface is not available, and
     // default CastApplicationMediaInfo value below will be used.
     OnApplicationMediaInfoReceived(
-        media_resource, client, init_cb,
+        media_resource, client,
         ::media::mojom::CastApplicationMediaInfo::New(std::string(), true));
   }
 }
@@ -122,32 +123,30 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
 void CastRenderer::OnApplicationMediaInfoReceived(
     ::media::MediaResource* media_resource,
     ::media::RendererClient* client,
-    const ::media::PipelineStatusCB& init_cb,
     ::media::mojom::CastApplicationMediaInfoPtr application_media_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (application_media_info->application_session_id.empty()) {
-    OnGetMultiroomInfo(media_resource, client, init_cb,
+    OnGetMultiroomInfo(media_resource, client,
                        std::move(application_media_info),
                        chromecast::mojom::MultiroomInfo::New());
     return;
   }
   connector_->Connect(chromecast::mojom::kChromecastServiceName,
                       multiroom_manager_.BindNewPipeAndPassReceiver());
-  multiroom_manager_.set_disconnect_handler(base::BindOnce(
-      &CastRenderer::OnGetMultiroomInfo, base::Unretained(this), media_resource,
-      client, init_cb, application_media_info.Clone(),
-      chromecast::mojom::MultiroomInfo::New()));
+  multiroom_manager_.set_disconnect_handler(
+      base::BindOnce(&CastRenderer::OnGetMultiroomInfo, base::Unretained(this),
+                     media_resource, client, application_media_info.Clone(),
+                     chromecast::mojom::MultiroomInfo::New()));
   std::string session_id = application_media_info->application_session_id;
   multiroom_manager_->GetMultiroomInfo(
       session_id, base::BindOnce(&CastRenderer::OnGetMultiroomInfo,
                                  base::Unretained(this), media_resource, client,
-                                 init_cb, std::move(application_media_info)));
+                                 std::move(application_media_info)));
 }
 
 void CastRenderer::OnGetMultiroomInfo(
     ::media::MediaResource* media_resource,
     ::media::RendererClient* client,
-    const ::media::PipelineStatusCB& init_cb,
     ::media::mojom::CastApplicationMediaInfoPtr application_media_info,
     chromecast::mojom::MultiroomInfoPtr multiroom_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -218,7 +217,7 @@ void CastRenderer::OnGetMultiroomInfo(
         pipeline_->InitializeAudio(audio_stream->audio_decoder_config(),
                                    audio_client, std::move(frame_provider));
     if (status != ::media::PIPELINE_OK) {
-      init_cb.Run(status);
+      RunInitCallback(status);
       return;
     }
     audio_stream->EnableBitstreamConverter();
@@ -247,7 +246,7 @@ void CastRenderer::OnGetMultiroomInfo(
     ::media::PipelineStatus status = pipeline_->InitializeVideo(
         video_configs, video_client, std::move(frame_provider));
     if (status != ::media::PIPELINE_OK) {
-      init_cb.Run(status);
+      RunInitCallback(status);
       return;
     }
     video_stream->EnableBitstreamConverter();
@@ -265,22 +264,26 @@ void CastRenderer::OnGetMultiroomInfo(
     video_configs.push_back(video_stream->video_decoder_config());
     auto mode_switch_completion_cb =
         base::Bind(&CastRenderer::OnVideoInitializationFinished,
-                   weak_factory_.GetWeakPtr(), init_cb);
+                   weak_factory_.GetWeakPtr());
     video_mode_switcher_->SwitchMode(
         video_configs, base::BindOnce(&VideoModeSwitchCompletionCb,
                                       mode_switch_completion_cb));
   } else if (video_stream) {
     // No mode switch needed.
-    OnVideoInitializationFinished(init_cb, ::media::PIPELINE_OK);
+    OnVideoInitializationFinished(::media::PIPELINE_OK);
   } else {
-    init_cb.Run(::media::PIPELINE_OK);
+    RunInitCallback(::media::PIPELINE_OK);
   }
 }
 
+void CastRenderer::RunInitCallback(::media::PipelineStatus status) {
+  if (init_cb_)
+    std::move(init_cb_).Run(status);
+}
+
 void CastRenderer::OnVideoInitializationFinished(
-    const ::media::PipelineStatusCB& init_cb,
     ::media::PipelineStatus status) {
-  init_cb.Run(status);
+  RunInitCallback(status);
   if (status == ::media::PIPELINE_OK) {
     // Force compositor to treat video as opaque (needed for overlay codepath).
     OnVideoOpacityChange(true);
@@ -305,9 +308,9 @@ void CastRenderer::SetCdm(::media::CdmContext* cdm_context,
   cdm_attached_cb.Run(true);
 }
 
-void CastRenderer::Flush(const base::Closure& flush_cb) {
+void CastRenderer::Flush(base::OnceClosure flush_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  pipeline_->Flush(flush_cb);
+  pipeline_->Flush(std::move(flush_cb));
 }
 
 void CastRenderer::StartPlayingFrom(base::TimeDelta time) {

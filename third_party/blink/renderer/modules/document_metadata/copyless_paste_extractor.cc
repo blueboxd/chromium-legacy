@@ -256,7 +256,8 @@ ExtractionStatus ExtractMetadata(const Element& root,
                                  Vector<EntityPtr>& entities) {
   for (Element& element : ElementTraversal::DescendantsOf(root)) {
     if (element.HasTagName(html_names::kScriptTag) &&
-        element.getAttribute(html_names::kTypeAttr) == "application/ld+json") {
+        element.FastGetAttribute(html_names::kTypeAttr) ==
+            "application/ld+json") {
       std::unique_ptr<JSONValue> json = ParseJSON(element.textContent());
       if (!json) {
         LOG(ERROR) << "Failed to parse json.";

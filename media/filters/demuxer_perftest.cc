@@ -117,10 +117,10 @@ void StreamReader::Read() {
   base::TimeDelta timestamp;
 
   base::RunLoop run_loop;
-  streams_[index]->Read(
-      base::Bind(&StreamReader::OnReadDone, base::Unretained(this),
-                 base::ThreadTaskRunnerHandle::Get(),
-                 run_loop.QuitWhenIdleClosure(), &end_of_stream, &timestamp));
+  streams_[index]->Read(base::BindOnce(
+      &StreamReader::OnReadDone, base::Unretained(this),
+      base::ThreadTaskRunnerHandle::Get(), run_loop.QuitWhenIdleClosure(),
+      &end_of_stream, &timestamp));
   run_loop.Run();
 
   CHECK(end_of_stream || timestamp != media::kNoTimestamp);

@@ -585,8 +585,9 @@ void CSSStyleSheet::SetAlternateFromConstructor(
 bool CSSStyleSheet::IsAlternate() const {
   if (owner_node_) {
     auto* owner_element = DynamicTo<Element>(owner_node_.Get());
-    return owner_element && owner_element->getAttribute(html_names::kRelAttr)
-                                .Contains("alternate");
+    return owner_element &&
+           owner_element->FastGetAttribute(html_names::kRelAttr)
+               .Contains("alternate");
   }
   return alternate_from_constructor_;
 }

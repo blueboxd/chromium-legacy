@@ -332,7 +332,7 @@ void PrerenderManager::CancelAllPrerenders() {
 
 PrerenderManager::Params::Params(NavigateParams* params,
                                  content::WebContents* contents_being_navigated)
-    : uses_post(params->uses_post),
+    : uses_post(!!params->post_data),
       extra_headers(params->extra_headers),
       should_replace_current_entry(params->should_replace_current_entry),
       contents_being_navigated(contents_being_navigated) {}

@@ -1157,13 +1157,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsRendererCodeIntegrityEnabled();
 #endif
 
-  // Binds a new media remoter service to |request|, if supported by the
+  // Binds a new media remoter service to |receiver|, if supported by the
   // embedder, for the |source| that lives in the render frame represented
   // by |render_frame_host|. This may be called multiple times if there is more
   // than one source candidate in the same render frame.
-  virtual void CreateMediaRemoter(RenderFrameHost* render_frame_host,
-                                  media::mojom::RemotingSourcePtr source,
-                                  media::mojom::RemoterRequest request) {}
+  virtual void CreateMediaRemoter(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingRemote<media::mojom::RemotingSource> source,
+      mojo::PendingReceiver<media::mojom::Remoter> receiver) {}
 
   // Returns the RapporService from the browser process.
   virtual ::rappor::RapporService* GetRapporService();

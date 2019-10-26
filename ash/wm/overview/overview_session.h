@@ -58,9 +58,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                    public SplitViewObserver {
  public:
   enum class OverviewTransition {
-    kEnter,       // In the entering process of overview.
+    kEnter,       // Entering overview.
     kInOverview,  // Already in overview.
-    kExit         // In the exiting process of overview.
+    kExit         // Exiting overview.
   };
 
   // Enum describing the different ways overview can be entered or exited.
@@ -91,6 +91,15 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     // the source desk is in overview mode, while the target desk is not.
     // This should not be used for entering overview mode.
     kImmediateExit,
+    // Fades all windows in to enter overview. This can happen when
+    // transitioning to overview from home screen (in a state where all windows
+    // are minimized).
+    kFadeInEnter,
+    // Fades all windows out to exit overview (when going to a state where all
+    // windows are minimized). This will minimize windows on exit if needed, so
+    // that we do not need to add a delayed observer to handle minimizing the
+    // windows after overview exit animations are finished.
+    kFadeOutExit
   };
 
   // Callback which fills out the passed settings object. Used by several

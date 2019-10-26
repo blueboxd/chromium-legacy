@@ -70,11 +70,6 @@ MixedRealityDevice::~MixedRealityDevice() {
   Shutdown();
 }
 
-mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
-MixedRealityDevice::BindGamepadFactory() {
-  return gamepad_provider_factory_receiver_.BindNewPipeAndPassRemote();
-}
-
 mojo::PendingRemote<mojom::XRCompositorHost>
 MixedRealityDevice::BindCompositorHost() {
   return compositor_host_receiver_.BindNewPipeAndPassRemote();
@@ -101,13 +96,6 @@ void MixedRealityDevice::RequestSession(
     if (!render_loop_->IsRunning()) {
       std::move(callback).Run(nullptr, mojo::NullRemote());
       return;
-    }
-
-    if (provider_receiver_) {
-      render_loop_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                    base::Unretained(render_loop_.get()),
-                                    std::move(provider_receiver_)));
     }
 
     if (overlay_receiver_) {
@@ -176,20 +164,6 @@ void MixedRealityDevice::OnRequestSessionResult(
       base::Unretained(this)));
 }
 
-void MixedRealityDevice::GetIsolatedXRGamepadProvider(
-    mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver) {
-  if (!render_loop_)
-    CreateRenderLoop();
-  if (render_loop_->IsRunning()) {
-    render_loop_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                  base::Unretained(render_loop_.get()),
-                                  std::move(provider_receiver)));
-  } else {
-    provider_receiver_ = std::move(provider_receiver);
-  }
-}
-
 void MixedRealityDevice::CreateImmersiveOverlay(
     mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver) {
   if (!render_loop_)
@@ -211,15 +185,12 @@ void MixedRealityDevice::SetFrameDataRestricted(bool restricted) {
 }
 
 void MixedRealityDevice::OnPresentingControllerMojoConnectionError() {
-  if (!render_loop_)
-    CreateRenderLoop();
-  render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
-                                base::Unretained(render_loop_.get())));
-  // Don't stop the render loop here. We need to keep the gamepad provider alive
-  // so that we don't lose a pending mojo gamepad_callback_.
-  // TODO(https://crbug.com/875187): Alternatively, we could recreate the
-  // provider on the next session, or look into why the callback gets lost.
+  if (render_loop_) {
+    render_loop_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
+                                  base::Unretained(render_loop_.get())));
+  }
+
   OnExitPresent();
   exclusive_controller_receiver_.reset();
 }

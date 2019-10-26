@@ -68,6 +68,9 @@ public final class OAuth2TokenService
     private final AccountManagerFacade mAccountManagerFacade;
 
     private boolean mPendingUpdate;
+    // TODO(crbug.com/934688) Once OAuth2TokenService.java is internalized, use CoreAccountId
+    // instead of String.
+    private String mPendingUpdateAccountId;
 
     @VisibleForTesting
     public OAuth2TokenService(long nativeOAuth2TokenServiceDelegate,
@@ -285,44 +288,28 @@ public final class OAuth2TokenService
     @Override
     public void onSystemAccountsSeedingComplete() {
         if (mPendingUpdate) {
-            updateAccountListInternal();
+            reloadAllAccountsWithPrimaryAccountAfterSeeding(mPendingUpdateAccountId);
             mPendingUpdate = false;
+            mPendingUpdateAccountId = null;
         }
     }
 
     @CalledByNative
-    public void updateAccountList() {
+    private void seedAndReloadAccountsWithPrimaryAccount(@Nullable String accountId) {
         ThreadUtils.assertOnUiThread();
         if (!mAccountTrackerService.checkAndSeedSystemAccounts()) {
+            assert !mPendingUpdate && mPendingUpdateAccountId == null;
             mPendingUpdate = true;
+            mPendingUpdateAccountId = accountId;
             return;
         }
 
-        updateAccountListInternal();
+        reloadAllAccountsWithPrimaryAccountAfterSeeding(accountId);
     }
 
-    private void updateAccountListInternal() {
-        String currentlySignedInAccount = ChromeSigninController.get().getSignedInAccountName();
-        if (currentlySignedInAccount != null
-                && isSignedInAccountChanged(currentlySignedInAccount)) {
-            // Set currentlySignedInAccount to null for validation if signed-in account was changed
-            // (renamed or removed from the device), this will cause all credentials in token
-            // service be revoked.
-            // Could only get here during Chrome cold startup.
-            // After chrome started, SigninHelper and AccountsChangedReceiver will handle account
-            // change (re-signin or sign out signed-in account).
-            currentlySignedInAccount = null;
-        }
-        OAuth2TokenServiceJni.get().updateAccountList(mNativeOAuth2TokenServiceDelegate,
-                OAuth2TokenService.this, currentlySignedInAccount);
-    }
-
-    private boolean isSignedInAccountChanged(String signedInAccountName) {
-        String[] accountNames = getSystemAccountNames();
-        for (String accountName : accountNames) {
-            if (accountName.equals(signedInAccountName)) return false;
-        }
-        return true;
+    private void reloadAllAccountsWithPrimaryAccountAfterSeeding(@Nullable String accountId) {
+        OAuth2TokenServiceJni.get().reloadAllAccountsWithPrimaryAccountAfterSeeding(
+                mNativeOAuth2TokenServiceDelegate, accountId);
     }
 
     private static String[] getStoredAccounts() {
@@ -427,7 +414,7 @@ public final class OAuth2TokenService
     interface Natives {
         void onOAuth2TokenFetched(
                 String authToken, boolean isTransientError, long nativeCallback);
-        void updateAccountList(long nativeOAuth2TokenServiceDelegateAndroid,
-                OAuth2TokenService caller, String currentlySignedInAccount);
+        void reloadAllAccountsWithPrimaryAccountAfterSeeding(
+                long nativeOAuth2TokenServiceDelegateAndroid, @Nullable String accountId);
     }
 }

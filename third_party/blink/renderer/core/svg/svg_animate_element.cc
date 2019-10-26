@@ -326,9 +326,21 @@ SVGPropertyBase* SVGAnimateElement::AdjustForInheritance(
   return CreatePropertyForAnimation(value);
 }
 
-void SVGAnimateElement::CalculateAnimatedValue(float percentage,
-                                               unsigned repeat_count,
-                                               SVGSMILElement* result_element) {
+static SVGPropertyBase* DiscreteSelectValue(AnimationMode animation_mode,
+                                            float percentage,
+                                            SVGPropertyBase* from,
+                                            SVGPropertyBase* to) {
+  if ((animation_mode == kFromToAnimation && percentage > 0.5) ||
+      animation_mode == kToAnimation || percentage == 1) {
+    return to;
+  }
+  return from;
+}
+
+void SVGAnimateElement::CalculateAnimatedValue(
+    float percentage,
+    unsigned repeat_count,
+    SVGSMILElement* result_element) const {
   DCHECK(result_element);
   DCHECK(targetElement());
   if (!IsSVGAnimateElement(*result_element))
@@ -369,8 +381,16 @@ void SVGAnimateElement::CalculateAnimatedValue(float percentage,
   from_value = AdjustForInheritance(from_value, from_property_value_type_);
   to_value = AdjustForInheritance(to_value, to_property_value_type_);
 
+  // If the animated type can only be animated discretely, then do that here,
+  // replacing |result_element|s animated value.
+  if (!AnimatedPropertyTypeSupportsAddition()) {
+    result_animation_element->animated_value_ = DiscreteSelectValue(
+        GetAnimationMode(), percentage, from_value, to_value);
+    return;
+  }
+
   animated_value->CalculateAnimatedValue(
-      this, percentage, repeat_count, from_value, to_value,
+      *this, percentage, repeat_count, from_value, to_value,
       to_at_end_of_duration_value, target_element);
 }
 
@@ -424,7 +444,6 @@ void SVGAnimateElement::ResetAnimatedType() {
     // SVG DOM animVal animation code-path.
     animated_value_ = target_property_->CreateAnimatedValue();
     DCHECK_EQ(animated_value_->GetType(), type_);
-    target_element->SetAnimatedAttribute(AttributeName(), animated_value_);
     return;
   }
   DCHECK(IsAnimatingCSSProperty());
@@ -448,8 +467,8 @@ void SVGAnimateElement::ClearAnimatedType() {
   }
 
   bool should_apply = ShouldApplyAnimation(*target_element);
+  // CSS properties animation code-path.
   if (IsAnimatingCSSProperty()) {
-    // CSS properties animation code-path.
     if (should_apply) {
       MutableCSSPropertyValueSet* property_set =
           target_element->EnsureAnimatedSMILStyleProperties();
@@ -460,12 +479,9 @@ void SVGAnimateElement::ClearAnimatedType() {
       }
     }
   }
-  if (IsAnimatingSVGDom()) {
-    // SVG DOM animVal animation code-path.
+  // SVG DOM animVal animation code-path.
+  if (IsAnimatingSVGDom())
     target_element->ClearAnimatedAttribute(AttributeName());
-    if (should_apply)
-      target_element->InvalidateAnimatedAttribute(AttributeName());
-  }
 
   animated_value_.Clear();
 }
@@ -484,8 +500,9 @@ void SVGAnimateElement::ApplyResultsToTarget() {
 
   // We do update the style and the animation property independent of each
   // other.
+
+  // CSS properties animation code-path.
   if (IsAnimatingCSSProperty()) {
-    // CSS properties animation code-path.
     // Convert the result of the animation to a String and apply it as CSS
     // property on the target_element.
     MutableCSSPropertyValueSet* properties =
@@ -502,12 +519,9 @@ void SVGAnimateElement::ApplyResultsToTarget() {
           StyleChangeReasonForTracing::Create(style_change_reason::kAnimation));
     }
   }
-  if (IsAnimatingSVGDom()) {
-    // SVG DOM animVal animation code-path.
-    // At this point the SVG DOM values are already changed, unlike for CSS.
-    // We only have to trigger update notifications here.
-    targetElement()->InvalidateAnimatedAttribute(AttributeName());
-  }
+  // SVG DOM animVal animation code-path.
+  if (IsAnimatingSVGDom())
+    target_element->SetAnimatedAttribute(AttributeName(), animated_value_);
 }
 
 bool SVGAnimateElement::AnimatedPropertyTypeSupportsAddition() const {

@@ -10317,7 +10317,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=any"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -10403,7 +10403,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=native"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -10715,7 +10715,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=any"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -10801,7 +10801,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=native"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -24883,7 +24883,7 @@
           "--target",
           "Release_x64"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"

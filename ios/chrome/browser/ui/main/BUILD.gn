@@ -18,10 +18,22 @@ source_set("scene") {
   deps = [
     ":main",
     "//base",
+    "//ios/chrome/app:app",
+    "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browsing_data",
+    "//ios/chrome/browser/browsing_data",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs:tabs",
+    "//ios/chrome/browser/ui/browser_view",
     "//ios/chrome/browser/ui/commands:commands",
+    "//ios/chrome/browser/ui/history",
+    "//ios/chrome/browser/ui/settings:settings_root",
+    "//ios/chrome/browser/ui/signin_interaction",
     "//ios/chrome/browser/ui/tab_grid",
     "//ios/chrome/browser/ui/util:multiwindow_util",
+    "//ios/chrome/browser/url_loading",
+    "//ios/chrome/browser/web_state_list",
   ]
 
   libs = [ "UIKit.framework" ]

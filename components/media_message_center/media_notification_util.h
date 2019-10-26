@@ -6,6 +6,7 @@
 #define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_UTIL_H_
 
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace views {
@@ -29,9 +30,11 @@ base::string16 GetAccessibleNameFromMetadata(
 // most |max_actions| - if needed, the actions will the least priority will be
 // dropped.
 COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
-std::set<media_session::mojom::MediaSessionAction> GetTopVisibleActions(
-    const std::set<media_session::mojom::MediaSessionAction>& enabled_actions,
-    const std::set<media_session::mojom::MediaSessionAction>& ignored_actions,
+base::flat_set<media_session::mojom::MediaSessionAction> GetTopVisibleActions(
+    const base::flat_set<media_session::mojom::MediaSessionAction>&
+        enabled_actions,
+    const base::flat_set<media_session::mojom::MediaSessionAction>&
+        ignored_actions,
     size_t max_actions);
 
 // Returns the |MediaSessionAction| corresponding to playback action |button|.

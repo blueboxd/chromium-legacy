@@ -348,7 +348,8 @@ TEST_F(CookieManagerImplTest, UpdateBatching) {
   }
 }
 
-TEST_F(CookieManagerImplTest, ReconnectToNetworkContext) {
+// TODO(https://crbug.com/1018178): Flakes on GetAllCookies().has_value().
+TEST_F(CookieManagerImplTest, DISABLED_ReconnectToNetworkContext) {
   // Attach a cookie observer, which we expect should become disconnected with
   // an appropriate error if the NetworkService goes away.
   base::RunLoop global_changes_disconnect_loop;

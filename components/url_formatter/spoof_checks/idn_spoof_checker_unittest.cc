@@ -1091,6 +1091,11 @@ const IDNTestCase kIdnCases[] = {
     // U+05D7 can look like Latin n in many fonts.
     {"xn--ceba.com", L"חח.com", false},
 
+    // U+00FE (þ) and U+00F0 (ð) are only allowed under the .is TLD.
+    {"xn--acdef-wva.com", L"aþcdef.com", false},
+    {"xn--mnpqr-jta.com", L"mnðpqr.com", false},
+    {"xn--acdef-wva.is", L"aþcdef.is", true},
+    {"xn--mnpqr-jta.is", L"mnðpqr.is", true},
 };  // namespace
 
 namespace test {

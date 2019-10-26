@@ -421,10 +421,10 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
   base::win::ScopedVariant attribute_value_variant;
 
   // The range is inclusive, so advance our endpoint to the next position
-  auto end = end_->CreateNextAnchorPosition();
+  auto end = end_->AsLeafTextPosition()->CreateNextAnchorPosition();
 
   // Iterate over anchor positions
-  for (auto it = start_->Clone();
+  for (auto it = start_->AsLeafTextPosition();
        it->anchor_id() != end->anchor_id() || it->tree_id() != end->tree_id();
        it = it->CreateNextAnchorPosition()) {
     AXPlatformNodeDelegate* delegate = GetDelegate(it.get());

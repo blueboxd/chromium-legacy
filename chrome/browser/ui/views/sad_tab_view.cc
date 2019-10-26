@@ -188,6 +188,18 @@ void SadTabView::AttachToWebView() {
   }
 }
 
+void SadTabView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Specify the maximum message and title width explicitly.
+  const int max_width =
+      std::min(width() - ChromeLayoutProvider::Get()->GetDistanceMetric(
+                             DISTANCE_UNRELATED_CONTROL_HORIZONTAL) *
+                             2,
+               kMaxContentWidth);
+
+  message_->SizeToFit(max_width);
+  title_->SizeToFit(max_width);
+}
+
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
   PerformAction(Action::HELP_LINK);
 }
@@ -196,18 +208,6 @@ void SadTabView::ButtonPressed(views::Button* sender,
                                const ui::Event& event) {
   DCHECK_EQ(action_button_, sender);
   PerformAction(Action::BUTTON);
-}
-
-void SadTabView::Layout() {
-  // Specify the maximum message width explicitly.
-  const int max_width =
-      std::min(width() - ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_UNRELATED_CONTROL_HORIZONTAL) * 2, kMaxContentWidth);
-
-  message_->SizeToFit(max_width);
-  title_->SizeToFit(max_width);
-
-  View::Layout();
 }
 
 void SadTabView::OnPaint(gfx::Canvas* canvas) {

@@ -85,8 +85,6 @@ template("fuchsia_package_runner") {
       _manifest_path,
       "//build/fuchsia/",
       "//build/util/lib/",
-      "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
-      "${qemu_root}/",
       "${fuchsia_sdk}/tools/fvm",
       "${fuchsia_sdk}/tools/pm",
       "${fuchsia_sdk}/tools/symbolize",
@@ -99,6 +97,20 @@ template("fuchsia_package_runner") {
 
     if (host_cpu == "x64" && target_cpu == "x64") {
       data += [ "${aemu_root}/" ]
+    }
+
+    if (host_os == "linux" && host_cpu == "x64" && target_cpu == "arm64") {
+      data += [
+        # Host tools for qemu on arm64 test bots.
+        "${qemu_arm64_root}/",
+        "${fuchsia_arm64_sdk}/",
+      ]
+    } else {
+      data += [
+        # Host tools for qemu on x64 test bots.
+        "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
+        "${qemu_root}/",
+      ]
     }
 
     executable_args = []

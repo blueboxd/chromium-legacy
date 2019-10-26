@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<script>
+if (window.internals)
+  internals.useMockOverlayScrollbars();
+</script>
 <script src="../../resources/js-test.js"></script>
 <style>
     iframe { width: 100px; height: 100px; }
@@ -12,9 +16,6 @@
 
     shouldBeDefined(window.internals);
 
-    var originalOverlayScrollbars = internals.runtimeFlags.overlayScrollbarsEnabled;
-    internals.runtimeFlags.overlayScrollbarsEnabled = true;
-
     function runTests() {
         clientWidthBefore = frame.contentDocument.documentElement.clientWidth;
         frame.className = "wider";
@@ -24,7 +25,6 @@
         shouldBe("clientWidthBefore", "100");
         shouldBe("clientWidthAfter", "200");
 
-        internals.runtimeFlags.overlayScrollbarsEnabled = originalOverlayScrollbars;
         finishJSTest();
     }
 </script>

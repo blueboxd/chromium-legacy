@@ -1143,16 +1143,18 @@ void DeviceStatusCollector::SampleProbeData(
     return;
 
   const auto& battery = result->battery_info;
-  enterprise_management::BatterySample battery_sample;
-  battery_sample.set_timestamp(sample->timestamp.ToJavaTime());
-  // Convert V to mV:
-  battery_sample.set_voltage(std::lround(battery->voltage_now * 1000));
-  // Convert Ah to mAh:
-  battery_sample.set_remaining_capacity(
-      std::lround(battery->charge_now * 1000));
-  // Convert 0.1 Kelvin to Celsius:
-  battery_sample.set_temperature((battery->temperature_smart - 2731) / 10);
-  sample->battery_samples[battery->model_name] = battery_sample;
+  if (!battery.is_null()) {
+    enterprise_management::BatterySample battery_sample;
+    battery_sample.set_timestamp(sample->timestamp.ToJavaTime());
+    // Convert V to mV:
+    battery_sample.set_voltage(std::lround(battery->voltage_now * 1000));
+    // Convert Ah to mAh:
+    battery_sample.set_remaining_capacity(
+        std::lround(battery->charge_now * 1000));
+    // Convert 0.1 Kelvin to Celsius:
+    battery_sample.set_temperature((battery->temperature_smart - 2731) / 10);
+    sample->battery_samples[battery->model_name] = battery_sample;
+  }
 
   SamplingCallback completion_callback;
   if (!callback.is_null()) {

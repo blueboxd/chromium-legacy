@@ -1189,13 +1189,7 @@ public class PaymentRequestImpl
         mPaymentHandlerUi = new PaymentHandlerCoordinator();
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) return false;
-        return mPaymentHandlerUi.show(
-                chromeActivity, this::onPaymentHandlerUiDismissed, url, mIsIncognito);
-    }
-
-    private void onPaymentHandlerUiDismissed() {
-        ensureHideAndResetPaymentHandlerUi();
-        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContents);
+        return mPaymentHandlerUi.show(chromeActivity, url, mIsIncognito);
     }
 
     @Override
@@ -1247,7 +1241,7 @@ public class PaymentRequestImpl
             // Todo(sahel): handlesShipping must be true when the payment handler is responsible for
             // handling shipping. crbug.com/984694
             mInvokedPaymentInstrument.updateWith(
-                    PaymentDetailsConverter.convertToPaymentMethodChangeResponse(
+                    PaymentDetailsConverter.convertToPaymentRequestDetailsUpdate(
                             details, false /* handlesShipping */, this /* methodChecker */));
             return;
         }

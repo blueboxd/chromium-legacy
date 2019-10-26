@@ -171,11 +171,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'a7f3157ac0125701653b8f36becd36b2886b70c7',
+  'skia_revision': 'ff82e15d014a954a24b8df3615858d5d37748240',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '008243fd338dd0fe00b6fd2cb0b26703279c7c80',
+  'v8_revision': '4812325d6c2c0de1cf44e7b1669e23b86eacfd52',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -183,7 +183,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '6b652b335259295d90702fff9f3b34988eef36f7',
+  'angle_revision': '76763cb90a431b7fa3a9dcfefe6b71436a8e48a1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '38f98ead10af9d9a335aef2e3e796807bcd31bf8',
+  'catapult_revision': '4b1db19bd4262b8289266d0e753d6d4f247bf94d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -310,11 +310,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1fdcb16b6995c54c645f17566d019ebf46229fd0',
+  'dawn_revision': '04863c42beddde4b4e8a76884094101c0ba7e1cc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'b38e635502035083ead0d64e26026ee724238c65',
+  'quiche_revision': '91ae3918387e152674f9ef30ca5821a83de6a0fd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -464,7 +464,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/chrome/test/data/password/captured_sites',
-        'version': 'q_mI3rtAXvNUW_X3zxca3VcUVdHkgwRqhfTLHt9H7rIC',
+        'version': 'MuT6UWjyB52nWFDuu4RCv4o_vMPIZdI4P2m2YsC66fAC',
       }
     ],
     'condition': 'checkout_chromium_password_manager_test_dependencies',
@@ -765,7 +765,7 @@ deps = {
     Var('chromium_git') + '/angle/angle.git' + '@' +  Var('angle_revision'),
 
   'src/third_party/dav1d/libdav1d':
-    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + '62fcd0cb19d2fe46af7541d8185de86d45d58697',
+    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + 'fc54119cc0aeae96184bb4d18a2aef4c69f1a0fd',
 
   'src/third_party/dawn':
     Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
@@ -874,7 +874,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e0f4b5423da21788c54627ddfe783a689f7560ff',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'a8c4e3a48ffde94eb75630b0640328e4f62fbe59',
       'condition': 'checkout_linux',
   },
 
@@ -899,7 +899,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '86244d69136428f214950605d82533229b18098e',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ebba8d75bf65250198a1f5c84295e119129915bd',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -937,7 +937,7 @@ deps = {
   },
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'd7ba23c23434eb938c6fcae4fe77ca1e2a2fbeff',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '83304c4e5287d20407dff656545e6dddd73566f8',
 
   'src/third_party/flac':
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',
@@ -957,7 +957,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/sdk/core/linux-arm64',
-              'version': 'J4QyYSv0T-30YSgD6d34XHRpck2ckNh-4MMhsRYj4zoC'
+              'version': 'xbqDSJKkLORclZW8h9et17dVsOjaxurf7RElMu0fGvUC',
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia and checkout_fuchsia_for_arm64_host',
@@ -1280,7 +1280,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'd0f315b3fac883c1e34c1ea2d768118efeffb3bc',
+    Var('chromium_git') + '/openscreen' + '@' + '729798cc3be6c945eb7ec4b3cf10e027397b6ca7',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '46d7cb392019e934e2944bdd317be8ed5176b3f2',
@@ -1308,7 +1308,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '208c36706ef6b4b9c53542c9e15256c816fd3368',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '512f209de9b5955d62b26e675dff7762688397d2',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1509,7 +1509,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '2701c130839edbeb226735b0775966b6423d9e83',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '16cec3be2c96d7db74e5cb6a9d9837e98d09944e',
+    Var('webrtc_git') + '/src.git' + '@' + 'e95fc85cb76d6bec8b06300774efc97309b5947a',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.
@@ -1576,7 +1576,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@52d33c48770b61dd04351dd9f958165090929dac',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@403b00885ea5f429970e175393b1de1a6ac831de',
     'condition': 'checkout_src_internal',
   },
 

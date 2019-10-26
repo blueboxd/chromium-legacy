@@ -26,3 +26,23 @@ blink_modules_sources("native_file_system") {
     "//third_party/blink/renderer/platform",
   ]
 }
+
+jumbo_source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "window_native_file_system_test.cc",
+  ]
+
+  configs += [
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer:inside_blink",
+    "//third_party/blink/renderer/core:blink_core_pch",
+  ]
+
+  deps = [
+    "//testing/gtest",
+    "//third_party/blink/renderer/modules",
+    "//third_party/blink/renderer/platform",
+    "//third_party/blink/renderer/platform/wtf",
+  ]
+}

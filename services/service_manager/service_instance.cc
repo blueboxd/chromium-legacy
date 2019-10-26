@@ -571,11 +571,11 @@ void ServiceInstance::Clone(mojom::ConnectorRequest request) {
 void ServiceInstance::FilterInterfaces(
     const std::string& filter_name,
     const Identity& source,
-    mojom::InterfaceProviderRequest source_request,
-    mojom::InterfaceProviderPtr target) {
+    mojo::PendingReceiver<mojom::InterfaceProvider> source_receiver,
+    mojo::PendingRemote<mojom::InterfaceProvider> target) {
   interface_filters_.insert(std::make_unique<InterfaceFilter>(
-      service_manager_, this, filter_name, source, identity_,
-      target.PassInterface(), std::move(source_request)));
+      service_manager_, this, filter_name, source, identity_, std::move(target),
+      std::move(source_receiver)));
 }
 
 void ServiceInstance::RequestQuit() {

@@ -15,8 +15,8 @@ import androidx.annotation.StringRes;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 

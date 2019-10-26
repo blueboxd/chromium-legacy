@@ -5,6 +5,8 @@
 #ifndef WEBLAYER_TEST_WEBLAYER_BROWSER_TEST_UTILS_H_
 #define WEBLAYER_TEST_WEBLAYER_BROWSER_TEST_UTILS_H_
 
+#include "base/values.h"
+
 class GURL;
 
 namespace weblayer {
@@ -15,6 +17,9 @@ void NavigateAndWaitForCompletion(const GURL& url, Shell* shell);
 
 // Navigates |shell| to |url| and wait for failed navigation.
 void NavigateAndWaitForFailure(const GURL& url, Shell* shell);
+
+// Executes |script| in |shell| and returns the result.
+base::Value ExecuteScript(Shell* shell, const std::string& script);
 
 }  // namespace weblayer
 

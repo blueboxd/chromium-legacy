@@ -26,6 +26,30 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  * bitmap is placed in a cc::Layer and the layer is shown while scrolling the top-view.
  * ViewResourceAdapter is always kept in sync, as to do otherwise results in a noticeable delay
  * between when the scroll starts the content is available.
+ *
+ * There are many parts involved in orchestrating top-controls scrolling. The key things to know
+ * are:
+ * . TopControlsContainerView (in native code) keeps a cc::Layer that shows a bitmap rendered by
+ *   the top-view. The bitmap is updated anytime the top-view changes. This is done as otherwise
+ *   there is a noticable delay between when the scroll starts and the bitmap is available.
+ * . When scrolling, the cc::Layer for the WebContents and TopControlsContainerView is moved.
+ * . The size of the WebContents is only changed after the user releases a touch point. Otherwise
+ *   the scrollbar bounces around.
+ * . WebContentsDelegate::DoBrowserControlsShrinkRendererSize() only changes when the WebContents
+ *   size change.
+ * . WebContentsGestureStateTracker is responsible for determining when a scroll/touch is underway.
+ * . ContentViewRenderView.Delegate is used to adjust the size of the webcontents when the
+ *   top-controls are fully visible (and a scroll is not underway).
+ *
+ * The flow of this code is roughly:
+ * . WebContentsGestureStateTracker generally detects a touch first
+ * . BrowserControllerImpl is notified and caches state.
+ * . onTopControlsChanged() is called. This triggers hiding the real view and calling to native code
+ *   to move the cc::Layers.
+ * . the move continues.
+ * . when the move completes and both WebContentsGestureStateTracker and TopControlsContainerView
+ *   no longer believe a move/gesture/scroll is underway the size of the WebContents is adjusted
+ *   (if necessary).
  */
 @JNINamespace("weblayer")
 class TopControlsContainerView extends FrameLayout {
@@ -50,13 +74,24 @@ class TopControlsContainerView extends FrameLayout {
     private EventOffsetHandler mEventOffsetHandler;
     private int mTopContentOffset;
 
-    // True if scrolling.
+    // Set to true if |mView| is hidden because the user has scrolled or triggered some action such
+    // that mView is not visible. While |mView| is not visible if this is true, the bitmap from
+    // |mView| may be partially visible.
     private boolean mInTopControlsScroll;
 
     private boolean mIsFullscreen;
 
     // Used to delay processing fullscreen requests.
     private Runnable mSystemUiFullscreenResizeRunnable;
+
+    private final Listener mListener;
+
+    public interface Listener {
+        /**
+         * Called when the top-controls are either completely showing, or completely hiding.
+         */
+        public void onTopControlsCompletelyShownOrHidden();
+    }
 
     // Used to  delay updating the image for the layer.
     private final Runnable mRefreshResourceIdRunnable = () -> {
@@ -65,8 +100,8 @@ class TopControlsContainerView extends FrameLayout {
                 mNativeTopControlsContainerView, TopControlsContainerView.this);
     };
 
-    TopControlsContainerView(
-            Context context, WebContents webContents, ContentViewRenderView contentViewRenderView) {
+    TopControlsContainerView(Context context, WebContents webContents,
+            ContentViewRenderView contentViewRenderView, Listener listener) {
         super(context);
         mContentViewRenderView = contentViewRenderView;
         mWebContents = webContents;
@@ -85,6 +120,7 @@ class TopControlsContainerView extends FrameLayout {
         mNativeTopControlsContainerView =
                 TopControlsContainerViewJni.get().createTopControlsContainerView(
                         this, webContents, contentViewRenderView.getNativeHandle());
+        mListener = listener;
     }
 
     public void destroy() {
@@ -99,6 +135,21 @@ class TopControlsContainerView extends FrameLayout {
 
     public EventOffsetHandler getEventOffsetHandler() {
         return mEventOffsetHandler;
+    }
+
+    /**
+     * Returns the vertical offset for the WebContents.
+     */
+    public int getTopContentOffset() {
+        return mView == null ? 0 : mTopContentOffset;
+    }
+
+    /**
+     * Returns true if the top control is visible to the user.
+     */
+    public boolean isTopControlVisible() {
+        // Don't check the visibility of the View itself as it's hidden while scrolling.
+        return mView != null && mTopContentOffset != 0;
     }
 
     /**
@@ -216,8 +267,19 @@ class TopControlsContainerView extends FrameLayout {
         mContentViewRenderView.postOnAnimation(() -> showTopControls());
     }
 
+    /**
+     * Returns true if the top-controls are completely shown or completely hidden. A return value
+     * of false indicates the top-controls are being moved.
+     */
+    public boolean isTopControlsCompletelyShownOrHidden() {
+        return mTopContentOffset == 0 || mTopContentOffset == getHeight();
+    }
+
     private void setTopControlsOffset(int topControlsOffsetY, int topContentOffsetY) {
         mTopContentOffset = topContentOffsetY;
+        if (isTopControlsCompletelyShownOrHidden()) {
+            mListener.onTopControlsCompletelyShownOrHidden();
+        }
         TopControlsContainerViewJni.get().setTopControlsOffset(mNativeTopControlsContainerView,
                 TopControlsContainerView.this, topControlsOffsetY, topContentOffsetY);
     }

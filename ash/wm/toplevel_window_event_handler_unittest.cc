@@ -1197,6 +1197,43 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, DonotStartGoingBack) {
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 }
 
+TEST_F(ToplevelWindowEventHandlerBackGestureTest, CancelOnScreenRotation) {
+  UpdateDisplay("807x407");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  // Set the screen orientation to LANDSCAPE_PRIMARY.
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapePrimary);
+
+  gfx::Point start(0, 100);
+  gfx::Point update_and_end(200, 100);
+  SendGestureEvent(start, 0, 0, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(update_and_end, update_and_end.x() - start.x(), 0,
+                   ui::ET_GESTURE_SCROLL_UPDATE);
+  // Rotate the screen by 270 degree during drag.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitPrimary);
+  SendGestureEvent(update_and_end,
+                   ToplevelWindowEventHandler::kFlingVelocityForGoingBack + 10,
+                   0, ui::ET_SCROLL_FLING_START);
+  // Left edge swipe back should be cancelled due to screen rotation, so the
+  // fling event with velocity larger than |kFlingVelocityForGoingBack| above
+  // will not trigger actual going back.
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+}
+
 namespace {
 
 void SendMouseReleaseAndReleaseCapture(ui::test::EventGenerator* generator,

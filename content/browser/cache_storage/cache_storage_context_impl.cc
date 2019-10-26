@@ -128,13 +128,15 @@ void CacheStorageContextImpl::SetBlobParametersForCache(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!blob_storage_context)
     return;
-  // We can only get a WeakPtr to the BlobStorageContext on the IO thread.
+  // We can only get a mojo interface for BlobStorageContext on the IO thread.
   // Bounce there first before setting the context on the manager.
+  // TODO(enne): clean this up in the future to not require this bounce and
+  // to have this mojo context live on the cache storage sequence.
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &CacheStorageContextImpl::GetBlobStorageContextWeakPtrOnIOThread,
-          this, base::RetainedRef(blob_storage_context)));
+          &CacheStorageContextImpl::GetBlobStorageMojoContextOnIOThread, this,
+          base::RetainedRef(blob_storage_context)));
 }
 
 void CacheStorageContextImpl::GetAllOriginsInfo(
@@ -248,22 +250,26 @@ void CacheStorageContextImpl::ShutdownOnTaskRunner() {
   cache_manager_ = nullptr;
 }
 
-void CacheStorageContextImpl::GetBlobStorageContextWeakPtrOnIOThread(
+void CacheStorageContextImpl::GetBlobStorageMojoContextOnIOThread(
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(blob_storage_context);
+
+  // TODO(enne): this receiver will need to be sent to the storage service when
+  // cache storage is moved.
+  auto context = blob_storage_context->MojoContext();
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner, this,
-          blob_storage_context->context()->AsWeakPtr()));
+          base::MakeRefCounted<BlobStorageContextWrapper>(std::move(context))));
 }
 
 void CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner(
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
+    scoped_refptr<BlobStorageContextWrapper> blob_storage_context) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (cache_manager_)
-    cache_manager_->SetBlobParametersForCache(blob_storage_context);
+    cache_manager_->SetBlobParametersForCache(std::move(blob_storage_context));
 }
 
 void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(

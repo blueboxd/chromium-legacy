@@ -46,7 +46,7 @@ void TextureVirtualDeviceMojoAdapter::OnNewMailboxHolderBufferHandle(
 
 void TextureVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
     int32_t buffer_id,
-    mojom::ScopedAccessPermissionPtr access_permission,
+    mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission,
     media::mojom::VideoFrameInfoPtr frame_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!receiver_.is_bound())

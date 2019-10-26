@@ -1018,7 +1018,6 @@ IN_PROC_BROWSER_TEST_P(
     params.window_action = NavigateParams::SHOW_WINDOW;
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     params.is_renderer_initiated = false;
-    params.uses_post = true;
     params.post_data = network::ResourceRequestBody::CreateFromBytes(
         post_data.data(), post_data.size());
 

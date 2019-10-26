@@ -610,7 +610,7 @@ TEST(SecurityStateContentUtilsTest, HTTPDangerous) {
       security_state::DANGEROUS, visible_security_state, &explanations);
   // Verify that the security style was downgraded and an explanation shown
   // because a form was edited.
-  EXPECT_EQ(blink::SecurityStyle::kInsecure, security_style);
+  EXPECT_EQ(blink::SecurityStyle::kInsecureBroken, security_style);
   EXPECT_EQ(1u, explanations.insecure_explanations.size());
 }
 

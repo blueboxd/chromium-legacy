@@ -12,6 +12,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 
@@ -21,7 +22,7 @@ using content::BrowserThread;
 namespace content {
 
 P2PSocketDispatcherHost::P2PSocketDispatcherHost(int render_process_id)
-    : render_process_id_(render_process_id), binding_(this) {}
+    : render_process_id_(render_process_id) {}
 
 P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {}
 
@@ -70,10 +71,8 @@ void P2PSocketDispatcherHost::BindRequest(
 
   // In case the renderer was connected previously but the network process
   // crashed.
-  binding_.Close();
-  network::mojom::P2PTrustedSocketManagerClientPtr
-      trusted_socket_manager_client;
-  binding_.Bind(mojo::MakeRequest(&trusted_socket_manager_client));
+  receiver_.reset();
+  auto trusted_socket_manager_client = receiver_.BindNewPipeAndPassRemote();
 
   rph->GetStoragePartition()->GetNetworkContext()->CreateP2PSocketManager(
       std::move(trusted_socket_manager_client),

@@ -92,14 +92,15 @@ bool Connector::IsBound() const {
   return connector_.is_bound();
 }
 
-void Connector::FilterInterfaces(const std::string& spec,
-                                 const Identity& source_identity,
-                                 mojom::InterfaceProviderRequest request,
-                                 mojom::InterfaceProviderPtr target) {
+void Connector::FilterInterfaces(
+    const std::string& spec,
+    const Identity& source_identity,
+    mojo::PendingReceiver<mojom::InterfaceProvider> receiver,
+    mojo::PendingRemote<mojom::InterfaceProvider> target) {
   if (!BindConnectorIfNecessary())
     return;
   DCHECK(source_identity.IsValid());
-  connector_->FilterInterfaces(spec, source_identity, std::move(request),
+  connector_->FilterInterfaces(spec, source_identity, std::move(receiver),
                                std::move(target));
 }
 

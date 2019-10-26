@@ -46,26 +46,68 @@ final class ClassLoaderPatcher {
      * Loads all dex files within |dexDir| into the app's ClassLoader.
      */
     @SuppressLint({
-            "SetWorldReadable", "SetWorldWritable",
+            "SetWorldReadable",
+            "SetWorldWritable",
     })
-    DexFile[] loadDexFiles(File dexDir) throws ReflectiveOperationException, IOException {
+    DexFile[] loadDexFiles(File dexDir, String packageName)
+            throws ReflectiveOperationException, IOException {
         Log.i(TAG, "Installing dex files from: " + dexDir);
 
-        // The optimized dex files will be owned by this process' user.
-        // Store them within the app's data dir rather than on /data/local/tmp
-        // so that they are still deleted (by the OS) when we uninstall
-        // (even on a non-rooted device).
-        File incrementalDexesDir = new File(mAppFilesSubDir, "optimized-dexes");
-        File isolatedDexesDir = new File(mAppFilesSubDir, "isolated-dexes");
-        File optimizedDir;
+        File optimizedDir = null;
+        boolean isAtLeastOreo = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
 
-        // In O, optimizedDirectory is ignored, and the files are always put in an "oat"
-        // directory that is a sibling to the dex files themselves. SELinux policies
-        // prevent using odex files from /data/local/tmp, so we must first copy them
-        // into the app's data directory in order to get the odex files to live there.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            safeCopyAllFiles(dexDir, incrementalDexesDir);
-            dexDir = incrementalDexesDir;
+        if (isAtLeastOreo) {
+            // In O, optimizedDirectory is ignored, and the files are always put in an "oat"
+            // directory that is a sibling to the dex files themselves. SELinux policies
+            // prevent using odex files from /data/local/tmp, so we must first copy them
+            // into the app's data directory in order to get the odex files to live there.
+            // Use a package-name subdirectory to prevent name collisions when apk-under-test is
+            // used.
+            File newDexDir = new File(mAppFilesSubDir, packageName + "-dexes");
+            if (mIsPrimaryProcess) {
+                safeCopyAllFiles(dexDir, newDexDir);
+            }
+            dexDir = newDexDir;
+        } else {
+            // The optimized dex files will be owned by this process' user.
+            // Store them within the app's data dir rather than on /data/local/tmp
+            // so that they are still deleted (by the OS) when we uninstall
+            // (even on a non-rooted device).
+            File incrementalDexesDir = new File(mAppFilesSubDir, "optimized-dexes");
+            File isolatedDexesDir = new File(mAppFilesSubDir, "isolated-dexes");
+
+            if (mIsPrimaryProcess) {
+                ensureAppFilesSubDirExists();
+                // Allows isolated processes to access the same files.
+                incrementalDexesDir.mkdir();
+                incrementalDexesDir.setReadable(true, false);
+                incrementalDexesDir.setExecutable(true, false);
+                // Create a directory for isolated processes to create directories in.
+                isolatedDexesDir.mkdir();
+                isolatedDexesDir.setWritable(true, false);
+                isolatedDexesDir.setExecutable(true, false);
+
+                optimizedDir = incrementalDexesDir;
+            } else {
+                // There is a UID check of the directory in dalvik.system.DexFile():
+                // https://android.googlesource.com/platform/libcore/+/45e0260/dalvik/src/main/java/dalvik/system/DexFile.java#101
+                // Rather than have each isolated process run DexOpt though, we use
+                // symlinks within the directory to point at the browser process'
+                // optimized dex files.
+                optimizedDir = new File(isolatedDexesDir, "isolated-" + mProcessUid);
+                optimizedDir.mkdir();
+                // Always wipe it out and re-create for simplicity.
+                Log.i(TAG, "Creating dex file symlinks for isolated process");
+                for (File f : optimizedDir.listFiles()) {
+                    f.delete();
+                }
+                for (File f : incrementalDexesDir.listFiles()) {
+                    String to = "../../" + incrementalDexesDir.getName() + "/" + f.getName();
+                    File from = new File(optimizedDir, f.getName());
+                    createSymlink(to, from);
+                }
+            }
+            Log.i(TAG, "Code cache dir: " + optimizedDir);
         }
 
         // Ignore "oat" directory.
@@ -75,39 +117,6 @@ final class ClassLoaderPatcher {
             throw new FileNotFoundException("Dex dir does not exist: " + dexDir);
         }
 
-        if (mIsPrimaryProcess) {
-            ensureAppFilesSubDirExists();
-            // Allows isolated processes to access the same files.
-            incrementalDexesDir.mkdir();
-            incrementalDexesDir.setReadable(true, false);
-            incrementalDexesDir.setExecutable(true, false);
-            // Create a directory for isolated processes to create directories in.
-            isolatedDexesDir.mkdir();
-            isolatedDexesDir.setWritable(true, false);
-            isolatedDexesDir.setExecutable(true, false);
-
-            optimizedDir = incrementalDexesDir;
-        } else {
-            // There is a UID check of the directory in dalvik.system.DexFile():
-            // https://android.googlesource.com/platform/libcore/+/45e0260/dalvik/src/main/java/dalvik/system/DexFile.java#101
-            // Rather than have each isolated process run DexOpt though, we use
-            // symlinks within the directory to point at the browser process'
-            // optimized dex files.
-            optimizedDir = new File(isolatedDexesDir, "isolated-" + mProcessUid);
-            optimizedDir.mkdir();
-            // Always wipe it out and re-create for simplicity.
-            Log.i(TAG, "Creating dex file symlinks for isolated process");
-            for (File f : optimizedDir.listFiles()) {
-                f.delete();
-            }
-            for (File f : incrementalDexesDir.listFiles()) {
-                String to = "../../" + incrementalDexesDir.getName() + "/" + f.getName();
-                File from = new File(optimizedDir, f.getName());
-                createSymlink(to, from);
-            }
-        }
-
-        Log.i(TAG, "Code cache dir: " + optimizedDir);
         Log.i(TAG, "Loading " + dexFilesArr.length + " dex files");
 
         Object dexPathList = Reflect.getField(mClassLoader, "pathList");
@@ -115,9 +124,11 @@ final class ClassLoaderPatcher {
         dexElements = addDexElements(dexFilesArr, optimizedDir, dexElements);
         Reflect.setField(dexPathList, "dexElements", dexElements);
 
-        DexFile[] ret = new DexFile[dexElements.length];
+        // Return the list of new DexFile instances for the .jars in dexPathList.
+        DexFile[] ret = new DexFile[dexFilesArr.length];
+        int startIndex = dexElements.length - dexFilesArr.length;
         for (int i = 0; i < ret.length; ++i) {
-            ret[i] = (DexFile) Reflect.getField(dexElements[i], "dexFile");
+            ret[i] = (DexFile) Reflect.getField(dexElements[startIndex + i], "dexFile");
         }
         return ret;
     }

@@ -30,11 +30,11 @@ class MediaStream final : public DemuxerStream {
   MediaStream(RpcBroker* rpc_broker,
               Type type,
               int remote_handle,
-              const base::Closure& error_callback);
+              base::OnceClosure error_callback);
   ~MediaStream() override;
 
   // DemuxerStream implementation.
-  void Read(const ReadCB& read_cb) override;
+  void Read(ReadCB read_cb) override;
   bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
@@ -92,7 +92,7 @@ class MediaStream final : public DemuxerStream {
   // Set when Read() is called. Run only once when read completes.
   ReadCB read_complete_callback_;
 
-  base::Closure error_callback_;  // Called only once when first error occurs.
+  base::OnceClosure error_callback_;  // Called when first error occurs.
 
   base::circular_deque<scoped_refptr<DecoderBuffer>> buffers_;
 
@@ -112,12 +112,12 @@ class MediaStream final : public DemuxerStream {
 MediaStream::MediaStream(RpcBroker* rpc_broker,
                          Type type,
                          int remote_handle,
-                         const base::Closure& error_callback)
+                         base::OnceClosure error_callback)
     : rpc_broker_(rpc_broker),
       type_(type),
       remote_handle_(remote_handle),
       rpc_handle_(rpc_broker_->GetUniqueHandle()),
-      error_callback_(error_callback) {
+      error_callback_(std::move(error_callback)) {
   DCHECK(remote_handle_ != RpcBroker::kInvalidHandle);
   rpc_broker_->RegisterMessageReceiverCallback(
       rpc_handle_,
@@ -297,10 +297,10 @@ void MediaStream::FlushUntil(int count) {
   read_until_sent_ = false;
 }
 
-void MediaStream::Read(const ReadCB& read_cb) {
+void MediaStream::Read(ReadCB read_cb) {
   DCHECK(read_complete_callback_.is_null());
   DCHECK(read_cb);
-  read_complete_callback_ = read_cb;
+  read_complete_callback_ = std::move(read_cb);
   if (buffers_.empty() && config_changed_) {
     CompleteRead(DemuxerStream::kConfigChanged);
     return;
@@ -391,8 +391,8 @@ void MediaStream::OnError(const std::string& error) {
 }
 
 StreamProvider::StreamProvider(RpcBroker* rpc_broker,
-                               const base::Closure& error_callback)
-    : rpc_broker_(rpc_broker), error_callback_(error_callback) {}
+                               base::OnceClosure error_callback)
+    : rpc_broker_(rpc_broker), error_callback_(std::move(error_callback)) {}
 
 StreamProvider::~StreamProvider() = default;
 
@@ -415,16 +415,16 @@ void StreamProvider::Initialize(int remote_audio_handle,
   if (remote_audio_handle != RpcBroker::kInvalidHandle) {
     audio_stream_.reset(new MediaStream(
         rpc_broker_, DemuxerStream::AUDIO, remote_audio_handle,
-        base::Bind(&StreamProvider::OnError, weak_factory_.GetWeakPtr(),
-                   "Media stream error")));
+        base::BindOnce(&StreamProvider::OnError, weak_factory_.GetWeakPtr(),
+                       "Media stream error")));
     audio_stream_->Initialize(base::Bind(
         &StreamProvider::AudioStreamInitialized, weak_factory_.GetWeakPtr()));
   }
   if (remote_video_handle != RpcBroker::kInvalidHandle) {
     video_stream_.reset(new MediaStream(
         rpc_broker_, DemuxerStream::VIDEO, remote_video_handle,
-        base::Bind(&StreamProvider::OnError, weak_factory_.GetWeakPtr(),
-                   "Media stream error")));
+        base::BindOnce(&StreamProvider::OnError, weak_factory_.GetWeakPtr(),
+                       "Media stream error")));
     video_stream_->Initialize(base::Bind(
         &StreamProvider::VideoStreamInitialized, weak_factory_.GetWeakPtr()));
   }

@@ -158,19 +158,19 @@ bool HTMLScriptElement::async() const {
 }
 
 String HTMLScriptElement::SourceAttributeValue() const {
-  return getAttribute(html_names::kSrcAttr).GetString();
+  return FastGetAttribute(html_names::kSrcAttr).GetString();
 }
 
 String HTMLScriptElement::CharsetAttributeValue() const {
-  return getAttribute(html_names::kCharsetAttr).GetString();
+  return FastGetAttribute(html_names::kCharsetAttr).GetString();
 }
 
 String HTMLScriptElement::TypeAttributeValue() const {
-  return getAttribute(html_names::kTypeAttr).GetString();
+  return FastGetAttribute(html_names::kTypeAttr).GetString();
 }
 
 String HTMLScriptElement::LanguageAttributeValue() const {
-  return getAttribute(html_names::kLanguageAttr).GetString();
+  return FastGetAttribute(html_names::kLanguageAttr).GetString();
 }
 
 bool HTMLScriptElement::NomoduleAttributeValue() const {
@@ -178,27 +178,27 @@ bool HTMLScriptElement::NomoduleAttributeValue() const {
 }
 
 String HTMLScriptElement::ForAttributeValue() const {
-  return getAttribute(html_names::kForAttr).GetString();
+  return FastGetAttribute(html_names::kForAttr).GetString();
 }
 
 String HTMLScriptElement::EventAttributeValue() const {
-  return getAttribute(html_names::kEventAttr).GetString();
+  return FastGetAttribute(html_names::kEventAttr).GetString();
 }
 
 String HTMLScriptElement::CrossOriginAttributeValue() const {
-  return getAttribute(html_names::kCrossoriginAttr);
+  return FastGetAttribute(html_names::kCrossoriginAttr);
 }
 
 String HTMLScriptElement::IntegrityAttributeValue() const {
-  return getAttribute(html_names::kIntegrityAttr);
+  return FastGetAttribute(html_names::kIntegrityAttr);
 }
 
 String HTMLScriptElement::ReferrerPolicyAttributeValue() const {
-  return getAttribute(html_names::kReferrerpolicyAttr);
+  return FastGetAttribute(html_names::kReferrerpolicyAttr);
 }
 
 String HTMLScriptElement::ImportanceAttributeValue() const {
-  return getAttribute(html_names::kImportanceAttr);
+  return FastGetAttribute(html_names::kImportanceAttr);
 }
 
 String HTMLScriptElement::TextFromChildren() {

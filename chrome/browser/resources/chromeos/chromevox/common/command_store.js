@@ -33,9 +33,6 @@
 
 goog.provide('cvox.CommandStore');
 
-goog.require('cvox.PlatformFilter');
-
-
 /**
  * Returns all of the categories in the store as an array.
  * @return {Array<string>} The collection of categories.
@@ -103,7 +100,6 @@ cvox.CommandStore.commandsForCategory = function(category) {
  *                doDefault: (undefined|boolean),
  *                msgId: (undefined|string),
  *                nodeList: (undefined|string),
- *                platformFilter: (undefined|cvox.PlatformFilter),
  *                skipInput: (undefined|boolean),
  *                allowEvents: (undefined|boolean),
  *                disallowContinuation: (undefined|boolean)}>}
@@ -120,8 +116,6 @@ cvox.CommandStore.commandsForCategory = function(category) {
  *  msgId: The message resource describing the command.
  *  nodeList: The id from the map above if this command is used for
  *            showing a list of nodes.
- *  platformFilter: Specifies to which platforms this command applies. If left
- *                  undefined, the command applies to all platforms.
  *  skipInput: Explicitly skips this command when text input has focus.
  *             Defaults to false.
  *  disallowOOBE: Explicitly disallows this command when on chrome://oobe/*.
@@ -147,12 +141,6 @@ cvox.CommandStore.CMD_WHITELIST = {
     msgId: 'stop_speech_key',
     category: 'controlling_speech'
   },
-  'toggleChromeVox': {
-    announce: false,
-    platformFilter: cvox.PlatformFilter.WML,
-    msgId: 'toggle_chromevox_active'
-  },
-  'toggleChromeVoxVersion': {announce: false},
   'openChromeVoxMenus': {announce: false, msgId: 'menus_title'},
   'decreaseTtsRate': {
     announce: false,

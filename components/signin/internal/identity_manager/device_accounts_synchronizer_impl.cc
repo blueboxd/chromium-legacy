@@ -20,7 +20,7 @@ DeviceAccountsSynchronizerImpl::~DeviceAccountsSynchronizerImpl() = default;
 #if defined(OS_ANDROID)
 void DeviceAccountsSynchronizerImpl::
     ReloadAllAccountsFromSystemWithPrimaryAccount(
-        const CoreAccountId& primary_account_id) {
+        const base::Optional<CoreAccountId>& primary_account_id) {
   token_service_delegate_->ReloadAllAccountsFromSystemWithPrimaryAccount(
       primary_account_id);
 }

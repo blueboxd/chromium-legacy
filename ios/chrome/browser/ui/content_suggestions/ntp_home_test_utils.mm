@@ -20,6 +20,7 @@
 #endif
 
 namespace {
+
 // Helper method to get the Article category.
 ntp_snippets::Category Category() {
   return ntp_snippets::Category::FromKnownCategory(
@@ -55,36 +56,6 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
 }  // namespace
 
 namespace ntp_home {
-id<GREYMatcher> OmniboxWidth(CGFloat width) {
-  GREYMatchesBlock matches = ^BOOL(UIView* view) {
-    return fabs(view.bounds.size.width - width) < 0.001;
-  };
-  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
-    [description
-        appendText:[NSString stringWithFormat:@"Omnibox has correct width: %g",
-                                              width]];
-  };
-
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
-id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
-  GREYMatchesBlock matches = ^BOOL(UIView* view) {
-    return view.bounds.size.width >= width - margin &&
-           view.bounds.size.width <= width + margin;
-  };
-  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
-    [description
-        appendText:[NSString
-                       stringWithFormat:
-                           @"Omnibox has correct width: %g with margin: %g",
-                           width, margin]];
-  };
-
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
 
 UICollectionView* CollectionView() {
   return base::mac::ObjCCast<UICollectionView>(
@@ -97,31 +68,6 @@ UIView* FakeOmnibox() {
   return SubviewWithAccessibilityIdentifier(
       FakeOmniboxAccessibilityID(),
       [[UIApplication sharedApplication] keyWindow]);
-}
-
-std::vector<ntp_snippets::ContentSuggestion> Suggestions() {
-  std::vector<ntp_snippets::ContentSuggestion> suggestions;
-  suggestions.emplace_back(
-      Suggestion("chromium1", GURL("http://chromium.org/1")));
-  suggestions.emplace_back(
-      Suggestion("chromium2", GURL("http://chromium.org/2")));
-  suggestions.emplace_back(
-      Suggestion("chromium3", GURL("http://chromium.org/3")));
-  suggestions.emplace_back(
-      Suggestion("chromium4", GURL("http://chromium.org/4")));
-  suggestions.emplace_back(
-      Suggestion("chromium5", GURL("http://chromium.org/5")));
-  suggestions.emplace_back(
-      Suggestion("chromium6", GURL("http://chromium.org/6")));
-  suggestions.emplace_back(
-      Suggestion("chromium7", GURL("http://chromium.org/7")));
-  suggestions.emplace_back(
-      Suggestion("chromium8", GURL("http://chromium.org/8")));
-  suggestions.emplace_back(
-      Suggestion("chromium9", GURL("http://chromium.org/9")));
-  suggestions.emplace_back(
-      Suggestion("chromium10", GURL("http://chromium.org/10")));
-  return suggestions;
 }
 
 }  // namespace ntp_home

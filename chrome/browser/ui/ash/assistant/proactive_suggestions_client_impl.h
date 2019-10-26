@@ -51,6 +51,8 @@ class ProactiveSuggestionsClientImpl : public ash::ProactiveSuggestionsClient,
       content::NavigationHandle* navigation_handle) override;
 
   // AssistantStateObserver:
+  void OnAssistantFeatureAllowedChanged(
+      ash::mojom::AssistantAllowedState state) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantContextEnabled(bool enabled) override;
 

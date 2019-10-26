@@ -127,10 +127,12 @@ ComputeSameSiteContextForScriptGet(
 // with respect to the SameSite attribute. This will only return CROSS_SITE or
 // SAME_SITE_LAX (cookie sets of SameSite=strict cookies are permitted in same
 // contexts that sets of SameSite=lax cookies are).
+// If |attach_same_site_cookies| is true, this returns SAME_SITE_LAX.
 NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForResponse(const GURL& url,
                                   const GURL& site_for_cookies,
-                                  const base::Optional<url::Origin>& initiator);
+                                  const base::Optional<url::Origin>& initiator,
+                                  bool attach_same_site_cookies);
 
 // Determines which of the cookies for |url| can be set from a script context,
 // with respect to the SameSite attribute. This will only return CROSS_SITE or

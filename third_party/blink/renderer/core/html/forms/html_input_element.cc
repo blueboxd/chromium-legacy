@@ -875,7 +875,7 @@ void HTMLInputElement::FinishParsingChildren() {
   DCHECK(input_type_view_);
   TextControlElement::FinishParsingChildren();
   if (!state_restored_) {
-    bool checked = hasAttribute(html_names::kCheckedAttr);
+    bool checked = FastHasAttribute(html_names::kCheckedAttr);
     if (checked)
       setChecked(checked);
     dirty_checkedness_ = false;
@@ -950,7 +950,7 @@ void HTMLInputElement::ResetImpl() {
     SetNeedsValidityCheck();
   }
 
-  setChecked(hasAttribute(html_names::kCheckedAttr));
+  setChecked(FastHasAttribute(html_names::kCheckedAttr));
   dirty_checkedness_ = false;
 }
 

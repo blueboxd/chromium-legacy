@@ -21,6 +21,7 @@ android_library("java") {
     "org/chromium/weblayer_private/BrowserFragmentControllerImpl.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
+    "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/DownloadDelegateProxy.java",
@@ -30,10 +31,10 @@ android_library("java") {
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/FragmentWindowAndroid.java",
     "org/chromium/weblayer_private/ProfileManager.java",
+    "org/chromium/weblayer_private/RemoteFragmentImpl.java",
+    "org/chromium/weblayer_private/WebContentsGestureStateTracker.java",
     "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
-    "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
-    "org/chromium/weblayer_private/RemoteFragmentImpl.java",
   ]
 
   deps = [

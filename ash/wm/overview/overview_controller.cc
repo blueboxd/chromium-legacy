@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -50,24 +51,46 @@ constexpr base::TimeDelta kOcclusionPauseDurationForStart =
 constexpr base::TimeDelta kOcclusionPauseDurationForEnd =
     base::TimeDelta::FromMilliseconds(500);
 
-// Returns whether overview mode items should be slid in or out from the top of
-// the screen.
-bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
-  // No sliding if home launcher is not available.
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-    return false;
-  }
+// Returns the enter/exit type that should be used if kNormal enter/exit type
+// was originally requested - if the overview is expected to transition to/from
+// the home screen, the normal enter/exit mode is expected to be overridden by
+// either slide, or fade to home modes.
+// |enter| - Whether |original_type| is used for entering overview.
+// |windows| - The list of windows that are displayed in the overview UI.
+OverviewSession::EnterExitOverviewType MaybeOverrideEnterExitTypeForHomeScreen(
+    OverviewSession::EnterExitOverviewType original_type,
+    bool enter,
+    const std::vector<aura::Window*>& windows) {
+  if (original_type != OverviewSession::EnterExitOverviewType::kNormal)
+    return original_type;
 
-  if (windows.empty())
-    return false;
+  // Use normal type if home launcher is not available.
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    return original_type;
 
-  // Only slide in if all windows are minimized.
+  // Transition to home screen only if all windows are minimized.
   for (const aura::Window* window : windows) {
-    if (!WindowState::Get(window)->IsMinimized())
-      return false;
+    if (!WindowState::Get(window)->IsMinimized()) {
+      return original_type;
+    }
   }
 
-  return true;
+  // If homerview gesture is enabled, overview is expected to fade in or out to
+  // home screen (when all windows are minimized).
+  if (ash::features::IsHomerviewGestureEnabled()) {
+    return enter ? OverviewSession::EnterExitOverviewType::kFadeInEnter
+                 : OverviewSession::EnterExitOverviewType::kFadeOutExit;
+  }
+
+  // When HomerviewGesture is enabled, the original type is overriden even if
+  // the list of windows is empty so home screen knows to animate in during
+  // overview exit animation (home screen controller uses different show/hide
+  // animations depending on the overview exit/enter types).
+  if (windows.empty())
+    return original_type;
+
+  return enter ? OverviewSession::EnterExitOverviewType::kSlideInEnter
+               : OverviewSession::EnterExitOverviewType::kSlideOutExit;
 }
 
 }  // namespace
@@ -388,13 +411,11 @@ void OverviewController::ToggleOverview(
 
     // We may want to slide out the overview grid in some cases, even if not
     // explicitly stated.
-    OverviewSession::EnterExitOverviewType new_type = type;
-    if (type == OverviewSession::EnterExitOverviewType::kNormal &&
-        ShouldSlideInOutOverview(windows)) {
-      new_type = OverviewSession::EnterExitOverviewType::kSlideOutExit;
-    }
+    OverviewSession::EnterExitOverviewType new_type =
+        MaybeOverrideEnterExitTypeForHomeScreen(type, /*enter=*/false, windows);
     overview_session_->set_enter_exit_overview_type(new_type);
     if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit ||
+        type == OverviewSession::EnterExitOverviewType::kFadeOutExit ||
         type == OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
       // Minimize the windows without animations. When the home launcher button
       // is pressed, minimized widgets will get created in their place, and
@@ -443,7 +464,6 @@ void OverviewController::ToggleOverview(
   } else {
     DCHECK(CanEnterOverview());
     TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview", this);
-    LOG(ERROR) << "Will start, overview session " << overview_session();
     for (auto& observer : observers_)
       observer.OnOverviewModeWillStart();
 
@@ -485,16 +505,20 @@ void OverviewController::ToggleOverview(
     overview_session_ = std::make_unique<OverviewSession>(this);
     // We may want to slide in the overview grid in some cases, even if not
     // explicitly stated.
-    OverviewSession::EnterExitOverviewType new_type = type;
-    if (type == OverviewSession::EnterExitOverviewType::kNormal &&
-        ShouldSlideInOutOverview(windows)) {
-      new_type = OverviewSession::EnterExitOverviewType::kSlideInEnter;
-    }
+    OverviewSession::EnterExitOverviewType new_type =
+        MaybeOverrideEnterExitTypeForHomeScreen(type, /*enter=*/true, windows);
     overview_session_->set_enter_exit_overview_type(new_type);
     for (auto& observer : observers_)
       observer.OnOverviewModeStarting();
     overview_session_->Init(windows, hide_windows);
-    overview_wallpaper_controller_->Blur(/*animate_only=*/false);
+
+    // When fading in from home, start animating blur immediately (if animation
+    // is required) - with this transition the item widgets are positioned in
+    // the overview immediately, so delaying blur start until start animations
+    // finish looks janky.
+    overview_wallpaper_controller_->Blur(
+        /*animate_only=*/new_type ==
+        OverviewSession::EnterExitOverviewType::kFadeInEnter);
 
     // For app dragging, there are no start animations so add a delay to delay
     // animations observing when the start animation ends, such as the shelf,
@@ -559,15 +583,19 @@ bool OverviewController::CanEndOverview(
 }
 
 void OverviewController::OnStartingAnimationComplete(bool canceled) {
-  if (!canceled)
+  DCHECK(overview_session_);
+
+  // For kFadeInEnter, wallpaper blur is initiated on transition start,
+  // so it doesn't have to be requested again on starting animation end.
+  if (!canceled && overview_session_->enter_exit_overview_type() !=
+                       OverviewSession::EnterExitOverviewType::kFadeInEnter) {
     overview_wallpaper_controller_->Blur(/*animate_only=*/true);
+  }
 
   for (auto& observer : observers_)
     observer.OnOverviewModeStartingAnimationComplete(canceled);
-  if (overview_session_) {
-    overview_session_->OnStartingAnimationComplete(canceled,
-                                                   should_focus_overview_);
-  }
+  overview_session_->OnStartingAnimationComplete(canceled,
+                                                 should_focus_overview_);
   UnpauseOcclusionTracker(kOcclusionPauseDurationForStart);
   TRACE_EVENT_ASYNC_END1("ui", "OverviewController::EnterOverview", this,
                          "canceled", canceled);

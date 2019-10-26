@@ -215,10 +215,10 @@ SkColor ShelfBackgroundAnimator::GetBackgroundColor(
       shelf_target_color = ShelfConfig::Get()->GetShelfWithAppListColor();
       break;
     case SHELF_BACKGROUND_DEFAULT:
-    case SHELF_BACKGROUND_OVERVIEW:
       shelf_target_color = ShelfConfig::Get()->GetDefaultShelfColor();
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
+    case SHELF_BACKGROUND_OVERVIEW:
       shelf_target_color = ShelfConfig::Get()->GetMaximizedShelfColor();
       break;
     case SHELF_BACKGROUND_OOBE:

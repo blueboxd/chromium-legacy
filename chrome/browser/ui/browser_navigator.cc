@@ -350,7 +350,7 @@ void LoadURLInContents(WebContents* target_contents,
                 GetSourceProfile(params)));
   }
 
-  if (params->uses_post) {
+  if (params->post_data) {
     load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
     load_url_params.post_data = params->post_data;
   }

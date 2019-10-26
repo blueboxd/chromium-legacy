@@ -1825,6 +1825,15 @@ void LocalFrame::NotifyUserActivation() {
   NotifyUserActivation(false);
 }
 
+void LocalFrame::AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
+                                     const WTF::String& message,
+                                     bool discard_duplicates) {
+  GetDocument()->AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther, level,
+                             message),
+      discard_duplicates);
+}
+
 void LocalFrame::BindToReceiver(
     blink::LocalFrame* frame,
     mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver) {

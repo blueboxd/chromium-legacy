@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/stl_util.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -60,11 +61,16 @@ void ToolbarIconContainerView::RemoveObserver(const Observer* obs) {
 void ToolbarIconContainerView::OnHighlightChanged(
     views::Button* observed_button,
     bool highlighted) {
-  if (highlighted)
-    DCHECK(observed_button);
+  // We don't care about the main button being highlighted.
+  if (observed_button == main_button_)
+    return;
 
-  // TODO(crbug.com/932818): Pass observed button type to container.
-  highlighted_button_ = highlighted ? observed_button : nullptr;
+  if (highlighted) {
+    DCHECK(observed_button);
+    highlighted_buttons_.insert(observed_button);
+  } else {
+    highlighted_buttons_.erase(observed_button);
+  }
 
   UpdateHighlight();
 }
@@ -81,6 +87,10 @@ void ToolbarIconContainerView::OnViewFocused(views::View* observed_view) {
 
 void ToolbarIconContainerView::OnViewBlurred(views::View* observed_view) {
   UpdateHighlight();
+}
+
+const views::View::Views& ToolbarIconContainerView::GetChildren() const {
+  return children();
 }
 
 void ToolbarIconContainerView::OnMouseEntered(const ui::MouseEvent& event) {
@@ -110,15 +120,11 @@ bool ToolbarIconContainerView::ShouldDisplayHighlight() {
   if (!uses_highlight_)
     return false;
 
-  // The container should also be highlighted if a dialog is anchored to.
-  if (highlighted_button_ && highlighted_button_ != main_button_)
-    return true;
-
   if (IsMouseHovered() && (!main_button_ || !main_button_->IsMouseHovered()))
     return true;
 
   // Focused, pressed or hovered children should trigger the highlight.
-  for (views::View* child : children()) {
+  for (views::View* child : GetChildren()) {
     if (child == main_button_)
       continue;
     if (child->HasFocus())
@@ -130,7 +136,11 @@ bool ToolbarIconContainerView::ShouldDisplayHighlight() {
         button->state() == views::Button::ButtonState::STATE_HOVERED) {
       return true;
     }
+    // The container should also be highlighted if a dialog is anchored to.
+    if (base::Contains(highlighted_buttons_, button))
+      return true;
   }
+
   return false;
 }
 

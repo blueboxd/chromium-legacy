@@ -880,6 +880,26 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
     case RangeID::LIMITED:
       break;
   }
+
+  // Note: The values below assume an 8-bit range and aren't entirely correct
+  // for higher bit depths. They are close enough though (with a relative error
+  // of ~2.9% for 10-bit and ~3.7% for 12-bit) that it's not worth adding a
+  // |bit_depth| field to gfx::ColorSpace yet.
+  //
+  // The limited ranges are [64,940] and [256, 3760] for 10 and 12 bit content
+  // respectively. So the final values end up being:
+  //
+  //   16 /  255 = 0.06274509803921569
+  //   64 / 1023 = 0.06256109481915934
+  //  256 / 4095 = 0.06251526251526252
+  //
+  //  235 /  255 = 0.9215686274509803
+  //  940 / 1023 = 0.9188660801564027
+  // 3760 / 4095 = 0.9181929181929182
+  //
+  // Relative error (same for min/max):
+  //   10 bit: abs(16/235 - 64/1023)/(64/1023)   = 0.0029411764705882222
+  //   12 bit: abs(16/235 - 256/4095)/(256/4095) = 0.003676470588235281
   switch (matrix_) {
     case MatrixID::RGB:
     case MatrixID::GBR:

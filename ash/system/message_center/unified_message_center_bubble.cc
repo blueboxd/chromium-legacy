@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/shelf/shelf.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
@@ -14,13 +16,55 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
+// We need to draw a custom inner border for the message center in a separate
+// layer so we can properly clip ARC notifications. Each ARC notification is
+// contained in its own Window with its own layer, and the border needs to be
+// drawn on top of them all.
+class UnifiedMessageCenterBubble::Border : public ui::LayerDelegate {
+ public:
+  Border() : layer_(ui::LAYER_TEXTURED) {
+    layer_.set_delegate(this);
+    layer_.SetFillsBoundsOpaquely(false);
+  }
+
+  ~Border() override = default;
+
+  ui::Layer* layer() { return &layer_; }
+
+ private:
+  // ui::LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    gfx::Rect bounds = layer()->bounds();
+    ui::PaintRecorder recorder(context, bounds.size());
+    gfx::Canvas* canvas = recorder.canvas();
+
+    // Draw a solid rounded rect as the inner border.
+    cc::PaintFlags flags;
+    flags.setColor(AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kSeparator,
+        AshColorProvider::AshColorMode::kLight));
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(canvas->image_scale());
+    flags.setAntiAlias(true);
+    canvas->DrawRoundRect(bounds, kUnifiedTrayCornerRadius, flags);
+  }
+
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
+
+  ui::Layer layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(Border);
+};
+
 UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
-    : tray_(tray) {
+    : tray_(tray), border_(std::make_unique<Border>()) {
   TrayBubbleView::InitParams init_params;
   init_params.delegate = tray;
   // Anchor within the overlay container.
@@ -53,6 +97,12 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
 
   tray->tray_event_filter()->AddBubble(this);
   tray->bubble()->unified_view()->AddObserver(this);
+
+  ui::Layer* widget_layer = bubble_widget_->GetLayer();
+  int radius = kUnifiedTrayCornerRadius;
+  widget_layer->SetRoundedCornerRadius({radius, radius, radius, radius});
+  widget_layer->SetIsFastRoundedCorner(true);
+  widget_layer->Add(border_->layer());
 
   UpdatePosition();
 }
@@ -95,14 +145,14 @@ void UnifiedMessageCenterBubble::UpdatePosition() {
   // achieve the padding, but that enlarges the layer bounds and breaks rounded
   // corner clipping for ARC notifications. This approach only modifies the
   // position of the layer.
-  gfx::Rect resting_bounds = tray_->shelf()->GetSystemTrayAnchorRect();
-  resting_bounds.set_x(resting_bounds.x() - kUnifiedMenuPadding);
-  resting_bounds.set_y(
-      resting_bounds.y() - tray_->bubble()->GetCurrentTrayHeight() -
-      kUnifiedMenuPadding - kUnifiedMessageCenterBubbleSpacing);
+  gfx::Rect anchor_rect = tray_->shelf()->GetSystemTrayAnchorRect();
+  anchor_rect.set_x(anchor_rect.x() - kUnifiedMenuPadding);
+  anchor_rect.set_y(anchor_rect.y() - tray_->bubble()->GetCurrentTrayHeight() -
+                    kUnifiedMenuPadding - kUnifiedMessageCenterBubbleSpacing);
+  bubble_view_->ChangeAnchorRect(anchor_rect);
 
-  bubble_widget_->SetBounds(resting_bounds);
-  bubble_view_->ChangeAnchorRect(resting_bounds);
+  bubble_widget_->GetLayer()->StackAtTop(border_->layer());
+  border_->layer()->SetBounds(message_center_view_->GetContentsBounds());
 }
 
 void UnifiedMessageCenterBubble::FocusEntered(bool reverse) {

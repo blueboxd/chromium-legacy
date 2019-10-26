@@ -63,7 +63,7 @@ void SVGMarkerOrientEnumeration::Add(SVGPropertyBase*, SVGElement*) {
 }
 
 void SVGMarkerOrientEnumeration::CalculateAnimatedValue(
-    SVGAnimationElement*,
+    const SVGAnimationElement&,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from,
@@ -381,15 +381,15 @@ void SVGAngle::Assign(const SVGAngle& other) {
     orient_type_->SetEnumValue(other_orient_type);
 }
 
-void SVGAngle::CalculateAnimatedValue(SVGAnimationElement* animation_element,
-                                      float percentage,
-                                      unsigned repeat_count,
-                                      SVGPropertyBase* from,
-                                      SVGPropertyBase* to,
-                                      SVGPropertyBase* to_at_end_of_duration,
-                                      SVGElement*) {
-  DCHECK(animation_element);
-  bool is_to_animation = animation_element->GetAnimationMode() == kToAnimation;
+void SVGAngle::CalculateAnimatedValue(
+    const SVGAnimationElement& animation_element,
+    float percentage,
+    unsigned repeat_count,
+    SVGPropertyBase* from,
+    SVGPropertyBase* to,
+    SVGPropertyBase* to_at_end_of_duration,
+    SVGElement*) {
+  bool is_to_animation = animation_element.GetAnimationMode() == kToAnimation;
 
   SVGAngle* from_angle = is_to_animation ? this : ToSVGAngle(from);
   SVGAngle* to_angle = ToSVGAngle(to);
@@ -415,7 +415,7 @@ void SVGAngle::CalculateAnimatedValue(SVGAnimationElement* animation_element,
       float animated_value = Value();
       SVGAngle* to_at_end_of_duration_angle = ToSVGAngle(to_at_end_of_duration);
 
-      animation_element->AnimateAdditiveNumber(
+      animation_element.AnimateAdditiveNumber(
           percentage, repeat_count, from_angle->Value(), to_angle->Value(),
           to_at_end_of_duration_angle->Value(), animated_value);
       OrientType()->SetEnumValue(kSVGMarkerOrientAngle);

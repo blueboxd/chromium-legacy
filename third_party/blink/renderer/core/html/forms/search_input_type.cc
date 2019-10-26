@@ -127,7 +127,7 @@ void SearchInputType::SearchEventTimerFired(TimerBase*) {
 }
 
 bool SearchInputType::SearchEventsShouldBeDispatched() const {
-  return GetElement().hasAttribute(html_names::kIncrementalAttr);
+  return GetElement().FastHasAttribute(html_names::kIncrementalAttr);
 }
 
 void SearchInputType::DidSetValueByUserEdit() {

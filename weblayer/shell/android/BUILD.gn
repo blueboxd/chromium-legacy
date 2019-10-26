@@ -149,56 +149,6 @@ if (public_android_sdk) {
   }
 }
 
-demo_apk_manifest = "$target_gen_dir/demo_apk_manifest/AndroidManifest.xml"
-
-jinja_template("demo_apk_manifest") {
-  input = "demo_apk/AndroidManifest.xml"
-  output = demo_apk_manifest
-}
-
-android_assets("demo_apk_assets") {
-  testonly = true
-
-  sources = [
-    "$root_out_dir/weblayer_shell.pak",
-  ]
-  disable_compression = true
-  deps = [
-    "//weblayer/shell:shell_pak",
-  ]
-}
-
-android_library("demo_apk_java") {
-  testonly = true
-
-  deps = [
-    ":demo_apk_manifest",
-    "//third_party/android_deps:android_support_v4_java",
-    "//weblayer/public/java",
-  ]
-  java_files = [ "demo_apk/src/org/chromium/weblayer/demo/WebLayerAnimationDemoActivity.java" ]
-
-  android_manifest_for_lint = demo_apk_manifest
-}
-
-android_apk("weblayer_demo_apk") {
-  testonly = true
-
-  deps = [
-    ":demo_apk_assets",
-    ":demo_apk_java",
-    ":demo_apk_manifest",
-  ]
-  apk_name = "WebLayerDemo"
-  android_manifest = demo_apk_manifest
-  min_sdk_version = 21
-  target_sdk_version = 28
-  android_manifest_dep = ":demo_apk_manifest"
-
-  # Add a native lib so the ABI is compatible with the implementation APK.
-  native_lib_placeholders = [ "libdummy.so" ]
-}
-
 weblayer_support_manifest =
     "$target_gen_dir/weblayer_support_manifest/AndroidManifest.xml"
 
@@ -209,6 +159,9 @@ jinja_template("weblayer_support_manifest") {
 
 android_apk("weblayer_support_apk") {
   testonly = true
+
+  # Test runner does not support having "additional apks" that are incremental.
+  never_incremental = true
 
   deps = [
     ":weblayer_support_manifest",
@@ -265,6 +218,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "javatests/src/org/chromium/weblayer/test/EventUtils.java",
     "javatests/src/org/chromium/weblayer/test/ExecuteScriptTest.java",
     "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
+    "javatests/src/org/chromium/weblayer/test/TopControlsTest.java",
     "javatests/src/org/chromium/weblayer/test/WebLayerShellActivityTestRule.java",
     "javatests/src/org/chromium/weblayer/test/FragmentRestoreTest.java",
     "javatests/src/org/chromium/weblayer/test/InputTypesTest.java",

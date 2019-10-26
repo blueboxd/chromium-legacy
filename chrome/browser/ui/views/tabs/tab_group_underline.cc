@@ -22,7 +22,11 @@ constexpr int TabGroupUnderline::kStrokeThickness;
 
 TabGroupUnderline::TabGroupUnderline(TabStrip* tab_strip, TabGroupId group)
     : tab_strip_(tab_strip), group_(group) {
-  UpdateBounds();
+  // Set non-zero bounds to start with, so that painting isn't pruned.
+  // Needed because UpdateBounds() happens during OnPaint(), which is called
+  // after painting is pruned.
+  const int y = tab_strip_->bounds().height() - 1;
+  SetBounds(0, y - kStrokeThickness, kStrokeThickness * 2, kStrokeThickness);
 }
 
 void TabGroupUnderline::OnPaint(gfx::Canvas* canvas) {
@@ -39,6 +43,12 @@ void TabGroupUnderline::OnPaint(gfx::Canvas* canvas) {
 void TabGroupUnderline::UpdateBounds() {
   const int start_x = GetStart();
   const int end_x = GetEnd();
+
+  // The width may be zero if the group underline and header are initialized at
+  // the same time, as with tab restore. In this case, don't update the bounds
+  // and defer to the next paint cycle.
+  if (end_x <= start_x)
+    return;
 
   const int start_y = tab_strip_->bounds().height() - 1;
 

@@ -70,8 +70,8 @@ class MEDIA_EXPORT DemuxerStream {
   // The first parameter indicates the status of the read.
   // The second parameter is non-NULL and contains media data
   // or the end of the stream if the first parameter is kOk. NULL otherwise.
-  typedef base::Callback<void(Status, scoped_refptr<DecoderBuffer>)> ReadCB;
-  virtual void Read(const ReadCB& read_cb) = 0;
+  typedef base::OnceCallback<void(Status, scoped_refptr<DecoderBuffer>)> ReadCB;
+  virtual void Read(ReadCB read_cb) = 0;
 
   // Returns true if a Read() call has been made but the |read_cb| has not yet
   // been run.

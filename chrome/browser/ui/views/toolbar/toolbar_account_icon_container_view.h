@@ -42,6 +42,9 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
   static const char kToolbarAccountIconContainerViewClassName[];
 
  private:
+  // ToolbarIconContainerView:
+  const views::View::Views& GetChildren() const override;
+
   SkColor GetIconColor() const;
 
   PageActionIconContainerView* page_action_icon_container_view_ = nullptr;

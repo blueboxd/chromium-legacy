@@ -14,7 +14,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.components.sync.AndroidSyncSettings;
 
 import java.lang.annotation.Retention;
@@ -1583,10 +1582,9 @@ public class ContextualSearchUma {
      * @return The code for the Contextual Search preference.
      */
     private static int getPreferenceValue() {
-        PrefServiceBridge preferences = PrefServiceBridge.getInstance();
-        if (preferences.isContextualSearchUninitialized()) {
+        if (ContextualSearchManager.isContextualSearchUninitialized()) {
             return Preference.UNINITIALIZED;
-        } else if (preferences.isContextualSearchDisabled()) {
+        } else if (ContextualSearchManager.isContextualSearchDisabled()) {
             return Preference.DISABLED;
         }
         return Preference.ENABLED;

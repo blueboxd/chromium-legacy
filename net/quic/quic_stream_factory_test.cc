@@ -11458,7 +11458,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionSync) {
 
   // Set up a different address in stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -11556,7 +11556,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
 
   // Set up the same address in the stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -11620,7 +11620,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set up the same address in the stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -11691,7 +11691,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set up the same address in the stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -11755,7 +11755,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set up a different address in the stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -11836,7 +11836,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
 
   // Set up a different address in the stale resolvercache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -11921,7 +11921,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
 
   // Set up a different address in the stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -12049,7 +12049,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleSyncHostResolveError) {
 
   // Set up an address in the stale cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -12111,7 +12111,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSMatches) {
 
   // Set up the same address in the stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -12162,7 +12162,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatch) {
 
   // Set up a different address in stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -12228,7 +12228,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatchError) {
 
   // Set up a different address in the stale cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -12285,7 +12285,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
 
   // Set up an address in stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -12346,7 +12346,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set up an address in stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -12452,7 +12452,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
 
   // Set up the same address in the stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);
@@ -12529,7 +12529,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
 
   // Set up a different address in the stale resolvercache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
-                     HostResolverSource::ANY);
+                     HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
                          AddressList::CreateFromIPAddress(kCachedIPAddress, 0),
                          HostCache::Entry::SOURCE_DNS);

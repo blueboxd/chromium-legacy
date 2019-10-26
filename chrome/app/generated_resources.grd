@@ -5806,7 +5806,7 @@ the Bookmarks menu.">
         <!-- Feedback Dialog -->
         <if expr="use_titlecase">
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-            Tell Us What's Happening
+            Send Feedback to Google
           </message>
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW" desc="Label showing the title of the feedback app window when the crash report has been requested from the 'Aw, Snap!' page">
             Describe What You Were Doing When The Tab Crashed
@@ -5814,7 +5814,7 @@ the Bookmarks menu.">
         </if>
         <if expr="not use_titlecase">
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-            Tell us what's happening
+            Send feedback to Google
           </message>
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW" desc="Label showing the title of the feedback app window when the crash report has been requested from the 'Aw, Snap!' page">
             Describe what you were doing when the tab crashed

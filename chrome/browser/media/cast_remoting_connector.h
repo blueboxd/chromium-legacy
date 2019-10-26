@@ -93,9 +93,10 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
 
   // Used by ChromeContentBrowserClient to request a binding to a new
   // Remoter for each new source in a render frame.
-  static void CreateMediaRemoter(content::RenderFrameHost* render_frame_host,
-                                 media::mojom::RemotingSourcePtr source,
-                                 media::mojom::RemoterRequest request);
+  static void CreateMediaRemoter(
+      content::RenderFrameHost* render_frame_host,
+      mojo::PendingRemote<media::mojom::RemotingSource> source,
+      mojo::PendingReceiver<media::mojom::Remoter> receiver);
 
   // Called when a MediaRemoter is created and started in the Cast MRP. This
   // call connects the CastRemotingConnector with the MediaRemoter. Remoting
@@ -140,9 +141,9 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
                         PermissionRequestCallback request_callback);
 
   // Creates a RemotingBridge that implements the requested Remoter service, and
-  // binds it to the interface |request|.
-  void CreateBridge(media::mojom::RemotingSourcePtr source,
-                    media::mojom::RemoterRequest request);
+  // binds it to the interface |receiver|.
+  void CreateBridge(mojo::PendingRemote<media::mojom::RemotingSource> source,
+                    mojo::PendingReceiver<media::mojom::Remoter> receiver);
 
   // Called by the RemotingBridge constructor/destructor to register/deregister
   // an instance. This allows this connector to broadcast notifications to all

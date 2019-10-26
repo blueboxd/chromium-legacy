@@ -411,12 +411,12 @@ TEST_F(ContextHostResolverTest, ResolveFromCache) {
 
   AddressList expected(kEndpoint);
   std::unique_ptr<HostCache> cache = HostCache::CreateDefaultCache();
-  cache->Set(
-      HostCache::Key("example.com", DnsQueryType::UNSPECIFIED,
-                     0 /* host_resolver_flags */, HostResolverSource::ANY),
-      HostCache::Entry(OK, expected, HostCache::Entry::SOURCE_DNS,
-                       base::TimeDelta::FromDays(1)),
-      clock.NowTicks(), base::TimeDelta::FromDays(1));
+  cache->Set(HostCache::Key("example.com", DnsQueryType::UNSPECIFIED,
+                            0 /* host_resolver_flags */,
+                            HostResolverSource::ANY, NetworkIsolationKey()),
+             HostCache::Entry(OK, expected, HostCache::Entry::SOURCE_DNS,
+                              base::TimeDelta::FromDays(1)),
+             clock.NowTicks(), base::TimeDelta::FromDays(1));
 
   auto resolver =
       std::make_unique<ContextHostResolver>(manager_.get(), std::move(cache));

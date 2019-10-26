@@ -328,12 +328,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   NSString* const kGetCookiesScript =
       @"document.cookie ? document.cookie.split(/;\\s*/) : [];";
   id result = [self executeJavaScript:kGetCookiesScript];
-  EG_TEST_HELPER_ASSERT_TRUE([result isKindOfClass:[NSArray class]],
-                             @"Unexpected script response");
+  EG_TEST_HELPER_ASSERT_TRUE(
+      [result respondsToSelector:@selector(objectEnumerator)],
+      @"The script response is not iterable.");
 
-  NSArray* nameValuePairs = base::mac::ObjCCastStrict<NSArray>(result);
   NSMutableDictionary* cookies = [NSMutableDictionary dictionary];
-  for (NSString* nameValuePair in nameValuePairs) {
+  for (NSString* nameValuePair in result) {
     NSArray* cookieNameValue = [nameValuePair componentsSeparatedByString:@"="];
     EG_TEST_HELPER_ASSERT_TRUE((2 == cookieNameValue.count),
                                @"Cookie has invalid format.");

@@ -89,16 +89,12 @@ struct ReadPixelsContext {
 class CopyOutputResultYUV : public CopyOutputResult {
  public:
   CopyOutputResultYUV(const gfx::Rect& rect,
-                      const void* data[3],
-                      size_t row_bytes[3])
-      : CopyOutputResult(Format::I420_PLANES, rect) {
+                      std::unique_ptr<const SkSurface::AsyncReadResult> result)
+      : CopyOutputResult(Format::I420_PLANES, rect),
+        result_(std::move(result)) {
+    DCHECK_EQ(3, result_->count());
     DCHECK_EQ(0, size().width() % 2);
     DCHECK_EQ(0, size().height() % 2);
-    for (int i = 0; i < 3; ++i) {
-      data_[i] = std::make_unique<uint8_t[]>(row_bytes[i] * height(i));
-      memcpy(data_[i].get(), data[i], row_bytes[i] * height(i));
-      row_bytes_[i] = row_bytes[i];
-    }
   }
 
   // CopyOutputResult implementation.
@@ -114,11 +110,14 @@ class CopyOutputResultYUV : public CopyOutputResult {
         memcpy(out, src, width);
       }
     };
-    CopyPlane(data_[0].get(), row_bytes_[0], width(0), height(0), y_out,
+    auto* data0 = static_cast<const uint8_t*>(result_->data(0));
+    auto* data1 = static_cast<const uint8_t*>(result_->data(1));
+    auto* data2 = static_cast<const uint8_t*>(result_->data(2));
+    CopyPlane(data0, result_->rowBytes(0), width(0), height(0), y_out,
               y_out_stride);
-    CopyPlane(data_[1].get(), row_bytes_[1], width(1), height(1), u_out,
+    CopyPlane(data1, result_->rowBytes(1), width(1), height(1), u_out,
               u_out_stride);
-    CopyPlane(data_[2].get(), row_bytes_[2], width(2), height(2), v_out,
+    CopyPlane(data2, result_->rowBytes(2), width(2), height(2), v_out,
               v_out_stride);
     return true;
   }
@@ -138,20 +137,21 @@ class CopyOutputResultYUV : public CopyOutputResult {
       return size().height() / 2;
   }
 
-  std::unique_ptr<uint8_t[]> data_[3];
-  size_t row_bytes_[3];
+  std::unique_ptr<const SkSurface::AsyncReadResult> result_;
 };
 
-void OnYUVReadbackDone(void* c, const void* data[3], size_t row_bytes[3]) {
+void OnYUVReadbackDone(
+    void* c,
+    std::unique_ptr<const SkSurface::AsyncReadResult> async_result) {
   std::unique_ptr<ReadPixelsContext> context(
       static_cast<ReadPixelsContext*>(c));
-  if (!data) {
+  if (!async_result) {
     // This will automatically send an empty result.
     return;
   }
   std::unique_ptr<CopyOutputResult> result =
-      std::make_unique<CopyOutputResultYUV>(context->result_rect, data,
-                                            row_bytes);
+      std::make_unique<CopyOutputResultYUV>(context->result_rect,
+                                            std::move(async_result));
   context->request->SendResult(std::move(result));
 }
 
@@ -1080,7 +1080,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
                                             geometry.result_bounds);
     surface->asyncRescaleAndReadPixelsYUV420(
         kRec709_SkYUVColorSpace, SkColorSpace::MakeSRGB(), srcRect,
-        geometry.result_bounds.width(), geometry.result_bounds.height(),
+        {geometry.result_bounds.width(), geometry.result_bounds.height()},
         SkSurface::RescaleGamma::kSrc, filter_quality, OnYUVReadbackDone,
         context.release());
     return;

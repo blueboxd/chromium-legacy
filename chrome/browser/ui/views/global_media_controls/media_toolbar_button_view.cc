@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
@@ -13,8 +14,8 @@
 #include "chrome/browser/ui/views/feature_promos/global_media_controls_promo_controller.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -136,7 +137,9 @@ void MediaToolbarButtonView::UpdateIcon() {
   if (!GetWidget())
     return;
 
-  const gfx::VectorIcon& icon = ::vector_icons::kQueueMusicIcon;
+  const gfx::VectorIcon& icon = ui::MaterialDesignController::touch_ui()
+                                    ? kMediaToolbarButtonTouchIcon
+                                    : kMediaToolbarButtonIcon;
 
   const SkColor normal_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);

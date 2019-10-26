@@ -19,6 +19,7 @@
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_entry.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -141,7 +142,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataBuilder {
       const base::Time& expected_modification_time,
       scoped_refptr<FileSystemContext> file_system_context);
 
-  void AppendReadableDataHandle(scoped_refptr<DataHandle> data_handle);
+  void AppendReadableDataHandle(scoped_refptr<DataHandle> data_handle) {
+    auto length = data_handle->GetSize();
+    AppendReadableDataHandle(std::move(data_handle), 0u, length);
+  }
+  void AppendReadableDataHandle(scoped_refptr<DataHandle> data_handle,
+                                uint64_t offset,
+                                uint64_t length);
+  void AppendMojoDataItem(mojom::BlobDataItemPtr item);
 
   void set_content_type(const std::string& content_type) {
     content_type_ = content_type;

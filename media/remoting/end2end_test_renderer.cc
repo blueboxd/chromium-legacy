@@ -17,8 +17,9 @@
 #include "media/remoting/receiver.h"
 #include "media/remoting/renderer_controller.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace media {
 namespace remoting {
@@ -74,7 +75,7 @@ class TestRemoter final : public mojom::Remoter {
   using SendMessageToSinkCallback =
       base::RepeatingCallback<void(const std::vector<uint8_t>& message)>;
   TestRemoter(
-      mojom::RemotingSourcePtr source,
+      mojo::PendingRemote<mojom::RemotingSource> source,
       const SendMessageToSinkCallback& send_message_to_sink_cb,
       const TestStreamSender::SendFrameToSinkCallback& send_frame_to_sink_cb)
       : source_(std::move(source)),
@@ -137,15 +138,17 @@ class TestRemoter final : public mojom::Remoter {
 std::unique_ptr<RendererController> CreateController(
     const TestRemoter::SendMessageToSinkCallback& send_message_to_sink_cb,
     const TestStreamSender::SendFrameToSinkCallback& send_frame_to_sink_cb) {
-  mojom::RemotingSourcePtr remoting_source;
-  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
-  mojom::RemoterPtr remoter;
+  mojo::PendingRemote<mojom::RemotingSource> remoting_source;
+  auto remoting_source_receiver =
+      remoting_source.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<mojom::Remoter> remoter;
   std::unique_ptr<TestRemoter> test_remoter = std::make_unique<TestRemoter>(
       std::move(remoting_source), send_message_to_sink_cb,
       send_frame_to_sink_cb);
-  mojo::MakeStrongBinding(std::move(test_remoter), mojo::MakeRequest(&remoter));
+  mojo::MakeSelfOwnedReceiver(std::move(test_remoter),
+                              remoter.InitWithNewPipeAndPassReceiver());
   return std::make_unique<RendererController>(
-      std::move(remoting_source_request), std::move(remoter));
+      std::move(remoting_source_receiver), std::move(remoter));
 }
 
 }  // namespace
@@ -168,8 +171,8 @@ End2EndTestRenderer::~End2EndTestRenderer() = default;
 
 void End2EndTestRenderer::Initialize(MediaResource* media_resource,
                                      RendererClient* client,
-                                     const PipelineStatusCB& init_cb) {
-  courier_renderer_->Initialize(media_resource, client, init_cb);
+                                     PipelineStatusCallback init_cb) {
+  courier_renderer_->Initialize(media_resource, client, std::move(init_cb));
 }
 
 void End2EndTestRenderer::SetCdm(CdmContext* cdm_context,
@@ -179,8 +182,8 @@ void End2EndTestRenderer::SetCdm(CdmContext* cdm_context,
   NOTIMPLEMENTED() << "Media Remoting doesn't support EME for now.";
 }
 
-void End2EndTestRenderer::Flush(const base::Closure& flush_cb) {
-  courier_renderer_->Flush(flush_cb);
+void End2EndTestRenderer::Flush(base::OnceClosure flush_cb) {
+  courier_renderer_->Flush(std::move(flush_cb));
 }
 
 void End2EndTestRenderer::StartPlayingFrom(base::TimeDelta time) {

@@ -17,16 +17,10 @@ goog.require('constants');
 // us to group all of the forward declarations for each file without
 // having them overwrite the mapping in deps.js
 goog.addDependency(
-    '../host/interface/abstract_host.js', ['cvox.AbstractHost'], []);
-
-goog.addDependency(
     '../host/interface/tts_interface.js', ['cvox.TtsInterface'], []);
 
 goog.addDependency(
     '../host/interface/braille_interface.js', ['cvox.BrailleInterface'], []);
-
-goog.addDependency(
-    '../host/interface/mathjax_interface.js', ['cvox.MathJaxInterface'], []);
 
 goog.addDependency('../chromevox/messages/msgs.js', ['Msgs'], []);
 
@@ -63,10 +57,6 @@ cvox.VERBOSITY_BRIEF = 1;
  */
 cvox.ChromeVox = function() {};
 
-/**
- * @type {cvox.AbstractHost}
- */
-cvox.ChromeVox.host = null;
 /**
  * @type {cvox.TtsInterface}
  */

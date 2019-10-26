@@ -842,7 +842,12 @@ Status ProcessExtension(const std::string& extension,
         crx_file::Verify(extension_crx, crx_file::VerifierFormat::CRX3,
                          {} /** required_key_hashes */,
                          {} /** required_file_hash */, &public_key_base64, &id);
-    if (result != crx_file::VerifierResult::OK_FULL) {
+    if (result == crx_file::VerifierResult::ERROR_HEADER_INVALID) {
+      return Status(kUnknownError,
+                    "CRX verification failed to parse extension header. Chrome "
+                    "supports only CRX3 format. Does the extension need to be "
+                    "updated?");
+    } else if (result != crx_file::VerifierResult::OK_FULL) {
       return Status(kUnknownError,
                     base::StringPrintf("CRX verification failed: %d", result));
     }
@@ -944,7 +949,7 @@ Status ProcessExtensions(const std::vector<std::string>& extensions,
     Status status = ProcessExtension(extensions[i], temp_dir, &path, &bg_page);
     if (status.IsError()) {
       return Status(
-          kUnknownError,
+          kSessionNotCreated,
           base::StringPrintf("cannot process extension #%" PRIuS, i + 1),
           status);
     }

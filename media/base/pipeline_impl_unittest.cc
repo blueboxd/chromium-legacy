@@ -32,8 +32,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
-using ::base::test::RunCallback;
-using ::base::test::RunClosure;
+using ::base::test::RunOnceCallback;
+using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::CreateFunctor;
@@ -75,7 +75,7 @@ ACTION_TEMPLATE(PostCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::get<k>(args), p0));
+      FROM_HERE, base::BindOnce(std::move(std::get<k>(args)), p0));
 }
 
 // TODO(scherkus): even though some filters are initialized on separate
@@ -144,7 +144,7 @@ class PipelineImplTest : public ::testing::Test {
   void SetDemuxerExpectations(MockDemuxerStreamVector* streams,
                               const base::TimeDelta& duration) {
     EXPECT_CALL(callbacks_, OnDurationChange());
-    EXPECT_CALL(*demuxer_, Initialize(_, _))
+    EXPECT_CALL(*demuxer_, OnInitialize(_, _))
         .WillOnce(DoAll(SaveArg<0>(&demuxer_host_),
                         SetDemuxerProperties(duration),
                         PostCallback<1>(PIPELINE_OK)));
@@ -173,7 +173,7 @@ class PipelineImplTest : public ::testing::Test {
 
   // Sets up expectations to allow the video renderer to initialize.
   void SetRendererExpectations() {
-    EXPECT_CALL(*renderer_, Initialize(_, _, _))
+    EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
         .WillOnce(
             DoAll(SaveArg<1>(&renderer_client_), PostCallback<2>(PIPELINE_OK)));
   }
@@ -240,10 +240,10 @@ class PipelineImplTest : public ::testing::Test {
 
   void ExpectSeek(const base::TimeDelta& seek_time, bool underflowed) {
     EXPECT_CALL(*demuxer_, AbortPendingReads());
-    EXPECT_CALL(*demuxer_, Seek(seek_time, _))
-        .WillOnce(RunCallback<1>(PIPELINE_OK));
+    EXPECT_CALL(*demuxer_, OnSeek(seek_time, _))
+        .WillOnce(RunOnceCallback<1>(PIPELINE_OK));
 
-    EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
+    EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
     EXPECT_CALL(*renderer_, SetPlaybackRate(_));
     EXPECT_CALL(*renderer_, SetVolume(_));
     EXPECT_CALL(*renderer_, StartPlayingFrom(seek_time))
@@ -284,8 +284,8 @@ class PipelineImplTest : public ::testing::Test {
 
   void ExpectResume(const base::TimeDelta& seek_time) {
     SetRendererExpectations();
-    EXPECT_CALL(*demuxer_, Seek(seek_time, _))
-        .WillOnce(RunCallback<1>(PIPELINE_OK));
+    EXPECT_CALL(*demuxer_, OnSeek(seek_time, _))
+        .WillOnce(RunOnceCallback<1>(PIPELINE_OK));
     EXPECT_CALL(*renderer_, SetPlaybackRate(_));
     EXPECT_CALL(*renderer_, SetVolume(_));
     EXPECT_CALL(*renderer_, StartPlayingFrom(seek_time))
@@ -375,7 +375,7 @@ TEST_F(PipelineImplTest, NotStarted) {
 
 TEST_F(PipelineImplTest, NeverInitializes) {
   // Don't execute the callback passed into Initialize().
-  EXPECT_CALL(*demuxer_, Initialize(_, _));
+  EXPECT_CALL(*demuxer_, OnInitialize(_, _));
 
   // This test hangs during initialization by never calling
   // InitializationComplete().  StrictMock<> will ensure that the callback is
@@ -395,7 +395,7 @@ TEST_F(PipelineImplTest, StopWithoutStart) {
 }
 
 TEST_F(PipelineImplTest, StartThenStopImmediately) {
-  EXPECT_CALL(*demuxer_, Initialize(_, _))
+  EXPECT_CALL(*demuxer_, OnInitialize(_, _))
       .WillOnce(PostCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*demuxer_, Stop());
   EXPECT_CALL(callbacks_, OnMetadata(_));
@@ -476,7 +476,7 @@ TEST_F(PipelineImplTest, DemuxerErrorDuringStop) {
 }
 
 TEST_F(PipelineImplTest, NoStreams) {
-  EXPECT_CALL(*demuxer_, Initialize(_, _))
+  EXPECT_CALL(*demuxer_, OnInitialize(_, _))
       .WillOnce(PostCallback<1>(PIPELINE_OK));
   EXPECT_CALL(callbacks_, OnMetadata(_));
 
@@ -654,7 +654,7 @@ TEST_F(PipelineImplTest, GetBufferedTimeRanges) {
 }
 
 TEST_F(PipelineImplTest, BufferedTimeRangesCanChangeAfterStop) {
-  EXPECT_CALL(*demuxer_, Initialize(_, _))
+  EXPECT_CALL(*demuxer_, OnInitialize(_, _))
       .WillOnce(
           DoAll(SaveArg<0>(&demuxer_host_), PostCallback<1>(PIPELINE_OK)));
   EXPECT_CALL(*demuxer_, Stop());
@@ -701,11 +701,11 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
 
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
-  EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
 
   EXPECT_CALL(*demuxer_, AbortPendingReads());
-  EXPECT_CALL(*demuxer_, Seek(seek_time, _))
-      .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
+  EXPECT_CALL(*demuxer_, OnSeek(seek_time, _))
+      .WillOnce(RunOnceCallback<1>(PIPELINE_ERROR_READ));
   EXPECT_CALL(*demuxer_, Stop());
 
   pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
@@ -752,11 +752,11 @@ TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
   // Seek() isn't called as the demuxer errors out first.
-  EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
 
   EXPECT_CALL(*demuxer_, AbortPendingReads());
-  EXPECT_CALL(*demuxer_, Seek(seek_time, _))
-      .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
+  EXPECT_CALL(*demuxer_, OnSeek(seek_time, _))
+      .WillOnce(RunOnceCallback<1>(PIPELINE_ERROR_READ));
   EXPECT_CALL(*demuxer_, Stop());
 
   pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
@@ -975,12 +975,12 @@ class PipelineTeardownTest : public PipelineImplTest {
                                  StopOrError stop_or_error) {
     if (state == kInitDemuxer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*demuxer_, Initialize(_, _))
+        EXPECT_CALL(*demuxer_, OnInitialize(_, _))
             .WillOnce(
                 DoAll(PostStop(pipeline_.get()), PostCallback<1>(PIPELINE_OK)));
         // Note: OnStart callback is not called after pipeline is stopped.
       } else {
-        EXPECT_CALL(*demuxer_, Initialize(_, _))
+        EXPECT_CALL(*demuxer_, OnInitialize(_, _))
             .WillOnce(PostCallback<1>(DEMUXER_ERROR_COULD_NOT_OPEN));
         EXPECT_CALL(callbacks_, OnStart(DEMUXER_ERROR_COULD_NOT_OPEN))
             .WillOnce(Stop(pipeline_.get()));
@@ -999,12 +999,12 @@ class PipelineTeardownTest : public PipelineImplTest {
 
     if (state == kInitRenderer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*renderer_, Initialize(_, _, _))
+        EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
             .WillOnce(
                 DoAll(PostStop(pipeline_.get()), PostCallback<2>(PIPELINE_OK)));
         // Note: OnStart is not callback after pipeline is stopped.
       } else {
-        EXPECT_CALL(*renderer_, Initialize(_, _, _))
+        EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
             .WillOnce(PostCallback<2>(PIPELINE_ERROR_INITIALIZATION_FAILED));
         EXPECT_CALL(callbacks_, OnStart(PIPELINE_ERROR_INITIALIZATION_FAILED))
             .WillOnce(Stop(pipeline_.get()));
@@ -1015,7 +1015,7 @@ class PipelineTeardownTest : public PipelineImplTest {
       return;
     }
 
-    EXPECT_CALL(*renderer_, Initialize(_, _, _))
+    EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
         .WillOnce(
             DoAll(SaveArg<1>(&renderer_client_), PostCallback<2>(PIPELINE_OK)));
 
@@ -1047,35 +1047,33 @@ class PipelineTeardownTest : public PipelineImplTest {
 
   void SetSeekExpectations(TeardownState state, StopOrError stop_or_error) {
     if (state == kFlushing) {
-      EXPECT_CALL(*demuxer_, Seek(_, _));
+      EXPECT_CALL(*demuxer_, OnSeek(_, _));
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*renderer_, Flush(_))
-            .WillOnce(DoAll(
-                Stop(pipeline_.get()), RunClosure<0>()));
+        EXPECT_CALL(*renderer_, OnFlush(_))
+            .WillOnce(DoAll(Stop(pipeline_.get()), RunOnceClosure<0>()));
         // Note: OnSeek callbacks are not called
         // after pipeline is stopped.
       } else {
-        EXPECT_CALL(*renderer_, Flush(_))
-            .WillOnce(DoAll(
-                SetError(&renderer_client_, PIPELINE_ERROR_READ),
-                RunClosure<0>()));
+        EXPECT_CALL(*renderer_, OnFlush(_))
+            .WillOnce(DoAll(SetError(&renderer_client_, PIPELINE_ERROR_READ),
+                            RunOnceClosure<0>()));
         EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
             .WillOnce(Stop(pipeline_.get()));
       }
       return;
     }
 
-    EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
+    EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
 
     if (state == kSeeking) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*demuxer_, Seek(_, _))
-            .WillOnce(
-                DoAll(PostStop(pipeline_.get()), RunCallback<1>(PIPELINE_OK)));
+        EXPECT_CALL(*demuxer_, OnSeek(_, _))
+            .WillOnce(DoAll(PostStop(pipeline_.get()),
+                            RunOnceCallback<1>(PIPELINE_OK)));
         // Note: OnSeek callback is not called after pipeline is stopped.
       } else {
-        EXPECT_CALL(*demuxer_, Seek(_, _))
-            .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
+        EXPECT_CALL(*demuxer_, OnSeek(_, _))
+            .WillOnce(RunOnceCallback<1>(PIPELINE_ERROR_READ));
         EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
             .WillOnce(Stop(pipeline_.get()));
       }
@@ -1110,13 +1108,13 @@ class PipelineTeardownTest : public PipelineImplTest {
     EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
     if (state == kResuming) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*demuxer_, Seek(_, _))
-            .WillOnce(
-                DoAll(PostStop(pipeline_.get()), RunCallback<1>(PIPELINE_OK)));
+        EXPECT_CALL(*demuxer_, OnSeek(_, _))
+            .WillOnce(DoAll(PostStop(pipeline_.get()),
+                            RunOnceCallback<1>(PIPELINE_OK)));
         // Note: OnResume callback is not called after pipeline is stopped.
       } else {
-        EXPECT_CALL(*demuxer_, Seek(_, _))
-            .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
+        EXPECT_CALL(*demuxer_, OnSeek(_, _))
+            .WillOnce(RunOnceCallback<1>(PIPELINE_ERROR_READ));
         EXPECT_CALL(callbacks_, OnResume(PIPELINE_ERROR_READ))
             .WillOnce(Stop(pipeline_.get()));
       }

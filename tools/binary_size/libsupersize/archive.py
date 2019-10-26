@@ -773,6 +773,7 @@ def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
         elf_path))
     timestamp = calendar.timegm(timestamp_obj.timetuple())
     relative_tool_prefix = path_util.ToSrcRootRelative(tool_prefix)
+    relocations_count = _CountRelocationsFromElf(elf_path, tool_prefix)
 
     metadata = {
         models.METADATA_GIT_REVISION: git_rev,
@@ -781,6 +782,7 @@ def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
         models.METADATA_ELF_BUILD_ID: build_id,
         models.METADATA_LINKER_NAME: linker_name,
         models.METADATA_TOOL_PREFIX: relative_tool_prefix,
+        models.METADATA_ELF_RELOCATIONS_COUNT: relocations_count
     }
 
     if output_directory:
@@ -1669,6 +1671,13 @@ def _ArchFromElf(elf_path, tool_prefix):
   elif machine == 'AArch64':
     return 'arm64'
   return machine
+
+
+def _CountRelocationsFromElf(elf_path, tool_prefix):
+  args = [path_util.GetObjDumpPath(tool_prefix), '--private-headers', elf_path]
+  stdout = subprocess.check_output(args)
+  relocations = re.search('RELCOUNT\s*(.+)', stdout).group(1)
+  return int(relocations, 16)
 
 
 def _ParseGnArgs(args_path):

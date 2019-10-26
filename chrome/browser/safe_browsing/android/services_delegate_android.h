@@ -12,7 +12,6 @@
 namespace safe_browsing {
 
 class AndroidTelemetryService;
-class TelemetryService;
 
 // Android ServicesDelegate implementation. Create via
 // ServicesDelegate::Create().
@@ -47,8 +46,7 @@ class ServicesDelegateAndroid : public ServicesDelegate {
   void StopOnIOThread(bool shutdown) override;
 
   void CreateTelemetryService(Profile* profile) override;
-  void RemoveTelemetryService() override;
-  TelemetryService* GetTelemetryService() const override;
+  void RemoveTelemetryService(Profile* profile) override;
 
   void CreateBinaryUploadService(Profile* profile) override;
   void RemoveBinaryUploadService(Profile* profile) override;

@@ -15,6 +15,7 @@
 #include "content/common/frame_proxy.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
@@ -199,9 +200,9 @@ class RenderFrameProxyHost : public IPC::Listener,
   std::unique_ptr<blink::AssociatedInterfaceProvider>
       remote_associated_interfaces_;
 
-  // Mojo binding to this RenderFrameProxyHost.
-  mojo::AssociatedBinding<mojom::RenderFrameProxyHost>
-      frame_proxy_host_associated_binding_;
+  // Mojo receiver to this RenderFrameProxyHost.
+  mojo::AssociatedReceiver<mojom::RenderFrameProxyHost>
+      frame_proxy_host_associated_receiver_{this};
 
   // Holder of Mojo connection with the Frame service in Blink.
   mojo::AssociatedRemote<blink::mojom::RemoteFrame> remote_frame_;

@@ -76,7 +76,12 @@ template("trichrome_library_apk_tmpl") {
     uncompress_shared_libraries = true
     uncompress_dex = use_uncompressed_dex
     version_name = chrome_version_name
-    version_code = trichrome_version_code
+
+    if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+      version_code = trichrome_64_32_version_code
+    } else {
+      version_code = trichrome_version_code
+    }
 
     # TODO(torne): make minsdk=Q once we no longer build hacky P version
     min_sdk_version = android_sdk_version

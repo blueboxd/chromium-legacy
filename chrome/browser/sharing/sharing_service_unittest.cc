@@ -28,6 +28,7 @@
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_device_info/local_device_info_provider.h"
+#include "components/sync_device_info/local_device_info_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/ec_private_key.h"
@@ -251,6 +252,7 @@ class SharingServiceTest : public testing::Test {
           &test_sync_service_,
           /* notification_display_service= */ nullptr);
     }
+    task_environment_.RunUntilIdle();
     return sharing_service_.get();
   }
 
@@ -963,4 +965,23 @@ TEST_F(SharingServiceTest, GetDeviceByGuid) {
   std::unique_ptr<syncer::DeviceInfo> device_info =
       GetSharingService()->GetDeviceByGuid(guid);
   EXPECT_EQ("Dell Computer sno one", device_info->client_name());
+}
+
+// Tests transition from M78- to M79+ where same local device should not show up
+// by also checking for personalizable client name.
+TEST_F(SharingServiceTest,
+       DeduplicateLocalDeviceOnClientName_HardwareInfoNotAvailable) {
+  const std::string local_client_name =
+      syncer::GetPersonalizableDeviceNameBlocking();
+
+  std::string guid = base::GenerateGUID();
+  std::unique_ptr<syncer::DeviceInfo> computer = CreateFakeDeviceInfo(
+      guid, local_client_name, sync_pb::SyncEnums_DeviceType_TYPE_LINUX, {});
+  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer.get());
+
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+
+  EXPECT_TRUE(candidates.empty());
 }

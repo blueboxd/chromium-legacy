@@ -27,8 +27,8 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationState;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 
 import java.util.concurrent.TimeUnit;
@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 public class TrustedWebActivityOpenTimeRecorderTest {
 
     @Mock ActivityLifecycleDispatcher mLifecycleDispatcher;
-    @Mock TrustedWebActivityVerifier mVerifier;
+    @Mock Verifier mVerifier;
     @Mock TrustedWebActivityUmaRecorder mUmaRecorder;
     @Mock ActivityTabProvider mTabProvider;
     @Captor ArgumentCaptor<Runnable> mVerificationObserverCaptor;

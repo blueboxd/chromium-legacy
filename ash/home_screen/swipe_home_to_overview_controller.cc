@@ -49,8 +49,7 @@ void SwipeHomeToOverviewController::EndDrag(
   if (location_in_screen.y() - initial_location_in_screen_.y() <=
           -kSwipeMovementThreshold &&
       velocity_y.value_or(0) < -kSwipeVelocityThreshold) {
-    Shell::Get()->overview_controller()->StartOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateEnter);
+    Shell::Get()->overview_controller()->StartOverview();
   }
 }
 

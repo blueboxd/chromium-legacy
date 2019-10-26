@@ -99,8 +99,12 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
     // Switch to the second most recently used window (most recent is the
     // current window) if it exists, unless splitview mode is active. Do not
     // switch if we entered overview mode with all windows minimized.
+    const OverviewSession::EnterExitOverviewType enter_exit_type =
+        overview_controller->overview_session()->enter_exit_overview_type();
     if (mru_window_list.size() > 1u &&
-        overview_controller->overview_session()->enter_exit_overview_type() !=
+        enter_exit_type !=
+            OverviewSession::EnterExitOverviewType::kFadeInEnter &&
+        enter_exit_type !=
             OverviewSession::EnterExitOverviewType::kSlideInEnter) {
       aura::Window* new_active_window = mru_window_list[1];
 
@@ -130,16 +134,14 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
 
   // If not in overview mode record the time of this tap. A subsequent tap will
   // be checked against this to see if we should quick switch.
-  last_press_event_time_ =
-      Shell::Get()->overview_controller()->InOverviewSession()
-          ? base::nullopt
-          : base::make_optional(event.time_stamp());
+  last_press_event_time_ = overview_controller->InOverviewSession()
+                               ? base::nullopt
+                               : base::make_optional(event.time_stamp());
 
-  OverviewController* controller = Shell::Get()->overview_controller();
-  if (controller->InOverviewSession())
-    controller->EndOverview();
+  if (overview_controller->InOverviewSession())
+    overview_controller->EndOverview();
   else
-    controller->StartOverview();
+    overview_controller->StartOverview();
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
 
   // The return value doesn't matter here. OnOverviewModeStarting() and

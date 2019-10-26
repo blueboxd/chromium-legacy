@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
+
+#include <utility>
+
 #include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
@@ -12,10 +15,10 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/constants.h"
-#include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "chromeos/services/assistant/test_support/fake_assistant_manager_service_delegate.h"
+#include "chromeos/services/assistant/test_support/fake_client.h"
 #include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
 #include "chromeos/services/assistant/test_support/mock_media_manager.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"

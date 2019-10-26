@@ -13,7 +13,7 @@
 #include "build/buildflag.h"
 #include "media/media_buildflags.h"
 #include "media/remoting/renderer_controller.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
@@ -113,7 +113,8 @@ void FakeRemotingDataStreamSender::CancelInFlightData() {
   ++cancel_in_flight_count_;
 }
 
-FakeRemoter::FakeRemoter(mojom::RemotingSourcePtr source, bool start_will_fail)
+FakeRemoter::FakeRemoter(mojo::PendingRemote<mojom::RemotingSource> source,
+                         bool start_will_fail)
     : source_(std::move(source)), start_will_fail_(start_will_fail) {}
 
 FakeRemoter::~FakeRemoter() = default;
@@ -180,24 +181,26 @@ FakeRemoterFactory::FakeRemoterFactory(bool start_will_fail)
 
 FakeRemoterFactory::~FakeRemoterFactory() = default;
 
-void FakeRemoterFactory::Create(mojom::RemotingSourcePtr source,
-                                mojom::RemoterRequest request) {
-  mojo::MakeStrongBinding(
+void FakeRemoterFactory::Create(
+    mojo::PendingRemote<mojom::RemotingSource> source,
+    mojo::PendingReceiver<mojom::Remoter> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<FakeRemoter>(std::move(source), start_will_fail_),
-      std::move(request));
+      std::move(receiver));
 }
 
 // static
 std::unique_ptr<RendererController> FakeRemoterFactory::CreateController(
     bool start_will_fail) {
-  mojom::RemotingSourcePtr remoting_source;
-  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
-  mojom::RemoterPtr remoter;
+  mojo::PendingRemote<mojom::RemotingSource> remoting_source;
+  auto remoting_source_receiver =
+      remoting_source.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<mojom::Remoter> remoter;
   FakeRemoterFactory remoter_factory(start_will_fail);
   remoter_factory.Create(std::move(remoting_source),
-                         mojo::MakeRequest(&remoter));
+                         remoter.InitWithNewPipeAndPassReceiver());
   return std::make_unique<RendererController>(
-      std::move(remoting_source_request), std::move(remoter));
+      std::move(remoting_source_receiver), std::move(remoter));
 }
 
 }  // namespace remoting

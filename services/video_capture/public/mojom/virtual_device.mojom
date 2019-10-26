@@ -59,7 +59,7 @@ interface TextureVirtualDevice {
   // of the frame, i.e. using |visible_rect| to crop to subregions of the frame
   // is not supported.
   OnFrameReadyInBuffer(int32 buffer_id,
-                       ScopedAccessPermission access_permission,
+                       pending_remote<ScopedAccessPermission> access_permission,
                        media.mojom.VideoFrameInfo frame_info);
   // Unregisters a set of mailbox holders previously registered via
   // OnNewMailboxHolderBufferHandle(). Note, that this should not be called

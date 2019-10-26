@@ -27,6 +27,7 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -51,6 +52,7 @@ constexpr int kShelfBlurRadius = 30;
 constexpr int kShelfMaxOvershootHeight = 40;
 constexpr float kShelfBlurQuality = 0.33f;
 constexpr gfx::Size kDragHandleSize(80, 4);
+constexpr int kDragHandleCornerRadius = 2;
 
 // Return the first or last focusable child of |root|.
 views::View* FindFirstOrLastFocusableChild(views::View* root,
@@ -147,9 +149,18 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
 
   std::unique_ptr<views::View> drag_handle_ptr =
       std::make_unique<views::View>();
+  const int radius = kDragHandleCornerRadius;
+  const AshColorProvider::RippleAttributes ripple_attributes =
+      AshColorProvider::Get()->GetRippleAttributes(
+          ShelfConfig::Get()->GetDefaultShelfColor());
   drag_handle_ = AddChildView(std::move(drag_handle_ptr));
   drag_handle_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  drag_handle_->layer()->SetColor(SK_ColorWHITE);
+  drag_handle_->layer()->SetColor(ripple_attributes.base_color);
+  // TODO(manucornet): Figure out why we need a manual opacity adjustment
+  // to make this color look the same as the status area highlight.
+  drag_handle_->layer()->SetOpacity(ripple_attributes.inkdrop_opacity + 0.075);
+  drag_handle_->layer()->SetRoundedCornerRadius(
+      {radius, radius, radius, radius});
   drag_handle_->SetSize(kDragHandleSize);
 
   UpdateOpaqueBackground();
@@ -272,12 +283,15 @@ void ShelfWidget::DelegateView::UpdateDragHandle() {
     return;
   }
   drag_handle_->SetVisible(true);
-  drag_handle_->SetX((shelf_widget_->GetClientAreaBoundsInScreen().width() -
-                      kDragHandleSize.width()) /
-                     2);
-  drag_handle_->SetY((shelf_widget_->GetClientAreaBoundsInScreen().height() -
-                      kDragHandleSize.height()) /
-                     2);
+
+  const int x = (shelf_widget_->GetClientAreaBoundsInScreen().width() -
+                 kDragHandleSize.width()) /
+                2;
+  const int y = (shelf_widget_->GetClientAreaBoundsInScreen().height() -
+                 kDragHandleSize.height()) /
+                2;
+  drag_handle_->SetBounds(x, y, kDragHandleSize.width(),
+                          kDragHandleSize.height());
 }
 
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
@@ -570,6 +584,12 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     login_shelf_view()->SetVisible(!show_hotseat);
     delegate_view_->SetLayoutManager(
         show_hotseat ? nullptr : std::make_unique<views::FillLayout>());
+
+    // When FillLayout is no longer the layout manager, ensure the correct size
+    // for the drag handle is set.
+    if (show_hotseat)
+      delegate_view_->UpdateDragHandle();
+
     ShowIfHidden();
   }
   login_shelf_view_->UpdateAfterSessionChange();

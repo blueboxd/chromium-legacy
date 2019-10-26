@@ -1098,9 +1098,10 @@ interface NetworkContext {
                     NetworkIsolationKey network_isolation_key);
 
   // Creates a P2PSocketManager instance, used for WebRTC.
-  CreateP2PSocketManager(P2PTrustedSocketManagerClient client,
-                         P2PTrustedSocketManager& trusted_socket_manager,
-                         P2PSocketManager& socket_manager);
+  CreateP2PSocketManager(
+      pending_remote<P2PTrustedSocketManagerClient> client,
+      pending_receiver<P2PTrustedSocketManager> trusted_socket_manager,
+      pending_receiver<P2PSocketManager> socket_manager);
 
   // Creates an MdnsResponder instance.
   CreateMdnsResponder(pending_receiver<MdnsResponder> responder_receiver);
@@ -1174,6 +1175,12 @@ interface NetworkContext {
   // security state. Returns true iff an entry was deleted.
   // See net::TransportSecurityState::DeleteDynamicDataForHost for more detail.
   DeleteDynamicDataForHost(string host) => (bool result);
+
+  // Sets whether the HTTP auth cache will be split the NetworkIsolationKey.
+  // Only affects server (not proxy) credentials. Whenever the effective value
+  // is changed, all cached server auth credentials will be cleared.
+  SetSplitAuthCacheByNetworkIsolationKey(
+      bool split_auth_cache_by_network_isolation_key);
 
   // Copies the proxy entries of this NetworkContext's auth cache and
   // returns a key that can be used by LoadHttpAuthCache to load them into

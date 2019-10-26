@@ -288,12 +288,12 @@ void ChunkDemuxerStream::UnmarkEndOfStream() {
 }
 
 // DemuxerStream methods.
-void ChunkDemuxerStream::Read(const ReadCB& read_cb) {
+void ChunkDemuxerStream::Read(ReadCB read_cb) {
   base::AutoLock auto_lock(lock_);
   DCHECK_NE(state_, UNINITIALIZED);
   DCHECK(!read_cb_);
 
-  read_cb_ = BindToCurrentLoop(read_cb);
+  read_cb_ = BindToCurrentLoop(std::move(read_cb));
 
   if (!is_enabled_) {
     DVLOG(1) << "Read from disabled stream, returning EOS";
@@ -463,14 +463,14 @@ std::string ChunkDemuxer::GetDisplayName() const {
 }
 
 void ChunkDemuxer::Initialize(DemuxerHost* host,
-                              const PipelineStatusCB& init_cb) {
+                              PipelineStatusCallback init_cb) {
   DVLOG(1) << "Initialize()";
   TRACE_EVENT_ASYNC_BEGIN0("media", "ChunkDemuxer::Initialize", this);
 
   base::AutoLock auto_lock(lock_);
   if (state_ == SHUTDOWN) {
     // Init cb must only be run after this method returns, so post.
-    init_cb_ = BindToCurrentLoop(init_cb);
+    init_cb_ = BindToCurrentLoop(std::move(init_cb));
     RunInitCB_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
   }
@@ -481,7 +481,7 @@ void ChunkDemuxer::Initialize(DemuxerHost* host,
   // error after initialization, the error might be reported before init_cb
   // has a chance to run. This is because ChunkDemuxer::ReportError_Locked
   // directly calls DemuxerHost::OnDemuxerError: crbug.com/633016.
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
 
   ChangeState_Locked(INITIALIZING);
 
@@ -493,7 +493,7 @@ void ChunkDemuxer::Stop() {
   Shutdown();
 }
 
-void ChunkDemuxer::Seek(TimeDelta time, const PipelineStatusCB& cb) {
+void ChunkDemuxer::Seek(TimeDelta time, PipelineStatusCallback cb) {
   DVLOG(1) << "Seek(" << time.InSecondsF() << ")";
   DCHECK(time >= TimeDelta());
   TRACE_EVENT_ASYNC_BEGIN0("media", "ChunkDemuxer::Seek", this);
@@ -501,7 +501,7 @@ void ChunkDemuxer::Seek(TimeDelta time, const PipelineStatusCB& cb) {
   base::AutoLock auto_lock(lock_);
   DCHECK(!seek_cb_);
 
-  seek_cb_ = BindToCurrentLoop(cb);
+  seek_cb_ = BindToCurrentLoop(std::move(cb));
   if (state_ != INITIALIZED && state_ != ENDED) {
     RunSeekCB_Locked(PIPELINE_ERROR_INVALID_STATE);
     return;

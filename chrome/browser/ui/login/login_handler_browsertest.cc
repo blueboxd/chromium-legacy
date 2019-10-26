@@ -190,12 +190,12 @@ class LoginPromptBrowserTest
           // enabled_features
           {features::kHTTPAuthCommittedInterstitials},
           // disabled_features
-          {features::kSplitAuthCacheByNetworkIsolationKey});
+          {network::features::kSplitAuthCacheByNetworkIsolationKey});
     } else {
       scoped_feature_list_.InitWithFeatures(
           // enabled_features
           {features::kHTTPAuthCommittedInterstitials,
-           features::kSplitAuthCacheByNetworkIsolationKey},
+           network::features::kSplitAuthCacheByNetworkIsolationKey},
           // disabled_features
           {});
     }

@@ -259,16 +259,16 @@ void MediaInterfaceProxy::CreateCdmProxy(
   NOTREACHED() << "The CdmProxy should only be created by a CDM.";
 }
 
-service_manager::mojom::InterfaceProviderPtr
+mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
 MediaInterfaceProxy::GetFrameServices(const base::Token& cdm_guid,
                                       const std::string& cdm_file_system_id) {
   // Register frame services.
-  service_manager::mojom::InterfaceProviderPtr interfaces;
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
 
   // TODO(xhwang): Replace this InterfaceProvider with a dedicated media host
   // interface. See http://crbug.com/660573
   auto provider = std::make_unique<media::MediaInterfaceProvider>(
-      mojo::MakeRequest(&interfaces));
+      interfaces.InitWithNewPipeAndPassReceiver());
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   // TODO(slan): Wrap these into a RenderFrame specific ProvisionFetcher impl.
@@ -363,15 +363,15 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
   cdm_service->LoadCdm(cdm_path);
 #endif  // defined(OS_MACOSX)
 
-  media::mojom::CdmFactoryPtr cdm_factory_ptr;
-  cdm_service->CreateCdmFactory(MakeRequest(&cdm_factory_ptr),
+  mojo::Remote<media::mojom::CdmFactory> cdm_factory_remote;
+  cdm_service->CreateCdmFactory(cdm_factory_remote.BindNewPipeAndPassReceiver(),
                                 GetFrameServices(cdm_guid, cdm_file_system_id));
-  cdm_factory_ptr.set_connection_error_handler(
+  cdm_factory_remote.set_disconnect_handler(
       base::BindOnce(&MediaInterfaceProxy::OnCdmServiceConnectionError,
                      base::Unretained(this), cdm_guid));
 
-  auto* cdm_factory = cdm_factory_ptr.get();
-  cdm_factory_map_.emplace(cdm_guid, std::move(cdm_factory_ptr));
+  auto* cdm_factory = cdm_factory_remote.get();
+  cdm_factory_map_.emplace(cdm_guid, std::move(cdm_factory_remote));
   return cdm_factory;
 }
 

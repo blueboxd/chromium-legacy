@@ -13,6 +13,9 @@
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 
 namespace {
 
@@ -57,6 +60,32 @@ class SubresourceLoadingPageLoadMetricsObserverTest
 
     NavigateAndCommit(navigation_url_);
     tester()->SimulateTimingUpdate(timing_);
+  }
+
+  void VerifyNoUKM() {
+    auto entries = tester()->test_ukm_recorder().GetEntriesByName(
+        ukm::builders::PrefetchProxy::kEntryName);
+    EXPECT_TRUE(entries.empty());
+  }
+
+  void VerifyUKMEntry(const std::string& metric_name,
+                      base::Optional<int64_t> expected_value) {
+    auto entries = tester()->test_ukm_recorder().GetEntriesByName(
+        ukm::builders::PrefetchProxy::kEntryName);
+    ASSERT_EQ(1U, entries.size());
+
+    const auto* entry = entries.front();
+    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry,
+                                                          navigation_url_);
+
+    const int64_t* value =
+        ukm::TestUkmRecorder::GetEntryMetric(entry, metric_name);
+    EXPECT_EQ(value != nullptr, expected_value.has_value());
+
+    if (!expected_value.has_value())
+      return;
+
+    EXPECT_EQ(*value, expected_value.value());
   }
 
   page_load_metrics::mojom::ResourceDataUpdatePtr CreateCSSResource(
@@ -154,6 +183,10 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_CSS) {
       1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 3, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_network_before_fcpName, 2);
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_cache_before_fcpName, 3);
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_JS) {
@@ -185,6 +218,10 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_JS) {
       1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 3, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_network_before_fcpName, 2);
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_cache_before_fcpName, 3);
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_Other) {
@@ -216,6 +253,10 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_Other) {
       1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_network_before_fcpName, 0);
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_cache_before_fcpName, 0);
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_NotComplete) {
@@ -247,6 +288,10 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_NotComplete) {
       1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_network_before_fcpName, 0);
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_cache_before_fcpName, 0);
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_Subframe) {
@@ -279,6 +324,10 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_Subframe) {
       1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_network_before_fcpName, 0);
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_cache_before_fcpName, 0);
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, AfterFCP) {
@@ -310,6 +359,85 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, AfterFCP) {
       1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_network_before_fcpName, 0);
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_cache_before_fcpName, 0);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_MaxUKM) {
+  StartTest(true /* data_saver_enabled */);
+
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+
+  tester()->SimulateResourceDataUseUpdate(resources);
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0,
+      1);
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 11, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_network_before_fcpName, 0);
+  VerifyUKMEntry(UkmEntry::kcount_css_js_loaded_cache_before_fcpName, 10);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, BeforeFCP_NoUKM) {
+  StartTest(false /* data_saver_enabled */);
+
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+  resources.push_back(CreateCSSResource(true /* was_cached */,
+                                        true /* is_complete */,
+                                        true /* completed_before_fcp */));
+
+  tester()->SimulateResourceDataUseUpdate(resources);
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0,
+      1);
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 2, 1);
+
+  VerifyNoUKM();
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, DontRecordForNonHttp) {
@@ -342,6 +470,8 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, DontRecordForNonHttp) {
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0);
   tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0);
+
+  VerifyNoUKM();
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_None) {
@@ -355,6 +485,9 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_None) {
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", 0);
   tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kdays_since_last_visit_to_originName, base::nullopt);
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_Fail) {
@@ -369,6 +502,9 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_Fail) {
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", 0);
   tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kdays_since_last_visit_to_originName, base::nullopt);
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest,
@@ -384,6 +520,9 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest,
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", false, 1);
   tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kdays_since_last_visit_to_originName, -1);
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_Today) {
@@ -399,6 +538,9 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_Today) {
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kdays_since_last_visit_to_originName, 0);
 }
 
 TEST_F(SubresourceLoadingPageLoadMetricsObserverTest,
@@ -415,6 +557,45 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest,
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 1, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kdays_since_last_visit_to_originName, 1);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_MaxUKM) {
+  StartTest(true /* data_saver_enabled */);
+  plm_observer()->CallOnOriginLastVisitResult(
+      {true /* success */, base::Time::Now() - base::TimeDelta::FromDays(181)});
+
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.HistoryQueryTime", 1);
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 181, 1);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kdays_since_last_visit_to_originName,
+                 /*ukm::GetExponentialBucketMin(180,1.70)=*/119);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_NoUKM) {
+  StartTest(false /* data_saver_enabled */);
+  plm_observer()->CallOnOriginLastVisitResult(
+      {true /* success */, base::Time::Now() - base::TimeDelta::FromDays(1)});
+
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.HistoryQueryTime", 1);
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 1, 1);
+
+  VerifyNoUKM();
 }
 
 // The rest of cookie testing is done in
@@ -428,4 +609,20 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, HadCookies_None) {
       "PageLoad.Clients.SubresourceLoading.CookiesQueryTime", 0);
   tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", 0);
+
+  using UkmEntry = ukm::builders::PrefetchProxy;
+  VerifyUKMEntry(UkmEntry::kmainpage_request_had_cookiesName, base::nullopt);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, HadCookies_NoUKM) {
+  StartTest(false /* data_saver_enabled */);
+
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.CookiesQueryTime", 0);
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", 0);
+
+  VerifyNoUKM();
 }

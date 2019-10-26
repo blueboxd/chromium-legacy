@@ -291,7 +291,7 @@ const AtomicString& HitTestResult::AltDisplayString() const {
     return g_null_atom;
 
   if (auto* image = ToHTMLImageElementOrNull(*inner_node_or_image_map_image))
-    return image->getAttribute(html_names::kAltAttr);
+    return image->FastGetAttribute(html_names::kAltAttr);
 
   if (auto* input = ToHTMLInputElementOrNull(*inner_node_or_image_map_image))
     return input->Alt();

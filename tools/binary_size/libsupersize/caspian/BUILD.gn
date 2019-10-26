@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-assert(is_linux)
+# Enable wasm target that depends on foo.patch being applied.
+if (!defined(is_wasm)) {
+  is_wasm = current_os == "wasm"
+}
+
+assert(is_linux || is_wasm)
 
 source_set("caspian-lib") {
   sources = [
@@ -27,4 +32,33 @@ executable("cli") {
   deps = [
     ":caspian-lib",
   ]
+}
+
+if (is_wasm) {
+  executable("caspian_web") {
+    sources = [
+      "caspian_web.cc",
+    ]
+    deps = [
+      ":caspian-lib",
+    ]
+    if (!is_debug) {
+      # Use optimize_speed (-O3) to output the _smallest_ code.
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_speed" ]
+    }
+    ldflags = [
+      "-s",
+      "TOTAL_MEMORY=536870912",
+      "-s",
+      "ALLOW_MEMORY_GROWTH=1",
+      "-s",
+      "EXPORTED_FUNCTIONS=['_LoadSizeFile','_Open','_malloc','_free']",
+      "-s",
+      "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString']",
+    ]
+    if (!is_debug) {
+      ldflags += [ "-O3" ]
+    }
+  }
 }

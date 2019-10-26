@@ -2090,6 +2090,9 @@ crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-pref
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ WontFix ]
 crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ WontFix ]
 
+# Windows doesn't have native overlay scrollbar
+[ Win ] virtual/overlay-scrollbar [ WontFix ]
+
 # Blink implements additional privacy measures that cause the regular test in
 # WPT to time out.
 # There is a version in wpt_internal that performs the same checks but works

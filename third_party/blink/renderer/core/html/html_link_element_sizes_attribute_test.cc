@@ -22,7 +22,7 @@ TEST(HTMLLinkElementSizesAttributeTest,
   DOMTokenList* sizes = link->sizes();
   EXPECT_EQ(g_null_atom, sizes->value());
   sizes->setValue("   a b  c ");
-  EXPECT_EQ("   a b  c ", link->getAttribute(html_names::kSizesAttr));
+  EXPECT_EQ("   a b  c ", link->FastGetAttribute(html_names::kSizesAttr));
   EXPECT_EQ("   a b  c ", sizes->value());
 }
 

@@ -311,8 +311,8 @@ void TextRenderer::Read(
   state->read_state = TextTrackState::kReadPending;
   ++pending_read_count_;
 
-  text_stream->Read(base::Bind(
-      &TextRenderer::BufferReady, weak_factory_.GetWeakPtr(), text_stream));
+  text_stream->Read(base::BindOnce(&TextRenderer::BufferReady,
+                                   weak_factory_.GetWeakPtr(), text_stream));
 }
 
 TextRenderer::TextTrackState::TextTrackState(std::unique_ptr<TextTrack> tt)

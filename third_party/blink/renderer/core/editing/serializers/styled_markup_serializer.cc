@@ -253,7 +253,8 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
              !fully_selected_root_style->Style() ||
              !fully_selected_root_style->Style()->GetPropertyCSSValue(
                  CSSPropertyID::kBackgroundImage)) &&
-            fully_selected_root->hasAttribute(html_names::kBackgroundAttr)) {
+            fully_selected_root->FastHasAttribute(
+                html_names::kBackgroundAttr)) {
           fully_selected_root_style->Style()->SetProperty(
               CSSPropertyID::kBackgroundImage,
               "url('" +

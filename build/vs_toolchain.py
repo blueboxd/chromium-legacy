@@ -159,7 +159,8 @@ def GetVisualStudioVersion():
         os.environ.get('vs%s_install' % version),
         os.path.expandvars('%ProgramFiles(x86)%' +
                            '/Microsoft Visual Studio/%s' % version)):
-      if path and os.path.exists(path):
+      if path and any(os.path.exists(os.path.join(path, edition)) for edition in
+          ('Enterprise', 'Professional', 'Community', 'Preview')):
         available_versions.append(version)
         break
 

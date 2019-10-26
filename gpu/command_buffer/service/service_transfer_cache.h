@@ -131,6 +131,10 @@ class GPU_GLES2_EXPORT ServiceTransferCache
   // Total size of all |entries_|. The same as summing
   // GpuDiscardableEntry::size for each entry.
   size_t total_size_ = 0;
+  // Total size of all |entries_| of TransferCacheEntryType::kImage.
+  size_t total_image_size_ = 0;
+  // Number of |entries_| of TransferCacheEntryType::kImage.
+  int total_image_count_ = 0;
 
   // The limit above which the cache will start evicting resources.
   size_t cache_size_limit_ = 0;

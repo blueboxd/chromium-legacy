@@ -444,9 +444,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::flat_set<media::EncryptionMode>* encryption_schemes) override;
   ::rappor::RapporService* GetRapporService() override;
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  void CreateMediaRemoter(content::RenderFrameHost* render_frame_host,
-                          media::mojom::RemotingSourcePtr source,
-                          media::mojom::RemoterRequest request) final;
+  void CreateMediaRemoter(
+      content::RenderFrameHost* render_frame_host,
+      mojo::PendingRemote<media::mojom::RemotingSource> source,
+      mojo::PendingReceiver<media::mojom::Remoter> receiver) final;
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
   base::FilePath GetLoggingFileName(
       const base::CommandLine& command_line) override;

@@ -161,10 +161,12 @@ XrResult xrCreateReferenceSpace(XrSession session,
   RETURN_IF(create_info->type != XR_TYPE_REFERENCE_SPACE_CREATE_INFO,
             XR_ERROR_VALIDATION_FAILURE,
             "XrReferenceSpaceCreateInfo type invalid");
-  RETURN_IF(create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_LOCAL &&
-                create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_VIEW,
-            XR_ERROR_VALIDATION_FAILURE,
-            "XrReferenceSpaceCreateInfo referenceSpaceType invalid");
+  RETURN_IF(
+      create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_LOCAL &&
+          create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_VIEW &&
+          create_info->referenceSpaceType != XR_REFERENCE_SPACE_TYPE_STAGE,
+      XR_ERROR_VALIDATION_FAILURE,
+      "XrReferenceSpaceCreateInfo referenceSpaceType invalid");
   RETURN_IF_XR_FAILED(g_test_helper.ValidateXrPosefIsIdentity(
       create_info->poseInReferenceSpace));
 
@@ -595,6 +597,8 @@ XrResult xrLocateViews(XrSession session,
             "xrLocateViews view_locate_info type invalid");
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(view_locate_info->space));
   if (view_capacity_input != 0) {
+    RETURN_IF_XR_FAILED(
+        g_test_helper.ValidateViews(view_capacity_input, views));
     RETURN_IF_FALSE(g_test_helper.UpdateViewFOV(views, view_capacity_input),
                     XR_ERROR_VALIDATION_FAILURE,
                     "xrLocateViews UpdateViewFOV failed");

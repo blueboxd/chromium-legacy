@@ -20,12 +20,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/blob/blob_storage_constants.h"
 #include "storage/browser/blob/blob_storage_registry.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 class GURL;
@@ -46,7 +49,8 @@ class BlobDataSnapshot;
 // This class is not threadsafe, access on IO thread. In Chromium there is one
 // instance per profile.
 class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
-    : public base::trace_event::MemoryDumpProvider {
+    : public base::trace_event::MemoryDumpProvider,
+      public mojom::BlobStorageContext {
  public:
   using TransportAllowedCallback = BlobEntry::TransportAllowedCallback;
   using BuildAbortedCallback = BlobEntry::BuildAbortedCallback;
@@ -154,6 +158,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
     return ptr_factory_.GetWeakPtr();
   }
 
+  void Bind(mojo::PendingReceiver<mojom::BlobStorageContext> receiver);
+
   void set_limits_for_testing(const BlobStorageLimits& limits) {
     mutable_memory_controller()->set_limits_for_testing(limits);
   }
@@ -236,8 +242,17 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  // storage::mojom::BlobStorageContext implementation.
+  void RegisterFromDataItem(mojo::PendingReceiver<blink::mojom::Blob> blob,
+                            const std::string& uuid,
+                            mojom::BlobDataItemPtr item) override;
+  void RegisterFromMemory(mojo::PendingReceiver<::blink::mojom::Blob> blob,
+                          const std::string& uuid,
+                          mojo_base::BigBuffer data) override;
+
   BlobStorageRegistry registry_;
   BlobMemoryController memory_controller_;
+  mojo::ReceiverSet<mojom::BlobStorageContext> receivers_;
   base::WeakPtrFactory<BlobStorageContext> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlobStorageContext);

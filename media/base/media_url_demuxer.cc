@@ -48,10 +48,11 @@ void MediaUrlDemuxer::ForwardDurationChangeToDemuxerHost(
 }
 
 void MediaUrlDemuxer::Initialize(DemuxerHost* host,
-                                 const PipelineStatusCB& status_cb) {
+                                 PipelineStatusCallback status_cb) {
   DVLOG(1) << __func__;
   host_ = host;
-  task_runner_->PostTask(FROM_HERE, base::BindOnce(status_cb, PIPELINE_OK));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(std::move(status_cb), PIPELINE_OK));
 }
 
 void MediaUrlDemuxer::StartWaitingForSeek(base::TimeDelta seek_time) {}
@@ -59,8 +60,9 @@ void MediaUrlDemuxer::StartWaitingForSeek(base::TimeDelta seek_time) {}
 void MediaUrlDemuxer::CancelPendingSeek(base::TimeDelta seek_time) {}
 
 void MediaUrlDemuxer::Seek(base::TimeDelta time,
-                           const PipelineStatusCB& status_cb) {
-  task_runner_->PostTask(FROM_HERE, base::BindOnce(status_cb, PIPELINE_OK));
+                           PipelineStatusCallback status_cb) {
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(std::move(status_cb), PIPELINE_OK));
 }
 
 void MediaUrlDemuxer::Stop() {}

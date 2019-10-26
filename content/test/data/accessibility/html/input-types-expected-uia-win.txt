@@ -16,9 +16,11 @@ document
 ++++description
 ++++++description Name='File: '
 ++++++button Name='File:'
+++++++++button Name='Choose File'
 ++++description
 ++++++description Name='Image: '
 ++++++button Name='Image:'
+++++++++img
 ++++description
 ++++++description Name='Number: '
 ++++++spinbutton Name='Number:' RangeValue.IsReadOnly=false RangeValue.LargeChange=10.00 RangeValue.SmallChange=1.00 RangeValue.Maximum=0.00 RangeValue.Minimum=0.00 RangeValue.Value=0.00

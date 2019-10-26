@@ -16,6 +16,6 @@ interface MediaService {
   // provide interfaces hosted by the caller to the remote InterfaceFactory
   // implementation.
   CreateInterfaceFactory(
-      InterfaceFactory& factory,
-      service_manager.mojom.InterfaceProvider? host_interfaces);
+      pending_receiver<InterfaceFactory> factory,
+      pending_remote<service_manager.mojom.InterfaceProvider> host_interfaces);
 };

@@ -7,6 +7,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/util/process_version.gni")
 import("//testing/test.gni")
 
+# TODO(sorin): make the code build on Linux. https://crbug.com/1014320
 group("updater") {
   if (is_win) {
     deps = [
@@ -41,24 +42,32 @@ if (is_win || is_mac) {
       "unzipper.h",
       "updater.cc",
       "updater.h",
-      "updater_constants.cc",
-      "updater_constants.h",
       "util.cc",
       "util.h",
     ]
 
     deps = [
+      ":updater_constants",
       ":version_header",
       "//base",
       "//components/crash/core/common:crash_key",
+      "//components/crx_file",
       "//components/prefs",
       "//components/update_client",
       "//components/version_info",
-      "//courgette",
+      "//courgette:bsdiff",
+      "//courgette:courgette_lib",
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/handler",
       "//third_party/zlib/google:zip",
       "//url",
+    ]
+  }
+
+  source_set("updater_constants") {
+    sources = [
+      "updater_constants.cc",
+      "updater_constants.h",
     ]
   }
 

@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 
+@class BrowserViewController;
 @class HistoryCoordinator;
 @class SigninInteractionCoordinator;
 @class TabGridCoordinator;

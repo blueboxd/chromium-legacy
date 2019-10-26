@@ -14,7 +14,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_output_ipc.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -62,7 +61,7 @@ class FakeRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     EXPECT_FALSE(receiver_.is_bound());
     receiver_.Bind(
-        mojo::InterfaceRequest<mojom::RendererAudioOutputStreamFactory>(
+        mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory>(
             std::move(handle)));
   }
 
@@ -103,7 +102,7 @@ class AudioOutputIPCFactoryTest : public testing::Test {
 
 TEST_F(AudioOutputIPCFactoryTest, CallFactoryFromIOThread) {
   // This test makes sure that AudioOutputIPCFactory correctly binds the
-  // RendererAudioOutputStreamFactoryPtr to the IO thread.
+  // RendererAudioOutputStreamFactory to the IO thread.
   base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   auto io_thread = MakeIOThread();

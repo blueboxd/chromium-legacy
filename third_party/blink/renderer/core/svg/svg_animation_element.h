@@ -76,25 +76,12 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
 
   bool OverwritesUnderlyingAnimationValue() const override;
 
-  template <typename AnimatedType>
-  void AnimateDiscreteType(float percentage,
-                           const AnimatedType& from_type,
-                           const AnimatedType& to_type,
-                           AnimatedType& animated_type) {
-    if ((GetAnimationMode() == kFromToAnimation && percentage > 0.5) ||
-        GetAnimationMode() == kToAnimation || percentage == 1) {
-      animated_type = AnimatedType(to_type);
-      return;
-    }
-    animated_type = AnimatedType(from_type);
-  }
-
   void AnimateAdditiveNumber(float percentage,
                              unsigned repeat_count,
                              float from_number,
                              float to_number,
                              float to_at_end_of_duration_number,
-                             float& animated_number) {
+                             float& animated_number) const {
     float number;
     if (GetCalcMode() == kCalcModeDiscrete)
       number = percentage < 0.5 ? from_number : to_number;
@@ -155,7 +142,7 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
                                         const String& by_string) = 0;
   virtual void CalculateAnimatedValue(float percent,
                                       unsigned repeat_count,
-                                      SVGSMILElement* result_element) = 0;
+                                      SVGSMILElement* result_element) const = 0;
   virtual float CalculateDistance(const String& /*fromString*/,
                                   const String& /*toString*/) {
     return -1.f;

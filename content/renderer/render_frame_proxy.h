@@ -249,7 +249,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnAddContentSecurityPolicies(
       const std::vector<ContentSecurityPolicyHeader>& header);
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
-  void OnEnforceInsecureNavigationsSet(const std::vector<uint32_t>& set);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);
   void OnDidUpdateOrigin(const url::Origin& origin,
                          bool is_potentially_trustworthy_unique_origin);

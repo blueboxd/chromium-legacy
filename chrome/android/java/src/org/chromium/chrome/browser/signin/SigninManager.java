@@ -232,6 +232,8 @@ public class SigninManager
 
         mAccountTrackerService.addSystemAccountsSeededListener(this);
         mIdentityManager.addObserver(this);
+
+        reloadAllAccountsFromSystem();
     }
 
     /**
@@ -478,9 +480,8 @@ public class SigninManager
             mSignInState.mCallback.onSignInComplete();
         }
 
-        // Trigger token requests via native.
-        mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(
-                mSignInState.mCoreAccountInfo.getId());
+        // Trigger token requests via identity mutator.
+        reloadAllAccountsFromSystem();
 
         RecordUserAction.record("Signin_Signin_Succeed");
         logSigninCompleteAccessPoint();
@@ -585,6 +586,14 @@ public class SigninManager
      */
     public String getManagementDomain() {
         return SigninManagerJni.get().getManagementDomain(mNativeSigninManagerAndroid);
+    }
+
+    /**
+     * Reloads accounts from system within IdentityManager.
+     */
+    void reloadAllAccountsFromSystem() {
+        mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(
+                mIdentityManager.getPrimaryAccountId());
     }
 
     /**
@@ -702,6 +711,11 @@ public class SigninManager
             SigninManagerJni.get().wipeGoogleServiceWorkerCaches(
                     mNativeSigninManagerAndroid, wipeDataCallback);
         }
+    }
+
+    @VisibleForTesting
+    IdentityMutator getIdentityMutator() {
+        return mIdentityMutator;
     }
 
     // Native methods.

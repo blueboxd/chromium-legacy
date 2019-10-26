@@ -73,9 +73,6 @@ struct CONTENT_EXPORT OpenURLParams {
   // Any redirect URLs that occurred for this navigation before |url|.
   std::vector<GURL> redirect_chain;
 
-  // Indicates whether this navigation will be sent using POST.
-  bool uses_post;
-
   // The post data when the navigation uses POST.
   scoped_refptr<network::ResourceRequestBody> post_data;
 

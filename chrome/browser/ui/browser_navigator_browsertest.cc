@@ -106,7 +106,6 @@ bool BrowserNavigatorTest::OpenPOSTURLInNewForegroundTabAndGetTitle(
   param.url = url;
   param.initiator_origin = url::Origin();
   param.is_renderer_initiated = !is_browser_initiated;
-  param.uses_post = true;
   param.post_data = network::ResourceRequestBody::CreateFromBytes(
       post_data.data(), post_data.size());
 

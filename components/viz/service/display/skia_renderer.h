@@ -191,13 +191,19 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                           DrawQuadParams* params);
 
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
+                           const DrawRPDQParams* rpdq_params,
                            DrawQuadParams* params);
   void DrawTextureQuad(const TextureDrawQuad* quad, DrawQuadParams* params);
   void DrawTileDrawQuad(const TileDrawQuad* quad,
                         const DrawRPDQParams* rpdq_params,
                         DrawQuadParams* params);
-  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad, DrawQuadParams* params);
-  void DrawUnsupportedQuad(const DrawQuad* quad, DrawQuadParams* params);
+  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
+                        const DrawRPDQParams* rpdq_params,
+                        DrawQuadParams* params);
+
+  void DrawUnsupportedQuad(const DrawQuad* quad,
+                           const DrawRPDQParams* rpdq_params,
+                           DrawQuadParams* params);
 
   // Schedule overlay candidates for presentation at next SwapBuffers().
   void ScheduleDCLayers();

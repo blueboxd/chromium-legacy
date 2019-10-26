@@ -54,3 +54,5 @@ def ProcessHistogramDicts(histogram_dicts, options):
 
   with open(output_file, 'w') as output_stream:
     _WriteCsv(csv_dicts, output_stream)
+
+  return output_file

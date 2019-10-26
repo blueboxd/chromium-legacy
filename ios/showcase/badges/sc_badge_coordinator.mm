@@ -20,8 +20,11 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kSCDisplayedBadgeToggleButton =
-    @"kSCDisplayedBadgeToggleButtonAXID";
+NSString* const kSCShowOverflowDisplayedBadgeButton =
+    @"kSCShowOverflowDisplayedBadgeButtonAXID";
+
+NSString* const kSCShowAcceptedDisplayedBadgeButton =
+    @"kSCShowAcceptedDisplayedBadgeButtonAXID";
 
 @interface BadgeContainerViewController : UIViewController
 @property(nonatomic, strong) BadgeViewController* centeredChildViewController;
@@ -32,44 +35,70 @@ NSString* const kSCDisplayedBadgeToggleButton =
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  UIStackView* stackView = [[UIStackView alloc] init];
-  stackView.translatesAutoresizingMaskIntoConstraints = NO;
-  stackView.axis = UILayoutConstraintAxisHorizontal;
-  [self.view addSubview:stackView];
-  [NSLayoutConstraint activateConstraints:@[
-    [stackView.widthAnchor constraintEqualToConstant:400],
-    [stackView.heightAnchor constraintEqualToConstant:100]
-  ]];
-  AddSameCenterConstraints(stackView, self.view);
+  UIStackView* containerStack = [[UIStackView alloc] init];
+  containerStack.translatesAutoresizingMaskIntoConstraints = NO;
+  containerStack.axis = UILayoutConstraintAxisVertical;
 
   [self addChildViewController:self.centeredChildViewController];
-  [stackView addArrangedSubview:self.centeredChildViewController.view];
+  [containerStack addArrangedSubview:self.centeredChildViewController.view];
   [self didMoveToParentViewController:self.centeredChildViewController];
-  self.centeredChildViewController.view
-      .translatesAutoresizingMaskIntoConstraints = NO;
-  [NSLayoutConstraint activateConstraints:@[
-    [self.centeredChildViewController.view.widthAnchor
-        constraintGreaterThanOrEqualToConstant:1],
-    [self.centeredChildViewController.view.heightAnchor
-        constraintEqualToConstant:100]
-  ]];
 
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
-  button.accessibilityIdentifier = kSCDisplayedBadgeToggleButton;
-  [button setTitle:@"Show Overflow badge" forState:UIControlStateNormal];
-  [button addTarget:self
-                action:@selector(addSecondBadge:)
-      forControlEvents:UIControlEventTouchUpInside];
-  [stackView addArrangedSubview:button];
+  UIStackView* buttonStackView = [[UIStackView alloc] init];
+  buttonStackView.axis = UILayoutConstraintAxisHorizontal;
+  UIButton* showAcceptedBadgeButton =
+      [UIButton buttonWithType:UIButtonTypeSystem];
+  showAcceptedBadgeButton.accessibilityIdentifier =
+      kSCShowAcceptedDisplayedBadgeButton;
+  showAcceptedBadgeButton.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+  showAcceptedBadgeButton.titleLabel.textAlignment = NSTextAlignmentCenter;
+  [showAcceptedBadgeButton setTitle:@"Show Accepted Badge"
+                           forState:UIControlStateNormal];
+  [showAcceptedBadgeButton addTarget:self
+                              action:@selector(showAcceptedDisplayedBadge)
+                    forControlEvents:UIControlEventTouchUpInside];
+  [buttonStackView addArrangedSubview:showAcceptedBadgeButton];
+
+  UIButton* showOverflowBadgeButton =
+      [UIButton buttonWithType:UIButtonTypeSystem];
+  showOverflowBadgeButton.accessibilityIdentifier =
+      kSCShowOverflowDisplayedBadgeButton;
+  showOverflowBadgeButton.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+  showOverflowBadgeButton.titleLabel.textAlignment = NSTextAlignmentCenter;
+  [showOverflowBadgeButton setTitle:@"Show Overflow badge"
+                           forState:UIControlStateNormal];
+  [showOverflowBadgeButton addTarget:self
+                              action:@selector(addSecondBadge:)
+                    forControlEvents:UIControlEventTouchUpInside];
+  [buttonStackView addArrangedSubview:showOverflowBadgeButton];
+
+  [containerStack addArrangedSubview:buttonStackView];
+  [self.view addSubview:containerStack];
+  AddSameCenterConstraints(containerStack, self.view);
+  [NSLayoutConstraint activateConstraints:@[
+    [containerStack.widthAnchor constraintEqualToConstant:300],
+    [containerStack.heightAnchor constraintGreaterThanOrEqualToConstant:100]
+  ]];
 
   UIView* containerView = self.view;
   containerView.backgroundColor = [UIColor whiteColor];
+
   self.title = @"Badges";
   AddNamedGuidesToView(@[ kBadgeOverflowMenuGuide ], self.view);
   BadgeStaticItem* incognitoItem = [[BadgeStaticItem alloc]
       initWithBadgeType:BadgeType::kBadgeTypeIncognito];
   InfobarBadgeModel* passwordBadgeItem = [[InfobarBadgeModel alloc]
       initWithInfobarType:InfobarType::kInfobarTypePasswordSave];
+  passwordBadgeItem.badgeState = BadgeStateRead;
+  [self.consumer setupWithDisplayedBadge:passwordBadgeItem
+                         fullScreenBadge:incognitoItem];
+}
+
+- (void)showAcceptedDisplayedBadge {
+  BadgeStaticItem* incognitoItem = [[BadgeStaticItem alloc]
+      initWithBadgeType:BadgeType::kBadgeTypeIncognito];
+  InfobarBadgeModel* passwordBadgeItem = [[InfobarBadgeModel alloc]
+      initWithInfobarType:InfobarType::kInfobarTypePasswordSave];
+  passwordBadgeItem.badgeState = BadgeStateRead | BadgeStateAccepted;
   [self.consumer setupWithDisplayedBadge:passwordBadgeItem
                          fullScreenBadge:incognitoItem];
 }

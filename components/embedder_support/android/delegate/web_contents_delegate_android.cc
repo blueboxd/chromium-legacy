@@ -90,11 +90,8 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
         ConvertUTF8ToJavaString(env, url.spec());
     ScopedJavaLocalRef<jstring> extra_headers =
         ConvertUTF8ToJavaString(env, params.extra_headers);
-    ScopedJavaLocalRef<jobject> post_data;
-    if (params.uses_post && params.post_data) {
-      post_data = content::ConvertResourceRequestBodyToJavaObject(
-          env, params.post_data);
-    }
+    ScopedJavaLocalRef<jobject> post_data =
+        content::ConvertResourceRequestBodyToJavaObject(env, params.post_data);
     Java_WebContentsDelegateAndroid_openNewTab(
         env, obj, java_url, extra_headers, post_data,
         static_cast<int>(disposition), params.is_renderer_initiated);

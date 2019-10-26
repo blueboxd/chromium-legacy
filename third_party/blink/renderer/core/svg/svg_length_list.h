@@ -56,7 +56,7 @@ class SVGLengthList final
   SVGLengthMode UnitMode() const { return mode_; }
 
   void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(SVGAnimationElement*,
+  void CalculateAnimatedValue(const SVGAnimationElement&,
                               float percentage,
                               unsigned repeat_count,
                               SVGPropertyBase* from_value,

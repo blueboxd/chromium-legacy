@@ -391,8 +391,8 @@ static bool NodeHasRole(Node* node, const String& role) {
     return false;
 
   // TODO(accessibility) support role strings with multiple roles.
-  return EqualIgnoringASCIICase(element->getAttribute(html_names::kRoleAttr),
-                                role);
+  return EqualIgnoringASCIICase(
+      element->FastGetAttribute(html_names::kRoleAttr), role);
 }
 
 AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {

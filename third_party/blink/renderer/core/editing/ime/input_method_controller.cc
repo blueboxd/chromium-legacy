@@ -1384,14 +1384,14 @@ int InputMethodController::TextInputFlags() const {
   int flags = 0;
 
   const AtomicString& autocomplete =
-      element->getAttribute(html_names::kAutocompleteAttr);
+      element->FastGetAttribute(html_names::kAutocompleteAttr);
   if (autocomplete == "on")
     flags |= kWebTextInputFlagAutocompleteOn;
   else if (autocomplete == "off")
     flags |= kWebTextInputFlagAutocompleteOff;
 
   const AtomicString& autocorrect =
-      element->getAttribute(html_names::kAutocorrectAttr);
+      element->FastGetAttribute(html_names::kAutocorrectAttr);
   if (autocorrect == "on")
     flags |= kWebTextInputFlagAutocorrectOn;
   else if (autocorrect == "off")

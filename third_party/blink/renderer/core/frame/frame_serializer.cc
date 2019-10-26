@@ -394,7 +394,7 @@ void FrameSerializer::AddResourceForElement(Document& document,
       // Otherwise, it is single <img> element. We should get image url
       // contained in href attribute. ImageSourceURL() may return a different
       // URL from srcset attribute.
-      image_url_value = image->getAttribute(html_names::kSrcAttr);
+      image_url_value = image->FastGetAttribute(html_names::kSrcAttr);
     }
     ImageResourceContent* cached_image = image->CachedImage();
     AddImageToResources(cached_image, document.CompleteURL(image_url_value));
@@ -407,7 +407,7 @@ void FrameSerializer::AddResourceForElement(Document& document,
   } else if (const auto* link = ToHTMLLinkElementOrNull(element)) {
     if (CSSStyleSheet* sheet = link->sheet()) {
       KURL sheet_url =
-          document.CompleteURL(link->getAttribute(html_names::kHrefAttr));
+          document.CompleteURL(link->FastGetAttribute(html_names::kHrefAttr));
       SerializeCSSStyleSheet(*sheet, sheet_url);
     }
   } else if (const auto* style = ToHTMLStyleElementOrNull(element)) {

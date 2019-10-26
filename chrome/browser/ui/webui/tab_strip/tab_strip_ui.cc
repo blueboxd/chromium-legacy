@@ -134,7 +134,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   void NotifyLayoutChanged() {
     if (!IsJavascriptAllowed())
       return;
-    FireWebUIListener("layout-changed");
+    FireWebUIListener("layout-changed", embedder_->GetLayout().AsDictionary());
   }
 
   // TabStripModelObserver:

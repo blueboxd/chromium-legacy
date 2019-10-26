@@ -79,7 +79,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
 
  private:
   void OnChangePaymentRequestDetailsResponse(
-      payments::mojom::blink::PaymentMethodChangeResponsePtr);
+      payments::mojom::blink::PaymentRequestDetailsUpdatePtr);
   void OnHostConnectionError();
 
   String top_origin_;

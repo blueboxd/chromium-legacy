@@ -105,7 +105,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   void IntrinsicSizingInfoChanged() override {}
   void SetNeedsOcclusionTracking(bool) override {}
   AtomicString BrowsingContextContainerName() const override {
-    return getAttribute(html_names::kNameAttr);
+    return FastGetAttribute(html_names::kNameAttr);
   }
   ScrollbarMode ScrollingMode() const override { return ScrollbarMode::kAuto; }
   int MarginWidth() const override { return -1; }

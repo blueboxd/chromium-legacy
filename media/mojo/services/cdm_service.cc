@@ -12,6 +12,7 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -49,9 +50,10 @@ constexpr base::TimeDelta kKeepaliveIdleTimeout =
 //     details.
 class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
  public:
-  CdmFactoryImpl(CdmService::Client* client,
-                 service_manager::mojom::InterfaceProviderPtr interfaces,
-                 std::unique_ptr<ServiceKeepaliveRef> keepalive_ref)
+  CdmFactoryImpl(
+      CdmService::Client* client,
+      mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces,
+      std::unique_ptr<ServiceKeepaliveRef> keepalive_ref)
       : client_(client),
         interfaces_(std::move(interfaces)),
         keepalive_ref_(std::move(keepalive_ref)) {
@@ -109,7 +111,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
   MojoCdmServiceContext cdm_service_context_;
 
   CdmService::Client* client_;
-  service_manager::mojom::InterfaceProviderPtr interfaces_;
+  mojo::Remote<service_manager::mojom::InterfaceProvider> interfaces_;
   mojo::UniqueReceiverSet<mojom::ContentDecryptionModule> cdm_receivers_;
   std::unique_ptr<ServiceKeepaliveRef> keepalive_ref_;
   std::unique_ptr<media::CdmFactory> cdm_factory_;
@@ -226,16 +228,17 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
 }
 
 void CdmService::CreateCdmFactory(
-    mojom::CdmFactoryRequest request,
-    service_manager::mojom::InterfaceProviderPtr host_interfaces) {
-  // Ignore request if service has already stopped.
+    mojo::PendingReceiver<mojom::CdmFactory> receiver,
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        host_interfaces) {
+  // Ignore receiver if service has already stopped.
   if (!client_)
     return;
 
   cdm_factory_bindings_.AddBinding(
       std::make_unique<CdmFactoryImpl>(
           client_.get(), std::move(host_interfaces), keepalive_->CreateRef()),
-      std::move(request));
+      std::move(receiver));
 }
 
 }  // namespace media

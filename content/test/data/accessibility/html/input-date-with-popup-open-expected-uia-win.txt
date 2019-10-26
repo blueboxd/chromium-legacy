@@ -17,9 +17,13 @@ document
 ++++++++++group
 ++++++++++++group
 ++++++++++++++button Name='Show month selection panel'
+++++++++++++++++img
 ++++++++++++button Name='Show previous month'
+++++++++++++++img
 ++++++++++++button Name='Today'
+++++++++++++++group
 ++++++++++++button Name='Show next month'
+++++++++++++++img
 ++++++++++++grid Grid.ColumnCount=0 Grid.RowCount=0 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Table.RowOrColumnMajor='RowMajor'
 ++++++++++++++group
 ++++++++++++++++group

@@ -48,8 +48,8 @@ void PaymentHandlerHost::Destroy(JNIEnv* env) {
 void PaymentHandlerHost::UpdateWith(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& response_buffer) {
-  mojom::PaymentMethodChangeResponsePtr response;
-  bool success = mojom::PaymentMethodChangeResponse::Deserialize(
+  mojom::PaymentRequestDetailsUpdatePtr response;
+  bool success = mojom::PaymentRequestDetailsUpdate::Deserialize(
       std::move(JavaByteBufferToNativeByteVector(env, response_buffer)),
       &response);
   DCHECK(success);

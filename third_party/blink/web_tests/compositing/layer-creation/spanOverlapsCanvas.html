@@ -5,6 +5,8 @@
 	<meta name="viewport" content="width=480"/>
 
 	<script>
+      if (window.internals)
+          internals.runtimeFlags.accelerated2dCanvasEnabled = true;
 
 	    function init() {
 	        var ctx = document.getElementById("world").getContext("2d");

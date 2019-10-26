@@ -183,12 +183,12 @@ MojoBlobReader::Delegate::RequestSideData BlobURLLoader::DidCalculateSize(
     return REQUEST_SIDE_DATA;
   }
 
-  HeadersCompleted(status_code, content_size, nullptr);
+  HeadersCompleted(status_code, content_size, base::nullopt);
   return DONT_REQUEST_SIDE_DATA;
 }
 
-void BlobURLLoader::DidReadSideData(net::IOBufferWithSize* data) {
-  HeadersCompleted(net::HTTP_OK, total_size_, data);
+void BlobURLLoader::DidReadSideData(base::Optional<mojo_base::BigBuffer> data) {
+  HeadersCompleted(net::HTTP_OK, total_size_, std::move(data));
 }
 
 void BlobURLLoader::OnComplete(net::Error error_code,
@@ -201,9 +201,10 @@ void BlobURLLoader::OnComplete(net::Error error_code,
   status.decoded_body_length = total_written_bytes;
   client_->OnComplete(status);
 }
-void BlobURLLoader::HeadersCompleted(net::HttpStatusCode status_code,
-                                     uint64_t content_size,
-                                     net::IOBufferWithSize* metadata) {
+void BlobURLLoader::HeadersCompleted(
+    net::HttpStatusCode status_code,
+    uint64_t content_size,
+    base::Optional<mojo_base::BigBuffer> metadata) {
   auto response = network::mojom::URLResponseHead::New();
   response->content_length = 0;
   if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT)
@@ -223,11 +224,8 @@ void BlobURLLoader::HeadersCompleted(net::HttpStatusCode status_code,
   client_->OnReceiveResponse(std::move(response));
   sent_headers_ = true;
 
-  if (metadata) {
-    const uint8_t* data = reinterpret_cast<const uint8_t*>(metadata->data());
-    client_->OnReceiveCachedMetadata(
-        std::vector<uint8_t>(data, data + metadata->size()));
-  }
+  if (metadata.has_value())
+    client_->OnReceiveCachedMetadata(std::move(metadata.value()));
 
   client_->OnStartLoadingResponseBody(
       std::move(response_body_consumer_handle_));

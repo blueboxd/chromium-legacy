@@ -26,7 +26,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/media_router/media_remoting_dialog_view.h"
@@ -43,11 +44,11 @@ class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
   // |connector|. |connector| must be valid at the time of construction, but is
   // otherwise a weak pointer that can become invalid during the lifetime of a
   // RemotingBridge.
-  RemotingBridge(media::mojom::RemotingSourcePtr source,
+  RemotingBridge(mojo::PendingRemote<media::mojom::RemotingSource> source,
                  CastRemotingConnector* connector)
       : source_(std::move(source)), connector_(connector) {
     DCHECK(connector_);
-    source_.set_connection_error_handler(
+    source_.set_disconnect_handler(
         base::BindOnce(&RemotingBridge::Stop, base::Unretained(this),
                        RemotingStopReason::SOURCE_GONE));
     connector_->RegisterBridge(this);
@@ -117,7 +118,7 @@ class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
   }
 
  private:
-  media::mojom::RemotingSourcePtr source_;
+  mojo::Remote<media::mojom::RemotingSource> source_;
 
   // Weak pointer. Will be set to nullptr if the CastRemotingConnector is
   // destroyed before this RemotingBridge.
@@ -171,8 +172,8 @@ CastRemotingConnector* CastRemotingConnector::Get(
 // static
 void CastRemotingConnector::CreateMediaRemoter(
     content::RenderFrameHost* host,
-    media::mojom::RemotingSourcePtr source,
-    media::mojom::RemoterRequest request) {
+    mojo::PendingRemote<media::mojom::RemotingSource> source,
+    mojo::PendingReceiver<media::mojom::Remoter> receiver) {
   DCHECK(host);
   auto* const contents = content::WebContents::FromRenderFrameHost(host);
   if (!contents)
@@ -180,7 +181,7 @@ void CastRemotingConnector::CreateMediaRemoter(
   CastRemotingConnector* const connector = CastRemotingConnector::Get(contents);
   if (!connector)
     return;
-  connector->CreateBridge(std::move(source), std::move(request));
+  connector->CreateBridge(std::move(source), std::move(receiver));
 }
 
 CastRemotingConnector::CastRemotingConnector(
@@ -274,11 +275,12 @@ void CastRemotingConnector::OnMirrorServiceStopped() {
     notifyee->OnSinkGone();
 }
 
-void CastRemotingConnector::CreateBridge(media::mojom::RemotingSourcePtr source,
-                                         media::mojom::RemoterRequest request) {
-  mojo::MakeStrongBinding(
+void CastRemotingConnector::CreateBridge(
+    mojo::PendingRemote<media::mojom::RemotingSource> source,
+    mojo::PendingReceiver<media::mojom::Remoter> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<RemotingBridge>(std::move(source), this),
-      std::move(request));
+      std::move(receiver));
 }
 
 void CastRemotingConnector::RegisterBridge(RemotingBridge* bridge) {

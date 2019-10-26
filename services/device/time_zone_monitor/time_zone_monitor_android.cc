@@ -31,9 +31,10 @@ TimeZoneMonitorAndroid::~TimeZoneMonitorAndroid() {
 void TimeZoneMonitorAndroid::TimeZoneChangedFromJava(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
-  base::string16 timezone_id = base::android::GetDefaultTimeZoneId();
+  // See base/i18n/icu_util.cc:InitializeIcuTimeZone() for more information.
+  base::string16 zone_id = base::android::GetDefaultTimeZoneId();
   std::unique_ptr<icu::TimeZone> new_zone(icu::TimeZone::createTimeZone(
-      icu::UnicodeString(FALSE, timezone_id.data(), timezone_id.length())));
+      icu::UnicodeString(FALSE, zone_id.data(), zone_id.length())));
   UpdateIcuAndNotifyClients(std::move(new_zone));
 }
 

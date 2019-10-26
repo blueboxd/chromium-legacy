@@ -10,9 +10,9 @@
 #include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "content/common/render_frame_metadata.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +33,7 @@ class MockRenderFrameMetadataObserverClient
       mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
           client_receiver,
       mojo::PendingRemote<mojom::RenderFrameMetadataObserver> observer)
-      : render_frame_metadata_observer_client_binding_(
+      : render_frame_metadata_observer_client_receiver_(
             this,
             std::move(client_receiver)),
         render_frame_metadata_observer_remote_(std::move(observer)) {}
@@ -44,8 +44,8 @@ class MockRenderFrameMetadataObserverClient
   MOCK_METHOD1(OnFrameSubmissionForTesting, void(uint32_t frame_token));
 
  private:
-  mojo::Binding<mojom::RenderFrameMetadataObserverClient>
-      render_frame_metadata_observer_client_binding_;
+  mojo::Receiver<mojom::RenderFrameMetadataObserverClient>
+      render_frame_metadata_observer_client_receiver_;
   mojo::Remote<mojom::RenderFrameMetadataObserver>
       render_frame_metadata_observer_remote_;
 

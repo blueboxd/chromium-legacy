@@ -130,7 +130,7 @@ void CrossSequenceCacheStorageManager::DeleteOriginData(
 }
 
 void CrossSequenceCacheStorageManager::SetBlobParametersForCache(
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
+    scoped_refptr<BlobStorageContextWrapper> blob_storage_context) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This method is used for initialization of a real manager and should not
   // be invoked for the cross-sequence wrapper.

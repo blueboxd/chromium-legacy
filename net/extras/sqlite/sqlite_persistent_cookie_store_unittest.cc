@@ -761,7 +761,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
 
   InitializeStore(false, true);
 
-  // Add a non-samesite cookie.
+  // Add a non-samesite persistent cookie.
   store_->AddCookie(CanonicalCookie(
       kNoneName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(1),

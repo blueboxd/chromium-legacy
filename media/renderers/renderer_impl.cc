@@ -142,7 +142,7 @@ RendererImpl::~RendererImpl() {
 
 void RendererImpl::Initialize(MediaResource* media_resource,
                               RendererClient* client,
-                              const PipelineStatusCB& init_cb) {
+                              PipelineStatusCallback init_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -152,7 +152,7 @@ void RendererImpl::Initialize(MediaResource* media_resource,
 
   client_ = client;
   media_resource_ = media_resource;
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
 
   if (HasEncryptedStream() && !cdm_context_) {
     DVLOG(1) << __func__ << ": Has encrypted stream but CDM is not set.";
@@ -189,7 +189,7 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
   InitializeAudioRenderer();
 }
 
-void RendererImpl::Flush(const base::Closure& flush_cb) {
+void RendererImpl::Flush(base::OnceClosure flush_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!flush_cb_);
@@ -197,7 +197,7 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
   TRACE_EVENT_ASYNC_BEGIN0("media", "RendererImpl::Flush", this);
 
   if (state_ == STATE_FLUSHED) {
-    flush_cb_ = BindToCurrentLoop(flush_cb);
+    flush_cb_ = BindToCurrentLoop(std::move(flush_cb));
     FinishFlush();
     return;
   }
@@ -207,7 +207,7 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
     return;
   }
 
-  flush_cb_ = flush_cb;
+  flush_cb_ = std::move(flush_cb);
   state_ = STATE_FLUSHING;
 
   // If a stream restart is pending, this Flush() will complete it. Upon flush

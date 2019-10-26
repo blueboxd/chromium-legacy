@@ -569,13 +569,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (element &&
       RuntimeEnabledFeatures::DisplayLockingEnabled(
           element->GetExecutionContext()) &&
-      element->hasAttribute(html_names::kRendersubtreeAttr)) {
+      element->FastHasAttribute(html_names::kRendersubtreeAttr)) {
     // The element has the rendersubtree attr, so we should add style and
     // layout containment. If the attribute contains "invisible" we should
     // also add size containment.
     Containment contain = kContainsStyle | kContainsLayout;
     SpaceSplitString tokens(
-        element->getAttribute(html_names::kRendersubtreeAttr).LowerASCII());
+        element->FastGetAttribute(html_names::kRendersubtreeAttr).LowerASCII());
     if (style.ContainsSize() || tokens.Contains("invisible")) {
       contain |= kContainsSize;
     }

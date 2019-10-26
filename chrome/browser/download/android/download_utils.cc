@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/android/chrome_jni_headers/DownloadUtils_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/download/android/jni_headers/MimeUtils_jni.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -30,10 +31,6 @@ namespace {
 // from the beginning, throttle it.
 int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
 const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
-
-// Mime type for OMA download descriptor.
-const char kOmaDownloadDescriptorMimeType[] = "application/vnd.oma.dd+xml";
-
 }  // namespace
 
 static ScopedJavaLocalRef<jstring> JNI_DownloadUtils_GetFailStateMessage(
@@ -103,7 +100,7 @@ std::string DownloadUtils::RemapGenericMimeType(const std::string& mime_type,
                                                 const GURL& url,
                                                 const std::string& file_name) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  auto j_remapped_mime_type = Java_DownloadUtils_remapGenericMimeType(
+  auto j_remapped_mime_type = Java_MimeUtils_remapGenericMimeType(
       env, ConvertUTF8ToJavaString(env, mime_type),
       ConvertUTF8ToJavaString(env, url.spec()),
       ConvertUTF8ToJavaString(env, file_name));
@@ -120,8 +117,9 @@ bool DownloadUtils::ShouldAutoOpenDownload(download::DownloadItem* item) {
 
 // static
 bool DownloadUtils::IsOmaDownloadDescription(const std::string& mime_type) {
-  return base::EqualsCaseInsensitiveASCII(mime_type,
-                                          kOmaDownloadDescriptorMimeType);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_MimeUtils_isOMADownloadDescription(
+      env, ConvertUTF8ToJavaString(env, mime_type));
 }
 
 // static

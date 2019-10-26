@@ -97,6 +97,9 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   scroller_->SetVerticalScrollBar(base::WrapUnique(scroll_bar_));
   scroller_->SetDrawOverflowIndicator(false);
   AddChildView(scroller_);
+
+  notification_bar_->Update(message_list_view_->GetTotalNotificationCount(),
+                            GetStackedNotifications());
 }
 
 UnifiedMessageCenterView::~UnifiedMessageCenterView() {

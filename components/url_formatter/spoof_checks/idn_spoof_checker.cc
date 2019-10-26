@@ -170,6 +170,14 @@ IDNSpoofChecker::IDNSpoofChecker() {
       status);
   lgc_letters_n_ascii_.freeze();
 
+  // Latin small letter thorn ("þ", U+00FE) can be used to spoof both b and p.
+  // It's used in modern Icelandic orthography, so allow it for the Icelandic
+  // ccTLD (.is) but block in any other TLD. Also block Latin small letter eth
+  // ("ð", U+00F0) which can be used to spoof the letter o.
+  icelandic_characters_ =
+      icu::UnicodeSet(UNICODE_STRING_SIMPLE("[\\u00fe\\u00f0]"), status);
+  icelandic_characters_.freeze();
+
   // Used for diacritics-removal before the skeleton calculation. Add
   // "ł > l; ø > o; đ > d" that are not handled by "NFD; Nonspacing mark
   // removal; NFC".
@@ -284,13 +292,10 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
   if (deviation_characters_.containsSome(label_string))
     return false;
 
-  // Latin small letter thorn (U+00FE) can be used to spoof both b and p. It's
-  // used in modern Icelandic orthography, so allow it for the Icelandic ccTLD
-  // (.is) but block in any other TLD.
-  if (label_string.length() > 1 && label_string.indexOf("þ") != -1 &&
-      top_level_domain != ".is") {
+  // Disallow Icelandic confusables for domains outside Iceland's ccTLD (.is).
+  if (label_string.length() > 1 && top_level_domain != ".is" &&
+      icelandic_characters_.containsSome(label_string))
     return false;
-  }
 
   // If there's no script mixing, the input is regarded as safe without any
   // extra check unless it falls into one of three categories:

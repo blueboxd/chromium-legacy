@@ -681,9 +681,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetWebGLErrorsToConsoleEnabled(
       prefs.webgl_errors_to_console_enabled);
 
-  // Uses the mock theme engine for scrollbars.
-  settings->SetMockScrollbarsEnabled(prefs.mock_scrollbars_enabled);
-
   settings->SetHideScrollbars(prefs.hide_scrollbars);
 
   // Enable gpu-accelerated 2d canvas if requested on the command line.

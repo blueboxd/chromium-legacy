@@ -78,20 +78,19 @@ void SVGNumber::Add(SVGPropertyBase* other, SVGElement*) {
   SetValue(value_ + ToSVGNumber(other)->Value());
 }
 
-void SVGNumber::CalculateAnimatedValue(SVGAnimationElement* animation_element,
-                                       float percentage,
-                                       unsigned repeat_count,
-                                       SVGPropertyBase* from,
-                                       SVGPropertyBase* to,
-                                       SVGPropertyBase* to_at_end_of_duration,
-                                       SVGElement*) {
-  DCHECK(animation_element);
-
+void SVGNumber::CalculateAnimatedValue(
+    const SVGAnimationElement& animation_element,
+    float percentage,
+    unsigned repeat_count,
+    SVGPropertyBase* from,
+    SVGPropertyBase* to,
+    SVGPropertyBase* to_at_end_of_duration,
+    SVGElement*) {
   SVGNumber* from_number = ToSVGNumber(from);
   SVGNumber* to_number = ToSVGNumber(to);
   SVGNumber* to_at_end_of_duration_number = ToSVGNumber(to_at_end_of_duration);
 
-  animation_element->AnimateAdditiveNumber(
+  animation_element.AnimateAdditiveNumber(
       percentage, repeat_count, from_number->Value(), to_number->Value(),
       to_at_end_of_duration_number->Value(), value_);
 }

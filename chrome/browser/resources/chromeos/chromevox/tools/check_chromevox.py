@@ -82,7 +82,6 @@ _COMMANDLINE_PRIVATE_EXTERNS = (
 
 # Externs common to many ChromeVox scripts.
 _COMMON_EXTERNS = [
-    CVoxPath('common/externs.js'),
     CVoxPath('common/chrome_extension_externs.js'),
     CVoxPath('chromevox/background/externs.js'),
     CVoxPath('host/chrome/externs.js'),
@@ -101,7 +100,6 @@ _TOP_LEVEL_SCRIPTS = [
     [[CVoxPath('chromevox/background/kbexplorer_loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('chromevox/background/options_loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('cvox2/background/log_loader.js')], _COMMON_EXTERNS],
-    [[CVoxPath('chromevox/injected/loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('cvox2/background/loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('cvox2/background/panel_loader.js')], _COMMON_EXTERNS],
     ]

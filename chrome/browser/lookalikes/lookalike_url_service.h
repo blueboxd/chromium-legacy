@@ -34,9 +34,10 @@ struct DomainInfo {
   // eTLD+1, used for skeleton and edit distance comparison. Must be ASCII.
   // Empty for non-unique domains, localhost or sites whose eTLD+1 is empty.
   const std::string domain_and_registry;
-  // eTLD+1 without the registry part. For "www.google.com", this will be
-  // "google". Used for edit distance comparisons.
-  // Empty for non-unique domains, localhost or sites whose eTLD+1 is empty.
+  // eTLD+1 without the registry part, and with a trailing period. For
+  // "www.google.com", this will be "google.". Used for edit distance
+  // comparisons. Empty for non-unique domains, localhost or sites whose eTLD+1
+  // is empty.
   const std::string domain_without_registry;
 
   // Result of IDN conversion of domain_and_registry field.

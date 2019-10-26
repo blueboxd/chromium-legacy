@@ -2448,6 +2448,11 @@ enum WebFeature {
   kV8RegExpExecCalledOnSlowRegExp = 3064,
   kV8RegExpReplaceCalledOnSlowRegExp = 3065,
   kHasMarkerPseudoElement = 3066,
+  kWindowMove = 3067,
+  kWindowResize = 3068,
+  kMovedOrResizedPopup = 3069,
+  kMovedOrResizedPopup2sAfterCreation = 3070,
+  kDOMWindowOpenPositioningFeatures = 3071,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

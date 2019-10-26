@@ -224,7 +224,7 @@ WebSearchableFormData::WebSearchableFormData(
 
   // Only consider forms that GET data.
   if (EqualIgnoringASCIICase(
-          form_element->getAttribute(html_names::kMethodAttr), "post"))
+          form_element->FastGetAttribute(html_names::kMethodAttr), "post"))
     return;
 
   WTF::TextEncoding encoding;

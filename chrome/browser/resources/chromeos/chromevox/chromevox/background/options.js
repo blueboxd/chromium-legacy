@@ -16,14 +16,10 @@ goog.require('Msgs');
 goog.require('PanelCommand');
 goog.require('cvox.BrailleTable');
 goog.require('cvox.BrailleTranslatorManager');
-goog.require('cvox.ChromeEarcons');
-goog.require('cvox.ChromeTts');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.CommandStore');
 goog.require('cvox.ExtensionBridge');
-goog.require('cvox.PlatformFilter');
-goog.require('cvox.PlatformUtil');
 
 /**
  * Class to manage the options page.
@@ -163,10 +159,6 @@ cvox.OptionsPage.init = function() {
       cvox.OptionsPage.update();
     }
   });
-
-  if (cvox.PlatformUtil.matchesPlatform(cvox.PlatformFilter.WML)) {
-    $('version').textContent = chrome.app.getDetails().version;
-  }
 
   var clearVirtualDisplay = function() {
     var groups = [];

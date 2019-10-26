@@ -15,6 +15,7 @@ import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodChangeResponse;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
 
 import java.util.List;
 import java.util.Map;
@@ -197,10 +198,15 @@ public abstract class PaymentInstrument extends EditableOption {
             InstrumentDetailsCallback callback);
 
     /**
-     * Update the payment information in response to payment method change event.
+     * Update the payment information in response to payment method, shipping address, or shipping
+     * option change events.
      *
-     * @param response The merchant's response to the payment method change event.
+     * @param response The merchant's response to the payment method, shipping address, or shipping
+     *         option change events.
      */
+    public void updateWith(PaymentRequestDetailsUpdate response) {}
+
+    // TODO(sahel): Remove this stub after updating clank code. crbug.com/984694
     public void updateWith(PaymentMethodChangeResponse response) {}
 
     /** Called when the merchant ignored the payment method change event. */

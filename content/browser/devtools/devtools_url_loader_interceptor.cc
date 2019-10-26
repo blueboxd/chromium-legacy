@@ -1036,7 +1036,8 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
       net::cookie_util::ComputeSameSiteContextForResponse(
           create_loader_params_->request.url,
           create_loader_params_->request.site_for_cookies,
-          create_loader_params_->request.request_initiator));
+          create_loader_params_->request.request_initiator,
+          create_loader_params_->request.attach_same_site_cookies));
 
   // |this| might be deleted here if |cookies| is empty!
   auto on_cookie_set = base::BindRepeating(

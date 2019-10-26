@@ -19,17 +19,20 @@ class WebThemeEngineImplDefaultBrowserTest : public ContentBrowserTest {
 
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebThemeEngineImplDefaultBrowserTest, GetSystemColor) {
-  // The test non-deterministically fails on Windows Server 2008 builders due to
-  // a difference in the default theme. As a result, only run the test on
-  // Windows version 7 and above.
-  if (base::win::GetVersion() < base::win::Version::WIN7)
+  // The test non-deterministically fails on Windows-2008ServerR2 builders due
+  // to a difference in the default theme. As a result, only run the test on
+  // non-server versions.
+  if (base::win::OSInfo::GetInstance()->version_type() ==
+      base::win::VersionType::SUITE_SERVER) {
     return;
+  }
   GURL url(
       "data:text/html,"
       "<!doctype html><html>"
       "<body>"
       "<div id='activeBorder' style='color: ActiveBorder'>ActiveBorder</div>"
       "<div id='activeCaption' style='color: ActiveCaption'>ActiveCaption</div>"
+      "<div id='activeText' style='color: ActiveText'>ActiveText</div>"
       "<div id='appWorkspace' style='color: AppWorkspace'>AppWorkspace</div>"
       "<div id='background' style='color: Background'>Background</div>"
       "<div id='buttonFace' style='color: ButtonFace'>ButtonFace</div>"
@@ -38,6 +41,8 @@ IN_PROC_BROWSER_TEST_F(WebThemeEngineImplDefaultBrowserTest, GetSystemColor) {
       "<div id='buttonShadow' style='color: ButtonShadow'>ButtonShadow</div>"
       "<div id='buttonText' style='color: ButtonText'>ButtonText</div>"
       "<div id='captionText' style='color: CaptionText'>CaptionText</div>"
+      "<div id='field' style='color: Field'>Field</div>"
+      "<div id='fieldText' style='color: FieldText'>FieldText</div>"
       "<div id='grayText' style='color: GrayText'>GrayText</div>"
       "<div id='highlight' style='color: Highlight'>Highlight</div>"
       "<div id='highlightText' style='color: HighlightText'>HighlightText</div>"
@@ -71,6 +76,7 @@ IN_PROC_BROWSER_TEST_F(WebThemeEngineImplDefaultBrowserTest, GetSystemColor) {
 
   std::vector<std::string> ids = {"activeBorder",
                                   "activeCaption",
+                                  "activeText",
                                   "appWorkspace",
                                   "background",
                                   "buttonFace",
@@ -78,6 +84,8 @@ IN_PROC_BROWSER_TEST_F(WebThemeEngineImplDefaultBrowserTest, GetSystemColor) {
                                   "buttonShadow",
                                   "buttonText",
                                   "captionText",
+                                  "field",
+                                  "fieldText",
                                   "grayText",
                                   "highlight",
                                   "highlightText",
@@ -102,9 +110,10 @@ IN_PROC_BROWSER_TEST_F(WebThemeEngineImplDefaultBrowserTest, GetSystemColor) {
   std::vector<std::string> expected_colors;
   if (base::win::GetVersion() <= base::win::Version::WIN8_1) {
     expected_colors = {
-        "rgb(255, 255, 255)", "rgb(204, 204, 204)", "rgb(255, 255, 255)",
-        "rgb(99, 99, 206)",   "rgb(240, 240, 240)", "rgb(221, 221, 221)",
-        "rgb(136, 136, 136)", "rgb(0, 0, 0)",       "rgb(0, 0, 0)",
+        "rgb(255, 255, 255)", "rgb(204, 204, 204)", "rgb(0, 0, 0)",
+        "rgb(255, 255, 255)", "rgb(99, 99, 206)",   "rgb(240, 240, 240)",
+        "rgb(221, 221, 221)", "rgb(136, 136, 136)", "rgb(0, 0, 0)",
+        "rgb(0, 0, 0)",       "rgb(0, 0, 0)",       "rgb(0, 0, 0)",
         "rgb(109, 109, 109)", "rgb(51, 153, 255)",  "rgb(255, 255, 255)",
         "rgb(255, 255, 255)", "rgb(255, 255, 255)", "rgb(127, 127, 127)",
         "rgb(251, 252, 197)", "rgb(0, 0, 0)",       "rgb(0, 102, 204)",
@@ -114,9 +123,10 @@ IN_PROC_BROWSER_TEST_F(WebThemeEngineImplDefaultBrowserTest, GetSystemColor) {
         "rgb(255, 255, 255)", "rgb(204, 204, 204)", "rgb(0, 0, 0)"};
   } else {
     expected_colors = {
-        "rgb(255, 255, 255)", "rgb(204, 204, 204)", "rgb(255, 255, 255)",
-        "rgb(99, 99, 206)",   "rgb(240, 240, 240)", "rgb(221, 221, 221)",
-        "rgb(136, 136, 136)", "rgb(0, 0, 0)",       "rgb(0, 0, 0)",
+        "rgb(255, 255, 255)", "rgb(204, 204, 204)", "rgb(0, 0, 0)",
+        "rgb(255, 255, 255)", "rgb(99, 99, 206)",   "rgb(240, 240, 240)",
+        "rgb(221, 221, 221)", "rgb(136, 136, 136)", "rgb(0, 0, 0)",
+        "rgb(0, 0, 0)",       "rgb(0, 0, 0)",       "rgb(0, 0, 0)",
         "rgb(109, 109, 109)", "rgb(0, 120, 215)",   "rgb(255, 255, 255)",
         "rgb(255, 255, 255)", "rgb(255, 255, 255)", "rgb(127, 127, 127)",
         "rgb(251, 252, 197)", "rgb(0, 0, 0)",       "rgb(0, 102, 204)",

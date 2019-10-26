@@ -495,9 +495,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   IPC_STRUCT_MEMBER(url::Origin, initiator_origin)
-  IPC_STRUCT_MEMBER(bool, uses_post)
-  IPC_STRUCT_MEMBER(scoped_refptr<network::ResourceRequestBody>,
-                    resource_request_body)
+  IPC_STRUCT_MEMBER(scoped_refptr<network::ResourceRequestBody>, post_body)
   IPC_STRUCT_MEMBER(std::string, extra_headers)
   IPC_STRUCT_MEMBER(content::Referrer, referrer)
   IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
@@ -733,12 +731,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DidStartLoading)
 // RenderFrame has completed loading.
 IPC_MESSAGE_ROUTED0(FrameMsg_DidStopLoading)
 
-// Add message to the frame console.
-IPC_MESSAGE_ROUTED3(FrameMsg_AddMessageToConsole,
-                    blink::mojom::ConsoleMessageLevel /* level */,
-                    std::string /* message */,
-                    bool /* discard_duplicates */)
-
 // TODO(https://crbug.com/995428): Deprecated.
 // Tells the renderer to reload the frame.
 IPC_MESSAGE_ROUTED0(FrameMsg_Reload)
@@ -785,11 +777,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_AddContentSecurityPolicies,
 // Used when the frame's policy is changed in another process.
 IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,
                     blink::WebInsecureRequestPolicy)
-
-// Update a proxy's replicated set for enforcement of insecure navigations.
-// Used when the frame's set is changed in another process.
-IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureNavigationsSet,
-                    std::vector<uint32_t> /* set */)
 
 // Update a proxy's replicated origin.  Used when the frame is navigated to a
 // new origin.

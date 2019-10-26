@@ -15,8 +15,8 @@ import androidx.annotation.StringRes;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -74,7 +74,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
     /**
      * Mapping from {@link Item} to the ID found in the ids.xml.
      */
-    private final static int[] MENU_IDS = {
+    private static final int[] MENU_IDS = {
             R.id.contextmenu_open_in_new_chrome_tab, // Item.OPEN_IN_NEW_CHROME_TAB
             R.id.contextmenu_open_in_chrome_incognito_tab, // Item.OPEN_IN_CHROME_INCOGNITO_TAB
             R.id.contextmenu_open_in_browser_id, // Item.OPEN_IN_BROWSER_ID
@@ -103,7 +103,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
     /**
      * Mapping from {@link Item} to the ID of the string that describes the action of the item.
      */
-    private final static int[] STRING_IDS = {
+    private static final int[] STRING_IDS = {
             R.string.contextmenu_open_in_new_chrome_tab, // Item.OPEN_IN_NEW_CHROME_TAB:
             R.string.contextmenu_open_in_chrome_incognito_tab, // Item.OPEN_IN_CHROME_INCOGNITO_TAB:
             0, // Item.OPEN_IN_BROWSER_ID is not handled by this mapping.

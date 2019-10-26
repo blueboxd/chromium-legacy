@@ -32,8 +32,7 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
       params_(params),
       shared_memory_count_(shared_memory_count),
       deleter_(std::move(deleter)),
-      renderer_factory_client_(std::move(renderer_factory_client)),
-      observer_binding_(this) {
+      renderer_factory_client_(std::move(renderer_factory_client)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(source_);
   DCHECK(renderer_factory_client_);
@@ -65,7 +64,7 @@ AudioLoopbackStreamBroker::~AudioLoopbackStreamBroker() {
 void AudioLoopbackStreamBroker::CreateStream(
     audio::mojom::StreamFactory* factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!observer_binding_.is_bound());
+  DCHECK(!observer_receiver_.is_bound());
   DCHECK(!client_receiver_);
   DCHECK(source_);
 
@@ -79,19 +78,16 @@ void AudioLoopbackStreamBroker::CreateStream(
   mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver =
       stream.InitWithNewPipeAndPassReceiver();
 
-  media::mojom::AudioInputStreamObserverPtr observer_ptr;
-  observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
-
-  // Unretained is safe because |this| owns |observer_binding_|.
-  observer_binding_.set_connection_error_handler(base::BindOnce(
-      &AudioLoopbackStreamBroker::Cleanup, base::Unretained(this)));
-
   factory->CreateLoopbackStream(
       std::move(stream_receiver), std::move(client),
-      observer_ptr.PassInterface(), params_, shared_memory_count_,
-      source_->GetGroupID(),
+      observer_receiver_.BindNewPipeAndPassRemote(), params_,
+      shared_memory_count_, source_->GetGroupID(),
       base::BindOnce(&AudioLoopbackStreamBroker::StreamCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(stream)));
+
+  // Unretained is safe because |this| owns |observer_receiver_|.
+  observer_receiver_.set_disconnect_handler(base::BindOnce(
+      &AudioLoopbackStreamBroker::Cleanup, base::Unretained(this)));
 }
 
 void AudioLoopbackStreamBroker::OnSourceGone() {

@@ -2606,7 +2606,7 @@ const AtomicString& Element::LocateNamespacePrefix(
 }
 
 const AtomicString Element::ImageSourceURL() const {
-  return getAttribute(html_names::kSrcAttr);
+  return FastGetAttribute(html_names::kSrcAttr);
 }
 
 bool Element::LayoutObjectIsNeeded(const ComputedStyle& style) const {
@@ -2914,7 +2914,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
     element_animations->CssAnimations().ClearPendingUpdate();
 
   if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-      hasAttribute(html_names::kInvisibleAttr) && !calc_invisible) {
+      FastHasAttribute(html_names::kInvisibleAttr) && !calc_invisible) {
     auto style =
         GetDocument().GetStyleResolver()->InitialStyleForElement(GetDocument());
     style->SetDisplay(EDisplay::kNone);

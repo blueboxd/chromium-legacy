@@ -452,7 +452,7 @@ unsigned HTMLImageElement::width() {
     // check the attribute first for an explicit pixel value
     // TODO(cbiesinger): The attribute could be a float or percentage value...
     unsigned width = 0;
-    if (ParseHTMLNonNegativeInteger(getAttribute(html_names::kWidthAttr),
+    if (ParseHTMLNonNegativeInteger(FastGetAttribute(html_names::kWidthAttr),
                                     width))
       return width;
 
@@ -475,7 +475,7 @@ unsigned HTMLImageElement::height() {
     // check the attribute first for an explicit pixel value
     // TODO(cbiesinger): The attribute could be a float or percentage value...
     unsigned height = 0;
-    if (ParseHTMLNonNegativeInteger(getAttribute(html_names::kHeightAttr),
+    if (ParseHTMLNonNegativeInteger(FastGetAttribute(html_names::kHeightAttr),
                                     height))
       return height;
 
@@ -573,8 +573,8 @@ const QualifiedName& HTMLImageElement::SubResourceAttributeName() const {
 
 bool HTMLImageElement::draggable() const {
   // Image elements are draggable by default.
-  return !DeprecatedEqualIgnoringCase(getAttribute(html_names::kDraggableAttr),
-                                      "false");
+  return !DeprecatedEqualIgnoringCase(
+      FastGetAttribute(html_names::kDraggableAttr), "false");
 }
 
 void HTMLImageElement::setHeight(unsigned value) {

@@ -994,8 +994,8 @@ bool HTMLElement::isContentEditableForBinding() const {
 }
 
 bool HTMLElement::draggable() const {
-  return DeprecatedEqualIgnoringCase(getAttribute(html_names::kDraggableAttr),
-                                     "true");
+  return DeprecatedEqualIgnoringCase(
+      FastGetAttribute(html_names::kDraggableAttr), "true");
 }
 
 void HTMLElement::setDraggable(bool value) {
@@ -1038,7 +1038,7 @@ int HTMLElement::tabIndex() const {
 }
 
 TranslateAttributeMode HTMLElement::GetTranslateAttributeMode() const {
-  const AtomicString& value = getAttribute(html_names::kTranslateAttr);
+  const AtomicString& value = FastGetAttribute(html_names::kTranslateAttr);
 
   if (value == g_null_atom)
     return kTranslateAttributeInherit;
@@ -1104,7 +1104,7 @@ HTMLFormElement* HTMLElement::FindFormAncestor() const {
 static inline bool ElementAffectsDirectionality(const Node* node) {
   auto* html_element = DynamicTo<HTMLElement>(node);
   return html_element && (IsHTMLBDIElement(*html_element) ||
-                          html_element->hasAttribute(html_names::kDirAttr));
+                          html_element->FastHasAttribute(html_names::kDirAttr));
 }
 
 void HTMLElement::ChildrenChanged(const ChildrenChange& change) {

@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.infobar.DownloadProgressInfoBar;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -31,7 +32,6 @@ import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -281,7 +281,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     public void onDownloadItemUpdated(DownloadItem downloadItem) {
         if (mUseNewDownloadPath) return;
 
-        OfflineItem offlineItem = DownloadInfo.createOfflineItem(downloadItem.getDownloadInfo());
+        OfflineItem offlineItem = DownloadItem.createOfflineItem(downloadItem);
         if (!isVisibleToUser(offlineItem)) return;
 
         if (downloadItem.getDownloadInfo().state() == DownloadState.COMPLETE) {
@@ -320,8 +320,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                     if (result) {
                         onItemRemoved(downloadItem.getContentId());
                     } else {
-                        computeNextStepForUpdate(
-                                DownloadInfo.createOfflineItem(downloadItem.getDownloadInfo()));
+                        computeNextStepForUpdate(DownloadItem.createOfflineItem(downloadItem));
                     }
                 });
     }

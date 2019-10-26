@@ -8,7 +8,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.PaymentMethodChangeResponse;
+import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
 
 import java.nio.ByteBuffer;
 
@@ -69,10 +69,10 @@ public class PaymentHandlerHost {
 
     /**
      * Notifies the payment handler that the merchant has updated the payment details in response to
-     * the payment-method-change event.
-     * @param response The payment method change response. Should not be null.
+     * the payment-method-change event or shipping-[address|option]-change events.
+     * @param response The payment request details update response. Should not be null.
      */
-    public void updateWith(PaymentMethodChangeResponse response) {
+    public void updateWith(PaymentRequestDetailsUpdate response) {
         assert response != null;
         PaymentHandlerHostJni.get().updateWith(mNativePointer, response.serialize());
     }

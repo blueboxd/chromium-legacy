@@ -16,6 +16,9 @@
 // should trigger a safety tip. This algorithm factors in the sites that the
 // user has already engaged with. This heuristic stores a "safe url" that the
 // navigated domain is a lookalike to, in the passed |safe_url|.
+//
+// This heuristic should never be called with a URL which is already in
+// |engaged_sites|.
 bool ShouldTriggerSafetyTipFromLookalike(
     const GURL& url,
     const DomainInfo& navigated_domain,
@@ -24,8 +27,11 @@ bool ShouldTriggerSafetyTipFromLookalike(
 
 // Checks to see whether a given URL contains sensitive keywords in a way
 // that it should trigger a safety tip.
+//
+// URLs without a TLD or with an unknown TLD never trigger.
 bool ShouldTriggerSafetyTipFromKeywordInURL(
     const GURL& url,
+    const DomainInfo& navigated_domain,
     const char* const sensitive_keywords[],
     size_t num_keywords);
 

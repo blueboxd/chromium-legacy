@@ -177,6 +177,7 @@ Bug(none) paint/invalidation/compositing/should-not-repaint-composited-filter.ht
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-opacity.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
 Bug(none) paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
+Bug(none) paint/invalidation/scroll/repaint-composited-child-in-scrolled-container.html [ Failure ]
 Bug(none) paint/invalidation/position/layout-state-only-positioned.html [ Failure ]
 Bug(none) paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 
@@ -451,5 +452,8 @@ crbug.com/966981 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.h
 crbug.com/979002 virtual/threaded-prefer-compositing/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
 crbug.com/981749 virtual/threaded-prefer-compositing/fast/scrolling/scroll-chaining-from-position-fixed.html [ Failure ]
 
-# These tests are failing due to subpixel differences but can't be rebaselined.
-Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/select/select-multiple-appearance-basic.html [ Failure ]
+# These tests are failing due to subpixel differences but can be rebaselined.
+Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/color/color-suggestion-picker-appearance.html [ Failure ]
+Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/color/color-suggestion-picker-appearance-with-scrollbar.html [ Failure ]
+Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/select/select-multiple-appearance-basic.html [ Failure ]
+Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/time-picker/time-picker-appearance.html [ Failure ]

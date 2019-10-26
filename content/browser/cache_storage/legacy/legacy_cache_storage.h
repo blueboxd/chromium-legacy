@@ -18,8 +18,11 @@
 #include "build/build_config.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_scheduler_types.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_cache.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -27,10 +30,6 @@
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace storage {
-class BlobStorageContext;
 }
 
 namespace content {
@@ -62,7 +61,7 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
       base::SequencedTaskRunner* cache_task_runner,
       scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-      base::WeakPtr<storage::BlobStorageContext> blob_context,
+      scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
       LegacyCacheStorageManager* cache_storage_manager,
       const url::Origin& origin,
       CacheStorageOwner owner);
@@ -303,6 +302,9 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
 
   // The quota manager.
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+
+  // An IO thread bound wrapper for storage.mojom.BlobStorageContext.
+  scoped_refptr<BlobStorageContextWrapper> blob_storage_context_;
 
   // The owner that this CacheStorage is associated with.
   CacheStorageOwner owner_;

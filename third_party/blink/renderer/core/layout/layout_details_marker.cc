@@ -55,8 +55,11 @@ bool LayoutDetailsMarker::IsOpen() const {
     const auto* node = layout_object->GetNode();
     if (!node)
       continue;
-    if (IsHTMLDetailsElement(*node))
-      return !To<Element>(node)->getAttribute(html_names::kOpenAttr).IsNull();
+    if (IsHTMLDetailsElement(*node)) {
+      return !To<Element>(node)
+                  ->FastGetAttribute(html_names::kOpenAttr)
+                  .IsNull();
+    }
     if (IsHTMLInputElement(*node))
       return true;
   }

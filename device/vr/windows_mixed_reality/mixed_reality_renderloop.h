@@ -6,6 +6,7 @@
 #define DEVICE_VR_WINDOWS_MIXED_REALITY_MIXED_REALITY_RENDERLOOP_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
@@ -57,7 +58,6 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
 
   // XRDeviceAbstraction:
   mojom::XRFrameDataPtr GetNextFrameData() override;
-  mojom::XRGamepadDataPtr GetNextGamepadData() override;
   bool PreComposite() override;
   bool SubmitCompositedFrame() override;
 

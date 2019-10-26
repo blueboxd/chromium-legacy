@@ -20,9 +20,6 @@
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/putil.h"
 #include "third_party/icu/source/common/unicode/udata.h"
-#if (defined(OS_LINUX) && !defined(IS_CHROMECAST)) || defined(OS_ANDROID)
-#include "third_party/icu/source/i18n/unicode/timezone.h"
-#endif
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
@@ -35,6 +32,10 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
+#endif
+
+#if defined(OS_ANDROID) || (defined(OS_LINUX) && !defined(IS_CHROMECAST))
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #endif
 
 namespace base {
@@ -217,24 +218,73 @@ bool InitializeICUWithFileDescriptorInternal(
   if (g_debug_icu_load == 3) {
     g_debug_icu_last_error = err;
   }
-#if defined(OS_ANDROID)
-  else if (g_debug_icu_load == 0) {
-    // On Android, we can't leave it up to ICU to set the default timezone
-    // because ICU's timezone detection does not work in many timezones (e.g.
-    // Australia/Sydney, Asia/Seoul, Europe/Paris ). Use JNI to detect the host
-    // timezone and set the ICU default timezone accordingly in advance of
-    // actual use. See crbug.com/722821 and
-    // https://ssl.icu-project.org/trac/ticket/13208 .
-    string16 timezone_id = android::GetDefaultTimeZoneId();
-    icu::TimeZone::adoptDefault(icu::TimeZone::createTimeZone(
-        icu::UnicodeString(FALSE, timezone_id.data(), timezone_id.length())));
-  }
-#endif
+
   // Never try to load ICU data from files.
   udata_setFileAccess(UDATA_ONLY_PACKAGES, &err);
   return U_SUCCESS(err);
 }
+
+bool InitializeICUFromDataFile() {
+  // If the ICU data directory is set, ICU won't actually load the data until
+  // it is needed.  This can fail if the process is sandboxed at that time.
+  // Instead, we map the file in and hand off the data so the sandbox won't
+  // cause any problems.
+  LazyOpenIcuDataFile();
+  bool result =
+      InitializeICUWithFileDescriptorInternal(g_icudtl_pf, g_icudtl_region);
+
+#if defined(OS_WIN)
+  int debug_icu_load = g_debug_icu_load;
+  debug::Alias(&debug_icu_load);
+  int debug_icu_last_error = g_debug_icu_last_error;
+  debug::Alias(&debug_icu_last_error);
+  int debug_icu_pf_last_error = g_debug_icu_pf_last_error;
+  debug::Alias(&debug_icu_pf_last_error);
+  int debug_icu_pf_error_details = g_debug_icu_pf_error_details;
+  debug::Alias(&debug_icu_pf_error_details);
+  wchar_t debug_icu_pf_filename[_MAX_PATH] = {0};
+  wcscpy_s(debug_icu_pf_filename, g_debug_icu_pf_filename);
+  debug::Alias(&debug_icu_pf_filename);
+  CHECK(result);  // TODO(brucedawson): http://crbug.com/445616
+#endif            // defined(OS_WIN)
+
+  return result;
+}
 #endif  // (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
+
+// Explicitly initialize ICU's time zone if necessary.
+// On some platforms, the time zone must be explicitly initialized zone rather
+// than relying on ICU's internal initialization.
+void InitializeIcuTimeZone() {
+#if defined(OS_ANDROID)
+  // On Android, we can't leave it up to ICU to set the default timezone
+  // because ICU's timezone detection does not work in many timezones (e.g.
+  // Australia/Sydney, Asia/Seoul, Europe/Paris ). Use JNI to detect the host
+  // timezone and set the ICU default timezone accordingly in advance of
+  // actual use. See crbug.com/722821 and
+  // https://ssl.icu-project.org/trac/ticket/13208 .
+  string16 zone_id = android::GetDefaultTimeZoneId();
+  icu::TimeZone::adoptDefault(icu::TimeZone::createTimeZone(
+      icu::UnicodeString(FALSE, zone_id.data(), zone_id.length())));
+#elif defined(OS_LINUX) && !defined(IS_CHROMECAST)
+  // To respond to the timezone change properly, the default timezone
+  // cache in ICU has to be populated on starting up.
+  // See TimeZoneMonitorLinux::NotifyClientsFromImpl().
+  std::unique_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+#endif  // defined(OS_ANDROID)
+}
+
+// Common initialization to run regardless of how ICU is initialized.
+// There are multiple exposed InitializeIcu* functions. This should be called
+// as at the end of (the last functions in the sequence of) these functions.
+bool DoCommonInitialization() {
+  // TODO(jungshik): Some callers do not care about tz at all. If necessary,
+  // add a boolean argument to this function to init the default tz only
+  // when requested.
+  InitializeIcuTimeZone();
+
+  return true;
+}
 
 }  // namespace
 
@@ -263,7 +313,10 @@ bool InitializeICUWithFileDescriptor(
   DCHECK(!g_check_called_once || !g_called_once);
   g_called_once = true;
 #endif
-  return InitializeICUWithFileDescriptorInternal(data_fd, data_region);
+  if (!InitializeICUWithFileDescriptorInternal(data_fd, data_region))
+    return false;
+
+  return DoCommonInitialization();
 }
 
 PlatformFile GetIcuDataFileHandle(MemoryMappedFile::Region* out_region) {
@@ -315,47 +368,16 @@ bool InitializeICU() {
   g_called_once = true;
 #endif
 
-  bool result;
 #if (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_STATIC)
   // The ICU data is statically linked.
-  result = true;
 #elif (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
-  // If the ICU data directory is set, ICU won't actually load the data until
-  // it is needed.  This can fail if the process is sandboxed at that time.
-  // Instead, we map the file in and hand off the data so the sandbox won't
-  // cause any problems.
-  LazyOpenIcuDataFile();
-  result =
-      InitializeICUWithFileDescriptorInternal(g_icudtl_pf, g_icudtl_region);
-#if defined(OS_WIN)
-  int debug_icu_load = g_debug_icu_load;
-  debug::Alias(&debug_icu_load);
-  int debug_icu_last_error = g_debug_icu_last_error;
-  debug::Alias(&debug_icu_last_error);
-  int debug_icu_pf_last_error = g_debug_icu_pf_last_error;
-  debug::Alias(&debug_icu_pf_last_error);
-  int debug_icu_pf_error_details = g_debug_icu_pf_error_details;
-  debug::Alias(&debug_icu_pf_error_details);
-  wchar_t debug_icu_pf_filename[_MAX_PATH] = {0};
-  wcscpy_s(debug_icu_pf_filename, g_debug_icu_pf_filename);
-  debug::Alias(&debug_icu_pf_filename);
-  CHECK(result);  // TODO(brucedawson): http://crbug.com/445616
-#endif  // defined(OS_WIN)
+  if (!InitializeICUFromDataFile())
+    return false;
 #else
 #error Unsupported ICU_UTIL_DATA_IMPL value
 #endif  // (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_STATIC)
 
-#if defined(OS_LINUX) && !defined(IS_CHROMECAST)
-  // To respond to the timezone change properly, the default timezone
-  // cache in ICU has to be populated on starting up.
-  // See TimeZoneMonitorLinux::NotifyClientsFromImpl().
-  // TODO(jungshik): Some callers do not care about tz at all. If necessary,
-  // add a boolean argument to this function to init the default tz only
-  // when requested.
-  if (result)
-    std::unique_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
-#endif  // defined(OS_LINUX) && !defined(IS_CHROMECAST)
-  return result;
+  return DoCommonInitialization();
 }
 
 void AllowMultipleInitializeCallsForTesting() {

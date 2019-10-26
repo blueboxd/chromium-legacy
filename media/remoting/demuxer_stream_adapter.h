@@ -40,7 +40,7 @@ namespace remoting {
 // while RPC message should be sent on main thread using |main_task_runner|.
 class DemuxerStreamAdapter {
  public:
-  using ErrorCallback = base::Callback<void(StopTrigger)>;
+  using ErrorCallback = base::OnceCallback<void(StopTrigger)>;
 
   // |main_task_runner|: Task runner to post RPC message on main thread
   // |media_task_runner|: Task runner to run whole class on media thread.
@@ -63,7 +63,7 @@ class DemuxerStreamAdapter {
       int rpc_handle,
       mojom::RemotingDataStreamSenderPtrInfo stream_sender_info,
       mojo::ScopedDataPipeProducerHandle producer_handle,
-      const ErrorCallback& error_callback);
+      ErrorCallback error_callback);
   ~DemuxerStreamAdapter();
 
   // Rpc handle for this class. This is used for sending/receiving RPC message

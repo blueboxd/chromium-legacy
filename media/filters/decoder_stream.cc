@@ -662,8 +662,8 @@ void DecoderStream<StreamType>::ReadFromDemuxerStream() {
   TRACE_EVENT_ASYNC_BEGIN0("media", GetDemuxerReadTraceString<StreamType>(),
                            this);
   pending_demuxer_read_ = true;
-  stream_->Read(base::BindRepeating(&DecoderStream<StreamType>::OnBufferReady,
-                                    weak_factory_.GetWeakPtr()));
+  stream_->Read(base::BindOnce(&DecoderStream<StreamType>::OnBufferReady,
+                               weak_factory_.GetWeakPtr()));
 }
 
 template <DemuxerStream::Type StreamType>

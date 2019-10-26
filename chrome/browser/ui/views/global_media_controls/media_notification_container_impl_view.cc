@@ -148,7 +148,7 @@ void MediaNotificationContainerImplView::OnMediaSessionMetadataChanged() {
 }
 
 void MediaNotificationContainerImplView::OnVisibleActionsChanged(
-    const std::set<media_session::mojom::MediaSessionAction>& actions) {
+    const base::flat_set<media_session::mojom::MediaSessionAction>& actions) {
   has_many_actions_ = actions.size() >= kMinVisibleActionsForExpanding;
   ForceExpandedState();
 }

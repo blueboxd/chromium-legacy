@@ -730,12 +730,14 @@ TEST_F(TemplateURLServiceTest, CreateFromPlayAPI) {
   const base::string16 short_name = ASCIIToUTF16("google");
   const base::string16 keyword = ASCIIToUTF16("keyword");
   const std::string search_url = "http://www.google.com/foo/bar";
+  const std::string suggest_url = "http://www.google.com/suggest";
   const std::string favicon_url = "http://favicon.url";
   TemplateURL* t_url = model()->CreateOrUpdateTemplateURLFromPlayAPIData(
-      short_name, keyword, search_url, favicon_url);
+      short_name, keyword, search_url, suggest_url, favicon_url);
   ASSERT_EQ(short_name, t_url->short_name());
   ASSERT_EQ(keyword, t_url->keyword());
   ASSERT_EQ(search_url, t_url->url());
+  ASSERT_EQ(suggest_url, t_url->suggestions_url());
   ASSERT_EQ(GURL(favicon_url), t_url->favicon_url());
   ASSERT_TRUE(t_url->created_from_play_api());
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(keyword));
@@ -777,13 +779,16 @@ TEST_F(TemplateURLServiceTest, UpdateFromPlayAPI) {
   // Reset the short name and url and make sure it takes.
   const base::string16 new_short_name = ASCIIToUTF16("new_name");
   const std::string new_search_url = "new_url";
+  const std::string new_suggest_url = "new_suggest_url";
   const std::string new_favicon_url = "new_favicon_url";
   TemplateURL* updated_turl = model()->CreateOrUpdateTemplateURLFromPlayAPIData(
-      new_short_name, keyword, new_search_url, new_favicon_url);
+      new_short_name, keyword, new_search_url, new_suggest_url,
+      new_favicon_url);
   ASSERT_EQ(t_url, updated_turl);
   ASSERT_EQ(new_short_name, t_url->short_name());
   ASSERT_EQ(keyword, t_url->keyword());
   ASSERT_EQ(new_search_url, t_url->url());
+  ASSERT_EQ(new_suggest_url, t_url->suggestions_url());
   ASSERT_EQ(GURL(new_favicon_url), t_url->favicon_url());
   ASSERT_TRUE(t_url->created_from_play_api());
 

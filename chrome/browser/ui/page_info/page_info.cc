@@ -674,8 +674,10 @@ void PageInfo::ComputeUIInputs(
     // All about: URLs except about:blank are redirected.
     DCHECK_EQ(url::kAboutBlankURL, url.spec());
     site_identity_status_ = SITE_IDENTITY_STATUS_NO_CERT;
-    site_details_message_ =
+#if defined(OS_ANDROID)
+    identity_status_description_android_ =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY);
+#endif
     site_connection_status_ = SITE_CONNECTION_STATUS_UNENCRYPTED;
     site_connection_details_ = l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -685,8 +687,10 @@ void PageInfo::ComputeUIInputs(
 
   if (url.SchemeIs(content::kChromeUIScheme) || is_chrome_ui_native_scheme) {
     site_identity_status_ = SITE_IDENTITY_STATUS_INTERNAL_PAGE;
-    site_details_message_ =
+#if defined(OS_ANDROID)
+    identity_status_description_android_ =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
+#endif
     site_connection_status_ = SITE_CONNECTION_STATUS_INTERNAL_PAGE;
     return;
   }
@@ -700,8 +704,6 @@ void PageInfo::ComputeUIInputs(
     if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT) {
 #if defined(OS_CHROMEOS)
       site_identity_status_ = SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
-      site_details_message_ = l10n_util::GetStringFUTF16(
-          IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE, UTF8ToUTF16(url.host()));
 #else
       DCHECK(false) << "Policy certificates exist only on ChromeOS";
 #endif
@@ -720,51 +722,65 @@ void PageInfo::ComputeUIInputs(
               IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
         }
 
-        site_details_message_.assign(l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_VERIFIED, issuer_name));
+#if defined(OS_ANDROID)
+        // This string is shown on all non-error HTTPS sites on Android when
+        // the user taps "Details" link on page info.
+        identity_status_description_android_.assign(l10n_util::GetStringFUTF16(
+            IDS_PAGE_INFO_SECURE_IDENTITY_VERIFIED, issuer_name));
+#endif
       }
       if (security_state::IsSHA1InChain(visible_security_state)) {
         site_identity_status_ =
             SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM;
-        site_details_message_ +=
+
+#if defined(OS_ANDROID)
+        identity_status_description_android_ +=
             UTF8ToUTF16("\n\n") +
             l10n_util::GetStringUTF16(
                 IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM);
+#endif
       }
     }
   } else {
     // HTTP or HTTPS with errors (not warnings).
-    site_details_message_.assign(l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
     if (!security_state::IsSchemeCryptographic(visible_security_state.url) ||
         !visible_security_state.certificate) {
       site_identity_status_ = SITE_IDENTITY_STATUS_NO_CERT;
     } else {
       site_identity_status_ = SITE_IDENTITY_STATUS_ERROR;
     }
-
+#if defined(OS_ANDROID)
     const base::string16 bullet = UTF8ToUTF16("\n • ");
     std::vector<ssl_errors::ErrorInfo> errors;
     ssl_errors::ErrorInfo::GetErrorsForCertStatus(
         certificate_, visible_security_state.cert_status, url, &errors);
-    for (size_t i = 0; i < errors.size(); ++i) {
-      site_details_message_ += bullet;
-      site_details_message_ += errors[i].short_description();
+
+    identity_status_description_android_.assign(l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
+    for (const ssl_errors::ErrorInfo& error : errors) {
+      identity_status_description_android_ += bullet;
+      identity_status_description_android_ += error.short_description();
     }
 
     if (visible_security_state.cert_status & net::CERT_STATUS_NON_UNIQUE_NAME) {
-      site_details_message_ += ASCIIToUTF16("\n\n");
-      site_details_message_ +=
+      identity_status_description_android_ += ASCIIToUTF16("\n\n");
+      identity_status_description_android_ +=
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
     }
+#endif
   }
 
   if (visible_security_state.malicious_content_status !=
       security_state::MALICIOUS_CONTENT_STATUS_NONE) {
     // The site has been flagged by Safe Browsing. Takes precedence over TLS.
+    base::string16 safe_browsing_details;
     GetSafeBrowsingStatusByMaliciousContentStatus(
         visible_security_state.malicious_content_status, &safe_browsing_status_,
-        &site_details_message_);
+        &safe_browsing_details);
+#if defined(OS_ANDROID)
+    identity_status_description_android_ = safe_browsing_details;
+#endif
+
 #if BUILDFLAG(FULL_SAFE_BROWSING)
     bool old_show_change_pw_buttons = show_change_password_buttons_;
 #endif
@@ -787,15 +803,18 @@ void PageInfo::ComputeUIInputs(
   }
 
   safety_tip_info_ = visible_security_state.safety_tip_info;
+#if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
-    // site_details_message_ is only displayed on Android when the user taps
-    // "Details" link on the page info. Reuse the description from page info UI.
+    // identity_status_description_android_ is only displayed on Android when
+    // the user taps "Details" link on the page info. Reuse the description from
+    // page info UI.
     std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
         PageInfoUI::CreateSafetyTipSecurityDescription(safety_tip_info_);
     if (security_description) {
-      site_details_message_ = security_description->details;
+      identity_status_description_android_ = security_description->details;
     }
   }
+#endif
 
   // Site Connection
   // We consider anything less than 80 bits encryption to be weak encryption.
@@ -1012,7 +1031,11 @@ void PageInfo::PresentSiteIdentity() {
   if (base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
     info.safety_tip_info = safety_tip_info_;
   }
-  info.identity_status_description = UTF16ToUTF8(site_details_message_);
+#if defined(OS_ANDROID)
+  info.identity_status_description_android =
+      UTF16ToUTF8(identity_status_description_android_);
+#endif
+
   info.certificate = certificate_;
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;
   info.show_change_password_buttons = show_change_password_buttons_;

@@ -1560,21 +1560,6 @@
             ]
         }
     ],
-    "ChromeOSParentalControlsSettings": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ChromeOSParentalControlsSettings"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeSmartSelection": [
         {
             "platforms": [
@@ -3586,6 +3571,21 @@
                         "ChromeColors",
                         "ChromeColorsCustomColorPicker",
                         "NtpCustomizationMenuV2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NativeGellerizationRollout": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeOSParentalControlsSettings"
                     ]
                 }
             ]

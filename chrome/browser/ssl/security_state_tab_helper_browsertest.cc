@@ -254,7 +254,8 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
                               int error,
                               Browser* browser,
                               net::X509Certificate* expected_cert) {
-  EXPECT_EQ(blink::SecurityStyle::kInsecure, observer.latest_security_style());
+  EXPECT_EQ(blink::SecurityStyle::kInsecureBroken,
+            observer.latest_security_style());
 
   const content::SecurityStyleExplanations& expired_explanation =
       observer.latest_explanations();
@@ -1695,7 +1696,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithHttpDangerous,
   ui_test_utils::NavigateToURL(browser(), http_url);
 
   EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-  EXPECT_EQ(blink::SecurityStyle::kInsecure, observer.latest_security_style());
+  EXPECT_EQ(blink::SecurityStyle::kInsecureBroken,
+            observer.latest_security_style());
   const content::SecurityStyleExplanations& http_explanation =
       observer.latest_explanations();
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY),

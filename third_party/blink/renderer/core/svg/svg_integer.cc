@@ -62,22 +62,21 @@ void SVGInteger::Add(SVGPropertyBase* other, SVGElement*) {
   SetValue(value_ + ToSVGInteger(other)->Value());
 }
 
-void SVGInteger::CalculateAnimatedValue(SVGAnimationElement* animation_element,
-                                        float percentage,
-                                        unsigned repeat_count,
-                                        SVGPropertyBase* from,
-                                        SVGPropertyBase* to,
-                                        SVGPropertyBase* to_at_end_of_duration,
-                                        SVGElement*) {
-  DCHECK(animation_element);
-
+void SVGInteger::CalculateAnimatedValue(
+    const SVGAnimationElement& animation_element,
+    float percentage,
+    unsigned repeat_count,
+    SVGPropertyBase* from,
+    SVGPropertyBase* to,
+    SVGPropertyBase* to_at_end_of_duration,
+    SVGElement*) {
   SVGInteger* from_integer = ToSVGInteger(from);
   SVGInteger* to_integer = ToSVGInteger(to);
   SVGInteger* to_at_end_of_duration_integer =
       ToSVGInteger(to_at_end_of_duration);
 
   float animated_float = value_;
-  animation_element->AnimateAdditiveNumber(
+  animation_element.AnimateAdditiveNumber(
       percentage, repeat_count, from_integer->Value(), to_integer->Value(),
       to_at_end_of_duration_integer->Value(), animated_float);
   value_ = clampTo<int>(roundf(animated_float));

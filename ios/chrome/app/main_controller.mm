@@ -177,9 +177,6 @@ namespace {
 // Preference key used to store which profile is current.
 NSString* kIncognitoCurrentKey = @"IncognitoActive";
 
-// Constants for deferred initialization of preferences observer.
-NSString* const kPrefObserverInit = @"PrefObserverInit";
-
 // Constants for deferring notifying the AuthenticationService of a new cold
 // start.
 NSString* const kAuthenticationServiceNotification =
@@ -226,11 +223,6 @@ NSString* const kEnterpriseManagedDeviceCheck = @"EnterpriseManagedDeviceCheck";
 
 // Constants for deferred promo display.
 const NSTimeInterval kDisplayPromoDelay = 0.1;
-
-// A rough estimate of the expected duration of a view controller transition
-// animation. It's used to temporarily disable mutally exclusive chrome
-// commands that trigger a view controller presentation.
-const int64_t kExpectedTransitionDurationInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 // Adapted from chrome/browser/ui/browser_init.cc.
 void RegisterComponentsForUpdate() {
@@ -293,26 +285,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                         completionBlock:completion];
 }
 
-// Possible results of snapshotting at the moment the user enters the tab
-// switcher. These values are persisted to logs. Entries should not be
-// renumbered and numeric values should never be reused.
-enum class EnterTabSwitcherSnapshotResult {
-  // Page was loading at the time of the snapshot request, and the snapshot
-  // failed.
-  kPageLoadingAndSnapshotFailed = 0,
-  // Page was loading at the time of the snapshot request, and the snapshot
-  // succeeded.
-  kPageLoadingAndSnapshotSucceeded = 1,
-  // Page was not loading at the time of the snapshot request, and the snapshot
-  // failed.
-  kPageNotLoadingAndSnapshotFailed = 2,
-  // Page was not loading at the time of the snapshot request, and the snapshot
-  // succeeded.
-  kPageNotLoadingAndSnapshotSucceeded = 3,
-  // kMaxValue should share the value of the highest enumerator.
-  kMaxValue = kPageNotLoadingAndSnapshotSucceeded,
-};
-
 }  // namespace
 
 @interface MainController () <AppURLLoadingServiceDelegate,
@@ -338,9 +310,6 @@ enum class EnterTabSwitcherSnapshotResult {
   // Parameters received at startup time when the app is launched from another
   // app.
   AppStartupParameters* _startupParameters;
-
-  // Navigation View controller for the settings.
-  SettingsNavigationController* _settingsNavigationController;
 
   // TabSwitcher object -- the tab grid.
   id<TabSwitcher> _tabSwitcher;
@@ -417,7 +386,7 @@ enum class EnterTabSwitcherSnapshotResult {
     NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
 
 // Returns YES if the settings are presented, either from
-// _settingsNavigationController or from SigninInteractionCoordinator.
+// self.settingsNavigationController or from SigninInteractionCoordinator.
 @property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
     BOOL settingsViewPresented;
 
@@ -465,8 +434,6 @@ enum class EnterTabSwitcherSnapshotResult {
 // Completes the process of dismissing the tab switcher, removing it from the
 // screen and showing the appropriate BVC.
 - (void)finishDismissingTabSwitcher;
-// Opens an url from a link in the settings UI.
-- (void)openUrlFromSettings:(OpenNewTabCommand*)command;
 // Switch all global states for the given mode (normal or incognito).
 - (void)switchGlobalStateToMode:(ApplicationMode)mode;
 // Updates the local storage, cookie store, and sets the global state.
@@ -711,7 +678,7 @@ enum class EnterTabSwitcherSnapshotResult {
   _browserViewWrangler = [[BrowserViewWrangler alloc]
             initWithBrowserState:self.mainBrowserState
             webStateListObserver:self
-      applicationCommandEndpoint:self
+      applicationCommandEndpoint:self.sceneController
             appURLLoadingService:self.appURLLoadingService
                  storageSwitcher:self];
 
@@ -723,7 +690,7 @@ enum class EnterTabSwitcherSnapshotResult {
   AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
       self.mainBrowserState,
       std::make_unique<MainControllerAuthenticationServiceDelegate>(
-          self.mainBrowserState, self));
+          self.mainBrowserState, self.sceneController));
 
   // Send "Chrome Opened" event to the feature_engagement::Tracker on cold
   // start.
@@ -851,12 +818,13 @@ enum class EnterTabSwitcherSnapshotResult {
   DCHECK(self.mainBrowserState->HasOffTheRecordChromeBrowserState());
   ios::ChromeBrowserState* otrBrowserState =
       self.mainBrowserState->GetOffTheRecordChromeBrowserState();
-  [self removeBrowsingDataForBrowserState:otrBrowserState
-                               timePeriod:browsing_data::TimePeriod::ALL_TIME
-                               removeMask:BrowsingDataRemoveMask::REMOVE_ALL
-                          completionBlock:^{
-                            [self activateBVCAndMakeCurrentBVCPrimary];
-                          }];
+  [self.sceneController
+      removeBrowsingDataForBrowserState:otrBrowserState
+                             timePeriod:browsing_data::TimePeriod::ALL_TIME
+                             removeMask:BrowsingDataRemoveMask::REMOVE_ALL
+                        completionBlock:^{
+                          [self activateBVCAndMakeCurrentBVCPrimary];
+                        }];
 }
 
 - (void)destroyAndRebuildIncognitoBrowserState {
@@ -911,7 +879,7 @@ enum class EnterTabSwitcherSnapshotResult {
     // Lazily create the main coordinator.
     TabGridCoordinator* tabGridCoordinator =
         [[TabGridCoordinator alloc] initWithWindow:self.window
-                        applicationCommandEndpoint:self];
+                        applicationCommandEndpoint:self.sceneController];
     tabGridCoordinator.regularTabModel = self.mainTabModel;
     tabGridCoordinator.incognitoTabModel = self.otrTabModel;
     _mainCoordinator = tabGridCoordinator;
@@ -924,7 +892,7 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (BOOL)isSettingsViewPresented {
-  return _settingsNavigationController ||
+  return self.settingsNavigationController ||
          self.signinInteractionCoordinator.isSettingsViewPresented;
 }
 
@@ -1507,310 +1475,8 @@ enum class EnterTabSwitcherSnapshotResult {
                            completion:nil];
 }
 
-#pragma mark - ApplicationCommands
 
-- (void)dismissModalDialogs {
-  [self dismissModalDialogsWithCompletion:nil dismissOmnibox:YES];
-}
 
-- (void)showHistory {
-  self.historyCoordinator = [[HistoryCoordinator alloc]
-      initWithBaseViewController:self.currentBVC
-                    browserState:self.mainBrowserState];
-  self.historyCoordinator.loadStrategy =
-      [self currentPageIsIncognito] ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
-                                    : UrlLoadStrategy::NORMAL;
-  self.historyCoordinator.dispatcher = self.mainBVC.dispatcher;
-  [self.historyCoordinator start];
-}
-
-- (void)closeSettingsUIAndOpenURL:(OpenNewTabCommand*)command {
-  [self openUrlFromSettings:command];
-}
-
-- (void)closeSettingsUI {
-  [self closeSettingsAnimated:YES completion:NULL];
-}
-
-- (void)prepareTabSwitcher {
-  web::WebState* currentWebState =
-      self.currentBVC.tabModel.webStateList->GetActiveWebState();
-  if (currentWebState) {
-    BOOL loading = currentWebState->IsLoading();
-    SnapshotTabHelper::FromWebState(currentWebState)
-        ->UpdateSnapshotWithCallback(^(UIImage* snapshot) {
-          EnterTabSwitcherSnapshotResult snapshotResult;
-          if (loading && !snapshot) {
-            snapshotResult =
-                EnterTabSwitcherSnapshotResult::kPageLoadingAndSnapshotFailed;
-          } else if (loading && snapshot) {
-            snapshotResult = EnterTabSwitcherSnapshotResult::
-                kPageLoadingAndSnapshotSucceeded;
-          } else if (!loading && !snapshot) {
-            snapshotResult = EnterTabSwitcherSnapshotResult::
-                kPageNotLoadingAndSnapshotFailed;
-          } else {
-            DCHECK(!loading && snapshot);
-            snapshotResult = EnterTabSwitcherSnapshotResult::
-                kPageNotLoadingAndSnapshotSucceeded;
-          }
-          UMA_HISTOGRAM_ENUMERATION("IOS.EnterTabSwitcherSnapshotResult",
-                                    snapshotResult);
-        });
-  }
-  [self.mainCoordinator prepareToShowTabSwitcher:_tabSwitcher];
-}
-
-- (void)displayTabSwitcher {
-  DCHECK(!_tabSwitcherIsActive);
-  if (!self.isProcessingVoiceSearchCommand) {
-    [self.currentBVC userEnteredTabSwitcher];
-    [self showTabSwitcher];
-    self.isProcessingTabSwitcherCommand = YES;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                 kExpectedTransitionDurationInNanoSeconds),
-                   dispatch_get_main_queue(), ^{
-                     self.isProcessingTabSwitcherCommand = NO;
-                   });
-  }
-}
-
-// TODO(crbug.com/779791) : Remove showing settings from MainController.
-- (void)showAutofillSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (_settingsNavigationController)
-    return;
-  Browser* browser = self.interfaceProvider.mainInterface.browser;
-  _settingsNavigationController =
-      [SettingsNavigationController autofillProfileControllerForBrowser:browser
-                                                               delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-- (void)showReportAnIssueFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(baseViewController);
-  DCHECK(![baseViewController presentedViewController]);
-  // This dispatch is necessary to give enough time for the tools menu to
-  // disappear before taking a screenshot.
-  dispatch_async(dispatch_get_main_queue(), ^{
-    DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-    if (_settingsNavigationController)
-      return;
-    Browser* browser = self.interfaceProvider.mainInterface.browser;
-    _settingsNavigationController =
-        [SettingsNavigationController userFeedbackControllerForBrowser:browser
-                                                              delegate:self
-                                                    feedbackDataSource:self
-                                                            dispatcher:self];
-    [baseViewController presentViewController:_settingsNavigationController
-                                     animated:YES
-                                   completion:nil];
-  });
-}
-
-- (void)openURLInNewTab:(OpenNewTabCommand*)command {
-  UrlLoadParams params =
-      UrlLoadParams::InNewTab(command.URL, command.virtualURL);
-  params.SetInBackground(command.inBackground);
-  params.web_params.referrer = command.referrer;
-  params.in_incognito = command.inIncognito;
-  params.append_to = command.appendTo;
-  params.origin_point = command.originPoint;
-  params.from_chrome = command.fromChrome;
-  params.user_initiated = command.userInitiated;
-  params.should_focus_omnibox = command.shouldFocusOmnibox;
-  self.appURLLoadingService->LoadUrlInNewTab(params);
-}
-
-// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
-- (void)showSignin:(ShowSigninCommand*)command
-    baseViewController:(UIViewController*)baseViewController {
-  if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-        initWithBrowserState:self.mainBrowserState
-                  dispatcher:self.mainBVC.dispatcher];
-  }
-
-  switch (command.operation) {
-    case AUTHENTICATION_OPERATION_REAUTHENTICATE:
-      [self.signinInteractionCoordinator
-          reAuthenticateWithAccessPoint:command.accessPoint
-                            promoAction:command.promoAction
-               presentingViewController:baseViewController
-                             completion:command.callback];
-      break;
-    case AUTHENTICATION_OPERATION_SIGNIN:
-      [self.signinInteractionCoordinator signInWithIdentity:command.identity
-                                                accessPoint:command.accessPoint
-                                                promoAction:command.promoAction
-                                   presentingViewController:baseViewController
-                                                 completion:command.callback];
-      break;
-  }
-}
-
-- (void)showAdvancedSigninSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-      initWithBrowserState:self.mainBrowserState
-                dispatcher:self.mainBVC.dispatcher];
-  [self.signinInteractionCoordinator
-      showAdvancedSigninSettingsWithPresentingViewController:
-          baseViewController];
-}
-
-// TODO(crbug.com/779791) : Remove settings commands from MainController.
-- (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
-  if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-        initWithBrowserState:self.mainBrowserState
-                  dispatcher:self.mainBVC.dispatcher];
-  }
-
-  [self.signinInteractionCoordinator
-      addAccountWithAccessPoint:signin_metrics::AccessPoint::
-                                    ACCESS_POINT_UNKNOWN
-                    promoAction:signin_metrics::PromoAction::
-                                    PROMO_ACTION_NO_SIGNIN_PROMO
-       presentingViewController:baseViewController
-                     completion:nil];
-}
-
-- (void)setIncognitoContentVisible:(BOOL)incognitoContentVisible {
-  _incognitoContentVisible = incognitoContentVisible;
-}
-
-#pragma mark - ApplicationSettingsCommands
-
-// TODO(crbug.com/779791) : Remove show settings from MainController.
-- (void)showAccountsSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (!baseViewController) {
-    DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
-    baseViewController = self.currentBVC;
-  }
-
-  if ([self currentBrowserState]->IsOffTheRecord()) {
-    NOTREACHED();
-    return;
-  }
-  if (_settingsNavigationController) {
-    [_settingsNavigationController
-        showAccountsSettingsFromViewController:baseViewController];
-    return;
-  }
-
-  Browser* browser = self.interfaceProvider.mainInterface.browser;
-  _settingsNavigationController =
-      [SettingsNavigationController accountsControllerForBrowser:browser
-                                                        delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-// TODO(crbug.com/779791) : Remove Google services settings from MainController.
-- (void)showGoogleServicesSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (!baseViewController) {
-    DCHECK_EQ(self.currentBVC, self.mainCoordinator.activeViewController);
-    baseViewController = self.currentBVC;
-  }
-
-  if (_settingsNavigationController) {
-    // Navigate to the Google services settings if the settings dialog is
-    // already opened.
-    [_settingsNavigationController
-        showGoogleServicesSettingsFromViewController:baseViewController];
-    return;
-  }
-
-  Browser* browser = self.interfaceProvider.mainInterface.browser;
-  _settingsNavigationController =
-      [SettingsNavigationController googleServicesControllerForBrowser:browser
-                                                              delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-// TODO(crbug.com/779791) : Remove show settings commands from MainController.
-- (void)showSyncPassphraseSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (_settingsNavigationController) {
-    [_settingsNavigationController
-        showSyncPassphraseSettingsFromViewController:baseViewController];
-    return;
-  }
-  Browser* browser = self.interfaceProvider.mainInterface.browser;
-  _settingsNavigationController =
-      [SettingsNavigationController syncPassphraseControllerForBrowser:browser
-                                                              delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-// TODO(crbug.com/779791) : Remove show settings commands from MainController.
-- (void)showSavedPasswordsSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (_settingsNavigationController) {
-    [_settingsNavigationController
-        showSavedPasswordsSettingsFromViewController:baseViewController];
-    return;
-  }
-  Browser* browser = self.interfaceProvider.mainInterface.browser;
-  _settingsNavigationController =
-      [SettingsNavigationController savePasswordsControllerForBrowser:browser
-                                                             delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-// TODO(crbug.com/779791) : Remove show settings commands from MainController.
-- (void)showProfileSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (_settingsNavigationController) {
-    [_settingsNavigationController
-        showProfileSettingsFromViewController:baseViewController];
-    return;
-  }
-  Browser* browser = self.interfaceProvider.mainInterface.browser;
-  _settingsNavigationController =
-      [SettingsNavigationController autofillProfileControllerForBrowser:browser
-                                                               delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-// TODO(crbug.com/779791) : Remove show settings commands from MainController.
-- (void)showCreditCardSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (_settingsNavigationController) {
-    [_settingsNavigationController
-        showCreditCardSettingsFromViewController:baseViewController];
-    return;
-  }
-  Browser* browser = self.interfaceProvider.mainInterface.browser;
-  _settingsNavigationController = [SettingsNavigationController
-      autofillCreditCardControllerForBrowser:browser
-                                    delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
 
 #pragma mark - AppURLLoadingServiceDelegate
 
@@ -1831,33 +1497,6 @@ enum class EnterTabSwitcherSnapshotResult {
                      focusOmnibox:(BOOL)focusOmnibox {
   [self.currentBVC openNewTabFromOriginPoint:originPoint
                                 focusOmnibox:focusOmnibox];
-}
-
-#pragma mark - ApplicationCommands helpers
-
-- (void)openUrlFromSettings:(OpenNewTabCommand*)command {
-  DCHECK([command fromChrome]);
-  UrlLoadParams params = UrlLoadParams::InNewTab([command URL]);
-  params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  ProceduralBlock completion = ^{
-    [self dismissModalsAndOpenSelectedTabInMode:ApplicationModeForTabOpening::
-                                                    NORMAL
-                              withUrlLoadParams:params
-                                 dismissOmnibox:YES
-                                     completion:nil];
-  };
-  [self closeSettingsAnimated:YES completion:completion];
-}
-
-- (void)startVoiceSearchInCurrentBVC {
-  // If the background (non-current) BVC is playing TTS audio, call
-  // -startVoiceSearch on it to stop the TTS.
-  BrowserViewController* backgroundBVC =
-      self.mainBVC == self.currentBVC ? self.otrBVC : self.mainBVC;
-  if (backgroundBVC.playingTTS)
-    [backgroundBVC startVoiceSearch];
-  else
-    [self.currentBVC startVoiceSearch];
 }
 
 #pragma mark - Preferences Management
@@ -1983,18 +1622,6 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 #pragma mark - Mode Switching
-
-- (void)startVoiceSearch {
-  if (!self.isProcessingTabSwitcherCommand) {
-    [self startVoiceSearchInCurrentBVC];
-    self.isProcessingVoiceSearchCommand = YES;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                 kExpectedTransitionDurationInNanoSeconds),
-                   dispatch_get_main_queue(), ^{
-                     self.isProcessingVoiceSearchCommand = NO;
-                   });
-  }
-}
 
 - (void)switchGlobalStateToMode:(ApplicationMode)mode {
   const BOOL incognito = (mode == ApplicationMode::INCOGNITO);
@@ -2165,66 +1792,6 @@ enum class EnterTabSwitcherSnapshotResult {
   _dismissingTabSwitcher = NO;
 }
 
-#pragma mark - BrowsingDataCommands
-
-- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
-                               timePeriod:(browsing_data::TimePeriod)timePeriod
-                               removeMask:(BrowsingDataRemoveMask)removeMask
-                          completionBlock:(ProceduralBlock)completionBlock {
-  // TODO(crbug.com/632772): https://bugs.webkit.org/show_bug.cgi?id=149079
-  // makes it necessary to disable web usage while clearing browsing data.
-  // It is however unnecessary for off-the-record BrowserState (as the code
-  // is not invoked) and has undesired side-effect (cause all regular tabs
-  // to reload, see http://crbug.com/821753 for details).
-  BOOL disableWebUsageDuringRemoval =
-      !browserState->IsOffTheRecord() &&
-      IsRemoveDataMaskSet(removeMask, BrowsingDataRemoveMask::REMOVE_SITE_DATA);
-  BOOL showActivityIndicator = NO;
-
-  if (@available(iOS 13, *)) {
-    // TODO(crbug.com/632772): Visited links clearing doesn't require disabling
-    // web usage with iOS 13. Stop disabling web usage once iOS 12 is not
-    // supported.
-    showActivityIndicator = disableWebUsageDuringRemoval;
-    disableWebUsageDuringRemoval = NO;
-  }
-
-  if (disableWebUsageDuringRemoval) {
-    // Disables browsing and purges web views.
-    // Must be called only on the main thread.
-    DCHECK([NSThread isMainThread]);
-    self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
-    self.interfaceProvider.incognitoInterface.userInteractionEnabled = NO;
-  } else if (showActivityIndicator) {
-    // Show activity overlay so users know that clear browsing data is in
-    // progress.
-    [self.mainBVC.dispatcher showActivityOverlay:YES];
-  }
-
-  BrowsingDataRemoverFactory::GetForBrowserState(browserState)
-      ->Remove(
-          timePeriod, removeMask, base::BindOnce(^{
-            // Activates browsing and enables web views.
-            // Must be called only on the main thread.
-            DCHECK([NSThread isMainThread]);
-            if (showActivityIndicator) {
-              // User interaction still needs to be disabled as a way to
-              // force reload all the web states and to reset NTPs.
-              self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
-              self.interfaceProvider.incognitoInterface.userInteractionEnabled =
-                  NO;
-
-              [self.mainBVC.dispatcher showActivityOverlay:NO];
-            }
-            self.interfaceProvider.mainInterface.userInteractionEnabled = YES;
-            self.interfaceProvider.incognitoInterface.userInteractionEnabled =
-                YES;
-            [self.currentBVC setPrimary:YES];
-
-            if (completionBlock)
-              completionBlock();
-          }));
-}
 
 #pragma mark - Navigation Controllers
 
@@ -2240,34 +1807,18 @@ enum class EnterTabSwitcherSnapshotResult {
                  completion:nil];
 }
 
-- (void)showSettingsFromViewController:(UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (_settingsNavigationController)
-    return;
-  [[DeferredInitializationRunner sharedInstance]
-      runBlockIfNecessary:kPrefObserverInit];
-  DCHECK(_localStatePrefObserverBridge);
-  Browser* browser = self.interfaceProvider.mainInterface.browser;
-  _settingsNavigationController =
-      [SettingsNavigationController mainSettingsControllerForBrowser:browser
-                                                            delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
 - (void)closeSettingsAnimated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
-  if (_settingsNavigationController) {
-    [_settingsNavigationController cleanUpSettings];
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController cleanUpSettings];
     UIViewController* presentingViewController =
-        [_settingsNavigationController presentingViewController];
+        [self.settingsNavigationController presentingViewController];
     // If presentingViewController is nil it means the VC was already dismissed
     // by some other action like swiping down.
     DCHECK(presentingViewController);
     [presentingViewController dismissViewControllerAnimated:animated
                                                  completion:completion];
-    _settingsNavigationController = nil;
+    self.settingsNavigationController = nil;
     return;
   }
   // |self.signinInteractionCoordinator| can also present settings, like
@@ -2642,8 +2193,8 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)settingsWasDismissed {
-  [_settingsNavigationController cleanUpSettings];
-  _settingsNavigationController = nil;
+  [self.settingsNavigationController cleanUpSettings];
+  self.settingsNavigationController = nil;
 }
 
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
@@ -2677,10 +2228,6 @@ enum class EnterTabSwitcherSnapshotResult {
   return CaptureView(lastView, scale);
 }
 
-- (BOOL)currentPageIsIncognito {
-  return [self currentBrowserState]->IsOffTheRecord();
-}
-
 - (NSString*)currentPageSyncedUserName {
   ios::ChromeBrowserState* browserState = [self currentBrowserState];
   if (browserState->IsOffTheRecord())
@@ -2689,6 +2236,45 @@ enum class EnterTabSwitcherSnapshotResult {
       IdentityManagerFactory::GetForBrowserState(browserState);
   std::string username = identity_manager->GetPrimaryAccountInfo().email;
   return username.empty() ? nil : base::SysUTF8ToNSString(username);
+}
+
+- (BOOL)currentPageIsIncognito {
+  return [self currentBrowserState] -> IsOffTheRecord();
+}
+
+#pragma mark - ApplicationCommands helpers
+
+- (void)startVoiceSearchInCurrentBVC {
+  // If the background (non-current) BVC is playing TTS audio, call
+  // -startVoiceSearch on it to stop the TTS.
+  BrowserViewController* backgroundBVC =
+      self.mainBVC == self.currentBVC ? self.otrBVC : self.mainBVC;
+  if (backgroundBVC.playingTTS)
+    [backgroundBVC startVoiceSearch];
+  else
+    [self.currentBVC startVoiceSearch];
+}
+
+#pragma mark - SceneController plumbing
+
+// This method is temporarily both required in the scene controller and here.
+- (void)closeSettingsUI {
+  [self closeSettingsAnimated:YES completion:nullptr];
+}
+
+// This method is temporarily both required in the scene controller and here.
+- (void)openURLInNewTab:(OpenNewTabCommand*)command {
+  UrlLoadParams params =
+      UrlLoadParams::InNewTab(command.URL, command.virtualURL);
+  params.SetInBackground(command.inBackground);
+  params.web_params.referrer = command.referrer;
+  params.in_incognito = command.inIncognito;
+  params.append_to = command.appendTo;
+  params.origin_point = command.originPoint;
+  params.from_chrome = command.fromChrome;
+  params.user_initiated = command.userInitiated;
+  params.should_focus_omnibox = command.shouldFocusOmnibox;
+  self.appURLLoadingService->LoadUrlInNewTab(params);
 }
 
 #pragma mark - MainControllerGuts

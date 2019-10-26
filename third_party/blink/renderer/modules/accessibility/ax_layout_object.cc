@@ -873,7 +873,7 @@ const AtomicString& AXLayoutObject::AccessKey() const {
   auto* element = DynamicTo<Element>(layout_object_->GetNode());
   if (!element)
     return g_null_atom;
-  return element->getAttribute(html_names::kAccesskeyAttr);
+  return element->FastGetAttribute(html_names::kAccesskeyAttr);
 }
 
 RGBA32 AXLayoutObject::ComputeBackgroundColor() const {

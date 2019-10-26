@@ -299,9 +299,9 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
       // Sent before the update client does an update check.
       COMPONENT_CHECKING_FOR_UPDATES = 1,
 
-      // Sent when there is a new version of a registered CRX. After
-      // the notification is sent the CRX will be downloaded unless the
-      // update client inserts a
+      // Sent when there is a new version of a registered CRX. The CRX will be
+      // downloaded after the notification unless the update client inserts
+      // a wait because of a throttling policy.
       COMPONENT_UPDATE_FOUND,
 
       // Sent when a CRX is in the update queue but it can't be acted on

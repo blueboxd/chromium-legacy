@@ -80,7 +80,7 @@ bool OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
 
 bool RemoveBrowsingCacheForMainTabs() {
   __block BOOL caches_cleared = NO;
-  [chrome_test_util::GetMainController()
+  [chrome_test_util::GetMainController().sceneController
       removeBrowsingDataForBrowserState:chrome_test_util::
                                             GetOriginalBrowserState()
                              timePeriod:browsing_data::TimePeriod::ALL_TIME

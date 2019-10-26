@@ -6,10 +6,11 @@
 #define DEVICE_VR_OPENXR_OPENXR_CONTROLLER_H_
 
 #include <stdint.h>
+#include <map>
 #include <unordered_map>
 
 #include "base/optional.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 #include "ui/gfx/transform.h"
 
@@ -56,11 +57,7 @@ class OpenXrController {
       XrTime predicted_display_time);
 
   base::Optional<GamepadButton> GetButton(OpenXrButtonType type) const;
-  std::vector<mojom::XRGamepadButtonPtr> GetWebVrButtons() const;
   std::vector<double> GetAxis(OpenXrAxisType type) const;
-  std::vector<double> GetWebVrAxes() const;
-  mojom::VRPosePtr GetPose(XrTime predicted_display_time,
-                           XrSpace local_space) const;
 
   base::Optional<gfx::Transform> GetMojoFromGripTransform(
       XrTime predicted_display_time,

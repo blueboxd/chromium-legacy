@@ -185,34 +185,35 @@ TEST_F(FakeVideoCaptureDeviceTest,
           }));
   bool found_unexpected_all_zero_frame = false;
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
-      .WillRepeatedly(Invoke([&wait_loop, &num_frames_arrived, &buffers_by_id,
-                              &found_unexpected_all_zero_frame](
-                                 int32_t buffer_id, int32_t frame_feedback_id,
-                                 mojom::ScopedAccessPermissionPtr*,
-                                 media::mojom::VideoFrameInfoPtr*) {
-        const mojo::ScopedSharedBufferHandle& handle =
-            buffers_by_id[buffer_id]->get_shared_buffer_handle();
-        mojo::ScopedSharedBufferMapping mapping =
-            handle->Map(handle->GetSize());
-        const uint8_t* data = static_cast<uint8_t*>(mapping.get());
-        // Check that there is at least one non-zero byte in the frame data.
-        bool found_non_zero_byte = false;
-        for (uint32_t i = 0; i < handle->GetSize(); i++) {
-          if (data[i] != 0u) {
-            found_non_zero_byte = true;
-            break;
-          }
-        }
-        if (!found_non_zero_byte) {
-          found_unexpected_all_zero_frame = true;
-          wait_loop.Quit();
-          return;
-        }
-        num_frames_arrived += 1;
-        if (num_frames_arrived >= kNumFramesToWaitFor) {
-          wait_loop.Quit();
-        }
-      }));
+      .WillRepeatedly(
+          Invoke([&wait_loop, &num_frames_arrived, &buffers_by_id,
+                  &found_unexpected_all_zero_frame](
+                     int32_t buffer_id, int32_t frame_feedback_id,
+                     const mojo::PendingRemote<mojom::ScopedAccessPermission>&,
+                     media::mojom::VideoFrameInfoPtr*) {
+            const mojo::ScopedSharedBufferHandle& handle =
+                buffers_by_id[buffer_id]->get_shared_buffer_handle();
+            mojo::ScopedSharedBufferMapping mapping =
+                handle->Map(handle->GetSize());
+            const uint8_t* data = static_cast<uint8_t*>(mapping.get());
+            // Check that there is at least one non-zero byte in the frame data.
+            bool found_non_zero_byte = false;
+            for (uint32_t i = 0; i < handle->GetSize(); i++) {
+              if (data[i] != 0u) {
+                found_non_zero_byte = true;
+                break;
+              }
+            }
+            if (!found_non_zero_byte) {
+              found_unexpected_all_zero_frame = true;
+              wait_loop.Quit();
+              return;
+            }
+            num_frames_arrived += 1;
+            if (num_frames_arrived >= kNumFramesToWaitFor) {
+              wait_loop.Quit();
+            }
+          }));
 
   // Make a copy of |requestable_settings_| and change it to ask for
   // |kSharedMemoryViaRawFileDescriptor|.

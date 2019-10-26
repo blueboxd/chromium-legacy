@@ -30,3 +30,5 @@ def ProcessHistogramDicts(histogram_dicts, options):
 
   with open(output_file, 'w') as output_stream:
     json.dump(histogram_dicts, output_stream)
+
+  return output_file

@@ -174,8 +174,9 @@ bool BrowserAccessibilityAndroid::PlatformIsLeafIncludingIgnored() const {
     return false;
   }
 
-  // Date and time controls should drop their children.
+  // Button, date and time controls should drop their children.
   switch (GetRole()) {
+    case ax::mojom::Role::kButton:
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
     case ax::mojom::Role::kInputTime:
@@ -230,6 +231,9 @@ bool BrowserAccessibilityAndroid::IsClickable() const {
        ax::mojom::DefaultActionVerb::kClickAncestor)) {
     return true;
   }
+
+  if (IsHeadingLink())
+    return true;
 
   if (!IsEnabled()) {
     // TalkBack won't announce a control as disabled unless it's also marked
@@ -414,6 +418,15 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
          !base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
 }
 
+bool BrowserAccessibilityAndroid::IsHeadingLink() const {
+  if (!(GetRole() == ax::mojom::Role::kHeading && InternalChildCount() == 1))
+    return false;
+
+  BrowserAccessibilityAndroid* child =
+      static_cast<BrowserAccessibilityAndroid*>(InternalChildrenBegin().get());
+  return child->IsLink();
+}
+
 const BrowserAccessibilityAndroid*
 BrowserAccessibilityAndroid::GetSoleInterestingNodeFromSubtree() const {
   if (IsInterestingOnAndroid())
@@ -556,16 +569,37 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
   content::ContentClient* content_client = content::GetContentClient();
 
   // As a special case, if we have a heading level return a string like
-  // "heading level 1", etc.
+  // "heading level 1", etc. - and if the heading consists of a link,
+  // append the word link as well.
   if (GetRole() == ax::mojom::Role::kHeading) {
+    base::string16 role_description;
     int level = GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
     if (level >= 1 && level <= 6) {
       std::vector<base::string16> values;
       values.push_back(base::NumberToString16(level));
-      return base::ReplaceStringPlaceholders(
+      role_description = base::ReplaceStringPlaceholders(
           content_client->GetLocalizedString(IDS_AX_ROLE_HEADING_WITH_LEVEL),
           values, nullptr);
+    } else {
+      role_description =
+          content_client->GetLocalizedString(IDS_AX_ROLE_HEADING);
     }
+
+    if (IsHeadingLink()) {
+      role_description += base::ASCIIToUTF16(" ") +
+                          content_client->GetLocalizedString(IDS_AX_ROLE_LINK);
+    }
+
+    return role_description;
+  }
+
+  // If this node is a link and the parent is a heading, return the role
+  // description of the parent (e.g. "heading 1 link").
+  if (ui::IsLink(GetRole()) && PlatformGetParent()) {
+    BrowserAccessibilityAndroid* parent =
+        static_cast<BrowserAccessibilityAndroid*>(PlatformGetParent());
+    if (parent->IsHeadingLink())
+      return parent->GetRoleDescription();
   }
 
   int message_id = -1;

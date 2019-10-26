@@ -13,11 +13,11 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 
 /**

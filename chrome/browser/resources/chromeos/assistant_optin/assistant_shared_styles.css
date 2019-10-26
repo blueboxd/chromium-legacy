@@ -51,6 +51,7 @@ oobe-dialog {
 #logo {
   height: 32px;
   margin: 0;
+  width: 32px;
 }
 
 #next-button {

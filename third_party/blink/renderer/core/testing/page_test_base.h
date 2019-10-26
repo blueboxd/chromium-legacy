@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace base {
@@ -18,7 +19,7 @@ namespace blink {
 class Document;
 class LocalFrame;
 
-class PageTestBase : public testing::Test {
+class PageTestBase : public testing::Test, public UseMockScrollbarSettings {
   USING_FAST_MALLOC(PageTestBase);
 
  public:

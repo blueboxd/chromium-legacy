@@ -49,7 +49,7 @@ class CONTENT_EXPORT CrossSequenceCacheStorageManager
   void DeleteOriginData(const url::Origin& origin,
                         CacheStorageOwner owner) override;
   void SetBlobParametersForCache(
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context) override;
+      scoped_refptr<BlobStorageContextWrapper> blob_storage_context) override;
 
  private:
   ~CrossSequenceCacheStorageManager() override;

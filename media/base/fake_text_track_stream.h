@@ -25,7 +25,7 @@ class FakeTextTrackStream : public DemuxerStream {
   ~FakeTextTrackStream() override;
 
   // DemuxerStream implementation.
-  void Read(const ReadCB&) override;
+  void Read(ReadCB) override;
   bool IsReadPending() const override;
   MOCK_METHOD0(audio_decoder_config, AudioDecoderConfig());
   MOCK_METHOD0(video_decoder_config, VideoDecoderConfig());

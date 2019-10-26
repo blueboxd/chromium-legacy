@@ -27,8 +27,8 @@ class PaymentDetailsConverter {
   // Shipping related information is redacted when |handles_shipping| is false.
   // The |method_checker| is not saved. It is used only for the duration of this
   // call.
-  static mojom::PaymentMethodChangeResponsePtr
-  ConvertToPaymentMethodChangeResponse(const mojom::PaymentDetailsPtr& details,
+  static mojom::PaymentRequestDetailsUpdatePtr
+  ConvertToPaymentRequestDetailsUpdate(const mojom::PaymentDetailsPtr& details,
                                        bool handles_shipping,
                                        const MethodChecker& method_checker);
 

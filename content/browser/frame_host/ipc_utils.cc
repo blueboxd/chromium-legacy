@@ -121,10 +121,9 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
             process->GetBrowserContext(), std::move(blob_url_token_remote));
   }
 
-  // Verify |params.resource_request_body|.
+  // Verify |params.post_body|.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanReadRequestBody(site_instance,
-                                  params.resource_request_body)) {
+  if (!policy->CanReadRequestBody(site_instance, params.post_body)) {
     bad_message::ReceivedBadMessage(process,
                                     bad_message::ILLEGAL_UPLOAD_PARAMS);
     return false;
@@ -154,7 +153,7 @@ bool VerifyBeginNavigationCommonParams(
     return false;
   }
 
-  // Verify |resource_request_body|.
+  // Verify |post_data|.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanReadRequestBody(site_instance, common_params->post_data)) {
     bad_message::ReceivedBadMessage(process,

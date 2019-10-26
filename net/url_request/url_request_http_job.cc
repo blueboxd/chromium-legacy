@@ -740,8 +740,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   options.set_include_httponly();
   options.set_same_site_cookie_context(
       net::cookie_util::ComputeSameSiteContextForResponse(
-          request_->url(), request_->site_for_cookies(),
-          request_->initiator()));
+          request_->url(), request_->site_for_cookies(), request_->initiator(),
+          request_->attach_same_site_cookies()));
 
   options.set_return_excluded_cookies();
 

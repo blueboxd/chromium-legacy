@@ -2146,8 +2146,8 @@ static bool IsElementEditable(const Element* element) {
       return true;
   }
 
-  return EqualIgnoringASCIICase(element->getAttribute(html_names::kRoleAttr),
-                                "textbox");
+  return EqualIgnoringASCIICase(
+      element->FastGetAttribute(html_names::kRoleAttr), "textbox");
 }
 
 bool WebViewImpl::ScrollFocusedEditableElementIntoView() {

@@ -55,21 +55,11 @@ gfx::Size Separator::CalculatePreferredSize() const {
 }
 
 void Separator::OnPaint(gfx::Canvas* canvas) {
-  SkColor color = overridden_color_
-                      ? *overridden_color_
-                      : GetNativeTheme()->GetSystemColor(
-                            ui::NativeTheme::kColorId_SeparatorColor);
-
-  float dsf = canvas->UndoDeviceScaleFactor();
-
-  // The separator fills its bounds, but avoid filling partial pixels.
-  gfx::Rect aligned = gfx::ScaleToEnclosedRect(GetContentsBounds(), dsf, dsf);
-
-  // At least 1 pixel should be drawn to make the separator visible.
-  aligned.set_width(std::max(1, aligned.width()));
-  aligned.set_height(std::max(1, aligned.height()));
-  canvas->FillRect(aligned, color);
-
+  const SkColor color = overridden_color_
+                            ? *overridden_color_
+                            : GetNativeTheme()->GetSystemColor(
+                                  ui::NativeTheme::kColorId_SeparatorColor);
+  canvas->DrawColor(color);
   View::OnPaint(canvas);
 }
 

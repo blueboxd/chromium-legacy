@@ -1426,7 +1426,7 @@ bool Node::IsInert() const {
       element = FlatTreeTraversal::ParentElement(*this);
 
     while (element) {
-      if (element->hasAttribute(html_names::kInertAttr))
+      if (element->FastHasAttribute(html_names::kInertAttr))
         return true;
       element = FlatTreeTraversal::ParentElement(*element);
     }

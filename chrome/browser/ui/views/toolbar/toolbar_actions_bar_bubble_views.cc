@@ -38,6 +38,7 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
                                    delegate_->GetActionButtonText());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    delegate_->GetDismissButtonText());
+  DialogDelegate::SetExtraView(CreateExtraInfoView());
 
   DCHECK(anchor_view);
   set_close_on_deactivate(delegate_->ShouldCloseOnDeactivate());
@@ -62,7 +63,8 @@ std::string ToolbarActionsBarBubbleViews::GetAnchorActionId() {
   return delegate_->GetAnchorActionId();
 }
 
-std::unique_ptr<views::View> ToolbarActionsBarBubbleViews::CreateExtraView() {
+std::unique_ptr<views::View>
+ToolbarActionsBarBubbleViews::CreateExtraInfoView() {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
       extra_view_info = delegate_->GetExtraViewInfo();
 
@@ -86,8 +88,8 @@ std::unique_ptr<views::View> ToolbarActionsBarBubbleViews::CreateExtraView() {
       image_button->SetTooltipText(text);
       views::SetImageFromVectorIcon(image_button.get(),
                                     vector_icons::kHelpOutlineIcon);
-      image_button_ = image_button.release();
-      extra_view.reset(image_button_);
+      learn_more_button_ = image_button.get();
+      extra_view = std::move(image_button);
     } else {
       extra_view = std::make_unique<views::Label>(text);
     }

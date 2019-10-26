@@ -5060,6 +5060,55 @@ TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
   }
 }
 
+struct FallbackFontCase {
+  const char* test_name;
+  const wchar_t* text;
+};
+
+class RenderTextTestWithFallbackFontCase
+    : public RenderTextTest,
+      public ::testing::WithParamInterface<FallbackFontCase> {
+ public:
+  static std::string ParamInfoToString(
+      ::testing::TestParamInfo<FallbackFontCase> param_info) {
+    return param_info.param.test_name;
+  }
+};
+
+TEST_P(RenderTextTestWithFallbackFontCase, FallbackFont) {
+  FallbackFontCase param = GetParam();
+  RenderTextHarfBuzz* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(param.text));
+  test_api()->EnsureLayout();
+
+  int missing_glyphs = 0;
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
+  for (const auto& run : run_list->runs())
+    missing_glyphs += run->CountMissingGlyphs();
+
+  EXPECT_EQ(missing_glyphs, 0);
+}
+
+const FallbackFontCase kUnicodeDecomposeCases[] = {
+    // Decompose to "\u0041\u0300".
+    {"letter_A_with_grave", L"\u00c0"},
+    // Decompose to "\u004f\u0328\u0304".
+    {"letter_O_with_ogonek_macron", L"\u01ec"},
+    // Decompose to "\u0041\u030a".
+    {"angstrom_sign", L"\u212b"},
+    // Decompose to "\u1100\u1164\u11b6".
+    {"hangul_syllable_gyaelh", L"\uac63"},
+    // Decompose to "\u1107\u1170\u11af".
+    {"hangul_syllable_bwel", L"\ubdc0"},
+    // Decompose to "\U00044039".
+    {"cjk_ideograph_fad4", L"\ufad4"},
+};
+
+INSTANTIATE_TEST_SUITE_P(FallbackFontUnicodeDecompose,
+                         RenderTextTestWithFallbackFontCase,
+                         ::testing::ValuesIn(kUnicodeDecomposeCases),
+                         RenderTextTestWithFallbackFontCase::ParamInfoToString);
+
 #if defined(OS_WIN)
 // Ensures that locale is used for fonts selection.
 TEST_F(RenderTextTest, CJKFontWithLocale) {

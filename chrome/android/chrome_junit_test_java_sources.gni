@@ -33,7 +33,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TestVerifierDelegate.java",
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityDisclosureControllerTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityOpenTimeRecorderTest.java",
-  "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityVerifierTest.java",
+  "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/VerifierTest.java",
   "junit/src/org/chromium/chrome/browser/compositor/CompositorSurfaceManagerImplTest.java",
   "junit/src/org/chromium/chrome/browser/compositor/animation/CompositorAnimationHandlerTest.java",
   "junit/src/org/chromium/chrome/browser/compositor/animation/CompositorAnimatorTest.java",

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -134,6 +135,15 @@ std::string GetNewTabBackgroundTilingCSS(
   int repeat_mode =
       theme_provider.GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING);
   return ThemeProperties::TilingToString(repeat_mode);
+}
+
+std::string ReplaceTemplateExpressions(
+    const scoped_refptr<base::RefCountedMemory>& bytes,
+    const ui::TemplateReplacements& replacements) {
+  return ui::ReplaceTemplateExpressions(
+      base::StringPiece(reinterpret_cast<const char*>(bytes->front()),
+                        bytes->size()),
+      replacements);
 }
 
 }  // namespace
@@ -296,12 +306,13 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &replacements);
 
-  static const base::StringPiece incognito_tab_html(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_INCOGNITO_TAB_HTML));
+  static const base::NoDestructor<scoped_refptr<base::RefCountedMemory>>
+      incognito_tab_html(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              IDR_INCOGNITO_TAB_HTML));
 
   std::string full_html =
-      ui::ReplaceTemplateExpressions(incognito_tab_html, replacements);
+      ReplaceTemplateExpressions(*incognito_tab_html, replacements);
 
   new_tab_incognito_html_ = base::RefCountedString::TakeString(&full_html);
 }
@@ -311,13 +322,13 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   const char* guest_tab_link = kLearnMoreGuestSessionUrl;
-  int guest_tab_ids = IDR_GUEST_TAB_HTML;
+  int guest_tab_idr = IDR_GUEST_TAB_HTML;
   int guest_tab_description_ids = IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION;
   int guest_tab_heading_ids = IDS_NEW_TAB_GUEST_SESSION_HEADING;
   int guest_tab_link_ids = IDS_LEARN_MORE;
 
 #if defined(OS_CHROMEOS)
-  guest_tab_ids = IDR_GUEST_SESSION_TAB_HTML;
+  guest_tab_idr = IDR_GUEST_SESSION_TAB_HTML;
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -361,14 +372,14 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
 
-  static const base::StringPiece guest_tab_html(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          guest_tab_ids));
-
+  static const base::NoDestructor<scoped_refptr<base::RefCountedMemory>>
+      guest_tab_html(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              guest_tab_idr));
   ui::TemplateReplacements replacements;
   ui::TemplateReplacementsFromDictionaryValue(localized_strings, &replacements);
   std::string full_html =
-      ui::ReplaceTemplateExpressions(guest_tab_html, replacements);
+      ReplaceTemplateExpressions(*guest_tab_html, replacements);
 
   new_tab_guest_html_ = base::RefCountedString::TakeString(&full_html);
 }
@@ -476,12 +487,15 @@ void NTPResourceCache::CreateNewTabHTML() {
       "isUserSignedIn",
       IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount());
 
-  // Load the new tab page appropriate for this build.
-  base::StringPiece new_tab_html(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_NEW_TAB_4_HTML));
-  std::string full_html =
-      webui::GetI18nTemplateHtml(new_tab_html, &load_time_data);
+  // Load the new tab page template and localize it.
+  static const base::NoDestructor<scoped_refptr<base::RefCountedMemory>>
+      new_tab_html(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              IDR_NEW_TAB_4_HTML));
+  std::string full_html = webui::GetI18nTemplateHtml(
+      base::StringPiece(reinterpret_cast<const char*>((*new_tab_html)->front()),
+                        (*new_tab_html)->size()),
+      &load_time_data);
   new_tab_html_ = base::RefCountedString::TakeString(&full_html);
 }
 
@@ -504,13 +518,14 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
   substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
 
   // Get our template.
-  static const base::StringPiece new_tab_theme_css(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_NEW_INCOGNITO_TAB_THEME_CSS));
+  static const base::NoDestructor<scoped_refptr<base::RefCountedMemory>>
+      new_tab_theme_css(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
   std::string full_css =
-      ui::ReplaceTemplateExpressions(new_tab_theme_css, substitutions);
+      ReplaceTemplateExpressions(*new_tab_theme_css, substitutions);
 
   new_tab_incognito_css_ = base::RefCountedString::TakeString(&full_css);
 }
@@ -582,12 +597,13 @@ void NTPResourceCache::CreateNewTabCSS() {
       tp.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ? "inline" : "none";
 
   // Get our template.
-  static const base::StringPiece new_tab_theme_css(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_NEW_TAB_4_THEME_CSS));
+  static const base::NoDestructor<scoped_refptr<base::RefCountedMemory>>
+      new_tab_theme_css(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              IDR_NEW_TAB_4_THEME_CSS));
 
   // Create the string from our template and the replacements.
   std::string css_string =
-      ui::ReplaceTemplateExpressions(new_tab_theme_css, substitutions);
+      ReplaceTemplateExpressions(*new_tab_theme_css, substitutions);
   new_tab_css_ = base::RefCountedString::TakeString(&css_string);
 }

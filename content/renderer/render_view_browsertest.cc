@@ -845,6 +845,10 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   auto form_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   form_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   form_navigation_info->url_request.SetHttpMethod("POST");
+  blink::WebHTTPBody post_body;
+  post_body.Initialize();
+  post_body.AppendData("blah");
+  form_navigation_info->url_request.SetHttpBody(post_body);
   form_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   form_navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;
@@ -945,6 +949,10 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       blink::WebURLRequest(GURL("data:text/html,foo"));
   data_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   data_navigation_info->url_request.SetHttpMethod("POST");
+  blink::WebHTTPBody post_body;
+  post_body.Initialize();
+  post_body.AppendData("blah");
+  data_navigation_info->url_request.SetHttpBody(post_body);
   data_navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;
   data_navigation_info->navigation_type =

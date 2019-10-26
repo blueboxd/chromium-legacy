@@ -54,10 +54,10 @@ class CastRenderer : public ::media::Renderer,
   // ::media::Renderer implementation.
   void Initialize(::media::MediaResource* media_resource,
                   ::media::RendererClient* client,
-                  const ::media::PipelineStatusCB& init_cb) final;
+                  ::media::PipelineStatusCallback init_cb) final;
   void SetCdm(::media::CdmContext* cdm_context,
               const ::media::CdmAttachedCB& cdm_attached_cb) final;
-  void Flush(const base::Closure& flush_cb) final;
+  void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
@@ -71,12 +71,10 @@ class CastRenderer : public ::media::Renderer,
   void OnApplicationMediaInfoReceived(
       ::media::MediaResource* media_resource,
       ::media::RendererClient* client,
-      const ::media::PipelineStatusCB& init_cb,
       ::media::mojom::CastApplicationMediaInfoPtr application_media_info);
   void OnGetMultiroomInfo(
       ::media::MediaResource* media_resource,
       ::media::RendererClient* client,
-      const ::media::PipelineStatusCB& init_cb,
       ::media::mojom::CastApplicationMediaInfoPtr application_media_info,
       chromecast::mojom::MultiroomInfoPtr multiroom_info);
   void OnError(::media::PipelineStatus status);
@@ -88,9 +86,8 @@ class CastRenderer : public ::media::Renderer,
   void OnVideoNaturalSizeChange(const gfx::Size& size);
   void OnVideoOpacityChange(bool opaque);
   void CheckVideoResolutionPolicy();
-
-  void OnVideoInitializationFinished(const ::media::PipelineStatusCB& init_cb,
-                                     ::media::PipelineStatus status);
+  void RunInitCallback(::media::PipelineStatus status);
+  void OnVideoInitializationFinished(::media::PipelineStatus status);
 
   CmaBackendFactory* const backend_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -110,6 +107,7 @@ class CastRenderer : public ::media::Renderer,
   ::media::mojom::CastApplicationMediaInfoManagerPtr
       application_media_info_manager_ptr_;
   mojo::Remote<chromecast::mojom::MultiroomManager> multiroom_manager_;
+  ::media::PipelineStatusCallback init_cb_;
 
   base::WeakPtrFactory<CastRenderer> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);

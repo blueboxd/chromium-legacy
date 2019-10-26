@@ -113,6 +113,7 @@
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/hugepage_text/hugepage_text.h"
+#include "chromeos/memory/kstaled.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -598,6 +599,10 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
   if (is_browser_process) {
     heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
     heap_profiler_controller_->Start();
+
+#if defined(OS_CHROMEOS)
+    chromeos::InitializeKstaled();
+#endif
   }
 }
 

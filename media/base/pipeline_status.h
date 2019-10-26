@@ -58,7 +58,10 @@ enum PipelineStatus {
   PIPELINE_STATUS_MAX = DEMUXER_ERROR_DETECTED_HLS,
 };
 
+// TODO(crbug.com/1007799): Delete PipelineStatusCB once all callbacks are
+//                          converted to PipelineStatusCallback.
 typedef base::RepeatingCallback<void(PipelineStatus)> PipelineStatusCB;
+typedef base::OnceCallback<void(PipelineStatus)> PipelineStatusCallback;
 
 struct PipelineDecoderInfo {
   bool is_platform_decoder = false;

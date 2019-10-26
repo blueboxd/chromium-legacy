@@ -12,8 +12,8 @@
 #include "base/test/task_environment.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/test_support/fake_client.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

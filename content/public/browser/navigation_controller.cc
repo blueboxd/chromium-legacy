@@ -19,7 +19,7 @@ NavigationController::LoadURLParams::LoadURLParams(const OpenURLParams& input)
     : url(input.url),
       initiator_origin(input.initiator_origin),
       source_site_instance(input.source_site_instance),
-      load_type(input.uses_post ? LOAD_TYPE_HTTP_POST : LOAD_TYPE_DEFAULT),
+      load_type(input.post_data ? LOAD_TYPE_HTTP_POST : LOAD_TYPE_DEFAULT),
       transition_type(input.transition),
       frame_tree_node_id(input.frame_tree_node_id),
       referrer(input.referrer),
@@ -33,11 +33,6 @@ NavigationController::LoadURLParams::LoadURLParams(const OpenURLParams& input)
       blob_url_loader_factory(input.blob_url_loader_factory),
       href_translate(input.href_translate),
       reload_type(input.reload_type) {
-  // |post_data| should be present iff |uses_post| is true.
-  //
-  // TODO(lukasza): Consider removing |uses_post| (redundant with |post_data|).
-  DCHECK_EQ(input.uses_post, !!input.post_data);
-
   // A non-null |source_site_instance| is important for picking the right
   // renderer process for hosting about:blank and/or data: URLs (their origin's
   // precursor is based on |initiator_origin|).

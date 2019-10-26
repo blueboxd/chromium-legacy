@@ -1,4 +1,10 @@
 <!DOCTYPE HTML>
+<script>
+if (window.internals) {
+    internals.useMockOverlayScrollbars();
+    internals.settings.setPreferCompositingToLCDTextEnabled(false);
+}
+</script>
 <style>
 #container {
     -webkit-box-reflect: below;
@@ -35,11 +41,6 @@
 }
 </style>
 <script>
-if (window.internals) {
-    internals.runtimeFlags.overlayScrollbarsEnabled = true;
-    internals.settings.setPreferCompositingToLCDTextEnabled(false);
-}
-
 if (window.testRunner)
     testRunner.dumpAsTextWithPixelResults();
 

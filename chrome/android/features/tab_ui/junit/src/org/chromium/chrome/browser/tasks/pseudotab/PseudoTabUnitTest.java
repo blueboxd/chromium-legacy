@@ -20,11 +20,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 
 import java.util.ArrayList;

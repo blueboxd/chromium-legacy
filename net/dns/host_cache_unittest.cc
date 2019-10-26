@@ -16,6 +16,8 @@
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 
@@ -26,7 +28,7 @@ const int kMaxCacheEntries = 10;
 // Builds a key for |hostname|, defaulting the query type to unspecified.
 HostCache::Key Key(const std::string& hostname) {
   return HostCache::Key(hostname, DnsQueryType::UNSPECIFIED, 0,
-                        HostResolverSource::ANY);
+                        HostResolverSource::ANY, NetworkIsolationKey());
 }
 
 bool FoobarIndexIsOdd(const std::string& foobarx_com) {
@@ -105,6 +107,67 @@ TEST(HostCacheTest, Basic) {
 
   EXPECT_FALSE(cache.Lookup(key1, now));
   EXPECT_FALSE(cache.Lookup(key2, now));
+}
+
+// Make sure NetworkIsolationKey is respected.
+TEST(HostCacheTest, NetworkIsolationKey) {
+  const char kHostname[] = "hostname.test";
+  const base::TimeDelta kTTL = base::TimeDelta::FromSeconds(10);
+
+  const url::Origin kOrigin1(
+      url::Origin::Create(GURL("https://origin1.test/")));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2(
+      url::Origin::Create(GURL("https://origin2.test/")));
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  HostCache::Key key1(kHostname, DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY, kNetworkIsolationKey1);
+  HostCache::Key key2(kHostname, DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY, kNetworkIsolationKey2);
+  HostCache::Entry entry1 =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
+  HostCache::Entry entry2 = HostCache::Entry(ERR_FAILED, AddressList(),
+                                             HostCache::Entry::SOURCE_UNKNOWN);
+
+  HostCache cache(kMaxCacheEntries);
+
+  // Start at t=0.
+  base::TimeTicks now;
+
+  EXPECT_EQ(0U, cache.size());
+
+  // Add an entry for kNetworkIsolationKey1.
+  EXPECT_FALSE(cache.Lookup(key1, now));
+  cache.Set(key1, entry1, now, kTTL);
+
+  const std::pair<const HostCache::Key, HostCache::Entry>* result =
+      cache.Lookup(key1, now);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(kNetworkIsolationKey1, result->first.network_isolation_key);
+  EXPECT_EQ(OK, result->second.error());
+  EXPECT_FALSE(cache.Lookup(key2, now));
+  EXPECT_EQ(1U, cache.size());
+
+  // Add a different entry for kNetworkIsolationKey2.
+  cache.Set(key2, entry2, now, 3 * kTTL);
+  result = cache.Lookup(key1, now);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(kNetworkIsolationKey1, result->first.network_isolation_key);
+  EXPECT_EQ(OK, result->second.error());
+  result = cache.Lookup(key2, now);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(kNetworkIsolationKey2, result->first.network_isolation_key);
+  EXPECT_EQ(ERR_FAILED, result->second.error());
+  EXPECT_EQ(2U, cache.size());
+
+  // Advance time so that first entry times out. Second entry should remain.
+  now += 2 * kTTL;
+  EXPECT_FALSE(cache.Lookup(key1, now));
+  result = cache.Lookup(key2, now);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(kNetworkIsolationKey2, result->first.network_isolation_key);
+  EXPECT_EQ(ERR_FAILED, result->second.error());
 }
 
 // Try caching entries for a failed resolve attempt -- since we set the TTL of
@@ -210,9 +273,9 @@ TEST(HostCacheTest, DnsQueryTypeIsPartOfKey) {
   base::TimeTicks now;
 
   HostCache::Key key1("foobar.com", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY);
-  HostCache::Key key2("foobar.com", DnsQueryType::A, 0,
-                      HostResolverSource::ANY);
+                      HostResolverSource::ANY, NetworkIsolationKey());
+  HostCache::Key key2("foobar.com", DnsQueryType::A, 0, HostResolverSource::ANY,
+                      NetworkIsolationKey());
   HostCache::Entry entry =
       HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
@@ -245,12 +308,13 @@ TEST(HostCacheTest, HostResolverFlagsArePartOfKey) {
   // t=0.
   base::TimeTicks now;
 
-  HostCache::Key key1("foobar.com", DnsQueryType::A, 0,
-                      HostResolverSource::ANY);
+  HostCache::Key key1("foobar.com", DnsQueryType::A, 0, HostResolverSource::ANY,
+                      NetworkIsolationKey());
   HostCache::Key key2("foobar.com", DnsQueryType::A, HOST_RESOLVER_CANONNAME,
-                      HostResolverSource::ANY);
+                      HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Key key3("foobar.com", DnsQueryType::A,
-                      HOST_RESOLVER_LOOPBACK_ONLY, HostResolverSource::ANY);
+                      HOST_RESOLVER_LOOPBACK_ONLY, HostResolverSource::ANY,
+                      NetworkIsolationKey());
   HostCache::Entry entry =
       HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
@@ -292,9 +356,9 @@ TEST(HostCacheTest, HostResolverSourceIsPartOfKey) {
   base::TimeTicks now;
 
   HostCache::Key key1("foobar.com", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY);
+                      HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Key key2("foobar.com", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::DNS);
+                      HostResolverSource::DNS, NetworkIsolationKey());
   HostCache::Entry entry =
       HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
@@ -328,11 +392,11 @@ TEST(HostCacheTest, SecureIsPartOfKey) {
   base::TimeTicks now;
   HostCache::EntryStaleness stale;
 
-  HostCache::Key key1("foobar.com", DnsQueryType::A, 0,
-                      HostResolverSource::ANY);
+  HostCache::Key key1("foobar.com", DnsQueryType::A, 0, HostResolverSource::ANY,
+                      NetworkIsolationKey());
   key1.secure = true;
-  HostCache::Key key2("foobar.com", DnsQueryType::A, 0,
-                      HostResolverSource::ANY);
+  HostCache::Key key2("foobar.com", DnsQueryType::A, 0, HostResolverSource::ANY,
+                      NetworkIsolationKey());
   key2.secure = false;
   HostCache::Entry entry =
       HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
@@ -374,9 +438,9 @@ TEST(HostCacheTest, PreferLessStaleMoreSecure) {
   HostCache::EntryStaleness stale;
 
   HostCache::Key insecure_key("foobar.com", DnsQueryType::A, 0,
-                              HostResolverSource::ANY);
+                              HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Key secure_key("foobar.com", DnsQueryType::A, 0,
-                            HostResolverSource::ANY);
+                            HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   HostCache::Entry entry =
       HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
@@ -691,51 +755,61 @@ TEST(HostCacheTest, KeyComparators) {
   };
   std::vector<CacheTestParameters> tests = {
       {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
        HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
        0},
-      {HostCache::Key("host1", DnsQueryType::A, 0, HostResolverSource::ANY),
+      {HostCache::Key("host1", DnsQueryType::A, 0, HostResolverSource::ANY,
+                      NetworkIsolationKey()),
        HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
        1},
       {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
-       HostCache::Key("host1", DnsQueryType::A, 0, HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
+       HostCache::Key("host1", DnsQueryType::A, 0, HostResolverSource::ANY,
+                      NetworkIsolationKey()),
        -1},
       {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
        HostCache::Key("host2", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
        -1},
-      {HostCache::Key("host1", DnsQueryType::A, 0, HostResolverSource::ANY),
+      {HostCache::Key("host1", DnsQueryType::A, 0, HostResolverSource::ANY,
+                      NetworkIsolationKey()),
        HostCache::Key("host2", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
        1},
       {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
-       HostCache::Key("host2", DnsQueryType::A, 0, HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
+       HostCache::Key("host2", DnsQueryType::A, 0, HostResolverSource::ANY,
+                      NetworkIsolationKey()),
        -1},
       {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
        HostCache::Key("host1", DnsQueryType::UNSPECIFIED,
-                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY),
+                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY,
+                      NetworkIsolationKey()),
        -1},
       {HostCache::Key("host1", DnsQueryType::UNSPECIFIED,
-                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY),
+                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY,
+                      NetworkIsolationKey()),
        HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
-                      HostResolverSource::ANY),
+                      HostResolverSource::ANY, NetworkIsolationKey()),
        1},
       {HostCache::Key("host1", DnsQueryType::UNSPECIFIED,
-                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY),
+                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY,
+                      NetworkIsolationKey()),
        HostCache::Key("host2", DnsQueryType::UNSPECIFIED,
-                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY),
+                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY,
+                      NetworkIsolationKey()),
        -1},
   };
-  HostCache::Key insecure_key = HostCache::Key(
-      "host1", DnsQueryType::UNSPECIFIED, 0, HostResolverSource::ANY);
-  HostCache::Key secure_key = HostCache::Key("host1", DnsQueryType::UNSPECIFIED,
-                                             0, HostResolverSource::ANY);
+  HostCache::Key insecure_key =
+      HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                     HostResolverSource::ANY, NetworkIsolationKey());
+  HostCache::Key secure_key =
+      HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                     HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   tests.emplace_back(insecure_key, secure_key, -1);
 
@@ -900,13 +974,62 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   EXPECT_EQ(2u, restored_cache.last_restore_size());
 }
 
+TEST(HostCacheTest, SerializeAndDeserializeWithNetworkIsolationKey) {
+  const char kHostname[] = "hostname.test";
+  const base::TimeDelta kTTL = base::TimeDelta::FromSeconds(10);
+  const url::Origin kOrigin(url::Origin::Create(GURL("https://origin.test/")));
+  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const url::Origin kOpaqueOrigin;
+  const NetworkIsolationKey kOpaqueNetworkIsolationKey(kOpaqueOrigin,
+                                                       kOpaqueOrigin);
+
+  HostCache::Key key1(kHostname, DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY, kNetworkIsolationKey);
+  HostCache::Key key2(kHostname, DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY, kOpaqueNetworkIsolationKey);
+  IPEndPoint endpoint(IPAddress(1, 2, 3, 4), 0);
+
+  HostCache::Entry entry = HostCache::Entry(OK, AddressList(endpoint),
+                                            HostCache::Entry::SOURCE_UNKNOWN);
+
+  base::TimeTicks now;
+  HostCache cache(kMaxCacheEntries);
+
+  cache.Set(key1, entry, now, kTTL);
+  cache.Set(key2, entry, now, kTTL);
+
+  EXPECT_TRUE(cache.Lookup(key1, now));
+  EXPECT_EQ(kNetworkIsolationKey,
+            cache.Lookup(key1, now)->first.network_isolation_key);
+  EXPECT_TRUE(cache.Lookup(key2, now));
+  EXPECT_EQ(kOpaqueNetworkIsolationKey,
+            cache.Lookup(key2, now)->first.network_isolation_key);
+  EXPECT_EQ(2u, cache.size());
+
+  base::ListValue serialized_cache;
+  cache.GetAsListValue(&serialized_cache, /*include_staleness=*/false);
+  HostCache restored_cache(kMaxCacheEntries);
+  EXPECT_TRUE(restored_cache.RestoreFromListValue(serialized_cache));
+  EXPECT_EQ(1u, restored_cache.size());
+
+  HostCache::EntryStaleness stale;
+  const std::pair<const HostCache::Key, HostCache::Entry>* result =
+      restored_cache.LookupStale(key1, now, &stale);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(kNetworkIsolationKey, result->first.network_isolation_key);
+  EXPECT_EQ(kHostname, result->first.hostname);
+  ASSERT_EQ(1u, result->second.addresses().value().size());
+  EXPECT_EQ(endpoint, result->second.addresses().value().front());
+  EXPECT_FALSE(restored_cache.Lookup(key2, now));
+}
+
 TEST(HostCacheTest, SerializeAndDeserialize_Text) {
   base::TimeTicks now;
 
   base::TimeDelta ttl = base::TimeDelta::FromSeconds(99);
   std::vector<std::string> text_records({"foo", "bar"});
-  HostCache::Key key("example.com", DnsQueryType::A, 0,
-                     HostResolverSource::DNS);
+  HostCache::Key key("example.com", DnsQueryType::A, 0, HostResolverSource::DNS,
+                     NetworkIsolationKey());
   key.secure = true;
   HostCache::Entry entry(OK, text_records, HostCache::Entry::SOURCE_DNS, ttl);
   EXPECT_TRUE(entry.text_records());
@@ -920,9 +1043,10 @@ TEST(HostCacheTest, SerializeAndDeserialize_Text) {
   HostCache restored_cache(kMaxCacheEntries);
   restored_cache.RestoreFromListValue(serialized_cache);
 
-  ASSERT_EQ(1u, cache.size());
+  ASSERT_EQ(1u, restored_cache.size());
+  HostCache::EntryStaleness stale;
   const std::pair<const HostCache::Key, HostCache::Entry>* result =
-      cache.Lookup(key, now);
+      restored_cache.LookupStale(key, now, &stale);
   ASSERT_TRUE(result);
   EXPECT_TRUE(result->first.secure);
   EXPECT_FALSE(result->second.addresses());
@@ -937,8 +1061,8 @@ TEST(HostCacheTest, SerializeAndDeserialize_Hostname) {
   base::TimeDelta ttl = base::TimeDelta::FromSeconds(99);
   std::vector<HostPortPair> hostnames(
       {HostPortPair("example.com", 95), HostPortPair("chromium.org", 122)});
-  HostCache::Key key("example.com", DnsQueryType::A, 0,
-                     HostResolverSource::DNS);
+  HostCache::Key key("example.com", DnsQueryType::A, 0, HostResolverSource::DNS,
+                     NetworkIsolationKey());
   HostCache::Entry entry(OK, hostnames, HostCache::Entry::SOURCE_DNS, ttl);
   EXPECT_TRUE(entry.hostnames());
 
@@ -951,9 +1075,10 @@ TEST(HostCacheTest, SerializeAndDeserialize_Hostname) {
   HostCache restored_cache(kMaxCacheEntries);
   restored_cache.RestoreFromListValue(serialized_cache);
 
-  ASSERT_EQ(1u, cache.size());
+  ASSERT_EQ(1u, restored_cache.size());
+  HostCache::EntryStaleness stale;
   const std::pair<const HostCache::Key, HostCache::Entry>* result =
-      cache.Lookup(key, now);
+      restored_cache.LookupStale(key, now, &stale);
   ASSERT_TRUE(result);
   EXPECT_FALSE(result->first.secure);
   EXPECT_FALSE(result->second.addresses());
@@ -1222,15 +1347,17 @@ void GetMatchingKeyHelper(const HostCache::Key key, bool expect_match) {
 
 TEST(HostCacheTest, GetMatchingKey_ExactMatch) {
   // Should find match because this mimics the default Key struct.
-  GetMatchingKeyHelper(HostCache::Key("foobar.com", DnsQueryType::UNSPECIFIED,
-                                      0, HostResolverSource::ANY),
-                       true);
+  GetMatchingKeyHelper(
+      HostCache::Key("foobar.com", DnsQueryType::UNSPECIFIED, 0,
+                     HostResolverSource::ANY, NetworkIsolationKey()),
+      true);
 }
 
 TEST(HostCacheTest, GetMatchingKey_IgnoreSecureField) {
   // Should find match because lookups ignore the secure field.
-  HostCache::Key secure_key = HostCache::Key(
-      "foobar.com", DnsQueryType::UNSPECIFIED, 0, HostResolverSource::ANY);
+  HostCache::Key secure_key =
+      HostCache::Key("foobar.com", DnsQueryType::UNSPECIFIED, 0,
+                     HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   GetMatchingKeyHelper(secure_key, true);
 }
@@ -1238,7 +1365,8 @@ TEST(HostCacheTest, GetMatchingKey_IgnoreSecureField) {
 TEST(HostCacheTest, GetMatchingKey_UnsupportedDnsQueryType) {
   // Should not find match because the DnsQueryType field matters.
   GetMatchingKeyHelper(
-      HostCache::Key("foobar.com", DnsQueryType::A, 0, HostResolverSource::ANY),
+      HostCache::Key("foobar.com", DnsQueryType::A, 0, HostResolverSource::ANY,
+                     NetworkIsolationKey()),
       false);
 }
 
@@ -1247,22 +1375,24 @@ TEST(HostCacheTest, GetMatchingKey_UnsupportedHostResolverFlags) {
   GetMatchingKeyHelper(
       HostCache::Key("foobar.com", DnsQueryType::UNSPECIFIED,
                      HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6,
-                     HostResolverSource::ANY),
+                     HostResolverSource::ANY, NetworkIsolationKey()),
       false);
 }
 
 TEST(HostCacheTest, GetMatchingKey_UnsupportedHostResolverSource) {
   // Should not find match because the HostResolverSource field matters.
-  GetMatchingKeyHelper(HostCache::Key("foobar.com", DnsQueryType::UNSPECIFIED,
-                                      0, HostResolverSource::DNS),
-                       false);
+  GetMatchingKeyHelper(
+      HostCache::Key("foobar.com", DnsQueryType::UNSPECIFIED, 0,
+                     HostResolverSource::DNS, NetworkIsolationKey()),
+      false);
 }
 
 TEST(HostCacheTest, GetMatchingKey_AlternativeMatch) {
   // Should find match because a lookup with these alternate fields is tried.
-  HostCache::Key secure_key = HostCache::Key(
-      "foobar.com", DnsQueryType::A,
-      HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6, HostResolverSource::ANY);
+  HostCache::Key secure_key =
+      HostCache::Key("foobar.com", DnsQueryType::A,
+                     HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6,
+                     HostResolverSource::ANY, NetworkIsolationKey());
   secure_key.secure = true;
   GetMatchingKeyHelper(secure_key, true);
 }

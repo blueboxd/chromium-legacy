@@ -626,11 +626,11 @@ HTMLCollection* HTMLTableElement::tBodies() {
 }
 
 const AtomicString& HTMLTableElement::Rules() const {
-  return getAttribute(html_names::kRulesAttr);
+  return FastGetAttribute(html_names::kRulesAttr);
 }
 
 const AtomicString& HTMLTableElement::Summary() const {
-  return getAttribute(html_names::kSummaryAttr);
+  return FastGetAttribute(html_names::kSummaryAttr);
 }
 
 void HTMLTableElement::Trace(Visitor* visitor) {

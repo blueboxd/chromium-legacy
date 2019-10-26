@@ -29,8 +29,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationState;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
@@ -45,7 +45,7 @@ public class TrustedWebActivityDisclosureControllerTest {
 
     @Mock public ChromePreferenceManager mPreferences;
     @Mock public ActivityLifecycleDispatcher mLifecycleDispatcher;
-    @Mock public TrustedWebActivityVerifier mVerifier;
+    @Mock public Verifier mVerifier;
     @Mock public TrustedWebActivityUmaRecorder mRecorder;
 
     @Captor public ArgumentCaptor<Runnable> mVerificationObserverCaptor;

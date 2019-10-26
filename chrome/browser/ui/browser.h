@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
@@ -1150,6 +1151,8 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
       extension_browser_window_helper_;
 #endif
+
+  const base::ElapsedTimer creation_timer_;
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_{this};

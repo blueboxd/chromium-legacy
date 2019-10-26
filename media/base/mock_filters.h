@@ -151,10 +151,17 @@ class MockDemuxer : public Demuxer {
 
   // Demuxer implementation.
   std::string GetDisplayName() const override;
-  MOCK_METHOD2(Initialize, void(DemuxerHost* host, const PipelineStatusCB& cb));
+  void Initialize(DemuxerHost* host, PipelineStatusCallback cb) {
+    OnInitialize(host, cb);
+  }
+  MOCK_METHOD2(OnInitialize,
+               void(DemuxerHost* host, PipelineStatusCallback& cb));
   MOCK_METHOD1(StartWaitingForSeek, void(base::TimeDelta));
   MOCK_METHOD1(CancelPendingSeek, void(base::TimeDelta));
-  MOCK_METHOD2(Seek, void(base::TimeDelta time, const PipelineStatusCB& cb));
+  void Seek(base::TimeDelta time, PipelineStatusCallback cb) {
+    OnSeek(time, cb);
+  }
+  MOCK_METHOD2(OnSeek, void(base::TimeDelta time, PipelineStatusCallback& cb));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(AbortPendingReads, void());
   MOCK_METHOD0(GetAllStreams, std::vector<DemuxerStream*>());
@@ -183,7 +190,8 @@ class MockDemuxerStream : public DemuxerStream {
   // DemuxerStream implementation.
   Type type() const override;
   Liveness liveness() const override;
-  MOCK_METHOD1(Read, void(const ReadCB& read_cb));
+  void Read(ReadCB read_cb) { OnRead(read_cb); }
+  MOCK_METHOD1(OnRead, void(ReadCB& read_cb));
   MOCK_CONST_METHOD0(IsReadPending, bool());
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
@@ -340,11 +348,17 @@ class MockRenderer : public Renderer {
   ~MockRenderer() override;
 
   // Renderer implementation.
-  MOCK_METHOD3(Initialize,
+  void Initialize(MediaResource* media_resource,
+                  RendererClient* client,
+                  PipelineStatusCallback init_cb) override {
+    OnInitialize(media_resource, client, init_cb);
+  }
+  MOCK_METHOD3(OnInitialize,
                void(MediaResource* media_resource,
                     RendererClient* client,
-                    const PipelineStatusCB& init_cb));
-  MOCK_METHOD1(Flush, void(const base::Closure& flush_cb));
+                    PipelineStatusCallback& init_cb));
+  void Flush(base::OnceClosure flush_cb) { OnFlush(flush_cb); }
+  MOCK_METHOD1(OnFlush, void(base::OnceClosure& flush_cb));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));
   MOCK_METHOD1(SetPlaybackRate, void(double playback_rate));
   MOCK_METHOD1(SetVolume, void(float volume));

@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
@@ -164,11 +163,8 @@ class HttpAuthHandlerNtlmPortableTest : public PlatformTest {
 };
 
 TEST_F(HttpAuthHandlerNtlmPortableTest, SimpleConstruction) {
-  base::HistogramTester histogram_tester;
   ASSERT_EQ(OK, CreateHandler());
   ASSERT_TRUE(GetAuthHandler() != nullptr);
-  histogram_tester.ExpectBucketCount("Net.HttpAuthNtlmV2Usage",
-                                     NtlmV2Usage::kDisabledOverInsecure, 1);
 }
 
 TEST_F(HttpAuthHandlerNtlmPortableTest, DoNotAllowDefaultCreds) {
@@ -221,7 +217,6 @@ TEST_F(HttpAuthHandlerNtlmPortableTest, CantChangeSchemeMidway) {
 }
 
 TEST_F(HttpAuthHandlerNtlmPortableTest, NtlmV1AuthenticationSuccess) {
-  base::HistogramTester histogram_tester;
   HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGetMSTime, MockRandom,
                                                     MockGetHostName);
   ASSERT_EQ(OK, CreateHandler());
@@ -241,8 +236,6 @@ TEST_F(HttpAuthHandlerNtlmPortableTest, NtlmV1AuthenticationSuccess) {
   ASSERT_EQ(0, memcmp(decoded.data(),
                       ntlm::test::kExpectedAuthenticateMsgSpecResponseV1,
                       decoded.size()));
-  histogram_tester.ExpectBucketCount("Net.HttpAuthNtlmV2Usage",
-                                     NtlmV2Usage::kDisabledOverInsecure, 1);
 }
 
 }  // namespace net

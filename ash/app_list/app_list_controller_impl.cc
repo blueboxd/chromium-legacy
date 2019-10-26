@@ -131,6 +131,10 @@ bool HasVisibleWindows() {
   return false;
 }
 
+void LogAppListShowSource(AppListShowSource show_source) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListToggleMethodHistogram, show_source);
+}
+
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
@@ -474,8 +478,10 @@ void AppListControllerImpl::OnActiveUserPrefServiceChanged(
     return;
   }
 
-  // Show the app list after signing in in tablet mode.
-  Show(GetDisplayIdToShowAppListOn(), AppListShowSource::kTabletMode,
+  // Show the app list after signing in in tablet mode. For metrics, the app
+  // list is not considered shown since the browser window is shown over app
+  // list upon login.
+  Show(GetDisplayIdToShowAppListOn(), base::nullopt /* no AppListShowSource */,
        base::TimeTicks());
 
   // The app list is not dismissed before switching user, suggestion chips will
@@ -530,9 +536,10 @@ bool AppListControllerImpl::GetTargetVisibility() const {
 }
 
 void AppListControllerImpl::Show(int64_t display_id,
-                                 AppListShowSource show_source,
+                                 base::Optional<AppListShowSource> show_source,
                                  base::TimeTicks event_time_stamp) {
-  UMA_HISTOGRAM_ENUMERATION(kAppListToggleMethodHistogram, show_source);
+  if (show_source.has_value())
+    LogAppListShowSource(show_source.value());
 
   presenter_.Show(display_id, event_time_stamp);
 
@@ -571,9 +578,8 @@ ash::ShelfAction AppListControllerImpl::ToggleAppList(
   ash::ShelfAction action =
       presenter_.ToggleAppList(display_id, show_source, event_time_stamp);
   UpdateExpandArrowVisibility();
-  if (action == SHELF_ACTION_APP_LIST_SHOWN) {
-    UMA_HISTOGRAM_ENUMERATION(kAppListToggleMethodHistogram, show_source);
-  }
+  if (action == SHELF_ACTION_APP_LIST_SHOWN)
+    LogAppListShowSource(show_source);
   return action;
 }
 
@@ -787,7 +793,13 @@ void AppListControllerImpl::OnHomeLauncherTargetPositionChanged(
 void AppListControllerImpl::ShowHomeScreenView() {
   DCHECK(IsTabletMode());
 
-  Show(GetDisplayIdToShowAppListOn(), kTabletMode, base::TimeTicks());
+  // App list is only considered shown for metrics if there are currently no
+  // other visible windows shown over the app list after the tablet transition.
+  base::Optional<AppListShowSource> show_source;
+  if (!HasVisibleWindows())
+    show_source = kTabletMode;
+
+  Show(GetDisplayIdToShowAppListOn(), show_source, base::TimeTicks());
 }
 
 aura::Window* AppListControllerImpl::GetHomeScreenWindow() {
@@ -851,9 +863,12 @@ ash::ShelfAction AppListControllerImpl::OnHomeButtonPressed(
   bool handled = Shell::Get()->home_screen_controller()->GoHome(display_id);
 
   // Perform the "back" action for the app list.
-  if (!handled)
+  if (!handled) {
     Back();
+    return ash::SHELF_ACTION_APP_LIST_BACK;
+  }
 
+  LogAppListShowSource(show_source);
   return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 

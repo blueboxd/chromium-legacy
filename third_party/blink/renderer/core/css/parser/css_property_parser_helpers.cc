@@ -903,6 +903,10 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
         (color->GetValueID() == CSSValueID::kLinktext ||
          color->GetValueID() == CSSValueID::kVisitedtext)) {
       return nullptr;
+    } else if (!RuntimeEnabledFeatures::NewSystemColorsEnabled() &&
+               (id == CSSValueID::kActivetext || id == CSSValueID::kField ||
+                id == CSSValueID::kFieldtext)) {
+      return nullptr;
     }
     return color;
   }

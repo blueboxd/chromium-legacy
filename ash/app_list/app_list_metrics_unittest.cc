@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/test/app_list_test_model.h"
@@ -22,9 +23,11 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -492,6 +495,78 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherSearchLaunchFromSearchBox) {
       "Apps.AppListAppLaunchedV2.HomecherSearch",
       AppListLaunchedFrom::kLaunchedFromSearchBox,
       1 /* Number of times launched from search box */);
+}
+
+class AppListShowSourceMetricTest : public AshTestBase {
+ public:
+  AppListShowSourceMetricTest() = default;
+  ~AppListShowSourceMetricTest() override = default;
+
+ protected:
+  void ClickHomeButton() {
+    HomeButton* home_button =
+        GetPrimaryShelf()->shelf_widget()->GetHomeButton();
+    gfx::Point center = home_button->GetCenterPoint();
+    views::View::ConvertPointToScreen(home_button, &center);
+    GetEventGenerator()->MoveMouseTo(center);
+    GetEventGenerator()->ClickLeftButton();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(AppListShowSourceMetricTest);
+};
+
+// In tablet mode, test that AppListShowSource metric is only recorded when
+// pressing home button when not already home. Any presses on the home button
+// when already home should do nothing.
+TEST_F(AppListShowSourceMetricTest, TabletInAppToHome) {
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  ClickHomeButton();
+  histogram_tester.ExpectBucketCount(
+      kAppListToggleMethodHistogram, kShelfButton,
+      1 /* Number of times app list is shown with a shelf button */);
+  histogram_tester.ExpectBucketCount(
+      kAppListToggleMethodHistogram, kTabletMode,
+      0 /* Number of times app list is shown by tablet mode transition */);
+
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Ensure that any subsequent clicks while already at home do not count as
+  // showing the app list.
+  ClickHomeButton();
+  histogram_tester.ExpectBucketCount(
+      kAppListToggleMethodHistogram, kShelfButton,
+      1 /* Number of times app list shown with a shelf button */);
+  histogram_tester.ExpectTotalCount(kAppListToggleMethodHistogram, 1);
+}
+
+// Ensure that app list is not recorded as shown when going to tablet mode with
+// a window open.
+TEST_F(AppListShowSourceMetricTest, TabletModeWithWindowOpen) {
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Ensure that no AppListShowSource metric was recoreded.
+  histogram_tester.ExpectTotalCount(kAppListToggleMethodHistogram, 0);
+}
+
+// Ensure that app list is recorded as shown when going to tablet mode with no
+// other windows open.
+TEST_F(AppListShowSourceMetricTest, TabletModeWithNoWindowOpen) {
+  base::HistogramTester histogram_tester;
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  histogram_tester.ExpectBucketCount(
+      kAppListToggleMethodHistogram, kTabletMode,
+      1 /* Number of times app list shown after entering tablet mode */);
 }
 
 }  // namespace ash

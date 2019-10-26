@@ -653,6 +653,19 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
 std::vector<std::string> RegisterAllFeatureVariationParameters(
     flags_ui::FlagsStorage* flags_storage,
     base::FeatureList* feature_list) {
+  // Occasionally DCHECK crashes on canary can be very distuptive.  An
+  // experimental flag was added to aid in temporarily disabling this for
+  // canary testers.
+#if defined(DCHECK_IS_CONFIGURABLE)
+  if (experimental_flags::AreDCHECKCrashesDisabled()) {
+    std::vector<base::FeatureList::FeatureOverrideInfo> overrides;
+    overrides.push_back(
+        {std::cref(base::kDCheckIsFatalFeature),
+         base::FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE});
+    feature_list->RegisterExtraFeatureOverrides(std::move(overrides));
+  }
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
+
   return GetGlobalFlagsState().RegisterAllFeatureVariationParameters(
       flags_storage, feature_list);
 }

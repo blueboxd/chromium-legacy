@@ -261,6 +261,7 @@ class TemplateURLService : public WebDataServiceConsumer,
       const base::string16& title,
       const base::string16& keyword,
       const std::string& search_url,
+      const std::string& suggestions_url,
       const std::string& favicon_url);
 
   // Updates any search providers matching |potential_search_url| with the new

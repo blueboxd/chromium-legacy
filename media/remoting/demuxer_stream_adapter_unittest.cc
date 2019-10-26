@@ -44,8 +44,8 @@ class MockDemuxerStreamAdapter {
         demuxer_stream, rpc_broker_->GetWeakPtr(),
         rpc_broker_->GetUniqueHandle(), std::move(stream_sender_info),
         std::move(producer_handle),
-        base::Bind(&MockDemuxerStreamAdapter::OnError,
-                   weak_factory_.GetWeakPtr())));
+        base::BindOnce(&MockDemuxerStreamAdapter::OnError,
+                       weak_factory_.GetWeakPtr())));
 
     // Faking initialization with random callback handle to start mojo watcher.
     demuxer_stream_adapter_->Initialize(3);

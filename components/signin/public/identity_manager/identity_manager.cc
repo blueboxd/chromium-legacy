@@ -406,6 +406,20 @@ bool IdentityManager::HasPrimaryAccount(JNIEnv* env) const {
   return HasPrimaryAccount();
 }
 
+base::android::ScopedJavaLocalRef<jobject>
+IdentityManager::GetPrimaryAccountInfo(JNIEnv* env) const {
+  if (HasPrimaryAccount())
+    return ConvertToJavaCoreAccountInfo(env, GetPrimaryAccountInfo());
+  return nullptr;
+}
+
+base::android::ScopedJavaLocalRef<jobject> IdentityManager::GetPrimaryAccountId(
+    JNIEnv* env) const {
+  if (HasPrimaryAccount())
+    return ConvertToJavaCoreAccountId(env, GetPrimaryAccountId());
+  return nullptr;
+}
+
 base::android::ScopedJavaLocalRef<jobject> IdentityManager::
     FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
         JNIEnv* env,

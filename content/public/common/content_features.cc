@@ -28,10 +28,9 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows popups during page unloading.
-// TODO(https://crbug.com/1010509): Set to DISABLED_BY_DEFAULT in Chrome 80.
 // TODO(https://crbug.com/937569): Remove this entirely in Chrome 82.
 const base::Feature kAllowPopupsDuringPageUnload{
-    "AllowPopupsDuringPageUnload", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AllowPopupsDuringPageUnload", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Accepts Origin-Signed HTTP Exchanges to be signed with certificates
 // that do not have CanSignHttpExchangesDraft extension.

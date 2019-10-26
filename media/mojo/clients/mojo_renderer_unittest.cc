@@ -33,7 +33,8 @@
 #include "url/origin.h"
 
 using ::base::test::RunCallback;
-using ::base::test::RunClosure;
+using ::base::test::RunOnceCallback;
+using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Return;
@@ -126,17 +127,17 @@ class MojoRendererTest : public ::testing::Test {
   void InitializeAndExpect(PipelineStatus status) {
     DVLOG(1) << __func__ << ": " << status;
     EXPECT_CALL(*this, OnInitialized(status));
-    mojo_renderer_->Initialize(
-        &demuxer_, &renderer_client_,
-        base::Bind(&MojoRendererTest::OnInitialized, base::Unretained(this)));
+    mojo_renderer_->Initialize(&demuxer_, &renderer_client_,
+                               base::BindOnce(&MojoRendererTest::OnInitialized,
+                                              base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
   void Initialize() {
     CreateAudioStream();
-    EXPECT_CALL(*mock_renderer_, Initialize(_, _, _))
+    EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
         .WillOnce(DoAll(SaveArg<1>(&remote_renderer_client_),
-                        RunCallback<2>(PIPELINE_OK)));
+                        RunOnceCallback<2>(PIPELINE_OK)));
     InitializeAndExpect(PIPELINE_OK);
   }
 
@@ -145,7 +146,7 @@ class MojoRendererTest : public ::testing::Test {
     // Flush callback should always be fired.
     EXPECT_CALL(*this, OnFlushed());
     mojo_renderer_->Flush(
-        base::Bind(&MojoRendererTest::OnFlushed, base::Unretained(this)));
+        base::BindOnce(&MojoRendererTest::OnFlushed, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -238,14 +239,14 @@ TEST_F(MojoRendererTest, Initialize_Failure) {
   CreateAudioStream();
   // Mojo Renderer only expects a boolean result, which will be translated
   // to PIPELINE_OK or PIPELINE_ERROR_INITIALIZATION_FAILED.
-  EXPECT_CALL(*mock_renderer_, Initialize(_, _, _))
-      .WillOnce(RunCallback<2>(PIPELINE_ERROR_ABORT));
+  EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
+      .WillOnce(RunOnceCallback<2>(PIPELINE_ERROR_ABORT));
   InitializeAndExpect(PIPELINE_ERROR_INITIALIZATION_FAILED);
 }
 
 TEST_F(MojoRendererTest, Initialize_BeforeConnectionError) {
   CreateAudioStream();
-  EXPECT_CALL(*mock_renderer_, Initialize(_, _, _))
+  EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
       .WillOnce(InvokeWithoutArgs(this, &MojoRendererTest::ConnectionError));
   InitializeAndExpect(PIPELINE_ERROR_INITIALIZATION_FAILED);
 }
@@ -259,7 +260,7 @@ TEST_F(MojoRendererTest, Initialize_AfterConnectionError) {
 TEST_F(MojoRendererTest, Flush_Success) {
   Initialize();
 
-  EXPECT_CALL(*mock_renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(*mock_renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
   Flush();
 }
 
@@ -268,7 +269,7 @@ TEST_F(MojoRendererTest, Flush_ConnectionError) {
 
   // Upon connection error, OnError() should be called once and only once.
   EXPECT_CALL(renderer_client_, OnError(PIPELINE_ERROR_DECODE)).Times(1);
-  EXPECT_CALL(*mock_renderer_, Flush(_))
+  EXPECT_CALL(*mock_renderer_, OnFlush(_))
       .WillOnce(InvokeWithoutArgs(this, &MojoRendererTest::ConnectionError));
   Flush();
 }
@@ -397,7 +398,7 @@ TEST_F(MojoRendererTest, GetMediaTime) {
   EXPECT_GT(mojo_renderer_->GetMediaTime(), kStartTime);
 
   // Flushing should pause media-time updates.
-  EXPECT_CALL(*mock_renderer_, Flush(_)).WillOnce(RunClosure<0>());
+  EXPECT_CALL(*mock_renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
   Flush();
   base::TimeDelta pause_time = mojo_renderer_->GetMediaTime();
   EXPECT_GT(pause_time, kStartTime);
@@ -439,12 +440,12 @@ TEST_F(MojoRendererTest, OnEnded) {
 
 TEST_F(MojoRendererTest, Destroy_PendingInitialize) {
   CreateAudioStream();
-  EXPECT_CALL(*mock_renderer_, Initialize(_, _, _))
-      .WillRepeatedly(RunCallback<2>(PIPELINE_ERROR_ABORT));
+  EXPECT_CALL(*mock_renderer_, OnInitialize(_, _, _))
+      .WillRepeatedly(RunOnceCallback<2>(PIPELINE_ERROR_ABORT));
   EXPECT_CALL(*this, OnInitialized(PIPELINE_ERROR_INITIALIZATION_FAILED));
   mojo_renderer_->Initialize(
       &demuxer_, &renderer_client_,
-      base::Bind(&MojoRendererTest::OnInitialized, base::Unretained(this)));
+      base::BindOnce(&MojoRendererTest::OnInitialized, base::Unretained(this)));
   Destroy();
 }
 
@@ -461,10 +462,10 @@ TEST_F(MojoRendererTest, Destroy_PendingFlush) {
 TEST_F(MojoRendererTest, Destroy_PendingSetCdm) {
   Initialize();
 
-  EXPECT_CALL(*mock_renderer_, Flush(_)).WillRepeatedly(RunClosure<0>());
+  EXPECT_CALL(*mock_renderer_, OnFlush(_)).WillRepeatedly(RunOnceClosure<0>());
   EXPECT_CALL(*this, OnFlushed());
   mojo_renderer_->Flush(
-      base::Bind(&MojoRendererTest::OnFlushed, base::Unretained(this)));
+      base::BindOnce(&MojoRendererTest::OnFlushed, base::Unretained(this)));
   Destroy();
 }
 

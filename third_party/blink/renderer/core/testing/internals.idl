@@ -440,4 +440,7 @@
     // The returned string is composed of the process ID and the memory address
     // of the Agent object.
     DOMString getDocumentAgentId(Document document);
+
+    void useMockOverlayScrollbars();
+    readonly attribute boolean overlayScrollbarsEnabled;
 };

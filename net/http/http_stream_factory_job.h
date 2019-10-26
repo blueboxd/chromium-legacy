@@ -282,6 +282,7 @@ class HttpStreamFactory::Job
   int DoLoop(int result);
   int StartInternal();
   int DoInitConnectionImpl();
+  int DoInitConnectionImplQuic();
 
   // If this is a QUIC alt job, then this function is called when host
   // resolution completes. It's called with the next result after host
@@ -311,9 +312,6 @@ class HttpStreamFactory::Job
   // nothing if |stream_factory_| is for WebSocket.
   int SetSpdyHttpStreamOrBidirectionalStreamImpl(
       base::WeakPtr<SpdySession> session);
-
-  // Returns to STATE_INIT_CONNECTION and resets some state.
-  void ReturnToStateInitConnection(bool close_connection);
 
   // SpdySessionPool::SpdySessionRequest::Delegate implementation:
   void OnSpdySessionAvailable(base::WeakPtr<SpdySession> spdy_session) override;

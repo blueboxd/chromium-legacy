@@ -31,7 +31,7 @@ import javax.inject.Named;
  * - Transforming the origin into a domain (requires native).
  *
  * Lifecycle: There should be a 1-1 relationship between this class and
- * {@link TrustedWebActivityVerifier}. Having more instances won't effect correctness, but will
+ * {@link Verifier}. Having more instances won't effect correctness, but will
  * limit the performance benefits of the cache.
  * Thread safety: All methods on this class should be called from the same thread.
  */

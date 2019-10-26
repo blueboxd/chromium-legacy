@@ -117,6 +117,11 @@ const base::Feature kPrefetchMainResourceNetworkIsolationKey{
     "PrefetchMainResourceNetworkIsolationKey",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or defaults splittup up server (not proxy) entries in the
+// HttpAuthCache.
+const base::Feature kSplitAuthCacheByNetworkIsolationKey{
+    "SplitAuthCacheByNetworkIsolationKey", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable usage of hardcoded DoH upgrade mapping for use in automatic mode.
 const base::Feature kDnsOverHttpsUpgrade {
   "DnsOverHttpsUpgrade",

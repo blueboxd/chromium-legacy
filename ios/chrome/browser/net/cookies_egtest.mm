@@ -6,14 +6,13 @@
 #include <memory>
 #include <string>
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -46,8 +45,21 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 
 #pragma mark - Overrides superclass
 
+#if defined(CHROME_EARL_GREY_2)
++ (void)setUpForTestCase {
+  [super setUpForTestCase];
+  [self setUpHelper];
+}
+#elif defined(CHROME_EARL_GREY_1)
 + (void)setUp {
   [super setUp];
+  [self setUpHelper];
+}
+#else
+#error Not an EarlGrey Test
+#endif
+
++ (void)setUpHelper {
   // Creates a map of canned responses and set up the test HTML server.
   // |kTestUrlNormalSetCookie| and |kTestUrlIncognitoSetCookie| always sets
   // cookie in response header while |kTestUrlNormalBrowsing| and
@@ -85,8 +97,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
        "  var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;"
        "  document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';"
        "}";
-  NSError* error = nil;
-  chrome_test_util::ExecuteJavaScript(clearCookieScript, &error);
+  [ChromeEarlGrey executeJavaScript:clearCookieScript];
   [super tearDown];
 }
 

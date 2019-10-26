@@ -6662,6 +6662,46 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PrefetchProxy" singular="True">
+  <owner>robertogden@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Metrics related to the privacy-preserving prefetch proxy. Recorded only for
+    Lite mode (AKA Data Saver) users.
+  </summary>
+  <metric name="count_css_js_loaded_cache_before_fcp">
+    <summary>
+      The number of CSS or JS files that were loaded from the cache before first
+      contentful paint, with a maximum of 10. Always set when this event is
+      recorded.
+    </summary>
+  </metric>
+  <metric name="count_css_js_loaded_network_before_fcp">
+    <summary>
+      The number of CSS or JS files that were loaded from the network before
+      FCP, with a maximum of 10. Always set when this event is recorded.
+    </summary>
+  </metric>
+  <metric name="days_since_last_visit_to_origin">
+    <summary>
+      The number of days since the user has last visited any page on this
+      origin, either during a redirect or a committed page. Records -1 if the
+      origin has never been visited before. Metrics for origins that have been
+      visited before are capped at 180 then exponentially bucketed into 10
+      buckets with values (1,2,3,5,9,15,25,42,70,119). Only set when a query
+      result was received from the history service before event recording.
+    </summary>
+  </metric>
+  <metric name="mainpage_request_had_cookies" enum="Boolean">
+    <summary>
+      A boolean indicating if any mainpage request in the redirect chain or
+      committed request had cookies set on it. Only set when a query result was
+      received from the cookie manager before event recording.
+    </summary>
+  </metric>
+</event>
+
 <event name="Previews" singular="True">
   <owner>ryansturm@chromium.org</owner>
   <summary>

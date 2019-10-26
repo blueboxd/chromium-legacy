@@ -6,6 +6,7 @@
 #define ASH_MEDIA_MEDIA_NOTIFICATION_CONTAINER_IMPL_H_
 
 #include "ash/ash_export.h"
+#include "base/containers/flat_set.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_view.h"
 #include "ui/message_center/views/message_view.h"
@@ -43,7 +44,7 @@ class ASH_EXPORT MediaNotificationContainerImpl
       const media_session::mojom::MediaSessionInfoPtr& session_info) override {}
   void OnMediaSessionMetadataChanged() override {}
   void OnVisibleActionsChanged(
-      const std::set<media_session::mojom::MediaSessionAction>& actions)
+      const base::flat_set<media_session::mojom::MediaSessionAction>& actions)
       override {}
   void OnMediaArtworkChanged(const gfx::ImageSkia& image) override {}
   void OnColorsChanged(SkColor foreground, SkColor background) override {}

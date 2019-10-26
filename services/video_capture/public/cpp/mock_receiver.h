@@ -9,6 +9,7 @@
 
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/mojo/mojom/media_types.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
 #include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
@@ -31,7 +32,7 @@ class MockReceiver : public mojom::Receiver {
   void OnFrameReadyInBuffer(
       int32_t buffer_id,
       int32_t frame_feedback_id,
-      mojom::ScopedAccessPermissionPtr access_permission,
+      mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int32_t buffer_id) override;
 
@@ -40,7 +41,7 @@ class MockReceiver : public mojom::Receiver {
   MOCK_METHOD4(DoOnFrameReadyInBuffer,
                void(int32_t buffer_id,
                     int32_t frame_feedback_id,
-                    mojom::ScopedAccessPermissionPtr*,
+                    const mojo::PendingRemote<mojom::ScopedAccessPermission>&,
                     media::mojom::VideoFrameInfoPtr*));
   MOCK_METHOD1(DoOnBufferRetired, void(int32_t));
   MOCK_METHOD1(OnError, void(media::VideoCaptureError));

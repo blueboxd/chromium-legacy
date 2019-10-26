@@ -118,7 +118,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   void UnmarkEndOfStream();
 
   // DemuxerStream methods.
-  void Read(const ReadCB& read_cb) override;
+  void Read(ReadCB read_cb) override;
   bool IsReadPending() const override;
   Type type() const override;
   Liveness liveness() const override;
@@ -216,9 +216,9 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   // |enable_text| Process inband text tracks in the normal way when true,
   //   otherwise ignore them.
-  void Initialize(DemuxerHost* host, const PipelineStatusCB& init_cb) override;
+  void Initialize(DemuxerHost* host, PipelineStatusCallback init_cb) override;
   void Stop() override;
-  void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
+  void Seek(base::TimeDelta time, PipelineStatusCallback cb) override;
   base::Time GetTimelineOffset() const override;
   std::vector<DemuxerStream*> GetAllStreams() override;
   base::TimeDelta GetStartTime() const override;
@@ -479,12 +479,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // MediaLog for reporting messages and properties to debug content and engine.
   MediaLog* media_log_;
 
-  PipelineStatusCB init_cb_;
+  PipelineStatusCallback init_cb_;
   // Callback to execute upon seek completion.
   // TODO(wolenetz/acolwell): Protect against possible double-locking by first
   // releasing |lock_| before executing this callback. See
   // http://crbug.com/308226
-  PipelineStatusCB seek_cb_;
+  PipelineStatusCallback seek_cb_;
 
   using OwnedChunkDemuxerStreamVector =
       std::vector<std::unique_ptr<ChunkDemuxerStream>>;

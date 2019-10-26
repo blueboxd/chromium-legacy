@@ -6,6 +6,8 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -31,11 +33,14 @@ bool CrostiniAppContextMenu::IsCommandIdEnabled(int command_id) const {
 
 void CrostiniAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
-    case ash::UNINSTALL:
+    case ash::UNINSTALL: {
       DCHECK_NE(app_id(), crostini::kCrostiniTerminalId);
-      crostini::ShowCrostiniAppUninstallerView(profile(), app_id());
+      apps::AppServiceProxy* proxy =
+          apps::AppServiceProxyFactory::GetForProfile(profile());
+      DCHECK(proxy);
+      proxy->Uninstall(app_id(), nullptr /* parent_window */);
       return;
-
+    }
     case ash::STOP_APP:
       if (app_id() == crostini::kCrostiniTerminalId) {
         crostini::CrostiniManager::GetForProfile(profile())->StopVm(

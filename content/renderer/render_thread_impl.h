@@ -49,7 +49,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -679,7 +678,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   mojo::AssociatedReceiver<mojom::Renderer> renderer_receiver_{this};
 
-  mojom::RenderMessageFilterAssociatedPtr render_message_filter_;
+  mojo::AssociatedRemote<mojom::RenderMessageFilter> render_message_filter_;
 
   RendererMemoryMetrics purge_and_suspend_memory_metrics_;
   bool needs_to_record_first_active_paint_;

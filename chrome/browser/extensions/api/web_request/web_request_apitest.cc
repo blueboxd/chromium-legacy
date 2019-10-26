@@ -1903,6 +1903,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // WebRequestAPI. This will cause the connection error that will reach the
   // proxy before the ProxySet shutdown code runs on the IO thread.
   api->Shutdown();
+
+  // We are about to destroy a profile. In production that will only happen
+  // as part of the destruction of BrowserProcess's ProfileManager. This
+  // happens in ShutdownPostThreadsStop(). This means that to have this test
+  // represent production we have to make sure that no tasks are pending before
+  // we destroy the profile.
+  content::RunAllTasksUntilIdle();
+
   ProfileDestroyer::DestroyProfileWhenAppropriate(temp_profile);
   client.Unbind();
   api.reset();

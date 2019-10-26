@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/extensions/installation_error_infobar_delegate.h"
-#include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/startup/automation_infobar_delegate.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
@@ -44,7 +43,7 @@
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 #include "chrome/browser/ui/tab_sharing/tab_sharing_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/test/test_browser_ui.h"
+#include "chrome/browser/ui/test/test_infobar.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -156,42 +155,18 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   }
 }
 
-class InfoBarUiTest : public UiBrowserTest {
+class InfoBarUiTest : public TestInfoBar {
  public:
   InfoBarUiTest() = default;
 
-  // UiBrowserTest:
-  void PreShow() override;
+  // TestInfoBar:
   void ShowUi(const std::string& name) override;
-  bool VerifyUi() override;
-  void WaitForUserDismissal() override;
 
  private:
   using IBD = infobars::InfoBarDelegate;
-  using InfoBars = infobars::InfoBarManager::InfoBars;
-
-  // Returns the active tab.
-  content::WebContents* GetWebContents();
-  const content::WebContents* GetWebContents() const;
-
-  // Returns the InfoBarService associated with the active tab.
-  InfoBarService* GetInfoBarService();
-  const InfoBarService* GetInfoBarService() const;
-
-  // Returns the current infobars that are not already in |starting_infobars_|.
-  // Fails (i.e. returns nullopt) if the current set of infobars does not begin
-  // with |starting_infobars_|.
-  base::Optional<InfoBars> GetNewInfoBars() const;
-
-  InfoBars starting_infobars_;
-  std::vector<IBD::InfoBarIdentifier> expected_identifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarUiTest);
 };
-
-void InfoBarUiTest::PreShow() {
-  starting_infobars_ = GetNewInfoBars().value();
-}
 
 void InfoBarUiTest::ShowUi(const std::string& name) {
   if (name == "multiple_infobars") {
@@ -219,7 +194,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"keystone_promotion", IBD::KEYSTONE_PROMOTION_INFOBAR_DELEGATE_MAC},
       {"collected_cookies", IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE},
       {"installation_error", IBD::INSTALLATION_ERROR_INFOBAR_DELEGATE},
-      {"alternate_nav", IBD::ALTERNATE_NAV_INFOBAR_DELEGATE},
       {"bad_flags", IBD::BAD_FLAGS_INFOBAR_DELEGATE},
       {"default_browser", IBD::DEFAULT_BROWSER_INFOBAR_DELEGATE},
       {"google_api_keys", IBD::GOOGLE_API_KEYS_INFOBAR_DELEGATE},
@@ -231,11 +205,14 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"flash_deprecation", IBD::FLASH_DEPRECATION_INFOBAR_DELEGATE},
       {"tab_sharing", IBD::TAB_SHARING_INFOBAR_DELEGATE},
   };
-  auto id = kIdentifiers.find(name);
-  expected_identifiers_.push_back((id == kIdentifiers.end()) ? IBD::INVALID
-                                                             : id->second);
-
-  switch (expected_identifiers_.back()) {
+  auto id_entry = kIdentifiers.find(name);
+  if (id_entry == kIdentifiers.end()) {
+    ADD_FAILURE() << "Unexpected infobar " << name;
+    return;
+  }
+  auto infobar_identifier = id_entry->second;
+  AddExpectedInfoBar(infobar_identifier);
+  switch (infobar_identifier) {
     case IBD::HUNG_PLUGIN_INFOBAR_DELEGATE:
       HungPluginInfoBarDelegate::Create(GetInfoBarService(), nullptr, 0,
                                         base::ASCIIToUTF16("Test Plugin"));
@@ -337,15 +314,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
     }
 
-    case IBD::ALTERNATE_NAV_INFOBAR_DELEGATE: {
-      AutocompleteMatch match;
-      match.destination_url = GURL("http://intranetsite/");
-      AlternateNavInfoBarDelegate::CreateForOmniboxNavigation(
-          GetWebContents(), base::string16(), match,
-          GURL("http://example.com/"));
-      break;
-    }
-
     case IBD::BAD_FLAGS_INFOBAR_DELEGATE:
       chrome::ShowBadFlagsInfoBar(GetWebContents(),
                                   IDS_BAD_FLAGS_WARNING_MESSAGE,
@@ -417,57 +385,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
   }
 }
 
-bool InfoBarUiTest::VerifyUi() {
-  base::Optional<InfoBars> infobars = GetNewInfoBars();
-  if (!infobars)
-    return false;
-  return std::equal(infobars->begin(), infobars->end(),
-                    expected_identifiers_.begin(), expected_identifiers_.end(),
-                    [](infobars::InfoBar* infobar, IBD::InfoBarIdentifier id) {
-                      return infobar->delegate()->GetIdentifier() == id;
-                    });
-}
-
-void InfoBarUiTest::WaitForUserDismissal() {
-  while (!GetNewInfoBars().value_or(InfoBars()).empty()) {
-    InfoBarObserver observer(GetInfoBarService(),
-                             InfoBarObserver::Type::kInfoBarRemoved);
-    observer.Wait();
-  }
-}
-
-content::WebContents* InfoBarUiTest::GetWebContents() {
-  return browser()->tab_strip_model()->GetActiveWebContents();
-}
-
-const content::WebContents* InfoBarUiTest::GetWebContents() const {
-  return browser()->tab_strip_model()->GetActiveWebContents();
-}
-
-InfoBarService* InfoBarUiTest::GetInfoBarService() {
-  return const_cast<InfoBarService*>(
-      static_cast<const InfoBarUiTest*>(this)->GetInfoBarService());
-}
-
-const InfoBarService* InfoBarUiTest::GetInfoBarService() const {
-  // There may be no web contents if the browser window is closing.
-  const content::WebContents* web_contents = GetWebContents();
-  return web_contents ? InfoBarService::FromWebContents(web_contents) : nullptr;
-}
-
-base::Optional<InfoBarUiTest::InfoBars> InfoBarUiTest::GetNewInfoBars() const {
-  const InfoBarService* infobar_service = GetInfoBarService();
-  if (!infobar_service)
-    return base::nullopt;
-  const InfoBars& infobars = infobar_service->infobars_;
-  if ((infobars.size() < starting_infobars_.size()) ||
-      !std::equal(starting_infobars_.begin(), starting_infobars_.end(),
-                  infobars.begin()))
-    return base::nullopt;
-  return InfoBars(std::next(infobars.begin(), starting_infobars_.size()),
-                  infobars.end());
-}
-
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_hung_plugin) {
   ShowAndVerifyUi();
 }
@@ -525,10 +442,6 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_collected_cookies) {
 }
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_installation_error) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_alternate_nav) {
   ShowAndVerifyUi();
 }
 

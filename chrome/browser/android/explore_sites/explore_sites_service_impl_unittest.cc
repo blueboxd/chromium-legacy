@@ -48,7 +48,7 @@ class ExploreSitesServiceImplTest : public testing::Test {
         std::make_unique<ExploreSitesStore>(
             task_environment_.GetMainThreadTaskRunner());
     auto history_stats_reporter =
-        std::make_unique<HistoryStatisticsReporter>(nullptr, nullptr, nullptr);
+        std::make_unique<HistoryStatisticsReporter>(nullptr, nullptr);
     service_ = std::make_unique<ExploreSitesServiceImpl>(
         std::move(store),
         std::make_unique<TestURLLoaderFactoryGetter>(

@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<script>
+if (window.internals)
+  internals.useMockOverlayScrollbars();
+</script>
 <style>
   #intermediate::-webkit-scrollbar { display: none; }
 </style>
@@ -9,9 +13,3 @@
   </div>
   <div style="height: 210px"></div>
 </div>
-<script>
-if (window.internals) {
-  internals.runtimeFlags.overlayScrollbarsEnabled = true;
-  internals.settings.setMockScrollbarsEnabled(true);
-}
-</script>

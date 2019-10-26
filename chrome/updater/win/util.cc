@@ -10,8 +10,13 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/process/process_iterator.h"
+#include "base/strings/string16.h"
+#include "base/strings/sys_string_conversions.h"
+#include "chrome/updater/win/constants.h"
+#include "chrome/updater/win/user_info.h"
 
 namespace updater {
 
@@ -24,6 +29,9 @@ const unsigned int kMaxProcessQueryIterations = 50;
 const unsigned int kProcessQueryWaitTimeMs = 100;
 
 }  // namespace
+
+NamedObjectAttributes::NamedObjectAttributes() = default;
+NamedObjectAttributes::~NamedObjectAttributes() = default;
 
 HRESULT HRESULTFromLastError() {
   const auto error_code = ::GetLastError();
@@ -141,4 +149,156 @@ bool InitializeCOMSecurity() {
   return SUCCEEDED(hr);
 }
 
+HMODULE GetModuleHandleFromAddress(void* address) {
+  MEMORY_BASIC_INFORMATION mbi = {0};
+  size_t result = ::VirtualQuery(address, &mbi, sizeof(mbi));
+  DCHECK_EQ(result, sizeof(mbi));
+  return static_cast<HMODULE>(mbi.AllocationBase);
+}
+
+HMODULE GetCurrentModuleHandle() {
+  return GetModuleHandleFromAddress(
+      reinterpret_cast<void*>(&GetCurrentModuleHandle));
+}
+
+// The event name saved to the environment variable does not contain the
+// decoration added by GetNamedObjectAttributes.
+HRESULT CreateUniqueEventInEnvironment(const base::string16& var_name,
+                                       bool is_machine,
+                                       HANDLE* unique_event) {
+  DCHECK(unique_event);
+
+  const base::string16 event_name = base::SysUTF8ToWide(base::GenerateGUID());
+  NamedObjectAttributes attr;
+  GetNamedObjectAttributes(event_name.c_str(), is_machine, &attr);
+
+  HRESULT hr = CreateEvent(&attr, unique_event);
+  if (FAILED(hr))
+    return hr;
+
+  if (!::SetEnvironmentVariable(var_name.c_str(), event_name.c_str())) {
+    DWORD error = ::GetLastError();
+    return HRESULT_FROM_WIN32(error);
+  }
+
+  return S_OK;
+}
+
+HRESULT OpenUniqueEventFromEnvironment(const base::string16& var_name,
+                                       bool is_machine,
+                                       HANDLE* unique_event) {
+  DCHECK(unique_event);
+
+  base::char16 event_name[MAX_PATH] = {0};
+  if (!::GetEnvironmentVariable(var_name.c_str(), event_name,
+                                base::size(event_name))) {
+    DWORD error = ::GetLastError();
+    return HRESULT_FROM_WIN32(error);
+  }
+
+  NamedObjectAttributes attr;
+  GetNamedObjectAttributes(event_name, is_machine, &attr);
+  *unique_event = ::OpenEvent(EVENT_ALL_ACCESS, false, attr.name.c_str());
+
+  if (!*unique_event) {
+    DWORD error = ::GetLastError();
+    return HRESULT_FROM_WIN32(error);
+  }
+
+  return S_OK;
+}
+
+HRESULT CreateEvent(NamedObjectAttributes* event_attr, HANDLE* event_handle) {
+  DCHECK(event_handle);
+  DCHECK(event_attr);
+  DCHECK(!event_attr->name.empty());
+  *event_handle = ::CreateEvent(&event_attr->sa,
+                                true,   // manual reset
+                                false,  // not signaled
+                                event_attr->name.c_str());
+
+  if (!*event_handle) {
+    DWORD error = ::GetLastError();
+    return HRESULT_FROM_WIN32(error);
+  }
+
+  return S_OK;
+}
+
+void GetNamedObjectAttributes(const base::char16* base_name,
+                              bool is_machine,
+                              NamedObjectAttributes* attr) {
+  DCHECK(base_name);
+  DCHECK(attr);
+
+  attr->name = kGlobalPrefix;
+
+  if (!is_machine) {
+    base::string16 user_sid;
+    GetProcessUser(nullptr, nullptr, &user_sid);
+    attr->name += user_sid;
+    GetCurrentUserDefaultSecurityAttributes(&attr->sa);
+  } else {
+    // Grant access to administrators and system.
+    GetAdminDaclSecurityAttributes(&attr->sa, GENERIC_ALL);
+  }
+
+  attr->name += base_name;
+}
+
+bool GetCurrentUserDefaultSecurityAttributes(CSecurityAttributes* sec_attr) {
+  DCHECK(sec_attr);
+
+  CAccessToken token;
+  if (!token.GetProcessToken(TOKEN_QUERY))
+    return false;
+
+  CSecurityDesc security_desc;
+  CSid sid_owner;
+  if (!token.GetOwner(&sid_owner))
+    return false;
+
+  security_desc.SetOwner(sid_owner);
+  CSid sid_group;
+  if (!token.GetPrimaryGroup(&sid_group))
+    return false;
+
+  security_desc.SetGroup(sid_group);
+
+  CDacl dacl;
+  if (!token.GetDefaultDacl(&dacl))
+    return false;
+
+  CSid sid_user;
+  if (!token.GetUser(&sid_user))
+    return false;
+  if (!dacl.AddAllowedAce(sid_user, GENERIC_ALL))
+    return false;
+
+  security_desc.SetDacl(dacl);
+  sec_attr->Set(security_desc);
+
+  return true;
+}
+
+void GetAdminDaclSecurityDescriptor(CSecurityDesc* sd, ACCESS_MASK accessmask) {
+  DCHECK(sd);
+
+  CDacl dacl;
+  dacl.AddAllowedAce(Sids::System(), accessmask);
+  dacl.AddAllowedAce(Sids::Admins(), accessmask);
+
+  sd->SetOwner(Sids::Admins());
+  sd->SetGroup(Sids::Admins());
+  sd->SetDacl(dacl);
+  sd->MakeAbsolute();
+}
+
+void GetAdminDaclSecurityAttributes(CSecurityAttributes* sec_attr,
+                                    ACCESS_MASK accessmask) {
+  DCHECK(sec_attr);
+  CSecurityDesc sd;
+  GetAdminDaclSecurityDescriptor(&sd, accessmask);
+  sec_attr->Set(sd);
+}
 }  // namespace updater

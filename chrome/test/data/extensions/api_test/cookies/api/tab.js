@@ -6,6 +6,7 @@ var TEST_DOMAIN = 'cookies.com';
 var TEST_PATH = '/auth';
 var TEST_HOST = 'www.chrome_extensions.' + TEST_DOMAIN;
 var TEST_URL = 'http://' + TEST_HOST + '/foobar.html?arg=toolbar&param=true';
+var TEST_URL_HTTPS = 'https://' + TEST_HOST + '/foobar.html?arg=toolbar&param=true';
 var TEST_URL2 = 'http://chromium.' + TEST_DOMAIN + '/index.html';
 var TEST_URL3 = 'https://' + TEST_HOST + '/content.html';
 var TEST_URL4 = 'https://' + TEST_HOST + TEST_PATH + '/content.html';
@@ -79,7 +80,8 @@ function removeTestCookies() {
       {url: TEST_URL4, name: TEST_SECURE_COOKIE.name});
   chrome.cookies.remove({url: TEST_URL, name: 'abcd'});
   chrome.cookies.remove({url: TEST_URL, name: 'AA'});
-  chrome.cookies.remove({url: TEST_URL, name: 'A'});
+  chrome.cookies.remove({url: TEST_URL_HTTPS, name: 'A'});
+  chrome.cookies.remove({url: TEST_URL, name: 'AI'});
   chrome.cookies.remove({url: TEST_URL, name: 'B'});
   chrome.cookies.remove({url: TEST_URL, name: 'C'});
   chrome.cookies.remove({url: TEST_URL, name: 'D'});
@@ -261,9 +263,10 @@ chrome.test.runTests([
 
     // No same-site restriction
     chrome.cookies.set(
-      {url: TEST_URL, name: "A", value: "1", sameSite: "no_restriction"},
+      {url: TEST_URL_HTTPS, name: "A", value: "1", sameSite: "no_restriction",
+       secure: true},
       pass(function () {
-        chrome.cookies.get({url: TEST_URL, name: "A"}, pass(function (c) {
+        chrome.cookies.get({url: TEST_URL_HTTPS, name: "A"}, pass(function (c) {
           expectValidCookie(c);
           chrome.test.assertEq("no_restriction", c.sameSite);
         }));
@@ -298,6 +301,34 @@ chrome.test.runTests([
           chrome.test.assertEq('unspecified', c.sameSite);
         }));
       }));
+  },
+  function setSameSiteCookiesInsecureNone() {
+    chrome.test.getConfig(config => {
+      // No same-site restriction but also not secure. This should succeed if
+      // and only if the feature requiring SameSite=none cookies to be secure
+      // cookies is disabled.
+      var sameSiteNoneRequiresSecure = config.customArg === 'true';
+      removeTestCookies();
+
+      chrome.cookies.set(
+        {url: TEST_URL, name: "AI", value: "1", sameSite: "no_restriction"},
+        setResult => {
+          if (sameSiteNoneRequiresSecure) {
+            chrome.test.assertLastError(
+                 'Failed to parse or set cookie named "AI".');
+            chrome.test.assertEq(null, setResult);
+            chrome.test.succeed();
+          } else {
+            chrome.test.assertNoLastError();
+            chrome.cookies.get(
+                {url: TEST_URL_HTTPS, name: "AI"},
+                pass(function (c) {
+                  expectValidCookie(c);
+                  chrome.test.assertEq("no_restriction", c.sameSite);
+                }));
+          }
+        });
+    });
   },
   function setCookiesWithCallbacks() {
     removeTestCookies();

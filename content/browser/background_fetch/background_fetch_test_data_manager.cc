@@ -76,8 +76,9 @@ void BackgroundFetchTestDataManager::InitializeOnCoreThread() {
       base::MakeRefCounted<CacheStorageContextImpl::ObserverList>());
   DCHECK(cache_manager_);
 
-  cache_manager_->SetBlobParametersForCache(
-      blob_storage_context_->context()->AsWeakPtr());
+  auto context = base::MakeRefCounted<BlobStorageContextWrapper>(
+      blob_storage_context_->MojoContext());
+  cache_manager_->SetBlobParametersForCache(std::move(context));
 }
 
 BackgroundFetchTestDataManager::~BackgroundFetchTestDataManager() = default;

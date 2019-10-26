@@ -40,7 +40,6 @@ class ResourceRequestDetector;
 struct ResourceRequestInfo;
 class SafeBrowsingService;
 class SafeBrowsingDatabaseManager;
-class TelemetryService;
 struct V4ProtocolConfig;
 class VerdictCacheManager;
 
@@ -126,9 +125,8 @@ class ServicesDelegate {
   PasswordProtectionService* GetPasswordProtectionService(
       Profile* profile) const;
 
-  virtual void CreateTelemetryService(Profile* profile) = 0;
-  virtual void RemoveTelemetryService() = 0;
-  virtual TelemetryService* GetTelemetryService() const = 0;
+  virtual void CreateTelemetryService(Profile* profile) {}
+  virtual void RemoveTelemetryService(Profile* profile) {}
 
   virtual void CreateVerdictCacheManager(Profile* profile);
   virtual void RemoveVerdictCacheManager(Profile* profile);

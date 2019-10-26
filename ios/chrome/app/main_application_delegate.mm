@@ -86,6 +86,10 @@
       _sceneState = [[SceneState alloc] init];
       _sceneController =
           [[SceneController alloc] initWithSceneState:_sceneState];
+
+      // This is temporary plumbing that's not supposed to be here.
+      _sceneController.mainController = (id<MainControllerGuts>)_mainController;
+      _mainController.sceneController = _sceneController;
     }
   }
   return self;
@@ -117,8 +121,14 @@
 
   BOOL inBackground =
       [application applicationState] == UIApplicationStateBackground;
-  return [_appState requiresHandlingAfterLaunchWithOptions:launchOptions
-                                           stateBackground:inBackground];
+  BOOL requiresHandling =
+      [_appState requiresHandlingAfterLaunchWithOptions:launchOptions
+                                        stateBackground:inBackground];
+  if (!IsMultiwindowSupported()) {
+    self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
+  }
+
+  return requiresHandling;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application {
@@ -152,10 +162,10 @@
     self.sceneState.activationLevel = SceneActivationLevelBackground;
   }
 
-  [_appState
-      applicationDidEnterBackground:application
-                       memoryHelper:_memoryHelper
-            incognitoContentVisible:_mainController.incognitoContentVisible];
+  [_appState applicationDidEnterBackground:application
+                              memoryHelper:_memoryHelper
+                   incognitoContentVisible:self.sceneController
+                                               .incognitoContentVisible];
 }
 
 // Called when returning to the foreground.

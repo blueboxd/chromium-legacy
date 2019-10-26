@@ -38,15 +38,15 @@ FakeDemuxerStream::FakeDemuxerStream(bool is_audio) {
 
 FakeDemuxerStream::~FakeDemuxerStream() = default;
 
-void FakeDemuxerStream::FakeRead(const ReadCB& read_cb) {
+void FakeDemuxerStream::FakeRead(ReadCB read_cb) {
   if (buffer_queue_.empty()) {
     // Silent return to simulate waiting for buffer available.
-    pending_read_cb_ = read_cb;
+    pending_read_cb_ = std::move(read_cb);
     return;
   }
   scoped_refptr<DecoderBuffer> buffer = buffer_queue_.front();
   buffer_queue_.pop_front();
-  read_cb.Run(kOk, buffer);
+  std::move(read_cb).Run(kOk, buffer);
 }
 
 bool FakeDemuxerStream::IsReadPending() const {

@@ -433,8 +433,6 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ASSERT_EQ(1, GetBlockedContentsCount());
 }
 
-// TODO(https://crbug.com/1010509): Re-enable this in Chrome 80.
-#if 0
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
@@ -448,7 +446,6 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   // Expect no popup.
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
-#endif
 
 // This only exists for the AllowPopupsWhenTabIsClosedWithSpecialPolicy test.
 // Remove this in Chrome 82. https://crbug.com/937569

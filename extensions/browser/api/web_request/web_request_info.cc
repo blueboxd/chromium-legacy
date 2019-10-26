@@ -23,8 +23,8 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/url_loader.h"
 
 namespace keys = extension_web_request_api_constants;
@@ -244,7 +244,7 @@ WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
 WebRequestInfo::~WebRequestInfo() = default;
 
 void WebRequestInfo::AddResponseInfoFromResourceResponse(
-    const network::ResourceResponseHead& response) {
+    const network::mojom::URLResponseHead& response) {
   response_headers = response.headers;
   if (response_headers)
     response_code = response_headers->response_code();

@@ -89,6 +89,10 @@ public class WebLayerShellActivity extends FragmentActivity {
         super.startActivityFromFragment(fragment, intent, requestCode, options);
     }
 
+    public View getTopContentsContainer() {
+        return mTopContentsContainer;
+    }
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

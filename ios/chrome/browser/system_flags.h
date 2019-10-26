@@ -57,6 +57,9 @@ bool IsThirdPartyKeyboardWorkaroundEnabled();
 // only once.
 bool MustClearApplicationGroupSandbox();
 
+// Whether the DCheckIsFatal feature should be disabled.
+bool AreDCHECKCrashesDisabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_SYSTEM_FLAGS_H_

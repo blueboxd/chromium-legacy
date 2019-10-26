@@ -26,7 +26,6 @@
 #include "content/public/common/network_service_util.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/network_isolation_key.h"
 #include "third_party/blink/public/common/features.h"
@@ -594,10 +593,10 @@ class DedicatedWorkerHostFactoryImpl final
         creator_process_id_, ancestor_render_frame_id_,
         creator_render_frame_id_, origin, std::move(host_receiver));
     host->BindBrowserInterfaceBrokerReceiver(std::move(broker_receiver));
-    mojo::MakeStrongBinding(std::move(host),
-                            FilterRendererExposedInterfaces(
-                                blink::mojom::kNavigation_DedicatedWorkerSpec,
-                                creator_process_id_, std::move(request)));
+    mojo::MakeSelfOwnedReceiver(
+        std::move(host), FilterRendererExposedInterfaces(
+                             blink::mojom::kNavigation_DedicatedWorkerSpec,
+                             creator_process_id_, std::move(request)));
   }
 
   // PlzDedicatedWorker:
@@ -634,7 +633,7 @@ class DedicatedWorkerHostFactoryImpl final
         broker.InitWithNewPipeAndPassReceiver());
     auto* host_raw = host.get();
     service_manager::mojom::InterfaceProviderPtr interface_provider;
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::move(host),
         FilterRendererExposedInterfaces(
             blink::mojom::kNavigation_DedicatedWorkerSpec, creator_process_id_,

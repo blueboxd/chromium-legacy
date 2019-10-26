@@ -18,6 +18,14 @@ export class TabStripEmbedderProxy {
     return sendWithPromise('getThemeColors');
   }
 
+  /**
+   * @return {!Promise<!Object<string, string>>} Object with CSS variables
+   *     as keys and pixel lengths as values
+   */
+  getLayout() {
+    return sendWithPromise('getLayout');
+  }
+
   observeThemeChanges() {
     chrome.send('observeThemeChanges');
   }

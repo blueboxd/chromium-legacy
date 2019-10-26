@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.browser.ui.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.ViewType;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -720,6 +719,7 @@ public class BookmarkReorderTest extends BookmarkTest {
 
         // Show in folder.
         onView(withText("Show in folder")).perform(click());
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
 
         // Make sure that we're in the right folder (index 1 because of promo).
         View itemA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
@@ -749,6 +749,9 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testAddBookmarkInBackgroundWithSelection() throws Exception {
         BookmarkId id = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
         BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        // Force empty partner bookmark folder to keep set of bookmark items consistent across
+        // devices.
+        loadEmptyPartnerBookmarksForTesting();
         openBookmarkManager();
         Assert.assertEquals(1, getAdapter().getItemCount());
         BookmarkRow row =
@@ -786,6 +789,9 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkId googleId = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         BookmarkId aId = addBookmark(TEST_TITLE_A, TEST_URL_A);
         BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        // Force empty partner bookmark folder to keep set of bookmark items consistent across
+        // devices.
+        loadEmptyPartnerBookmarksForTesting();
         openBookmarkManager();
         Assert.assertEquals(3, getAdapter().getItemCount());
         BookmarkRow row =
@@ -816,6 +822,9 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkId googleId = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         BookmarkId aId = addBookmark(TEST_TITLE_A, TEST_URL_A);
         BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        // Force empty partner bookmark folder to keep set of bookmark items consistent across
+        // devices.
+        loadEmptyPartnerBookmarksForTesting();
         openBookmarkManager();
         Assert.assertEquals(3, getAdapter().getItemCount());
         BookmarkRow row =
@@ -846,6 +855,9 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testUpdateSelectedBookmarkInBackground() throws Exception {
         BookmarkId id = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
         BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        // Force empty partner bookmark folder to keep set of bookmark items consistent across
+        // devices.
+        loadEmptyPartnerBookmarksForTesting();
         openBookmarkManager();
         Assert.assertEquals(1, getAdapter().getItemCount());
         BookmarkRow row =
@@ -879,17 +891,6 @@ public class BookmarkReorderTest extends BookmarkTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mManager.getDragStateDelegate().setA11yStateForTesting(false);
         });
-    }
-
-    /**
-     * Loads an empty partner bookmarks folder for testing. The partner bookmarks folder will appear
-     * in the mobile bookmarks folder.
-     *
-     */
-    private void loadEmptyPartnerBookmarksForTesting() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting(); });
-        BookmarkTestUtil.waitForBookmarkModelLoaded();
     }
 
     /**

@@ -20,7 +20,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -803,7 +802,6 @@ class ObfuscatedFileUtilTest : public testing::Test,
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<leveldb::Env> incognito_leveldb_environment_;
   base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;

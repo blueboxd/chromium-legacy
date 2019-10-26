@@ -22,7 +22,7 @@ class DeviceAccountsSynchronizerImpl : public DeviceAccountsSynchronizer {
   // DeviceAccountsSynchronizer implementation.
 #if defined(OS_ANDROID)
   void ReloadAllAccountsFromSystemWithPrimaryAccount(
-      const CoreAccountId& primary_account_id) override;
+      const base::Optional<CoreAccountId>& primary_account_id) override;
 #endif
 
 #if defined(OS_IOS)

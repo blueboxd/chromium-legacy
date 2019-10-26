@@ -99,8 +99,8 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
       headline = identity_info.site_identity;
     }
 
-    ScopedJavaLocalRef<jstring> description =
-        ConvertUTF8ToJavaString(env, identity_info.identity_status_description);
+    ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
+        env, identity_info.identity_status_description_android);
     base::string16 certificate_label;
 
     // Only show the certificate viewer link if the connection actually used a

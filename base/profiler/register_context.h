@@ -10,7 +10,6 @@
 #define BASE_PROFILER_REGISTER_CONTEXT_H_
 
 #include <cstdint>
-#include <type_traits>
 
 #include "build/build_config.h"
 
@@ -25,13 +24,14 @@
 namespace base {
 
 // Helper function to account for the fact that platform-specific register state
-// types may be unsigned and of the same size as uintptr_t, but not of the same
-// type -- e.g. unsigned int vs. unsigned long on 32-bit Windows and unsigned
-// long vs. unsigned long long on Mac.
+// types may be of the same size as uintptr_t, but not of the same type or
+// signedness -- e.g. unsigned int vs. unsigned long on 32-bit Windows, unsigned
+// long vs. unsigned long long on Mac, long long vs. unsigned long long on
+// Linux.
 template <typename T>
 uintptr_t& AsUintPtr(T* value) {
-  static_assert(std::is_unsigned<T>::value && sizeof(T) == sizeof(uintptr_t),
-                "register state type must be equivalent to uintptr_t");
+  static_assert(sizeof(T) == sizeof(uintptr_t),
+                "register state type must be of equivalent size to uintptr_t");
   return *reinterpret_cast<uintptr_t*>(value);
 }
 
@@ -86,11 +86,11 @@ inline uintptr_t& RegisterContextInstructionPointer(
   return AsUintPtr(&context->__rip);
 }
 
-#elif (defined(OS_ANDROID) || defined(OS_LINUX)) && \
-    defined(ARCH_CPU_ARM_FAMILY) &&                 \
-    defined(ARCH_CPU_32_BITS)  // #if defined(OS_WIN)
+#elif defined(OS_ANDROID) || defined(OS_LINUX)  // #if defined(OS_WIN)
 
 using RegisterContext = mcontext_t;
+
+#if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
 
 inline uintptr_t& RegisterContextStackPointer(mcontext_t* context) {
   return AsUintPtr(&context->arm_sp);
@@ -103,6 +103,55 @@ inline uintptr_t& RegisterContextFramePointer(mcontext_t* context) {
 inline uintptr_t& RegisterContextInstructionPointer(mcontext_t* context) {
   return AsUintPtr(&context->arm_ip);
 }
+
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_64_BITS)
+
+inline uintptr_t& RegisterContextStackPointer(mcontext_t* context) {
+  return AsUintPtr(&context->sp);
+}
+
+inline uintptr_t& RegisterContextFramePointer(mcontext_t* context) {
+  // r29 is the FP register on 64-bit ARM per the Procedure Call Standard,
+  // section 5.1.1.
+  return AsUintPtr(&context->regs[29]);
+}
+
+inline uintptr_t& RegisterContextInstructionPointer(mcontext_t* context) {
+  return AsUintPtr(&context->pc);
+}
+
+#elif defined(ARCH_CPU_X86_64)  // #if defined(ARCH_CPU_ARM_FAMILY) &&
+                                // defined(ARCH_CPU_32_BITS)
+
+inline uintptr_t& RegisterContextStackPointer(mcontext_t* context) {
+  return AsUintPtr(&context->gregs[REG_RSP]);
+}
+
+inline uintptr_t& RegisterContextFramePointer(mcontext_t* context) {
+  return AsUintPtr(&context->gregs[REG_RBP]);
+}
+
+inline uintptr_t& RegisterContextInstructionPointer(mcontext_t* context) {
+  return AsUintPtr(&context->gregs[REG_RIP]);
+}
+
+#else  // #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
+
+// Placeholders for other POSIX platforms that just return the first
+// three register slots in the context.
+inline uintptr_t& RegisterContextStackPointer(mcontext_t* context) {
+  return *reinterpret_cast<uintptr_t*>(context);
+}
+
+inline uintptr_t& RegisterContextFramePointer(mcontext_t* context) {
+  return *(reinterpret_cast<uintptr_t*>(context) + 1);
+}
+
+inline uintptr_t& RegisterContextInstructionPointer(mcontext_t* context) {
+  return *(reinterpret_cast<uintptr_t*>(context) + 2);
+}
+
+#endif  // #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
 
 #else  // #if defined(OS_WIN)
 

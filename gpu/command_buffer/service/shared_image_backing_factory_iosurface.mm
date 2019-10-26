@@ -378,7 +378,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                               const gfx::ColorSpace& color_space,
                               uint32_t usage,
                               base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                              base::Optional<DawnTextureFormat> dawn_format,
+                              base::Optional<WGPUTextureFormat> dawn_format,
                               size_t estimated_size)
       : SharedImageBacking(mailbox,
                            format,
@@ -477,7 +477,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      DawnDevice device) override {
+      WGPUDevice device) override {
 #if BUILDFLAG(USE_DAWN)
     if (!dawn_format_) {
       LOG(ERROR) << "Format not supported for Dawn";
@@ -561,7 +561,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
   }
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
-  base::Optional<DawnTextureFormat> dawn_format_;
+  base::Optional<WGPUTextureFormat> dawn_format_;
   base::scoped_nsprotocol<id<MTLTexture>> mtl_texture_;
   bool is_cleared_ = false;
 

@@ -23,13 +23,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorView;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

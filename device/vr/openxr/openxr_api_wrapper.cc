@@ -478,7 +478,9 @@ XrResult OpenXrApiWrapper::LocateViews(XrReferenceSpaceType type,
       NOTREACHED();
   }
 
-  std::vector<XrView> new_views(kNumViews);
+  // Initialize the XrView objects' type field to XR_TYPE_VIEW. xrLocateViews
+  // fails validation if this isn't set.
+  std::vector<XrView> new_views(kNumViews, {XR_TYPE_VIEW});
   uint32_t view_count;
   RETURN_IF_XR_FAILED(xrLocateViews(session_, &view_locate_info, &view_state,
                                     new_views.size(), &view_count,

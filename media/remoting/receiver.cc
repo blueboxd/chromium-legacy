@@ -74,14 +74,15 @@ void Receiver::AcquireRenderer(std::unique_ptr<pb::RpcMessage> message) {
 
   remote_handle_ = message->integer_value();
   if (stream_provider_) {
-    VLOG(1) << "Acquire renderer error: Already aquired.";
+    VLOG(1) << "Acquire renderer error: Already acquired.";
     OnError(PipelineStatus::PIPELINE_ERROR_DECODE);
     return;
   }
 
   stream_provider_.reset(new StreamProvider(
-      rpc_broker_, base::Bind(&Receiver::OnError, weak_factory_.GetWeakPtr(),
-                              PipelineStatus::PIPELINE_ERROR_DECODE)));
+      rpc_broker_,
+      base::BindOnce(&Receiver::OnError, weak_factory_.GetWeakPtr(),
+                     PipelineStatus::PIPELINE_ERROR_DECODE)));
 
   DVLOG(3) << __func__
            << ": Issues RPC_ACQUIRE_RENDERER_DONE RPC message. remote_handle="
@@ -110,9 +111,9 @@ void Receiver::Initialize(std::unique_ptr<pb::RpcMessage> message) {
 
 void Receiver::OnStreamInitialized() {
   DCHECK(stream_provider_);
-  renderer_->Initialize(
-      stream_provider_.get(), this,
-      base::Bind(&Receiver::OnRendererInitialized, weak_factory_.GetWeakPtr()));
+  renderer_->Initialize(stream_provider_.get(), this,
+                        base::BindOnce(&Receiver::OnRendererInitialized,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void Receiver::OnRendererInitialized(PipelineStatus status) {
@@ -162,7 +163,7 @@ void Receiver::FlushUntil(std::unique_ptr<pb::RpcMessage> message) {
   }
   time_update_timer_.Stop();
   renderer_->Flush(
-      base::Bind(&Receiver::OnFlushDone, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&Receiver::OnFlushDone, weak_factory_.GetWeakPtr()));
 }
 
 void Receiver::OnFlushDone() {

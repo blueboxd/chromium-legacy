@@ -466,7 +466,6 @@ void ChromePasswordProtectionService::ShowInterstitial(
       GURL(chrome::kChromeUIResetPasswordURL), content::Referrer(),
       WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
       /*is_renderer_initiated=*/false);
-  params.uses_post = true;
   std::string post_data =
       base::NumberToString(static_cast<std::underlying_type_t<PasswordType>>(
           ConvertReusedPasswordAccountTypeToPasswordType(password_type)));

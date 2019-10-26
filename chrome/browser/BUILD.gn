@@ -2880,6 +2880,7 @@ jumbo_static_library("browser") {
       "//chrome/android/modules/extra_icu/provider:native",
       "//chrome/browser/android/thin_webview/internal",
       "//chrome/browser/android/webapk:proto",
+      "//chrome/browser/notifications/chime/android",
       "//chrome/browser/notifications/scheduler/public",
       "//chrome/browser/share",
       "//chrome/services/media_gallery_util/public/cpp",

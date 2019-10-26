@@ -2557,6 +2557,10 @@ const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
 
+const char kGamesHubName[] = "Games Hub";
+const char kGamesHubDescription[] =
+    "Enables viewing and usage of the Games Hub.";
+
 const char kInterestFeedNotificationsName[] = "Interest Feed Notifications";
 const char kInterestFeedNotificationsDescription[] =
     "Show notifications for some suggested content from the interest feed. "

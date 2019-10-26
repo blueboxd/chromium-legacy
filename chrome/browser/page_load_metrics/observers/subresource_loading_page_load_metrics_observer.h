@@ -71,6 +71,9 @@ class SubresourceLoadingPageLoadMetricsObserver
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
 
+  // Whether data saver was enabled for this page load when it committed.
+  bool data_saver_enabled_at_commit_ = false;
+
   // The time that the navigation started. Used to timebox the history service
   // query on commit.
   base::Time navigation_start_;

@@ -51,12 +51,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
   // storage::MojoBlobReader::Delegate implementation:
   RequestSideData DidCalculateSize(uint64_t total_size,
                                    uint64_t content_size) override;
-  void DidReadSideData(net::IOBufferWithSize* data) override;
+  void DidReadSideData(base::Optional<mojo_base::BigBuffer> data) override;
   void OnComplete(net::Error error_code, uint64_t total_written_bytes) override;
 
   void HeadersCompleted(net::HttpStatusCode status_code,
                         uint64_t content_size,
-                        net::IOBufferWithSize* metadata);
+                        base::Optional<mojo_base::BigBuffer> metadata);
 
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;

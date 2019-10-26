@@ -2036,7 +2036,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   content::OpenURLParams params(dest_url(), Referrer(),
                                 WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_TYPED, false);
-  params.uses_post = true;
   params.post_data = network::ResourceRequestBody::CreateFromBytes(
       post_data.data(), post_data.size());
   NavigateToURLWithParams(params, false);

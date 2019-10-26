@@ -339,8 +339,7 @@ void NavigatorImpl::RequestOpenURL(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
     const base::Optional<url::Origin>& initiator_origin,
-    bool uses_post,
-    const scoped_refptr<network::ResourceRequestBody>& body,
+    const scoped_refptr<network::ResourceRequestBody>& post_body,
     const std::string& extra_headers,
     const Referrer& referrer,
     WindowOpenDisposition disposition,
@@ -380,8 +379,7 @@ void NavigatorImpl::RequestOpenURL(
   OpenURLParams params(url, referrer, frame_tree_node_id, disposition,
                        ui::PAGE_TRANSITION_LINK,
                        true /* is_renderer_initiated */);
-  params.uses_post = uses_post;
-  params.post_data = body;
+  params.post_data = post_body;
   params.extra_headers = extra_headers;
   if (redirect_chain.size() > 0)
     params.redirect_chain = redirect_chain;

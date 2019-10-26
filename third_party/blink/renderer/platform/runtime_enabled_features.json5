@@ -1090,6 +1090,9 @@
       name: "NewRemotePlaybackPipeline",
     },
     {
+      name: "NewSystemColors",
+    },
+    {
       name: "NoIdleEncodingForWebTests",
       status: "test",
     },
@@ -1171,7 +1174,6 @@
     },
     {
       name: "OverlayScrollbars",
-      settable_from_internals: true,
     },
     {
       name: "OverscrollCustomization",
@@ -1210,6 +1212,11 @@
     },
     {
       name: "PassPaintVisualRectToCompositor",
+    },
+    // This is to add an option to enable the Reveal button on password inputs while waiting ::reveal gets standardized.
+    {
+      name: "PasswordReveal",
+      depends_on: ["FormControlsRefresh"],
     },
     {
       name: "PaymentApp",

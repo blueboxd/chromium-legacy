@@ -4,6 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/subresource_loading_page_load_metrics_observer.h"
 
+#include <algorithm>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -16,9 +18,23 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/cookie_options.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 namespace {
+
+// Yields 10 buckets between 1 and 180 (1,2,3,5,9,15,25,42,70,119), per privacy
+// requirements. Computed using:
+// CEIL(
+//   POW(kDaysSinceLastVisitBucketSpacing,
+//       FLOOR(LN(sample) / LN(kDaysSinceLastVisitBucketSpacing)))
+// )
+const double kDaysSinceLastVisitBucketSpacing = 1.7;
+
+const size_t kUkmCssJsBeforeFcpMax = 10;
 
 bool IsCSSOrJS(const std::string& mime_type) {
   std::string lower_mime_type = base::ToLowerASCII(mime_type);
@@ -77,6 +93,9 @@ SubresourceLoadingPageLoadMetricsObserver::OnCommit(
 
   if (profile->IsOffTheRecord())
     return STOP_OBSERVING;
+
+  data_saver_enabled_at_commit_ = data_reduction_proxy::
+      DataReductionProxySettings::IsDataSaverEnabledByUser(profile->GetPrefs());
 
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfileIfExists(
@@ -186,9 +205,6 @@ void SubresourceLoadingPageLoadMetricsObserver::RecordMetrics() {
   }
   history_query_times_.clear();
 
-  // TODO(crbug.com/995437): Add UKM for data saver users once all metrics
-  // are in place.
-
   if (mainframe_had_cookies_.has_value()) {
     UMA_HISTOGRAM_BOOLEAN(
         "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies",
@@ -215,6 +231,42 @@ void SubresourceLoadingPageLoadMetricsObserver::RecordMetrics() {
   UMA_HISTOGRAM_COUNTS_100(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached",
       loaded_css_js_from_network_before_fcp_);
+
+  // Only record UKM for Data Saver users.
+  if (!data_saver_enabled_at_commit_)
+    return;
+
+  ukm::builders::PrefetchProxy builder(GetDelegate().GetSourceId());
+
+  if (min_days_since_last_visit_to_origin_.has_value()) {
+    // The -1 value is a sentinel to signal there was no previous visit. Don't
+    // let the ukm call make it 0.
+    if (min_days_since_last_visit_to_origin_.value() == -1) {
+      builder.Setdays_since_last_visit_to_origin(-1);
+    } else {
+      int64_t maxxed_days_since_last_visit =
+          std::min(180, min_days_since_last_visit_to_origin_.value());
+      int64_t ukm_days_since_last_visit = ukm::GetExponentialBucketMin(
+          maxxed_days_since_last_visit, kDaysSinceLastVisitBucketSpacing);
+      builder.Setdays_since_last_visit_to_origin(ukm_days_since_last_visit);
+    }
+  }
+  if (mainframe_had_cookies_.has_value()) {
+    int ukm_mainpage_had_cookies = mainframe_had_cookies_.value() ? 1 : 0;
+    builder.Setmainpage_request_had_cookies(ukm_mainpage_had_cookies);
+  }
+
+  int ukm_loaded_css_js_from_cache_before_fcp =
+      std::min(kUkmCssJsBeforeFcpMax, loaded_css_js_from_cache_before_fcp_);
+  builder.Setcount_css_js_loaded_cache_before_fcp(
+      ukm_loaded_css_js_from_cache_before_fcp);
+
+  int ukm_loaded_css_js_from_network_before_fcp =
+      std::min(kUkmCssJsBeforeFcpMax, loaded_css_js_from_network_before_fcp_);
+  builder.Setcount_css_js_loaded_network_before_fcp(
+      ukm_loaded_css_js_from_network_before_fcp);
+
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy

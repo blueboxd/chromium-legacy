@@ -150,8 +150,8 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void SetState(State next_state);
   void CompleteSeek(base::TimeDelta seek_time, PipelineStatus status);
   void CompleteSuspend(PipelineStatus status);
-  void InitializeDemuxer(const PipelineStatusCB& done_cb);
-  void InitializeRenderer(const PipelineStatusCB& done_cb);
+  void InitializeDemuxer(PipelineStatusCallback done_cb);
+  void InitializeRenderer(PipelineStatusCallback done_cb);
   void DestroyRenderer();
   void ReportMetadata(StartType start_type);
 
@@ -416,8 +416,8 @@ void PipelineImpl::RendererWrapper::Resume(std::unique_ptr<Renderer> renderer,
   fns.Push(base::BindRepeating(&Demuxer::Seek, base::Unretained(demuxer_),
                                start_timestamp));
 
-  fns.Push(base::BindRepeating(&RendererWrapper::InitializeRenderer,
-                               weak_factory_.GetWeakPtr()));
+  fns.Push(base::BindOnce(&RendererWrapper::InitializeRenderer,
+                          weak_factory_.GetWeakPtr()));
 
   pending_callbacks_ = SerialRunner::Run(
       std::move(fns),
@@ -883,21 +883,21 @@ void PipelineImpl::RendererWrapper::CompleteSuspend(PipelineStatus status) {
 }
 
 void PipelineImpl::RendererWrapper::InitializeDemuxer(
-    const PipelineStatusCB& done_cb) {
+    PipelineStatusCallback done_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  demuxer_->Initialize(this, done_cb);
+  demuxer_->Initialize(this, std::move(done_cb));
 }
 
 void PipelineImpl::RendererWrapper::InitializeRenderer(
-    const PipelineStatusCB& done_cb) {
+    PipelineStatusCallback done_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   switch (demuxer_->GetType()) {
     case MediaResource::Type::STREAM:
       if (demuxer_->GetAllStreams().empty()) {
         DVLOG(1) << "Error: demuxer does not have an audio or a video stream.";
-        done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
+        std::move(done_cb).Run(PIPELINE_ERROR_COULD_NOT_RENDER);
         return;
       }
       break;
@@ -906,7 +906,7 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
       // NOTE: Empty GURL are not valid.
       if (!demuxer_->GetMediaUrlParams().media_url.is_valid()) {
         DVLOG(1) << "Error: demuxer does not have a valid URL.";
-        done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
+        std::move(done_cb).Run(PIPELINE_ERROR_COULD_NOT_RENDER);
         return;
       }
       break;
@@ -917,7 +917,7 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
                                    base::BindRepeating(&IgnoreCdmAttached));
   }
 
-  shared_state_.renderer->Initialize(demuxer_, this, done_cb);
+  shared_state_.renderer->Initialize(demuxer_, this, std::move(done_cb));
 }
 
 void PipelineImpl::RendererWrapper::DestroyRenderer() {

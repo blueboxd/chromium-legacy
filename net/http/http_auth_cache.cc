@@ -71,6 +71,20 @@ HttpAuthCache::HttpAuthCache(bool key_server_entries_by_network_isolation_key)
 
 HttpAuthCache::~HttpAuthCache() = default;
 
+void HttpAuthCache::SetKeyServerEntriesByNetworkIsolationKey(
+    bool key_server_entries_by_network_isolation_key) {
+  if (key_server_entries_by_network_isolation_key_ ==
+      key_server_entries_by_network_isolation_key) {
+    return;
+  }
+
+  key_server_entries_by_network_isolation_key_ =
+      key_server_entries_by_network_isolation_key;
+  base::EraseIf(entries_, [](EntryMap::value_type& entry_map_pair) {
+    return entry_map_pair.first.target == HttpAuth::AUTH_SERVER;
+  });
+}
+
 // Performance: O(logN+n), where N is the total number of entries, n is the
 // number of realm entries for the given origin, target, and with a matching
 // NetworkIsolationKey.

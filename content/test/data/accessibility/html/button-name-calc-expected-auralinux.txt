@@ -6,5 +6,15 @@
 ++[push button] name='LabelledBy4' description='DescribedBy4' labelled-by described-by explicit-name:true
 ++[push button] name='InnerText5' description='DescribedBy5' described-by
 ++[push button] name='Outer inner'
+++++[text] name='Outer'
+++++[section]
+++++++[text] name='inner'
 ++[push button] name='Outer inner1'
+++++[text] name='Outer'
+++++[section] name='inner1' explicit-name:true
+++++++[text] name='inner2'
 ++[push button] name='Outer grandchild'
+++++[text] name='Outer'
+++++[section]
+++++++[section]
+++++++++[text] name='grandchild'

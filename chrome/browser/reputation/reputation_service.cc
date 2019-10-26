@@ -154,7 +154,7 @@ bool ShouldSuppressWarning(const GURL& url) {
 
 ReputationService::ReputationService(Profile* profile) : profile_(profile) {}
 
-ReputationService::~ReputationService() {}
+ReputationService::~ReputationService() = default;
 
 // static
 ReputationService* ReputationService::Get(Profile* profile) {
@@ -257,7 +257,7 @@ void ReputationService::GetReputationStatusWithEngagedSites(
 
   // 5. Keyword heuristics.
   if (ShouldTriggerSafetyTipFromKeywordInURL(
-          url, top500_domains::kTop500Keywords, 500)) {
+          url, navigated_domain, top500_domains::kTop500Keywords, 500)) {
     std::move(callback).Run(security_state::SafetyTipStatus::kBadKeyword,
                             IsIgnored(url), url, GURL());
     return;

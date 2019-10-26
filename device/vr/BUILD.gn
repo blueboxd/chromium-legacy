@@ -93,18 +93,6 @@ if (enable_vr) {
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
 
-    if (!is_android) {
-      sources += [
-        "isolated_gamepad_data_fetcher.cc",
-        "isolated_gamepad_data_fetcher.h",
-      ]
-
-      deps += [
-        "//device/gamepad",
-        "//device/gamepad/public/cpp:shared_with_blink",
-      ]
-    }
-
     if (enable_openvr) {
       deps += [ "//third_party/openvr:openvr" ]
       sources += [

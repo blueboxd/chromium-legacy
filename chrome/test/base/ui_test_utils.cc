@@ -259,7 +259,6 @@ void NavigateToURLWithPost(Browser* browser, const GURL& url) {
   std::string post_data("test=body");
   params.post_data = network::ResourceRequestBody::CreateFromBytes(
       post_data.data(), post_data.size());
-  params.uses_post = true;
 
   NavigateToURL(&params);
 }

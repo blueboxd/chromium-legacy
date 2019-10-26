@@ -124,11 +124,8 @@ void TabModelJniBridge::HandlePopupNavigation(TabAndroid* parent,
     jinitiator_origin =
         ConvertUTF8ToJavaString(env, params->initiator_origin->Serialize());
   }
-  ScopedJavaLocalRef<jobject> jpost_data;
-  if (params->uses_post && params->post_data) {
-    jpost_data =
-        content::ConvertResourceRequestBodyToJavaObject(env, params->post_data);
-  }
+  ScopedJavaLocalRef<jobject> jpost_data =
+      content::ConvertResourceRequestBodyToJavaObject(env, params->post_data);
   Java_TabModelJniBridge_openNewTab(
       env, jobj, parent->GetJavaObject(), jurl, jinitiator_origin, jheaders,
       jpost_data, static_cast<int>(disposition), params->created_with_opener,

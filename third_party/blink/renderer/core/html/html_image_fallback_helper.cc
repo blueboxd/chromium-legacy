@@ -22,7 +22,7 @@
 namespace blink {
 
 static bool NoImageSourceSpecified(const Element& element) {
-  return element.getAttribute(html_names::kSrcAttr).IsEmpty();
+  return element.FastGetAttribute(html_names::kSrcAttr).IsEmpty();
 }
 
 static bool ElementRepresentsNothing(const Element& element) {

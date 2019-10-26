@@ -60,7 +60,7 @@ class MediaNotificationContainerImplView
       const media_session::mojom::MediaSessionInfoPtr& session_info) override {}
   void OnMediaSessionMetadataChanged() override;
   void OnVisibleActionsChanged(
-      const std::set<media_session::mojom::MediaSessionAction>& actions)
+      const base::flat_set<media_session::mojom::MediaSessionAction>& actions)
       override;
   void OnMediaArtworkChanged(const gfx::ImageSkia& image) override;
   void OnColorsChanged(SkColor foreground, SkColor background) override;

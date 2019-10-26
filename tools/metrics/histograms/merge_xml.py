@@ -6,8 +6,10 @@
 """A script to merge multiple source xml files into a single histograms.xml."""
 
 import argparse
-import expand_owners
 import xml.dom.minidom
+
+import expand_owners
+import extract_histograms
 
 
 def GetElementsByTagName(trees, tag):
@@ -19,7 +21,8 @@ def GetElementsByTagName(trees, tag):
   Returns:
     A list of DOM nodes with the specified tag.
   """
-  return [e for t in trees for e in t.getElementsByTagName(tag)]
+  iterator = extract_histograms.IterElementsWithTag
+  return list(e for t in trees for e in iterator(t, tag, 2))
 
 
 def MakeNodeWithChildren(doc, tag, children):

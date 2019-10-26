@@ -1961,7 +1961,7 @@ TEST_F('ChromeVoxBackgroundTest', 'EventFromAction', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'EventFromUser', function() {
+TEST_F('ChromeVoxBackgroundTest', 'DISABLED_EventFromUser', function() {
   this.runWithLoadedTree(function() {/*
     <button>ok</button><button>cancel</button>
   */}, function(root) {

@@ -25,10 +25,10 @@ class MojoRendererWrapper : public Renderer {
   // Renderer implementation.
   void Initialize(MediaResource* media_resource,
                   media::RendererClient* client,
-                  const PipelineStatusCB& init_cb) override;
+                  PipelineStatusCallback init_cb) override;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) override;
-  void Flush(const base::Closure& flush_cb) override;
+  void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;

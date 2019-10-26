@@ -91,12 +91,6 @@ public class OMADownloadHandler extends BroadcastReceiver {
     private static final String TAG = "OMADownloadHandler";
     private static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
 
-    // MIME types for OMA downloads.
-    public static final String OMA_DOWNLOAD_DESCRIPTOR_MIME = "application/vnd.oma.dd+xml";
-    public static final String OMA_DRM_MESSAGE_MIME = "application/vnd.oma.drm.message";
-    public static final String OMA_DRM_CONTENT_MIME = "application/vnd.oma.drm.content";
-    public static final String OMA_DRM_RIGHTS_MIME = "application/vnd.oma.drm.rights+wbxml";
-
     // Valid download descriptor attributes.
     protected static final String OMA_TYPE = "type";
     protected static final String OMA_SIZE = "size";
@@ -209,8 +203,8 @@ public class OMADownloadHandler extends BroadcastReceiver {
          */
         String getDrmType() {
             for (String type : mTypes) {
-                if (type.equalsIgnoreCase(OMA_DRM_MESSAGE_MIME)
-                        || type.equalsIgnoreCase(OMA_DRM_CONTENT_MIME)) {
+                if (type.equalsIgnoreCase(MimeUtils.OMA_DRM_MESSAGE_MIME)
+                        || type.equalsIgnoreCase(MimeUtils.OMA_DRM_CONTENT_MIME)) {
                     return type;
                 }
             }
@@ -608,10 +602,10 @@ public class OMADownloadHandler extends BroadcastReceiver {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         Uri uri = Uri.parse(omaInfo.getValue(OMA_OBJECT_URI));
         for (String type : omaInfo.getTypes()) {
-            if (!type.equalsIgnoreCase(OMA_DRM_MESSAGE_MIME)
-                    && !type.equalsIgnoreCase(OMA_DRM_CONTENT_MIME)
-                    && !type.equalsIgnoreCase(OMA_DOWNLOAD_DESCRIPTOR_MIME)
-                    && !type.equalsIgnoreCase(OMA_DRM_RIGHTS_MIME)) {
+            if (!type.equalsIgnoreCase(MimeUtils.OMA_DRM_MESSAGE_MIME)
+                    && !type.equalsIgnoreCase(MimeUtils.OMA_DRM_CONTENT_MIME)
+                    && !type.equalsIgnoreCase(MimeUtils.OMA_DOWNLOAD_DESCRIPTOR_MIME)
+                    && !type.equalsIgnoreCase(MimeUtils.OMA_DRM_RIGHTS_MIME)) {
                 intent.setDataAndType(uri, type);
                 if (!PackageManagerUtils
                                 .queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
@@ -878,7 +872,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
                 DownloadManagerService.getDownloadManagerService().getInfoBarController(
                         downloadItem.getDownloadInfo().isOffTheRecord());
         if (infobarController == null) return;
-        OfflineItem offlineItem = DownloadInfo.createOfflineItem(downloadItem.getDownloadInfo());
+        OfflineItem offlineItem = DownloadItem.createOfflineItem(downloadItem);
         offlineItem.id.namespace = LegacyHelpers.LEGACY_ANDROID_DOWNLOAD_NAMESPACE;
         if (downloadStatus == DownloadManagerService.DownloadStatus.COMPLETE) {
             offlineItem.state = OfflineItemState.COMPLETE;

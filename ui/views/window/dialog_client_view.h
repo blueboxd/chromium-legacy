@@ -46,6 +46,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Accessors in case the user wishes to adjust these buttons.
   LabelButton* ok_button() const { return ok_button_; }
   LabelButton* cancel_button() const { return cancel_button_; }
+  View* extra_view() const { return extra_view_; }
 
   void SetButtonRowInsets(const gfx::Insets& insets);
 

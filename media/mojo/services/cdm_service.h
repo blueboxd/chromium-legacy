@@ -15,6 +15,7 @@
 #include "media/mojo/services/deferred_destroy_strong_binding_set.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -87,8 +88,9 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   void LoadCdm(const base::FilePath& cdm_path) final;
 #endif  // defined(OS_MACOSX)
   void CreateCdmFactory(
-      mojom::CdmFactoryRequest request,
-      service_manager::mojom::InterfaceProviderPtr host_interfaces) final;
+      mojo::PendingReceiver<mojom::CdmFactory> receiver,
+      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+          host_interfaces) final;
 
   service_manager::ServiceBinding service_binding_;
   std::unique_ptr<service_manager::ServiceKeepalive> keepalive_;

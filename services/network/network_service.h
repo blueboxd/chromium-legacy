@@ -166,8 +166,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void SetEnvironment(
       std::vector<mojom::EnvironmentVariablePtr> environment) override;
-  void SetSplitAuthCacheByNetworkIsolationKey(
-      bool split_auth_cache_by_network_isolation_key) override;
 #if defined(OS_ANDROID)
   void DumpWithoutCrashing(base::Time dump_request_time) override;
 #endif

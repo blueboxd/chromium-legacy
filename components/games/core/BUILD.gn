@@ -4,6 +4,8 @@
 
 static_library("core") {
   sources = [
+    "games_features.cc",
+    "games_features.h",
     "games_service.h",
     "games_service_impl.cc",
     "games_service_impl.h",

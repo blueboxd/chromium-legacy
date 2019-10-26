@@ -62,6 +62,8 @@ public class ContentViewRenderView extends FrameLayout {
     private int mWidth;
     private int mHeight;
 
+    private int mWebContentsHeightDelta;
+
     // Common interface to listen to surface related events.
     private interface SurfaceEventListener {
         void surfaceCreated();
@@ -514,11 +516,25 @@ public class ContentViewRenderView extends FrameLayout {
         mRequested.addCallback(callback);
     }
 
+    /**
+     * Sets how much to decrease the height of the WebContents by.
+     */
+    public void setWebContentsHeightDelta(int delta) {
+        if (delta == mWebContentsHeightDelta) return;
+        mWebContentsHeightDelta = delta;
+        updateWebContentsSize();
+    }
+
+    private void updateWebContentsSize() {
+        if (mWebContents == null) return;
+        mWebContents.setSize(mWidth, mHeight - mWebContentsHeightDelta);
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         mWidth = w;
         mHeight = h;
-        if (mWebContents != null) mWebContents.setSize(w, h);
+        updateWebContentsSize();
     }
 
     /**
@@ -581,7 +597,7 @@ public class ContentViewRenderView extends FrameLayout {
         mWebContents = webContents;
 
         if (webContents != null) {
-            webContents.setSize(mWidth, mHeight);
+            updateWebContentsSize();
             ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
                     mNativeContentViewRenderView, webContents, mWidth, mHeight);
         }

@@ -25,7 +25,6 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -49,7 +48,6 @@
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -128,12 +126,11 @@ void SafeBrowsingService::Initialize() {
   CreateTriggerManager();
 
   // Track profile creation and destruction.
-  if (g_browser_process->profile_manager())
+  if (g_browser_process->profile_manager()) {
     g_browser_process->profile_manager()->AddObserver(this);
-  profiles_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                          content::NotificationService::AllSources());
-  profiles_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                          content::NotificationService::AllSources());
+    DCHECK_EQ(0U,
+              g_browser_process->profile_manager()->GetLoadedProfiles().size());
+  }
 
   // Register all the delayed analysis to the incident reporting service.
   RegisterAllDelayedAnalysis();
@@ -147,7 +144,7 @@ void SafeBrowsingService::ShutDown() {
   // Remove Profile creation/destruction observers.
   if (g_browser_process->profile_manager())
     g_browser_process->profile_manager()->RemoveObserver(this);
-  profiles_registrar_.RemoveAll();
+  observed_profiles_.RemoveAll();
 
   // Delete the PrefChangeRegistrars, whose dtors also unregister |this| as an
   // observer of the preferences.
@@ -335,33 +332,6 @@ void SafeBrowsingService::Stop(bool shutdown) {
       base::BindOnce(&SafeBrowsingService::StopOnIOThread, this, shutdown));
 }
 
-void SafeBrowsingService::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_CREATED: {
-      DCHECK_CURRENTLY_ON(BrowserThread::UI);
-      Profile* profile = content::Source<Profile>(source).ptr();
-      services_delegate_->CreateVerdictCacheManager(profile);
-      services_delegate_->CreatePasswordProtectionService(profile);
-      services_delegate_->CreateTelemetryService(profile);
-      services_delegate_->CreateBinaryUploadService(profile);
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      DCHECK_CURRENTLY_ON(BrowserThread::UI);
-      Profile* profile = content::Source<Profile>(source).ptr();
-      services_delegate_->RemoveVerdictCacheManager(profile);
-      services_delegate_->RemovePasswordProtectionService(profile);
-      services_delegate_->RemoveTelemetryService();
-      services_delegate_->RemoveBinaryUploadService(profile);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
 void SafeBrowsingService::OnProfileAdded(Profile* profile) {
   // Start following the safe browsing preference on |pref_service|.
   PrefService* pref_service = profile->GetPrefs();
@@ -388,6 +358,29 @@ void SafeBrowsingService::OnProfileAdded(Profile* profile) {
                         pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
   // Extended Reporting metrics are handled together elsewhere.
   RecordExtendedReportingMetrics(*pref_service);
+
+  CreateServicesForProfile(profile);
+}
+
+void SafeBrowsingService::OnOffTheRecordProfileCreated(
+    Profile* off_the_record) {
+  CreateServicesForProfile(off_the_record);
+}
+
+void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
+  observed_profiles_.Remove(profile);
+  services_delegate_->RemoveVerdictCacheManager(profile);
+  services_delegate_->RemovePasswordProtectionService(profile);
+  services_delegate_->RemoveTelemetryService(profile);
+  services_delegate_->RemoveBinaryUploadService(profile);
+}
+
+void SafeBrowsingService::CreateServicesForProfile(Profile* profile) {
+  services_delegate_->CreateVerdictCacheManager(profile);
+  services_delegate_->CreatePasswordProtectionService(profile);
+  services_delegate_->CreateTelemetryService(profile);
+  services_delegate_->CreateBinaryUploadService(profile);
+  observed_profiles_.Add(profile);
 }
 
 std::unique_ptr<SafeBrowsingService::StateSubscription>

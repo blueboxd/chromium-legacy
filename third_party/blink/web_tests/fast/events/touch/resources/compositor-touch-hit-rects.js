@@ -76,10 +76,6 @@ if (window.testRunner) {
     document.documentElement.setAttribute('dumpRenderTree', 'true');
 }
 
-if (window.internals) {
-    internals.settings.setMockScrollbarsEnabled(true);
-}
-
 window.onload = function() {
     // Run each general test case.
     var tests = document.querySelectorAll('.testcase');

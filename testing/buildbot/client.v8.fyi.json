@@ -1301,7 +1301,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1350,7 +1350,7 @@
           "--num-retries=3",
           "--debug"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1399,7 +1399,7 @@
           "--num-retries=3",
           "--additional-driver-flag=--js-flags=--future"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1448,7 +1448,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1497,7 +1497,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1524,7 +1524,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"

@@ -47,7 +47,7 @@ LayoutObject* HTMLFrameElement::CreateLayoutObject(const ComputedStyle&,
 }
 
 bool HTMLFrameElement::NoResize() const {
-  return hasAttribute(html_names::kNoresizeAttr);
+  return FastHasAttribute(html_names::kNoresizeAttr);
 }
 
 void HTMLFrameElement::AttachLayoutTree(AttachContext& context) {

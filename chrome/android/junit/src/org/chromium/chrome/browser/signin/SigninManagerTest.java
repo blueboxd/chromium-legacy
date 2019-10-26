@@ -78,6 +78,7 @@ public class SigninManagerTest {
 
         AndroidSyncSettings androidSyncSettings = mock(AndroidSyncSettings.class);
 
+        doReturn(null).when(mIdentityManager).getPrimaryAccountId();
         mSigninManager = new SigninManager(0 /* nativeSigninManagerAndroid */,
                 mAccountTrackerService, mIdentityManager, mIdentityMutator, androidSyncSettings);
 
@@ -224,6 +225,7 @@ public class SigninManagerTest {
                 .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
         doReturn(false).when(mIdentityManager).hasPrimaryAccount();
         doReturn(true).when(mIdentityMutator).setPrimaryAccount(any());
+        doReturn(account.getId()).when(mIdentityManager).getPrimaryAccountId();
         doNothing().when(mIdentityMutator).reloadAllAccountsFromSystemWithPrimaryAccount(any());
 
         mSigninManager.onFirstRunCheckDone(); // Allow sign-in.

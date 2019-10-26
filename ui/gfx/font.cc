@@ -4,6 +4,8 @@
 
 #include "ui/gfx/font.h"
 
+#include <algorithm>
+
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/gfx/platform_font.h"

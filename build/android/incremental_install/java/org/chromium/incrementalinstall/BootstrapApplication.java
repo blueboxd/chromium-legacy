@@ -101,10 +101,10 @@ public final class BootstrapApplication extends Application {
             }
 
             mClassLoaderPatcher.importNativeLibs(instLibDir);
-            sIncrementalDexFiles = mClassLoaderPatcher.loadDexFiles(instDexDir);
+            sIncrementalDexFiles = mClassLoaderPatcher.loadDexFiles(instDexDir, instPackageName);
             if (instPackageNameDiffers) {
                 mClassLoaderPatcher.importNativeLibs(appLibDir);
-                mClassLoaderPatcher.loadDexFiles(appDexDir);
+                mClassLoaderPatcher.loadDexFiles(appDexDir, appPackageName);
             }
 
             if (isFirstRun && mClassLoaderPatcher.mIsPrimaryProcess) {

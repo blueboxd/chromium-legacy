@@ -273,9 +273,6 @@ class BlinkTestController : public WebContentsObserver,
   // What phase of running an individual test we are currently in.
   TestPhase test_phase_;
 
-  // True if the currently running test is a compositing test.
-  bool is_compositing_test_;
-
   // Per test config.
   std::string expected_pixel_hash_;
   gfx::Size initial_size_;

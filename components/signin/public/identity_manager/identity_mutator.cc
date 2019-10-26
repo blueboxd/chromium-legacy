@@ -46,12 +46,18 @@ bool JniIdentityMutator::ClearPrimaryAccount(JNIEnv* env,
 
 void JniIdentityMutator::ReloadAllAccountsFromSystemWithPrimaryAccount(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& primary_account_id) {
+    const base::android::JavaParamRef<jobject>& j_primary_account_id) {
   DeviceAccountsSynchronizer* device_accounts_synchronizer =
       identity_mutator_->GetDeviceAccountsSynchronizer();
   DCHECK(device_accounts_synchronizer);
+  base::Optional<CoreAccountId> primary_account_id;
+  if (j_primary_account_id) {
+    primary_account_id = CoreAccountId();
+    primary_account_id->id =
+        ConvertFromJavaCoreAccountId(env, j_primary_account_id);
+  }
   device_accounts_synchronizer->ReloadAllAccountsFromSystemWithPrimaryAccount(
-      ConvertFromJavaCoreAccountId(env, primary_account_id));
+      primary_account_id);
 }
 #endif  // defined(OS_ANDROID)
 

@@ -41,7 +41,7 @@ MediaPlayerRendererClient::~MediaPlayerRendererClient() {
 void MediaPlayerRendererClient::Initialize(
     media::MediaResource* media_resource,
     media::RendererClient* client,
-    const media::PipelineStatusCB& init_cb) {
+    media::PipelineStatusCallback init_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_);
 
@@ -54,7 +54,7 @@ void MediaPlayerRendererClient::Initialize(
 
   media_resource_ = media_resource;
   client_ = client;
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
 
   // Initialize the StreamTexture using a 1x1 texture because we do not have
   // any size information from the MediaPlayer yet.

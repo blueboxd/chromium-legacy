@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
@@ -22,8 +23,8 @@ bool g_bypass_interface_filtering_for_testing = false;
 void FilterInterfacesImpl(
     const char* spec,
     int process_id,
-    service_manager::mojom::InterfaceProviderRequest request,
-    service_manager::mojom::InterfaceProviderPtr provider) {
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver,
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider) {
   RenderProcessHost* process = RenderProcessHost::FromID(process_id);
   if (!process || !process->IsInitializedAndNotDead())
     return;
@@ -35,30 +36,30 @@ void FilterInterfacesImpl(
     return;
 
   connector->FilterInterfaces(spec, process->GetChildIdentity(),
-                              std::move(request), std::move(provider));
+                              std::move(receiver), std::move(provider));
 }
 
 }  // namespace
 
-service_manager::mojom::InterfaceProviderRequest
+mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
 FilterRendererExposedInterfaces(
     const char* spec,
     int process_id,
-    service_manager::mojom::InterfaceProviderRequest request) {
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver) {
   if (g_bypass_interface_filtering_for_testing)
-    return request;
+    return receiver;
 
-  service_manager::mojom::InterfaceProviderPtr provider;
-  auto filtered_request = mojo::MakeRequest(&provider);
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider;
+  auto filtered_receiver = provider.InitWithNewPipeAndPassReceiver();
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     base::PostTask(FROM_HERE, {BrowserThread::UI},
                    base::BindOnce(&FilterInterfacesImpl, spec, process_id,
-                                  std::move(request), std::move(provider)));
+                                  std::move(receiver), std::move(provider)));
   } else {
-    FilterInterfacesImpl(spec, process_id, std::move(request),
+    FilterInterfacesImpl(spec, process_id, std::move(receiver),
                          std::move(provider));
   }
-  return filtered_request;
+  return filtered_receiver;
 }
 
 namespace test {

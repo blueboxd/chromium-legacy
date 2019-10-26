@@ -28,6 +28,7 @@
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_fixer.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -296,14 +297,23 @@ void AutocompleteResult::SortAndCull(
              : base::string16()) +
         base::ASCIIToUTF16(", input=") + input.text();
 
-    // We should only get here with an empty omnibox for automatic suggestions
-    // on focus on the NTP; in these cases hitting enter should do nothing, so
-    // there should be no default match.  Otherwise, we're doing automatic
-    // suggestions for the currently visible URL (and hitting enter should
-    // reload it), or the user is typing; in either of these cases, there should
-    // be a default match.
-    DCHECK_NE(input.text().empty(), default_match_->allowed_to_be_default_match)
-        << debug_info;
+    // It's unusual if |default_match_| is not |allowed_to_be_default_match|.
+    // This can occur in two situations:
+    //  - Empty-textfield on-focus suggestions (i.e. NTP, ChromeOS launcher)
+    //  - Enterprise policy prohibiting a default search provider
+    //
+    // In those cases, hitting Enter should do nothing, so there should be
+    // legitimately no default match.
+    //
+    // TODO(tommycli): It seems odd that we are still setting |default_match_|
+    // in that case. We should fix that.
+    if (!default_match_->allowed_to_be_default_match) {
+      bool default_search_provider_exists =
+          template_url_service &&
+          template_url_service->GetDefaultSearchProvider();
+      DCHECK(input.text().empty() || !default_search_provider_exists)
+          << debug_info;
+    }
 
     // For navigable default matches, make sure the destination type is what the
     // user would expect given the input.
@@ -768,6 +778,10 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
       matches->begin(), matches->end(), [&](const AutocompleteMatch& match) {
         return match.allowed_to_be_default_match && !is_tail(match);
       });
+  bool tail_default_exists = std::any_of(
+      matches->begin(), matches->end(), [&](const AutocompleteMatch& match) {
+        return match.allowed_to_be_default_match && is_tail(match);
+      });
   // If the only default matches are tail suggestions, let them remain and
   // instead remove the non-tail suggestions.  This is necessary because we do
   // not want to display tail suggestions mixed with other suggestions in the
@@ -776,7 +790,7 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   // default match--the non-tail ones much go.  This situation though is
   // unlikely, as we normally would expect the search-what-you-typed suggestion
   // as a default match (and that's a non-tail suggestion).
-  if (non_tail_default == matches->end()) {
+  if (tail_default_exists && non_tail_default == matches->end()) {
     base::EraseIf(*matches, [&is_tail](const AutocompleteMatch& match) {
       return !is_tail(match);
     });

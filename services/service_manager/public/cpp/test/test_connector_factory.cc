@@ -13,6 +13,8 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -89,10 +91,11 @@ class ProxiedServiceConnector : public mojom::Connector {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  void FilterInterfaces(const std::string& spec,
-                        const Identity& source,
-                        mojom::InterfaceProviderRequest source_request,
-                        mojom::InterfaceProviderPtr target) override {
+  void FilterInterfaces(
+      const std::string& spec,
+      const Identity& source,
+      mojo::PendingReceiver<mojom::InterfaceProvider> source_receiver,
+      mojo::PendingRemote<mojom::InterfaceProvider> target) override {
     NOTREACHED();
   }
 

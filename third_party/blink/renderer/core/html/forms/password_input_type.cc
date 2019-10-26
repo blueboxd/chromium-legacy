@@ -79,13 +79,13 @@ bool PasswordInputType::ShouldRespectListAttribute() {
 }
 
 bool PasswordInputType::NeedsContainer() const {
-  return RuntimeEnabledFeatures::FormControlsRefreshEnabled();
+  return RuntimeEnabledFeatures::PasswordRevealEnabled();
 }
 
 void PasswordInputType::CreateShadowSubtree() {
   BaseTextInputType::CreateShadowSubtree();
 
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (RuntimeEnabledFeatures::PasswordRevealEnabled()) {
     Element* container = ContainerElement();
     Element* view_port = GetElement().UserAgentShadowRoot()->getElementById(
         shadow_element_names::EditingViewPort());
@@ -98,7 +98,7 @@ void PasswordInputType::CreateShadowSubtree() {
 }
 
 void PasswordInputType::DidSetValueByUserEdit() {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (RuntimeEnabledFeatures::PasswordRevealEnabled()) {
     // If the last character is deleted, we hide the reveal button.
     if (GetElement().value().IsEmpty()) {
       should_show_reveal_button_ = false;
@@ -109,7 +109,7 @@ void PasswordInputType::DidSetValueByUserEdit() {
 }
 
 void PasswordInputType::DidSetValue(const String& string, bool value_changed) {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (RuntimeEnabledFeatures::PasswordRevealEnabled()) {
     if (value_changed) {
       // Hide the password if the value is changed by script.
       should_show_reveal_button_ = false;
@@ -122,7 +122,7 @@ void PasswordInputType::DidSetValue(const String& string, bool value_changed) {
 void PasswordInputType::UpdateView() {
   BaseTextInputType::UpdateView();
 
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+  if (RuntimeEnabledFeatures::PasswordRevealEnabled())
     UpdatePasswordRevealButton();
 }
 
@@ -164,7 +164,7 @@ void PasswordInputType::UpdatePasswordRevealButton() {
 }
 
 void PasswordInputType::HandleBlurEvent() {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (RuntimeEnabledFeatures::PasswordRevealEnabled()) {
     should_show_reveal_button_ = false;
     UpdatePasswordRevealButton();
   }
@@ -174,7 +174,7 @@ void PasswordInputType::HandleBlurEvent() {
 
 void PasswordInputType::HandleBeforeTextInsertedEvent(
     BeforeTextInsertedEvent& event) {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (RuntimeEnabledFeatures::PasswordRevealEnabled()) {
     // This is the only scenario we go from no reveal button to showing the
     // reveal button: the password is empty and we have some user input.
     if (GetElement().value().IsEmpty())
@@ -185,7 +185,7 @@ void PasswordInputType::HandleBeforeTextInsertedEvent(
 }
 
 void PasswordInputType::HandleKeydownEvent(KeyboardEvent& event) {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+  if (RuntimeEnabledFeatures::PasswordRevealEnabled()) {
     if (should_show_reveal_button_) {
       // Alt-F8 to reveal/obscure password
       if (event.getModifierState("Alt") && event.key() == "F8") {

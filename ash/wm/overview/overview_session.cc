@@ -160,10 +160,13 @@ void OverviewSession::Init(const WindowList& windows,
       overview_grid->PositionWindows(/*animate=*/false);
       overview_grid->SlideWindowsIn();
     } else {
-      // EnterExitOverviewType::kSwipeFromShelf is an exit only type, so it
-      // should not appear here.
+      // Exit only types should not appear here:
       DCHECK_NE(enter_exit_overview_type_,
                 EnterExitOverviewType::kSwipeFromShelf);
+      DCHECK_NE(enter_exit_overview_type_,
+                EnterExitOverviewType::kSlideOutExit);
+      DCHECK_NE(enter_exit_overview_type_, EnterExitOverviewType::kFadeOutExit);
+
       overview_grid->PositionWindows(/*animate=*/true, /*ignored_items=*/{},
                                      OverviewTransition::kEnter);
     }

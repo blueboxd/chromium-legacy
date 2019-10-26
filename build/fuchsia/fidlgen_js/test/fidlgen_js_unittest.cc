@@ -77,7 +77,7 @@ class FidlGenJsTestShellRunnerDelegate : public gin::ShellRunnerDelegate {
 
 using FidlGenJsTest = gin::V8Test;
 
-TEST_F(FidlGenJsTest, BasicJSSetup) {
+TEST_F(FidlGenJsTest, DISABLED_BasicJSSetup) {
   v8::Isolate* isolate = instance_->isolate();
 
   std::string source = "log('this is a log'); this.stuff = 'HAI';";
@@ -541,7 +541,7 @@ class TestolaImpl : public fidljstest::Testola {
   DISALLOW_COPY_AND_ASSIGN(TestolaImpl);
 };
 
-TEST_F(FidlGenJsTest, RawReceiveFidlMessage) {
+TEST_F(FidlGenJsTest, DISABLED_RawReceiveFidlMessage) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -574,7 +574,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessage) {
   EXPECT_TRUE(testola_impl.was_do_something_called());
 }
 
-TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithSimpleArg) {
+TEST_F(FidlGenJsTest, DISABLED_RawReceiveFidlMessageWithSimpleArg) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -608,7 +608,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithSimpleArg) {
   EXPECT_EQ(testola_impl.received_int(), 12345);
 }
 
-TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithStringArg) {
+TEST_F(FidlGenJsTest, DISABLED_RawReceiveFidlMessageWithStringArg) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -640,7 +640,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithStringArg) {
   EXPECT_EQ(testola_impl.received_msg(), "Ça c'est a 你好 from deep in JS");
 }
 
-TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithMultipleArgs) {
+TEST_F(FidlGenJsTest, DISABLED_RawReceiveFidlMessageWithMultipleArgs) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -677,7 +677,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithMultipleArgs) {
   EXPECT_EQ(testola_impl.various_stuff()[2], 123456u);
 }
 
-TEST_F(FidlGenJsTest, RawWithResponse) {
+TEST_F(FidlGenJsTest, DISABLED_RawWithResponse) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -709,7 +709,7 @@ TEST_F(FidlGenJsTest, RawWithResponse) {
   EXPECT_EQ(sum_result, 72 + 99);
 }
 
-TEST_F(FidlGenJsTest, NoResponseBeforeTearDown) {
+TEST_F(FidlGenJsTest, DISABLED_NoResponseBeforeTearDown) {
   v8::Isolate* isolate = instance_->isolate();
 
   BindingsSetupHelper helper(isolate);
@@ -750,7 +750,7 @@ TEST_F(FidlGenJsTest, NoResponseBeforeTearDown) {
   EXPECT_FALSE(helper.Get<bool>("excepted"));
 }
 
-TEST_F(FidlGenJsTest, RawReceiveFidlStructMessage) {
+TEST_F(FidlGenJsTest, DISABLED_RawReceiveFidlStructMessage) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -782,7 +782,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlStructMessage) {
   EXPECT_EQ(received_struct.u32, 0u);
 }
 
-TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
+TEST_F(FidlGenJsTest, DISABLED_RawReceiveFidlNestedStructsAndRespond) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -861,7 +861,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
   EXPECT_EQ(result_vblorp[3], static_cast<int>(fidljstest::Blorp::ALPHA));
 }
 
-TEST_F(FidlGenJsTest, HandlePassing) {
+TEST_F(FidlGenJsTest, DISABLED_HandlePassing) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -909,7 +909,7 @@ TEST_F(FidlGenJsTest, HandlePassing) {
   EXPECT_NE(GetKoidForHandle(*zx::process::self()), ZX_KOID_INVALID);
 }
 
-TEST_F(FidlGenJsTest, UnionSend) {
+TEST_F(FidlGenJsTest, DISABLED_UnionSend) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -944,7 +944,7 @@ TEST_F(FidlGenJsTest, UnionSend) {
   EXPECT_TRUE(testola_impl.did_receive_union());
 }
 
-TEST_F(FidlGenJsTest, UnionReceive) {
+TEST_F(FidlGenJsTest, DISABLED_UnionReceive) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -990,7 +990,7 @@ TEST_F(FidlGenJsTest, UnionReceive) {
   EXPECT_EQ(helper.Get<uint32_t>("result_optional_num"), 987654u);
 }
 
-TEST_F(FidlGenJsTest, VariousDefaults) {
+TEST_F(FidlGenJsTest, DISABLED_VariousDefaults) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -1033,7 +1033,7 @@ TEST_F(FidlGenJsTest, VariousDefaults) {
   EXPECT_EQ(helper.Get<std::string>("result_string_in_struct"), "stuff");
 }
 
-TEST_F(FidlGenJsTest, VectorOfStrings) {
+TEST_F(FidlGenJsTest, DISABLED_VectorOfStrings) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -1056,7 +1056,7 @@ TEST_F(FidlGenJsTest, VectorOfStrings) {
   EXPECT_TRUE(testola_impl.did_get_vectors_of_string());
 }
 
-TEST_F(FidlGenJsTest, VectorOfStringsTooLongString) {
+TEST_F(FidlGenJsTest, DISABLED_VectorOfStringsTooLongString) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -1079,7 +1079,7 @@ TEST_F(FidlGenJsTest, VectorOfStringsTooLongString) {
   EXPECT_FALSE(testola_impl.did_get_vectors_of_string());
 }
 
-TEST_F(FidlGenJsTest, VectorOfStruct) {
+TEST_F(FidlGenJsTest, DISABLED_VectorOfStruct) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -1111,7 +1111,7 @@ TEST_F(FidlGenJsTest, VectorOfStruct) {
   EXPECT_EQ(helper.Get<int>("result_1"), 258);
 }
 
-TEST_F(FidlGenJsTest, VectorsOfPrimitives) {
+TEST_F(FidlGenJsTest, DISABLED_VectorsOfPrimitives) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -1272,7 +1272,7 @@ TEST_F(FidlGenJsTest, VectorsOfPrimitives) {
   EXPECT_EQ(result_v_float64[10], 76.f);
 }
 
-TEST_F(FidlGenJsTest, VectorOfHandle) {
+TEST_F(FidlGenJsTest, DISABLED_VectorOfHandle) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
@@ -1328,7 +1328,7 @@ TEST_F(FidlGenJsTest, VectorOfHandle) {
   EXPECT_EQ(zx_handle_close(result_vmo1), ZX_OK);
 }
 
-TEST_F(FidlGenJsTest, RequestInterface) {
+TEST_F(FidlGenJsTest, DISABLED_RequestInterface) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 

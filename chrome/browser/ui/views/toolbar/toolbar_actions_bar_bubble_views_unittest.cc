@@ -32,12 +32,6 @@ const int kIconSize = 16;
 }
 
 class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
- public:
-  std::unique_ptr<views::View> TestCreateExtraView() {
-    DCHECK(bubble_);
-    return bubble_->CreateExtraView();
-  }
-
  protected:
   ToolbarActionsBarBubbleViewsTest() {}
   ~ToolbarActionsBarBubbleViewsTest() override {}
@@ -136,7 +130,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutNoButtons) {
   delegate.set_action_button_text(base::string16());
   ShowBubble(&delegate);
 
-  std::unique_ptr<views::View> extra_view(TestCreateExtraView());
+  EXPECT_EQ(nullptr, bubble()->GetExtraView());
   EXPECT_FALSE(bubble()->GetDialogClientView()->ok_button());
   EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button());
   EXPECT_FALSE(bubble()->learn_more_button());
@@ -352,8 +346,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestNullExtraView) {
   TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
                                                ActionString());
   ShowBubble(&delegate);
-  std::unique_ptr<views::View> extra_view(TestCreateExtraView());
-  ASSERT_FALSE(extra_view);
+  EXPECT_EQ(nullptr, bubble()->GetExtraView());
   CloseBubble();
 }
 
@@ -366,11 +359,11 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewIconOnly) {
   extra_view_info->resource = &vector_icons::kBusinessIcon;
   delegate.set_extra_view_info(std::move(extra_view_info));
   ShowBubble(&delegate);
-  std::unique_ptr<views::View> extra_view(TestCreateExtraView());
+  const views::View* const extra_view = bubble()->GetExtraView();
   ASSERT_TRUE(extra_view);
   ASSERT_EQ("ImageView", std::string(extra_view->GetClassName()));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
-      gfx::Image(static_cast<views::ImageView*>(extra_view.get())->GetImage()),
+      gfx::Image(static_cast<const views::ImageView*>(extra_view)->GetImage()),
       gfx::Image(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, kIconSize,
                                        gfx::kChromeIconGrey))));
   CloseBubble();
@@ -389,7 +382,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewLinkedTextOnly) {
 
   ShowBubble(&delegate);
 
-  std::unique_ptr<views::View> extra_view(TestCreateExtraView());
+  const views::View* const extra_view = bubble()->GetExtraView();
   ASSERT_TRUE(extra_view);
   ASSERT_EQ("ImageButton", std::string(extra_view->GetClassName()));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN),
@@ -410,11 +403,11 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewLabelTextOnly) {
 
   ShowBubble(&delegate);
 
-  std::unique_ptr<views::View> extra_view(TestCreateExtraView());
+  const views::View* const extra_view = bubble()->GetExtraView();
   ASSERT_TRUE(extra_view);
   EXPECT_EQ("Label", std::string(extra_view->GetClassName()));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN),
-            static_cast<views::Label*>(extra_view.get())->GetText());
+            static_cast<const views::Label*>(extra_view)->GetText());
   CloseBubble();
 }
 
@@ -432,7 +425,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewImageAndText) {
 
   ShowBubble(&delegate);
 
-  std::unique_ptr<views::View> extra_view(TestCreateExtraView());
+  const views::View* const extra_view = bubble()->GetExtraView();
   ASSERT_TRUE(extra_view);
   EXPECT_STREQ("View", extra_view->GetClassName());
   EXPECT_EQ(2u, extra_view->children().size());

@@ -293,10 +293,9 @@ void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
 
 std::unique_ptr<views::InkDropRipple> TrayBackgroundView::CreateInkDropRipple()
     const {
-  // TODO(minch): Do not hard code the color, get the background color of shelf
-  // instead.
   const AshColorProvider::RippleAttributes ripple_attributes =
-      AshColorProvider::Get()->GetRippleAttributes(SK_ColorBLACK);
+      AshColorProvider::Get()->GetRippleAttributes(
+          ShelfConfig::Get()->GetDefaultShelfColor());
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetBackgroundInsets(), GetInkDropCenterBasedOnLastEvent(),
       ripple_attributes.base_color, ripple_attributes.inkdrop_opacity);
@@ -306,7 +305,7 @@ std::unique_ptr<views::InkDropHighlight>
 TrayBackgroundView::CreateInkDropHighlight() const {
   gfx::Rect bounds = GetBackgroundBounds();
   // Currently, we don't handle view resize. To compensate for that, enlarge the
-  // bounds by two tray icons so that the hightlight looks good even if two more
+  // bounds by two tray icons so that the highlight looks good even if two more
   // icons are added when it is visible. Note that ink drop mask handles resize
   // correctly, so the extra highlight would be clipped.
   // TODO(mohsen): Remove this extra size when resize is handled properly (see
@@ -314,10 +313,9 @@ TrayBackgroundView::CreateInkDropHighlight() const {
   const int icon_size = kTrayIconSize + 2 * kTrayImageItemPadding;
   bounds.set_width(bounds.width() + 2 * icon_size);
   bounds.set_height(bounds.height() + 2 * icon_size);
-  // TODO(minch): Do not hard code the color, get the background color of shelf
-  // instead.
   const AshColorProvider::RippleAttributes ripple_attributes =
-      AshColorProvider::Get()->GetRippleAttributes(SK_ColorBLACK);
+      AshColorProvider::Get()->GetRippleAttributes(
+          ShelfConfig::Get()->GetDefaultShelfColor());
   std::unique_ptr<views::InkDropHighlight> highlight(
       new views::InkDropHighlight(bounds.size(), 0,
                                   gfx::RectF(bounds).CenterPoint(),

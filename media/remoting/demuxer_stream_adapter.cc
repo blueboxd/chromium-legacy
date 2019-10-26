@@ -36,7 +36,7 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
     int rpc_handle,
     mojom::RemotingDataStreamSenderPtrInfo stream_sender_info,
     mojo::ScopedDataPipeProducerHandle producer_handle,
-    const ErrorCallback& error_callback)
+    ErrorCallback error_callback)
     : main_task_runner_(std::move(main_task_runner)),
       media_task_runner_(std::move(media_task_runner)),
       name_(name),
@@ -44,7 +44,7 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
       rpc_handle_(rpc_handle),
       demuxer_stream_(demuxer_stream),
       type_(demuxer_stream ? demuxer_stream->type() : DemuxerStream::UNKNOWN),
-      error_callback_(error_callback),
+      error_callback_(std::move(error_callback)),
       remote_callback_handle_(RpcBroker::kInvalidHandle),
       read_until_callback_handle_(RpcBroker::kInvalidHandle),
       read_until_count_(0),
@@ -58,7 +58,7 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
   DCHECK(media_task_runner_);
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream);
-  DCHECK(!error_callback.is_null());
+  DCHECK(!error_callback_.is_null());
   const RpcBroker::ReceiveMessageCallback receive_callback =
       BindToCurrentLoop(base::BindRepeating(
           &DemuxerStreamAdapter::OnReceivedRpc, weak_factory_.GetWeakPtr()));
@@ -242,8 +242,9 @@ void DemuxerStreamAdapter::RequestBuffer() {
     DEMUXER_VLOG(2) << "Skip actions since it's not in the reading state";
     return;
   }
-  demuxer_stream_->Read(base::Bind(&DemuxerStreamAdapter::OnNewBuffer,
-                                   request_buffer_weak_factory_.GetWeakPtr()));
+  demuxer_stream_->Read(
+      base::BindOnce(&DemuxerStreamAdapter::OnNewBuffer,
+                     request_buffer_weak_factory_.GetWeakPtr()));
 }
 
 void DemuxerStreamAdapter::OnNewBuffer(DemuxerStream::Status status,

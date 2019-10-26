@@ -62,19 +62,6 @@ class OAuth2TokenServiceDelegateAndroid
                        const GoogleServiceAuthError& error) override;
   std::vector<CoreAccountId> GetAccounts() const override;
 
-  void UpdateAccountList(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& current_account);
-
-  // Takes a the signed in sync account as well as all the other
-  // android account ids and check the token status of each.
-  // NOTE: TokenAvailable notifications will be sent for all accounts, even if
-  // they were already known. See https://crbug.com/939470 for details.
-  void UpdateAccountList(const CoreAccountId& signed_in_account_id,
-                         const std::vector<CoreAccountId>& prev_ids,
-                         const std::vector<CoreAccountId>& curr_ids);
-
   // Overridden from ProfileOAuth2TokenService to complete signout of all
   // POA2TService aware accounts.
   void RevokeAllCredentials() override;
@@ -82,7 +69,23 @@ class OAuth2TokenServiceDelegateAndroid
   void LoadCredentials(const CoreAccountId& primary_account_id) override;
 
   void ReloadAllAccountsFromSystemWithPrimaryAccount(
-      const CoreAccountId& primary_account_id) override;
+      const base::Optional<CoreAccountId>& primary_account_id) override;
+
+  // Resumes the reload of accounts once the account seeding is complete.
+  // TODO(crbug.com/934688) Once OAuth2TokenService.java is internalized, use
+  // CoreAccountId instead of String.
+  void ReloadAllAccountsWithPrimaryAccountAfterSeeding(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& account_id);
+
+  // Takes a the signed in sync account as well as all the other
+  // android account ids and check the token status of each.
+  // NOTE: TokenAvailable notifications will be sent for all accounts, even if
+  // they were already known. See https://crbug.com/939470 for details.
+  void UpdateAccountList(
+      const base::Optional<CoreAccountId>& signed_in_account_id,
+      const std::vector<CoreAccountId>& prev_ids,
+      const std::vector<CoreAccountId>& curr_ids);
 
  protected:
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
@@ -115,7 +118,7 @@ class OAuth2TokenServiceDelegateAndroid
 
   // Return whether accounts are valid and we have access to all the tokens in
   // |curr_ids|.
-  bool UpdateAccountList(const CoreAccountId& signed_in_id,
+  bool UpdateAccountList(const base::Optional<CoreAccountId>& signed_in_id,
                          const std::vector<CoreAccountId>& prev_ids,
                          const std::vector<CoreAccountId>& curr_ids,
                          std::vector<CoreAccountId>* refreshed_ids,

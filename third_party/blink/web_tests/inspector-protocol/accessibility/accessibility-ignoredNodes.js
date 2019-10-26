@@ -8,9 +8,6 @@
             <circle xmlns:svg='http://www.w3.org/2000/svg' cx='150px' cy='100px' r='50px' fill='#ff0000' stroke='#000000' stroke-width='5px'/>
         </svg>
     </div>
-    <button>
-      <span data-dump>Buttons are leaf nodes</span>
-    </button>
     <div data-dump aria-hidden='true'>
         <div data-dump>Descendant of aria-hidden node</div>
     </div>

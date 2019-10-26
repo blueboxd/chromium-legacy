@@ -79,7 +79,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
 // Removes all browsing data.
 void RemoveBrowsingData() {
   __block BOOL browsing_data_removed = NO;
-  [chrome_test_util::GetMainController()
+  [chrome_test_util::GetMainController().sceneController
       removeBrowsingDataForBrowserState:chrome_test_util::
                                             GetOriginalBrowserState()
                              timePeriod:browsing_data::TimePeriod::ALL_TIME

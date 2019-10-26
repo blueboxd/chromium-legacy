@@ -128,6 +128,12 @@ class NET_EXPORT HttpAuthCache {
   explicit HttpAuthCache(bool key_server_entries_by_network_isolation_key);
   ~HttpAuthCache();
 
+  // Sets whether server entries are keyed by NetworkIsolationKey.
+  // If this results in changing the value of the setting, all current server
+  // entries are deleted.
+  void SetKeyServerEntriesByNetworkIsolationKey(
+      bool key_server_entries_by_network_isolation_key);
+
   // Find the realm entry on server |origin| for realm |realm| and
   // scheme |scheme|. If a matching entry is found, move it up by one place
   // in the entries list, so that more frequently used entries migrate to the
@@ -258,7 +264,7 @@ class NET_EXPORT HttpAuthCache {
 
   void EvictLeastRecentlyUsedEntry();
 
-  const bool key_server_entries_by_network_isolation_key_;
+  bool key_server_entries_by_network_isolation_key_;
 
   EntryMap entries_;
 

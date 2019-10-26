@@ -68,7 +68,6 @@ void NavigateParams::FillNavigateParamsFromOpenURLParams(
   this->trusted_source = false;
   this->is_renderer_initiated = params.is_renderer_initiated;
   this->should_replace_current_entry = params.should_replace_current_entry;
-  this->uses_post = params.uses_post;
   this->post_data = params.post_data;
   this->started_from_context_menu = params.started_from_context_menu;
   this->open_pwa_window_if_possible = params.open_app_window_if_possible;

@@ -126,7 +126,7 @@ void HTMLSourceElement::AddMediaQueryListListener() {
 }
 
 const AtomicString& HTMLSourceElement::type() const {
-  return getAttribute(html_names::kTypeAttr);
+  return FastGetAttribute(html_names::kTypeAttr);
 }
 
 void HTMLSourceElement::setType(const AtomicString& type) {

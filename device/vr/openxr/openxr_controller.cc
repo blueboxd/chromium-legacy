@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/openxr/openxr_util.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/xr_standard_gamepad_builder.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/transform_util.h"
@@ -31,15 +30,6 @@ const char* GetStringFromType(OpenXrHandednessType type) {
       NOTREACHED();
       return "";
   }
-}
-
-mojom::XRGamepadButtonPtr GetXRGamepadButtonPtr(
-    base::Optional<GamepadButton> button) {
-  mojom::XRGamepadButtonPtr ret = mojom::XRGamepadButton::New();
-  ret->pressed = button->pressed;
-  ret->touched = button->touched;
-  ret->value = button->value;
-  return ret;
 }
 
 }  // namespace
@@ -222,25 +212,6 @@ device::mojom::XRInputSourceDescriptionPtr OpenXrController::GetDescription(
   return description_.Clone();
 }
 
-std::vector<mojom::XRGamepadButtonPtr> OpenXrController::GetWebVrButtons()
-    const {
-  std::vector<mojom::XRGamepadButtonPtr> buttons;
-
-  constexpr uint32_t kNumButtons =
-      static_cast<uint32_t>(OpenXrButtonType::kMaxValue) + 1;
-  for (uint32_t i = 0; i < kNumButtons; i++) {
-    base::Optional<GamepadButton> button =
-        GetButton(static_cast<OpenXrButtonType>(i));
-    if (button) {
-      buttons.push_back(GetXRGamepadButtonPtr(button.value()));
-    } else {
-      return {};
-    }
-  }
-
-  return buttons;
-}
-
 base::Optional<GamepadButton> OpenXrController::GetButton(
     OpenXrButtonType type) const {
   GamepadButton ret;
@@ -278,24 +249,6 @@ base::Optional<GamepadButton> OpenXrController::GetButton(
   return ret;
 }
 
-std::vector<double> OpenXrController::GetWebVrAxes() const {
-  std::vector<double> axes;
-
-  constexpr uint32_t kNumAxes =
-      static_cast<uint32_t>(OpenXrAxisType::kMaxValue) + 1;
-  for (uint32_t i = 0; i < kNumAxes; i++) {
-    std::vector<double> axis = GetAxis(static_cast<OpenXrAxisType>(i));
-    if (axis.empty()) {
-      return {};
-    }
-
-    DCHECK(axis.size() == kAxisDimensions);
-    axes.insert(axes.end(), axis.begin(), axis.end());
-  }
-
-  return axes;
-}
-
 std::vector<double> OpenXrController::GetAxis(OpenXrAxisType type) const {
   XrActionStateVector2f axis_state_v2f = {XR_TYPE_ACTION_STATE_VECTOR2F};
   if (XR_FAILED(QueryState(axis_action_map_.at(type), &axis_state_v2f)) ||
@@ -304,55 +257,6 @@ std::vector<double> OpenXrController::GetAxis(OpenXrAxisType type) const {
   }
 
   return {axis_state_v2f.currentState.x, axis_state_v2f.currentState.y};
-}
-
-mojom::VRPosePtr OpenXrController::GetPose(XrTime predicted_display_time,
-                                           XrSpace local_space) const {
-  XrActionStatePose grip_state_pose = {XR_TYPE_ACTION_STATE_POSE};
-  if (XR_FAILED(QueryState(grip_pose_action_, &grip_state_pose)) ||
-      !grip_state_pose.isActive) {
-    return nullptr;
-  }
-
-  XrSpaceVelocity local_from_grip_speed = {XR_TYPE_SPACE_VELOCITY};
-  XrSpaceLocation local_from_grip = {XR_TYPE_SPACE_LOCATION};
-  local_from_grip.next = &local_from_grip_speed;
-  if (XR_FAILED(xrLocateSpace(grip_pose_space_, local_space,
-                              predicted_display_time, &local_from_grip))) {
-    return nullptr;
-  }
-
-  mojom::VRPosePtr pose = mojom::VRPose::New();
-
-  if (local_from_grip.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
-    pose->position = gfx::Point3F(local_from_grip.pose.position.x,
-                                  local_from_grip.pose.position.y,
-                                  local_from_grip.pose.position.z);
-  }
-
-  if (local_from_grip.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
-    pose->orientation = gfx::Quaternion(
-        local_from_grip.pose.orientation.x, local_from_grip.pose.orientation.y,
-        local_from_grip.pose.orientation.z, local_from_grip.pose.orientation.w);
-  }
-
-  if (local_from_grip_speed.velocityFlags &
-      XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
-    pose->linear_velocity =
-        gfx::Vector3dF(local_from_grip_speed.linearVelocity.x,
-                       local_from_grip_speed.linearVelocity.y,
-                       local_from_grip_speed.linearVelocity.z);
-  }
-
-  if (local_from_grip_speed.velocityFlags &
-      XR_SPACE_VELOCITY_ANGULAR_VALID_BIT) {
-    pose->angular_velocity =
-        gfx::Vector3dF(local_from_grip_speed.angularVelocity.x,
-                       local_from_grip_speed.angularVelocity.y,
-                       local_from_grip_speed.angularVelocity.z);
-  }
-
-  return pose;
 }
 
 base::Optional<gfx::Transform> OpenXrController::GetMojoFromGripTransform(

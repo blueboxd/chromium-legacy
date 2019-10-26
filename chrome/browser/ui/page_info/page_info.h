@@ -204,10 +204,6 @@ class PageInfo : public content::WebContentsObserver {
     return safe_browsing_status_;
   }
 
-  const base::string16& site_details_message() const {
-    return site_details_message_;
-  }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
                            NonFactoryDefaultAndRecentlyChangedPermissionsShown);
@@ -285,10 +281,12 @@ class PageInfo : public content::WebContentsObserver {
   // strings below to the corresponding UI code, in order to prevent
   // unnecessary UTF-8 string conversions.
 
+#if defined(OS_ANDROID)
   // Details about the website's identity. If the website's identity has been
-  // verified then |site_details_message_| contains who verified the identity.
-  // This string will be displayed in the UI.
-  base::string16 site_details_message_;
+  // verified then |identity_status_description_android_| contains who verified
+  // the identity. This string will be displayed in the UI.
+  base::string16 identity_status_description_android_;
+#endif
 
   // Set when the user has explicitly bypassed an SSL error for this host or
   // explicitly denied it (the latter of which is not currently possible in the

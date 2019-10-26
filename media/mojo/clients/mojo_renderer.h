@@ -52,10 +52,10 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   // Renderer implementation.
   void Initialize(MediaResource* media_resource,
                   media::RendererClient* client,
-                  const PipelineStatusCB& init_cb) override;
+                  PipelineStatusCallback init_cb) override;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) override;
-  void Flush(const base::Closure& flush_cb) override;
+  void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
@@ -145,8 +145,8 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
 
   bool encountered_error_ = false;
 
-  PipelineStatusCB init_cb_;
-  base::Closure flush_cb_;
+  PipelineStatusCallback init_cb_;
+  base::OnceClosure flush_cb_;
   CdmAttachedCB cdm_attached_cb_;
 
   // Lock used to serialize access for |time_interpolator_|.

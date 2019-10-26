@@ -19,19 +19,18 @@ test(function(t) {
 </script>
 
 <div class="container" id="container2" role="group" aria-label="Container">
-    <div id="button2" role="button" aria-owns="menu2">button</div>
+    <div id="image2" role="img" aria-owns="menu2">image</div>
     <div id="menu2" role="menu">menu</div>
 </div>
 
 <script>
 test(function(t)
 {
-    // A button can't have children, so we should ignore aria-owns.
-    var axButton2 = accessibilityController.accessibleElementById("button2");
-    assert_equals(axButton2.name, "button");
+    // An image can't have children, so we should ignore aria-owns.
+    var axImage2 = accessibilityController.accessibleElementById("image2");
     var axContainer2 = accessibilityController.accessibleElementById("container2");
     assert_equals(axContainer2.childrenCount, 2);
-    assert_equals(axContainer2.childAtIndex(0).role, "AXRole: AXButton");
+    assert_equals(axContainer2.childAtIndex(0).role, "AXRole: AXImage");
     assert_equals(axContainer2.childAtIndex(1).role, "AXRole: AXMenu");
 }, "Aria-owns doesn't move an element if the role doesn't allow children.");
 </script>

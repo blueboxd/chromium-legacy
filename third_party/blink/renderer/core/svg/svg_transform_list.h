@@ -60,7 +60,7 @@ class SVGTransformList final
   bool Parse(const LChar*& ptr, const LChar* end);
 
   void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(SVGAnimationElement*,
+  void CalculateAnimatedValue(const SVGAnimationElement&,
                               float percentage,
                               unsigned repeat_count,
                               SVGPropertyBase* from_value,

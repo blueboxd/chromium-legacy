@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,14 +82,15 @@ TEST_F(
       }));
   mock_receiver_2_->HoldAccessPermissions();
 
-  mojom::ScopedAccessPermissionPtr access_permission;
+  mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission;
   bool access_permission_has_been_released = false;
-  mojo::MakeStrongBinding(std::make_unique<FakeAccessPermission>(base::BindOnce(
-                              [](bool* access_permission_has_been_released) {
-                                *access_permission_has_been_released = true;
-                              },
-                              &access_permission_has_been_released)),
-                          mojo::MakeRequest(&access_permission));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<FakeAccessPermission>(base::BindOnce(
+          [](bool* access_permission_has_been_released) {
+            *access_permission_has_been_released = true;
+          },
+          &access_permission_has_been_released)),
+      access_permission.InitWithNewPipeAndPassReceiver());
   media::mojom::VideoFrameInfoPtr frame_info =
       media::mojom::VideoFrameInfo::New();
   media::VideoFrameMetadata frame_metadata;
@@ -141,14 +142,15 @@ TEST_F(BroadcastingReceiverTest,
   broadcaster_.SuspendClient(client_id_1_);
   broadcaster_.SuspendClient(client_id_2_);
 
-  mojom::ScopedAccessPermissionPtr access_permission;
+  mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission;
   bool access_permission_has_been_released = false;
-  mojo::MakeStrongBinding(std::make_unique<FakeAccessPermission>(base::BindOnce(
-                              [](bool* access_permission_has_been_released) {
-                                *access_permission_has_been_released = true;
-                              },
-                              &access_permission_has_been_released)),
-                          mojo::MakeRequest(&access_permission));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<FakeAccessPermission>(base::BindOnce(
+          [](bool* access_permission_has_been_released) {
+            *access_permission_has_been_released = true;
+          },
+          &access_permission_has_been_released)),
+      access_permission.InitWithNewPipeAndPassReceiver());
   media::mojom::VideoFrameInfoPtr frame_info =
       media::mojom::VideoFrameInfo::New();
   media::VideoFrameMetadata frame_metadata;

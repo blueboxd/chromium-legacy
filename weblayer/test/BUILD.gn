@@ -84,6 +84,7 @@ test("weblayer_browsertests") {
   ]
 
   sources = [
+    "../browser/webui/webui_browsertest.cc",
     "browsertests_main.cc",
     "ssl_browsertest.cc",
     "test_launcher_delegate_impl.cc",

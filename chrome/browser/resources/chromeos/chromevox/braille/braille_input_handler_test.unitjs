@@ -170,13 +170,33 @@ FakeEditor.prototype.message_ = function(msg) {
 };
 
 
+FakeEditor.prototype.createValue = function(
+    text, opt_selStart, opt_selEnd, opt_textOffset) {
+  var spannable = new Spannable(text, new cvox.ValueSpan(opt_textOffset || 0));
+  if (goog.isDef(opt_selStart)) {
+    opt_selEnd = goog.isDef(opt_selEnd) ? opt_selEnd : opt_selStart;
+    // TODO(plundblad): This looses the distinction between the selection
+    // anchor (start) and focus (end).  We should use that information to
+    // decide where to pan the braille display.
+    if (opt_selStart > opt_selEnd) {
+      var temp = opt_selStart;
+      opt_selStart = opt_selEnd;
+      opt_selEnd = temp;
+    }
+
+    spannable.setSpan(new cvox.ValueSelectionSpan(), opt_selStart, opt_selEnd);
+  }
+  return spannable;
+};
+
+
 /**
  * Calls the {@code onDisplayContentChanged} method of the input handler
  * with the current editor content and selection.
  * @private
  */
 FakeEditor.prototype.callOnDisplayContentChanged_ = function() {
-  var content = cvox.BrailleUtil.createValue(
+  var content = this.createValue(
       this.text_, this.selectionStart_, this.selectionEnd_)
   var grabExtraCells = function() {
     var span = content.getSpanInstanceOf(cvox.ExtraCellsSpan);
@@ -438,7 +458,6 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
   /** @override */
   closureModuleDeps: [
     'cvox.BrailleInputHandler',
-    'cvox.BrailleUtil',
   ],
 
   /**

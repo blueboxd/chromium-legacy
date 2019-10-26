@@ -1,4 +1,15 @@
 This is a testharness.js-based test.
-FAIL redirect-https-downgrade Uncaught SyntaxError: Unexpected token 'return'
+PASS Https downgrade iframe
+PASS Https downgrade top level navigation
+PASS Https downgrade embed
+PASS Https downgrade fetch() api
+PASS Https downgrade object
+PASS Https downgrade prefetch => No headers
+PASS Https downgrade preload
+PASS Https downgrade stylesheet
+PASS Https downgrade track
+PASS Https downgrade image => No headers
+FAIL Https downgrade script => No headers assert_equals: mode expected "no-cors" but got ""
+PASS Https downgrade font => No headers
 Harness: the test ran to completion.
 

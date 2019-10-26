@@ -344,7 +344,7 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   if (state()->selected_instrument() && state()->IsPaymentAppInvoked() &&
       payment_handler_host_.is_changing()) {
     payment_handler_host_.UpdateWith(
-        PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
+        PaymentDetailsConverter::ConvertToPaymentRequestDetailsUpdate(
             details, state()->selected_instrument()->HandlesShippingAddress(),
             base::BindRepeating(
                 &PaymentInstrument::IsValidForPaymentMethodIdentifier,

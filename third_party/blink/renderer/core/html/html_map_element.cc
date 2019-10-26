@@ -62,9 +62,10 @@ HTMLImageElement* HTMLMapElement::ImageElement() {
     // The HTMLImageElement's useMap() value includes the '#' symbol at the
     // beginning, which has to be stripped off.
     HTMLImageElement& image_element = ToHTMLImageElement(*curr);
-    String use_map_name = image_element.getAttribute(html_names::kUsemapAttr)
-                              .GetString()
-                              .Substring(1);
+    String use_map_name =
+        image_element.FastGetAttribute(html_names::kUsemapAttr)
+            .GetString()
+            .Substring(1);
     if (use_map_name == name_)
       return &image_element;
   }

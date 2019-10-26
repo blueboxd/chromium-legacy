@@ -36,6 +36,7 @@ constexpr LocalizedString kElementLocalizedStrings[] = {
     {"networkListItemConnecting", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING},
     {"networkListItemConnectingTo", IDS_NETWORK_LIST_CONNECTING_TO},
     {"networkListItemInitializing", IDS_NETWORK_LIST_INITIALIZING},
+    {"networkListItemLabelTemplate", IDS_NETWORK_LIST_ITEM_LABEL_TEMPLATE},
     {"networkListItemNotAvailable", IDS_NETWORK_LIST_NOT_AVAILABLE},
     {"networkListItemScanning", IDS_SETTINGS_INTERNET_MOBILE_SEARCH},
     {"networkListItemSimCardLocked", IDS_NETWORK_LIST_SIM_CARD_LOCKED},

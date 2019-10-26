@@ -24,8 +24,7 @@
 //
 // By design, it has no public API of its own. Anything interacting with
 // MainController should be doing so through a specific protocol.
-@interface MainController : NSObject <ApplicationCommands,
-                                      AppNavigation,
+@interface MainController : NSObject <AppNavigation,
                                       BrowserLauncher,
                                       MainControllerGuts,
                                       StartupInformation,
@@ -43,9 +42,8 @@
 // to the user preferences.
 @property(nonatomic, weak) MetricsMediator* metricsMediator;
 
-// Returns whether the app is showing or partially showing the
-// incognito panel.
-@property(nonatomic, assign, readonly) BOOL incognitoContentVisible;
+// For temporary plumbing only.
+@property(nonatomic, weak) id<ApplicationCommands> sceneController;
 
 @end
 

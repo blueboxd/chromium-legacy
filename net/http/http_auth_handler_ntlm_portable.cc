@@ -26,14 +26,6 @@ void GenerateRandom(uint8_t* output, size_t n) {
   base::RandBytes(output, n);
 }
 
-void RecordNtlmV2Usage(bool is_v2, bool is_secure) {
-  auto bucket = is_v2 ? is_secure ? NtlmV2Usage::kEnabledOverSecure
-                                  : NtlmV2Usage::kEnabledOverInsecure
-                      : is_secure ? NtlmV2Usage::kDisabledOverSecure
-                                  : NtlmV2Usage::kDisabledOverInsecure;
-  UMA_HISTOGRAM_ENUMERATION("Net.HttpAuthNtlmV2Usage", bucket);
-}
-
 }  // namespace
 
 // static
@@ -144,9 +136,6 @@ int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
   if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,
                                       net_log))
     return ERR_INVALID_RESPONSE;
-  RecordNtlmV2Usage(
-      http_auth_preferences() ? http_auth_preferences()->NtlmV2Enabled() : true,
-      ssl_info.is_valid());
   handler->swap(tmp_handler);
   return OK;
 }

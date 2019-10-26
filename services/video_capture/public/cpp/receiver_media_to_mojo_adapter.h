@@ -6,6 +6,7 @@
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_RECEIVER_MEDIA_TO_MOJO_ADAPTER_H_
 
 #include "media/capture/video/video_frame_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
 
 namespace video_capture {
@@ -24,7 +25,7 @@ class ReceiverMediaToMojoAdapter : public mojom::Receiver {
   void OnFrameReadyInBuffer(
       int32_t buffer_id,
       int32_t frame_feedback_id,
-      mojom::ScopedAccessPermissionPtr access_permission,
+      mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int32_t buffer_id) override;
   void OnError(media::VideoCaptureError error) override;

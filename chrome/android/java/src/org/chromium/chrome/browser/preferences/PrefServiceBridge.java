@@ -16,7 +16,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
-import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -53,10 +52,6 @@ public class PrefServiceBridge {
     private static final String[] EMPTY_PERMISSIONS = {};
 
     private static final String LOG_TAG = "PrefServiceBridge";
-
-    // Constants related to the Contextual Search preference.
-    private static final String CONTEXTUAL_SEARCH_DISABLED = "false";
-    private static final String CONTEXTUAL_SEARCH_ENABLED = "true";
 
     /**
      * Structure that holds all the version information about the current Chrome browser.
@@ -132,10 +127,34 @@ public class PrefServiceBridge {
 
     /**
      * @param preference The name of the preference.
+     * @return value The value of the specified preference.
+     */
+    public int getInteger(@Pref int preference) {
+        return PrefServiceBridgeJni.get().getInteger(PrefServiceBridge.this, preference);
+    }
+
+    /**
+     * @param preference The name of the preference.
      * @param value The value the specified preference will be set to.
      */
     public void setInteger(@Pref int preference, int value) {
         PrefServiceBridgeJni.get().setInteger(PrefServiceBridge.this, preference, value);
+    }
+
+    /**
+     * @param preference The name of the preference.
+     * @return value The value of the specified preference.
+     */
+    public String getString(@Pref int preference) {
+        return PrefServiceBridgeJni.get().getString(PrefServiceBridge.this, preference);
+    }
+
+    /**
+     * @param preference The name of the preference.
+     * @param value The value the specified preference will be set to.
+     */
+    public void setString(@Pref int preference, String value) {
+        PrefServiceBridgeJni.get().setString(PrefServiceBridge.this, preference, value);
     }
 
     /**
@@ -400,53 +419,6 @@ public class PrefServiceBridge {
      */
     public String getSyncLastAccountName() {
         return PrefServiceBridgeJni.get().getSyncLastAccountName(PrefServiceBridge.this);
-    }
-
-    /**
-     * @return the Contextual Search preference.
-     */
-    public String getContextualSearchPreference() {
-        return PrefServiceBridgeJni.get().getContextualSearchPreference(PrefServiceBridge.this);
-    }
-
-    /**
-     * Sets the Contextual Search preference.
-     * @param prefValue one of "", CONTEXTUAL_SEARCH_ENABLED or CONTEXTUAL_SEARCH_DISABLED.
-     */
-    public void setContextualSearchPreference(String prefValue) {
-        PrefServiceBridgeJni.get().setContextualSearchPreference(PrefServiceBridge.this, prefValue);
-    }
-
-    /**
-     * @return Whether the Contextual Search feature was disabled by the user explicitly.
-     */
-    public boolean isContextualSearchDisabled() {
-        return getContextualSearchPreference().equals(CONTEXTUAL_SEARCH_DISABLED);
-    }
-
-    /**
-     * @return Whether the Contextual Search feature is disabled by policy.
-     */
-    public boolean isContextualSearchDisabledByPolicy() {
-        return PrefServiceBridgeJni.get().getContextualSearchPreferenceIsManaged(
-                       PrefServiceBridge.this)
-                && isContextualSearchDisabled();
-    }
-
-    /**
-     * @return Whether the Contextual Search feature is uninitialized (preference unset by the
-     *         user).
-     */
-    public boolean isContextualSearchUninitialized() {
-        return getContextualSearchPreference().isEmpty();
-    }
-
-    /**
-     * @param enabled Whether Contextual Search should be enabled.
-     */
-    public void setContextualSearchState(boolean enabled) {
-        setContextualSearchPreference(enabled
-                ? CONTEXTUAL_SEARCH_ENABLED : CONTEXTUAL_SEARCH_DISABLED);
     }
 
     /**
@@ -1038,21 +1010,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return The status of prompt for download pref, defined by {@link DownloadPromptStatus}.
-     */
-    @DownloadPromptStatus
-    public int getPromptForDownloadAndroid() {
-        return PrefServiceBridgeJni.get().getPromptForDownloadAndroid(PrefServiceBridge.this);
-    }
-
-    /**
-     * @param status New status to update the prompt for download preference.
-     */
-    public void setPromptForDownloadAndroid(@DownloadPromptStatus int status) {
-        PrefServiceBridgeJni.get().setPromptForDownloadAndroid(PrefServiceBridge.this, status);
-    }
-
-    /**
      * @return Whether the explicit language prompt was shown at least once.
      */
     public boolean getExplicitLanguageAskPromptShown() {
@@ -1094,7 +1051,10 @@ public class PrefServiceBridge {
         void setContentSetting(PrefServiceBridge caller, int contentSettingType, int setting);
         boolean getBoolean(PrefServiceBridge caller, int preference);
         void setBoolean(PrefServiceBridge caller, int preference, boolean value);
+        int getInteger(PrefServiceBridge caller, int preference);
         void setInteger(PrefServiceBridge caller, int preference, int value);
+        String getString(PrefServiceBridge caller, int preference);
+        void setString(PrefServiceBridge caller, int preference, String value);
         boolean isManagedPreference(PrefServiceBridge caller, int preference);
         boolean getAcceptCookiesEnabled(PrefServiceBridge caller);
         boolean getAcceptCookiesUserModifiable(PrefServiceBridge caller);
@@ -1166,9 +1126,6 @@ public class PrefServiceBridge {
         void setSoundEnabled(PrefServiceBridge caller, boolean enabled);
         boolean canPrefetchAndPrerender(PrefServiceBridge caller);
         AboutVersionStrings getAboutVersionStrings(PrefServiceBridge caller);
-        void setContextualSearchPreference(PrefServiceBridge caller, String preference);
-        String getContextualSearchPreference(PrefServiceBridge caller);
-        boolean getContextualSearchPreferenceIsManaged(PrefServiceBridge caller);
         boolean getSafeBrowsingExtendedReportingEnabled(PrefServiceBridge caller);
         void setSafeBrowsingExtendedReportingEnabled(PrefServiceBridge caller, boolean enabled);
         boolean getSafeBrowsingExtendedReportingManaged(PrefServiceBridge caller);
@@ -1204,8 +1161,6 @@ public class PrefServiceBridge {
         void setLanguageBlockedState(PrefServiceBridge caller, String language, boolean blocked);
         String getDownloadDefaultDirectory(PrefServiceBridge caller);
         void setDownloadAndSaveFileDefaultDirectory(PrefServiceBridge caller, String directory);
-        int getPromptForDownloadAndroid(PrefServiceBridge caller);
-        void setPromptForDownloadAndroid(PrefServiceBridge caller, int status);
         boolean getExplicitLanguageAskPromptShown(PrefServiceBridge caller);
         void setExplicitLanguageAskPromptShown(PrefServiceBridge caller, boolean shown);
         void setForceWebContentsDarkModeEnabled(PrefServiceBridge caller, boolean enabled);

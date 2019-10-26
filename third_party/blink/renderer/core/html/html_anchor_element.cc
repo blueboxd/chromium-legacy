@@ -281,17 +281,17 @@ bool HTMLAnchorElement::CanStartSelection() const {
 
 bool HTMLAnchorElement::draggable() const {
   // Should be draggable if we have an href attribute.
-  const AtomicString& value = getAttribute(html_names::kDraggableAttr);
+  const AtomicString& value = FastGetAttribute(html_names::kDraggableAttr);
   if (DeprecatedEqualIgnoringCase(value, "true"))
     return true;
   if (DeprecatedEqualIgnoringCase(value, "false"))
     return false;
-  return hasAttribute(html_names::kHrefAttr);
+  return FastHasAttribute(html_names::kHrefAttr);
 }
 
 KURL HTMLAnchorElement::Href() const {
-  return GetDocument().CompleteURL(
-      StripLeadingAndTrailingHTMLSpaces(getAttribute(html_names::kHrefAttr)));
+  return GetDocument().CompleteURL(StripLeadingAndTrailingHTMLSpaces(
+      FastGetAttribute(html_names::kHrefAttr)));
 }
 
 void HTMLAnchorElement::SetHref(const AtomicString& value) {
@@ -307,7 +307,7 @@ void HTMLAnchorElement::SetURL(const KURL& url) {
 }
 
 String HTMLAnchorElement::Input() const {
-  return getAttribute(html_names::kHrefAttr);
+  return FastGetAttribute(html_names::kHrefAttr);
 }
 
 void HTMLAnchorElement::SetInput(const String& value) {
@@ -342,7 +342,7 @@ bool HTMLAnchorElement::IsLiveLink() const {
 }
 
 void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
-  const AtomicString& ping_value = getAttribute(html_names::kPingAttr);
+  const AtomicString& ping_value = FastGetAttribute(html_names::kPingAttr);
   if (ping_value.IsNull() || !GetDocument().GetSettings() ||
       !GetDocument().GetSettings()->GetHyperlinkAuditingEnabled()) {
     return;
@@ -397,7 +397,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   ResourceRequest request(completed_url);
 
   network::mojom::ReferrerPolicy policy;
-  if (hasAttribute(html_names::kReferrerpolicyAttr) &&
+  if (FastHasAttribute(html_names::kReferrerpolicyAttr) &&
       SecurityPolicy::ReferrerPolicyFromString(
           FastGetAttribute(html_names::kReferrerpolicyAttr),
           kSupportReferrerPolicyLegacyKeywords, &policy) &&
@@ -409,7 +409,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   // Ignore the download attribute if we either can't read the content, or
   // the event is an alt-click or similar.
-  if (hasAttribute(html_names::kDownloadAttr) &&
+  if (FastHasAttribute(html_names::kDownloadAttr) &&
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
       GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
     if (ShouldInterveneDownloadByFramePolicy(frame))
@@ -425,7 +425,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   request.SetHasUserGesture(LocalFrame::HasTransientUserActivation(frame));
-  const AtomicString& target = getAttribute(html_names::kTargetAttr);
+  const AtomicString& target = FastGetAttribute(html_names::kTargetAttr);
   FrameLoadRequest frame_request(&GetDocument(), request);
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
   if (HasRel(kRelationNoReferrer)) {
@@ -435,7 +435,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   if (HasRel(kRelationNoOpener))
     frame_request.SetNoOpener();
   if (RuntimeEnabledFeatures::HrefTranslateEnabled(&GetDocument()) &&
-      hasAttribute(html_names::kHreftranslateAttr)) {
+      FastHasAttribute(html_names::kHreftranslateAttr)) {
     frame_request.SetHrefTranslate(
         FastGetAttribute(html_names::kHreftranslateAttr));
     UseCounter::Count(GetDocument(),

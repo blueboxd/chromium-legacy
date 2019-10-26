@@ -448,15 +448,14 @@ void SVGTransformList::Add(SVGPropertyBase* other,
 }
 
 void SVGTransformList::CalculateAnimatedValue(
-    SVGAnimationElement* animation_element,
+    const SVGAnimationElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,
     SVGPropertyBase* to_value,
     SVGPropertyBase* to_at_end_of_duration_value,
     SVGElement* context_element) {
-  DCHECK(animation_element);
-  bool is_to_animation = animation_element->GetAnimationMode() == kToAnimation;
+  bool is_to_animation = animation_element.GetAnimationMode() == kToAnimation;
 
   // Spec: To animations provide specific functionality to get a smooth change
   // from the underlying value to the 'to' attribute value, which conflicts
@@ -489,14 +488,14 @@ void SVGTransformList::CalculateAnimatedValue(
 
   // Never resize the animatedTransformList to the toList size, instead either
   // clear the list or append to it.
-  if (!IsEmpty() && (!animation_element->IsAdditive() || is_to_animation))
+  if (!IsEmpty() && (!animation_element.IsAdditive() || is_to_animation))
     Clear();
 
   SVGTransform* current_transform =
       SVGTransformDistance(effective_from, to_transform)
           .ScaledDistance(percentage)
           .AddToSVGTransform(effective_from);
-  if (animation_element->IsAccumulated() && repeat_count) {
+  if (animation_element.IsAccumulated() && repeat_count) {
     SVGTransform* effective_to_at_end =
         !to_at_end_of_duration_list->IsEmpty()
             ? to_at_end_of_duration_list->at(0)

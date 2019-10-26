@@ -285,7 +285,7 @@ public class DownloadManagerBridge {
             String originalMimeType, String filePath, long fileSizeBytes, String originalUrl,
             String referrer, String downloadGuid, long callbackId) {
         final String mimeType =
-                DownloadUtils.remapGenericMimeType(originalMimeType, originalUrl, fileName);
+                MimeUtils.remapGenericMimeType(originalMimeType, originalUrl, fileName);
         AsyncTask<Pair<Long, Boolean>> task = new AsyncTask<Pair<Long, Boolean>>() {
             @Override
             protected Pair<Long, Boolean> doInBackground() {

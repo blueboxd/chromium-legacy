@@ -379,6 +379,12 @@ Color LayoutThemeMac::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kCaptiontext:
       color = GetSystemColor(MacSystemColorID::kText);
       break;
+    case CSSValueID::kField:
+      color = GetSystemColor(MacSystemColorID::kControlBackground);
+      break;
+    case CSSValueID::kFieldtext:
+      color = GetSystemColor(MacSystemColorID::kText);
+      break;
     case CSSValueID::kGraytext:
       color = GetSystemColor(MacSystemColorID::kDisabledControlText);
       break;

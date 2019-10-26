@@ -2299,7 +2299,7 @@
           '--additional-driver-flag=--no-sandbox',
           '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -2606,7 +2606,7 @@
         'args': [
           '--num-retries=3',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -2640,7 +2640,7 @@
         'args': [
           '--num-retries=3',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -2826,7 +2826,7 @@
         'args': [
           '--num-retries=3',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -3366,7 +3366,7 @@
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=any',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -3403,7 +3403,7 @@
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=native',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -4143,7 +4143,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
       },
     },
 
@@ -4257,7 +4257,7 @@
           # retry 3 times, so we explicitly specify it.
           '--num-retries=3',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -4752,7 +4752,7 @@
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=swiftshader',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -4781,7 +4781,7 @@
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',

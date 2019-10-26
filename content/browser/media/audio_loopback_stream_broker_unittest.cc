@@ -109,7 +109,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
     bool requested = false;
     mojo::PendingReceiver<media::mojom::AudioInputStream> stream_receiver;
     mojo::Remote<media::mojom::AudioInputStreamClient> client;
-    media::mojom::AudioInputStreamObserverPtr observer;
+    mojo::Remote<media::mojom::AudioInputStreamObserver> observer;
     const media::AudioParameters params;
     uint32_t shared_memory_count;
     base::UnguessableToken group_id;

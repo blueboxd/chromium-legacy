@@ -49,9 +49,12 @@ namespace blink {
 
 namespace {
 
-static bool UseMockTheme() {
-  return WebTestSupport::IsRunningWebTest();
-}
+// Use fixed scrollbar thickness for web_tests because many tests are
+// expecting that. Rebaselining is relatively easy for platform differences,
+// but tens of testharness tests will fail without this on Windows.
+// TODO(crbug.com/953847): Adapt testharness tests to native themes and remove
+// this.
+constexpr int kScrollbarThicknessForWebTests = 15;
 
 // Contains a flag indicating whether WebThemeEngine should paint a UI widget
 // for a scrollbar part, and if so, what part and state apply.
@@ -93,8 +96,6 @@ PartPaintingParams ButtonPartPaintingParams(const Scrollbar& scrollbar,
     if (part == kBackButtonStartPart) {
       paint_part = WebThemeEngine::kPartScrollbarLeftArrow;
       check_min = true;
-    } else if (UseMockTheme() && part != kForwardButtonEndPart) {
-      return PartPaintingParams();
     } else {
       paint_part = WebThemeEngine::kPartScrollbarRightArrow;
       check_max = true;
@@ -103,19 +104,14 @@ PartPaintingParams ButtonPartPaintingParams(const Scrollbar& scrollbar,
     if (part == kBackButtonStartPart) {
       paint_part = WebThemeEngine::kPartScrollbarUpArrow;
       check_min = true;
-    } else if (UseMockTheme() && part != kForwardButtonEndPart) {
-      return PartPaintingParams();
     } else {
       paint_part = WebThemeEngine::kPartScrollbarDownArrow;
       check_max = true;
     }
   }
 
-  if (UseMockTheme() && !scrollbar.Enabled()) {
-    state = WebThemeEngine::kStateDisabled;
-  } else if (!UseMockTheme() &&
-             ((check_min && (position <= 0)) ||
-              (check_max && position >= scrollbar.Maximum()))) {
+  if ((check_min && (position <= 0)) ||
+      (check_max && position >= scrollbar.Maximum())) {
     state = WebThemeEngine::kStateDisabled;
   } else {
     if (part == scrollbar.PressedPart())
@@ -160,11 +156,10 @@ bool ScrollbarThemeAura::SupportsDragSnapBack() const {
 }
 
 int ScrollbarThemeAura::ScrollbarThickness(ScrollbarControlSize control_size) {
+  if (WebTestSupport::IsRunningWebTest())
+    return kScrollbarThicknessForWebTests;
+
   // Horiz and Vert scrollbars are the same thickness.
-  // In unit tests we don't have the mock theme engine (because of layering
-  // violations), so we hard code the size (see bug 327470).
-  if (UseMockTheme())
-    return 15;
   IntSize scrollbar_size = Platform::Current()->ThemeEngine()->GetSize(
       WebThemeEngine::kPartScrollbarVerticalTrack);
   return scrollbar_size.Width();
@@ -249,9 +244,6 @@ void ScrollbarThemeAura::PaintTrackPiece(GraphicsContext& gc,
   WebThemeEngine::State state = scrollbar.HoveredPart() == part_type
                                     ? WebThemeEngine::kStateHover
                                     : WebThemeEngine::kStateNormal;
-
-  if (UseMockTheme() && !scrollbar.Enabled())
-    state = WebThemeEngine::kStateDisabled;
 
   IntRect align_rect = TrackRect(scrollbar);
   WebThemeEngine::ExtraParams extra_params;

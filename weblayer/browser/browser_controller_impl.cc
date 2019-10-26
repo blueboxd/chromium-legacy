@@ -12,6 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
 #include "weblayer/browser/file_select_helper.h"
+#include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/browser_observer.h"
@@ -27,7 +28,6 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
-#include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/java/jni/BrowserControllerImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
 #endif
@@ -47,7 +47,7 @@ struct UserData : public base::SupportsUserData::Data {
 #if defined(OS_ANDROID)
 BrowserController* g_last_browser_controller;
 
-void JavaScriptResultCallback(
+void HandleJavaScriptResult(
     const base::android::ScopedJavaGlobalRef<jobject>& callback,
     base::Value result) {
   std::string json;
@@ -57,6 +57,15 @@ void JavaScriptResultCallback(
 #endif
 
 }  // namespace
+
+#if defined(OS_ANDROID)
+BrowserControllerImpl::BrowserControllerImpl(
+    ProfileImpl* profile,
+    const base::android::JavaParamRef<jobject>& java_impl)
+    : BrowserControllerImpl(profile) {
+  java_impl_ = java_impl;
+}
+#endif
 
 BrowserControllerImpl::BrowserControllerImpl(ProfileImpl* profile)
     : profile_(profile) {
@@ -128,6 +137,12 @@ NavigationController* BrowserControllerImpl::GetNavigationController() {
   return navigation_controller_.get();
 }
 
+void BrowserControllerImpl::ExecuteScript(const base::string16& script,
+                                          JavaScriptResultCallback callback) {
+  web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
+      script, std::move(callback), ISOLATED_WORLD_ID_WEBLAYER);
+}
+
 #if !defined(OS_ANDROID)
 void BrowserControllerImpl::AttachToView(views::WebView* web_view) {
   web_view->SetWebContents(web_contents_.get());
@@ -136,10 +151,12 @@ void BrowserControllerImpl::AttachToView(views::WebView* web_view) {
 #endif
 
 #if defined(OS_ANDROID)
-static jlong JNI_BrowserControllerImpl_CreateBrowserController(JNIEnv* env,
-                                                               jlong profile) {
-  return reinterpret_cast<intptr_t>(
-      new BrowserControllerImpl(reinterpret_cast<ProfileImpl*>(profile)));
+static jlong JNI_BrowserControllerImpl_CreateBrowserController(
+    JNIEnv* env,
+    jlong profile,
+    const base::android::JavaParamRef<jobject>& java_impl) {
+  return reinterpret_cast<intptr_t>(new BrowserControllerImpl(
+      reinterpret_cast<ProfileImpl*>(profile), java_impl));
 }
 
 static void JNI_BrowserControllerImpl_DeleteBrowserController(
@@ -168,10 +185,8 @@ void BrowserControllerImpl::ExecuteScript(
     const base::android::JavaParamRef<jstring>& script,
     const base::android::JavaParamRef<jobject>& callback) {
   base::android::ScopedJavaGlobalRef<jobject> jcallback(env, callback);
-  web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
-      base::android::ConvertJavaStringToUTF16(script),
-      base::BindOnce(&JavaScriptResultCallback, jcallback),
-      ISOLATED_WORLD_ID_WEBLAYER);
+  ExecuteScript(base::android::ConvertJavaStringToUTF16(script),
+                base::BindOnce(&HandleJavaScriptResult, jcallback));
 }
 
 #endif
@@ -212,7 +227,12 @@ int BrowserControllerImpl::GetTopControlsHeight() {
 
 bool BrowserControllerImpl::DoBrowserControlsShrinkRendererSize(
     const content::WebContents* web_contents) {
-  return true;
+#if defined(OS_ANDROID)
+  return Java_BrowserControllerImpl_doBrowserControlsShrinkRendererSize(
+      base::android::AttachCurrentThread(), java_impl_);
+#else
+  return false;
+#endif
 }
 
 bool BrowserControllerImpl::EmbedsFullscreenWidget() {

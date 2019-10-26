@@ -197,15 +197,12 @@ bool SVGAnimateMotionElement::CalculateFromAndByValues(
 
 void SVGAnimateMotionElement::CalculateAnimatedValue(float percentage,
                                                      unsigned repeat_count,
-                                                     SVGSMILElement*) {
+                                                     SVGSMILElement*) const {
   SVGElement* target_element = targetElement();
   DCHECK(target_element);
   AffineTransform* transform = target_element->AnimateMotionTransform();
   if (!transform)
     return;
-
-  if (LayoutObject* target_layout_object = target_element->GetLayoutObject())
-    InvalidateForAnimateMotionTransformChange(*target_layout_object);
 
   if (!IsAdditive())
     transform->MakeIdentity();
@@ -263,6 +260,9 @@ void SVGAnimateMotionElement::ApplyResultsToTarget() {
   AffineTransform* target_transform = target_element->AnimateMotionTransform();
   if (!target_transform)
     return;
+
+  if (LayoutObject* target_layout_object = target_element->GetLayoutObject())
+    InvalidateForAnimateMotionTransformChange(*target_layout_object);
 
   // ...except in case where we have additional instances in <use> trees.
   const auto& instances = target_element->InstancesForElement();

@@ -72,10 +72,10 @@ class CourierRenderer : public Renderer {
   // media::Renderer implementation.
   void Initialize(MediaResource* media_resource,
                   RendererClient* client,
-                  const PipelineStatusCB& init_cb) final;
+                  PipelineStatusCallback init_cb) final;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) final;
-  void Flush(const base::Closure& flush_cb) final;
+  void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
@@ -172,9 +172,9 @@ class CourierRenderer : public Renderer {
   int remote_renderer_handle_;
 
   // Callbacks.
-  PipelineStatusCB init_workflow_done_callback_;
+  PipelineStatusCallback init_workflow_done_callback_;
   CdmAttachedCB cdm_attached_cb_;
-  base::Closure flush_cb_;
+  base::OnceClosure flush_cb_;
 
   VideoRendererSink* const video_renderer_sink_;  // Outlives this class.
 

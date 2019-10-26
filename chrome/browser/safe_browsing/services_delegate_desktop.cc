@@ -205,17 +205,6 @@ void ServicesDelegateDesktop::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 }
 
-// Only implemented on Android.
-void ServicesDelegateDesktop::CreateTelemetryService(Profile* profile) {}
-
-// Only implemented on Android.
-void ServicesDelegateDesktop::RemoveTelemetryService() {}
-
-// Only meaningful on Android.
-TelemetryService* ServicesDelegateDesktop::GetTelemetryService() const {
-  return nullptr;
-}
-
 void ServicesDelegateDesktop::CreateBinaryUploadService(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);

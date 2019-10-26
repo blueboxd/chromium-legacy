@@ -15,8 +15,8 @@ import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
-import org.chromium.payments.mojom.PaymentMethodChangeResponse;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -51,7 +51,9 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     private final URI mSwUri;
     private final boolean mUseCache;
 
-    /** The endpoint for payment handler communication, such as the change-payment-method event. */
+    /* The endpoint for payment handler communication, such as the
+     * change-[payment-method|shipping-address|shipping-option] events.
+     */
     private PaymentHandlerHost mPaymentHandlerHost;
 
     /**
@@ -373,7 +375,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     }
 
     @Override
-    public void updateWith(PaymentMethodChangeResponse response) {
+    public void updateWith(PaymentRequestDetailsUpdate response) {
         assert isChangingPaymentMethod();
         mPaymentHandlerHost.updateWith(response);
     }

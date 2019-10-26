@@ -496,10 +496,23 @@ void OverviewGrid::PositionWindows(
 
   // Position the windows centering the left-aligned rows vertically. Do not
   // position items in |ignored_items|.
-  OverviewAnimationType animation_type =
-      transition == OverviewSession::OverviewTransition::kEnter
-          ? OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER
-          : OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW;
+  OverviewAnimationType animation_type = OVERVIEW_ANIMATION_NONE;
+  switch (transition) {
+    case OverviewSession::OverviewTransition::kEnter: {
+      const bool entering_from_home =
+          overview_session_->enter_exit_overview_type() ==
+          OverviewSession::EnterExitOverviewType::kFadeInEnter;
+      animation_type = entering_from_home
+                           ? OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER
+                           : OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER;
+      break;
+    }
+    case OverviewSession::OverviewTransition::kInOverview:
+      animation_type = OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW;
+      break;
+    case OverviewSession::OverviewTransition::kExit:
+      NOTREACHED();
+  }
 
   int animate_count = 0;
   bool has_non_cover_animating = false;

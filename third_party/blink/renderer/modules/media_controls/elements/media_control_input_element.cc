@@ -82,7 +82,7 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
       MakeGarbageCollected<HTMLDivElement>(GetDocument());
   overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
   overflow_menu_container_->setAttribute(html_names::kAriaHiddenAttr, "true");
-  aria_label_ = button->getAttribute(html_names::kAriaLabelAttr) + " " +
+  aria_label_ = button->FastGetAttribute(html_names::kAriaLabelAttr) + " " +
                 button->GetOverflowMenuString();
   UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
   overflow_label_element_->ParserAppendChild(overflow_menu_container_);
@@ -293,7 +293,7 @@ WebSize MediaControlInputElement::GetSizeOrDefault() const {
 }
 
 bool MediaControlInputElement::IsDisabled() const {
-  return hasAttribute(html_names::kDisabledAttr);
+  return FastHasAttribute(html_names::kDisabledAttr);
 }
 
 void MediaControlInputElement::Trace(blink::Visitor* visitor) {

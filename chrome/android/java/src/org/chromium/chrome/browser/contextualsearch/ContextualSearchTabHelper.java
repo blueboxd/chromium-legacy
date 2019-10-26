@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.C
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -385,7 +384,7 @@ public class ContextualSearchTabHelper
         if (manager == null) return false;
 
         return !webContents.isIncognito() && FirstRunStatus.getFirstRunFlowComplete()
-                && !PrefServiceBridge.getInstance().isContextualSearchDisabled()
+                && !ContextualSearchManager.isContextualSearchDisabled()
                 && TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
                 && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
                 // Svelte and Accessibility devices are incompatible with the first-run flow and
@@ -427,8 +426,8 @@ public class ContextualSearchTabHelper
 
         ContextualSearchManager manager = getContextualSearchManager(mTab);
         if (manager != null) {
-            boolean isEnabled = !PrefServiceBridge.getInstance().isContextualSearchDisabled()
-                    && !PrefServiceBridge.getInstance().isContextualSearchUninitialized();
+            boolean isEnabled = !ContextualSearchManager.isContextualSearchDisabled()
+                    && !ContextualSearchManager.isContextualSearchUninitialized();
             manager.onContextualSearchPrefChanged(isEnabled);
         }
     }

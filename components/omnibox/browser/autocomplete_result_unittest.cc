@@ -552,6 +552,32 @@ TEST_F(AutocompleteResultTest, SortAndCullOnlyTailSuggestions) {
               result.match_at(i)->type);
 }
 
+TEST_F(AutocompleteResultTest, SortAndCullNoMatchesAllowedToBeDefault) {
+  // clang-format off
+  TestData data[] = {
+      {1, 1, 500,  false},  // Not allowed_to_be_default_match
+      {2, 1, 1100, false},  // Not allowed_to_be_default_match
+      {3, 1, 1000, false},  // Not allowed_to_be_default_match
+  };
+  // clang-format on
+
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+
+  AutocompleteInput input(base::string16(), metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  EXPECT_EQ(3UL, result.size());
+  EXPECT_EQ(matches[1].destination_url, result.match_at(0)->destination_url);
+  EXPECT_EQ(matches[2].destination_url, result.match_at(1)->destination_url);
+  EXPECT_EQ(matches[0].destination_url, result.match_at(2)->destination_url);
+  for (size_t i = 0; i < 3; ++i)
+    EXPECT_FALSE(result.match_at(i)->allowed_to_be_default_match);
+}
+
 TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   // Register a template URL that corresponds to 'foo' search engine.
   TemplateURLData url_data;

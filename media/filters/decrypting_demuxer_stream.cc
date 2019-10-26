@@ -71,16 +71,16 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
   std::move(init_cb_).Run(PIPELINE_OK);
 }
 
-void DecryptingDemuxerStream::Read(const ReadCB& read_cb) {
+void DecryptingDemuxerStream::Read(ReadCB read_cb) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kIdle) << state_;
   DCHECK(read_cb);
   CHECK(!read_cb_) << "Overlapping reads are not supported.";
 
-  read_cb_ = BindToCurrentLoop(read_cb);
+  read_cb_ = BindToCurrentLoop(std::move(read_cb));
   state_ = kPendingDemuxerRead;
-  demuxer_stream_->Read(base::Bind(
+  demuxer_stream_->Read(base::BindOnce(
       &DecryptingDemuxerStream::OnBufferReadFromDemuxerStream, weak_this_));
 }
 

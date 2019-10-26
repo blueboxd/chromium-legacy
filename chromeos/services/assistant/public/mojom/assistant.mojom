@@ -164,6 +164,7 @@ enum AssistantQuerySource {
   kVoiceInput = 5,
   kProactiveSuggestions = 6,
   kLibAssistantInitiated = 7,
+  kWarmerWelcome = 8,
 };
 
 // Subscribes to Assistant's interaction event. These events are server driven

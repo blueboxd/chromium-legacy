@@ -72,6 +72,8 @@ class AndroidTelemetryService
   // download::DownloadItem::Observer.
   void OnDownloadUpdated(download::DownloadItem* download) override;
 
+  Profile* profile() { return profile_; }
+
  private:
   friend class AndroidTelemetryServiceTest;
 

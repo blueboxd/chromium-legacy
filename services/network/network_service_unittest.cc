@@ -1638,32 +1638,6 @@ TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
   }
 }
 
-TEST_F(NetworkServiceTest, SplitAuthCacheByNetworkIsolationKey) {
-  service()->SetSplitAuthCacheByNetworkIsolationKey(true);
-  mojo::Remote<mojom::NetworkContext> network_context_remote;
-  NetworkContext network_context(
-      service(), network_context_remote.BindNewPipeAndPassReceiver(),
-      CreateContextParams());
-  EXPECT_TRUE(network_context.url_request_context()
-                  ->http_transaction_factory()
-                  ->GetSession()
-                  ->params()
-                  .key_auth_cache_server_entries_by_network_isolation_key);
-}
-
-TEST_F(NetworkServiceTest, NoSplitAuthCacheByNetworkIsolationKey) {
-  service()->SetSplitAuthCacheByNetworkIsolationKey(false);
-  mojo::Remote<mojom::NetworkContext> network_context_remote;
-  NetworkContext network_context(
-      service(), network_context_remote.BindNewPipeAndPassReceiver(),
-      CreateContextParams());
-  EXPECT_FALSE(network_context.url_request_context()
-                   ->http_transaction_factory()
-                   ->GetSession()
-                   ->params()
-                   .key_auth_cache_server_entries_by_network_isolation_key);
-}
-
 }  // namespace
 
 }  // namespace network

@@ -1,4 +1,0 @@
-noparent = True
-include_rules = [
-  "+weblayer/public/java",
-]

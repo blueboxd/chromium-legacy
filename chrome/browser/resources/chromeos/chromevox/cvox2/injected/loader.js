@@ -3,28 +3,12 @@
 // found in the LICENSE file.
 
 goog.require('cvox.ApiImplementation');
-goog.require('KeyboardHandler');
 
 /**
  * Initializes minimal content script.
  */
 function initMin() {
-  if (cvox.ChromeVox.isChromeOS) {
-    cvox.ApiImplementation.init();
-    return;
-  }
-
-  if (cvox.ChromeVox.isClassicEnabled_ === undefined) {
-    window.setTimeout(function() {
-      initMin();
-    }, 500);
-    return;
-  }
-
-  if (cvox.ChromeVox.isClassicEnabled_)
-    return;
-
-  new KeyboardHandler();
+  cvox.ApiImplementation.init();
 }
 
 initMin();

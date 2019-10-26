@@ -160,9 +160,9 @@ source_set("tests") {
   ]
 
   sources = [
-    "fake_client.cc",
-    "fake_client.h",
     "service_unittest.cc",
+    "test_support/fake_client.cc",
+    "test_support/fake_client.h",
     "test_support/fully_initialized_assistant_state.cc",
     "test_support/fully_initialized_assistant_state.h",
   ]

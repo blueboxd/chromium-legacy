@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/services/assistant/fake_client.h"
+#include "chromeos/services/assistant/test_support/fake_client.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

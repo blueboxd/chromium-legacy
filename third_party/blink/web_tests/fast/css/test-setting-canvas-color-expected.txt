@@ -6,6 +6,8 @@ PASS Setting color to ActiveBorder was successfully set.
 PASS Setting color to activeborder was successfully set.
 PASS Setting color to ActiveCaption was successfully set.
 PASS Setting color to activecaption was successfully set.
+FAIL Setting color to ActiveText was not set but should!
+FAIL Setting color to activetext was not set but should!
 PASS Setting color to AppWorkspace was successfully set.
 PASS Setting color to appworkspace was successfully set.
 PASS Setting color to Background was successfully set.
@@ -20,6 +22,10 @@ PASS Setting color to ButtonText was successfully set.
 PASS Setting color to buttontext was successfully set.
 PASS Setting color to CaptionText was successfully set.
 PASS Setting color to captiontext was successfully set.
+FAIL Setting color to Field was not set but should!
+FAIL Setting color to field was not set but should!
+FAIL Setting color to FieldText was not set but should!
+FAIL Setting color to fieldtext was not set but should!
 PASS Setting color to GrayText was successfully set.
 PASS Setting color to graytext was successfully set.
 PASS Setting color to Highlight was successfully set.

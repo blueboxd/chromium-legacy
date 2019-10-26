@@ -14,6 +14,8 @@
 #include "media/mojo/mojom/constants.mojom.h"
 #include "media/mojo/services/cdm_service.h"
 #include "media/mojo/services/media_interface_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,16 +84,17 @@ class CdmServiceTest : public testing::Test {
     cdm_service_ptr_.set_connection_error_handler(base::BindOnce(
         &CdmServiceTest::CdmServiceConnectionClosed, base::Unretained(this)));
 
-    service_manager::mojom::InterfaceProviderPtr interfaces;
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
     auto provider = std::make_unique<MediaInterfaceProvider>(
-        mojo::MakeRequest(&interfaces));
+        interfaces.InitWithNewPipeAndPassReceiver());
 
-    ASSERT_FALSE(cdm_factory_ptr_);
-    cdm_service_ptr_->CreateCdmFactory(mojo::MakeRequest(&cdm_factory_ptr_),
-                                       std::move(interfaces));
+    ASSERT_FALSE(cdm_factory_remote_);
+    cdm_service_ptr_->CreateCdmFactory(
+        cdm_factory_remote_.BindNewPipeAndPassReceiver(),
+        std::move(interfaces));
     cdm_service_ptr_.FlushForTesting();
-    ASSERT_TRUE(cdm_factory_ptr_);
-    cdm_factory_ptr_.set_connection_error_handler(base::BindOnce(
+    ASSERT_TRUE(cdm_factory_remote_);
+    cdm_factory_remote_.set_disconnect_handler(base::BindOnce(
         &CdmServiceTest::CdmFactoryConnectionClosed, base::Unretained(this)));
   }
 
@@ -107,7 +110,7 @@ class CdmServiceTest : public testing::Test {
 
   void InitializeCdm(const std::string& key_system, bool expected_result) {
     base::RunLoop run_loop;
-    cdm_factory_ptr_->CreateCdm(key_system, mojo::MakeRequest(&cdm_ptr_));
+    cdm_factory_remote_->CreateCdm(key_system, mojo::MakeRequest(&cdm_ptr_));
     cdm_ptr_.set_connection_error_handler(base::BindOnce(
         &CdmServiceTest::CdmConnectionClosed, base::Unretained(this)));
     EXPECT_CALL(*this, OnCdmInitialized(MatchesResult(expected_result), _, _))
@@ -129,7 +132,7 @@ class CdmServiceTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   mojom::CdmServicePtr cdm_service_ptr_;
-  mojom::CdmFactoryPtr cdm_factory_ptr_;
+  mojo::Remote<mojom::CdmFactory> cdm_factory_remote_;
   mojom::ContentDecryptionModulePtr cdm_ptr_;
 
  private:
@@ -194,7 +197,7 @@ TEST_F(CdmServiceTest, DestroyCdmFactory) {
   EXPECT_EQ(service->BoundCdmFactorySizeForTesting(), 1u);
   EXPECT_EQ(service->UnboundCdmFactorySizeForTesting(), 0u);
 
-  cdm_factory_ptr_.reset();
+  cdm_factory_remote_.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(service->BoundCdmFactorySizeForTesting(), 0u);
   EXPECT_EQ(service->UnboundCdmFactorySizeForTesting(), 1u);
@@ -217,7 +220,7 @@ TEST_F(CdmServiceTest, DestroyCdmFactory_DelayedServiceRelease) {
   InitializeWithServiceReleaseDelay(kKeepaliveIdleTimeout);
 
   InitializeCdm(kClearKeyKeySystem, true);
-  cdm_factory_ptr_.reset();
+  cdm_factory_remote_.reset();
   base::RunLoop().RunUntilIdle();
 
   base::RunLoop run_loop;

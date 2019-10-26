@@ -73,7 +73,7 @@ MediaPlayerRenderer::~MediaPlayerRenderer() {
 
 void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
                                      media::RendererClient* client,
-                                     const media::PipelineStatusCB& init_cb) {
+                                     media::PipelineStatusCallback init_cb) {
   DVLOG(1) << __func__;
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -82,7 +82,7 @@ void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
 
   if (media_resource->GetType() != media::MediaResource::Type::URL) {
     DLOG(ERROR) << "MediaResource is not of Type URL";
-    init_cb.Run(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+    std::move(init_cb).Run(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
 
@@ -90,7 +90,7 @@ void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
       media::MediaServiceThrottler::GetInstance()->GetDelayForClientCreation();
 
   if (creation_delay.is_zero()) {
-    CreateMediaPlayer(media_resource->GetMediaUrlParams(), init_cb);
+    CreateMediaPlayer(media_resource->GetMediaUrlParams(), std::move(init_cb));
     return;
   }
 
@@ -98,20 +98,20 @@ void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaPlayerRenderer::CreateMediaPlayer,
                      weak_factory_.GetWeakPtr(),
-                     media_resource->GetMediaUrlParams(), init_cb),
+                     media_resource->GetMediaUrlParams(), std::move(init_cb)),
       creation_delay);
 }
 
 void MediaPlayerRenderer::CreateMediaPlayer(
     const media::MediaUrlParams& url_params,
-    const media::PipelineStatusCB& init_cb) {
+    media::PipelineStatusCallback init_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Force the initialization of |media_resource_getter_| first. If it fails,
   // the RenderFrameHost may have been destroyed already.
   if (!GetMediaResourceGetter()) {
     DLOG(ERROR) << "Unable to retrieve MediaResourceGetter";
-    init_cb.Run(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+    std::move(init_cb).Run(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
 
@@ -132,7 +132,7 @@ void MediaPlayerRenderer::CreateMediaPlayer(
   media_player_->Initialize();
   UpdateVolume();
 
-  init_cb.Run(media::PIPELINE_OK);
+  std::move(init_cb).Run(media::PIPELINE_OK);
 }
 
 void MediaPlayerRenderer::SetCdm(media::CdmContext* cdm_context,
@@ -140,9 +140,9 @@ void MediaPlayerRenderer::SetCdm(media::CdmContext* cdm_context,
   NOTREACHED();
 }
 
-void MediaPlayerRenderer::Flush(const base::Closure& flush_cb) {
+void MediaPlayerRenderer::Flush(base::OnceClosure flush_cb) {
   DVLOG(3) << __func__;
-  flush_cb.Run();
+  std::move(flush_cb).Run();
 }
 
 void MediaPlayerRenderer::StartPlayingFrom(base::TimeDelta time) {

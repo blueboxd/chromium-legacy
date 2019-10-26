@@ -25,3 +25,6 @@ ProfileSigninConfirmationDialogTest.*
 TabGroupEditorBubbleViewDialogBrowserTest.*
 TabHoverCardBubbleViewBrowserTest.*
 OutdatedUpgradeBubbleTest.*
+
+# This test uses random network port and shows it on ui.
+-ContentSettingBubbleDialogTest.InvokeUi_popups

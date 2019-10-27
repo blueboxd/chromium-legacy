@@ -39,16 +39,15 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
       text_direction_(static_cast<unsigned>(line.BaseDirection())) {}
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
-                               wtf_size_t item_count)
+                               wtf_size_t item_count,
+                               TextDirection resolved_direction)
     : layout_object_(box.GetLayoutObject()),
       box_({&box, item_count}),
       rect_({PhysicalOffset(), box.Size()}),
       type_(kBox),
       style_variant_(static_cast<unsigned>(box.StyleVariant())),
       is_hidden_for_paint_(false),
-      // TODO(yosin): We should have |textDirection| parameter from
-      // |NGLineBoxFragmentBuilder::Child::BidiLevel()|
-      text_direction_(box.IsAtomicInline() && IsLtr(box.ResolvedDirection())) {}
+      text_direction_(static_cast<unsigned>(resolved_direction)) {}
 
 NGFragmentItem::~NGFragmentItem() {
   switch (Type()) {

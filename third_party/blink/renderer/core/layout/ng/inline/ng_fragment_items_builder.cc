@@ -85,7 +85,9 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
         if (!has_floating_descendants_for_paint_ && box.IsFloating())
           has_floating_descendants_for_paint_ = true;
 
-        items_.push_back(std::make_unique<NGFragmentItem>(box, 1));
+        DCHECK(child.HasBidiLevel());
+        items_.push_back(std::make_unique<NGFragmentItem>(
+            box, 1, DirectionFromLevel(child.bidi_level)));
         offsets_.push_back(child.offset);
         ++child_iter;
         continue;
@@ -112,8 +114,9 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       wtf_size_t item_count = items_.size() - box_start_index;
 
       // Create an item for the start of the box.
-      items_[box_start_index] =
-          std::make_unique<NGFragmentItem>(box, item_count);
+      DCHECK(child.HasBidiLevel());
+      items_[box_start_index] = std::make_unique<NGFragmentItem>(
+          box, item_count, DirectionFromLevel(child.bidi_level));
       continue;
     }
 
@@ -127,7 +130,11 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
 void NGFragmentItemsBuilder::AddListMarker(
     const NGPhysicalBoxFragment& marker_fragment,
     const LogicalOffset& offset) {
-  items_.push_back(std::make_unique<NGFragmentItem>(marker_fragment, 1));
+  // Resolved direction matters only for inline items, and outside list markers
+  // are not inline.
+  const TextDirection resolved_direction = TextDirection::kLtr;
+  items_.push_back(
+      std::make_unique<NGFragmentItem>(marker_fragment, 1, resolved_direction));
   offsets_.push_back(offset);
 }
 

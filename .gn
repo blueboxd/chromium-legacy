@@ -377,7 +377,6 @@ check_targets = [
   "//third_party/depot_tools/*",
   "//third_party/deqp/*",
   "//third_party/devscripts/*",
-  "//third_party/devtools-node-modules/*",
   "//third_party/dom_distiller_js/*",
   "//third_party/elfutils/*",
   "//third_party/errorprone/*",

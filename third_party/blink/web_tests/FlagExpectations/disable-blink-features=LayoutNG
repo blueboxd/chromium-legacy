@@ -397,3 +397,8 @@ Bug(none) virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable
 Bug(none) virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-15.html [ Failure ]
 Bug(none) virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/backplate/forced-colors-mode-backplate-07.html [ Failure ]
 
+# 10/27/2019 updates.
+Bug(none) external/wpt/css/css-writing-modes/wm-propagation-body-044.html [ Failure ]
+Bug(none) external/wpt/native-file-system/sandboxed_FileSystemBaseHandle-postMessage-MessagePort.tentative.https.window.html [ Crash ]
+Bug(none) external/wpt/native-file-system/sandboxed_FileSystemBaseHandle-postMessage.tentative.https.window.html [ Crash ]
+Bug(none) external/wpt/native-file-system/sandboxed_FileSystemDirectoryHandle-getFile.tentative.https.any.html [ Crash ]

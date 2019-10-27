@@ -50,7 +50,9 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
   std::vector<fuchsia::netstack::RouteTableEntry> routes;
   status = sync_netstack->GetRouteTable(&routes);
   ZX_CHECK(status == ZX_OK, status) << "synchronous GetInterfaces()";
-  OnRouteTableReceived(std::move(interfaces), std::move(routes), false);
+  // This will Notify internal observers like the NetworkChangeCalculator
+  // to be properly updated.
+  OnRouteTableReceived(std::move(interfaces), std::move(routes));
 
   // Re-wrap Netstack back into an asynchronous pointer.
   netstack_.Bind(sync_netstack.Unbind());
@@ -83,15 +85,13 @@ void NetworkChangeNotifierFuchsia::ProcessInterfaceList(
   netstack_->GetRouteTable(
       [this, interfaces = std::move(interfaces)](
           std::vector<fuchsia::netstack::RouteTableEntry> route_table) mutable {
-        OnRouteTableReceived(std::move(interfaces), std::move(route_table),
-                             true);
+        OnRouteTableReceived(std::move(interfaces), std::move(route_table));
       });
 }
 
 void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
     std::vector<fuchsia::netstack::NetInterface> interfaces,
-    std::vector<fuchsia::netstack::RouteTableEntry> route_table,
-    bool notify_observers) {
+    std::vector<fuchsia::netstack::RouteTableEntry> route_table) {
   // Create a set of NICs that have default routes (ie 0.0.0.0).
   base::flat_set<uint32_t> default_route_ids;
   for (const auto& route : route_table) {
@@ -142,14 +142,12 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
 
   if (addresses != cached_addresses_) {
     std::swap(cached_addresses_, addresses);
-    if (notify_observers)
-      NotifyObserversOfIPAddressChange();
+    NotifyObserversOfIPAddressChange();
   }
 
   if (connection_type != cached_connection_type_) {
     base::subtle::Release_Store(&cached_connection_type_, connection_type);
-    if (notify_observers)
-      NotifyObserversOfConnectionTypeChange();
+    NotifyObserversOfConnectionTypeChange();
   }
 }
 

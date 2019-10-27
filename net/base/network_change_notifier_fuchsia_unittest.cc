@@ -201,6 +201,12 @@ class MockIPAddressObserver : public NetworkChangeNotifier::IPAddressObserver {
   MOCK_METHOD0(OnIPAddressChanged, void());
 };
 
+class MockNetworkChangeObserver
+    : public NetworkChangeNotifier::NetworkChangeObserver {
+ public:
+  MOCK_METHOD1(OnNetworkChanged, void(NetworkChangeNotifier::ConnectionType));
+};
+
 }  // namespace
 
 class NetworkChangeNotifierFuchsiaTest : public testing::Test {
@@ -253,6 +259,8 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   testing::StrictMock<MockConnectionTypeObserver> observer_;
   testing::StrictMock<MockIPAddressObserver> ip_observer_;
+  testing::StrictMock<MockNetworkChangeObserver> network_change_observer_;
+
   fuchsia::netstack::NetstackPtr netstack_ptr_;
   FakeNetstackAsync netstack_;
 
@@ -271,6 +279,32 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InitialState) {
   CreateNotifier();
   EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_NONE,
             notifier_->GetCurrentConnectionType());
+}
+
+TEST_F(NetworkChangeNotifierFuchsiaTest, NotifyNetworkChangeOnInitialIPChange) {
+  netstack_.PushInterface(
+      CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp,
+                         fuchsia::hardware::ethernet::INFO_FEATURE_WLAN,
+                         CreateIPv4Address(169, 254, 0, 1),
+                         CreateIPv4Address(255, 255, 255, 0), {}));
+  CreateNotifier();
+  // Add and remove network_change_observer_ since it's only used in this method
+  // gtest gives warnings on unused mocks if put into setup/teardown.
+  NetworkChangeNotifier::AddNetworkChangeObserver(&network_change_observer_);
+  EXPECT_CALL(network_change_observer_,
+              OnNetworkChanged(NetworkChangeNotifier::CONNECTION_NONE));
+  EXPECT_CALL(network_change_observer_,
+              OnNetworkChanged(NetworkChangeNotifier::CONNECTION_WIFI));
+  EXPECT_CALL(ip_observer_, OnIPAddressChanged());
+  // Changing the IP address will now trigger network change as well since it is
+  // currently out of sync
+  netstack_.PushInterface(CreateNetInterface(
+      kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp,
+      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN,
+      CreateIPv4Address(10, 0, 0, 1), CreateIPv4Address(255, 255, 0, 0), {}));
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
+
+  NetworkChangeNotifier::RemoveNetworkChangeObserver(&network_change_observer_);
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, NoChange) {

@@ -62,7 +62,9 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   // TODO(kojii): Should be able to create without once creating fragments.
   NGFragmentItem(const NGPhysicalTextFragment& text);
-  NGFragmentItem(const NGPhysicalBoxFragment& box, wtf_size_t item_count);
+  NGFragmentItem(const NGPhysicalBoxFragment& box,
+                 wtf_size_t item_count,
+                 TextDirection resolved_direction);
   NGFragmentItem(const NGPhysicalLineBoxFragment& line, wtf_size_t item_count);
 
   ~NGFragmentItem() final;

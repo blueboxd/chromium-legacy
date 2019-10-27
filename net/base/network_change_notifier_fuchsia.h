@@ -51,8 +51,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   // connection type changes are detected.
   void OnRouteTableReceived(
       std::vector<fuchsia::netstack::NetInterface> interfaces,
-      std::vector<fuchsia::netstack::RouteTableEntry> table,
-      bool notify_observers);
+      std::vector<fuchsia::netstack::RouteTableEntry> table);
 
   // Bitmap of required features for an interface to be taken into account. The
   // features are defined in fuchsia::hardware::ethernet.

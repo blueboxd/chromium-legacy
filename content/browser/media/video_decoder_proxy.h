@@ -40,8 +40,9 @@ class CONTENT_EXPORT VideoDecoderProxy : public media::mojom::InterfaceFactory {
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              media::mojom::RendererRequest request) final;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
-  void CreateCastRenderer(const base::UnguessableToken& overlay_plane_id,
-                          media::mojom::RendererRequest request) final;
+  void CreateCastRenderer(
+      const base::UnguessableToken& overlay_plane_id,
+      mojo::PendingReceiver<media::mojom::Renderer> receiver) final;
 #endif
 #if defined(OS_ANDROID)
   void CreateMediaPlayerRenderer(

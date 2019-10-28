@@ -3977,6 +3977,32 @@ bool Element::hasAttributeNS(const AtomicString& namespace_uri,
   return GetElementData()->Attributes().Find(q_name);
 }
 
+// Step 1 of https://html.spec.whatwg.org/C/#focusing-steps in a case
+// where |new focus target| is an element.
+Element* Element::FindActualFocusTarget() const {
+  // TODO(crbug.com/1018619): Support AREA -> IMG delegation.
+  if (!AuthorShadowRoot() || !AuthorShadowRoot()->delegatesFocus())
+    return nullptr;
+  Document& doc = GetDocument();
+  UseCounter::Count(doc, WebFeature::kDelegateFocus);
+
+  // TODO(https://github.com/w3c/webcomponents/issues/840): We'd like to
+  // standardize this behavior.
+  Element* focused_element = doc.FocusedElement();
+  if (focused_element && IsShadowIncludingInclusiveAncestorOf(*focused_element))
+    return focused_element;
+
+  // Slide the focus to its inner node.
+  // TODO(crbug.com/1014094): We should pick the first focusable element in
+  // the flat tree.
+  Element* found =
+      doc.GetPage()->GetFocusController().FindFocusableElementInShadowHost(
+          *this);
+  if (found && IsShadowIncludingInclusiveAncestorOf(*found))
+    return found;
+  return nullptr;
+}
+
 void Element::focus(const FocusOptions* options) {
   focus(FocusParams(SelectionBehaviorOnFocus::kRestore, kWebFocusTypeNone,
                     nullptr, options));
@@ -4002,25 +4028,20 @@ void Element::focus(const FocusParams& params) {
 
   DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(this);
   GetDocument().UpdateStyleAndLayoutTree();
-  if (!IsFocusable()) {
-    if (AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus()) {
-      UseCounter::Count(GetDocument(), WebFeature::kDelegateFocus);
-      Element* focused_element = GetDocument().FocusedElement();
-      if (focused_element &&
-          IsShadowIncludingInclusiveAncestorOf(*focused_element))
-        return;
 
-      // Slide the focus to its inner node.
-      Element* found = GetDocument()
-                           .GetPage()
-                           ->GetFocusController()
-                           .FindFocusableElementInShadowHost(*this);
-      if (found && IsShadowIncludingInclusiveAncestorOf(*found)) {
-        found->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                                 kWebFocusTypeForward, nullptr,
-                                 params.options));
-      }
+  // https://html.spec.whatwg.org/C/#focusing-steps
+  //
+  // 1. If new focus target is not a focusable area, ...
+  if (!IsFocusable()) {
+    if (Element* new_focus_target = FindActualFocusTarget()) {
+      // Unlike the specification, we re-run focus() for new_focus_target
+      // because we can't change |this| in a member function.
+      new_focus_target->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                                          kWebFocusTypeForward, nullptr,
+                                          params.options));
     }
+    // 2. If new focus target is null, then:
+    //  2.1. If no fallback target was specified, then return.
     return;
   }
   // If script called focus(), then the type would be none. This means we are

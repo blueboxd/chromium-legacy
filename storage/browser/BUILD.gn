@@ -98,6 +98,8 @@ jumbo_component("browser") {
     "file_system/file_system_backend.h",
     "file_system/file_system_context.cc",
     "file_system/file_system_context.h",
+    "file_system/file_system_features.cc",
+    "file_system/file_system_features.h",
     "file_system/file_system_file_stream_reader.cc",
     "file_system/file_system_file_stream_reader.h",
     "file_system/file_system_file_util.cc",

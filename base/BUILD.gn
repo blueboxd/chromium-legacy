@@ -622,6 +622,8 @@ jumbo_component("base") {
     "profiler/stack_buffer.h",
     "profiler/stack_copier.cc",
     "profiler/stack_copier.h",
+    "profiler/stack_copier_signal.cc",
+    "profiler/stack_copier_signal.h",
     "profiler/stack_copier_suspend.cc",
     "profiler/stack_copier_suspend.h",
     "profiler/stack_sampler.cc",
@@ -1202,16 +1204,6 @@ jumbo_component("base") {
       "threading/thread_local_storage_posix.cc",
       "timer/hi_res_timer_manager_posix.cc",
     ]
-
-    if (!is_nacl && !is_mac && !is_ios) {
-      sources += [
-        "profiler/stack_copier_signal.cc",
-        "profiler/stack_copier_signal.h",
-        "profiler/stack_sampler_posix.cc",
-        "profiler/thread_delegate_posix.cc",
-        "profiler/thread_delegate_posix.h",
-      ]
-    }
   }
 
   if (!is_nacl) {
@@ -1230,6 +1222,14 @@ jumbo_component("base") {
 
     if (is_posix) {
       sources += [ "base_paths_posix.h" ]
+
+      if (!is_mac && !is_ios) {
+        sources += [
+          "profiler/stack_sampler_posix.cc",
+          "profiler/thread_delegate_posix.cc",
+          "profiler/thread_delegate_posix.h",
+        ]
+      }
     }
 
     if (is_linux) {
@@ -2905,9 +2905,6 @@ test("base_unittests") {
       "posix/unix_domain_socket_unittest.cc",
       "task/thread_pool/task_tracker_posix_unittest.cc",
     ]
-    if (!is_nacl && !is_mac && !is_ios) {
-      sources += [ "profiler/stack_copier_signal_unittest.cc" ]
-    }
   }
 
   # Allow more direct string conversions on platforms with native utf8

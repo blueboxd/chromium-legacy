@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/native_window_tracker.h"
 #include "chrome/services/app_service/public/cpp/icon_loader.h"
 #include "extensions/browser/uninstall_reason.h"
 
@@ -37,9 +36,6 @@ UninstallDialog::UninstallDialog(Profile* profile,
       app_name_(app_name),
       parent_window_(parent_window),
       uninstall_callback_(std::move(uninstall_callback)) {
-  if (parent_window)
-    parent_window_tracker_ = NativeWindowTracker::Create(parent_window);
-
   int32_t size_hint_in_dip;
   switch (app_type) {
     case apps::mojom::AppType::kCrostini:
@@ -90,12 +86,6 @@ void UninstallDialog::OnDialogClosed(bool uninstall,
 void UninstallDialog::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
   if (icon_value->icon_compression !=
       apps::mojom::IconCompression::kUncompressed) {
-    OnDialogClosed(false, false, false);
-    return;
-  }
-
-  if (parent_window_ && parent_window_tracker_->WasNativeWindowClosed()) {
-    OnDialogClosed(false, false, false);
     return;
   }
 

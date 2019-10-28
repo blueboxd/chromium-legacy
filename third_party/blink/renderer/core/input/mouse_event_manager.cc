@@ -649,30 +649,12 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
 
 bool MouseEventManager::SlideFocusOnShadowHostIfNecessary(
     const Element& element) {
-  if (element.AuthorShadowRoot() &&
-      element.AuthorShadowRoot()->delegatesFocus()) {
-    Document* doc = frame_->GetDocument();
-    UseCounter::Count(doc, WebFeature::kDelegateFocus);
-    Element* focused_element = doc->FocusedElement();
-    if (focused_element &&
-        element.IsShadowIncludingInclusiveAncestorOf(*focused_element)) {
-      // If the inner element is already focused, do nothing.
-      return true;
-    }
-
-    // If the host has a focusable inner element, focus it. Otherwise, the host
-    // takes focus.
-    Page* page = frame_->GetPage();
-    DCHECK(page);
-    Element* found =
-        page->GetFocusController().FindFocusableElementInShadowHost(element);
-    if (found && element.IsShadowIncludingInclusiveAncestorOf(*found)) {
-      // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the
-      // focus has slided.
-      found->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                               kWebFocusTypeForward, nullptr));
-      return true;
-    }
+  if (Element* delegated_target = element.FindActualFocusTarget()) {
+    // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the
+    // focus has slided.
+    delegated_target->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                                        kWebFocusTypeForward, nullptr));
+    return true;
   }
   return false;
 }

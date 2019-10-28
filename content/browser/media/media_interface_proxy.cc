@@ -177,13 +177,13 @@ void MediaInterfaceProxy::CreateDefaultRenderer(
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 void MediaInterfaceProxy::CreateCastRenderer(
     const base::UnguessableToken& overlay_plane_id,
-    media::mojom::RendererRequest request) {
+    mojo::PendingReceiver<media::mojom::Renderer> receiver) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // CastRenderer is always hosted in "media_renderer" service.
   InterfaceFactory* factory = media_renderer_interface_factory_ptr_->Get();
   if (factory)
-    factory->CreateCastRenderer(overlay_plane_id, std::move(request));
+    factory->CreateCastRenderer(overlay_plane_id, std::move(receiver));
 }
 #endif
 

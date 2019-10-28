@@ -91,22 +91,27 @@ void PalmFilterStroke::AddSample(const PalmFilterSample& sample) {
   }
   DCHECK_EQ(tracking_id_, sample.tracking_id);
   samples_.push_back(sample);
+  AddToUnscaledCentroid(sample.point.OffsetFromOrigin());
   while (samples_.size() > max_length_) {
+    AddToUnscaledCentroid(-samples_.front().point.OffsetFromOrigin());
     samples_.pop_front();
   }
 }
 
+void PalmFilterStroke::AddToUnscaledCentroid(const gfx::Vector2dF point) {
+  const gfx::Vector2dF corrected_point = point - unscaled_centroid_sum_error_;
+  const gfx::PointF new_unscaled_centroid =
+      unscaled_centroid_ + corrected_point;
+  unscaled_centroid_sum_error_ =
+      (new_unscaled_centroid - unscaled_centroid_) - corrected_point;
+  unscaled_centroid_ = new_unscaled_centroid;
+}
+
 gfx::PointF PalmFilterStroke::GetCentroid() const {
-  // TODO(robsc): Implement a Kahan sum to accurately track running sum instead
-  // of brute force.
   if (samples_.size() == 0) {
     return gfx::PointF(0., 0.);
   }
-  gfx::PointF unscaled_centroid;
-  for (const auto& sample : samples_) {
-    unscaled_centroid += sample.point.OffsetFromOrigin();
-  }
-  return gfx::ScalePoint(unscaled_centroid, 1.f / samples_.size());
+  return gfx::ScalePoint(unscaled_centroid_, 1.f / samples_.size());
 }
 
 const std::deque<PalmFilterSample>& PalmFilterStroke::samples() const {

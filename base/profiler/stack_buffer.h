@@ -40,15 +40,14 @@ class BASE_EXPORT StackBuffer {
         ~(kPlatformStackAlignment - 1));
   }
 
-  // Size in bytes.
   size_t size() const { return size_; }
 
  private:
   // The buffer to store the stack.
   const std::unique_ptr<uint8_t[]> buffer_;
 
-  // The size in bytes of the requested buffer allocation. The actual allocation
-  // is larger to accommodate alignment requirements.
+  // The size of the requested buffer allocation. The actual allocation is
+  // larger to accommodate alignment requirements.
   const size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(StackBuffer);

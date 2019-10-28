@@ -127,7 +127,7 @@ void InterfaceFactoryImpl::CreateDefaultRenderer(
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 void InterfaceFactoryImpl::CreateCastRenderer(
     const base::UnguessableToken& overlay_plane_id,
-    media::mojom::RendererRequest request) {
+    mojo::PendingReceiver<media::mojom::Renderer> receiver) {
   DVLOG(2) << __func__;
   auto renderer = mojo_media_client_->CreateCastRenderer(
       host_interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
@@ -144,7 +144,7 @@ void InterfaceFactoryImpl::CreateCastRenderer(
   MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
 
   mojo::BindingId binding_id = renderer_bindings_.AddBinding(
-      std::move(mojo_renderer_service), std::move(request));
+      std::move(mojo_renderer_service), std::move(receiver));
 
   // base::Unretained() is safe because the callback will be fired by
   // |mojo_renderer_service|, which is owned by |renderer_bindings_|.

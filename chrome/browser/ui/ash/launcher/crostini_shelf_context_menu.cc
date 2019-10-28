@@ -10,8 +10,6 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -70,14 +68,11 @@ bool CrostiniShelfContextMenu::IsCommandIdEnabled(int command_id) const {
 
 void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
-    case ash::UNINSTALL: {
+    case ash::UNINSTALL:
       DCHECK_NE(item().id.app_id, crostini::kCrostiniTerminalId);
-      apps::AppServiceProxy* proxy =
-          apps::AppServiceProxyFactory::GetForProfile(controller()->profile());
-      DCHECK(proxy);
-      proxy->Uninstall(item().id.app_id, nullptr /* parent_window */);
+      crostini::ShowCrostiniAppUninstallerView(controller()->profile(),
+                                               item().id.app_id);
       return;
-    }
     case ash::STOP_APP:
       if (item().id.app_id == crostini::kCrostiniTerminalId) {
         crostini::CrostiniManager::GetForProfile(controller()->profile())

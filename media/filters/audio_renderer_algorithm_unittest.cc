@@ -189,14 +189,13 @@ class AudioRendererAlgorithmTest : public testing::Test {
     const int kDefaultFramesRequested = kOutputDurationInSec *
         algorithm_.samples_per_second();
 
-    TestPlaybackRate(playback_rate, kDefaultBufferSize, kDefaultFramesRequested,
-                     0);
+    TestPlaybackRate(
+        playback_rate, kDefaultBufferSize, kDefaultFramesRequested);
   }
 
   void TestPlaybackRate(double playback_rate,
                         int buffer_size_in_frames,
-                        int total_frames_requested,
-                        int dest_offset) {
+                        int total_frames_requested) {
     int initial_frames_enqueued = frames_enqueued_;
     int initial_frames_buffered = algorithm_.frames_buffered();
 
@@ -212,10 +211,9 @@ class AudioRendererAlgorithmTest : public testing::Test {
     int frames_remaining = total_frames_requested;
     bool first_fill_buffer = true;
     while (frames_remaining > 0) {
-      int frames_requested =
-          std::min(buffer_size_in_frames - dest_offset, frames_remaining);
-      int frames_written = algorithm_.FillBuffer(
-          bus.get(), dest_offset, frames_requested, playback_rate);
+      int frames_requested = std::min(buffer_size_in_frames, frames_remaining);
+      int frames_written =
+          algorithm_.FillBuffer(bus.get(), 0, frames_requested, playback_rate);
       ASSERT_GT(frames_written, 0) << "Requested: " << frames_requested
                                    << ", playing at " << playback_rate;
 
@@ -358,7 +356,7 @@ TEST_F(AudioRendererAlgorithmTest, InitializeWithLargeParameters) {
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_Bitstream) {
   Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatEac3, kSamplesPerSecond,
              kSamplesPerSecond / 100);
-  TestPlaybackRate(1.0, kFrameSize, 16 * kFrameSize, /* dest_offset */ 0);
+  TestPlaybackRate(1.0, kFrameSize, 16 * kFrameSize);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_NormalRate) {
@@ -374,36 +372,6 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_NearlyNormalFasterRate) {
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_NearlyNormalSlowerRate) {
   Initialize();
   TestPlaybackRate(0.9999);
-}
-
-// This test verifies that the resampling based time stretch algorithms works.
-// The range of playback rates in which we use resampling is [0.95, 1.06].
-TEST_F(AudioRendererAlgorithmTest, FillBuffer_ResamplingRates) {
-  Initialize();
-  TestPlaybackRate(0.94);  // WSOLA.
-  TestPlaybackRate(0.95);  // Lower limit of resampling.
-  TestPlaybackRate(0.97);
-  TestPlaybackRate(1.00);
-  TestPlaybackRate(1.04);
-  TestPlaybackRate(1.06);  // Upper limit of resampling.
-  TestPlaybackRate(1.07);  // WSOLA.
-}
-
-TEST_F(AudioRendererAlgorithmTest, FillBuffer_WithOffset) {
-  Initialize();
-  const int kBufferSize = algorithm_.samples_per_second() / 10;
-  const int kOffset = kBufferSize / 10;
-  const int kFramesRequested =
-      kOutputDurationInSec * algorithm_.samples_per_second();
-
-  // No time-strech.
-  TestPlaybackRate(1.00, kBufferSize, kFramesRequested, kOffset);
-
-  // Resampling based time-strech.
-  TestPlaybackRate(1.05, kBufferSize, kFramesRequested, kOffset);
-
-  // WSOLA based time-strech.
-  TestPlaybackRate(1.25, kBufferSize, kFramesRequested, kOffset);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_OneAndAQuarterRate) {
@@ -479,9 +447,9 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_SmallBufferSize) {
   Initialize();
   static const int kBufferSizeInFrames = 1;
   static const int kFramesRequested = kOutputDurationInSec * kSamplesPerSecond;
-  TestPlaybackRate(1.0, kBufferSizeInFrames, kFramesRequested, 0);
-  TestPlaybackRate(0.5, kBufferSizeInFrames, kFramesRequested, 0);
-  TestPlaybackRate(1.5, kBufferSizeInFrames, kFramesRequested, 0);
+  TestPlaybackRate(1.0, kBufferSizeInFrames, kFramesRequested);
+  TestPlaybackRate(0.5, kBufferSizeInFrames, kFramesRequested);
+  TestPlaybackRate(1.5, kBufferSizeInFrames, kFramesRequested);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_LargeBufferSize) {

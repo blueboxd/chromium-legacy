@@ -645,6 +645,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual const AtomicString ImageSourceURL() const;
   virtual Image* ImageContents() { return nullptr; }
 
+  Element* FindActualFocusTarget() const;
   virtual void focus(const FocusParams& = FocusParams());
   void focus(const FocusOptions*);
 

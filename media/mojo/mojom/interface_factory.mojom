@@ -35,7 +35,7 @@ interface InterfaceFactory {
   // When CastRendererFactory is implemented, Chromecast will switch
   // from using CreateDefaultRenderer() to using this one.
   CreateCastRenderer(mojo_base.mojom.UnguessableToken overlay_plane_id,
-                     Renderer& renderer);
+                     pending_receiver<Renderer> renderer);
 
   [EnableIf=is_android]
   // Creates a MediaPlayerRenderer (MediaPlayerRendererFactory).

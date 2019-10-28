@@ -6,7 +6,6 @@
 
 #include "base/process/process_handle.h"
 #include "base/profiler/thread_delegate_posix.h"
-#include "base/stl_util.h"
 
 #include "build/build_config.h"
 
@@ -76,30 +75,6 @@ std::vector<uintptr_t*> ThreadDelegatePosix::GetRegistersToRewrite(
       reinterpret_cast<uintptr_t*>(&thread_context->arm_sp),
       // arm_lr and arm_pc do not require rewriting because they contain
       // addresses of executable code, not addresses in the stack.
-  };
-#elif defined(ARCH_CPU_ARM_FAMILY) && \
-    defined(ARCH_CPU_64_BITS)   // #if defined(ARCH_CPU_ARM_FAMILY) &&
-                                // defined(ARCH_CPU_32_BITS)
-  std::vector<uintptr_t*> registers;
-  registers.reserve(12);
-  // Return the set of callee-save registers per the ARM 64-bit Procedure Call
-  // Standard section 5.1.1, plus the stack pointer.
-  registers.push_back(reinterpret_cast<uintptr_t*>(&thread_context->sp));
-  for (size_t i = 19; i <= 29; ++i)
-    registers.push_back(reinterpret_cast<uintptr_t*>(&thread_context->regs[i]));
-  return registers;
-#elif defined(ARCH_CPU_X86_64)  // #if defined(ARCH_CPU_ARM_FAMILY) &&
-                                // defined(ARCH_CPU_32_BITS)
-  return {
-      // Return the set of callee-save registers per the x86-64 System V ABI
-      // section 3.2.1, plus the stack pointer.
-      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_RBP]),
-      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_RBX]),
-      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_R12]),
-      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_R13]),
-      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_R14]),
-      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_R15]),
-      reinterpret_cast<uintptr_t*>(&thread_context->gregs[REG_RSP]),
   };
 #else  // #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
   // Unimplemented for other architectures.

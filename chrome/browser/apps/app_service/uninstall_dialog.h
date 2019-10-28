@@ -11,7 +11,6 @@
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
-class NativeWindowTracker;
 class Profile;
 
 namespace gfx {
@@ -103,9 +102,6 @@ class UninstallDialog {
   const std::string app_name_;
   gfx::NativeWindow parent_window_;
   UninstallCallback uninstall_callback_;
-
-  // Tracks whether |parent_window_| got destroyed.
-  std::unique_ptr<NativeWindowTracker> parent_window_tracker_;
 
   base::WeakPtrFactory<UninstallDialog> weak_ptr_factory_{this};
 

@@ -65,10 +65,16 @@ class EVENTS_OZONE_EVDEV_EXPORT PalmFilterStroke {
   int tracking_id() const;
 
  private:
+  void AddToUnscaledCentroid(const gfx::Vector2dF point);
+
   std::deque<PalmFilterSample> samples_;
   int tracking_id_ = 0;
   uint64_t samples_seen_ = 0;
   uint64_t max_length_;
+  gfx::PointF unscaled_centroid_ = gfx::PointF(0., 0.);
+  // Used in part of the kahan summation.
+  gfx::Vector2dF unscaled_centroid_sum_error_ =
+      gfx::PointF(0., 0.).OffsetFromOrigin();
 };
 
 }  // namespace ui

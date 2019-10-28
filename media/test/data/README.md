@@ -574,20 +574,6 @@ ffmpeg -i third_party/WebKit/LayoutTests/media/content/test-25fps.mp4 \
       -vcodec copy -vbsf h264_mp4toannexb -an test-25fps.h264
 ```
 
-#### test-25fps.h264.md5
-MD5s of RGB thumbnail rendered version of test-25fps.h264 decoded with Intel
-VAAPI and V4L2VDA on various platforms.
-Written out by video_decode_accelerator_unittest.
-These differ between implementations because color space-converted frames are
-not specified to the last bit and GLES shader/texture filtering
-precision varies.
-
-#### test-25fps.h264.frames.md5:
-MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
-converted to I420 pixel format. Written out by
-video_decode_accelerator_unittest when input file is test-25fps.h264.
-This value must be identical on all platforms.
-
 #### test-25fps.h264.json:
 JSON file that contains all metadata related to test-25fps.h264, used by the
 video_decode_accelerator_tests. This includes the video codec, resolution and
@@ -600,16 +586,6 @@ mkvextract v5.0.1
 ffmpeg -i test-25fps.h264 -vcodec libvpx -an test-25fps.webm && \
     mkvextract tracks test-25fps.webm 1:test-25fps.vp8 && rm test-25fps.webm
 ```
-
-#### test-25fps.vp8.md5
-MD5 of RGB thumbnail rendered version of test-25fps.vp8. Written out by
-video_decode_accelerator_unittest.
-
-#### test-25fps.vp8.frames.md5:
-MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
-converted to I420 pixel format. Written out by
-video_decode_accelerator_unittest when input file is test-25fps.vp8.
-This value must be identical on all platforms.
 
 #### test-25fps.vp8.json:
 JSON file that contains all metadata related to test-25fps.vp8, used by the
@@ -629,16 +605,6 @@ vpxenc test-25fps_i420.yuv -o test-25fps.vp9 --codec=vp9 -w 320 -h 240 --ivf \
     --maxsection-pct=2000 --undershoot-pct=100
 ```
 
-#### test-25fps.vp9.md5
-MD5 of RGB thumbnail rendered version of test-25fps.vp9. Written out by
-video_decode_accelerator_unittest.
-
-#### test-25fps.vp9.frames.md5:
-MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
-converted to I420 pixel format. Written out by
-video_decode_accelerator_unittest when input file is test-25fps.vp9.
-This value must be identical on all platforms.
-
 #### test-25fps.vp9.json:
 JSON file that contains all metadata related to test-25fps.vp9, used by the
 video_decode_accelerator_tests. This includes the video codec, resolution and
@@ -648,16 +614,6 @@ md5 checksums of individual video frames when converted to the I420 format.
 Similar to test-25fps.vp9, substituting the option `--profile=0` with
 `--profile=2 --bit-depth=10` to vpxenc. (Note that vpxenc must have been
 configured with the option --enable-vp9-highbitdepth).
-
-#### test-25fps.vp9_2.md5
-MD5 of RGB thumbnail rendered version of test-25fps.vp9_2. Written out by
-video_decode_accelerator_unittest.
-
-#### test-25fps.vp9_2.frames.md5:
-MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
-converted to I420 pixel format. Written out by
-video_decode_accelerator_unittest when input file is test-25fps.vp9_2.
-This value must be identical on all platforms.
 
 #### test-25fps.vp9_2.json:
 JSON file that contains all metadata related to test-25fps.vp9_2, used by the
@@ -675,10 +631,6 @@ ffmpeg -i vp90_2_17_show_existing_frame.vp9 -vcodec copy -an -f ivf \
     vp90_2_17_show_existing_frame.vp9.ivf
 ```
 
-#### vp90_2_10_show_existing_frame2.vp9.ivf.md5
-MD5 of RGB thumbnail rendered version of vp90_2_10_show_existing_frame2.vp9.ivf.
-Written out by video_decode_accelerator_unittest.
-
 
 ### bear
 
@@ -689,14 +641,6 @@ bear.mp4 (https://chromiumcodereview.appspot.com/10805089):
 ffmpeg -i bear.mp4 -vcodec copy -vbsf h264_mp4toannexb -an bear.h264
 ```
 
-#### bear.h264.md5
-MD5s of RGB thumbnail rendered version of bear.h264 decoded with Intel
-VAAPI on Ivy Bridge and Sandy Bridge and V4L2VDA on Exynos.
-Written out by video_decode_accelerator_unittest.
-These differ between implementations because color space-converted frames are
-not specified to the last bit and GLES shader/texture filtering
-precision varies.
-
 ### npot-video
 
 #### npot-video.h264
@@ -706,14 +650,6 @@ npot-video.mp4 (https://codereview.chromium.org/8342021):
 ffmpeg -i npot-video.mp4 -vcodec copy -vbsf h264_mp4toannexb -an npot-video.h264
 ```
 
-#### npot-video.h264.md5
-MD5s of RGB thumbnail rendered version of npot-video.h264 decoded with Intel
-VAAPI on Ivy Bridge and Sandy Bridge and V4L2VDA on Exynos.
-Written out by video_decode_accelerator_unittest.
-These differ between implementations because color space-converted frames are
-not specified to the last bit and GLES shader/texture filtering
-precision varies.
-
 ### red-green
 
 #### red-green.h264
@@ -722,14 +658,6 @@ red-green.mp4 (https://codereview.chromium.org/8342021):
 ```
 ffmpeg -i red-green.mp4 -vcodec copy -vbsf h264_mp4toannexb -an red-green.h264
 ```
-
-#### red-green.h264.md5
-MD5s of RGB thumbnail rendered version of red-green.h264 decoded with Intel
-VAAPI on Ivy Bridge and Sandy Bridge and V4L2VDA on Exynos.
-Written out by video_decode_accelerator_unittest.
-These differ between implementations because color space-converted frames are
-not specified to the last bit and GLES shader/texture filtering
-precision varies.
 
 ## Misc Test Files
 

@@ -49,7 +49,7 @@ void VideoDecoderProxy::CreateDefaultRenderer(
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 void VideoDecoderProxy::CreateCastRenderer(
     const base::UnguessableToken& overlay_plane_id,
-    media::mojom::RendererRequest request) {}
+    mojo::PendingReceiver<media::mojom::Renderer> receiver) {}
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if defined(OS_ANDROID)

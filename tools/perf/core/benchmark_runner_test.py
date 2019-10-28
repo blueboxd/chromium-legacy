@@ -10,7 +10,6 @@ import unittest
 
 import mock
 
-from telemetry.testing import options_for_unittests
 from telemetry.testing import test_stories
 from telemetry.web_perf import timeline_based_measurement
 from tracing.value.diagnostics import all_diagnostics
@@ -20,6 +19,7 @@ from tracing.value import histogram_set
 from core import benchmark_runner
 from core import perf_benchmark
 from core import results_processor
+from core import testing
 
 
 def _FakeParseArgs(environment, args, results_arg_parser):
@@ -53,7 +53,7 @@ class BenchmarkRunnerIntegrationTest(unittest.TestCase):
   """
 
   def setUp(self):
-    self.options = options_for_unittests.GetRunOptions(
+    self.options = testing.GetRunOptions(
         output_dir=tempfile.mkdtemp())
     self.options.output_formats = ['histograms']
 

@@ -73,17 +73,17 @@ struct CORE_EXPORT
 template <>
 class CORE_EXPORT
     StructTraits<blink::mojom::blink::SerializedArrayBufferContents::DataView,
-                 WTF::ArrayBufferContents> {
+                 blink::ArrayBufferContents> {
  public:
   static mojo_base::BigBuffer contents(
-      const WTF::ArrayBufferContents& array_buffer_contents) {
+      const blink::ArrayBufferContents& array_buffer_contents) {
     uint8_t* allocation_start =
         static_cast<uint8_t*>(array_buffer_contents.Data());
     return mojo_base::BigBuffer(
         base::make_span(allocation_start, array_buffer_contents.DataLength()));
   }
   static bool Read(blink::mojom::blink::SerializedArrayBufferContents::DataView,
-                   WTF::ArrayBufferContents* out);
+                   blink::ArrayBufferContents* out);
 };
 
 }  // namespace mojo

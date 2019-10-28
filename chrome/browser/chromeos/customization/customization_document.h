@@ -174,7 +174,7 @@ class ServicesCustomizationDocument : public CustomizationDocument {
 
   // Creates an extensions::ExternalLoader that will provide OEM default apps.
   // Cache of OEM default apps stored in profile preferences.
-  extensions::ExternalLoader* CreateExternalLoader(Profile* profile);
+  ::extensions::ExternalLoader* CreateExternalLoader(Profile* profile);
 
   // Returns the name of the folder for OEM apps for given |locale|.
   std::string GetOemAppsFolderName(const std::string& locale) const;

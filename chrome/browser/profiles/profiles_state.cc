@@ -134,7 +134,7 @@ void UpdateProfileName(Profile* profile,
   }
 
   base::string16 current_profile_name =
-      base::FeatureList::IsEnabled(kConcatenateGaiaAndProfileName)
+      ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName()
           ? entry->GetLocalProfileName()
           : entry->GetName();
 

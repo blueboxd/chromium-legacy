@@ -46,10 +46,3 @@
 # Expect the swapped out RenderFrameHost to have a replacement proxy. This won't
 # happen when the BackForwardCache is used to store the old document.
 -RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill
-
-# Histogram "PrefetchedSignedExchangeCache.Count" is recorded when the document
-# in the RenderFrameHost is replaced, or when the RenderFrameHost is deleted.
-# With the BackForwardCache, the RenderFrameHost is not deleted, so the
-# histogram is not recorded before the end of the test.
--SignedExchangeRequestHandlerBrowserTest.Simple/3
--SignedExchangeRequestHandlerBrowserTest.VariantMatch/3

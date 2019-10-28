@@ -13,6 +13,7 @@
 #include "components/version_info/version_info.h"
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -79,9 +80,9 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
   BOOL _addAccountOperation;
 }
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
-  self = [super initWithBrowserState:browserState
+- (instancetype)initWithBrowser:(Browser*)browser
+                     dispatcher:(id<ApplicationCommands>)dispatcher {
+  self = [super initWithBrowserState:browser->GetBrowserState()
                          accessPoint:signin_metrics::AccessPoint::
                                          ACCESS_POINT_SIGNIN_PROMO
                          promoAction:signin_metrics::PromoAction::

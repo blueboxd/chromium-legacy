@@ -149,6 +149,10 @@ public class TabBuilder {
         Tab tab = new Tab(mId, mParent, mIncognito, mLaunchType);
         tab.updateWindowAndroid(mWindow);
 
+        if (mParent != null && mDelegateFactory == null) {
+            mDelegateFactory = mParent.getDelegateFactory();
+        }
+
         // Initializes Tab. Its user data objects are also initialized through the event
         // |onInitialized| of TabObserver they register.
         tab.initialize(mParent, mCreationType, mLoadUrlParams, mWebContents, mDelegateFactory,

@@ -1230,6 +1230,7 @@ TEST_F(ControllerTest, TrackReportsFirstSetOfScripts) {
                          base::Unretained(controller_.get()),
                          base::Unretained(&first_check_done)));
   EXPECT_FALSE(first_check_done);
+  EXPECT_FALSE(controller_->HasRunFirstCheck());
 
   ASSERT_TRUE(get_scripts_callback);
 
@@ -1240,6 +1241,7 @@ TEST_F(ControllerTest, TrackReportsFirstSetOfScripts) {
   std::move(get_scripts_callback).Run(true, response_str);
 
   EXPECT_TRUE(first_check_done);
+  EXPECT_TRUE(controller_->HasRunFirstCheck());
 }
 
 TEST_F(ControllerTest, TrackReportsNoScripts) {

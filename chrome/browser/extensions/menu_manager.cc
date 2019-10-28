@@ -638,13 +638,13 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
     SetIdKeyValue(properties.get(), "parentMenuItemId", *item->parent_id());
 
   switch (params.media_type) {
-    case blink::WebContextMenuData::kMediaTypeImage:
+    case blink::ContextMenuDataMediaType::kImage:
       properties->SetString("mediaType", "image");
       break;
-    case blink::WebContextMenuData::kMediaTypeVideo:
+    case blink::ContextMenuDataMediaType::kVideo:
       properties->SetString("mediaType", "video");
       break;
-    case blink::WebContextMenuData::kMediaTypeAudio:
+    case blink::ContextMenuDataMediaType::kAudio:
       properties->SetString("mediaType", "audio");
       break;
     default:  {}  // Do nothing.

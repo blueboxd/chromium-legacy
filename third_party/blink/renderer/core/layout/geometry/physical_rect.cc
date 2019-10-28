@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -11,6 +12,15 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+LogicalRect PhysicalRect::ConvertToLogical(WritingMode mode,
+                                           TextDirection direction,
+                                           PhysicalSize outer_size,
+                                           PhysicalSize inner_size) const {
+  return LogicalRect(
+      offset.ConvertToLogical(mode, direction, outer_size, inner_size),
+      size.ConvertToLogical(mode));
+}
 
 bool PhysicalRect::Contains(const PhysicalRect& other) const {
   return offset.left <= other.offset.left && offset.top <= other.offset.top &&

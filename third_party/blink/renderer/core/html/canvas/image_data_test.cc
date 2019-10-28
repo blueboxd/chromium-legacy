@@ -59,17 +59,17 @@ TEST_F(ImageDataTest,
   // Creating ArrayBufferContents objects. We need two buffers for RGBA32 data
   // because kRGBA8CanvasPixelFormat->kUint8ClampedArrayStorageFormat consumes
   // the input data parameter.
-  WTF::ArrayBufferContents contents_rgba32(
-      kNumColorComponents, 1, WTF::ArrayBufferContents::kNotShared,
-      WTF::ArrayBufferContents::kDontInitialize);
+  ArrayBufferContents contents_rgba32(kNumColorComponents, 1,
+                                      ArrayBufferContents::kNotShared,
+                                      ArrayBufferContents::kDontInitialize);
   std::memcpy(contents_rgba32.Data(), rgba32_pixels, kNumColorComponents);
 
-  WTF::ArrayBufferContents contents_rgba32_2;
+  ArrayBufferContents contents_rgba32_2;
   contents_rgba32.CopyTo(contents_rgba32_2);
 
-  WTF::ArrayBufferContents contents_f16(
-      kNumColorComponents * 2, 1, WTF::ArrayBufferContents::kNotShared,
-      WTF::ArrayBufferContents::kDontInitialize);
+  ArrayBufferContents contents_f16(kNumColorComponents * 2, 1,
+                                   ArrayBufferContents::kNotShared,
+                                   ArrayBufferContents::kDontInitialize);
   std::memcpy(contents_f16.Data(), f16_pixels, kNumColorComponents * 2);
 
   // Testing kRGBA8CanvasPixelFormat -> kUint8ClampedArrayStorageFormat

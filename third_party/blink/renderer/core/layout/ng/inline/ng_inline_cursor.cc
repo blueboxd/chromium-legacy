@@ -178,7 +178,11 @@ bool NGInlineCursor::IsHiddenForPaint() const {
 }
 
 bool NGInlineCursor::IsInlineLeaf() const {
-  return IsText() || IsAtomicInline();
+  if (IsText())
+    return true;
+  if (!IsAtomicInline())
+    return false;
+  return !IsListMarker();
 }
 
 bool NGInlineCursor::IsInclusiveDescendantOf(
@@ -422,6 +426,21 @@ PhysicalRect NGInlineCursor::CurrentLocalRect(unsigned start_offset,
   }
   NOTREACHED();
   return PhysicalRect();
+}
+
+LayoutUnit NGInlineCursor::InlinePositionForOffset(unsigned offset) const {
+  DCHECK(IsText());
+  if (current_paint_fragment_) {
+    return To<NGPhysicalTextFragment>(
+               current_paint_fragment_->PhysicalFragment())
+        .InlinePositionForOffset(offset);
+  }
+  if (current_item_) {
+    return current_item_->InlinePositionForOffset(
+        current_item_->Text(*fragment_items_), offset);
+  }
+  NOTREACHED();
+  return LayoutUnit();
 }
 
 void NGInlineCursor::MakeNull() {

@@ -17,7 +17,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       sub_type_(static_cast<unsigned>(text.TextType())),
       style_variant_(static_cast<unsigned>(text.StyleVariant())),
       is_generated_text_(text.IsGeneratedText()),
-      is_hidden_for_paint_(false),
+      is_hidden_for_paint_(text.IsHiddenForPaint()),
       text_direction_(static_cast<unsigned>(text.ResolvedDirection())) {
   DCHECK_LE(text_.start_offset, text_.end_offset);
 #if DCHECK_IS_ON()
@@ -46,7 +46,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
       rect_({PhysicalOffset(), box.Size()}),
       type_(kBox),
       style_variant_(static_cast<unsigned>(box.StyleVariant())),
-      is_hidden_for_paint_(false),
+      is_hidden_for_paint_(box.IsHiddenForPaint()),
       text_direction_(static_cast<unsigned>(resolved_direction)) {}
 
 NGFragmentItem::~NGFragmentItem() {

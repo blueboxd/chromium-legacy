@@ -48,6 +48,32 @@ WebArea
 }
 
 WebArea
+  button "Buttons are leaf nodes"
+    *Ignored
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ancestorIsLeafNode",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
+          {
+            "nodeResult": "button"
+          }
+        ]
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "span"
+}
+
+WebArea
   *Ignored
 {
   "nodeId": "<string>",
@@ -581,7 +607,6 @@ WebArea
 
 WebArea
   *button "Ignored parent shouldn't cause descendant to be missing from the tree"
-    text "Ignored parent shouldn't cause descendant to be missing from the tree"
 {
   "nodeId": "<string>",
   "ignored": false,

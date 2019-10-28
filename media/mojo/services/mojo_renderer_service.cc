@@ -15,6 +15,7 @@
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/media_resource_shim.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace media {
 
@@ -35,13 +36,13 @@ const int kTimeUpdateIntervalMs = 50;
 mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
     MojoCdmServiceContext* mojo_cdm_service_context,
     std::unique_ptr<media::Renderer> renderer,
-    mojo::InterfaceRequest<mojom::Renderer> request) {
+    mojo::PendingReceiver<mojom::Renderer> receiver) {
   MojoRendererService* service =
       new MojoRendererService(mojo_cdm_service_context, std::move(renderer));
 
   mojo::StrongBindingPtr<mojom::Renderer> binding =
-      mojo::MakeStrongBinding<mojom::Renderer>(base::WrapUnique(service),
-                                               std::move(request));
+      mojo::MakeSelfOwnedReceiver<mojom::Renderer>(base::WrapUnique(service),
+                                                   std::move(receiver));
 
   service->set_bad_message_cb(base::Bind(&CloseBindingOnBadMessage, binding));
 

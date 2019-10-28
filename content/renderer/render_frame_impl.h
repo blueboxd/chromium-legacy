@@ -596,19 +596,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::Optional<std::string>& error_page_content,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
-      CommitFailedNavigationCallback callback) override;
-
-  // This is the version to be used with PerNavigationMojoInterface enabled.
-  // It essentially works the same way, except the navigation callback is
-  // the one from NavigationClient mojo interface.
-  void CommitFailedPerNavigationMojoInterfaceNavigation(
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::CommitNavigationParamsPtr commit_params,
-      bool has_stale_copy_in_cache,
-      int error_code,
-      const base::Optional<std::string>& error_page_content,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories,
       mojom::NavigationClient::CommitFailedNavigationCallback
           per_navigation_mojo_interface_callback);
 
@@ -1416,18 +1403,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::UnguessableToken& devtools_navigation_token,
       mojom::FrameNavigationControl::CommitNavigationCallback callback,
       mojom::NavigationClient::CommitNavigationCallback
-          per_navigation_mojo_interface_callback);
-
-  void CommitFailedNavigationInternal(
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::CommitNavigationParamsPtr commit_params,
-      bool has_stale_copy_in_cache,
-      int error_code,
-      const base::Optional<std::string>& error_page_content,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories,
-      mojom::FrameNavigationControl::CommitFailedNavigationCallback callback,
-      mojom::NavigationClient::CommitFailedNavigationCallback
           per_navigation_mojo_interface_callback);
 
   // Ignores the navigation commit and stop its processing in the RenderFrame.

@@ -13,6 +13,7 @@
 #include "chrome/android/chrome_jni_headers/AppBannerManager_jni.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -49,6 +50,14 @@ infobars::InfoBar* GetVisibleAmbientBadgeInfoBar(
     }
   }
   return nullptr;
+}
+
+bool CanShowAppBanners(TabAndroid* tab) {
+  if (!tab)
+    return false;
+  return static_cast<android::TabWebContentsDelegateAndroid*>(
+             tab->web_contents()->GetDelegate())
+      ->CanShowAppBanners();
 }
 
 }  // anonymous namespace
@@ -106,6 +115,10 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
 void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!Java_AppBannerManager_isEnabledForTab(env, java_banner_manager_))
+    return;
+
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
+  if (!CanShowAppBanners(tab))
     return;
 
   AppBannerManager::RequestAppBanner(validated_url);
@@ -235,11 +248,8 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
 void AppBannerManagerAndroid::CreateJavaBannerManager(
     content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  base::android::ScopedJavaLocalRef<jobject> jtab(tab ? tab->GetJavaObject()
-                                                      : nullptr);
-  java_banner_manager_.Reset(Java_AppBannerManager_create(
-      env, jtab, reinterpret_cast<intptr_t>(this)));
+  java_banner_manager_.Reset(
+      Java_AppBannerManager_create(env, reinterpret_cast<intptr_t>(this)));
 }
 
 std::string AppBannerManagerAndroid::ExtractQueryValueForName(

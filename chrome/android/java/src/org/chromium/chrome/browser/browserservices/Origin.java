@@ -8,6 +8,8 @@ import android.net.Uri;
 
 import org.chromium.chrome.browser.util.UrlConstants;
 
+import androidx.annotation.Nullable;
+
 /**
  * A class to canonically represent a web origin in Java. In comparison to
  * {@link org.chromium.net.GURLUtils#getOrigin} it can be used before native is loaded and lets us
@@ -65,6 +67,23 @@ public class Origin {
         }
 
         mOrigin = origin;
+    }
+
+    /**
+     * Constructs a canonical Origin from an Uri.
+     */
+    @Nullable
+    public static Origin create(Uri uri) {
+        // This method will return null in the near future.
+        return new Origin(uri);
+    }
+
+    /**
+     * Constructs a canonical Origin from a String.
+     */
+    @Nullable
+    public static Origin create(String uri) {
+        return create(Uri.parse(uri));
     }
 
     /**

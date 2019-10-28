@@ -119,8 +119,7 @@ CastNetworkContexts::GetSystemURLLoaderFactory() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Create the URLLoaderFactory as needed.
-  if (system_url_loader_factory_ &&
-      !system_url_loader_factory_.encountered_error()) {
+  if (system_url_loader_factory_ && system_url_loader_factory_.is_connected()) {
     return system_url_loader_factory_.get();
   }
 
@@ -129,7 +128,8 @@ CastNetworkContexts::GetSystemURLLoaderFactory() {
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   GetSystemContext()->CreateURLLoaderFactory(
-      mojo::MakeRequest(&system_url_loader_factory_), std::move(params));
+      system_url_loader_factory_.BindNewPipeAndPassReceiver(),
+      std::move(params));
   return system_shared_url_loader_factory_.get();
 }
 

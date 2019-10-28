@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
@@ -38,15 +39,15 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
 
   // Implements the type conversion part of the "decode and enqueue a chunk"
   // algorithm.
-  void Transform(v8::Local<v8::Value> chunk,
-                 TransformStreamDefaultControllerInterface* controller,
-                 ExceptionState& exception_state) override {
+  ScriptPromise Transform(v8::Local<v8::Value> chunk,
+                          TransformStreamDefaultControllerInterface* controller,
+                          ExceptionState& exception_state) override {
     ArrayBufferOrArrayBufferView bufferSource;
     V8ArrayBufferOrArrayBufferView::ToImpl(
         script_state_->GetIsolate(), chunk, bufferSource,
         UnionTypeConversionMode::kNotNullable, exception_state);
     if (exception_state.HadException())
-      return;
+      return ScriptPromise();
 
     // This implements the "get a copy of the bytes held by the buffer source"
     // algorithm (https://heycam.github.io/webidl/#dfn-get-buffer-source-copy).
@@ -56,7 +57,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
       uint32_t length = view->byteLength();
       DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush,
                        controller, exception_state);
-      return;
+      return ScriptPromise::CastUndefined(script_state_);
     }
     DCHECK(bufferSource.IsArrayBuffer());
     const auto* array_buffer = bufferSource.GetAsArrayBuffer();
@@ -64,13 +65,17 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
     uint32_t length = array_buffer->ByteLength();
     DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush, controller,
                      exception_state);
+
+    return ScriptPromise::CastUndefined(script_state_);
   }
 
   // Implements the "encode and flush" algorithm.
-  void Flush(TransformStreamDefaultControllerInterface* controller,
-             ExceptionState& exception_state) override {
+  ScriptPromise Flush(TransformStreamDefaultControllerInterface* controller,
+                      ExceptionState& exception_state) override {
     DecodeAndEnqueue(nullptr, 0u, WTF::FlushBehavior::kDataEOF, controller,
                      exception_state);
+
+    return ScriptPromise::CastUndefined(script_state_);
   }
 
   ScriptState* GetScriptState() override { return script_state_; }

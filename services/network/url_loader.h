@@ -80,6 +80,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const mojom::URLLoaderFactoryParams* factory_params,
       uint32_t request_id,
+      int keepalive_request_size,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
       base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
@@ -263,6 +264,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   int render_frame_id_;
   uint32_t request_id_;
+  const int keepalive_request_size_;
   const bool keepalive_;
   const bool do_not_prompt_for_login_;
   std::unique_ptr<net::URLRequest> url_request_;

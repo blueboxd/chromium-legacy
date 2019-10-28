@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 
@@ -103,11 +104,12 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
     }
 
     /**
-     * Starts the WebLayer activity and completely loads the given URL (this calls
-     * navigateAndWait()).
+     * Starts the WebLayer activity with the given extras Bundle and completely loads the given URL
+     * (this calls navigateAndWait()).
      */
-    public WebLayerShellActivity launchShellWithUrl(String url) {
+    public WebLayerShellActivity launchShellWithUrl(String url, Bundle extras) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.putExtras(extras);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // Prevent URL from being loaded on start.
@@ -119,6 +121,14 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
         Assert.assertNotNull(activity);
         if (url != null) navigateAndWait(url);
         return activity;
+    }
+
+    /**
+     * Starts the WebLayer activity and completely loads the given URL (this calls
+     * navigateAndWait()).
+     */
+    public WebLayerShellActivity launchShellWithUrl(String url) {
+        return launchShellWithUrl(url, new Bundle());
     }
 
     /**

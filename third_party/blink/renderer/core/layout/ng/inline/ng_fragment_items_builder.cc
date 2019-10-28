@@ -44,7 +44,7 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   // Add an empty item so that the start of the line can be set later.
   wtf_size_t line_start_index = items_.size();
   items_.Grow(line_start_index + 1);
-  offsets_.Grow(line_start_index + 1);
+  offsets_.push_back(offset);
 
   AddItems(current_line_.begin(), current_line_.end());
 
@@ -54,8 +54,8 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   // TODO(kojii): We probably need an end marker too for the reverse-order
   // traversals.
 
-  for (unsigned i = size_before; i < offsets_.size(); ++i)
-    offsets_[i] += offset;
+  // Keep children's offsets relative to |line|. They will be adjusted later in
+  // |ConvertToPhysical()|.
 
   current_line_.clear();
 #if DCHECK_IS_ON()
@@ -148,11 +148,37 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
   DCHECK(!is_converted_to_physical_);
 #endif
 
-  const LogicalOffset* offset_iter = offsets_.begin();
-  for (auto& item : items_) {
-    item->SetOffset(offset_iter->ConvertToPhysical(writing_mode, direction,
-                                                   outer_size, item->Size()));
-    ++offset_iter;
+  std::unique_ptr<NGFragmentItem>* item_iter = items_.begin();
+  const LogicalOffset* offset = offsets_.begin();
+  for (; item_iter != items_.end(); ++item_iter, ++offset) {
+    DCHECK_NE(offset, offsets_.end());
+    NGFragmentItem* item = item_iter->get();
+    item->SetOffset(offset->ConvertToPhysical(writing_mode, direction,
+                                              outer_size, item->Size()));
+
+    // Transform children of lines separately from children of the block,
+    // because they may have different directions from the block. To do
+    // this, their offsets are relative to their containing line box.
+    if (item->Type() == NGFragmentItem::kLine) {
+      unsigned descendants_count = item->DescendantsCount();
+      DCHECK(descendants_count);
+      if (descendants_count) {
+        const PhysicalRect line_box_bounds = item->Rect();
+        while (--descendants_count) {
+          ++offset;
+          ++item_iter;
+          DCHECK_NE(offset, offsets_.end());
+          DCHECK_NE(item_iter, items_.end());
+          item = item_iter->get();
+          // Use `kLtr` because inline items are after bidi-reoder, and that
+          // their offset is visual, not logical.
+          item->SetOffset(
+              offset->ConvertToPhysical(writing_mode, TextDirection::kLtr,
+                                        line_box_bounds.size, item->Size()) +
+              line_box_bounds.offset);
+        }
+      }
+    }
   }
 
 #if DCHECK_IS_ON()

@@ -48,8 +48,8 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/data_url_blob_reader.h"
 #include "content/browser/download/mhtml_generation_manager.h"
-#include "content/browser/fileapi/file_system_manager_impl.h"
-#include "content/browser/fileapi/file_system_url_loader_factory.h"
+#include "content/browser/file_system/file_system_manager_impl.h"
+#include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -5588,7 +5588,7 @@ void RenderFrameHostImpl::CommitNavigation(
     }
 
     mojom::NavigationClient* navigation_client = nullptr;
-    if (IsPerNavigationMojoInterfaceEnabled() && navigation_request)
+    if (navigation_request)
       navigation_client = navigation_request->GetCommitNavigationClient();
 
     // Record the metrics about the state of the old main frame at the moment
@@ -5679,6 +5679,8 @@ void RenderFrameHostImpl::FailedNavigation(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(),
                "error", error_code);
 
+  DCHECK(navigation_request);
+
   // Update renderer permissions even for failed commits, so that for example
   // the URL bar correctly displays privileged URLs instead of filtering them.
   UpdatePermissionsForNavigation(common_params, commit_params);
@@ -5706,9 +5708,8 @@ void RenderFrameHostImpl::FailedNavigation(
           blink::URLLoaderFactoryBundleInfo::OriginMap(),
           bypass_redirect_checks);
 
-  mojom::NavigationClient* navigation_client = nullptr;
-  if (IsPerNavigationMojoInterfaceEnabled())
-    navigation_client = navigation_request->GetCommitNavigationClient();
+  mojom::NavigationClient* navigation_client =
+      navigation_request->GetCommitNavigationClient();
 
   SendCommitFailedNavigation(
       navigation_client, navigation_request, common_params.Clone(),
@@ -7364,6 +7365,10 @@ void RenderFrameHostImpl::SendCommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
+  // For committed interstitials, we do not have a NavigationRequest and use the
+  // old NavigationControl mojo interface. For anything else we should have a
+  // NavigationRequest, containing a NavigationClient, and commit through it.
+  // TODO(ahemery): Update when https://crbug.com/448486 is done.
   if (navigation_client) {
     navigation_client->CommitNavigation(
         std::move(common_params), std::move(commit_params),
@@ -7373,8 +7378,9 @@ void RenderFrameHostImpl::SendCommitNavigation(
         std::move(subresource_overrides), std::move(controller),
         std::move(provider_info), std::move(prefetch_loader_factory),
         devtools_navigation_token,
-        BuildNavigationClientCommitNavigationCallback(navigation_request));
+        BuildCommitNavigationCallback(navigation_request));
   } else {
+    DCHECK(!navigation_request);
     GetNavigationControl()->CommitNavigation(
         std::move(common_params), std::move(commit_params),
         std::move(response_head), std::move(response_body),
@@ -7383,7 +7389,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
         std::move(subresource_overrides), std::move(controller),
         std::move(provider_info), std::move(prefetch_loader_factory),
         devtools_navigation_token,
-        BuildCommitNavigationCallback(navigation_request));
+        mojom::FrameNavigationControl::CommitNavigationCallback());
   }
 }
 
@@ -7397,20 +7403,12 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories) {
-  if (navigation_client) {
-    navigation_client->CommitFailedNavigation(
-        std::move(common_params), std::move(commit_params),
-        has_stale_copy_in_cache, error_code, error_page_content,
-        std::move(subresource_loader_factories),
-        BuildNavigationClientCommitFailedNavigationCallback(
-            navigation_request));
-  } else {
-    GetNavigationControl()->CommitFailedNavigation(
-        std::move(common_params), std::move(commit_params),
-        has_stale_copy_in_cache, error_code, error_page_content,
-        std::move(subresource_loader_factories),
-        BuildCommitFailedNavigationCallback(navigation_request));
-  }
+  DCHECK(navigation_client && navigation_request);
+  navigation_client->CommitFailedNavigation(
+      std::move(common_params), std::move(commit_params),
+      has_stale_copy_in_cache, error_code, error_page_content,
+      std::move(subresource_loader_factories),
+      BuildCommitFailedNavigationCallback(navigation_request));
 }
 
 // Called when the renderer navigates. For every frame loaded, we'll get this
@@ -7550,26 +7548,8 @@ void RenderFrameHostImpl::DidCommitNavigation(
   EnsureDescendantsAreUnloading();
 }
 
-mojom::FrameNavigationControl::CommitNavigationCallback
-RenderFrameHostImpl::BuildCommitNavigationCallback(
-    NavigationRequest* navigation_request) {
-  if (!navigation_request)
-    return content::mojom::FrameNavigationControl::CommitNavigationCallback();
-
-  return base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-                        base::Unretained(this), navigation_request);
-}
-
-mojom::FrameNavigationControl::CommitFailedNavigationCallback
-RenderFrameHostImpl::BuildCommitFailedNavigationCallback(
-    NavigationRequest* navigation_request) {
-  DCHECK(navigation_request);
-  return base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-                        base::Unretained(this), navigation_request);
-}
-
 mojom::NavigationClient::CommitNavigationCallback
-RenderFrameHostImpl::BuildNavigationClientCommitNavigationCallback(
+RenderFrameHostImpl::BuildCommitNavigationCallback(
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
   return base::BindOnce(
@@ -7578,7 +7558,7 @@ RenderFrameHostImpl::BuildNavigationClientCommitNavigationCallback(
 }
 
 mojom::NavigationClient::CommitFailedNavigationCallback
-RenderFrameHostImpl::BuildNavigationClientCommitFailedNavigationCallback(
+RenderFrameHostImpl::BuildCommitFailedNavigationCallback(
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
   return base::BindOnce(

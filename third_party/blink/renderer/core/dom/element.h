@@ -645,6 +645,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual const AtomicString ImageSourceURL() const;
   virtual Image* ImageContents() { return nullptr; }
 
+  // Returns true if this is a shadow host, and its ShadowRoot has
+  // delegatesFocus flag.
+  bool DelegatesFocus() const;
   Element* FindActualFocusTarget() const;
   virtual void focus(const FocusParams& = FocusParams());
   void focus(const FocusOptions*);

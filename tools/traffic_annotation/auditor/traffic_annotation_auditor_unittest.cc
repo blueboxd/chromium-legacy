@@ -50,8 +50,6 @@ const base::FilePath kClangToolPath =
 const std::set<int> kDummyDeprecatedIDs = {100, 101, 102};
 }  // namespace
 
-using namespace testing;
-
 class TrafficAnnotationAuditorTest : public ::testing::Test {
  public:
   void SetUp() override {

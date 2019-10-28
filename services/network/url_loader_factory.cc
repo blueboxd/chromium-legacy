@@ -26,7 +26,7 @@ namespace network {
 
 constexpr int URLLoaderFactory::kMaxKeepaliveConnections;
 constexpr int URLLoaderFactory::kMaxKeepaliveConnectionsPerProcess;
-constexpr int URLLoaderFactory::kMaxKeepaliveConnectionsPerProcessForFetchAPI;
+constexpr int URLLoaderFactory::kMaxTotalKeepaliveRequestSize;
 
 URLLoaderFactory::URLLoaderFactory(
     NetworkContext* context,
@@ -100,26 +100,36 @@ void URLLoaderFactory::CreateLoaderAndStart(
         context_->network_service()->network_usage_accumulator()->AsWeakPtr();
   }
 
+  int keepalive_request_size = 0;
   bool exhausted = false;
   if (url_request.keepalive && keepalive_statistics_recorder) {
-    // This logic comes from
-    // content::ResourceDispatcherHostImpl::BeginRequestInternal.
-    // This is needed because we want to know whether the request is initiated
-    // by fetch() or not. We hope that we can unify these restrictions and
-    // remove the reference to fetch_request_context_type in the future.
-    constexpr uint32_t kInitiatedByFetchAPI = 8;
-    const bool is_initiated_by_fetch_api =
-        url_request.fetch_request_context_type == kInitiatedByFetchAPI;
-    const auto& recorder = *keepalive_statistics_recorder;
-    if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections)
-      exhausted = true;
-    if (recorder.NumInflightRequestsPerProcess(params_->process_id) >=
-        kMaxKeepaliveConnectionsPerProcess) {
-      exhausted = true;
+    const size_t url_size = url_request.url.spec().size();
+    size_t headers_size = 0;
+
+    net::HttpRequestHeaders merged_headers = url_request.headers;
+    merged_headers.MergeFrom(url_request.cors_exempt_headers);
+
+    for (const auto& pair : merged_headers.GetHeaderVector()) {
+      headers_size += (pair.key.size() + pair.value.size());
     }
-    if (is_initiated_by_fetch_api &&
-        recorder.NumInflightRequestsPerProcess(params_->process_id) >=
-            kMaxKeepaliveConnectionsPerProcessForFetchAPI) {
+
+    UMA_HISTOGRAM_COUNTS_10000("Net.KeepaliveRequest.UrlSize", url_size);
+    UMA_HISTOGRAM_COUNTS_10000("Net.KeepaliveRequest.HeadersSize",
+                               headers_size);
+    UMA_HISTOGRAM_COUNTS_10000("Net.KeepaliveRequest.UrlPlusHeadersSize",
+                               url_size + headers_size);
+
+    keepalive_request_size = url_size + headers_size;
+
+    const auto& recorder = *keepalive_statistics_recorder;
+    if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections) {
+      exhausted = true;
+    } else if (recorder.NumInflightRequestsPerProcess(params_->process_id) >=
+               kMaxKeepaliveConnectionsPerProcess) {
+      exhausted = true;
+    } else if (recorder.GetTotalRequestSizePerProcess(params_->process_id) +
+                   keepalive_request_size >
+               kMaxTotalKeepaliveRequestSize) {
       exhausted = true;
     }
   }
@@ -143,8 +153,8 @@ void URLLoaderFactory::CreateLoaderAndStart(
                      base::Unretained(cors_url_loader_factory_)),
       std::move(request), options, url_request, std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      params_.get(), request_id, resource_scheduler_client_,
-      std::move(keepalive_statistics_recorder),
+      params_.get(), request_id, keepalive_request_size,
+      resource_scheduler_client_, std::move(keepalive_statistics_recorder),
       std::move(network_usage_accumulator),
       header_client_.is_bound() ? header_client_.get() : nullptr,
       context_->origin_policy_manager());

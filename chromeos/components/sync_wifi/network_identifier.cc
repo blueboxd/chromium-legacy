@@ -7,9 +7,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/components/sync_wifi/network_type_conversions.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "components/sync/protocol/wifi_configuration_specifics.pb.h"
+#include "chromeos/network/network_state.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
@@ -20,22 +19,32 @@ namespace {
 
 const char kDelimeter[] = "_";
 
+std::string GetSecurityType(
+    sync_pb::WifiConfigurationSpecificsData_SecurityType security_type) {
+  switch (security_type) {
+    case sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_PSK:
+      return shill::kSecurityPsk;
+    case sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_WEP:
+      return shill::kSecurityWep;
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 }  // namespace
 
 // static
 NetworkIdentifier NetworkIdentifier::FromProto(
     const sync_pb::WifiConfigurationSpecificsData& specifics) {
-  return NetworkIdentifier(
-      specifics.hex_ssid(),
-      SecurityTypeStringFromProto(specifics.security_type()));
+  return NetworkIdentifier(specifics.hex_ssid(),
+                           GetSecurityType(specifics.security_type()));
 }
 
 // static
-NetworkIdentifier NetworkIdentifier::FromMojoNetwork(
-    const network_config::mojom::NetworkStatePropertiesPtr& network) {
-  return NetworkIdentifier(
-      network->type_state->get_wifi()->hex_ssid,
-      SecurityTypeStringFromMojo(network->type_state->get_wifi()->security));
+NetworkIdentifier NetworkIdentifier::FromNetwork(
+    const chromeos::NetworkState& network) {
+  return NetworkIdentifier(network.GetHexSsid(), network.security_class());
 }
 
 // static
@@ -66,18 +75,6 @@ std::string NetworkIdentifier::SerializeToString() const {
 
 bool NetworkIdentifier::operator==(const NetworkIdentifier& o) const {
   return hex_ssid_ == o.hex_ssid_ && security_type_ == o.security_type_;
-}
-
-bool NetworkIdentifier::operator!=(const NetworkIdentifier& o) const {
-  return hex_ssid_ != o.hex_ssid_ || security_type_ != o.security_type_;
-}
-
-bool NetworkIdentifier::operator>(const NetworkIdentifier& o) const {
-  return *this != o && !(*this < o);
-}
-
-bool NetworkIdentifier::operator<(const NetworkIdentifier& o) const {
-  return SerializeToString() < o.SerializeToString();
 }
 
 }  // namespace sync_wifi

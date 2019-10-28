@@ -101,6 +101,7 @@ class CONTENT_EXPORT JankMonitor
   virtual void DestroyOnMonitorThread();
   virtual void FinishDestroyMetricSource();
   virtual std::unique_ptr<MetricSource> CreateMetricSource();
+  virtual void OnCheckJankiness();  // Timer callback.
   bool timer_running() const;
 
  private:
@@ -154,9 +155,6 @@ class CONTENT_EXPORT JankMonitor
   // Stops the timer on inactivity for longer than a threshold.
   void StopTimerIfIdle();
 
-  // Timer callback.
-  void OnCheckJankiness();
-
   // Sends out notifications.
   void OnJankStarted(const void* opaque_identifier);
   void OnJankStopped(const void* opaque_identifier);
@@ -197,7 +195,7 @@ class CONTENT_EXPORT JankMonitor
   // The lock synchronizes access the |observers| from AddObserver(),
   // RemoveObserver(), OnJankStarted() and OnJankStopped().
   base::Lock observers_lock_;
-  base::ObserverList<Observer>::Unchecked observers_;
+  base::ObserverList<Observer, /* check_empty = */ true>::Unchecked observers_;
 
   // Checks some methods are called on the monitor thread.
   SEQUENCE_CHECKER(monitor_sequence_checker_);

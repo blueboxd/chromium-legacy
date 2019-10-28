@@ -52,6 +52,93 @@
 
 namespace content {
 
+namespace {
+
+// Similar to net::test_server::DelayedHttpResponse, but the delay is resolved
+// through Resolver.
+class DelayedHttpResponseWithResolver final
+    : public net::test_server::BasicHttpResponse {
+ public:
+  struct ResponseWithCallbacks final {
+    net::test_server::SendBytesCallback send_callback;
+    net::test_server::SendCompleteCallback done_callback;
+    std::string response_string;
+  };
+
+  class Resolver final : public base::RefCountedThreadSafe<Resolver> {
+   public:
+    void Resolve() {
+      base::AutoLock auto_lock(lock_);
+      DCHECK(!resolved_);
+      resolved_ = true;
+
+      if (!task_runner_) {
+        return;
+      }
+
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&Resolver::ResolveInServerTaskRunner, this));
+    }
+
+    void Add(const ResponseWithCallbacks& response) {
+      base::AutoLock auto_lock(lock_);
+
+      if (resolved_) {
+        response.send_callback.Run(response.response_string,
+                                   response.done_callback);
+        return;
+      }
+
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+          base::ThreadTaskRunnerHandle::Get();
+      if (task_runner_) {
+        DCHECK_EQ(task_runner_, task_runner);
+      } else {
+        task_runner_ = std::move(task_runner);
+      }
+
+      responses_with_callbacks_.push_back(response);
+    }
+
+   private:
+    void ResolveInServerTaskRunner() {
+      auto responses_with_callbacks = std::move(responses_with_callbacks_);
+      for (const auto& response_with_callbacks : responses_with_callbacks) {
+        response_with_callbacks.send_callback.Run(
+            response_with_callbacks.response_string,
+            response_with_callbacks.done_callback);
+      }
+    }
+
+    friend class base::RefCountedThreadSafe<Resolver>;
+    ~Resolver() = default;
+
+    base::Lock lock_;
+
+    std::vector<ResponseWithCallbacks> responses_with_callbacks_;
+    bool resolved_ GUARDED_BY(lock_) = false;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_ GUARDED_BY(lock_);
+  };
+
+  explicit DelayedHttpResponseWithResolver(scoped_refptr<Resolver> resolver)
+      : resolver_(std::move(resolver)) {}
+
+  DelayedHttpResponseWithResolver(const DelayedHttpResponseWithResolver&) =
+      delete;
+  DelayedHttpResponseWithResolver& operator=(
+      const DelayedHttpResponseWithResolver&) = delete;
+
+  void SendResponse(
+      const net::test_server::SendBytesCallback& send,
+      const net::test_server::SendCompleteCallback& done) override {
+    resolver_->Add({send, done, ToResponseString()});
+  }
+
+ private:
+  const scoped_refptr<Resolver> resolver_;
+};
+
 std::unique_ptr<net::test_server::HttpResponse> HandleBeacon(
     const net::test_server::HttpRequest& request) {
   if (request.relative_url != "/beacon")
@@ -69,6 +156,16 @@ std::unique_ptr<net::test_server::HttpResponse> HandleHungBeacon(
   }
   return std::make_unique<net::test_server::HungResponse>();
 }
+
+std::unique_ptr<net::test_server::HttpResponse> HandleHungBeaconWithResolver(
+    scoped_refptr<DelayedHttpResponseWithResolver::Resolver> resolver,
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/beacon")
+    return nullptr;
+  return std::make_unique<DelayedHttpResponseWithResolver>(std::move(resolver));
+}
+
+}  // namespace
 
 class RenderProcessHostTest : public ContentBrowserTest,
                               public RenderProcessHostObserver {
@@ -1111,6 +1208,48 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   EXPECT_GE(base::TimeTicks::Now() - start, base::TimeDelta::FromSeconds(1));
   if (!host_destructions_)
     rph->RemoveObserver(this);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ManyKeepaliveRequests) {
+  auto resolver =
+      base::MakeRefCounted<DelayedHttpResponseWithResolver::Resolver>();
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(HandleHungBeaconWithResolver, resolver));
+  const base::string16 title = base::ASCIIToUTF16("Resolved");
+  const base::string16 waiting = base::ASCIIToUTF16("Waiting");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/fetch-keepalive.html?requests=256")));
+
+  {
+    // Wait for the page to make all the keepalive requests.
+    TitleWatcher watcher(shell()->web_contents(), waiting);
+    EXPECT_EQ(waiting, watcher.WaitAndGetTitle());
+  }
+
+  resolver->Resolve();
+
+  {
+    TitleWatcher watcher(shell()->web_contents(), title);
+    EXPECT_EQ(title, watcher.WaitAndGetTitle());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, TooManyKeepaliveRequests) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(HandleHungBeacon, base::RepeatingClosure()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const base::string16 title = base::ASCIIToUTF16("Rejected");
+
+  TitleWatcher watcher(shell()->web_contents(), title);
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/fetch-keepalive.html?requests=257")));
+
+  EXPECT_EQ(title, watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, LowPriorityFramesDisabled) {

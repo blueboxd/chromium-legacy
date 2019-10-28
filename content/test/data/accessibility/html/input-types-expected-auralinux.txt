@@ -16,12 +16,9 @@
 ++++[label] label-for
 ++++++[text] name='File: '
 ++++++[push button] name='File:' labelled-by
-++++++++[push button] name='Choose File'
 ++++[label] label-for
 ++++++[text] name='Image: '
 ++++++[push button] name='Image:' labelled-by
-++++++++[image]
-++++++++[text] name='Submit'
 ++++[label] label-for
 ++++++[text] name='Number: '
 ++++++[spin button] name='Number:' selectable-text labelled-by text-input-type:number current=0.000000 minimum=0.000000 maximum=0.000000

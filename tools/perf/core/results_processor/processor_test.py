@@ -63,6 +63,12 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
       json.dump({'diagnostics': diagnostics}, f)
     return testing.Artifact(diag_file)
 
+  def CreateMeasurementsArtifact(self, measurements):
+    with tempfile.NamedTemporaryFile(
+        dir=self.intermediate_dir, delete=False) as artifact_file:
+      json.dump({'measurements': measurements}, artifact_file)
+    return testing.Artifact(artifact_file.name)
+
   def testJson3Output(self):
     self.SerializeIntermediateResults(
         testing.TestResult(
@@ -126,6 +132,41 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertEqual(len(artifacts), 2)
     self.assertEqual(artifacts['logs'], ['gs://logs.txt'])
     self.assertEqual(artifacts['trace.html'], ['gs://trace.html'])
+
+  def testMaxValuesPerTestCase(self):
+    def SomeMeasurements(num):
+      return (
+          processor.MEASUREMENTS_NAME,
+          self.CreateMeasurementsArtifact({
+              'n%d' % i: {'unit': 'count', 'samples': [i]}
+              for i in range(num)
+          })
+      )
+
+    self.SerializeIntermediateResults(
+        testing.TestResult(
+            'benchmark/story1', status='PASS',
+            output_artifacts=dict([SomeMeasurements(3)])),
+        testing.TestResult(
+            'benchmark/story2', status='PASS',
+            output_artifacts=dict([SomeMeasurements(7)])),
+    )
+
+    exit_code = processor.main([
+        '--output-format', 'json-test-results',
+        '--output-format', 'histograms',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--max-values-per-test-case', '5'
+    ])
+    self.assertEqual(exit_code, 1)
+
+    with open(os.path.join(
+        self.output_dir, json3_output.OUTPUT_FILENAME)) as f:
+      results = json.load(f)
+
+    self.assertEqual(results['tests']['benchmark']['story1']['actual'], 'PASS')
+    self.assertEqual(results['tests']['benchmark']['story2']['actual'], 'FAIL')
 
   def testHistogramsOutput(self):
     self.SerializeIntermediateResults(

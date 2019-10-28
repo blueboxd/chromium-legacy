@@ -13,6 +13,7 @@
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/mojo/clients/mojo_renderer_factory.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 
@@ -36,16 +37,18 @@ std::unique_ptr<media::Renderer> FlingingRendererClientFactory::CreateRenderer(
 
   // Used to send messages from the FlingingRenderer (Browser process),
   // to the FlingingRendererClient (Renderer process). The
-  // |client_extension_request| will be bound in FlingingRendererClient.
-  media::mojom::FlingingRendererClientExtensionPtr client_extension_ptr;
-  auto client_extension_request = mojo::MakeRequest(&client_extension_ptr);
+  // |client_extension_receiver| will be bound in FlingingRendererClient.
+  mojo::PendingRemote<media::mojom::FlingingRendererClientExtension>
+      client_extension_remote;
+  auto client_extension_receiver =
+      client_extension_remote.InitWithNewPipeAndPassReceiver();
 
   auto mojo_renderer = mojo_flinging_factory_->CreateFlingingRenderer(
-      GetActivePresentationId(), std::move(client_extension_ptr),
+      GetActivePresentationId(), std::move(client_extension_remote),
       media_task_runner, video_renderer_sink);
 
   return std::make_unique<FlingingRendererClient>(
-      std::move(client_extension_request), media_task_runner,
+      std::move(client_extension_receiver), media_task_runner,
       std::move(mojo_renderer), remote_play_state_change_cb_);
 }
 

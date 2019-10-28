@@ -786,6 +786,34 @@ class SitePerProcessNonIntegerScaleFactorHitTestBrowserTest
   }
 };
 
+//
+// SitePerProcessUserActivationHitTestBrowserTest
+//
+
+class SitePerProcessUserActivationHitTestBrowserTest
+    : public SitePerProcessHitTestBrowserTest {
+ public:
+  SitePerProcessUserActivationHitTestBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
+    if (std::get<0>(GetParam()) == HitTestType::kDrawQuad) {
+      feature_list_.InitAndEnableFeature(
+          features::kBrowserVerifiedUserActivation);
+      // Default enabled.
+    } else if (std::get<0>(GetParam()) == HitTestType::kSurfaceLayer) {
+      feature_list_.InitWithFeatures({features::kEnableVizHitTestSurfaceLayer,
+                                      features::kBrowserVerifiedUserActivation},
+                                     {});
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Restrict to Aura to we can use routable MouseWheel event via
 // RenderWidgetHostViewAura::OnScrollEvent().
 #if defined(USE_AURA)
@@ -6575,29 +6603,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   }
 }
 
-class SitePerProcessHitTestBrowserTestWithBrowserVerifiedUserActivation
-    : public SitePerProcessHitTestBrowserTest {
- public:
-  SitePerProcessHitTestBrowserTestWithBrowserVerifiedUserActivation() {
-    feature_list_.InitAndEnableFeature(
-        features::kBrowserVerifiedUserActivation);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-#if defined(OS_LINUX)
-// Test is flaky. See https://crbug.com/995285
-#define MAYBE_RenderWidgetUserActivationStateTest \
-  DISABLED_RenderWidgetUserActivationStateTest
-#else
-#define MAYBE_RenderWidgetUserActivationStateTest \
-  RenderWidgetUserActivationStateTest
-#endif
-IN_PROC_BROWSER_TEST_P(
-    SitePerProcessHitTestBrowserTestWithBrowserVerifiedUserActivation,
-    MAYBE_RenderWidgetUserActivationStateTest) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessUserActivationHitTestBrowserTest,
+                       RenderWidgetUserActivationStateTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6635,19 +6642,21 @@ IN_PROC_BROWSER_TEST_P(
   DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event, rwhv_root,
                                          click_point, rwhv_root, click_point);
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
+  base::RunLoop().RunUntilIdle();
 
-  // Root frame pending activation state has been cleared by activation
-  // notification, and it has user activation.
+  // Wait for root frame gets activated.
+  while (!root->HasTransientUserActivation()) {
+    base::RunLoop loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitClosure());
+    loop.Run();
+  }
+  // Child frame doesn't have user activation.
+  EXPECT_FALSE(child->HasTransientUserActivation());
+  // Root frame's pending activation state has been cleared by activation.
   EXPECT_FALSE(root->current_frame_host()
                    ->GetRenderWidgetHost()
                    ->RemovePendingUserActivationIfAvailable());
-  EXPECT_TRUE(root->HasTransientUserActivation());
-  // Child frame doesn't have allowed_activation state set, and does not have
-  // user activation.
-  EXPECT_FALSE(child->current_frame_host()
-                   ->GetRenderWidgetHost()
-                   ->RemovePendingUserActivationIfAvailable());
-  EXPECT_FALSE(child->HasTransientUserActivation());
 
   // Clear the activation state.
   root->UpdateUserActivationState(
@@ -6660,19 +6669,24 @@ IN_PROC_BROWSER_TEST_P(
                                          rwhv_child, click_point, rwhv_child,
                                          click_point);
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  base::RunLoop().RunUntilIdle();
 
-  // Child frame's activation state has been cleared by
-  // the activation notification, and it has user activation.
-  EXPECT_FALSE(child->current_frame_host()
-                   ->GetRenderWidgetHost()
-                   ->RemovePendingUserActivationIfAvailable());
-  EXPECT_TRUE(child->HasTransientUserActivation());
-  // Root frame doesn't have allowed_activation state set, but has user
-  // activation because with UAv2, ancestor frames get activated as well.
+  // Wait for child frame to get activated.
+  while (!child->HasTransientUserActivation()) {
+    base::RunLoop loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitClosure());
+    loop.Run();
+  }
+  // With UAV2, ancestor frames get activated too.
+  EXPECT_TRUE(root->HasTransientUserActivation());
+  // Both child frame and root frame don't have allowed_activation state
   EXPECT_FALSE(root->current_frame_host()
                    ->GetRenderWidgetHost()
                    ->RemovePendingUserActivationIfAvailable());
-  EXPECT_TRUE(root->HasTransientUserActivation());
+  EXPECT_FALSE(child->current_frame_host()
+                   ->GetRenderWidgetHost()
+                   ->RemovePendingUserActivationIfAvailable());
 }
 
 class SitePerProcessHitTestDataGenerationBrowserTest
@@ -7160,6 +7174,10 @@ static const float kOneScale[] = {1.f};
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          SitePerProcessHitTestBrowserTest,
+                         testing::Combine(testing::ValuesIn(kHitTestOption),
+                                          testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SitePerProcessUserActivationHitTestBrowserTest,
                          testing::Combine(testing::ValuesIn(kHitTestOption),
                                           testing::ValuesIn(kOneScale)));
 // TODO(wjmaclean): Since the next two test fixtures only differ in DSF

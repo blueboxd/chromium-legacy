@@ -63,9 +63,9 @@ var allTests = [
     assertEq(body, cancelButton.parent);
 
     assertEq(undefined, okButton.previousSibling);
-    assertEq({}, okButton.firstChild);
+    assertEq(undefined, okButton.firstChild);
     assertEq(userNameInput, okButton.nextSibling);
-    assertEq({}, okButton.lastChild);
+    assertEq(undefined, okButton.lastChild);
 
     assertEq(okButton, userNameInput.previousSibling);
     assertEq(cancelButton, userNameInput.nextSibling);

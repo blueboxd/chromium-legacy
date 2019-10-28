@@ -38,7 +38,7 @@ class TabSelectionEditorToolbar extends SelectableListToolbar<Integer> {
         super.onFinishInflate();
 
         showNavigationButton();
-        mGroupButton = (Button) findViewById(org.chromium.chrome.R.id.action_button);
+        mGroupButton = (Button) findViewById(R.id.action_button);
         mNumberRollView.setStringForZero(R.string.tab_selection_editor_toolbar_select_tabs);
     }
 

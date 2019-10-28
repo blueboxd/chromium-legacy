@@ -74,11 +74,11 @@ buildflag_header("buildflags") {
 if (is_android) {
   java_cpp_enum("blink_headers_java_enums_srcjar") {
     sources = [
+      "./common/context_menu_data/media_type.h",
       "./platform/web_focus_type.h",
       "./platform/web_input_event.h",
       "./platform/web_text_input_mode.h",
       "./platform/web_text_input_type.h",
-      "./web/web_context_menu_data.h",
     ]
   }
 

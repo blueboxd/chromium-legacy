@@ -269,6 +269,15 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     }
 
     /**
+     * Return true if app banners are to be permitted in this tab. May need to be overridden.
+     * @return true if app banners are permitted, and false otherwise.
+     */
+    @CalledByNative
+    protected boolean canShowAppBanners() {
+        return true;
+    }
+
+    /**
      * @return the Webapp manifest scope, which is used to allow frames within the scope to
      *         autoplay media unmuted.
      */

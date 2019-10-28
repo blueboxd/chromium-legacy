@@ -30,7 +30,7 @@ namespace password_manager {
 
 class FormSaver;
 class PasswordFormMetricsRecorder;
-class PasswordGenerationState;
+class PasswordGenerationManager;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 struct PossibleUsernameData;
@@ -337,7 +337,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool is_new_login_ = true;
 
   // Handles the user flows related to the generation.
-  std::unique_ptr<PasswordGenerationState> generation_state_;
+  std::unique_ptr<PasswordGenerationManager> generation_manager_;
 
   // Whether a saved password was overridden. The flag is true when there is a
   // credential in the store that will get a new password value.

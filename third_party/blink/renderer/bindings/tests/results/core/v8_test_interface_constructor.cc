@@ -127,7 +127,7 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   test_interface_empty_arg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[2]);
   if (!test_interface_empty_arg) {
-    exception_state.ThrowTypeError("parameter 3 is not of type 'TestInterfaceEmpty'.");
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(2, "TestInterfaceEmpty"));
     return;
   }
 
@@ -179,7 +179,7 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   optional_test_interface_empty_arg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[9]);
   if (!optional_test_interface_empty_arg) {
-    exception_state.ThrowTypeError("parameter 10 is not of type 'TestInterfaceEmpty'.");
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(9, "TestInterfaceEmpty"));
     return;
   }
 

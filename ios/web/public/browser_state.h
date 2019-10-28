@@ -104,7 +104,7 @@ class BrowserState : public base::SupportsUserData {
 
   void CreateNetworkContextIfNecessary();
 
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
   mojo::Remote<network::mojom::CookieManager> cookie_manager_;
   std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
       proto_database_provider_;

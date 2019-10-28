@@ -24,9 +24,6 @@ PendingNetworkConfigurationUpdate::PendingNetworkConfigurationUpdate(
 PendingNetworkConfigurationUpdate::~PendingNetworkConfigurationUpdate() =
     default;
 
-PendingNetworkConfigurationUpdate& PendingNetworkConfigurationUpdate::operator=(
-    PendingNetworkConfigurationUpdate& update) = default;
-
 bool PendingNetworkConfigurationUpdate::IsDeleteOperation() const {
   return !specifics_.has_value();
 }

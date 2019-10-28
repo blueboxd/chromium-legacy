@@ -61,9 +61,9 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
                                 traffic_annotation) override;
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override;
 
-  static constexpr int kMaxKeepaliveConnections = 256;
-  static constexpr int kMaxKeepaliveConnectionsPerProcess = 20;
-  static constexpr int kMaxKeepaliveConnectionsPerProcessForFetchAPI = 10;
+  static constexpr int kMaxKeepaliveConnections = 2048;
+  static constexpr int kMaxKeepaliveConnectionsPerProcess = 256;
+  static constexpr int kMaxTotalKeepaliveRequestSize = 256 * 1024;
 
  private:
   // The NetworkContext that indirectly owns |this|.

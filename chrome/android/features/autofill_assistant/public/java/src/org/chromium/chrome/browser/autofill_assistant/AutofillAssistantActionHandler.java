@@ -8,25 +8,36 @@ import android.os.Bundle;
 
 import org.chromium.base.Callback;
 
-import java.util.Set;
-
 /**
  * Interface that provides implementation for AA actions, triggered by direct actions.
  */
 public interface AutofillAssistantActionHandler {
     /**
-     * Returns the names of available AA actions.
+     * Start fetching potential actions for websites.
      *
      * <p>This method starts AA on the current tab, if necessary, and waits for the first results.
-     * Once AA is started, the results are reported immediately.
+     * The method hasRunFirstCheck will return true when that's done. Note that {@code callback}
+     * will receive true if fetching actions was successful and the resulting set is not empty.
+     * <p>This method needs to be called before getActions below will return anything.
      *
      * @param userName name of the user to use when sending RPCs. Might be empty.
      * @param experimentIds comma-separated set of experiment ids. Might be empty
      * @param arguments extra arguments to include into the RPC. Might be empty.
-     * @param callback callback to report the result to
+     * @param callback callback to report when actions are available.
      */
-    void listActions(String userName, String experimentIds, Bundle arguments,
-            Callback<Set<String>> callback);
+    void fetchWebsiteActions(
+            String userName, String experimentIds, Bundle arguments, Callback<Boolean> callback);
+
+    /**
+     * Returns if autofill assistant has fetched actions for the current URL.
+     *
+     * <p>This method queries the underlying Autofill Assistant stack to find out if it has been
+     * started and whether the first round of fetching scripts and checking availability has been
+     * completed.
+     *
+     * @return Whether scripts have been fetched and preconditions checked.
+     */
+    boolean hasRunFirstCheck();
 
     /**
      * Returns the available AA actions to be reported to the direct actions framework.

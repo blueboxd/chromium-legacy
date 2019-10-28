@@ -1038,6 +1038,7 @@
         'DeviceUnaffiliatedCrostiniAllowed',
         'CrostiniExportImportUIAllowed',
         'CrostiniRootAccessAllowed',
+        'CrostiniAnsiblePlaybook',
       ]
     },
     {
@@ -14895,6 +14896,47 @@
       If the policy is set to false, root access to both existing and new Crostini containers will not be granted to the user.''',
     },
     {
+      'name': 'CrostiniAnsiblePlaybook',
+      'owners': ['aoldemeier@chromium.org', 'okalitova@chromium.org'],
+      'type': 'external',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': {
+            'description': 'The URL from which the Ansible playbook can be downloaded.',
+            'type': 'string'
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the Ansible playbook.',
+            'type': 'string'
+          }
+        },
+      },
+      'supported_on': ['chrome_os:80-'],
+      'future': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': {
+        "url": "https://example.com/ansibleplaybook",
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+      },
+      'max_size': 1000000,
+      'id': 639,
+      'caption': '''Crostini Ansible playbook''',
+      'tags': [],
+      'desc': '''Provides an Ansible playbook that should be executed in the default Crostini container.
+
+      This policy allows to provide an Ansible playbook to be applied to the default Crostini container if it is available on the given device and allowed by policies.
+
+      The size of the data must not exceed 1MB (1000000 bytes) and must be encoded in YAML. The cryptographic hash is used to verify the integrity of the download.
+
+      The configuration is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If you set the policy, users can't change it. If not set, users can continue using default Crostini container in its ongoing configuration if Crostini is allowed by policies.''',
+    },
+    {
       'name': 'SafeBrowsingWhitelistDomains',
       'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
       'type': 'list',
@@ -19539,6 +19581,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 638,
+  'highest_id_currently_used': 639,
   'highest_atomic_group_id_currently_used': 38
 }

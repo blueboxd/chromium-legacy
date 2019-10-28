@@ -33,7 +33,6 @@ enum class SigninState {
 };
 
 extern const base::Feature kPersistUPAInProfileInfoCache;
-extern const base::Feature kConcatenateGaiaAndProfileName;
 
 class ProfileAttributesEntry {
  public:
@@ -41,6 +40,10 @@ class ProfileAttributesEntry {
 
   ProfileAttributesEntry();
   virtual ~ProfileAttributesEntry() {}
+
+  // Returns whether the profile name is the concatenation of the Gaia name and
+  // of the local profile name.
+  static bool ShouldConcatenateGaiaAndProfileName();
 
   // Gets the name of the profile to be displayed in the User Menu. The name can
   // be the GAIA name, local profile name or a combination of them.

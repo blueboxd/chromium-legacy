@@ -9,9 +9,8 @@
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
-namespace user_manager {
-class User;
-}  // namespace user_manager
+class PrefService;
+class PrefRegistrySimple;
 
 namespace chromeos {
 
@@ -24,7 +23,8 @@ namespace bluetooth {
 // state of debug logs and handles the user enabling/disabling them.
 class DebugLogsManager : public mojom::DebugLogsChangeHandler {
  public:
-  explicit DebugLogsManager(const user_manager::User* primary_user);
+  DebugLogsManager(const std::string& primary_user_email,
+                   PrefService* pref_service);
   ~DebugLogsManager() override;
 
   // State for capturing debug Bluetooth logs; logs are only captured when
@@ -37,19 +37,21 @@ class DebugLogsManager : public mojom::DebugLogsChangeHandler {
     kSupportedAndEnabled
   };
 
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
   DebugLogsState GetDebugLogsState() const;
+
+  // mojom::DebugLogsManager:
+  void ChangeDebugLogsState(bool should_debug_logs_be_enabled) override;
 
   // Generates an InterfacePtr bound to this object.
   mojom::DebugLogsChangeHandlerPtr GenerateInterfacePtr();
 
  private:
-  // mojom::DebugLogsManager:
-  void ChangeDebugLogsState(bool should_debug_logs_be_enabled) override;
-
   bool AreDebugLogsSupported() const;
 
-  const user_manager::User* primary_user_ = nullptr;
-  bool are_debug_logs_enabled_ = false;
+  const std::string primary_user_email_;
+  PrefService* pref_service_ = nullptr;
   mojo::BindingSet<mojom::DebugLogsChangeHandler> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugLogsManager);

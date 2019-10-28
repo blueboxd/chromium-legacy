@@ -2070,6 +2070,12 @@ extern const char kEnableVirtualDesksDescription[];
 extern const char kEnableVirtualDesksGesturesName[];
 extern const char kEnableVirtualDesksGesturesDescription[];
 
+extern const char kTerminalSystemAppName[];
+extern const char kTerminalSystemAppDescription[];
+
+extern const char kTerminalSystemAppSplitsName[];
+extern const char kTerminalSystemAppSplitsDescription[];
+
 extern const char kTrimOnFreezeName[];
 extern const char kTrimOnFreezeDescription[];
 
@@ -2249,8 +2255,6 @@ extern const char kZeroStateFilesDescription[];
 #endif  // #if defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-extern const char kTerminalSystemAppName[];
-extern const char kTerminalSystemAppDescription[];
 
 #if BUILDFLAG(USE_TCMALLOC)
 extern const char kDynamicTcmallocName[];

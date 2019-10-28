@@ -189,12 +189,12 @@ String FileReaderLoader::StringResult() {
   return string_result_;
 }
 
-WTF::ArrayBufferContents FileReaderLoader::TakeContents() {
+ArrayBufferContents FileReaderLoader::TakeContents() {
   if (!raw_data_.IsValid() || error_code_ != FileErrorCode::kOK)
-    return WTF::ArrayBufferContents();
+    return ArrayBufferContents();
 
   DCHECK(finished_loading_);
-  WTF::ArrayBufferContents contents = std::move(raw_data_);
+  ArrayBufferContents contents = std::move(raw_data_);
   return contents;
 }
 
@@ -245,10 +245,9 @@ void FileReaderLoader::OnStartLoading(uint64_t total_bytes) {
       return;
     }
 
-    raw_data_ =
-        WTF::ArrayBufferContents(static_cast<unsigned>(total_bytes), 1,
-                                 WTF::ArrayBufferContents::kNotShared,
-                                 WTF::ArrayBufferContents::kDontInitialize);
+    raw_data_ = ArrayBufferContents(static_cast<unsigned>(total_bytes), 1,
+                                    ArrayBufferContents::kNotShared,
+                                    ArrayBufferContents::kDontInitialize);
     if (!raw_data_.IsValid()) {
       Failed(FileErrorCode::kNotReadableErr,
              FailureType::kArrayBufferBuilderCreation);

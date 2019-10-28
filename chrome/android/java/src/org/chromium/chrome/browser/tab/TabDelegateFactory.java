@@ -36,12 +36,6 @@ public interface TabDelegateFactory {
     ContextMenuPopulator createContextMenuPopulator(Tab tab);
 
     /**
-     * Return true if app banners are to be permitted in this tab. May need to be overridden.
-     * @return true if app banners are permitted, and false otherwise.
-     */
-    boolean canShowAppBanners();
-
-    /**
      * Creates the {@link BrowserControlsVisibilityDelegate} the tab will be initialized with.
      * @param tab The associated {@link Tab}.
      */

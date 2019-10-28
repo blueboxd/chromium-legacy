@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -133,10 +134,9 @@ class ProfileInfoCacheTestWithParam
   ProfileInfoCacheTestWithParam() : ProfileInfoCacheTest() {
     concatenate_enabled_ = GetParam();
     if (concatenate_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(kConcatenateGaiaAndProfileName);
+      scoped_feature_list_.InitAndEnableFeature(features::kProfileMenuRevamp);
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          kConcatenateGaiaAndProfileName);
+      scoped_feature_list_.InitAndDisableFeature(features::kProfileMenuRevamp);
     }
   }
 
@@ -285,7 +285,7 @@ TEST_F(ProfileInfoCacheTest, ConcatenateGaiaNameAndProfileName) {
   // If one of the two conditions hold, we will show the profile name in this
   // format |GAIA name (Profile local name)|
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kConcatenateGaiaAndProfileName);
+  scoped_feature_list.InitAndEnableFeature(features::kProfileMenuRevamp);
   // Single profile.
   GetCache()->AddProfileToCache(
       GetProfilePath("path_1"), ASCIIToUTF16("Person 1"), std::string(),

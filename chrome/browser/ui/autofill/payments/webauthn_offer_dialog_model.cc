@@ -59,7 +59,6 @@ base::string16 WebauthnOfferDialogModel::GetCancelButtonLabel() const {
     case DialogState::kUnknown:
       break;
   }
-  NOTREACHED();
   return base::string16();
 }
 

@@ -88,42 +88,44 @@ void MediaInterfaceFactory::CreateCastRenderer(
 
 #if defined(OS_ANDROID)
 void MediaInterfaceFactory::CreateMediaPlayerRenderer(
-    media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
-    media::mojom::RendererRequest request,
-    media::mojom::MediaPlayerRendererExtensionRequest
-        renderer_extension_request) {
+    mojo::PendingRemote<media::mojom::MediaPlayerRendererClientExtension>
+        client_extension_remote,
+    mojo::PendingReceiver<media::mojom::Renderer> receiver,
+    mojo::PendingReceiver<media::mojom::MediaPlayerRendererExtension>
+        renderer_extension_receiver) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&MediaInterfaceFactory::CreateMediaPlayerRenderer,
-                       weak_this_, std::move(client_extension_ptr),
-                       std::move(request),
-                       std::move(renderer_extension_request)));
+                       weak_this_, std::move(client_extension_remote),
+                       std::move(receiver),
+                       std::move(renderer_extension_receiver)));
     return;
   }
 
   DVLOG(1) << __func__;
   GetMediaInterfaceFactory()->CreateMediaPlayerRenderer(
-      std::move(client_extension_ptr), std::move(request),
-      std::move(renderer_extension_request));
+      std::move(client_extension_remote), std::move(receiver),
+      std::move(renderer_extension_receiver));
 }
 
 void MediaInterfaceFactory::CreateFlingingRenderer(
     const std::string& presentation_id,
-    media::mojom::FlingingRendererClientExtensionPtr client_extension,
-    media::mojom::RendererRequest request) {
+    mojo::PendingRemote<media::mojom::FlingingRendererClientExtension>
+        client_extension,
+    mojo::PendingReceiver<media::mojom::Renderer> receiver) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&MediaInterfaceFactory::CreateFlingingRenderer,
                        weak_this_, presentation_id, std::move(client_extension),
-                       std::move(request)));
+                       std::move(receiver)));
     return;
   }
 
   DVLOG(1) << __func__;
   GetMediaInterfaceFactory()->CreateFlingingRenderer(
-      presentation_id, std::move(client_extension), std::move(request));
+      presentation_id, std::move(client_extension), std::move(receiver));
 }
 #endif  // defined(OS_ANDROID)
 

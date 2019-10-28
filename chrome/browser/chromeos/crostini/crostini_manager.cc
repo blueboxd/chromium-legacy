@@ -2077,7 +2077,7 @@ void CrostiniManager::OnContainerStarted(
   // pre-determined configuration to the default container.
   if (signal.vm_name() == kCrostiniDefaultVmName &&
       signal.container_name() == kCrostiniDefaultContainerName &&
-      IsCrostiniAnsibleInfrastructureEnabled()) {
+      ShouldConfigureDefaultContainer(profile_)) {
     AddLinuxPackageOperationProgressObserver(
         AnsibleManagementService::GetForProfile(profile_));
 
@@ -2106,10 +2106,22 @@ void CrostiniManager::OnAnsibleInDefaultContainerInstalled(bool success) {
     return;
   }
 
-  // TODO(https://crbug.com/998124): Propagate playbook to be applied.
+  const base::FilePath ansible_playbook_file_path =
+      profile_->GetPrefs()->GetFilePath(
+          prefs::kCrostiniAnsiblePlaybookFilePath);
+  std::string playbook_content;
+  if (!base::ReadFileToString(ansible_playbook_file_path, &playbook_content)) {
+    LOG(ERROR) << "Failed to retrieve Ansible playbook content from "
+               << ansible_playbook_file_path.value();
+    InvokeAndErasePendingContainerCallbacks(
+        &start_container_callbacks_, kCrostiniDefaultVmName,
+        kCrostiniDefaultContainerName, CrostiniResult::UNKNOWN_ERROR);
+    return;
+  }
+
   AnsibleManagementService::GetForProfile(profile_)
       ->ApplyAnsiblePlaybookToDefaultContainer(
-          /*playbook=*/"---",
+          playbook_content,
           base::BindOnce(
               &CrostiniManager::OnAnsiblePlaybookToDefaultContainerApplied,
               weak_ptr_factory_.GetWeakPtr()));

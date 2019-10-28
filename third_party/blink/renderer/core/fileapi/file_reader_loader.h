@@ -38,13 +38,13 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 
 namespace blink {
 
@@ -86,7 +86,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
 
   DOMArrayBuffer* ArrayBufferResult();
   String StringResult();
-  WTF::ArrayBufferContents TakeContents();
+  ArrayBufferContents TakeContents();
 
   // Returns the total bytes received. Bytes ignored by m_rawData won't be
   // counted.
@@ -153,7 +153,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   WTF::TextEncoding encoding_;
   String data_type_;
 
-  WTF::ArrayBufferContents raw_data_;
+  ArrayBufferContents raw_data_;
   bool is_raw_data_converted_ = false;
 
   Persistent<DOMArrayBuffer> array_buffer_result_;

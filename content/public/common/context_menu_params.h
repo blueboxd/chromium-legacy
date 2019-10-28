@@ -53,7 +53,7 @@ struct CONTENT_EXPORT ContextMenuParams {
   ~ContextMenuParams();
 
   // This is the type of Context Node that the context menu was invoked on.
-  blink::WebContextMenuData::MediaType media_type;
+  blink::ContextMenuDataMediaType media_type;
 
   // These values represent the coordinates of the mouse when the context menu
   // was invoked.  Coords are relative to the associated RenderView's origin.

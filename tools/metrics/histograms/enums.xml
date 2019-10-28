@@ -18509,6 +18509,7 @@ Called by update_net_error_codes.py.-->
   <int value="636" label="DeviceWebBasedAttestationAllowedUrls"/>
   <int value="637" label="BlockExternalExtensions"/>
   <int value="638" label="DeviceShowNumericKeyboardForPassword"/>
+  <int value="639" label="CrostiniAnsiblePlaybook"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -36024,6 +36025,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1251411236" label="disable-new-md-input-view"/>
   <int value="-1250611337" label="ChromeVoxArcSupport:disabled"/>
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
+  <int value="-1247631459" label="TerminalSystemAppSplits:disabled"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1243694853" label="DeferAllScript:disabled"/>
   <int value="-1241868814" label="WebAuthenticationPhoneSupport:disabled"/>
@@ -38079,6 +38081,7 @@ from previous Chrome versions.
   <int value="1442830837" label="MemoryAblation:disabled"/>
   <int value="1447295459" label="SyncPseudoUSSApps:enabled"/>
   <int value="1448684258" label="TabHoverCardImages:enabled"/>
+  <int value="1452492841" label="TerminalSystemAppSplits:enabled"/>
   <int value="1452546183" label="PwaPersistentNotification:enabled"/>
   <int value="1454006695" label="BlinkHeapUnifiedGarbageCollection:disabled"/>
   <int value="1454143461" label="CaptureThumbnailOnNavigatingAway:disabled"/>

@@ -195,7 +195,7 @@ Node* SmartClip::FindBestOverlappingNode(Node* root_node,
 bool SmartClip::ShouldSkipBackgroundImage(Node* node) {
   DCHECK(node);
   // Apparently we're only interested in background images on spans and divs.
-  if (!IsHTMLSpanElement(*node) && !IsHTMLDivElement(*node))
+  if (!IsA<HTMLSpanElement>(*node) && !IsHTMLDivElement(*node))
     return true;
 
   // This check actually makes a bit of sense. If you're going to sprite an

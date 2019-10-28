@@ -677,9 +677,9 @@ int BrowserMainLoop::EarlyInitialization() {
 }
 
 void BrowserMainLoop::PreMainMessageLoopStart() {
+  TRACE_EVENT0("startup",
+               "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
   if (parts_) {
-    TRACE_EVENT0("startup",
-        "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
     parts_->PreMainMessageLoopStart();
   }
 }
@@ -1018,9 +1018,13 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
   }
 #endif
 
-  // If the UI thread blocks, the whole UI is unresponsive.
-  // Do not allow unresponsive tasks from the UI thread.
+  // If the UI thread blocks, the whole UI is unresponsive. Do not allow
+  // unresponsive tasks from the UI thread and instantiate a
+  // responsiveness::Watcher to catch jank induced by any blocking tasks not
+  // instrumented with ScopedBlockingCall's assert.
   base::DisallowUnresponsiveTasks();
+  responsiveness_watcher_ = new responsiveness::Watcher;
+  responsiveness_watcher_->SetUp();
   return result_code_;
 }
 
@@ -1444,9 +1448,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(OS_MACOSX)
   ThemeHelperMac::GetInstance();
 #endif  // defined(OS_MACOSX)
-
-  responsiveness_watcher_ = new responsiveness::Watcher;
-  responsiveness_watcher_->SetUp();
 
 #if defined(OS_ANDROID)
   media::SetMediaDrmBridgeClient(GetContentClient()->GetMediaDrmBridgeClient());

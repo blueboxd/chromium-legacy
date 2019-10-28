@@ -674,7 +674,7 @@ unsigned ImageData::StorageFormatDataSize(
 
 DOMArrayBufferView*
 ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
-    WTF::ArrayBufferContents& content,
+    ArrayBufferContents& content,
     CanvasPixelFormat pixel_format,
     ImageDataStorageFormat storage_format) {
   if (!content.DataLength())

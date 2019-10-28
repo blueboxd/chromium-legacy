@@ -16,15 +16,10 @@ ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE ia2_hypertext='<obj0>'
 ++++++++IA2_ROLE_SECTION ia2_hypertext='<obj0>'
 ++++++++++IA2_ROLE_SECTION ia2_hypertext='<obj0><obj1><obj2><obj3><obj4>'
 ++++++++++++IA2_ROLE_SECTION ia2_hypertext='<obj0>'
-++++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show month selection panel' FOCUSABLE ia2_hypertext='September 2008<obj1>'
-++++++++++++++++ROLE_SYSTEM_STATICTEXT name='September 2008' ia2_hypertext='September 2008'
-++++++++++++++++ROLE_SYSTEM_GRAPHIC
-++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show previous month' FOCUSABLE ia2_hypertext='<obj0>'
-++++++++++++++ROLE_SYSTEM_GRAPHIC
-++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Today' FOCUSABLE ia2_hypertext='<obj0>'
-++++++++++++++IA2_ROLE_SECTION
-++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show next month' FOCUSABLE ia2_hypertext='<obj0>'
-++++++++++++++ROLE_SYSTEM_GRAPHIC
+++++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show month selection panel' FOCUSABLE ia2_hypertext='Show month selection panel'
+++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show previous month' FOCUSABLE ia2_hypertext='Show previous month'
+++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Today' FOCUSABLE ia2_hypertext='Today'
+++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show next month' FOCUSABLE ia2_hypertext='Show next month'
 ++++++++++++ROLE_SYSTEM_TABLE FOCUSABLE ia2_hypertext='<obj0><obj1>'
 ++++++++++++++IA2_ROLE_SECTION ia2_hypertext='<obj0><obj1><obj2><obj3><obj4><obj5><obj6>'
 ++++++++++++++++IA2_ROLE_SECTION ia2_hypertext='Sun'

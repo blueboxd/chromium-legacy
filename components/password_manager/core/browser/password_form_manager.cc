@@ -24,7 +24,7 @@
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/password_form_filling.h"
-#include "components/password_manager/core/browser/password_generation_state.h"
+#include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -487,8 +487,8 @@ void PasswordFormManager::PasswordNoLongerGenerated() {
   if (!HasGeneratedPassword())
     return;
 
-  generation_state_->PasswordNoLongerGenerated();
-  generation_state_.reset();
+  generation_manager_->PasswordNoLongerGenerated();
+  generation_manager_.reset();
   votes_uploader_.set_has_generated_password(false);
   votes_uploader_.set_generated_password_changed(false);
   metrics_recorder_->SetGeneratedPasswordStatus(
@@ -496,7 +496,7 @@ void PasswordFormManager::PasswordNoLongerGenerated() {
 }
 
 bool PasswordFormManager::HasGeneratedPassword() const {
-  return generation_state_ && generation_state_->HasGeneratedPassword();
+  return generation_manager_ && generation_manager_->HasGeneratedPassword();
 }
 
 void PasswordFormManager::SetGenerationPopupWasShown(
@@ -558,7 +558,7 @@ bool PasswordFormManager::UpdateGeneratedPasswordOnUserInput(
       break;
     }
   }
-  base::string16 generated_password = generation_state_->generated_password();
+  base::string16 generated_password = generation_manager_->generated_password();
   if (votes_uploader_.get_generation_element() == field_identifier) {
     generated_password = field_value;
     form_data_changed = true;
@@ -586,9 +586,9 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   // owning one needs to happen explicitly.
   result->owned_form_fetcher_ = std::move(fetcher);
 
-  if (generation_state_) {
-    result->generation_state_ =
-        generation_state_->Clone(result->form_saver_.get());
+  if (generation_manager_) {
+    result->generation_manager_ =
+        generation_manager_->Clone(result->form_saver_.get());
   }
 
   // These data members all satisfy:
@@ -834,10 +834,10 @@ void PasswordFormManager::OnGeneratedPasswordAccepted(
     parsed_form->signon_realm = GetSignonRealm(form_data.url);
   }
   parsed_form->password_value = password;
-  generation_state_ =
-      std::make_unique<PasswordGenerationState>(form_saver_.get(), client_);
-  generation_state_->GeneratedPasswordAccepted(*parsed_form, *form_fetcher_,
-                                               driver_);
+  generation_manager_ =
+      std::make_unique<PasswordGenerationManager>(form_saver_.get(), client_);
+  generation_manager_->GeneratedPasswordAccepted(*parsed_form, *form_fetcher_,
+                                                 driver_);
 }
 
 PasswordFormManager::PasswordFormManager(
@@ -958,7 +958,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     }
   }
   pending_credentials_.password_value =
-      HasGeneratedPassword() ? generation_state_->generated_password()
+      HasGeneratedPassword() ? generation_manager_->generated_password()
                              : password_to_save.first;
   pending_credentials_.preferred = true;
   pending_credentials_.date_last_used = base::Time::Now();
@@ -1094,8 +1094,8 @@ void PasswordFormManager::PresaveGeneratedPasswordInternal(
   }
 
   if (!HasGeneratedPassword()) {
-    generation_state_ =
-        std::make_unique<PasswordGenerationState>(form_saver_.get(), client_);
+    generation_manager_ =
+        std::make_unique<PasswordGenerationManager>(form_saver_.get(), client_);
     votes_uploader_.set_generated_password_changed(false);
     metrics_recorder_->SetGeneratedPasswordStatus(
         PasswordFormMetricsRecorder::GeneratedPasswordStatus::
@@ -1105,7 +1105,7 @@ void PasswordFormManager::PresaveGeneratedPasswordInternal(
     // from the presaved one, then mark that the generated password was changed.
     // If a user recovers the original generated password, it will be recorded
     // as a password change.
-    if (generation_state_->generated_password() != generated_password) {
+    if (generation_manager_->generated_password() != generated_password) {
       votes_uploader_.set_generated_password_changed(true);
       metrics_recorder_->SetGeneratedPasswordStatus(
           PasswordFormMetricsRecorder::GeneratedPasswordStatus::
@@ -1118,7 +1118,7 @@ void PasswordFormManager::PresaveGeneratedPasswordInternal(
   // generated password is saved.
   parsed_form->password_value = generated_password;
 
-  generation_state_->PresaveGeneratedPassword(
+  generation_manager_->PresaveGeneratedPassword(
       std::move(*parsed_form), form_fetcher_->GetAllRelevantMatches());
 }
 
@@ -1155,7 +1155,7 @@ void PasswordFormManager::SavePendingToStore(bool update) {
   base::string16 old_password =
       saved_form ? saved_form->password_value : base::string16();
   if (HasGeneratedPassword()) {
-    generation_state_->CommitGeneratedPassword(
+    generation_manager_->CommitGeneratedPassword(
         pending_credentials_, form_fetcher_->GetAllRelevantMatches(),
         old_password);
   } else if (update) {

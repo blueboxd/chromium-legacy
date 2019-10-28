@@ -88,7 +88,7 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   // UpgradeDetector:
   void OnRelaunchNotificationPeriodPrefChanged() override;
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN)
   // Receives the results of AreAutoupdatesEnabled and starts the upgrade check
   // timer.
   void OnAutoupdatesEnabledResult(bool auto_updates_enabled);

@@ -974,9 +974,9 @@ public class Tab {
     }
 
     /**
-     * @return The delegate factory for testing purposes only.
+     * @return The delegate factory.
      */
-    public TabDelegateFactory getDelegateFactory() {
+    TabDelegateFactory getDelegateFactory() {
         return mDelegateFactory;
     }
 

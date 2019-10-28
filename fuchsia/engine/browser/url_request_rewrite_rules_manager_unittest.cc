@@ -229,3 +229,32 @@ TEST_F(UrlRequestRewriteRulesManagerTest, RuleRenewal) {
       cached_rules->data[0]->rewrites[0]->get_add_headers()->headers.HasHeader(
           "Test2"));
 }
+
+// Tests host names containing non-ASCII characters are properly converted.
+TEST_F(UrlRequestRewriteRulesManagerTest, ConvertInternationalHostName) {
+  const char kNonAsciiHostName[] = "t\u00E8st.net";
+  const char kNonAsciiHostNameWithWildcard[] = "*.t\u00E8st.net";
+  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
+  rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
+  fuchsia::web::UrlRequestRewriteRule rule;
+  rule.set_rewrites(std::move(rewrites));
+  rule.set_hosts_filter({kNonAsciiHostName, kNonAsciiHostNameWithWildcard});
+
+  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
+  rules.push_back(std::move(rule));
+  EXPECT_EQ(url_request_rewrite_rules_manager_->OnRulesUpdated(std::move(rules),
+                                                               []() {}),
+            ZX_OK);
+  scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
+      cached_rules = url_request_rewrite_rules_manager_->GetCachedRules();
+
+  ASSERT_EQ(cached_rules->data.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->hosts_filter);
+  ASSERT_EQ(cached_rules->data[0]->hosts_filter.value().size(), 2u);
+  EXPECT_EQ(
+      cached_rules->data[0]->hosts_filter.value()[0].compare("xn--tst-6la.net"),
+      0);
+  EXPECT_EQ(cached_rules->data[0]->hosts_filter.value()[1].compare(
+                "*.xn--tst-6la.net"),
+            0);
+}

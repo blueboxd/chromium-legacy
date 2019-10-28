@@ -21,6 +21,7 @@
 #include "media/base/renderer_client.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
@@ -40,7 +41,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   static mojo::StrongBindingPtr<mojom::Renderer> Create(
       MojoCdmServiceContext* mojo_cdm_service_context,
       std::unique_ptr<media::Renderer> renderer,
-      mojo::InterfaceRequest<mojom::Renderer> request);
+      mojo::PendingReceiver<mojom::Renderer> receiver);
 
   // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.

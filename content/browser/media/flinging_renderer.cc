@@ -18,7 +18,7 @@ namespace content {
 
 FlingingRenderer::FlingingRenderer(
     std::unique_ptr<media::FlingingController> controller,
-    ClientExtensionPtr client_extension)
+    mojo::PendingRemote<ClientExtension> client_extension)
     : client_extension_(std::move(client_extension)),
       controller_(std::move(controller)) {
   controller_->AddMediaStatusObserver(this);
@@ -32,7 +32,7 @@ FlingingRenderer::~FlingingRenderer() {
 std::unique_ptr<FlingingRenderer> FlingingRenderer::Create(
     RenderFrameHost* render_frame_host,
     const std::string& presentation_id,
-    ClientExtensionPtr client_extension) {
+    mojo::PendingRemote<ClientExtension> client_extension) {
   DVLOG(1) << __func__;
 
   ContentClient* content_client = GetContentClient();

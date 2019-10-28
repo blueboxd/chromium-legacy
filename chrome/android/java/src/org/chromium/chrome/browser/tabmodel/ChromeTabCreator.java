@@ -115,8 +115,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                     AsyncTabParamsManager.remove(assignedTabId);
 
             boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito);
-            TabDelegateFactory delegateFactory = parent == null ? createDefaultTabDelegateFactory()
-                    : parent.getDelegateFactory();
+            TabDelegateFactory delegateFactory =
+                    parent == null ? createDefaultTabDelegateFactory() : null;
             Tab tab;
             if (asyncParams != null && asyncParams.getTabToReparent() != null) {
                 type = TabLaunchType.FROM_REPARENTING;
@@ -207,8 +207,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
         if (index != TabModel.INVALID_TAB_INDEX) position = index + 1;
 
         boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito);
-        TabDelegateFactory delegateFactory = parent == null ? createDefaultTabDelegateFactory()
-                : parent.getDelegateFactory();
+        TabDelegateFactory delegateFactory =
+                parent == null ? createDefaultTabDelegateFactory() : null;
         Tab tab = TabBuilder.createLiveTab(!openInForeground)
                           .setParent(parent)
                           .setIncognito(mIncognito)

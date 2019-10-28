@@ -24,11 +24,11 @@ MojoRenderer::MojoRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     std::unique_ptr<VideoOverlayFactory> video_overlay_factory,
     VideoRendererSink* video_renderer_sink,
-    mojom::RendererPtr remote_renderer)
+    mojo::PendingRemote<mojom::Renderer> remote_renderer)
     : task_runner_(task_runner),
       video_overlay_factory_(std::move(video_overlay_factory)),
       video_renderer_sink_(video_renderer_sink),
-      remote_renderer_info_(remote_renderer.PassInterface()),
+      remote_renderer_pending_remote_(std::move(remote_renderer)),
       client_binding_(this),
       media_time_interpolator_(base::DefaultTickClock::GetInstance()) {
   DVLOG(1) << __func__;
@@ -336,14 +336,14 @@ void MojoRenderer::BindRemoteRendererIfNeeded() {
   if (remote_renderer_.is_bound())
     return;
 
-  // Bind |remote_renderer_| to the |task_runner_|.
-  remote_renderer_.Bind(std::move(remote_renderer_info_));
+  // Bind |remote_renderer_| to the |remote_renderer_pending_remote_|.
+  remote_renderer_.Bind(std::move(remote_renderer_pending_remote_));
 
   // Otherwise, set an error handler to catch the connection error.
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the error handler can't be invoked once
   // |remote_renderer_| is destroyed.
-  remote_renderer_.set_connection_error_handler(
+  remote_renderer_.set_disconnect_handler(
       base::Bind(&MojoRenderer::OnConnectionError, base::Unretained(this)));
 }
 

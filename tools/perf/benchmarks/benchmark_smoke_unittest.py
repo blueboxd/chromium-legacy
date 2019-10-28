@@ -15,9 +15,11 @@ import unittest
 
 from chrome_telemetry_build import chromium_config
 
+from core import results_processor
+from core import testing
+
 from telemetry import benchmark as benchmark_module
 from telemetry import decorators
-from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
 
 from py_utils import discover
@@ -31,15 +33,20 @@ from benchmarks import speedometer
 from benchmarks import v8_browsing
 
 
-MAX_NUM_VALUES = 50000
+# We want to prevent benchmarks from accidentally trying to upload too much
+# data to the chrome perf dashboard. So the smoke tests below cap the max
+# number of values that each story tested would produce when running on the
+# waterfall.
+MAX_VALUES_PERT_TEST_CASE = 1000
 
 
-def SmokeTestGenerator(benchmark, num_pages=1):
-  """Generates a benchmark that includes first N pages from pageset.
+def SmokeTestGenerator(benchmark_class, num_pages=1):
+  """Generates a somke test for the first N pages from a benchmark.
 
   Args:
-    benchmark: benchmark object to make smoke test.
-    num_pages: use the first N pages to run smoke test.
+    benchmark_class: a benchmark class to smoke test.
+    num_pages: only smoke test the first N pages, since smoke testing
+      everything would take too long to run.
   """
   # NOTE TO SHERIFFS: DO NOT DISABLE THIS TEST.
   #
@@ -50,43 +57,30 @@ def SmokeTestGenerator(benchmark, num_pages=1):
   @decorators.Disabled('chromeos')  # crbug.com/351114
   @decorators.Disabled('android')  # crbug.com/641934
   def BenchmarkSmokeTest(self):
-    class SinglePageBenchmark(benchmark):  # pylint: disable=no-init
-      def CreateStorySet(self, options):
-        # pylint: disable=super-on-old-class
-        story_set = super(SinglePageBenchmark, self).CreateStorySet(options)
-
-        # We want to prevent benchmarks from accidentally trying to upload too
-        # much data to the chrome perf dashboard. So this tests tries to
-        # estimate the amount of values that the benchmark _would_ create when
-        # running on the waterfall, and fails if too many values are produced.
-        # As we run a single story and not the whole benchmark, the number of
-        # max values allowed is scaled proportionally.
-        # TODO(crbug.com/981349): This logic is only really valid for legacy
-        # values, and does not take histograms into account. An alternative
-        # should be implemented when using the results processor.
-        type(self).MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set)
-        return story_set
-
     # Some benchmarks are running multiple iterations
     # which is not needed for a smoke test
-    if hasattr(SinglePageBenchmark, 'enable_smoke_test_mode'):
-      SinglePageBenchmark.enable_smoke_test_mode = True
+    if hasattr(benchmark_class, 'enable_smoke_test_mode'):
+      benchmark_class.enable_smoke_test_mode = True
 
     with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
-      # Set the benchmark's default arguments.
-      options = options_for_unittests.GetRunOptions(
+      options = testing.GetRunOptions(
           output_dir=temp_dir,
-          benchmark_cls=SinglePageBenchmark,
-          # Only smoke test num_pages since smoke testing everything takes
-          # too long.
+          benchmark_cls=benchmark_class,
           overrides={'story_shard_end_index': num_pages},
           environment=chromium_config.GetDefaultChromiumConfig())
       options.pageset_repeat = 1  # For smoke testing only run the page once.
-      single_page_benchmark = SinglePageBenchmark()
-      return_code = single_page_benchmark.Run(options)
-    if return_code == -1:
-      self.skipTest('The benchmark was not run.')
-    self.assertEqual(0, return_code, msg='Failed: %s' % benchmark)
+      options.output_formats = ['histograms']
+      options.max_values_per_test_case = MAX_VALUES_PERT_TEST_CASE
+      return_code = benchmark_class().Run(options)
+      if return_code == -1:
+        self.skipTest('The benchmark was not run.')
+      self.assertEqual(
+          return_code, 0,
+          msg='Benchmark run failed: %s' % benchmark_class.Name())
+      return_code = results_processor.ProcessResults(options)
+      self.assertEqual(
+          return_code, 0,
+          msg='Result processing failed: %s' % benchmark_class.Name())
 
   return BenchmarkSmokeTest
 

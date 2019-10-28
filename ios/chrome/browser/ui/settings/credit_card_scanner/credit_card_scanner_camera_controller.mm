@@ -38,7 +38,7 @@
 - (void)configureScannerWithSession:(AVCaptureSession*)session {
   // Configure camera output.
   NSDictionary* outputSettings = @{
-    (id)kCVPixelBufferPixelFormatTypeKey :
+    (__bridge NSString*)kCVPixelBufferPixelFormatTypeKey :
         [NSNumber numberWithInteger:kCVPixelFormatType_32BGRA]
   };
   AVCaptureVideoDataOutput* videoOutput =

@@ -11,8 +11,8 @@
 namespace content {
 
 MediaPlayerRendererClient::MediaPlayerRendererClient(
-    RendererExtentionPtr renderer_extension_ptr,
-    ClientExtentionRequest client_extension_request,
+    mojo::PendingRemote<RendererExtention> renderer_extension_remote,
+    mojo::PendingReceiver<ClientExtention> client_extension_receiver,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     std::unique_ptr<media::MojoRenderer> mojo_renderer,
@@ -24,11 +24,10 @@ MediaPlayerRendererClient::MediaPlayerRendererClient(
       sink_(sink),
       media_task_runner_(std::move(media_task_runner)),
       compositor_task_runner_(std::move(compositor_task_runner)),
-      delayed_bind_client_extension_request_(
-          std::move(client_extension_request)),
-      delayed_bind_renderer_extention_ptr_info_(
-          renderer_extension_ptr.PassInterface()),
-      client_extension_binding_(this) {}
+      delayed_bind_client_extension_receiver_(
+          std::move(client_extension_receiver)),
+      delayed_bind_renderer_extention_remote_(
+          std::move(renderer_extension_remote)) {}
 
 MediaPlayerRendererClient::~MediaPlayerRendererClient() {
   // Clearing the STW's callback into |this| must happen first. Otherwise, the
@@ -45,12 +44,12 @@ void MediaPlayerRendererClient::Initialize(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_);
 
-  // Consume and bind the delayed Request and PtrInfo now that we are on
-  // |media_task_runner_|.
-  renderer_extension_ptr_.Bind(
-      std::move(delayed_bind_renderer_extention_ptr_info_), media_task_runner_);
-  client_extension_binding_.Bind(
-      std::move(delayed_bind_client_extension_request_), media_task_runner_);
+  // Consume and bind the delayed PendingRemote and PendingReceiver now that we
+  // are on |media_task_runner_|.
+  renderer_extension_remote_.Bind(
+      std::move(delayed_bind_renderer_extention_remote_), media_task_runner_);
+  client_extension_receiver_.Bind(
+      std::move(delayed_bind_client_extension_receiver_), media_task_runner_);
 
   media_resource_ = media_resource;
   client_ = client;
@@ -112,7 +111,7 @@ void MediaPlayerRendererClient::OnRemoteRendererInitialized(
   if (status == media::PIPELINE_OK) {
     // TODO(tguilbert): Measure and smooth out the initialization's ordering to
     // have the lowest total initialization time.
-    renderer_extension_ptr_->InitiateScopedSurfaceRequest(
+    renderer_extension_remote_->InitiateScopedSurfaceRequest(
         base::Bind(&MediaPlayerRendererClient::OnScopedSurfaceRequested,
                    weak_factory_.GetWeakPtr()));
 

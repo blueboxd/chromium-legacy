@@ -6573,15 +6573,16 @@ void SetOriginTrialFreezePolicy(
     DocumentResourceCoordinator* document_resource_coordinator,
     ExecutionContext* context) {
   // An explicit opt-out overrides an explicit opt-in if both are present.
+  InterventionPolicy policy = InterventionPolicy::kDefault;
   if (RuntimeEnabledFeatures::PageFreezeOptOutEnabled(context)) {
-    document_resource_coordinator->SetOriginTrialFreezePolicy(
-        InterventionPolicy::kOptOut);
+    policy = InterventionPolicy::kOptOut;
     UseCounter::Count(context, WebFeature::kPageFreezeOptOut);
   } else if (RuntimeEnabledFeatures::PageFreezeOptInEnabled(context)) {
-    document_resource_coordinator->SetOriginTrialFreezePolicy(
-        InterventionPolicy::kOptIn);
+    policy = InterventionPolicy::kOptIn;
     UseCounter::Count(context, WebFeature::kPageFreezeOptIn);
   }
+
+  document_resource_coordinator->SetOriginTrialFreezePolicy(policy);
 }
 
 }  // namespace
@@ -7870,8 +7871,7 @@ void Document::FlushAutofocusCandidates() {
     if (element.IsFocusable() ||
         // TODO(tkent): Standardize delegatesFocus handling.
         // https://github.com/whatwg/html/issues/5027
-        (element.AuthorShadowRoot() &&
-         element.AuthorShadowRoot()->delegatesFocus())) {
+        element.DelegatesFocus()) {
       // 9.1. Empty candidates.
       autofocus_candidates_.clear();
       // 9.2. Set topDocument's autofocus processed flag to true.

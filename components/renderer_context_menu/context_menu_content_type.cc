@@ -10,6 +10,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 
+using blink::ContextMenuDataMediaType;
 using blink::WebContextMenuData;
 using content::WebContents;
 
@@ -78,8 +79,8 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
 
     case ITEM_GROUP_PAGE: {
       bool is_candidate =
-          params_.media_type == WebContextMenuData::kMediaTypeNone &&
-          !has_link && !params_.is_editable && !has_selection;
+          params_.media_type == ContextMenuDataMediaType::kNone && !has_link &&
+          !params_.is_editable && !has_selection;
 
       if (!is_candidate && params_.page_url.is_empty())
         DCHECK(params_.frame_url.is_empty());
@@ -99,26 +100,26 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       return has_selection && !has_link;
 
     case ITEM_GROUP_MEDIA_IMAGE:
-      return params_.media_type == WebContextMenuData::kMediaTypeImage;
+      return params_.media_type == ContextMenuDataMediaType::kImage;
 
     case ITEM_GROUP_SEARCHWEBFORIMAGE:
       // Image menu items imply search web for image item.
       return SupportsGroupInternal(ITEM_GROUP_MEDIA_IMAGE);
 
     case ITEM_GROUP_MEDIA_VIDEO:
-      return params_.media_type == WebContextMenuData::kMediaTypeVideo;
+      return params_.media_type == ContextMenuDataMediaType::kVideo;
 
     case ITEM_GROUP_MEDIA_AUDIO:
-      return params_.media_type == WebContextMenuData::kMediaTypeAudio;
+      return params_.media_type == ContextMenuDataMediaType::kAudio;
 
     case ITEM_GROUP_MEDIA_CANVAS:
-      return params_.media_type == WebContextMenuData::kMediaTypeCanvas;
+      return params_.media_type == ContextMenuDataMediaType::kCanvas;
 
     case ITEM_GROUP_MEDIA_PLUGIN:
-      return params_.media_type == WebContextMenuData::kMediaTypePlugin;
+      return params_.media_type == ContextMenuDataMediaType::kPlugin;
 
     case ITEM_GROUP_MEDIA_FILE:
-      return params_.media_type == WebContextMenuData::kMediaTypeFile;
+      return params_.media_type == ContextMenuDataMediaType::kFile;
 
     case ITEM_GROUP_EDITABLE:
       return params_.is_editable;

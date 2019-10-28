@@ -45,7 +45,7 @@ class IOSChromeIOThread : public io_thread::IOSIOThread {
   std::string GetChannelString() const override;
 
  private:
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;
 

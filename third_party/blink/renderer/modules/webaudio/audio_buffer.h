@@ -141,14 +141,14 @@ class SharedAudioBuffer final {
   }
   float sampleRate() const { return sample_rate_; }
 
-  const Vector<WTF::ArrayBufferContents>& channels() { return channels_; }
+  const Vector<ArrayBufferContents>& channels() { return channels_; }
 
   void Zero();
 
  private:
   float sample_rate_;
   uint32_t length_;
-  Vector<WTF::ArrayBufferContents> channels_;
+  Vector<ArrayBufferContents> channels_;
 };
 
 }  // namespace blink

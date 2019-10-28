@@ -80,7 +80,7 @@ static bool HasNoAttributeOrOnlyStyleAttribute(
 }
 
 bool IsStyleSpanOrSpanWithOnlyStyleAttribute(const Element* element) {
-  if (auto* span = ToHTMLSpanElementOrNull(element)) {
+  if (auto* span = DynamicTo<HTMLSpanElement>(element)) {
     return HasNoAttributeOrOnlyStyleAttribute(span,
                                               kAllowNonEmptyStyleAttribute);
   }
@@ -89,7 +89,7 @@ bool IsStyleSpanOrSpanWithOnlyStyleAttribute(const Element* element) {
 
 static inline bool IsSpanWithoutAttributesOrUnstyledStyleSpan(
     const Node* node) {
-  if (auto* span = ToHTMLSpanElementOrNull(node)) {
+  if (auto* span = DynamicTo<HTMLSpanElement>(node)) {
     return HasNoAttributeOrOnlyStyleAttribute(span,
                                               kStyleAttributeShouldBeEmpty);
   }
@@ -1905,10 +1905,10 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
        container = container->firstChild()) {
     if (auto* font = DynamicTo<HTMLFontElement>(container))
       font_container = font;
-    bool style_container_is_not_span = !IsHTMLSpanElement(style_container);
+    bool style_container_is_not_span = !IsA<HTMLSpanElement>(style_container);
     auto* container_element = DynamicTo<HTMLElement>(container);
     if (container_element) {
-      if (IsHTMLSpanElement(*container_element) ||
+      if (IsA<HTMLSpanElement>(*container_element) ||
           (style_container_is_not_span && container_element->HasChildren()))
         style_container = container_element;
     }

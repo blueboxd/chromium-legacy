@@ -190,6 +190,11 @@ public class SearchActivity extends AsyncInitializationActivity
 
                     @Override
                     protected void setOverlayMode(boolean useOverlayMode) {}
+
+                    @Override
+                    public boolean canShowAppBanners() {
+                        return false;
+                    }
                 };
             }
 
@@ -201,11 +206,6 @@ public class SearchActivity extends AsyncInitializationActivity
             @Override
             public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
                 return null;
-            }
-
-            @Override
-            public boolean canShowAppBanners() {
-                return false;
             }
 
             @Override

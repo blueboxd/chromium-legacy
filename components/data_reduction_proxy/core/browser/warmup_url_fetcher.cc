@@ -177,8 +177,10 @@ WarmupURLFetcher::GetNetworkServiceURLLoaderFactory(
   auto factory_params = network::mojom::URLLoaderFactoryParams::New();
   factory_params->process_id = network::mojom::kBrowserProcessId;
   factory_params->is_corb_enabled = false;
-  context_->CreateURLLoaderFactory(mojo::MakeRequest(&url_loader_factory_),
-                                   std::move(factory_params));
+  url_loader_factory_.reset();
+  context_->CreateURLLoaderFactory(
+      url_loader_factory_.BindNewPipeAndPassReceiver(),
+      std::move(factory_params));
   return url_loader_factory_.get();
 }
 

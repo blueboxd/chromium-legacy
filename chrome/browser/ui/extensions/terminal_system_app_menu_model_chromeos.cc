@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "url/gurl.h"
@@ -29,10 +31,12 @@ TerminalSystemAppMenuModel::~TerminalSystemAppMenuModel() {}
 
 void TerminalSystemAppMenuModel::Build() {
   AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
-  AddItemWithStringId(IDC_TERMINAL_SPLIT_VERTICAL,
-                      IDS_APP_TERMINAL_SPLIT_VERTICAL);
-  AddItemWithStringId(IDC_TERMINAL_SPLIT_HORIZONTAL,
-                      IDS_APP_TERMINAL_SPLIT_HORIZONTAL);
+  if (base::FeatureList::IsEnabled(features::kTerminalSystemAppSplits)) {
+    AddItemWithStringId(IDC_TERMINAL_SPLIT_VERTICAL,
+                        IDS_APP_TERMINAL_SPLIT_VERTICAL);
+    AddItemWithStringId(IDC_TERMINAL_SPLIT_HORIZONTAL,
+                        IDS_APP_TERMINAL_SPLIT_HORIZONTAL);
+  }
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 }
 

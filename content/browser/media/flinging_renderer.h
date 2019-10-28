@@ -13,6 +13,8 @@
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -28,7 +30,7 @@ class RenderFrameHost;
 class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
                                         media::MediaStatusObserver {
  public:
-  using ClientExtensionPtr = media::mojom::FlingingRendererClientExtensionPtr;
+  using ClientExtension = media::mojom::FlingingRendererClientExtension;
 
   // Helper method to create a FlingingRenderer from an already existing
   // presentation ID.
@@ -37,7 +39,7 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
   static std::unique_ptr<FlingingRenderer> Create(
       RenderFrameHost* render_frame_host,
       const std::string& presentation_id,
-      ClientExtensionPtr client_extension);
+      mojo::PendingRemote<ClientExtension> client_extension);
 
   ~FlingingRenderer() override;
 
@@ -62,7 +64,7 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
 
   explicit FlingingRenderer(
       std::unique_ptr<media::FlingingController> controller,
-      ClientExtensionPtr client_extension);
+      mojo::PendingRemote<ClientExtension> client_extension);
 
   void SetExpectedPlayState(PlayState state);
 
@@ -80,7 +82,7 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
 
   media::RendererClient* client_;
 
-  ClientExtensionPtr client_extension_;
+  mojo::Remote<ClientExtension> client_extension_;
 
   std::unique_ptr<media::FlingingController> controller_;
 

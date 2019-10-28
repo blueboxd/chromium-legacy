@@ -14,6 +14,8 @@
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -57,13 +59,16 @@ class MojoRendererFactory : public RendererFactory {
 #if defined(OS_ANDROID)
   std::unique_ptr<MojoRenderer> CreateFlingingRenderer(
       const std::string& presentation_id,
-      mojom::FlingingRendererClientExtensionPtr client_extenion_ptr,
+      mojo::PendingRemote<mojom::FlingingRendererClientExtension>
+          client_extenion_ptr,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       VideoRendererSink* video_renderer_sink);
 
   std::unique_ptr<MojoRenderer> CreateMediaPlayerRenderer(
-      mojom::MediaPlayerRendererExtensionRequest renderer_extension_request,
-      mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+      mojo::PendingReceiver<mojom::MediaPlayerRendererExtension>
+          renderer_extension_receiver,
+      mojo::PendingRemote<mojom::MediaPlayerRendererClientExtension>
+          client_extension_remote,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       VideoRendererSink* video_renderer_sink);
 #endif  // defined (OS_ANDROID)

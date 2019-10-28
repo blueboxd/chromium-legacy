@@ -1262,7 +1262,7 @@ HTMLElement* CreateDefaultParagraphElement(Document& document) {
 }
 
 bool IsTabHTMLSpanElement(const Node* node) {
-  if (!IsHTMLSpanElement(node))
+  if (!IsA<HTMLSpanElement>(node))
     return false;
   const Node* const first_child = NodeTraversal::FirstChild(*node);
   auto* first_child_text_node = DynamicTo<Text>(first_child);
@@ -1284,7 +1284,7 @@ bool IsTabHTMLSpanElementTextNode(const Node* node) {
 
 HTMLSpanElement* TabSpanElement(const Node* node) {
   return IsTabHTMLSpanElementTextNode(node)
-             ? ToHTMLSpanElement(node->parentNode())
+             ? To<HTMLSpanElement>(node->parentNode())
              : nullptr;
 }
 

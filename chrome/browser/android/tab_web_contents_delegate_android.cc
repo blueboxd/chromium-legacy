@@ -535,6 +535,14 @@ bool TabWebContentsDelegateAndroid::IsNightModeEnabled() const {
   return Java_TabWebContentsDelegateAndroid_isNightModeEnabled(env, obj);
 }
 
+bool TabWebContentsDelegateAndroid::CanShowAppBanners() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_TabWebContentsDelegateAndroid_canShowAppBanners(env, obj);
+}
+
 const GURL TabWebContentsDelegateAndroid::GetManifestScope() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);

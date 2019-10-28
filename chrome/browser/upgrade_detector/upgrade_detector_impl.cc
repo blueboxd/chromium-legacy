@@ -195,7 +195,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::Clock* clock,
     // Also note that to test with a given time/date, until the network time
     // tracking moves off of the VariationsService, the "variations-server-url"
     // command line switch must also be specified for the service to be
-    // available on non GOOGLE_CHROME_BUILD.
+    // available on non GOOGLE_CHROME_BRANDING.
     std::string switch_name;
     if (cmd_line.HasSwitch(switches::kSimulateOutdatedNoAU)) {
       is_auto_update_enabled_ = false;
@@ -230,7 +230,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::Clock* clock,
 #if defined(OS_WIN)
 // Only enable upgrade notifications for Google Chrome builds. Chromium does not
 // use an auto-updater.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // There might be a policy/enterprise environment preventing updates, so
   // validate updatability and then call StartTimerForUpgradeCheck
   // appropriately. Skip this step if a past attempt has been made to enable
@@ -246,7 +246,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::Clock* clock,
         base::BindOnce(&UpgradeDetectorImpl::OnAutoupdatesEnabledResult,
                        weak_factory_.GetWeakPtr()));
   }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #else   // defined(OS_WIN)
 #if defined(OS_MACOSX)
   // Only enable upgrade notifications if the updater (Keystone) is present.
@@ -578,14 +578,14 @@ void UpgradeDetectorImpl::OnRelaunchNotificationPeriodPrefChanged() {
     NotifyOnUpgrade();
 }
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN)
 void UpgradeDetectorImpl::OnAutoupdatesEnabledResult(
     bool auto_updates_enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_auto_update_enabled_ = auto_updates_enabled;
   StartTimerForUpgradeCheck();
 }
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN)
 
 void UpgradeDetectorImpl::NotifyOnUpgrade() {
   const base::TimeDelta time_passed = clock()->Now() - upgrade_detected_time();

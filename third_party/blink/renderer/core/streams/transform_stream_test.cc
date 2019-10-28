@@ -7,6 +7,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -29,8 +31,11 @@
 namespace blink {
 
 namespace {
+
 using ::testing::_;
+using ::testing::ByMove;
 using ::testing::Mock;
+using ::testing::Return;
 
 class TransformStreamTest : public ::testing::Test {
  public:
@@ -68,19 +73,33 @@ class TransformStreamTest : public ::testing::Test {
   Persistent<TransformStream> stream_;
 };
 
-class IdentityTransformer final : public TransformStreamTransformer {
+// A convenient base class to make tests shorter. Subclasses need not implement
+// both Transform() and Flush(), and can override the void versions to avoid the
+// need to create a promise to return. Not appropriate for use in production.
+class TestTransformer : public TransformStreamTransformer {
  public:
-  explicit IdentityTransformer(ScriptState* script_state)
+  explicit TestTransformer(ScriptState* script_state)
       : script_state_(script_state) {}
 
-  void Transform(v8::Local<v8::Value> chunk,
-                 TransformStreamDefaultControllerInterface* controller,
-                 ExceptionState& exception_state) override {
-    controller->Enqueue(chunk, exception_state);
+  virtual void TransformVoid(v8::Local<v8::Value>,
+                             TransformStreamDefaultControllerInterface*,
+                             ExceptionState&) {}
+
+  ScriptPromise Transform(v8::Local<v8::Value> chunk,
+                          TransformStreamDefaultControllerInterface* controller,
+                          ExceptionState& exception_state) override {
+    TransformVoid(chunk, controller, exception_state);
+    return ScriptPromise::CastUndefined(script_state_);
   }
 
-  void Flush(TransformStreamDefaultControllerInterface* controller,
-             ExceptionState& exception_state) override {}
+  virtual void FlushVoid(TransformStreamDefaultControllerInterface*,
+                         ExceptionState&) {}
+
+  ScriptPromise Flush(TransformStreamDefaultControllerInterface* controller,
+                      ExceptionState& exception_state) override {
+    FlushVoid(controller, exception_state);
+    return ScriptPromise::CastUndefined(script_state_);
+  }
 
   ScriptState* GetScriptState() override { return script_state_; }
 
@@ -93,18 +112,30 @@ class IdentityTransformer final : public TransformStreamTransformer {
   const Member<ScriptState> script_state_;
 };
 
+class IdentityTransformer final : public TestTransformer {
+ public:
+  explicit IdentityTransformer(ScriptState* script_state)
+      : TestTransformer(script_state) {}
+
+  void TransformVoid(v8::Local<v8::Value> chunk,
+                     TransformStreamDefaultControllerInterface* controller,
+                     ExceptionState& exception_state) override {
+    controller->Enqueue(chunk, exception_state);
+  }
+};
+
 class MockTransformStreamTransformer : public TransformStreamTransformer {
  public:
   explicit MockTransformStreamTransformer(ScriptState* script_state)
       : script_state_(script_state) {}
 
   MOCK_METHOD3(Transform,
-               void(v8::Local<v8::Value> chunk,
-                    TransformStreamDefaultControllerInterface*,
-                    ExceptionState&));
+               ScriptPromise(v8::Local<v8::Value> chunk,
+                             TransformStreamDefaultControllerInterface*,
+                             ExceptionState&));
   MOCK_METHOD2(Flush,
-               void(TransformStreamDefaultControllerInterface*,
-                    ExceptionState&));
+               ScriptPromise(TransformStreamDefaultControllerInterface*,
+                             ExceptionState&));
 
   ScriptState* GetScriptState() override { return script_state_; }
 
@@ -144,7 +175,9 @@ TEST_F(TransformStreamTest, TransformIsCalled) {
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   CopyReadableAndWritableToGlobal(scope);
 
-  EXPECT_CALL(*mock, Transform(_, _, _));
+  EXPECT_CALL(*mock, Transform(_, _, _))
+      .WillOnce(
+          Return(ByMove(ScriptPromise::CastUndefined(scope.GetScriptState()))));
 
   // The initial read is needed to relieve backpressure.
   EvalWithPrintingError(&scope,
@@ -165,7 +198,9 @@ TEST_F(TransformStreamTest, FlushIsCalled) {
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   CopyReadableAndWritableToGlobal(scope);
 
-  EXPECT_CALL(*mock, Flush(_, _));
+  EXPECT_CALL(*mock, Flush(_, _))
+      .WillOnce(
+          Return(ByMove(ScriptPromise::CastUndefined(scope.GetScriptState()))));
 
   EvalWithPrintingError(&scope,
                         "const writer = writable.getWriter();\n"
@@ -237,27 +272,17 @@ TEST_F(TransformStreamTest, EnqueueFromTransform) {
 }
 
 TEST_F(TransformStreamTest, EnqueueFromFlush) {
-  class EnqueueFromFlushTransformer : public TransformStreamTransformer {
+  class EnqueueFromFlushTransformer final : public TestTransformer {
    public:
     explicit EnqueueFromFlushTransformer(ScriptState* script_state)
-        : script_state_(script_state) {}
+        : TestTransformer(script_state) {}
 
-    void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultControllerInterface*,
-                   ExceptionState&) override {}
-    void Flush(TransformStreamDefaultControllerInterface* controller,
-               ExceptionState& exception_state) override {
-      controller->Enqueue(ToV8("a", script_state_), exception_state);
+    void FlushVoid(TransformStreamDefaultControllerInterface* controller,
+                   ExceptionState& exception_state) override {
+      controller->Enqueue(ToV8("a", GetScriptState()), exception_state);
     }
-    ScriptState* GetScriptState() override { return script_state_; }
-    void Trace(Visitor* visitor) override {
-      visitor->Trace(script_state_);
-      TransformStreamTransformer::Trace(visitor);
-    }
-
-   private:
-    const Member<ScriptState> script_state_;
   };
+
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
   Init(MakeGarbageCollected<EnqueueFromFlushTransformer>(script_state),
@@ -280,27 +305,18 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
 
 TEST_F(TransformStreamTest, ThrowFromTransform) {
   static constexpr char kMessage[] = "errorInTransform";
-  class ThrowFromTransformTransformer : public TransformStreamTransformer {
+  class ThrowFromTransformTransformer final : public TestTransformer {
    public:
     explicit ThrowFromTransformTransformer(ScriptState* script_state)
-        : script_state_(script_state) {}
-    void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultControllerInterface*,
-                   ExceptionState& exception_state) override {
+        : TestTransformer(script_state) {}
+
+    void TransformVoid(v8::Local<v8::Value>,
+                       TransformStreamDefaultControllerInterface*,
+                       ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }
-    void Flush(TransformStreamDefaultControllerInterface*,
-               ExceptionState&) override {}
-
-    ScriptState* GetScriptState() override { return script_state_; }
-    void Trace(Visitor* visitor) override {
-      visitor->Trace(script_state_);
-      TransformStreamTransformer::Trace(visitor);
-    }
-
-   private:
-    const Member<ScriptState> script_state_;
   };
+
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
   Init(MakeGarbageCollected<ThrowFromTransformTransformer>(
@@ -331,25 +347,15 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
 
 TEST_F(TransformStreamTest, ThrowFromFlush) {
   static constexpr char kMessage[] = "errorInFlush";
-  class ThrowFromFlushTransformer : public TransformStreamTransformer {
+  class ThrowFromFlushTransformer final : public TestTransformer {
    public:
     explicit ThrowFromFlushTransformer(ScriptState* script_state)
-        : script_state_(script_state) {}
-    void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultControllerInterface*,
-                   ExceptionState&) override {}
-    void Flush(TransformStreamDefaultControllerInterface*,
-               ExceptionState& exception_state) override {
+        : TestTransformer(script_state) {}
+
+    void FlushVoid(TransformStreamDefaultControllerInterface*,
+                   ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }
-    ScriptState* GetScriptState() override { return script_state_; }
-    void Trace(Visitor* visitor) override {
-      visitor->Trace(script_state_);
-      TransformStreamTransformer::Trace(visitor);
-    }
-
-   private:
-    const Member<ScriptState> script_state_;
   };
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
@@ -387,6 +393,127 @@ TEST_F(TransformStreamTest, CreateFromReadableWritablePair) {
   TransformStream transform(readable, writable);
   EXPECT_EQ(readable, transform.Readable());
   EXPECT_EQ(writable, transform.Writable());
+}
+
+TEST_F(TransformStreamTest, WaitInTransform) {
+  class WaitInTransformTransformer final : public TestTransformer {
+   public:
+    explicit WaitInTransformTransformer(ScriptState* script_state)
+        : TestTransformer(script_state),
+          transform_promise_resolver_(
+              MakeGarbageCollected<ScriptPromiseResolver>(script_state)) {}
+
+    ScriptPromise Transform(v8::Local<v8::Value>,
+                            TransformStreamDefaultControllerInterface*,
+                            ExceptionState&) override {
+      return transform_promise_resolver_->Promise();
+    }
+
+    void FlushVoid(TransformStreamDefaultControllerInterface*,
+                   ExceptionState&) override {
+      flush_called_ = true;
+    }
+
+    void ResolvePromise() { transform_promise_resolver_->Resolve(); }
+    bool FlushCalled() const { return flush_called_; }
+
+    void Trace(Visitor* visitor) override {
+      visitor->Trace(transform_promise_resolver_);
+      TestTransformer::Trace(visitor);
+    }
+
+   private:
+    const Member<ScriptPromiseResolver> transform_promise_resolver_;
+    bool flush_called_ = false;
+  };
+
+  V8TestingScope scope;
+  auto* script_state = scope.GetScriptState();
+  auto* transformer =
+      MakeGarbageCollected<WaitInTransformTransformer>(script_state);
+  Init(transformer, script_state, ASSERT_NO_EXCEPTION);
+  CopyReadableAndWritableToGlobal(scope);
+
+  ScriptValue promise =
+      EvalWithPrintingError(&scope,
+                            "const writer = writable.getWriter();\n"
+                            "const promise = writer.write('a');\n"
+                            "writer.close();\n"
+                            "promise;\n");
+  // Need to read to relieve backpressure.
+  Stream()
+      ->Readable()
+      ->GetReadHandle(script_state, ASSERT_NO_EXCEPTION)
+      ->Read(script_state);
+
+  ScriptPromiseTester write_tester(script_state,
+                                   ScriptPromise::Cast(script_state, promise));
+
+  // Give Transform() the opportunity to be called.
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+
+  EXPECT_FALSE(write_tester.IsFulfilled());
+  EXPECT_FALSE(transformer->FlushCalled());
+
+  transformer->ResolvePromise();
+
+  write_tester.WaitUntilSettled();
+  EXPECT_TRUE(write_tester.IsFulfilled());
+  EXPECT_TRUE(transformer->FlushCalled());
+}
+
+TEST_F(TransformStreamTest, WaitInFlush) {
+  class WaitInFlushTransformer final : public TestTransformer {
+   public:
+    explicit WaitInFlushTransformer(ScriptState* script_state)
+        : TestTransformer(script_state),
+          flush_promise_resolver_(
+              MakeGarbageCollected<ScriptPromiseResolver>(script_state)) {}
+
+    ScriptPromise Flush(TransformStreamDefaultControllerInterface*,
+                        ExceptionState&) override {
+      return flush_promise_resolver_->Promise();
+    }
+
+    void ResolvePromise() { flush_promise_resolver_->Resolve(); }
+
+    void Trace(Visitor* visitor) override {
+      visitor->Trace(flush_promise_resolver_);
+      TestTransformer::Trace(visitor);
+    }
+
+   private:
+    const Member<ScriptPromiseResolver> flush_promise_resolver_;
+  };
+
+  V8TestingScope scope;
+  auto* script_state = scope.GetScriptState();
+  auto* transformer =
+      MakeGarbageCollected<WaitInFlushTransformer>(script_state);
+  Init(transformer, script_state, ASSERT_NO_EXCEPTION);
+  CopyReadableAndWritableToGlobal(scope);
+
+  ScriptValue promise =
+      EvalWithPrintingError(&scope,
+                            "const writer = writable.getWriter();\n"
+                            "writer.close();\n");
+
+  // Need to read to relieve backpressure.
+  Stream()
+      ->Readable()
+      ->GetReadHandle(script_state, ASSERT_NO_EXCEPTION)
+      ->Read(script_state);
+
+  ScriptPromiseTester close_tester(script_state,
+                                   ScriptPromise::Cast(script_state, promise));
+
+  // Give Flush() the opportunity to be called.
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+
+  EXPECT_FALSE(close_tester.IsFulfilled());
+  transformer->ResolvePromise();
+  close_tester.WaitUntilSettled();
+  EXPECT_TRUE(close_tester.IsFulfilled());
 }
 
 }  // namespace

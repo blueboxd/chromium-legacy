@@ -890,7 +890,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     // Manages its own lifetime.
     new android_webview::AwProxyingURLLoaderFactory(
-        0 /* process_id */, std::move(receiver), nullptr,
+        0 /* process_id */, std::move(receiver), mojo::NullRemote(),
         true /* intercept_only */);
   } else {
     base::PostTask(
@@ -900,7 +900,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
                    receiver) {
               // Manages its own lifetime.
               new android_webview::AwProxyingURLLoaderFactory(
-                  0 /* process_id */, std::move(receiver), nullptr,
+                  0 /* process_id */, std::move(receiver), mojo::NullRemote(),
                   true /* intercept_only */);
             },
             std::move(receiver)));
@@ -962,8 +962,8 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto proxied_receiver = std::move(*factory_receiver);
-  network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
-  *factory_receiver = mojo::MakeRequest(&target_factory_info);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote;
+  *factory_receiver = target_factory_remote.InitWithNewPipeAndPassReceiver();
   int process_id =
       type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
 
@@ -971,7 +971,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
                  base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
                                 process_id, std::move(proxied_receiver),
-                                std::move(target_factory_info)));
+                                std::move(target_factory_remote)));
   return true;
 }
 

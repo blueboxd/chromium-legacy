@@ -22,6 +22,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "weblayer/browser/content_browser_client_impl.h"
 #include "weblayer/common/content_client_impl.h"
+#include "weblayer/common/weblayer_paths.h"
 #include "weblayer/utility/content_utility_client_impl.h"
 
 #if defined(OS_ANDROID)
@@ -128,6 +129,7 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
 
   content_client_ = std::make_unique<ContentClientImpl>();
   SetContentClient(content_client_.get());
+  RegisterPathProvider();
 
   return false;
 }

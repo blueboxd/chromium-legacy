@@ -54,6 +54,11 @@ def ArgumentParser(standalone=False, legacy_formats=None):
           'Path to a directory where to write final results.',
           'Default: %(default)s.'))
   group.add_argument(
+      '--max-values-per-test-case', type=int, metavar='NUM',
+      help=Sentences(
+          'Fail a test run if it produces more than this number of values.'
+          'This includes both ad hoc and metric generated measurements.'))
+  group.add_argument(
       '--reset-results', action='store_true',
       help=Sentences(
           'Overwrite any previous output files in the output directory.',

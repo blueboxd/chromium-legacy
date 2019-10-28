@@ -39,18 +39,8 @@ template <typename T,
           typename Allocator = PartitionAllocator>
 class Vector;
 
-class ArrayBuffer;
-class ArrayBufferView;
-class ArrayPiece;
 class AtomicString;
-class BigInt64Array;
-class BigUint64Array;
 class CaseMap;
-class Float32Array;
-class Float64Array;
-class Int8Array;
-class Int16Array;
-class Int32Array;
 class OrdinalNumber;
 class SharedBuffer;
 class String;
@@ -59,27 +49,13 @@ class StringImpl;
 class StringView;
 class TextOffsetMap;
 class TextStream;
-class Uint8Array;
-class Uint8ClampedArray;
-class Uint16Array;
-class Uint32Array;
 
 }  // namespace WTF
 
 using WTF::Vector;
 
-using WTF::ArrayBuffer;
-using WTF::ArrayBufferView;
-using WTF::ArrayPiece;
 using WTF::AtomicString;
-using WTF::BigInt64Array;
-using WTF::BigUint64Array;
 using WTF::CaseMap;
-using WTF::Float32Array;
-using WTF::Float64Array;
-using WTF::Int8Array;
-using WTF::Int16Array;
-using WTF::Int32Array;
 using WTF::SharedBuffer;
 using WTF::String;
 using WTF::StringBuffer;
@@ -87,9 +63,5 @@ using WTF::StringBuilder;
 using WTF::StringImpl;
 using WTF::StringView;
 using WTF::TextOffsetMap;
-using WTF::Uint8Array;
-using WTF::Uint8ClampedArray;
-using WTF::Uint16Array;
-using WTF::Uint32Array;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_FORWARD_H_

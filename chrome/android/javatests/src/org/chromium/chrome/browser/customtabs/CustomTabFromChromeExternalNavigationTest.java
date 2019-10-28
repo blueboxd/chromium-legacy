@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -91,7 +92,7 @@ public class CustomTabFromChromeExternalNavigationTest {
         startCustomTabFromChrome("about:blank");
 
         Tab tab = mActivityRule.getActivity().getActivityTab();
-        TabDelegateFactory delegateFactory = tab.getDelegateFactory();
+        TabDelegateFactory delegateFactory = TabTestUtils.getDelegateFactory(tab);
         Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
         CustomTabDelegateFactory customTabDelegateFactory =
                 ((CustomTabDelegateFactory) delegateFactory);
@@ -151,7 +152,7 @@ public class CustomTabFromChromeExternalNavigationTest {
         startPaymentRequestUIFromChrome("about:blank");
 
         Tab tab = mActivityRule.getActivity().getActivityTab();
-        TabDelegateFactory delegateFactory = tab.getDelegateFactory();
+        TabDelegateFactory delegateFactory = TabTestUtils.getDelegateFactory(tab);
         Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
         CustomTabDelegateFactory customTabDelegateFactory =
                 ((CustomTabDelegateFactory) delegateFactory);

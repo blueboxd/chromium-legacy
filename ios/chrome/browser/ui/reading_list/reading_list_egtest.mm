@@ -193,8 +193,8 @@ void PerformActionOnEntry(const std::string& entryTitle,
                  grey_sufficientlyVisible(), nil);
   [[[EarlGrey selectElementWithMatcher:matcher]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
-      onElementWithMatcher:grey_accessibilityID(
-                               [ReadingListTableViewController class])]
+      onElementWithMatcher:grey_accessibilityID([[ReadingListTableViewController
+                               class] accessibilityIdentifier])]
       performAction:action];
 }
 

@@ -94,14 +94,14 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
 
   network::mojom::URLLoaderFactory* GetURLLoaderFactory() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (!url_loader_factory_ || url_loader_factory_.encountered_error()) {
+    if (!url_loader_factory_ || !url_loader_factory_.is_connected()) {
       network::mojom::URLLoaderFactoryParamsPtr params =
           network::mojom::URLLoaderFactoryParams::New();
       params->process_id = network::mojom::kBrowserProcessId;
       params->is_corb_enabled = false;
       params->is_trusted = true;
       GetNetworkContext()->CreateURLLoaderFactory(
-          MakeRequest(&url_loader_factory_), std::move(params));
+          url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
     }
     return url_loader_factory_.get();
   }
@@ -135,7 +135,7 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
   base::FilePath user_data_dir_;
   NetworkContextParamsFactory network_context_params_factory_;
   mojo::Remote<network::mojom::NetworkContext> network_context_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedURLLoaderFactory);
 };

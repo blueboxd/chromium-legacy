@@ -42,12 +42,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -73,8 +73,8 @@ class CORE_EXPORT SerializedScriptValue
   USING_FAST_MALLOC(SerializedScriptValue);
 
  public:
-  using ArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;
-  using SharedArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;
+  using ArrayBufferContentsArray = Vector<ArrayBufferContents, 1>;
+  using SharedArrayBufferContentsArray = Vector<ArrayBufferContents, 1>;
   using ImageBitmapContentsArray = Vector<scoped_refptr<StaticBitmapImage>, 1>;
   using TransferredWasmModulesArray = WTF::Vector<v8::CompiledWasmModule>;
   using MessagePortChannelArray = Vector<MessagePortChannel>;

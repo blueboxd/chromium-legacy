@@ -905,11 +905,9 @@ NavigationRequest::NavigationRequest(
     source_site_instance_ =
         frame_tree_node->current_frame_host()->GetSiteInstance();
 
-    if (IsPerNavigationMojoInterfaceEnabled()) {
-      DCHECK(navigation_client.is_valid());
-      SetNavigationClient(std::move(navigation_client),
-                          source_site_instance_->GetId());
-    }
+    DCHECK(navigation_client.is_valid());
+    SetNavigationClient(std::move(navigation_client),
+                        source_site_instance_->GetId());
   } else if (entry) {
     DCHECK(!navigation_client.is_valid());
     FrameNavigationEntry* frame_navigation_entry =
@@ -2346,8 +2344,7 @@ void NavigationRequest::CommitErrorPage(
   // consistent with the URL being requested.
   commit_params_->origin_to_commit =
       url::Origin::Create(common_params_->url).DeriveNewOpaqueOrigin();
-  if (IsPerNavigationMojoInterfaceEnabled() &&
-      request_navigation_client_.is_bound()) {
+  if (request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==
         render_frame_host_->GetSiteInstance()->GetId()) {
       // Reuse the request NavigationClient for commit.
@@ -2415,8 +2412,7 @@ void NavigationRequest::CommitNavigation() {
 
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
 
-  if (IsPerNavigationMojoInterfaceEnabled() &&
-      request_navigation_client_.is_bound()) {
+  if (request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==
         render_frame_host_->GetSiteInstance()->GetId()) {
       // Reuse the request NavigationClient for commit.

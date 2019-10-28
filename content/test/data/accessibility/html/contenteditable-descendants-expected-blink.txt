@@ -13,8 +13,6 @@ rootWebArea
 ++++++++staticText editable richlyEditable name=' and a '
 ++++++++++inlineTextBox name=' and a '
 ++++++++button editable richlyEditable name='Button'
-++++++++++staticText name='Button'
-++++++++++++inlineTextBox name='Button'
 ++++++++staticText editable richlyEditable name='.'
 ++++++++++inlineTextBox name='.'
 ++++++table editable richlyEditable

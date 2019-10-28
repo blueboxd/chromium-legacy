@@ -7,5 +7,5 @@ package org.chromium.weblayer_private.aidl;
 interface IProfile {
   void destroy() = 0;
 
-  void clearBrowsingData() = 1;
+  void clearBrowsingData(in IObjectWrapper completionCallback) = 1;
 }

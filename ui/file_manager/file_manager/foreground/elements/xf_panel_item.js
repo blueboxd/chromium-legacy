@@ -261,6 +261,7 @@ class PanelItem extends HTMLElement {
   static get observedAttributes() {
     return [
       'count',
+      'errormark',
       'indicator',
       'panel-type',
       'primary-text',
@@ -290,6 +291,11 @@ class PanelItem extends HTMLElement {
       case 'count':
         if (this.indicator_) {
           this.indicator_.setAttribute('label', newValue || '');
+        }
+        break;
+      case 'errormark':
+        if (this.indicator_) {
+          this.indicator_.setAttribute('errormark', newValue || '');
         }
         break;
       case 'indicator':
@@ -434,6 +440,28 @@ class PanelItem extends HTMLElement {
    */
   set signalCallback(signal) {
     this.signal_ = signal || console.log;
+  }
+
+  /**
+   * Set the visibility of the error marker.
+   * @param {string} visibility Visibility value being set.
+   */
+  set errorMarkerVisibility(visibility) {
+    this.setAttribute('errormark', visibility);
+  }
+
+  /**
+   *  Getter for the visibility of the error marker.
+   */
+  get errorMarkerVisibility() {
+    // If we have an indicator on the panel, then grab the
+    // visibility value from that.
+    if (this.indicator_) {
+      return this.indicator_.errorMarkerVisibility;
+    }
+    // If there's no indicator on the panel just return the
+    // value of any attribute as a fallback.
+    return this.getAttribute('errormark');
   }
 
   /**

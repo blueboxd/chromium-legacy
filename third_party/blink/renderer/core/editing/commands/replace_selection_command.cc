@@ -893,7 +893,7 @@ static bool FollowBlockElementStyle(const Node* node) {
 static void HandleStyleSpansBeforeInsertion(ReplacementFragment& fragment,
                                             const Position& insertion_pos) {
   Node* top_node = fragment.FirstChild();
-  if (!IsHTMLSpanElement(top_node))
+  if (!IsA<HTMLSpanElement>(top_node))
     return;
 
   // Handling the case where we are doing Paste as Quotation or pasting into
@@ -907,7 +907,7 @@ static void HandleStyleSpansBeforeInsertion(ReplacementFragment& fragment,
   // Remove style spans to follow the styles of parent block element when
   // |fragment| becomes a part of it. See bugs http://crbug.com/226941 and
   // http://crbug.com/335955.
-  HTMLSpanElement* wrapping_style_span = ToHTMLSpanElement(top_node);
+  auto* wrapping_style_span = To<HTMLSpanElement>(top_node);
   const Node* node = insertion_pos.AnchorNode();
   // |node| can be an inline element like <br> under <li>
   // e.g.) editing/execCommand/switch-list-type.html

@@ -121,7 +121,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   static unsigned StorageFormatDataSize(ImageDataStorageFormat);
   static DOMArrayBufferView*
   ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
-      WTF::ArrayBufferContents&,
+      ArrayBufferContents&,
       CanvasPixelFormat,
       ImageDataStorageFormat);
 

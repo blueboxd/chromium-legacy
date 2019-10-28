@@ -358,8 +358,12 @@ bool IsCrostiniRunning(Profile* profile) {
       kCrostiniDefaultVmName);
 }
 
-bool IsCrostiniAnsibleInfrastructureEnabled() {
-  return base::FeatureList::IsEnabled(features::kCrostiniAnsibleInfrastructure);
+bool ShouldConfigureDefaultContainer(Profile* profile) {
+  const base::FilePath ansible_playbook_file_path =
+      profile->GetPrefs()->GetFilePath(prefs::kCrostiniAnsiblePlaybookFilePath);
+  return base::FeatureList::IsEnabled(
+             features::kCrostiniAnsibleInfrastructure) &&
+         !ansible_playbook_file_path.empty();
 }
 
 void LaunchCrostiniApp(Profile* profile,

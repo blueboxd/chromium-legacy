@@ -99,8 +99,6 @@ gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) {
 }
 
 int AXPlatformNodeBase::GetIndexInParent() {
-  if (delegate_)
-    return delegate_->GetIndexInParent();
   return -1;
 }
 
@@ -1293,15 +1291,13 @@ int32_t AXPlatformNodeBase::GetHypertextOffsetFromChild(
     AXPlatformNodeBase* child) {
   // TODO(dougt) DCHECK(child.owner()->PlatformGetParent() == owner());
 
-  if (IsLeaf())
-    return -1;
-
   // Handle the case when we are dealing with a text-only child.
-  // Text-only children should not be present at tree roots and so no
+  // Note that this object might be a platform leaf, e.g. an ARIA searchbox.
+  // Also, text-only children should not be present at tree roots and so no
   // cross-tree traversal is necessary.
   if (child->IsTextOnlyObject()) {
     int32_t hypertext_offset = 0;
-    int32_t index_in_parent = child->GetIndexInParent();
+    int32_t index_in_parent = child->GetDelegate()->GetIndexInParent();
     DCHECK_GE(index_in_parent, 0);
     DCHECK_LT(index_in_parent, static_cast<int32_t>(GetChildCount()));
     for (uint32_t i = 0; i < static_cast<uint32_t>(index_in_parent); ++i) {
@@ -1382,9 +1378,9 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   }
 
   AXPlatformNodeBase* common_parent = this;
-  int32_t index_in_common_parent = GetIndexInParent();
+  int32_t index_in_common_parent = GetDelegate()->GetIndexInParent();
   while (common_parent && !endpoint_object->IsDescendantOf(common_parent)) {
-    index_in_common_parent = common_parent->GetIndexInParent();
+    index_in_common_parent = common_parent->GetDelegate()->GetIndexInParent();
     common_parent = static_cast<AXPlatformNodeBase*>(
         FromNativeViewAccessible(common_parent->GetParent()));
   }
@@ -1425,7 +1421,8 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
         common_parent->GetDelegate()->ChildAtIndex(i)));
     DCHECK(child);
     if (endpoint_object->IsDescendantOf(child)) {
-      endpoint_index_in_common_parent = child->GetIndexInParent();
+      endpoint_index_in_common_parent =
+          child->GetDelegate()->GetIndexInParent();
       break;
     }
   }

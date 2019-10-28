@@ -22,15 +22,3 @@
 # to exist.
 -WebContentsImplTest.CrossSiteBoundaries
 -WebContentsImplTest.NavigateFromSitelessUrl
-
-# Tests below are failing on android only.
-# Need to be triaged, see https://crbug.com/1007276.
-
-# Numerous tests from these suites are crashing with:
-# [FATAL:deferred_sequenced_task_runner.cc(83)] Check failed: !target_task_runner_
--AudibleMetricsTest.*
--GeolocationServiceTest.*
--MediaInternalsAudioLogTest/MediaInternalsAudioLogTest.*
--MediaInternalsVideoCaptureDeviceTest.NotifyVideoCaptureDeviceCapabilitiesEnumerated
--MediaStreamManagerTest.*
--RenderFrameAudioOutputStreamFactoryTest.*

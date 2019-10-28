@@ -52,6 +52,7 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
+#include "chrome/browser/chromeos/policy/external_data_handlers/crostini_ansible_playbook_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/native_printers_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/print_servers_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/user_avatar_image_external_data_handler.h"
@@ -424,6 +425,9 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
           cros_settings_, device_local_account_policy_service));
   cloud_external_data_policy_handlers_.emplace_back(
       std::make_unique<policy::PrintServersExternalDataHandler>(
+          cros_settings_, device_local_account_policy_service));
+  cloud_external_data_policy_handlers_.emplace_back(
+      std::make_unique<policy::CrostiniAnsiblePlaybookExternalDataHandler>(
           cros_settings_, device_local_account_policy_service));
 
   // Record the stored session length for enrolled device.

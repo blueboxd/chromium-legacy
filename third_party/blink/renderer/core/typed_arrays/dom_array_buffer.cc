@@ -38,7 +38,7 @@ bool DOMArrayBuffer::IsDetachable(v8::Isolate* isolate) {
 }
 
 bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
-                              WTF::ArrayBufferContents& result) {
+                              ArrayBufferContents& result) {
   DOMArrayBuffer* to_transfer = this;
   if (!IsDetachable(isolate)) {
     to_transfer =
@@ -62,8 +62,7 @@ DOMArrayBuffer* DOMArrayBuffer::CreateUninitializedOrNull(
     unsigned num_elements,
     unsigned element_byte_size) {
   scoped_refptr<ArrayBuffer> buffer =
-      WTF::ArrayBuffer::CreateUninitializedOrNull(num_elements,
-                                                  element_byte_size);
+      ArrayBuffer::CreateUninitializedOrNull(num_elements, element_byte_size);
   if (!buffer)
     return nullptr;
   return Create(std::move(buffer));
@@ -87,9 +86,9 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
 
 DOMArrayBuffer* DOMArrayBuffer::Create(
     scoped_refptr<SharedBuffer> shared_buffer) {
-  WTF::ArrayBufferContents contents(shared_buffer->size(), 1,
-                                    WTF::ArrayBufferContents::kNotShared,
-                                    WTF::ArrayBufferContents::kDontInitialize);
+  ArrayBufferContents contents(shared_buffer->size(), 1,
+                               ArrayBufferContents::kNotShared,
+                               ArrayBufferContents::kDontInitialize);
   uint8_t* data = static_cast<uint8_t*>(contents.Data());
   if (UNLIKELY(!data))
     OOM_CRASH();
@@ -108,9 +107,8 @@ DOMArrayBuffer* DOMArrayBuffer::Create(
   for (const auto& span : data) {
     size += span.size();
   }
-  WTF::ArrayBufferContents contents(size, 1,
-                                    WTF::ArrayBufferContents::kNotShared,
-                                    WTF::ArrayBufferContents::kDontInitialize);
+  ArrayBufferContents contents(size, 1, ArrayBufferContents::kNotShared,
+                               ArrayBufferContents::kDontInitialize);
   uint8_t* ptr = static_cast<uint8_t*>(contents.Data());
   if (UNLIKELY(!ptr))
     OOM_CRASH();

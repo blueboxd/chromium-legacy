@@ -67,7 +67,7 @@ TEST(BlinkTransferableMessageStructTraitsTest,
   ASSERT_TRUE(mojom::blink::TransferableMessage::DeserializeFromMessage(
       std::move(mojo_message), &out));
   ASSERT_EQ(out.message->GetArrayBufferContentsArray().size(), 1U);
-  WTF::ArrayBufferContents& deserialized_contents =
+  ArrayBufferContents& deserialized_contents =
       out.message->GetArrayBufferContentsArray()[0];
   Vector<uint8_t> deserialized_data;
   deserialized_data.Append(static_cast<uint8_t*>(deserialized_contents.Data()),
@@ -109,7 +109,7 @@ TEST(BlinkTransferableMessageStructTraitsTest,
 
   // When using WrapAsMessage, the deserialized ArrayBufferContents should own
   // the original ArrayBufferContents' data (as opposed to a copy of the data).
-  WTF::ArrayBufferContents& deserialized_contents =
+  ArrayBufferContents& deserialized_contents =
       out.message->GetArrayBufferContentsArray()[0];
   ASSERT_EQ(originalContentsData, deserialized_contents.Data());
 

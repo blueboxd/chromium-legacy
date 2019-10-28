@@ -537,6 +537,8 @@ jumbo_source_set("test_support") {
     "preload_check_test_util.h",
     "test_event_router_observer.cc",
     "test_event_router_observer.h",
+    "updater/extension_cache_fake.cc",
+    "updater/extension_cache_fake.h",
     "updater/extension_downloader_test_helper.cc",
     "updater/extension_downloader_test_helper.h",
     "value_store/test_value_store_factory.cc",

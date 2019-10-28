@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -20,6 +21,7 @@ class TextStream;
 namespace blink {
 
 class ComputedStyle;
+struct LogicalRect;
 struct NGPhysicalBoxStrut;
 
 // PhysicalRect is the position and size of a rect (typically a fragment)
@@ -46,6 +48,15 @@ struct CORE_EXPORT PhysicalRect {
 
   PhysicalOffset offset;
   PhysicalSize size;
+
+  // Converts a physical offset to a logical offset. See:
+  // https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
+  // @param outer_size the size of the rect (typically a fragment).
+  // @param inner_size the size of the inner rect (typically a child fragment).
+  LogicalRect ConvertToLogical(WritingMode,
+                               TextDirection,
+                               PhysicalSize outer_size,
+                               PhysicalSize inner_size) const;
 
   constexpr bool IsEmpty() const { return size.IsEmpty(); }
 

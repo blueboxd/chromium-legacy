@@ -17,7 +17,10 @@
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -36,20 +39,19 @@ class CONTENT_EXPORT MediaPlayerRenderer
       public media::mojom::MediaPlayerRendererExtension,
       public media::MediaPlayerBridge::Client {
  public:
-  using RendererExtensionRequest =
-      media::mojom::MediaPlayerRendererExtensionRequest;
-  using ClientExtensionPtr =
-      media::mojom::MediaPlayerRendererClientExtensionPtr;
+  using RendererExtension = media::mojom::MediaPlayerRendererExtension;
+  using ClientExtension = media::mojom::MediaPlayerRendererClientExtension;
 
   // Permits embedders to handle custom urls.
   static void RegisterMediaUrlInterceptor(
       media::MediaUrlInterceptor* media_url_interceptor);
 
-  MediaPlayerRenderer(int process_id,
-                      int routing_id,
-                      WebContents* web_contents,
-                      RendererExtensionRequest renderer_extension_request,
-                      ClientExtensionPtr client_extension_ptr);
+  MediaPlayerRenderer(
+      int process_id,
+      int routing_id,
+      WebContents* web_contents,
+      mojo::PendingReceiver<RendererExtension> renderer_extension_receiver,
+      mojo::PendingRemote<ClientExtension> client_extension_remote);
 
   ~MediaPlayerRenderer() override;
 
@@ -105,7 +107,7 @@ class CONTENT_EXPORT MediaPlayerRenderer
 
   void UpdateVolume();
 
-  ClientExtensionPtr client_extension_;
+  mojo::Remote<ClientExtension> client_extension_;
 
   // Identifiers to find the RenderFrameHost that created |this|.
   // NOTE: We store these IDs rather than a RenderFrameHost* because we do not
@@ -133,7 +135,7 @@ class CONTENT_EXPORT MediaPlayerRenderer
   MediaPlayerRendererWebContentsObserver* web_contents_observer_;
   float volume_;
 
-  mojo::Binding<MediaPlayerRendererExtension> renderer_extension_binding_;
+  mojo::Receiver<MediaPlayerRendererExtension> renderer_extension_receiver_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaPlayerRenderer> weak_factory_{this};

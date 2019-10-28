@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -113,7 +114,7 @@ bool AreSigninCookiesClearedOnExit(Profile* profile) {
   return client->AreSigninCookiesDeletedOnExit();
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Returns the Google G icon in grey and with a padding of 2. The padding is
 // needed to make the icon look smaller, otherwise it looks too big compared to
 // the other icons. See crbug.com/951751 for more information.
@@ -594,7 +595,7 @@ void ProfileMenuView::BuildFeatureButtons() {
 
   if (has_unconsented_account) {
     AddFeatureButton(
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
         // The Google G icon needs to be shrunk, so it won't look too big
         // compared to the other icons.
         ImageForMenu(kGoogleGLogoIcon, /*icon_to_image_ratio=*/0.75),
@@ -691,13 +692,11 @@ void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {
       AddGuestProfileView();
   }
 
-#if defined(GOOGLE_CHROME_BUILD)
   if (dice_enabled_ && !dice_accounts_.empty() &&
       !SigninErrorControllerFactory::GetForProfile(browser()->profile())
            ->HasError()) {
     AddManageGoogleAccountButton();
   }
-#endif
 
   if (browser()->profile()->IsSupervised())
     AddSupervisedUserDisclaimerView();
@@ -1093,16 +1092,16 @@ void ProfileMenuView::AddAutofillHomeView() {
                           base::Unretained(this)));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
 void ProfileMenuView::AddManageGoogleAccountButton() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   AddMenuGroup(false);
   CreateAndAddButton(
       GetGoogleIconForUserMenu(GetDefaultIconSize()),
       l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT),
       base::BindRepeating(&ProfileMenuView::OnManageGoogleAccountButtonClicked,
                           base::Unretained(this)));
-}
 #endif
+}
 
 void ProfileMenuView::PostActionPerformed(
     ProfileMetrics::ProfileDesktopMenu action_performed) {

@@ -788,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
-// TODO(crbug.com/1012222): re-enable this test on all builders once flakiness
+// TODO(crbug.com/1014086): re-enable this test on all builders once flakiness
 // is addressed.
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
                        DISABLED_ApplyRemoteCreationWithValidGUID) {
@@ -818,8 +818,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
       GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
 }
 
+// TODO(crbug.com/1014086): re-enable this test on all builders once flakiness
+// is addressed.
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
-                       ApplyRemoteCreationWithoutValidGUID) {
+                       DISABLED_ApplyRemoteCreationWithoutValidGUID) {
   // Start syncing.
   DisableVerifier();
   ASSERT_TRUE(SetupSync());
@@ -852,15 +854,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
       GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
 }
 
-#if defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER)
-#define MAYBE_ApplyRemoteCreationWithoutValidGUIDOrOCII \
-  DISABLED_ApplyRemoteCreationWithoutValidGUIDOrOCII
-#else
-#define MAYBE_ApplyRemoteCreationWithoutValidGUIDOrOCII \
-  ApplyRemoteCreationWithoutValidGUIDOrOCII
-#endif
+// TODO(crbug.com/1014086): re-enable this test on all builders once flakiness
+// is addressed.
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
-                       MAYBE_ApplyRemoteCreationWithoutValidGUIDOrOCII) {
+                       DISABLED_ApplyRemoteCreationWithoutValidGUIDOrOCII) {
   // Start syncing.
   DisableVerifier();
   ASSERT_TRUE(SetupSync());
@@ -977,7 +974,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
                                             originator_client_item_id));
 }
 
-// TODO(crbug.com/1012223): re-enable this test on all builders once flakiness
+// TODO(crbug.com/1014086): re-enable this test on all builders once flakiness
 // is addressed.
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
                        DISABLED_ApplyRemoteUpdateWithValidGUID) {

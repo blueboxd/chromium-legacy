@@ -51,10 +51,12 @@ void KeepaliveStatisticsRecorder::Unregister(int process_id) {
   --it->second.num_registrations;
 }
 
-void KeepaliveStatisticsRecorder::OnLoadStarted(int process_id) {
+void KeepaliveStatisticsRecorder::OnLoadStarted(int process_id,
+                                                int request_size) {
   auto it = per_process_records_.find(process_id);
   if (it != per_process_records_.end()) {
     ++it->second.num_inflight_requests;
+    it->second.total_request_size += request_size;
     if (it->second.peak_inflight_requests < it->second.num_inflight_requests) {
       it->second.peak_inflight_requests = it->second.num_inflight_requests;
       if (!base::FeatureList::IsEnabled(features::kDisableKeepaliveFetch)) {
@@ -75,10 +77,14 @@ void KeepaliveStatisticsRecorder::OnLoadStarted(int process_id) {
   }
 }
 
-void KeepaliveStatisticsRecorder::OnLoadFinished(int process_id) {
+void KeepaliveStatisticsRecorder::OnLoadFinished(int process_id,
+                                                 int request_size) {
   auto it = per_process_records_.find(process_id);
-  if (it != per_process_records_.end())
+  if (it != per_process_records_.end()) {
     --it->second.num_inflight_requests;
+    DCHECK_GE(it->second.total_request_size, request_size);
+    it->second.total_request_size -= request_size;
+  }
   --num_inflight_requests_;
 }
 
@@ -88,6 +94,14 @@ int KeepaliveStatisticsRecorder::NumInflightRequestsPerProcess(
   if (it == per_process_records_.end())
     return 0;
   return it->second.num_inflight_requests;
+}
+
+int KeepaliveStatisticsRecorder::GetTotalRequestSizePerProcess(
+    int process_id) const {
+  auto it = per_process_records_.find(process_id);
+  if (it == per_process_records_.end())
+    return 0;
+  return it->second.total_request_size;
 }
 
 bool KeepaliveStatisticsRecorder::HasRecordForProcess(int process_id) const {

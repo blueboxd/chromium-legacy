@@ -60,7 +60,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       network::mojom::URLLoaderRequest loader_request,
       network::mojom::URLLoaderClientPtr client,
-      network::mojom::URLLoaderFactoryPtr target_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
       bool intercept_only);
   ~InterceptedRequest() override;
 
@@ -150,7 +150,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
 
   mojo::Binding<network::mojom::URLLoaderClient> proxied_client_binding_;
   network::mojom::URLLoaderPtr target_loader_;
-  network::mojom::URLLoaderFactoryPtr target_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
 
   base::WeakPtrFactory<InterceptedRequest> weak_factory_{this};
 
@@ -267,7 +267,7 @@ InterceptedRequest::InterceptedRequest(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     network::mojom::URLLoaderRequest loader_request,
     network::mojom::URLLoaderClientPtr client,
-    network::mojom::URLLoaderFactoryPtr target_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
     bool intercept_only)
     : process_id_(process_id),
       request_id_(request_id),
@@ -724,14 +724,14 @@ void InterceptedRequest::SendErrorCallback(int error_code,
 AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
     int process_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-    network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote,
     bool intercept_only)
     : process_id_(process_id), intercept_only_(intercept_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(!(intercept_only_ && target_factory_info));
-  if (target_factory_info) {
-    target_factory_.Bind(std::move(target_factory_info));
-    target_factory_.set_connection_error_handler(
+  DCHECK(!(intercept_only_ && target_factory_remote));
+  if (target_factory_remote) {
+    target_factory_.Bind(std::move(target_factory_remote));
+    target_factory_.set_disconnect_handler(
         base::BindOnce(&AwProxyingURLLoaderFactory::OnTargetFactoryError,
                        base::Unretained(this)));
   }
@@ -747,12 +747,13 @@ AwProxyingURLLoaderFactory::~AwProxyingURLLoaderFactory() {}
 void AwProxyingURLLoaderFactory::CreateProxy(
     int process_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-    network::mojom::URLLoaderFactoryPtrInfo target_factory_info) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        target_factory_remote) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // will manage its own lifetime
   new AwProxyingURLLoaderFactory(process_id, std::move(loader_receiver),
-                                 std::move(target_factory_info), false);
+                                 std::move(target_factory_remote), false);
 }
 
 void AwProxyingURLLoaderFactory::CreateLoaderAndStart(
@@ -766,9 +767,10 @@ void AwProxyingURLLoaderFactory::CreateLoaderAndStart(
   // TODO(timvolodine): handle interception, modification (headers for
   // webview), blocking, callbacks etc..
 
-  network::mojom::URLLoaderFactoryPtr target_factory_clone;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_clone;
   if (target_factory_)
-    target_factory_->Clone(MakeRequest(&target_factory_clone));
+    target_factory_->Clone(
+        target_factory_clone.InitWithNewPipeAndPassReceiver());
 
   bool global_cookie_policy =
       AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();

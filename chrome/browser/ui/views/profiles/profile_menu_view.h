@@ -99,9 +99,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void AddOptionsView(bool display_lock, AvatarMenu* avatar_menu);
   void AddSupervisedUserDisclaimerView();
   void AddAutofillHomeView();
-#if defined(GOOGLE_CHROME_BUILD)
   void AddManageGoogleAccountButton();
-#endif
 
   // Adds the DICE UI view to sign in and turn on sync. It includes an
   // illustration, a promo and a button.

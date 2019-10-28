@@ -5,6 +5,7 @@
 #include <limits>
 
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
@@ -41,7 +42,7 @@ InflateTransformer::~InflateTransformer() {
   }
 }
 
-void InflateTransformer::Transform(
+ScriptPromise InflateTransformer::Transform(
     v8::Local<v8::Value> chunk,
     TransformStreamDefaultControllerInterface* controller,
     ExceptionState& exception_state) {
@@ -51,23 +52,25 @@ void InflateTransformer::Transform(
       script_state_->GetIsolate(), chunk, buffer_source,
       UnionTypeConversionMode::kNotNullable, exception_state);
   if (exception_state.HadException()) {
-    return;
+    return ScriptPromise();
   }
   if (buffer_source.IsArrayBufferView()) {
     const auto* view = buffer_source.GetAsArrayBufferView().View();
     const uint8_t* start = static_cast<const uint8_t*>(view->BaseAddress());
     wtf_size_t length = view->byteLength();
     Inflate(start, length, IsFinished(false), controller, exception_state);
-    return;
+    return ScriptPromise::CastUndefined(script_state_);
   }
   DCHECK(buffer_source.IsArrayBuffer());
   const auto* array_buffer = buffer_source.GetAsArrayBuffer();
   const uint8_t* start = static_cast<const uint8_t*>(array_buffer->Data());
   wtf_size_t length = array_buffer->ByteLength();
   Inflate(start, length, IsFinished(false), controller, exception_state);
+
+  return ScriptPromise::CastUndefined(script_state_);
 }
 
-void InflateTransformer::Flush(
+ScriptPromise InflateTransformer::Flush(
     TransformStreamDefaultControllerInterface* controller,
     ExceptionState& exception_state) {
   DCHECK(!was_flush_called_);
@@ -75,6 +78,8 @@ void InflateTransformer::Flush(
   inflateEnd(&stream_);
   was_flush_called_ = true;
   out_buffer_.clear();
+
+  return ScriptPromise::CastUndefined(script_state_);
 }
 
 void InflateTransformer::Inflate(

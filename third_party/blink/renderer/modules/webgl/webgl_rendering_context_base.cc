@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
@@ -113,7 +114,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 
 namespace blink {
 namespace {
@@ -6007,7 +6007,7 @@ void WebGLRenderingContextBase::uniform1f(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
-  if (isContextLost() || !ValidateUniformParameters<WTF::Float32Array>(
+  if (isContextLost() || !ValidateUniformParameters<Float32Array>(
                              "uniform1fv", location, v, 1, 0, v.length()))
     return;
 
@@ -6041,7 +6041,7 @@ void WebGLRenderingContextBase::uniform1i(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
-  if (isContextLost() || !ValidateUniformParameters<WTF::Int32Array>(
+  if (isContextLost() || !ValidateUniformParameters<Int32Array>(
                              "uniform1iv", location, v, 1, 0, v.length()))
     return;
 
@@ -6076,7 +6076,7 @@ void WebGLRenderingContextBase::uniform2f(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
-  if (isContextLost() || !ValidateUniformParameters<WTF::Float32Array>(
+  if (isContextLost() || !ValidateUniformParameters<Float32Array>(
                              "uniform2fv", location, v, 2, 0, v.length()))
     return;
 
@@ -6111,7 +6111,7 @@ void WebGLRenderingContextBase::uniform2i(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
-  if (isContextLost() || !ValidateUniformParameters<WTF::Int32Array>(
+  if (isContextLost() || !ValidateUniformParameters<Int32Array>(
                              "uniform2iv", location, v, 2, 0, v.length()))
     return;
 
@@ -6147,7 +6147,7 @@ void WebGLRenderingContextBase::uniform3f(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
-  if (isContextLost() || !ValidateUniformParameters<WTF::Float32Array>(
+  if (isContextLost() || !ValidateUniformParameters<Float32Array>(
                              "uniform3fv", location, v, 3, 0, v.length()))
     return;
 
@@ -6183,7 +6183,7 @@ void WebGLRenderingContextBase::uniform3i(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
-  if (isContextLost() || !ValidateUniformParameters<WTF::Int32Array>(
+  if (isContextLost() || !ValidateUniformParameters<Int32Array>(
                              "uniform3iv", location, v, 3, 0, v.length()))
     return;
 
@@ -6220,7 +6220,7 @@ void WebGLRenderingContextBase::uniform4f(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location,
                                            const FlexibleFloat32ArrayView& v) {
-  if (isContextLost() || !ValidateUniformParameters<WTF::Float32Array>(
+  if (isContextLost() || !ValidateUniformParameters<Float32Array>(
                              "uniform4fv", location, v, 4, 0, v.length()))
     return;
 
@@ -6257,7 +6257,7 @@ void WebGLRenderingContextBase::uniform4i(const WebGLUniformLocation* location,
 
 void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location,
                                            const FlexibleInt32ArrayView& v) {
-  if (isContextLost() || !ValidateUniformParameters<WTF::Int32Array>(
+  if (isContextLost() || !ValidateUniformParameters<Int32Array>(
                              "uniform4iv", location, v, 4, 0, v.length()))
     return;
 

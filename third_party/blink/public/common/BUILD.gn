@@ -49,6 +49,7 @@ source_set("headers") {
     "cache_storage/cache_storage_utils.h",
     "client_hints/client_hints.h",
     "common_export.h",
+    "context_menu_data/media_type.h",
     "css/forced_colors.h",
     "css/navigation_controls.h",
     "css/preferred_color_scheme.h",

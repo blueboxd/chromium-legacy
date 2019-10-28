@@ -3630,49 +3630,10 @@ void RenderFrameImpl::CommitFailedNavigation(
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
-    mojom::FrameNavigationControl::CommitFailedNavigationCallback callback) {
-  DCHECK(!navigation_client_impl_);
-  DCHECK(!IsPerNavigationMojoInterfaceEnabled());
-  CommitFailedNavigationInternal(
-      std::move(common_params), std::move(commit_params),
-      has_stale_copy_in_cache, error_code, error_page_content,
-      std::move(subresource_loader_factories), std::move(callback),
-      mojom::NavigationClient::CommitFailedNavigationCallback());
-}
-
-void RenderFrameImpl::CommitFailedPerNavigationMojoInterfaceNavigation(
-    mojom::CommonNavigationParamsPtr common_params,
-    mojom::CommitNavigationParamsPtr commit_params,
-    bool has_stale_copy_in_cache,
-    int error_code,
-    const base::Optional<std::string>& error_page_content,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factories,
-    mojom::NavigationClient::CommitFailedNavigationCallback
-        per_navigation_mojo_interface_callback) {
-  DCHECK(navigation_client_impl_);
-  DCHECK(IsPerNavigationMojoInterfaceEnabled());
-  CommitFailedNavigationInternal(
-      std::move(common_params), std::move(commit_params),
-      has_stale_copy_in_cache, error_code, error_page_content,
-      std::move(subresource_loader_factories),
-      mojom::FrameNavigationControl::CommitFailedNavigationCallback(),
-      std::move(per_navigation_mojo_interface_callback));
-}
-
-void RenderFrameImpl::CommitFailedNavigationInternal(
-    mojom::CommonNavigationParamsPtr common_params,
-    mojom::CommitNavigationParamsPtr commit_params,
-    bool has_stale_copy_in_cache,
-    int error_code,
-    const base::Optional<std::string>& error_page_content,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factories,
-    mojom::FrameNavigationControl::CommitFailedNavigationCallback callback,
-    mojom::NavigationClient::CommitFailedNavigationCallback
-        per_navigation_mojo_interface_callback) {
+    mojom::NavigationClient::CommitFailedNavigationCallback callback) {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::CommitFailedNavigation", "id", routing_id_);
+  DCHECK(navigation_client_impl_);
   DCHECK(!NavigationTypeUtils::IsSameDocument(common_params->navigation_type));
   RenderFrameImpl::PrepareRenderViewForNavigation(common_params->url,
                                                   *commit_params);
@@ -3710,8 +3671,9 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params->url)) {
     // The browser expects this frame to be loading an error page. Inform it
     // that the load stopped.
-    AbortCommitNavigation(std::move(callback),
-                          blink::mojom::CommitResult::Aborted);
+    AbortCommitNavigation(
+        base::NullCallback() /* deprecated interface callback */,
+        blink::mojom::CommitResult::Aborted);
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
@@ -3738,18 +3700,16 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   }
 
   if (fallback_result != blink::WebNavigationControl::NoFallbackContent) {
+    AbortCommitNavigation(
+        base::NullCallback() /* deprecated interface callback */,
+        blink::mojom::CommitResult::Aborted);
     if (fallback_result == blink::WebNavigationControl::NoLoadInProgress) {
       // If the frame wasn't loading but was fallback-eligible, the fallback
       // content won't be shown. However, showing an error page isn't right
       // either, as the frame has already been populated with something
       // unrelated to this navigation failure. In that case, just send a stop
       // IPC to the browser to unwind its state, and leave the frame as-is.
-      AbortCommitNavigation(std::move(callback),
-                            blink::mojom::CommitResult::Aborted);
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
-    } else {
-      AbortCommitNavigation(std::move(callback),
-                            blink::mojom::CommitResult::Ok);
     }
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
@@ -3802,9 +3762,9 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   // was not initiated through BeginNavigation, therefore
   // |was_initiated_in_this_frame| is false.
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
-      *common_params, *commit_params, base::TimeTicks(), std::move(callback),
-      std::move(per_navigation_mojo_interface_callback),
-      std::move(navigation_client_impl_), ResourceDispatcher::MakeRequestID(),
+      *common_params, *commit_params, base::TimeTicks(), base::NullCallback(),
+      std::move(callback), std::move(navigation_client_impl_),
+      ResourceDispatcher::MakeRequestID(),
       false /* was_initiated_in_this_frame */);
 
   // The load of the error page can result in this frame being removed.
@@ -7386,13 +7346,13 @@ bool RenderFrameImpl::ShouldThrottleDownload() {
 void RenderFrameImpl::AbortCommitNavigation(
     mojom::FrameNavigationControl::CommitNavigationCallback callback,
     blink::mojom::CommitResult reason) {
-  DCHECK(callback || IsPerNavigationMojoInterfaceEnabled());
+  DCHECK(callback || navigation_client_impl_);
   // The callback will trigger
   // RenderFrameHostImpl::OnCrossDocumentCommitProcessed() as will the interface
-  // disconnection. Note: We are using the callback and not the flag to
-  // determine if NavigationClient::CommitNavigation was used, because in
-  // certain cases we use the old path even when the flag is on (e.g. some
-  // interstitials).
+  // disconnection. Note: We are using the callback to determine if
+  // NavigationClient::CommitNavigation was used, because in certain cases we
+  // still use the old FrameNavigationControl path (e.g. some interstitials).
+  // TODO(ahemery): Update when https://crbug.com/448486 is done.
   if (callback) {
     std::move(callback).Run(reason);
   } else {

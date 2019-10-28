@@ -15,5 +15,5 @@ deps = [
 ]
 type_mappings = [
   "blink.mojom.TransferableMessage=::blink::BlinkTransferableMessage[move_only]",
-  "blink.mojom.SerializedArrayBufferContents=::WTF::ArrayBufferContents[move_only]",
+  "blink.mojom.SerializedArrayBufferContents=::blink::ArrayBufferContents[move_only]",
 ]

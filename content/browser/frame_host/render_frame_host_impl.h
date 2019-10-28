@@ -1269,18 +1269,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
           subresource_loader_factories);
 
   // The Build*Callback functions below are responsible for building the
-  // callbacks for possible Interface/Commit type combinations.
+  // callbacks for either successful or failed commits.
   // Protected because they need to be called from test overrides.
-  mojom::FrameNavigationControl::CommitNavigationCallback
-  BuildCommitNavigationCallback(NavigationRequest* navigation_request);
-  mojom::FrameNavigationControl::CommitFailedNavigationCallback
-  BuildCommitFailedNavigationCallback(NavigationRequest* navigation_request);
   mojom::NavigationClient::CommitNavigationCallback
-  BuildNavigationClientCommitNavigationCallback(
-      NavigationRequest* navigation_request);
+  BuildCommitNavigationCallback(NavigationRequest* navigation_request);
   mojom::NavigationClient::CommitFailedNavigationCallback
-  BuildNavigationClientCommitFailedNavigationCallback(
-      NavigationRequest* navigation_request);
+  BuildCommitFailedNavigationCallback(NavigationRequest* navigation_request);
 
  private:
   friend class RenderFrameHostFeaturePolicyTest;

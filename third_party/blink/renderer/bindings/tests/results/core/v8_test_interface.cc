@@ -1506,7 +1506,7 @@ static void VoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
   TestInterfaceEmpty* test_interface_empty_arg;
   test_interface_empty_arg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!test_interface_empty_arg) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface", "parameter 1 is not of type 'TestInterfaceEmpty'."));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface", ExceptionMessages::ArgumentNotOfType(0, "TestInterfaceEmpty")));
     return;
   }
 
@@ -1740,7 +1740,7 @@ static void OverloadMethodWithExposedAndRuntimeEnabledFlag3Method(const v8::Func
   DOMWindow* window;
   window = ToDOMWindow(info.GetIsolate(), info[0]);
   if (!window) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadMethodWithExposedAndRuntimeEnabledFlag", "TestInterface", "parameter 1 is not of type 'Window'."));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadMethodWithExposedAndRuntimeEnabledFlag", "TestInterface", ExceptionMessages::ArgumentNotOfType(0, "Window")));
     return;
   }
 
@@ -1854,7 +1854,7 @@ static void PromiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v
   DOMWindow* window;
   window = ToDOMWindow(info.GetIsolate(), info[0]);
   if (!window) {
-    exception_state.ThrowTypeError("parameter 1 is not of type 'Window'.");
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(0, "Window"));
     return;
   }
 
@@ -2063,7 +2063,7 @@ static void MixinComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 
   test_interface_empty_arg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!test_interface_empty_arg) {
-    exception_state.ThrowTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(1, "TestInterfaceEmpty"));
     return;
   }
 

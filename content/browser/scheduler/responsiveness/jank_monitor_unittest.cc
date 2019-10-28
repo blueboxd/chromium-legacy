@@ -92,6 +92,7 @@ class JankMonitorTest : public testing::Test {
   void TearDown() override {
     if (!monitor_)  // Already teared down.
       return;
+    monitor_->RemoveObserver(&test_observer_);
     monitor_->Destroy();
     task_environment_.RunUntilIdle();
     monitor_ = nullptr;
@@ -116,6 +117,7 @@ TEST_F(JankMonitorTest, LifeCycle) {
   EXPECT_FALSE(monitor_->destroy_on_monitor_thread_called());
 
   // Test that the monitor thread is destroyed.
+  monitor_->RemoveObserver(&test_observer_);
   monitor_->Destroy();
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(monitor_->destroy_on_monitor_thread_called());
@@ -321,7 +323,7 @@ class TestJankMonitorShutdownRace : public JankMonitor {
 };
 
 // Test that shutdown race with the monitor timer doesn't happen.
-TEST(JankMonitorShutdownTest, ShutdownRace) {
+TEST(JankMonitorShutdownTest, ShutdownRace_TimerRestarted) {
   content::BrowserTaskEnvironment task_environment;
 
   // Use WaitableEvent to control the progress of shutdown sequence.
@@ -348,6 +350,66 @@ TEST(JankMonitorShutdownTest, ShutdownRace) {
   // The monitor thread should be shut down with MetricSource destroyed, i.e.
   // the monitor timer shouldn't be restarted.
   EXPECT_FALSE(jank_monitor->timer_running());
+}
+
+class TestJankMonitorShutdownRaceTimerFired : public JankMonitor {
+ public:
+  TestJankMonitorShutdownRaceTimerFired(
+      content::BrowserTaskEnvironment* task_environment)
+      : task_environment_(task_environment) {}
+
+  bool monitor_timer_fired() const { return monitor_timer_fired_; }
+
+ protected:
+  ~TestJankMonitorShutdownRaceTimerFired() override = default;
+
+  std::unique_ptr<MetricSource> CreateMetricSource() override {
+    return std::make_unique<TestMetricSource>(this);
+  }
+
+  void FinishDestroyMetricSource() override {
+    // Forward by 1 ms to trigger the monitor timer. This shouldn't crash even
+    // after MetricSource is destroyed.
+    task_environment_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+
+    JankMonitor::FinishDestroyMetricSource();
+  }
+
+  void OnCheckJankiness() override {
+    JankMonitor::OnCheckJankiness();
+    monitor_timer_fired_ = true;
+  }
+
+ private:
+  content::BrowserTaskEnvironment* task_environment_;
+  bool monitor_timer_fired_ = false;
+};
+
+// Test that the monitor timer shouldn't race with shutdown of MetricSource and
+// then crashes.
+TEST(JankMonitorShutdownTest, ShutdownRace_TimerFired) {
+  content::BrowserTaskEnvironment task_environment(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+
+  scoped_refptr<TestJankMonitorShutdownRaceTimerFired> jank_monitor =
+      base::MakeRefCounted<TestJankMonitorShutdownRaceTimerFired>(
+          &task_environment);
+  jank_monitor->SetUp();
+  task_environment.RunUntilIdle();
+
+  // Fast-forward by 499 ms. This shouldn't trigger the monitor timer.
+  static constexpr base::TimeDelta kCheckInterval =
+      base::TimeDelta::FromMilliseconds(500);
+  task_environment.FastForwardBy(kCheckInterval -
+                                 base::TimeDelta::FromMilliseconds(1));
+
+  EXPECT_FALSE(jank_monitor->monitor_timer_fired());
+
+  jank_monitor->Destroy();
+  task_environment.RunUntilIdle();
+
+  // The timer fires, but we shouldn't crash.
+  EXPECT_TRUE(jank_monitor->monitor_timer_fired());
 }
 
 #undef VALIDATE_TEST_OBSERVER_CALLS

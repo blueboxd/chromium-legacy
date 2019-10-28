@@ -2050,11 +2050,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-backup", flag_descriptions::kCrostiniBackupName,
      flag_descriptions::kCrostiniBackupDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniBackup)},
+    {"terminal-system-app", flag_descriptions::kTerminalSystemAppName,
+     flag_descriptions::kTerminalSystemAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kTerminalSystemApp)},
+    {"terminal-system-app-splits",
+     flag_descriptions::kTerminalSystemAppSplitsName,
+     flag_descriptions::kTerminalSystemAppSplitsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kTerminalSystemAppSplits)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-    {"terminal-system-app", flag_descriptions::kTerminalSystemAppName,
-     flag_descriptions::kTerminalSystemAppDescription, kOsCrOS | kOsLinux,
-     FEATURE_VALUE_TYPE(features::kTerminalSystemApp)},
 #if BUILDFLAG(USE_TCMALLOC)
     {"dynamic-tcmalloc-tuning", flag_descriptions::kDynamicTcmallocName,
      flag_descriptions::kDynamicTcmallocDescription, kOsCrOS | kOsLinux,

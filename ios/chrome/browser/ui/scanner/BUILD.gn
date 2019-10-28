@@ -22,6 +22,7 @@ source_set("scanner") {
     "video_preview_view.mm",
   ]
   deps = [
+    ":camera_state",
     "resources:scanner_torch_off",
     "resources:scanner_torch_on",
     "//base",
@@ -38,5 +39,11 @@ source_set("scanner") {
   libs = [
     "AVFoundation.framework",
     "UIKit.framework",
+  ]
+}
+
+source_set("camera_state") {
+  sources = [
+    "camera_state.h",
   ]
 }

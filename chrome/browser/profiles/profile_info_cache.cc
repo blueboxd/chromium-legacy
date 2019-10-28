@@ -233,7 +233,7 @@ base::string16 ProfileInfoCache::GetNameToDisplayOfProfileAtIndex(
 }
 
 base::string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
-  DCHECK(!base::FeatureList::IsEnabled(kConcatenateGaiaAndProfileName));
+  DCHECK(!ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName());
   base::string16 name;
   // Unless the user has customized the profile name, we should use the
   // profile's Gaia given name, if it's available.

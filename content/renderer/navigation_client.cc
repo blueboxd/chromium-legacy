@@ -54,7 +54,7 @@ void NavigationClient::CommitFailedNavigation(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     CommitFailedNavigationCallback callback) {
   ResetDisconnectionHandler();
-  render_frame_->CommitFailedPerNavigationMojoInterfaceNavigation(
+  render_frame_->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
       has_stale_copy_in_cache, error_code, error_page_content,
       std::move(subresource_loaders), std::move(callback));

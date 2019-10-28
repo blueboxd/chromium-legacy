@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 
 #include <memory>
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/float32_array.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_options.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
@@ -36,7 +37,6 @@
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/float32_array.h"
 
 namespace blink {
 
@@ -145,14 +145,14 @@ bool AudioBuffer::CreatedSuccessfully(
 DOMFloat32Array* AudioBuffer::CreateFloat32ArrayOrNull(
     uint32_t length,
     InitializationPolicy policy) {
-  scoped_refptr<WTF::Float32Array> buffer;
+  scoped_refptr<Float32Array> buffer;
 
   switch (policy) {
     case kZeroInitialize:
-      buffer = WTF::Float32Array::CreateOrNull(length);
+      buffer = Float32Array::CreateOrNull(length);
       break;
     case kDontInitialize:
-      buffer = WTF::Float32Array::CreateUninitializedOrNull(length);
+      buffer = Float32Array::CreateUninitializedOrNull(length);
       break;
     default:
       NOTREACHED();

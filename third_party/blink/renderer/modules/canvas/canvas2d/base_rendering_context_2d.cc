@@ -1612,13 +1612,12 @@ ImageData* BaseRenderingContext2D::getImageData(
   bool may_have_stray_area =
       IsAccelerated()  // GPU readback may fail silently.
       || StaticBitmapImage::MayHaveStrayArea(snapshot, image_data_rect);
-  WTF::ArrayBufferContents::InitializationPolicy initialization_policy =
-      may_have_stray_area ? WTF::ArrayBufferContents::kZeroInitialize
-                          : WTF::ArrayBufferContents::kDontInitialize;
+  ArrayBufferContents::InitializationPolicy initialization_policy =
+      may_have_stray_area ? ArrayBufferContents::kZeroInitialize
+                          : ArrayBufferContents::kDontInitialize;
 
-  WTF::ArrayBufferContents contents(size_in_bytes, 1,
-                                    WTF::ArrayBufferContents::kNotShared,
-                                    initialization_policy);
+  ArrayBufferContents contents(
+      size_in_bytes, 1, ArrayBufferContents::kNotShared, initialization_policy);
   if (contents.DataLength() != size_in_bytes) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;

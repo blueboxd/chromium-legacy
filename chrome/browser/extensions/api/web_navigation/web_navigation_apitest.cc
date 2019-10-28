@@ -50,8 +50,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/web/web_context_menu_data.h"
 
 using content::ResourceType;
 using content::WebContents;
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
   // This corresponds to "Open link in new tab".
   content::ContextMenuParams params;
   params.is_editable = false;
-  params.media_type = blink::WebContextMenuData::kMediaTypeNone;
+  params.media_type = blink::ContextMenuDataMediaType::kNone;
   params.page_url = url;
   params.link_url = extension->GetResourceURL("b.html");
 

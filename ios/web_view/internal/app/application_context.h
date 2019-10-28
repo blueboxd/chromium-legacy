@@ -90,7 +90,7 @@ class ApplicationContext {
   std::string application_locale_;
 
   mojo::Remote<network::mojom::NetworkContext> network_context_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;
 

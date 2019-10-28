@@ -103,7 +103,7 @@ public class AccessibilitySnapshotTest {
         Assert.assertEquals(1, child.children.size());
         Assert.assertEquals("", child.text);
         AccessibilitySnapshotNode grandChild = child.children.get(0);
-        Assert.assertEquals(1, grandChild.children.size());
+        Assert.assertEquals(0, grandChild.children.size());
         Assert.assertEquals("Click", grandChild.text);
     }
 

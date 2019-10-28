@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -218,6 +219,18 @@ class CrostiniManagerTest : public testing::Test {
         vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::SUCCEEDED);
 
     fake_cicerone_client_->NotifyApplyAnsiblePlaybookProgress(signal);
+  }
+
+  void SetAnsibleInfra() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kCrostiniAnsibleInfrastructure);
+    base::FilePath ansible_playbook_file_path =
+        profile_->GetPath().AppendASCII("playbook.yaml");
+    const char playbook[] = "---";
+    base::WriteFile(ansible_playbook_file_path, playbook, strlen(playbook));
+    profile_->GetPrefs()->SetFilePath(prefs::kCrostiniAnsiblePlaybookFilePath,
+                                      ansible_playbook_file_path);
   }
 
   base::RunLoop* run_loop() { return run_loop_.get(); }
@@ -1541,9 +1554,7 @@ TEST_F(CrostiniManagerTest, StartContainerSuccess) {
 }
 
 TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraInstallFailure) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kCrostiniAnsibleInfrastructure);
+  SetAnsibleInfra();
 
   // Response for failed Ansible installation.
   vm_tools::cicerone::InstallLinuxPackageResponse install_response;
@@ -1560,9 +1571,7 @@ TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraInstallFailure) {
 }
 
 TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraApplicationFailure) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kCrostiniAnsibleInfrastructure);
+  SetAnsibleInfra();
 
   // Response for successful Ansible installation.
   vm_tools::cicerone::InstallLinuxPackageResponse install_response;
@@ -1590,9 +1599,7 @@ TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraApplicationFailure) {
 }
 
 TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraSuccess) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kCrostiniAnsibleInfrastructure);
+  SetAnsibleInfra();
 
   // Response for successful Ansible installation.
   vm_tools::cicerone::InstallLinuxPackageResponse install_response;

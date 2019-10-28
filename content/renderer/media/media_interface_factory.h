@@ -15,6 +15,7 @@
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "url/gurl.h"
 
 namespace service_manager {
@@ -48,13 +49,15 @@ class CONTENT_EXPORT MediaInterfaceFactory
 #if defined(OS_ANDROID)
   void CreateFlingingRenderer(
       const std::string& presentation_id,
-      media::mojom::FlingingRendererClientExtensionPtr client_extension,
-      media::mojom::RendererRequest request) final;
+      mojo::PendingRemote<media::mojom::FlingingRendererClientExtension>
+          client_extension,
+      mojo::PendingReceiver<media::mojom::Renderer> receiver) final;
   void CreateMediaPlayerRenderer(
-      media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
-      media::mojom::RendererRequest request,
-      media::mojom::MediaPlayerRendererExtensionRequest
-          renderer_extension_request) final;
+      mojo::PendingRemote<media::mojom::MediaPlayerRendererClientExtension>
+          client_extension_remote,
+      mojo::PendingReceiver<media::mojom::Renderer> receiver,
+      mojo::PendingReceiver<media::mojom::MediaPlayerRendererExtension>
+          renderer_extension_receiver) final;
 #endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
                  media::mojom::ContentDecryptionModuleRequest request) final;

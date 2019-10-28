@@ -132,6 +132,7 @@ class TabWebContentsDelegateAndroid
   bool ShouldEnableEmbeddedMediaExperience() const;
   bool IsPictureInPictureEnabled() const;
   bool IsNightModeEnabled() const;
+  bool CanShowAppBanners() const;
   const GURL GetManifestScope() const;
 
  private:

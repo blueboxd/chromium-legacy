@@ -191,7 +191,6 @@ class RawFileElementReader : public net::UploadFileElementReader {
   DISALLOW_COPY_AND_ASSIGN(RawFileElementReader);
 };
 
-// TODO: copied from content/browser/loader/upload_data_stream_builder.cc.
 std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
     ResourceRequestBody* body,
     std::vector<base::File>& opened_files,
@@ -331,6 +330,7 @@ URLLoader::URLLoader(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const mojom::URLLoaderFactoryParams* factory_params,
     uint32_t request_id,
+    int keepalive_request_size,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
     base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
@@ -347,6 +347,7 @@ URLLoader::URLLoader(
       factory_params_(factory_params),
       render_frame_id_(request.render_frame_id),
       request_id_(request_id),
+      keepalive_request_size_(keepalive_request_size),
       keepalive_(request.keepalive),
       do_not_prompt_for_login_(request.do_not_prompt_for_login),
       binding_(this, std::move(url_loader_request)),
@@ -474,21 +475,9 @@ URLLoader::URLLoader(
         base::Bind(&URLLoader::SetRawResponseHeaders, base::Unretained(this)));
   }
 
-  if (keepalive_ && keepalive_statistics_recorder_)
-    keepalive_statistics_recorder_->OnLoadStarted(factory_params_->process_id);
-
-  if (keepalive_) {
-    const size_t url_size = request.url.spec().size();
-    size_t headers_size = 0;
-    for (const auto& pair : merged_headers.GetHeaderVector()) {
-      headers_size += (pair.key.size() + pair.value.size());
-    }
-
-    UMA_HISTOGRAM_COUNTS_10000("Net.KeepaliveRequest.UrlSize", url_size);
-    UMA_HISTOGRAM_COUNTS_10000("Net.KeepaliveRequest.HeadersSize",
-                               headers_size);
-    UMA_HISTOGRAM_COUNTS_10000("Net.KeepaliveRequest.UrlPlusHeadersSize",
-                               url_size + headers_size);
+  if (keepalive_ && keepalive_statistics_recorder_) {
+    keepalive_statistics_recorder_->OnLoadStarted(factory_params_->process_id,
+                                                  keepalive_request_size_);
   }
 
   // Resolve elements from request_body and prepare upload data.
@@ -677,8 +666,10 @@ void URLLoader::ScheduleStart() {
 
 URLLoader::~URLLoader() {
   RecordBodyReadFromNetBeforePausedIfNeeded();
-  if (keepalive_ && keepalive_statistics_recorder_)
-    keepalive_statistics_recorder_->OnLoadFinished(factory_params_->process_id);
+  if (keepalive_ && keepalive_statistics_recorder_) {
+    keepalive_statistics_recorder_->OnLoadFinished(factory_params_->process_id,
+                                                   keepalive_request_size_);
+  }
 }
 
 // static

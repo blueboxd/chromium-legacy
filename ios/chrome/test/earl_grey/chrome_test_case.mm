@@ -386,7 +386,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 // Dismisses and revert browser settings to default.
 // It also starts the HTTP server and enables mock authentication.
 + (void)setUpHelper {
-  XCTAssertTrue([ChromeEarlGrey isCustomWebKitLoadedIfRequested]);
+  GREYAssertTrue([ChromeEarlGrey isCustomWebKitLoadedIfRequested],
+                 @"Unable to load custom WebKit");
 
   [CoverageUtils configureCoverageReportPath];
 

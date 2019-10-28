@@ -748,13 +748,13 @@ TEST_F(NetExportFileWriterTest, StartWithNetworkContextActive) {
 
   ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
 
-  network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
   auto url_loader_factory_params =
       network::mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
   url_loader_factory_params->is_corb_enabled = false;
   network_context()->CreateURLLoaderFactory(
-      mojo::MakeRequest(&url_loader_factory),
+      url_loader_factory.BindNewPipeAndPassReceiver(),
       std::move(url_loader_factory_params));
 
   const char kRedirectURL[] = "/server-redirect?/block";

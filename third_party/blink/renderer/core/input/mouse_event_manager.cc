@@ -594,14 +594,10 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   for (; element; element = element->ParentOrShadowHostElement()) {
     if (element->IsFocusable() && element->IsFocusedElementInDocument())
       return WebInputEventResult::kNotHandled;
-    if (element->IsMouseFocusable() ||
-        (element->AuthorShadowRoot() &&
-         element->AuthorShadowRoot()->delegatesFocus()))
+    if (element->IsMouseFocusable() || element->DelegatesFocus())
       break;
   }
-  DCHECK(!element || element->IsMouseFocusable() ||
-         (element->AuthorShadowRoot() &&
-          element->AuthorShadowRoot()->delegatesFocus()));
+  DCHECK(!element || element->IsMouseFocusable() || element->DelegatesFocus());
 
   // To fix <rdar://problem/4895428> Can't drag selected ToDo, we don't focus
   // a node on mouse down if it's selected and inside a focused node. It will

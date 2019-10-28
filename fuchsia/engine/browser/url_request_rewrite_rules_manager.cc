@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 
+#include "base/strings/strcat.h"
 #include "fuchsia/base/string_util.h"
 #include "fuchsia/engine/url_request_rewrite_type_converters.h"
 #include "net/http/http_util.h"
@@ -16,6 +17,10 @@ using RoutingIdRewriterMap =
 RoutingIdRewriterMap& GetRewriterMap() {
   static base::NoDestructor<RoutingIdRewriterMap> rewriter_map;
   return *rewriter_map;
+}
+
+bool IsValidUrlHost(base::StringPiece host) {
+  return GURL(base::StrCat({url::kHttpScheme, "://", host})).is_valid();
 }
 
 bool ValidateAddHeaders(
@@ -83,8 +88,21 @@ bool ValidateRewrite(const fuchsia::web::UrlRequestRewrite& rewrite) {
 bool ValidateRules(
     const std::vector<fuchsia::web::UrlRequestRewriteRule>& rules) {
   for (const auto& rule : rules) {
-    if (rule.has_hosts_filter() && rule.hosts_filter().empty())
-      return false;
+    if (rule.has_hosts_filter()) {
+      if (rule.hosts_filter().empty())
+        return false;
+
+      const base::StringPiece kWildcard("*.");
+      for (const base::StringPiece host : rule.hosts_filter()) {
+        if (base::StartsWith(host, kWildcard, base::CompareCase::SENSITIVE)) {
+          if (!IsValidUrlHost(host.substr(2)))
+            return false;
+        } else {
+          if (!IsValidUrlHost(host))
+            return false;
+        }
+      }
+    }
     if (rule.has_schemes_filter() && rule.schemes_filter().empty())
       return false;
     if (!rule.has_rewrites())

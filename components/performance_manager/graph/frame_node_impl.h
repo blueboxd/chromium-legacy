@@ -172,7 +172,7 @@ class FrameNodeImpl
     ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
         mojom::InterventionPolicy,
         &FrameNodeObserver::OnOriginTrialFreezePolicyChanged>
-        origin_trial_freeze_policy{mojom::InterventionPolicy::kDefault};
+        origin_trial_freeze_policy{mojom::InterventionPolicy::kUnknown};
   };
 
   // Invoked by subframes on joining/leaving the graph.

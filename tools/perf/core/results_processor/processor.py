@@ -65,6 +65,7 @@ def ProcessResults(options):
 
   upload_bucket = options.upload_bucket
   results_label = options.results_label
+  max_num_values = options.max_values_per_test_case
   test_suite_start = (test_results[0]['startTime'] if test_results
                       else datetime.datetime.utcnow().isoformat() + 'Z')
   run_identifier = RunIdentifier(results_label, test_suite_start)
@@ -74,7 +75,7 @@ def ProcessResults(options):
   util.ApplyInParallel(
       lambda result: ProcessTestResult(
           result, upload_bucket, results_label, run_identifier,
-          test_suite_start, should_compute_metrics),
+          test_suite_start, should_compute_metrics, max_num_values),
       test_results,
       on_failure=lambda result: result.update(status='FAIL'),
   )
@@ -95,7 +96,8 @@ def ProcessResults(options):
 
 
 def ProcessTestResult(test_result, upload_bucket, results_label,
-                      run_identifier, test_suite_start, should_compute_metrics):
+                      run_identifier, test_suite_start, should_compute_metrics,
+                      max_num_values):
   AggregateTraces(test_result)
   if upload_bucket is not None:
     UploadArtifacts(test_result, upload_bucket, run_identifier)
@@ -104,13 +106,21 @@ def ProcessTestResult(test_result, upload_bucket, results_label,
     test_result['_histograms'] = histogram_set.HistogramSet()
     compute_metrics.ComputeTBMv2Metrics(test_result)
     ExtractMeasurements(test_result)
-    AddDiagnosticsToHistograms(test_result, test_suite_start, results_label)
+    num_values = len(test_result['_histograms'])
+    if max_num_values is not None and num_values > max_num_values:
+      logging.error('%s produced %d values, but only %d are allowed.',
+                    test_result['testPath'], num_values, max_num_values)
+      test_result['status'] = 'FAIL'
+      del test_result['_histograms']
+    else:
+      AddDiagnosticsToHistograms(test_result, test_suite_start, results_label)
 
 
 def ExtractHistograms(test_results):
   histograms = histogram_set.HistogramSet()
   for result in test_results:
-    histograms.Merge(result['_histograms'])
+    if '_histograms' in result:
+      histograms.Merge(result['_histograms'])
   histograms.DeduplicateDiagnostics()
   return histograms.AsDicts()
 

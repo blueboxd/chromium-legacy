@@ -123,6 +123,12 @@ base::string16 CreateNotificationTitle(
 
 bool IsPersistentNotification(
     const message_center::Notification& notification) {
+  // TODO(crbug.com/1007418): Remove this and find a way to show alert style
+  // notifications in 10.15 and above. At least show them as banners until then
+  // as a temporary workaround.
+  if (base::mac::IsAtLeastOS10_15())
+    return false;
+
   return notification.never_timeout() ||
          notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS;
 }

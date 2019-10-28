@@ -20,9 +20,11 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -118,6 +120,66 @@ class MockContentBrowserClient final : public ContentBrowserClient {
   std::string accept_langs_ = "en";
 };
 
+// Histograms: PrefetchedSignedExchangeCache.* are recorded when the current
+// document is replaced by a new one:
+// (a) If the new document is loaded in a new RenderFrameHost. The histogram is
+//     recorded in the old RenderFrameHost destructor.
+// (b) If the new document is loaded inside the same RenderFrameHost, it is
+//     recorded in RenderFrameHost::CommitNavigation().
+//
+// Note: The RenderDocument project will remove code path (b).
+//
+// In (a), since the deletion of a RenderFrameHost is asynchronous, it caused
+// several tests to be flaky. The tests weren't waiting for the RenderFrameHost
+// deletion before checking the histograms. See https://crbug.com/1016865
+//
+// Use this class for waiting any RenderFrameHost pending deletion or inside the
+// BackForwardCache to be deleted
+class InactiveRenderFrameHostDeletionObserver : public WebContentsObserver {
+ public:
+  InactiveRenderFrameHostDeletionObserver(WebContents* content)
+      : WebContentsObserver(content) {
+    // |rfh_count_| starts at zero, because we expect to start counting when
+    // there are zero active RenderFrameHost.
+    EXPECT_EQ(1u, content->GetAllFrames().size());
+    EXPECT_FALSE(content->GetAllFrames()[0]->IsRenderFrameLive());
+  }
+  ~InactiveRenderFrameHostDeletionObserver() override = default;
+
+  void Wait() {
+    // Some RenderFrameHost may remain in the BackForwardCache. Request
+    // releasing them. This is asynchronous.
+    static_cast<WebContentsImpl*>(web_contents())
+        ->GetController()
+        .GetBackForwardCache()
+        .Flush();
+
+    loop_ = std::make_unique<base::RunLoop>();
+    target_rfh_count_ = web_contents()->GetAllFrames().size();
+    CheckCondition();
+    loop_->Run();
+  }
+
+ private:
+  void RenderFrameCreated(RenderFrameHost*) override { rfh_count_++; }
+
+  void RenderFrameDeleted(RenderFrameHost*) override {
+    rfh_count_--;
+    CheckCondition();
+  }
+
+  void CheckCondition() {
+    if (loop_ && rfh_count_ == target_rfh_count_)
+      loop_->Quit();
+  }
+
+  std::unique_ptr<base::RunLoop> loop_;
+  int rfh_count_ = 0;
+  int target_rfh_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(InactiveRenderFrameHostDeletionObserver);
+};
+
 }  // namespace
 
 class SignedExchangeRequestHandlerBrowserTestBase
@@ -138,6 +200,10 @@ class SignedExchangeRequestHandlerBrowserTestBase
 
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
+
+    inactive_rfh_deletion_observer_ =
+        std::make_unique<InactiveRenderFrameHostDeletionObserver>(
+            shell()->web_contents());
 #if defined(OS_ANDROID)
     // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
     // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
@@ -183,6 +249,9 @@ class SignedExchangeRequestHandlerBrowserTestBase
     partition->GetPrefetchURLLoaderService()->SetAcceptLanguages(langs);
     return true;
   }
+
+  std::unique_ptr<InactiveRenderFrameHostDeletionObserver>
+      inactive_rfh_deletion_observer_;
 
   const base::HistogramTester histogram_tester_;
 
@@ -281,13 +350,6 @@ class SignedExchangeRequestHandlerBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
-#if defined(OS_CHROMEOS)
-  // https://crbug.com/1016865 tracks the test failures on CrOS that are only
-  // happening in the mode special-cased below.
-  if (UsePrefetch() && SXGPrefetchCacheIsEnabled())
-    return;
-#endif
-
   InstallMockCert();
   InstallMockCertChainInterceptor();
 
@@ -337,6 +399,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
       net::X509Certificate::CalculateFingerprint256(
           original_cert->cert_buffer());
   EXPECT_EQ(original_fingerprint, fingerprint);
+
+  inactive_rfh_deletion_observer_->Wait();
   histogram_tester_.ExpectUniqueSample(
       kLoadResultHistogram, SignedExchangeLoadResult::kSuccess,
       (UsePrefetch() && !SXGPrefetchCacheIsEnabled()) ? 2 : 1);
@@ -362,13 +426,6 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, VariantMatch) {
-#if defined(OS_CHROMEOS)
-  // https://crbug.com/1016865 tracks the test failures on CrOS that are only
-  // happening in the mode special-cased below.
-  if (UsePrefetch() && SXGPrefetchCacheIsEnabled())
-    return;
-#endif
-
   if (!SetAcceptLangs("en-US,fr"))
     return;
   InstallUrlInterceptor(
@@ -398,6 +455,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, VariantMatch) {
       shell()->web_contents(),
       base::StringPrintf("location.href = '%s';", url.spec().c_str())));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+
+  inactive_rfh_deletion_observer_->Wait();
   histogram_tester_.ExpectUniqueSample(
       kLoadResultHistogram, SignedExchangeLoadResult::kSuccess,
       (UsePrefetch() && !SXGPrefetchCacheIsEnabled()) ? 2 : 1);

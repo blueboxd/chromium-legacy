@@ -222,21 +222,25 @@ const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kPrintServerUi{"PrintServerUi",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allow a Wilco DTC (diagnostics and telemetry controller) on Chrome OS.
-// More info about the project may be found here:
-// https://docs.google.com/document/d/18Ijj8YlC8Q3EWRzLspIi2dGxg4vIBVe5sJgMPt9SWYo
-const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable uploading of a zip archive of system logs instead of individual files.
-const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Enable chrome://terminal.  Terminal System App will only run on
 // OS_CHROMEOS, but this flag must be defined for all platforms since
 // it is required for SystemWebApp tests.
 const base::Feature kTerminalSystemApp{"TerminalSystemApp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable splits in the Terminal System App.
+const base::Feature kTerminalSystemAppSplits{"TerminalSystemAppSplits",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable uploading of a zip archive of system logs instead of individual files.
+const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allow a Wilco DTC (diagnostics and telemetry controller) on Chrome OS.
+// More info about the project may be found here:
+// https://docs.google.com/document/d/18Ijj8YlC8Q3EWRzLspIi2dGxg4vIBVe5sJgMPt9SWYo
+const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Enable using tab sharing infobars for desktop capture.
 const base::Feature kDesktopCaptureTabSharingInfobar{

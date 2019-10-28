@@ -302,22 +302,21 @@ public class SigninPromoController {
     private void signinWithNewAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNewAccountUserActionName);
-        context.startActivity(
-                SigninActivity.createIntentForPromoAddAccountFlow(context, mAccessPoint));
+        SigninActivityLauncher.get().launchActivityForPromoAddAccountFlow(context, mAccessPoint);
     }
 
     private void signinWithDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninWithDefaultUserActionName);
-        context.startActivity(SigninActivity.createIntentForPromoDefaultFlow(
-                context, mAccessPoint, mProfileData.getAccountName()));
+        SigninActivityLauncher.get().launchActivityForPromoDefaultFlow(
+                context, mAccessPoint, mProfileData.getAccountName());
     }
 
     private void signinWithNotDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNotDefaultUserActionName);
-        context.startActivity(SigninActivity.createIntentForPromoChooseAccountFlow(
-                context, mAccessPoint, mProfileData.getAccountName()));
+        SigninActivityLauncher.get().launchActivityForPromoChooseAccountFlow(
+                context, mAccessPoint, mProfileData.getAccountName());
     }
 
     private void recordSigninButtonUsed() {

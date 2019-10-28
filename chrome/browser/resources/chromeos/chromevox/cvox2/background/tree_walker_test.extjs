@@ -210,10 +210,6 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootPredicateEnding', function() {
     var forwardWalker =
         new AutomationTreeWalker(r.firstChild.lastChild, 'forward',
             {root: function(node) { return node === r; }});
-    // Advance to the static text box of button contains text "Forward".
-    assertEquals('Forward', forwardWalker.next().node.name);
-    // Advance to the inline text box of button contains text "Forward".
-    assertEquals('Forward', forwardWalker.next().node.name);
     assertEquals(null, forwardWalker.next().node);
   });
 });

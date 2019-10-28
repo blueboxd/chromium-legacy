@@ -24,12 +24,12 @@
 
 namespace network {
 
-// Typemapped to network.mojom::URLRequest, see comments there for details of
-// each field.
+// Typemapped to network.mojom.URLRequest in url_loader.mojom.
+//
 // Note: Please revise EqualsForTesting accordingly on any updates to this
 // struct.
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
-  // Typemapped to network.mojom::TrustedUrlRequestParams, see comments there
+  // Typemapped to network.mojom.TrustedUrlRequestParams, see comments there
   // for details of each field.
   //
   // TODO(mmenke):  There are likely other fields that should be moved into this
@@ -54,57 +54,15 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool SendsCookies() const;
   bool SavesCookies() const;
 
+  // See comments in network.mojom.URLRequest in url_loader.mojom for details
+  // of each field.
   std::string method = "GET";
   GURL url;
   GURL site_for_cookies;
   bool attach_same_site_cookies = false;
   bool update_first_party_url_on_redirect = false;
-
-  // |request_initiator| indicates the origin initiating the ResourceRequest.
-  //
-  // |request_initiator| is base::nullopt for browser-initiated requests (e.g.
-  // navigations initiated via omnibox or bookmarks, internal subrsource
-  // requests like fetching the SafeBrowsing data, etc.).
-  //
-  // For all requests initiated via web (both subresource requests and
-  // navigations), |request_initiator| is always set to the origin of the frame
-  // that has initiated the request.  This is true even if the request might
-  // have been initiated by an isolated world (e.g. from a content script of an
-  // extension, with its own, separate origin).  This needs to be true even if
-  // the request might be "proxied" in the browser process on behalf of a web
-  // origin (e.g. as is the case for PaymentRequest API).
-  //
-  // |request_initiator| is consulted in a variety of security features,
-  // including: calculating Sec-Fetch-Site request header, determining if the
-  // request should be subject to CORS, determining if CORB and/or CORP should
-  // block the response, determining if SameSite=strict cookies should be sent,
-  // etc.
-  //
-  // See also:
-  // - |isolated_world_origin|
-  // - URLLoaderFactoryParams::request_initiator_site_lock
   base::Optional<url::Origin> request_initiator;
-
-  // If this is a subresource request initiated from an isolated world (e.g.
-  // from a content script of a Chrome Extension), then |isolated_world_origin|
-  // indicates the origin of the isolated world.  Otherwise,
-  // |isolated_world_origin| is set to base::nullopt.
-  //
-  // Example #1: XHR initiated from a content script of chrome-extension://foo
-  // that was injected into a https://example.com web frame:
-  // - |request_initiator| is "https://example.com"
-  // - |isolated_world_origin| is "chrome-extension://foo"
-  //
-  // Example #2: XHR initiated from a Chrome Extension frame (e.g. from an
-  // extension background page):
-  // - |request_initiator| is "chrome-extension://foo"
-  // - |isolated_world_origin| is base::nullopt (this request is not associated
-  // with an isolated world)
-  //
-  // |isolated_world_origin| is consulted by OOR-CORS, to determine if this
-  // request might need to be exempt from CORS, based on OriginAccessList.
   base::Optional<url::Origin> isolated_world_origin;
-
   GURL referrer;
   net::URLRequest::ReferrerPolicy referrer_policy =
       net::URLRequest::NEVER_CLEAR_REFERRER;
@@ -148,7 +106,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool is_signed_exchange_prefetch_cache_enabled = false;
   bool obey_origin_policy = false;
   base::Optional<base::UnguessableToken> recursive_prefetch_token;
-
   base::Optional<TrustedParams> trusted_params;
 };
 

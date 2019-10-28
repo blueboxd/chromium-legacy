@@ -33,10 +33,11 @@ constexpr int kContainerCrashedEarly =
     static_cast<int>(ArcContainerLifetimeEvent::CONTAINER_CRASHED_EARLY);
 constexpr int kContainerCrashed =
     static_cast<int>(ArcContainerLifetimeEvent::CONTAINER_CRASHED);
+constexpr char kDefaultLocale[] = "en-US";
 
 UpgradeParams DefaultUpgradeParams() {
   UpgradeParams params;
-  params.locale = "en-US";
+  params.locale = kDefaultLocale;
   return params;
 }
 
@@ -294,6 +295,9 @@ TEST_F(ArcSessionRunnerTest, Restart) {
   EXPECT_TRUE(restarting_called());
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->is_running());
+  // Checks if the restart retains the original parameter.
+  EXPECT_EQ(std::string(kDefaultLocale),
+            arc_session()->upgrade_locale_param());
 
   arc_session_runner()->RequestStop();
   EXPECT_FALSE(arc_session());

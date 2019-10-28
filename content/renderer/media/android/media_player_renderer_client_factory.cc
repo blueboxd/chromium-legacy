@@ -32,27 +32,32 @@ MediaPlayerRendererClientFactory::CreateRenderer(
   // Used to send messages from the MPRC (Renderer process), to the MPR (Browser
   // process). The |renderer_extension_request| will be bound in
   // MediaPlayerRenderer.
-  media::mojom::MediaPlayerRendererExtensionPtr renderer_extension_ptr;
-  auto renderer_extension_request = mojo::MakeRequest(&renderer_extension_ptr);
+  mojo::PendingRemote<media::mojom::MediaPlayerRendererExtension>
+      renderer_extension_remote;
+  auto renderer_extension_receiver =
+      renderer_extension_remote.InitWithNewPipeAndPassReceiver();
 
   // Used to send messages from the MPR (Browser process), to the MPRC (Renderer
   // process). The |client_extension_request| will be bound in
   // MediaPlayerRendererClient.
-  media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr;
-  auto client_extension_request = mojo::MakeRequest(&client_extension_ptr);
+  mojo::PendingRemote<media::mojom::MediaPlayerRendererClientExtension>
+      client_extension_remote;
+  auto client_extension_receiver =
+      client_extension_remote.InitWithNewPipeAndPassReceiver();
 
   std::unique_ptr<media::MojoRenderer> mojo_renderer =
       mojo_renderer_factory_->CreateMediaPlayerRenderer(
-          std::move(renderer_extension_request),
-          std::move(client_extension_ptr), media_task_runner,
+          std::move(renderer_extension_receiver),
+          std::move(client_extension_remote), media_task_runner,
           video_renderer_sink);
 
   media::ScopedStreamTextureWrapper stream_texture_wrapper =
       get_stream_texture_wrapper_cb_.Run();
 
   return std::make_unique<MediaPlayerRendererClient>(
-      std::move(renderer_extension_ptr), std::move(client_extension_request),
-      media_task_runner, compositor_task_runner_, std::move(mojo_renderer),
+      std::move(renderer_extension_remote),
+      std::move(client_extension_receiver), media_task_runner,
+      compositor_task_runner_, std::move(mojo_renderer),
       std::move(stream_texture_wrapper), video_renderer_sink);
 }
 

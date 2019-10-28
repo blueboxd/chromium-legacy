@@ -154,7 +154,7 @@ class DriveApiRequestsTest : public testing::Test {
     params->process_id = network::mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
     network_context_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), std::move(params));
+        url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             url_loader_factory_.get());
@@ -230,7 +230,7 @@ class DriveApiRequestsTest : public testing::Test {
   std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
   std::unique_ptr<network::mojom::NetworkContextClient> network_context_client_;
   mojo::Remote<network::mojom::NetworkContext> network_context_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_loader_factory_;
   base::ScopedTempDir temp_dir_;

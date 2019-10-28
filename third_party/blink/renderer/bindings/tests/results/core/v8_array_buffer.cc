@@ -79,11 +79,11 @@ TestArrayBuffer* V8ArrayBuffer::ToImpl(v8::Local<v8::Object> object) {
   // Transfer the ownership of the allocated memory to an ArrayBuffer without
   // copying.
   v8::ArrayBuffer::Contents v8_contents = v8buffer->Externalize();
-  WTF::ArrayBufferContents::DataHandle data(v8_contents.Data(),
-                                            v8_contents.ByteLength(),
-                                            v8_contents.Deleter(),
-                                            v8_contents.DeleterData());
-  WTF::ArrayBufferContents contents(std::move(data), WTF::ArrayBufferContents::kNotShared);
+  ArrayBufferContents::DataHandle data(v8_contents.Data(),
+                                       v8_contents.ByteLength(),
+                                       v8_contents.Deleter(),
+                                       v8_contents.DeleterData());
+  ArrayBufferContents contents(std::move(data), ArrayBufferContents::kNotShared);
   TestArrayBuffer* buffer = TestArrayBuffer::Create(contents);
   v8::Local<v8::Object> associatedWrapper = buffer->AssociateWithWrapper(v8::Isolate::GetCurrent(), buffer->GetWrapperTypeInfo(), object);
   DCHECK(associatedWrapper == object);

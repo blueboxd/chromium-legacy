@@ -353,15 +353,9 @@ blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
 
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const WebURLRequest& request) {
-  bool block_mixed_plugin_content = false;
-  if (request.GetExtraData()) {
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
-    block_mixed_plugin_content = extra_data->block_mixed_plugin_content();
-  }
-
   return blink::WebMixedContent::ContextTypeFromRequestContext(
-      request.GetRequestContext(), block_mixed_plugin_content);
+      request.GetRequestContext(),
+      /*strict_mixed_content_checking_for_plugin=*/false);
 }
 
 #undef STATIC_ASSERT_ENUM

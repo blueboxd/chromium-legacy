@@ -116,24 +116,9 @@ bool BrowserAccessibility::PlatformIsLeafIncludingIgnored() const {
 
   // Roles whose children are only presentational according to the ARIA and
   // HTML5 Specs should be hidden from screen readers.
+  // (Note that whilst ARIA buttons can have only presentational children, HTML5
+  // buttons are allowed to have content.)
   switch (GetRole()) {
-    // According to the ARIA and Core-AAM specs:
-    // https://w3c.github.io/aria/#button,
-    // https://www.w3.org/TR/core-aam-1.1/#exclude_elements
-    // button's children are presentational only and should be hidden from
-    // screen readers. However, we cannot enforce the leafiness of buttons
-    // because they may contain many rich, interactive descendants such as a day
-    // in a calendar, and screen readers will need to interact with these
-    // contents. See https://crbug.com/689204.
-    // So we decided to not enforce the leafiness of buttons and expose all
-    // children. The only exception to enforce leafiness is when the button has
-    // a single text child and to prevent screen readers from double speak.
-    case ax::mojom::Role::kButton: {
-      if (InternalChildCount() == 1 &&
-          InternalGetFirstChild()->IsTextOnlyObject())
-        return true;
-      return false;
-    }
     case ax::mojom::Role::kDocCover:
     case ax::mojom::Role::kGraphicsSymbol:
     case ax::mojom::Role::kImage:

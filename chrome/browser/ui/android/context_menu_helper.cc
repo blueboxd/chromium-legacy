@@ -25,7 +25,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/context_menu_params.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/web/web_context_menu_data.h"
+#include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point.h"
@@ -149,7 +149,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
 
   base::android::ScopedJavaLocalRef<jobject> jmenu_info =
       ContextMenuParamsAndroid::Java_ContextMenuParams_create(
-          env, params.media_type,
+          env, static_cast<int>(params.media_type),
           ConvertUTF8ToJavaString(env, params.page_url.spec()),
           ConvertUTF8ToJavaString(env, params.link_url.spec()),
           ConvertUTF16ToJavaString(env, params.link_text),

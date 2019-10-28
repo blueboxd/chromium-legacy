@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/lock_observer.h"
 #include "content/public/browser/render_process_host.h"
@@ -14,7 +15,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -76,36 +76,19 @@ class LockManagerBrowserTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    // This is required to allow navigation to test https:// URLs. Service
-    // workers are not exposed to http:// URLs.
-    cert_verifier_.SetUpCommandLine(command_line);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    ContentBrowserTest::SetUpInProcessBrowserTestFixture();
-    cert_verifier_.SetUpInProcessBrowserTestFixture();
+    // This is required to allow navigation to test https:// URLs. Web Locks are
+    // not exposed to http:// URLs.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
-    // TODO(https://crbug.com/1011765): Navigation fails on Android Kit Kat.
-    if (!ShouldRunTest())
-      return;
-
     original_client_ = SetBrowserClientForTesting(&test_browser_client_);
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(server_.Start());
-
-    ASSERT_TRUE(NavigateToURL(shell(), GetLocksURL("a.com")));
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    ContentBrowserTest::TearDownInProcessBrowserTestFixture();
-    cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
   void TearDownOnMainThread() override {
@@ -114,19 +97,14 @@ class LockManagerBrowserTest : public ContentBrowserTest {
       SetBrowserClientForTesting(original_client_);
   }
 
-  bool ShouldRunTest() const {
+  bool CheckShouldRunTestAndNavigate() const {
 #if defined(OS_ANDROID)
     // Don't run the test if we couldn't override BrowserClient. It happens only
     // on Android Kitkat or older systems.
     if (!original_client_)
       return false;
-
-    // TODO(https://crbug.com/1011765): Navigation fails on Android Kit Kat.
-    if (base::android::BuildInfo::GetInstance()->sdk_int() <=
-        base::android::SDK_VERSION_KITKAT) {
-      return false;
-    }
-#endif
+#endif  // defined(OS_ANDROID)
+    EXPECT_TRUE(NavigateToURL(shell(), GetLocksURL("a.com")));
     return true;
   }
 
@@ -137,7 +115,6 @@ class LockManagerBrowserTest : public ContentBrowserTest {
   testing::StrictMock<MockObserver> mock_observer_;
 
  private:
-  ContentMockCertVerifier cert_verifier_;
   net::EmbeddedTestServer server_{net::EmbeddedTestServer::TYPE_HTTPS};
   ContentBrowserClient* original_client_ = nullptr;
   TestBrowserClient test_browser_client_{&mock_observer_};
@@ -149,7 +126,7 @@ class LockManagerBrowserTest : public ContentBrowserTest {
 // Verify that content::LockObserver is notified when a frame acquires a single
 // locks.
 IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverSingleLock) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -183,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverSingleLock) {
 // locks (notifications only when the number of held locks switches between zero
 // and non-zero).
 IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverTwoLocks) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -227,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverTwoLocks) {
 // Verify that content::LockObserver is notified that a frame stopped holding
 // locks when it is navigated away.
 IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverNavigate) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -259,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverNavigate) {
 // Verify that content::LockObserver is notified when a frame steals a lock from
 // another frame.
 IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverStealLock) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -307,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverStealLock) {
 // Verify that content::LockObserver is *not* notified when a lock is acquired
 // by a dedicated worker.
 IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverDedicatedWorker) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -331,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverDedicatedWorker) {
 // Verify that content::LockObserver is *not* notified when a lock is acquired
 // by a shared worker.
 IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverSharedWorker) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -354,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverSharedWorker) {
 // Verify that content::LockObserver is *not* notified when a lock is acquired
 // by a service worker.
 IN_PROC_BROWSER_TEST_F(LockManagerBrowserTest, ObserverServiceWorker) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();

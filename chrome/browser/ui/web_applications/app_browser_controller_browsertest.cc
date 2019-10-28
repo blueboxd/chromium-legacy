@@ -28,7 +28,9 @@ class AppBrowserControllerBrowserTest
     : public extensions::ExtensionBrowserTest {
  public:
   AppBrowserControllerBrowserTest() {
+#if defined(OS_CHROMEOS)
     scoped_feature_list_.InitWithFeatures({}, {features::kTerminalSystemApp});
+#endif
   }
 
   ~AppBrowserControllerBrowserTest() override {}
@@ -103,7 +105,7 @@ class AppBrowserControllerBrowserTest
   DISALLOW_COPY_AND_ASSIGN(AppBrowserControllerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, SomeTest) {
+IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
   InstallAndLaunchTerminalApp();
 

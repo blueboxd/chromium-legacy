@@ -254,40 +254,50 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
   if (dst_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     // Here, the content in |src_frame| is already copied to |dst_frame|, which
     // is a DMABUF based VideoFrame.
-    // Create GpuMemoryBufferHandle from |dst_frame|.
-    gfx::GpuMemoryBufferHandle gmb_handle;
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    gmb_handle = CreateGpuMemoryBufferHandle(dst_frame.get());
-#endif
-    if (gmb_handle.is_null() || gmb_handle.type != gfx::NATIVE_PIXMAP) {
-      LOG(ERROR) << "Failed to create native GpuMemoryBufferHandle";
-      return nullptr;
-    }
-
-    base::Optional<gfx::BufferFormat> buffer_format =
-        VideoPixelFormatToGfxBufferFormat(dst_layout.format());
-    if (!buffer_format) {
-      LOG(ERROR) << "Unexpected format: "
-                 << BufferFormatToString(*buffer_format);
-      return nullptr;
-    }
-
-    // Create GpuMemoryBuffer from GpuMemoryBufferHandle.
-    gpu::GpuMemoryBufferSupport support;
-    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
-        support.CreateGpuMemoryBufferImplFromHandle(
-            std::move(gmb_handle), dst_layout.coded_size(), *buffer_format,
-            gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
-            base::DoNothing());
-    gpu::MailboxHolder dummy_mailbox[media::VideoFrame::kMaxPlanes];
-    dst_frame = media::VideoFrame::WrapExternalGpuMemoryBuffer(
-        src_frame->visible_rect(), src_frame->visible_rect().size(),
-        std::move(gpu_memory_buffer), dummy_mailbox /* mailbox_holders */,
-        base::DoNothing() /* mailbox_holder_release_cb_ */,
-        src_frame->timestamp());
+    // Create GpuMemoryBuffer based VideoFrame from |dst_frame|.
+    dst_frame = CreateGpuMemoryBufferVideoFrame(
+        gpu_memory_buffer_factory, dst_frame.get(), *dst_buffer_usage);
   }
 
   return dst_frame;
+}
+
+scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+    const VideoFrame* const frame,
+    gfx::BufferUsage buffer_usage) {
+  gfx::GpuMemoryBufferHandle gmb_handle;
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+  gmb_handle = CreateGpuMemoryBufferHandle(frame);
+#endif
+  if (gmb_handle.is_null() || gmb_handle.type != gfx::NATIVE_PIXMAP) {
+    LOG(ERROR) << "Failed to create native GpuMemoryBufferHandle";
+    return nullptr;
+  }
+
+  base::Optional<gfx::BufferFormat> buffer_format =
+      VideoPixelFormatToGfxBufferFormat(frame->format());
+  if (!buffer_format) {
+    LOG(ERROR) << "Unexpected format: " << frame->format();
+    return nullptr;
+  }
+
+  // Create GpuMemoryBuffer from GpuMemoryBufferHandle.
+  gpu::GpuMemoryBufferSupport support;
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+      support.CreateGpuMemoryBufferImplFromHandle(
+          std::move(gmb_handle), frame->coded_size(), *buffer_format,
+          buffer_usage, base::DoNothing());
+  if (!gpu_memory_buffer) {
+    LOG(ERROR) << "Failed to create GpuMemoryBuffer from GpuMemoryBufferHandle";
+    return nullptr;
+  }
+
+  gpu::MailboxHolder dummy_mailbox[media::VideoFrame::kMaxPlanes];
+  return media::VideoFrame::WrapExternalGpuMemoryBuffer(
+      frame->visible_rect(), frame->natural_size(),
+      std::move(gpu_memory_buffer), dummy_mailbox,
+      base::DoNothing() /* mailbox_holder_release_cb_ */, frame->timestamp());
 }
 
 scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {

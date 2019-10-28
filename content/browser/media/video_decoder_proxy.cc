@@ -55,14 +55,16 @@ void VideoDecoderProxy::CreateCastRenderer(
 #if defined(OS_ANDROID)
 void VideoDecoderProxy::CreateFlingingRenderer(
     const std::string& audio_device_id,
-    media::mojom::FlingingRendererClientExtensionPtr client_extenion,
-    media::mojom::RendererRequest request) {}
+    mojo::PendingRemote<media::mojom::FlingingRendererClientExtension>
+        client_extenion,
+    mojo::PendingReceiver<media::mojom::Renderer> receiver) {}
 
 void VideoDecoderProxy::CreateMediaPlayerRenderer(
-    media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
-    media::mojom::RendererRequest request,
-    media::mojom::MediaPlayerRendererExtensionRequest
-        renderer_extension_request) {}
+    mojo::PendingRemote<media::mojom::MediaPlayerRendererClientExtension>
+        client_extension_remote,
+    mojo::PendingReceiver<media::mojom::Renderer> receiver,
+    mojo::PendingReceiver<media::mojom::MediaPlayerRendererExtension>
+        renderer_extension_receiver) {}
 #endif  // defined(OS_ANDROID)
 
 void VideoDecoderProxy::CreateCdm(

@@ -15,7 +15,7 @@ CustomContextMenuContext::CustomContextMenuContext()
 }
 
 ContextMenuParams::ContextMenuParams()
-    : media_type(blink::WebContextMenuData::kMediaTypeNone),
+    : media_type(blink::ContextMenuDataMediaType::kNone),
       x(0),
       y(0),
       has_image_contents(false),

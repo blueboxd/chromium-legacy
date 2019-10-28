@@ -1393,10 +1393,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
-          initWithBrowserState:self.mainBrowserState
-                      tabModel:self.mainTabModel
-                     presenter:self.mainBVC
-                    dispatcher:self.mainBVC.dispatcher];
+          initWithBrowser:self.interfaceProvider.mainInterface.browser
+                presenter:self.mainBVC
+               dispatcher:self.mainBVC.dispatcher];
   UINavigationController* navController =
       [[OrientationLimitingNavigationController alloc]
           initWithRootViewController:welcomeToChrome];
@@ -1436,9 +1435,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Show the sign-in promo if needed
   if ([SigninPromoViewController
           shouldBePresentedForBrowserState:self.mainBrowserState]) {
+    Browser* browser = self.interfaceProvider.mainInterface.browser;
     UIViewController* promoController = [[SigninPromoViewController alloc]
-        initWithBrowserState:self.mainBrowserState
-                  dispatcher:self.mainBVC.dispatcher];
+        initWithBrowser:browser
+             dispatcher:self.mainBVC.dispatcher];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  (int64_t)(kDisplayPromoDelay * NSEC_PER_SEC)),

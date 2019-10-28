@@ -8,8 +8,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -279,8 +277,9 @@ TEST_F(BlobURLStoreImplTest, ResolveAsURLLoaderFactory) {
   BlobURLStoreImpl url_store(context_->AsWeakPtr(), &delegate_);
   RegisterURL(&url_store, std::move(blob), kValidUrl);
 
-  network::mojom::URLLoaderFactoryPtr factory;
-  url_store.ResolveAsURLLoaderFactory(kValidUrl, MakeRequest(&factory));
+  mojo::Remote<network::mojom::URLLoaderFactory> factory;
+  url_store.ResolveAsURLLoaderFactory(kValidUrl,
+                                      factory.BindNewPipeAndPassReceiver());
 
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = kValidUrl;

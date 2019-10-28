@@ -1428,51 +1428,40 @@ TEST_F(BrowserAccessibilityManagerTest, TestGetTextForRange) {
   button_text.SetName("Button");
   button.child_ids.push_back(button_text.id);
 
-  ui::AXNodeData container;
-  container.id = 5;
-  container.role = ax::mojom::Role::kGenericContainer;
-  div.child_ids.push_back(container.id);
-
-  ui::AXNodeData container_text;
-  container_text.id = 6;
-  container_text.role = ax::mojom::Role::kStaticText;
-  container_text.SetName("Text");
-  container.child_ids.push_back(container_text.id);
-
   ui::AXNodeData line_break;
-  line_break.id = 7;
+  line_break.id = 5;
   line_break.role = ax::mojom::Role::kLineBreak;
   line_break.SetName("\n");
   div.child_ids.push_back(line_break.id);
 
   ui::AXNodeData paragraph;
-  paragraph.id = 8;
+  paragraph.id = 6;
   paragraph.role = ax::mojom::Role::kParagraph;
   root.child_ids.push_back(paragraph.id);
 
   ui::AXNodeData paragraph_text;
-  paragraph_text.id = 9;
+  paragraph_text.id = 7;
   paragraph_text.role = ax::mojom::Role::kStaticText;
   paragraph_text.SetName("Hello world.");
   paragraph.child_ids.push_back(paragraph_text.id);
 
   ui::AXNodeData paragraph_line1;
-  paragraph_line1.id = 10;
+  paragraph_line1.id = 8;
   paragraph_line1.role = ax::mojom::Role::kInlineTextBox;
   paragraph_line1.SetName("Hello ");
   paragraph_text.child_ids.push_back(paragraph_line1.id);
 
   ui::AXNodeData paragraph_line2;
-  paragraph_line2.id = 11;
+  paragraph_line2.id = 9;
   paragraph_line2.role = ax::mojom::Role::kInlineTextBox;
   paragraph_line2.SetName("world.");
   paragraph_text.child_ids.push_back(paragraph_line2.id);
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, div, button, button_text, container,
-                           container_text, line_break, paragraph,
-                           paragraph_text, paragraph_line1, paragraph_line2),
+          MakeAXTreeUpdate(root, div, button, button_text, line_break,
+                           paragraph, paragraph_text, paragraph_line1,
+                           paragraph_line2),
           test_browser_accessibility_delegate_.get(),
           new CountedBrowserAccessibilityFactory()));
 
@@ -1481,20 +1470,14 @@ TEST_F(BrowserAccessibilityManagerTest, TestGetTextForRange) {
   ASSERT_EQ(2U, root_accessible->PlatformChildCount());
   BrowserAccessibility* div_accessible = root_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, div_accessible);
-  ASSERT_EQ(3U, div_accessible->PlatformChildCount());
+  ASSERT_EQ(2U, div_accessible->PlatformChildCount());
   BrowserAccessibility* button_accessible = div_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, button_accessible);
   BrowserAccessibility* button_text_accessible =
       button_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, button_text_accessible);
-  BrowserAccessibility* container_accessible =
-      div_accessible->PlatformGetChild(1);
-  ASSERT_NE(nullptr, container_accessible);
-  BrowserAccessibility* container_text_accessible =
-      container_accessible->PlatformGetChild(0);
-  ASSERT_NE(nullptr, container_text_accessible);
   BrowserAccessibility* line_break_accessible =
-      div_accessible->PlatformGetChild(2);
+      div_accessible->PlatformGetChild(1);
   ASSERT_NE(nullptr, line_break_accessible);
   BrowserAccessibility* paragraph_accessible =
       root_accessible->PlatformGetChild(1);
@@ -1513,37 +1496,37 @@ TEST_F(BrowserAccessibilityManagerTest, TestGetTextForRange) {
   std::vector<const BrowserAccessibility*> text_only_objects =
       BrowserAccessibilityManager::FindTextOnlyObjectsInRange(*root_accessible,
                                                               *root_accessible);
-
   EXPECT_EQ(3U, text_only_objects.size());
-  EXPECT_EQ(container_text_accessible, text_only_objects[0]);
+  EXPECT_EQ(button_text_accessible, text_only_objects[0]);
   EXPECT_EQ(line_break_accessible, text_only_objects[1]);
   EXPECT_EQ(paragraph_text_accessible, text_only_objects[2]);
 
   text_only_objects = BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
       *div_accessible, *paragraph_accessible);
   EXPECT_EQ(3U, text_only_objects.size());
-  EXPECT_EQ(container_text_accessible, text_only_objects[0]);
+  EXPECT_EQ(button_text_accessible, text_only_objects[0]);
   EXPECT_EQ(line_break_accessible, text_only_objects[1]);
   EXPECT_EQ(paragraph_text_accessible, text_only_objects[2]);
 
-  EXPECT_EQ(base::ASCIIToUTF16("Text\nHello world."),
+  EXPECT_EQ(base::ASCIIToUTF16("Button\nHello world."),
             BrowserAccessibilityManager::GetTextForRange(*root_accessible, 0,
-                                                         *root_accessible, 16));
-  EXPECT_EQ(base::ASCIIToUTF16("xt\nHello world."),
-            BrowserAccessibilityManager::GetTextForRange(*root_accessible, 2,
-                                                         *root_accessible, 12));
-  EXPECT_EQ(base::ASCIIToUTF16("Text\nHello world."),
+                                                         *root_accessible, 19));
+  EXPECT_EQ(base::ASCIIToUTF16("ton\nHello world."),
+            BrowserAccessibilityManager::GetTextForRange(*root_accessible, 3,
+                                                         *root_accessible, 19));
+  EXPECT_EQ(base::ASCIIToUTF16("Button\nHello world."),
             BrowserAccessibilityManager::GetTextForRange(
                 *div_accessible, 0, *paragraph_accessible, 12));
-  EXPECT_EQ(base::ASCIIToUTF16("xt\nHello world."),
+  EXPECT_EQ(base::ASCIIToUTF16("ton\nHello world."),
             BrowserAccessibilityManager::GetTextForRange(
-                *div_accessible, 2, *paragraph_accessible, 12));
-  EXPECT_EQ(base::ASCIIToUTF16("Text\n"),
+                *div_accessible, 3, *paragraph_accessible, 12));
+
+  EXPECT_EQ(base::ASCIIToUTF16("Button\n"),
             BrowserAccessibilityManager::GetTextForRange(*div_accessible, 0,
-                                                         *div_accessible, 4));
-  EXPECT_EQ(base::ASCIIToUTF16("Text\n"),
+                                                         *div_accessible, 1));
+  EXPECT_EQ(base::ASCIIToUTF16("Button\n"),
             BrowserAccessibilityManager::GetTextForRange(
-                *button_accessible, 0, *line_break_accessible, 4));
+                *button_accessible, 0, *line_break_accessible, 1));
 
   EXPECT_EQ(base::ASCIIToUTF16("Hello world."),
             BrowserAccessibilityManager::GetTextForRange(

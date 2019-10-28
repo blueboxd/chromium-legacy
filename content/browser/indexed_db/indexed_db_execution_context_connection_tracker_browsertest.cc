@@ -81,17 +81,11 @@ class IndexedDBExecutionContextConnectionTrackerBrowserTest
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
-    // TODO(https://crbug.com/1011765): Navigation fails on Android Kit Kat.
-    if (!ShouldRunTest())
-      return;
-
     original_client_ = SetBrowserClientForTesting(&test_browser_client_);
 
     host_resolver()->AddRule("*", "127.0.0.1");
     server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(server_.Start());
-
-    ASSERT_TRUE(NavigateToURL(shell(), GetTestURL("a.com")));
   }
 
   void TearDownOnMainThread() override {
@@ -100,19 +94,16 @@ class IndexedDBExecutionContextConnectionTrackerBrowserTest
       SetBrowserClientForTesting(original_client_);
   }
 
-  bool ShouldRunTest() const {
+  // Check if the test can run on the current system. If the test can run,
+  // navigates to the test page and returns true. Otherwise, returns false.
+  bool CheckShouldRunTestAndNavigate() const {
 #if defined(OS_ANDROID)
     // Don't run the test if we couldn't override BrowserClient. It happens only
     // on Android Kitkat or older systems.
     if (!original_client_)
       return false;
-
-    // TODO(https://crbug.com/1011765): Navigation fails on Android Kit Kat.
-    if (base::android::BuildInfo::GetInstance()->sdk_int() <=
-        base::android::SDK_VERSION_KITKAT) {
-      return false;
-    }
-#endif
+#endif  // defined(OS_ANDROID)
+    EXPECT_TRUE(NavigateToURL(shell(), GetTestURL("a.com")));
     return true;
   }
 
@@ -158,7 +149,7 @@ bool OpenConnectionB(RenderFrameHost* rfh) {
 // IndexedDB connection.
 IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
                        ObserverSingleConnection) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -195,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
 // switches between zero and non-zero).
 IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
                        ObserverTwoLocks) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -241,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
 // IndexedDB connections is navigated away.
 IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
                        ObserverNavigate) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -277,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
 // opens/closes an IndexedDB connection.
 IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
                        ObserverDedicatedWorker) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -302,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
 // opens/closes an IndexedDB connection.
 IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
                        ObserverSharedWorker) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();
@@ -326,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
 // opens/closes an IndexedDB connection.
 IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
                        ObserverServiceWorker) {
-  if (!ShouldRunTest())
+  if (!CheckShouldRunTestAndNavigate())
     return;
 
   RenderFrameHost* rfh = shell()->web_contents()->GetMainFrame();

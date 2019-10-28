@@ -63,6 +63,12 @@ inline bool IsVisibleToPaint(const NGPhysicalFragment& fragment,
          style.Visibility() == EVisibility::kVisible;
 }
 
+inline bool IsVisibleToPaint(const NGFragmentItem& item,
+                             const ComputedStyle& style) {
+  return !item.IsHiddenForPaint() &&
+         style.Visibility() == EVisibility::kVisible;
+}
+
 bool FragmentVisibleToHitTestRequest(const NGPaintFragment& paint_fragment,
                                      const HitTestRequest& request) {
   const NGPhysicalFragment& fragment = paint_fragment.PhysicalFragment();
@@ -1157,7 +1163,9 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& paint_fragment,
 void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
                                          const PaintInfo& paint_info,
                                          const PhysicalOffset& paint_offset) {
-  DCHECK_EQ(cursor.CurrentItem()->Type(), NGFragmentItem::kText);
+  DCHECK(cursor.CurrentItem());
+  const NGFragmentItem& item = *cursor.CurrentItem();
+  DCHECK_EQ(item.Type(), NGFragmentItem::kText);
   DCHECK(items_);
 
   // Only paint during the foreground/selection phases.
@@ -1166,6 +1174,13 @@ void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
       paint_info.phase != PaintPhase::kTextClip &&
       paint_info.phase != PaintPhase::kMask)
     return;
+
+  // Need to check |IsHiddenForPaint()| for each item, but checking the style is
+  // not needed if we reach here, because text items should have the same style
+  // as their parents.
+  if (UNLIKELY(item.IsHiddenForPaint()))
+    return;
+  DCHECK(IsVisibleToPaint(item, item.Style()));
 
   NGTextFragmentPainter<NGInlineCursor> text_painter(cursor);
   text_painter.Paint(paint_info, paint_offset);
@@ -1193,14 +1208,18 @@ NGBoxFragmentPainter::MoveTo NGBoxFragmentPainter::PaintBoxItem(
   DCHECK_EQ(item.Type(), NGFragmentItem::kBox);
   DCHECK(items_);
 
+  const ComputedStyle& style = item.Style();
+  if (UNLIKELY(!IsVisibleToPaint(item, style)))
+    return kSkipChildren;
+
   // Nothing to paint if this is a culled inline box. Proceed to its
   // descendants.
   const NGPhysicalBoxFragment* child_fragment = item.BoxFragment();
   if (!child_fragment)
     return kDontSkipChildren;
 
-  if (child_fragment->HasSelfPaintingLayer() ||
-      child_fragment->IsHiddenForPaint() || child_fragment->IsFloating())
+  DCHECK(!child_fragment->IsHiddenForPaint());
+  if (child_fragment->HasSelfPaintingLayer() || child_fragment->IsFloating())
     return kSkipChildren;
 
   // TODO(kojii): Check CullRect.

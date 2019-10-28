@@ -143,7 +143,8 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
                            *input_layout, VideoFrame::STORAGE_OWNED_MEMORY);
   } else {
 #if defined(OS_CHROMEOS)
-    LOG_ASSERT(input_storage_type == VideoFrame::STORAGE_DMABUFS);
+    LOG_ASSERT(input_storage_type == VideoFrame::STORAGE_DMABUFS ||
+               input_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
     // NV12 and YV12 are the only formats that can be allocated with
     // gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE. So
     // gfx::BufferUsage::GPU_READ_CPU_READ_WRITE is specified for RGB formats.
@@ -153,8 +154,7 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
             : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
     return CloneVideoFrame(gpu_memory_buffer_factory_.get(),
                            CreateVideoFrameFromImage(input_image).get(),
-                           *input_layout, VideoFrame::STORAGE_DMABUFS,
-                           dst_buffer_usage);
+                           *input_layout, input_storage_type, dst_buffer_usage);
 #endif
     return nullptr;
   }
@@ -178,12 +178,20 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateOutputFrame(
         base::TimeDelta(), false /* zero_initialize_memory*/);
   } else {
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    LOG_ASSERT(output_storage_type == VideoFrame::STORAGE_DMABUFS);
-    return CreatePlatformVideoFrame(
+    LOG_ASSERT(output_storage_type == VideoFrame::STORAGE_DMABUFS ||
+               output_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+    scoped_refptr<VideoFrame> output_frame = CreatePlatformVideoFrame(
         gpu_memory_buffer_factory_.get(), output_layout->format(),
         output_layout->coded_size(), gfx::Rect(output_image.Size()),
         output_image.Size(), base::TimeDelta(),
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+
+    if (output_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+      output_frame = CreateGpuMemoryBufferVideoFrame(
+          gpu_memory_buffer_factory_.get(), output_frame.get(),
+          gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+    }
+    return output_frame;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     return nullptr;
   }

@@ -61,12 +61,12 @@ WGPUBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc) {
 DOMArrayBuffer* CreateArrayBufferForMappedData(void* data, size_t data_length) {
   DCHECK(data);
 
-  WTF::ArrayBufferContents contents(
+  ArrayBufferContents contents(
       data, data_length,
       [](void* data, size_t length, void* info) {
         // DataDeleter does nothing because Dawn wire owns the memory.
       },
-      WTF::ArrayBufferContents::SharingType::kNotShared);
+      ArrayBufferContents::SharingType::kNotShared);
 
   return DOMArrayBuffer::Create(contents);
 }
@@ -259,7 +259,7 @@ void GPUBuffer::DetachArrayBufferForCurrentMapping(ScriptState* script_state) {
   DCHECK(mapped_buffer->IsDetachable(isolate));
 
   // Detach the array buffer by transferring the contents out and dropping them.
-  WTF::ArrayBufferContents contents;
+  ArrayBufferContents contents;
   DCHECK(mapped_buffer->Transfer(isolate, contents));
 }
 

@@ -18,7 +18,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/first_run/first_run_configuration.h"
-#include "ios/chrome/browser/tabs/tab_model.h"
+#include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
 #include "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -51,8 +51,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 
 @interface WelcomeToChromeViewController ()<WelcomeToChromeViewDelegate,
                                             UINavigationControllerDelegate> {
-  ios::ChromeBrowserState* browserState_;  // weak
-  __weak TabModel* tabModel_;
+  Browser* _browser;
 }
 
 // The animation which occurs at launch has run.
@@ -103,31 +102,17 @@ const BOOL kDefaultStatsCheckboxValue = YES;
   return kDefaultStatsCheckboxValue;
 }
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            tabModel:(TabModel*)tabModel
-                           presenter:(id<SyncPresenter>)presenter
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
-  DCHECK(browserState);
-  DCHECK(tabModel);
+- (instancetype)initWithBrowser:(Browser*)browser
+                      presenter:(id<SyncPresenter>)presenter
+                     dispatcher:(id<ApplicationCommands>)dispatcher {
+  DCHECK(browser);
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    browserState_ = browserState;
-    tabModel_ = tabModel;
+    _browser = browser;
     _presenter = presenter;
     _dispatcher = dispatcher;
   }
   return self;
-}
-
-- (instancetype)initWithNibName:(nullable NSString*)nibNameOrNil
-                         bundle:(nullable NSBundle*)nibBundleOrNil {
-  NOTREACHED();
-  return nil;
-}
-
-- (instancetype)initWithCoder:(nonnull NSCoder*)aDecoder {
-  NOTREACHED();
-  return nil;
 }
 
 - (void)loadView {
@@ -172,8 +157,9 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 // Displays the file at the given URL in a StaticFileViewController.
 - (void)openStaticFileWithURL:(NSURL*)url title:(NSString*)title {
   StaticFileViewController* staticViewController =
-      [[StaticFileViewController alloc] initWithBrowserState:browserState_
-                                                         URL:url];
+      [[StaticFileViewController alloc]
+          initWithBrowserState:_browser->GetBrowserState()
+                           URL:url];
   [staticViewController setTitle:title];
   [self.navigationController pushViewController:staticViewController
                                        animated:YES];
@@ -218,12 +204,11 @@ const BOOL kDefaultStatsCheckboxValue = YES;
   [firstRunConfig setHasSSOAccount:hasSSOAccounts];
   FirstRunChromeSigninViewController* signInController =
       [[FirstRunChromeSigninViewController alloc]
-          initWithBrowserState:browserState_
-                      tabModel:tabModel_
-                firstRunConfig:firstRunConfig
-                signInIdentity:nil
-                     presenter:self.presenter
-                    dispatcher:self.dispatcher];
+          initWithBrowser:_browser
+           firstRunConfig:firstRunConfig
+           signInIdentity:nil
+                presenter:self.presenter
+               dispatcher:self.dispatcher];
 
   CATransition* transition = [CATransition animation];
   transition.duration = kFadeOutAnimationDuration;

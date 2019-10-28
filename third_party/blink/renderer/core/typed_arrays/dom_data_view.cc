@@ -6,8 +6,8 @@
 
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_view.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
 
 namespace blink {
 

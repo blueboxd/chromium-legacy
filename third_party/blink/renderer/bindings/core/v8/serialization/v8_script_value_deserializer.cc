@@ -717,7 +717,7 @@ V8ScriptValueDeserializer::GetSharedArrayBufferFromId(v8::Isolate* isolate,
   auto& shared_array_buffers_contents =
       serialized_script_value_->SharedArrayBuffersContents();
   if (id < shared_array_buffers_contents.size()) {
-    WTF::ArrayBufferContents& contents = shared_array_buffers_contents.at(id);
+    ArrayBufferContents& contents = shared_array_buffers_contents.at(id);
     DOMSharedArrayBuffer* shared_array_buffer =
         DOMSharedArrayBuffer::Create(contents);
     v8::Local<v8::Object> creation_context =

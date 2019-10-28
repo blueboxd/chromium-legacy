@@ -303,12 +303,12 @@ used when committed.
 *   [Autoplay of HTMLMediaElements](media/autoplay.md) - How HTMLMediaElements
     are autoplayed.
 *   [Piranha Plant](piranha_plant.md) - Future architecture of MediaStreams
-*   [Video Decode/Encode Accelerator Tests](media/gpu/vdatest_usage.md) - How to
-    use the accelerated video decoder/encoder test programs.
+*   [Video Encode Accelerator Tests](media/gpu/veatest_usage.md) - How to
+    use the accelerated video encoder test program.
 *   [Video Decoder Tests](media/gpu/video_decoder_test_usage.md) - Running the
-    new video decoder tests.
+    video decoder tests.
 *   [Video Decoder Performance Tests](media/gpu/video_decoder_perf_test_usage.md) -
-    Running the new video decoder performance tests.
+    Running the video decoder performance tests.
 
 ### Accessibility
 *   [Accessibility Overview](accessibility/overview.md) - Overview of

@@ -87,6 +87,15 @@ Polymer({
       }),
       callbackRouter.onCanceled.addListener(() => this.closeDialog_()),
     ];
+
+    document.addEventListener('keyup', event => {
+      if (event.key == 'Escape') {
+        this.onCancelButtonClick_();
+        event.preventDefault();
+      }
+    });
+
+    this.$$('.action-button').focus();
   },
 
   /** @override */
@@ -117,6 +126,10 @@ Polymer({
         break;
       case State.ERROR:
         this.closeDialog_();
+        break;
+      case State.CANCELING:
+        // Although cancel button has been disabled, we can reach here if users
+        // press <esc> key.
         break;
       default:
         assertNotReached();

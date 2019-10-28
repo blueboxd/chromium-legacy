@@ -128,6 +128,43 @@ async function testDisplayPanelChangingPanelTypes(done) {
   done();
 }
 
+function testFilesDisplayPanelErrorMarker() {
+  // Get the host display panel container element.
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+
+  // Add a summary panel item to the display panel container.
+  const summaryPanel = displayPanel.addPanelItem('testpanel');
+  summaryPanel.panelType = summaryPanel.panelTypeSummary;
+
+  // Confirm the error marker is not visible by default.
+  const progressIndicator =
+      summaryPanel.shadowRoot.querySelector('xf-circular-progress');
+  const errorMarker = progressIndicator.shadowRoot.querySelector('.errormark');
+  assertEquals(
+      errorMarker.getAttribute('visibility'), 'hidden',
+      'Summary panel error marker should default to hidden');
+
+  // Confirm the error marker can be made visible through property setting on
+  // the progress indicator.
+  progressIndicator.errorMarkerVisibility = 'visible';
+  assertEquals(
+      errorMarker.getAttribute('visibility'), 'visible',
+      'Summary panel error marker should be visible');
+
+  // Confirm we can change visibility of the error marker from panel item
+  // property setting.
+  summaryPanel.errorMarkerVisibility = 'hidden';
+  assertEquals(
+      errorMarker.getAttribute('visibility'), 'hidden',
+      'Summary panel error marker should be hidden');
+
+  // Confirm the panel item reflects the visibility of the error marker.
+  assertEquals(
+      summaryPanel.errorMarkerVisibility, 'hidden',
+      'Summary panel error marker property is wrong, should be "hidden"');
+}
+
 async function testFilesDisplayPanelSummaryPanel(done) {
   // Get the host display panel container element.
   /** @type {!DisplayPanel|!Element} */

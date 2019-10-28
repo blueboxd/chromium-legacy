@@ -145,9 +145,9 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/public_buildflags.h"
-#include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -200,6 +200,7 @@
 #endif
 
 using base::UserMetricsAction;
+using blink::ContextMenuDataMediaType;
 using blink::PluginAction;
 using blink::WebContextMenuData;
 using blink::WebMediaPlayerAction;
@@ -651,19 +652,19 @@ bool RenderViewContextMenu::ExtensionContextAndPatternMatch(
     return true;
 
   switch (params.media_type) {
-    case WebContextMenuData::kMediaTypeImage:
+    case ContextMenuDataMediaType::kImage:
       if (contexts.Contains(MenuItem::IMAGE) &&
           ExtensionPatternMatch(target_url_patterns, params.src_url))
         return true;
       break;
 
-    case WebContextMenuData::kMediaTypeVideo:
+    case ContextMenuDataMediaType::kVideo:
       if (contexts.Contains(MenuItem::VIDEO) &&
           ExtensionPatternMatch(target_url_patterns, params.src_url))
         return true;
       break;
 
-    case WebContextMenuData::kMediaTypeAudio:
+    case ContextMenuDataMediaType::kAudio:
       if (contexts.Contains(MenuItem::AUDIO) &&
           ExtensionPatternMatch(target_url_patterns, params.src_url))
         return true;
@@ -677,7 +678,7 @@ bool RenderViewContextMenu::ExtensionContextAndPatternMatch(
   // other contexts apply (except for FRAME, which is included in PAGE for
   // backwards compatibility).
   if (!has_link && !has_selection && !params.is_editable &&
-      params.media_type == WebContextMenuData::kMediaTypeNone &&
+      params.media_type == ContextMenuDataMediaType::kNone &&
       contexts.Contains(MenuItem::PAGE))
     return true;
 
@@ -823,7 +824,7 @@ void RenderViewContextMenu::InitMenu() {
 
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK)) {
     AppendLinkItems();
-    if (params_.media_type != WebContextMenuData::kMediaTypeNone)
+    if (params_.media_type != ContextMenuDataMediaType::kNone)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   } else {
     // Shown when non link item is highlighted to avoid showing click to call
@@ -1040,7 +1041,7 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
         "ContextMenu.SelectedOptionDesktop.MisspelledWord", enum_id,
         GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
   } else if (!params_.selection_text.empty() &&
-             params_.media_type == blink::WebContextMenuData::kMediaTypeNone) {
+             params_.media_type == ContextMenuDataMediaType::kNone) {
     // Probably just text.
     UMA_HISTOGRAM_EXACT_LINEAR(
         "ContextMenu.SelectedOptionDesktop.SelectedText", enum_id,
@@ -1324,7 +1325,7 @@ void RenderViewContextMenu::AppendLinkItems() {
           IDS_CONTENT_CONTEXT_COPYLINKLOCATION);
 
   if (params_.source_type == ui::MENU_SOURCE_TOUCH &&
-      params_.media_type != WebContextMenuData::kMediaTypeImage &&
+      params_.media_type != ContextMenuDataMediaType::kImage &&
       !params_.link_text.empty()) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYLINKTEXT,
                                     IDS_CONTENT_CONTEXT_COPYLINKTEXT);
@@ -1611,7 +1612,7 @@ void RenderViewContextMenu::AppendSharedClipboardItems() {
 
 void RenderViewContextMenu::AppendPrintItem() {
   if (GetPrefs(browser_context_)->GetBoolean(prefs::kPrintingEnabled) &&
-      (params_.media_type == WebContextMenuData::kMediaTypeNone ||
+      (params_.media_type == ContextMenuDataMediaType::kNone ||
        params_.media_flags & WebContextMenuData::kMediaCanPrint) &&
       params_.misspelled_word.empty()) {
     menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
@@ -2498,7 +2499,7 @@ bool RenderViewContextMenu::IsViewSourceEnabled() const {
           source_web_contents_)) {
     return false;
   }
-  return (params_.media_type != WebContextMenuData::kMediaTypePlugin) &&
+  return (params_.media_type != ContextMenuDataMediaType::kPlugin) &&
          embedder_web_contents_->GetController().CanViewSource();
 }
 
@@ -2631,7 +2632,7 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
 }
 
 bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
-  if (params_.media_type != WebContextMenuData::kMediaTypeNone &&
+  if (params_.media_type != ContextMenuDataMediaType::kNone &&
       !(params_.media_flags & WebContextMenuData::kMediaCanPrint)) {
     return false;
   }
@@ -2800,8 +2801,8 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
 void RenderViewContextMenu::ExecSaveAs() {
   bool is_large_data_url = params_.has_image_contents &&
       params_.src_url.is_empty();
-  if (params_.media_type == WebContextMenuData::kMediaTypeCanvas ||
-      (params_.media_type == WebContextMenuData::kMediaTypeImage &&
+  if (params_.media_type == ContextMenuDataMediaType::kCanvas ||
+      (params_.media_type == ContextMenuDataMediaType::kImage &&
        is_large_data_url)) {
     RenderFrameHost* frame_host = GetRenderFrameHost();
     if (frame_host)
@@ -2815,7 +2816,7 @@ void RenderViewContextMenu::ExecSaveAs() {
     DataReductionProxyChromeSettings* settings =
         DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
             browser_context_);
-    if (params_.media_type == WebContextMenuData::kMediaTypeImage && settings &&
+    if (params_.media_type == ContextMenuDataMediaType::kImage && settings &&
         settings->CanUseDataReductionProxy(params_.src_url)) {
       headers = data_reduction_proxy::chrome_proxy_pass_through_header();
     }
@@ -2941,7 +2942,7 @@ void RenderViewContextMenu::ExecRestartPackagedApp() {
 
 void RenderViewContextMenu::ExecPrint() {
 #if BUILDFLAG(ENABLE_PRINTING)
-  if (params_.media_type != WebContextMenuData::kMediaTypeNone) {
+  if (params_.media_type != ContextMenuDataMediaType::kNone) {
     RenderFrameHost* render_frame_host = GetRenderFrameHost();
     if (render_frame_host) {
       render_frame_host->Send(new PrintMsg_PrintNodeUnderContextMenu(

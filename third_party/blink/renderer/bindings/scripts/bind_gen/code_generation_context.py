@@ -53,7 +53,7 @@ class CodeGenerationContext(object):
         cls._computational_attrs = (
             "class_like",
             "member_like",
-            "property",
+            "property_",
         )
 
         # Define public readonly properties of this class.
@@ -123,7 +123,7 @@ class CodeGenerationContext(object):
         for attr in self._computational_attrs:
             value = getattr(self, attr)
             if value is not None:
-                bindings[attr] = value
+                bindings[attr.strip("_")] = value
 
         return bindings
 
@@ -133,14 +133,40 @@ class CodeGenerationContext(object):
                 or self.namespace)
 
     @property
+    def is_return_by_argument(self):
+        if self.return_type is None:
+            return None
+        return_type = self.return_type.unwrap()
+        return return_type.is_dictionary or return_type.is_union
+
+    @property
+    def may_throw_exception(self):
+        if not self.member_like:
+            return None
+        ext_attr = self.member_like.extended_attributes.get("RaisesException")
+        if not ext_attr:
+            return False
+        return (not ext_attr.values
+                or (self.attribute_get and "Getter" in ext_attr.values)
+                or (self.attribute_set and "Setter" in ext_attr.values))
+
+    @property
     def member_like(self):
         return (self.attribute or self.constant or self.constructor
                 or self.dict_member or self.operation)
 
     @property
-    def property(self):
+    def property_(self):
         return (self.attribute or self.constant or self.constructor_group
                 or self.dict_member or self.operation_group)
+
+    @property
+    def return_type(self):
+        if self.attribute_get:
+            return self.attribute.idl_type
+        if self.operation:
+            return self.operation.return_type
+        return None
 
 
 CodeGenerationContext.init()

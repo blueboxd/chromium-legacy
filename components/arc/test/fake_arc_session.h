@@ -47,6 +47,9 @@ class FakeArcSession : public ArcSession {
   // Returns true if the session is considered as running.
   bool is_running() const { return running_; }
 
+  // Returns an upgrade parameter passed to the session.
+  std::string upgrade_locale_param() const { return upgrade_locale_param_; }
+
   // Returns FakeArcSession instance. This can be used for a factory
   // in ArcBridgeServiceImpl.
   static std::unique_ptr<ArcSession> Create();
@@ -59,6 +62,7 @@ class FakeArcSession : public ArcSession {
   bool upgrade_requested_ = false;
   bool running_ = false;
   bool stop_requested_ = false;
+  std::string upgrade_locale_param_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeArcSession);
 };

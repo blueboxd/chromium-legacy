@@ -190,8 +190,9 @@ void MediaInterfaceProxy::CreateCastRenderer(
 #if defined(OS_ANDROID)
 void MediaInterfaceProxy::CreateFlingingRenderer(
     const std::string& presentation_id,
-    media::mojom::FlingingRendererClientExtensionPtr client_extension,
-    media::mojom::RendererRequest request) {
+    mojo::PendingRemote<media::mojom::FlingingRendererClientExtension>
+        client_extension,
+    mojo::PendingReceiver<media::mojom::Renderer> receiver) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::unique_ptr<FlingingRenderer> flinging_renderer =
@@ -202,14 +203,15 @@ void MediaInterfaceProxy::CreateFlingingRenderer(
     return;
 
   media::MojoRendererService::Create(nullptr, std::move(flinging_renderer),
-                                     std::move(request));
+                                     std::move(receiver));
 }
 
 void MediaInterfaceProxy::CreateMediaPlayerRenderer(
-    media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
-    media::mojom::RendererRequest request,
-    media::mojom::MediaPlayerRendererExtensionRequest
-        renderer_extension_request) {
+    mojo::PendingRemote<media::mojom::MediaPlayerRendererClientExtension>
+        client_extension_remote,
+    mojo::PendingReceiver<media::mojom::Renderer> receiver,
+    mojo::PendingReceiver<media::mojom::MediaPlayerRendererExtension>
+        renderer_extension_receiver) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   media::MojoRendererService::Create(
@@ -220,9 +222,9 @@ void MediaInterfaceProxy::CreateMediaPlayerRenderer(
           static_cast<RenderFrameHostImpl*>(render_frame_host_)
               ->delegate()
               ->GetAsWebContents(),
-          std::move(renderer_extension_request),
-          std::move(client_extension_ptr)),
-      std::move(request));
+          std::move(renderer_extension_receiver),
+          std::move(client_extension_remote)),
+      std::move(receiver));
 }
 #endif
 

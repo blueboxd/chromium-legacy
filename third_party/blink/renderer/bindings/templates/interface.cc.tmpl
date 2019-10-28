@@ -1108,11 +1108,11 @@ v8::Local<v8::Object> {{v8_class}}::FindInstanceInPrototypeChain(
   // Transfer the ownership of the allocated memory to an {{interface_name}} without
   // copying.
   v8::{{interface_name}}::Contents v8_contents = v8buffer->Externalize();
-  WTF::ArrayBufferContents::DataHandle data(v8_contents.Data(),
-                                            v8_contents.ByteLength(),
-                                            v8_contents.Deleter(),
-                                            v8_contents.DeleterData());
-  WTF::ArrayBufferContents contents(std::move(data), WTF::ArrayBufferContents::k{% if interface_name == 'ArrayBuffer' %}Not{% endif %}Shared);
+  ArrayBufferContents::DataHandle data(v8_contents.Data(),
+                                       v8_contents.ByteLength(),
+                                       v8_contents.Deleter(),
+                                       v8_contents.DeleterData());
+  ArrayBufferContents contents(std::move(data), ArrayBufferContents::k{% if interface_name == 'ArrayBuffer' %}Not{% endif %}Shared);
   {{cpp_class}}* buffer = {{cpp_class}}::Create(contents);
   v8::Local<v8::Object> associatedWrapper = buffer->AssociateWithWrapper(v8::Isolate::GetCurrent(), buffer->GetWrapperTypeInfo(), object);
   DCHECK(associatedWrapper == object);

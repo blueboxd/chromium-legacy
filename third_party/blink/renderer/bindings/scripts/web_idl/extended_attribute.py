@@ -246,3 +246,13 @@ class ExtendedAttributes(object):
         Returns a list of extended attributes whose keys are |key|.
         """
         return self._ext_attrs.get(key, ())
+
+    def value_of(self, key):
+        """Returns self.get(key).value if the key exists or None."""
+        ext_attr = self.get(key)
+        return ext_attr.value if ext_attr else None
+
+    def values_of(self, key):
+        """Returns self.get(key).values if the key exists or an empty list."""
+        ext_attr = self.get(key)
+        return ext_attr.values if ext_attr else ()

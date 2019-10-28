@@ -9,7 +9,7 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -34,7 +34,6 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 
 @interface FirstRunChromeSigninViewController ()<
     ChromeSigninViewControllerDelegate> {
-  __weak TabModel* _tabModel;
   FirstRunConfiguration* _firstRunConfig;
   __weak ChromeIdentity* _identity;
   BOOL _hasRecordedSigninStarted;
@@ -43,37 +42,34 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 // Presenter for showing sync-related UI.
 @property(nonatomic, readonly, weak) id<SyncPresenter> presenter;
 
+// The Browser this object was initialized with.
+@property(nonatomic, readonly) Browser* browser;
+
 @end
 
 @implementation FirstRunChromeSigninViewController
-@synthesize presenter = _presenter;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            tabModel:(TabModel*)tabModel
-                      firstRunConfig:(FirstRunConfiguration*)firstRunConfig
-                      signInIdentity:(ChromeIdentity*)identity
-                           presenter:(id<SyncPresenter>)presenter
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+- (instancetype)initWithBrowser:(Browser*)browser
+                 firstRunConfig:(FirstRunConfiguration*)firstRunConfig
+                 signInIdentity:(ChromeIdentity*)identity
+                      presenter:(id<SyncPresenter>)presenter
+                     dispatcher:(id<ApplicationCommands>)dispatcher {
+  DCHECK(browser);
   self = [super
-       initWithBrowserState:browserState
-                accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE
-                promoAction:signin_metrics::PromoAction::
-                                PROMO_ACTION_NO_SIGNIN_PROMO
-             signInIdentity:identity
-                 dispatcher:dispatcher];
+      initWithBrowserState:browser->GetBrowserState()
+               accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE
+               promoAction:signin_metrics::PromoAction::
+                               PROMO_ACTION_NO_SIGNIN_PROMO
+            signInIdentity:identity
+                dispatcher:dispatcher];
   if (self) {
-    _tabModel = tabModel;
+    _browser = browser;
     _firstRunConfig = firstRunConfig;
     _identity = identity;
     _presenter = presenter;
     self.delegate = self;
   }
   return self;
-}
-
-- (void)dealloc {
-  self.delegate = nil;
-  _tabModel = nil;
 }
 
 - (void)viewDidLoad {
@@ -109,7 +105,8 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 
 - (void)finishFirstRunAndDismissWithCompletion:(ProceduralBlock)completion {
   DCHECK(self.presentingViewController);
-  web::WebState* currentWebState = _tabModel.webStateList->GetActiveWebState();
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
   FinishFirstRun(self.browserState, currentWebState, _firstRunConfig,
                  self.presenter);
   [self.presentingViewController dismissViewControllerAnimated:YES

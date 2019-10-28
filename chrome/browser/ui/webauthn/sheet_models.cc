@@ -86,12 +86,10 @@ bool AuthenticatorSheetModelBase::IsAcceptButtonVisible() const {
 }
 
 bool AuthenticatorSheetModelBase::IsAcceptButtonEnabled() const {
-  NOTREACHED();
   return false;
 }
 
 base::string16 AuthenticatorSheetModelBase::GetAcceptButtonLabel() const {
-  NOTREACHED();
   return base::string16();
 }
 

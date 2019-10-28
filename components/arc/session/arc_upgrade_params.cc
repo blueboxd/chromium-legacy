@@ -37,6 +37,7 @@ UpgradeParams::UpgradeParams()
       skip_gms_core_cache(base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kArcDisableGmsCoreCache)) {}
 
+UpgradeParams::UpgradeParams(const UpgradeParams& other) = default;
 UpgradeParams::UpgradeParams(UpgradeParams&& other) = default;
 UpgradeParams& UpgradeParams::operator=(UpgradeParams&& other) = default;
 UpgradeParams::~UpgradeParams() = default;

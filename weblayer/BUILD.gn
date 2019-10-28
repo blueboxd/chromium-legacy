@@ -67,6 +67,8 @@ jumbo_static_library("weblayer_lib") {
     "common/content_client_impl.h",
     "common/features.cc",
     "common/features.h",
+    "common/weblayer_paths.cc",
+    "common/weblayer_paths.h",
     "public/browser_controller.h",
     "public/browser_observer.h",
     "public/download_delegate.h",

@@ -284,17 +284,11 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   bool last_commit_was_error_page_;
 
   std::map<NavigationRequest*,
-           mojom::FrameNavigationControl::CommitNavigationCallback>
+           mojom::NavigationClient::CommitNavigationCallback>
       commit_callback_;
   std::map<NavigationRequest*,
-           mojom::NavigationClient::CommitNavigationCallback>
-      navigation_client_commit_callback_;
-  std::map<NavigationRequest*,
-           mojom::FrameNavigationControl::CommitFailedNavigationCallback>
-      commit_failed_callback_;
-  std::map<NavigationRequest*,
            mojom::NavigationClient::CommitFailedNavigationCallback>
-      navigation_client_commit_failed_callback_;
+      commit_failed_callback_;
 
   mojo::PendingRemote<blink::mojom::WebBluetoothService>
       dummy_web_bluetooth_service_remote_;

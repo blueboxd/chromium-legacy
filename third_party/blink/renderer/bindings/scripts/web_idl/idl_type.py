@@ -180,6 +180,18 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         """
         callback(self)
 
+    def unwrap(self, nullable=True, typedef=True):
+        """
+        Returns the body part of the actual type, i.e. returns the interesting
+        part of this type.
+
+        Args:
+            nullable: Unwraps a nullable type and returns |inner_type| if True.
+            typedef: Dereferences a typedef type and returns |original_type| if
+                True.
+        """
+        return self
+
     @property
     def does_include_nullable_type(self):
         """
@@ -644,6 +656,12 @@ class TypedefType(IdlType, WithIdentifier):
         callback(self)
         self.original_type.apply_to_all_composing_elements(callback)
 
+    def unwrap(self, nullable=True, typedef=True):
+        if typedef:
+            return self.original_type.unwrap(
+                nullable=nullable, typedef=typedef)
+        return self
+
     @property
     def does_include_nullable_type(self):
         return self.original_type.does_include_nullable_type
@@ -1031,6 +1049,11 @@ class NullableType(IdlType):
     def apply_to_all_composing_elements(self, callback):
         callback(self)
         self.inner_type.apply_to_all_composing_elements(callback)
+
+    def unwrap(self, nullable=True, typedef=True):
+        if nullable:
+            return self.inner_type.unwrap(nullable=nullable, typedef=typedef)
+        return self
 
     @property
     def does_include_nullable_type(self):

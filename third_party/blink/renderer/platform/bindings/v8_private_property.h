@@ -135,7 +135,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
   //
   // We can improve ability of tracking private properties by using an instance
   // of this class. |desc_| is a description of the private property.
-  class PLATFORM_EXPORT SymbolKey {
+  class PLATFORM_EXPORT SymbolKey final {
    public:
     // Note that, unlike a string class, the lifetime of |desc| must be longer
     // than this SymbolKey, i.e. this SymbolKey does not copy |desc| nor have
@@ -220,20 +220,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
 
   // Returns a Symbol to access a private property. Symbol instances from same
   // |key| are guaranteed to access the same property.
-  static Symbol GetSymbol(v8::Isolate* isolate, const SymbolKey& key) {
-    V8PrivateProperty* private_prop =
-        V8PerIsolateData::From(isolate)->PrivateProperty();
-    auto& symbol_map = private_prop->symbol_map_;
-    auto iter = symbol_map.find(&key);
-    v8::Local<v8::Private> v8_private;
-    if (UNLIKELY(iter == symbol_map.end())) {
-      v8_private = CreateV8Private(isolate, key.GetDescription());
-      symbol_map.insert(&key, v8::Eternal<v8::Private>(isolate, v8_private));
-    } else {
-      v8_private = iter->value.Get(isolate);
-    }
-    return Symbol(isolate, v8_private);
-  }
+  static Symbol GetSymbol(v8::Isolate* isolate, const SymbolKey& key);
 
   // This function is always called after NOTREACHED(). The Symbol returned from
   // this function must not be used.

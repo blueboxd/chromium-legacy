@@ -113,12 +113,10 @@ public class TabTestUtils {
     }
 
     /**
-     * Sets whether the tab is showing an error page.  This is reset whenever the tab finishes a
-     * navigation.
      * @param tab {@link Tab} object.
-     * @param isShowingErrorPage Whether the tab shows an error page.
+     * @return {@link TabDelegateFactory} for a given tab.
      */
-    public static void setIsShowingErrorPage(Tab tab, boolean isShowingErrorPage) {
-        tab.setIsShowingErrorPage(isShowingErrorPage);
+    public static TabDelegateFactory getDelegateFactory(Tab tab) {
+        return tab.getDelegateFactory();
     }
 }

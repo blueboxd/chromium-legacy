@@ -38,14 +38,15 @@ MediaPlayerRenderer::MediaPlayerRenderer(
     int process_id,
     int routing_id,
     WebContents* web_contents,
-    RendererExtensionRequest renderer_extension_request,
-    ClientExtensionPtr client_extension_ptr)
-    : client_extension_(std::move(client_extension_ptr)),
+    mojo::PendingReceiver<RendererExtension> renderer_extension_receiver,
+    mojo::PendingRemote<ClientExtension> client_extension_remote)
+    : client_extension_(std::move(client_extension_remote)),
       render_process_id_(process_id),
       routing_id_(routing_id),
       has_error_(false),
       volume_(kDefaultVolume),
-      renderer_extension_binding_(this, std::move(renderer_extension_request)) {
+      renderer_extension_receiver_(this,
+                                   std::move(renderer_extension_receiver)) {
   DCHECK_EQ(static_cast<RenderFrameHostImpl*>(
                 RenderFrameHost::FromID(process_id, routing_id))
                 ->delegate()

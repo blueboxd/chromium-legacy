@@ -2,25 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#include <atomic>
-
-#include "base/ios/ios_util.h"
-#import "base/test/ios/wait_util.h"
-#include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
-#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -30,6 +18,7 @@
 #endif
 
 using chrome_test_util::TapWebElementWithId;
+using chrome_test_util::ManualFallbackProfilesIconMatcher;
 
 namespace {
 
@@ -38,47 +27,18 @@ constexpr char kFormElementReadonly[] = "readonly_field";
 
 constexpr char kFormHTMLFile[] = "/readonly_form.html";
 
-// Returns a matcher for the profiles icon in the keyboard accessory bar.
-id<GREYMatcher> ProfilesIconMatcher() {
-  return grey_accessibilityID(
-      manual_fill::AccessoryAddressAccessibilityIdentifier);
-}
-
-// Saves an example profile in the store.
-void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
-  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  size_t profileCount = personalDataManager->GetProfiles().size();
-  personalDataManager->AddProfile(profile);
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForActionTimeout,
-                 ^bool() {
-                   return profileCount <
-                          personalDataManager->GetProfiles().size();
-                 }),
-             @"Failed to add profile.");
-}
-
 }  // namespace
 
 // Integration Tests for fallback coordinator.
-@interface FallbackViewControllerTestCase : ChromeTestCase {
-  // The PersonalDataManager instance for the current browser state.
-  autofill::PersonalDataManager* _personalDataManager;
-}
-
+@interface FallbackViewControllerTestCase : ChromeTestCase
 @end
 
 @implementation FallbackViewControllerTestCase
 
 - (void)setUp {
   [super setUp];
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  _personalDataManager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
-  _personalDataManager->SetSyncingForTest(true);
-  _personalDataManager->ClearAllLocalData();
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface clearProfilesStore];
+  [AutofillAppInterface saveExampleProfile];
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
@@ -87,7 +47,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
 }
 
 - (void)tearDown {
-  _personalDataManager->ClearAllLocalData();
+  [AutofillAppInterface clearProfilesStore];
   [super tearDown];
 }
 
@@ -98,7 +58,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
       performAction:TapWebElementWithId(kFormElementReadonly)];
 
   // Verify the profiles icon is not visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -110,7 +70,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
       performAction:TapWebElementWithId(kFormElementNormal)];
 
   // Verify the profiles icon is visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap the readonly field.
@@ -118,7 +78,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
       performAction:TapWebElementWithId(kFormElementReadonly)];
 
   // Verify the profiles icon is not visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -130,7 +90,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
       performAction:TapWebElementWithId(kFormElementReadonly)];
 
   // Verify the profiles icon is not visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_notVisible()];
 
   // Tap the regular field.
@@ -138,7 +98,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
       performAction:TapWebElementWithId(kFormElementNormal)];
 
   // Verify the profiles icon is visible.
-  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

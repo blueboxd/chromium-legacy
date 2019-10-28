@@ -2682,8 +2682,8 @@ public class CustomTabActivityTest {
         assertEquals(newActivity.getWindowAndroid(), tabToBeReparented.getWindowAndroid());
         assertEquals(newActivity.getWindowAndroid(),
                 tabToBeReparented.getWebContents().getTopLevelNativeWindow());
-        Assert.assertFalse(
-                tabToBeReparented.getDelegateFactory() instanceof CustomTabDelegateFactory);
+        Assert.assertFalse(TabTestUtils.getDelegateFactory(tabToBeReparented)
+                                   instanceof CustomTabDelegateFactory);
         assertEquals("The tab should never be hidden during the reparenting process", 0,
                 tabHiddenHelper.getCallCount());
         Assert.assertFalse(tabToBeReparented.isCurrentlyACustomTab());

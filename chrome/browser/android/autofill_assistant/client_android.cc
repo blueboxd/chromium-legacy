@@ -211,7 +211,7 @@ void ClientAndroid::OnAccessToken(JNIEnv* env,
   }
 }
 
-void ClientAndroid::ListDirectActions(
+void ClientAndroid::FetchWebsiteActions(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
@@ -225,8 +225,14 @@ void ClientAndroid::ListDirectActions(
   controller_->Track(
       CreateTriggerContext(env, jexperiment_ids, jargument_names,
                            jargument_values),
-      base::BindOnce(&ClientAndroid::OnListDirectActions,
+      base::BindOnce(&ClientAndroid::OnFetchWebsiteActions,
                      weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
+}
+
+bool ClientAndroid::HasRunFirstCheck(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) const {
+  return controller_ != nullptr && controller_->HasRunFirstCheck();
 }
 
 base::android::ScopedJavaLocalRef<jobjectArray>
@@ -262,11 +268,11 @@ base::android::ScopedJavaLocalRef<jobjectArray> ClientAndroid::GetDirectActions(
   return GetDirectActionsAsJavaArrayOfStrings(env);
 }
 
-void ClientAndroid::OnListDirectActions(
+void ClientAndroid::OnFetchWebsiteActions(
     const base::android::JavaRef<jobject>& jcallback) {
   JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantClient_sendDirectActionList(
-      env, java_object_, jcallback, GetDirectActionsAsJavaArrayOfStrings(env));
+  Java_AutofillAssistantClient_onFetchWebsiteActions(
+      env, java_object_, jcallback, controller_ != nullptr);
 }
 
 bool ClientAndroid::PerformDirectAction(
@@ -307,7 +313,7 @@ bool ClientAndroid::PerformDirectAction(
 
 int ClientAndroid::FindDirectAction(const std::string& action_name) {
   // It's too late to create a controller. This should have been done in
-  // ListDirectActions.
+  // FetchWebsiteActions.
   if (!controller_)
     return -1;
 

@@ -313,7 +313,7 @@ void ImageBitmapFactories::ImageBitmapLoader::DidFail(FileErrorCode) {
 namespace {
 void DecodeImageOnDecoderThread(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    WTF::ArrayBufferContents contents,
+    ArrayBufferContents contents,
     ImageDecoder::AlphaOption alpha_option,
     ColorBehavior color_behavior,
     WTF::CrossThreadOnceFunction<void(sk_sp<SkImage>)> result_callback) {
@@ -334,7 +334,7 @@ void DecodeImageOnDecoderThread(
 }  // namespace
 
 void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
-    WTF::ArrayBufferContents contents) {
+    ArrayBufferContents contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Thread::Current()->GetTaskRunner();

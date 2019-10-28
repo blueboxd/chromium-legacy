@@ -102,8 +102,6 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
         })");
   }
   DCHECK_EQ(service_type, metrics::MetricsLogUploader::UKM);
-  // TODO(https://crbug.com/951781): Update this annotation once Unity is
-  // enabled on ChromeOS by default.
   return net::DefineNetworkTrafficAnnotation("metrics_report_ukm", R"(
       semantics {
         sender: "Metrics UKM Log Uploader"
@@ -127,19 +125,13 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
       policy {
         cookies_allowed: NO
         setting:
-          "On ChromeOS, users can enable or disable this feature by disabling "
-          "'Automatically send diagnostic and usage data to Google' in "
-          "Chrome's settings under Advanced Settings, Privacy. This is only "
-          "enabled if all active profiles have History Sync enabled without a "
-          "Sync passphrase. "
-          "On all other platforms, users can enable or disable this feature by "
-          "disabling 'Make searches and browsing better' in Chrome's settings "
-          "under Advanced Settings, Privacy. This has to be enabled for all "
-          "active profiles. This is only enabled if the user has "
-          "'Help improve Chrome's features and performance' enabled in the "
-          "same settings menu. "
-          "On all platforms, information about the installed extensions is "
-          "sent only if Extension Sync is enabled."
+          "Users can enable or disable this feature by disabling 'Make "
+          "searches and browsing better' in Chrome's settings under Advanced "
+          "Settings, Privacy. This has to be enabled for all active profiles. "
+          "This is only enabled if the user has 'Help improve Chrome's "
+          "features and performance' enabled in the same settings menu. "
+          "Information about the installed extensions is sent only if "
+          "Extension Sync is enabled."
         chrome_policy {
           MetricsReportingEnabled {
             policy_options {mode: MANDATORY}

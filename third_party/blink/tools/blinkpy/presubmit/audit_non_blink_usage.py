@@ -205,6 +205,8 @@ _CONFIG = [
 
             # PartitionAlloc
             'base::PartitionFree',
+            'base::PartitionAllocZeroFill',
+            'base::PartitionAllocReturnNull',
 
             # For TaskObserver.
             'base::PendingTask',

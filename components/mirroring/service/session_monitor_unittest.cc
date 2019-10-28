@@ -18,10 +18,8 @@
 #include "components/mirroring/service/wifi_status_monitor.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/test/utility/net_utility.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -101,12 +99,13 @@ class SessionMonitorTest : public mojom::CastMessageChannel,
 
   void CreateSessionMonitor(int max_bytes, std::string* expected_settings) {
     EXPECT_CALL(*this, Send(::testing::_)).Times(::testing::AtLeast(1));
-    network::mojom::URLLoaderFactoryPtr url_loader_factory;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
     auto test_url_loader_factory =
         std::make_unique<network::TestURLLoaderFactory>();
     url_loader_factory_ = test_url_loader_factory.get();
-    mojo::MakeStrongBinding(std::move(test_url_loader_factory),
-                            mojo::MakeRequest(&url_loader_factory));
+    mojo::MakeSelfOwnedReceiver(
+        std::move(test_url_loader_factory),
+        url_loader_factory.InitWithNewPipeAndPassReceiver());
     MirrorSettings mirror_settings;
     base::Value session_tags(base::Value::Type::DICTIONARY);
     base::Value settings = mirror_settings.ToDictionaryValue();

@@ -28,8 +28,6 @@ class PendingNetworkConfigurationUpdate {
       int completed_attempts);
   PendingNetworkConfigurationUpdate(
       const PendingNetworkConfigurationUpdate& update);
-  PendingNetworkConfigurationUpdate& operator=(
-      PendingNetworkConfigurationUpdate& update);
   virtual ~PendingNetworkConfigurationUpdate();
 
   // The identifier for the network.
@@ -51,9 +49,9 @@ class PendingNetworkConfigurationUpdate {
   bool IsDeleteOperation() const;
 
  private:
-  NetworkIdentifier id_;
-  std::string change_guid_;
-  base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics_;
+  const NetworkIdentifier id_;
+  const std::string change_guid_;
+  const base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics_;
   int completed_attempts_;
 };
 

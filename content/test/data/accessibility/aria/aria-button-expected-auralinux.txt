@@ -7,9 +7,3 @@
 ++[push button] name='Complex button ' xml-roles:button
 ++++[text] name='Complex button '
 ++++[entry] selectable-text
-++[toggle button] name='Complex toggle button ' pressed checkable:true xml-roles:button
-++++[text] name='Complex toggle button '
-++++[entry] selectable-text
-++[push button] name='Complex pop up button ' haspopup:menu xml-roles:button
-++++[text] name='Complex pop up button '
-++++[entry] selectable-text

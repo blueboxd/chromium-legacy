@@ -38,6 +38,16 @@ TEST_F(NetworkIdentifierTest, FromProto) {
   EXPECT_EQ(expected_id, id);
 }
 
+TEST_F(NetworkIdentifierTest, FromNetwork) {
+  chromeos::NetworkState network("dummy_path");
+  network.PropertyChanged(shill::kWifiHexSsid, base::Value(kHexSsid));
+  network.PropertyChanged(shill::kSecurityClassProperty,
+                          base::Value(shill::kSecurityPsk));
+  NetworkIdentifier id = NetworkIdentifier::FromNetwork(network);
+  EXPECT_EQ(kHexSsid, id.hex_ssid());
+  EXPECT_EQ(shill::kSecurityPsk, id.security_type());
+}
+
 TEST_F(NetworkIdentifierTest, FromString) {
   std::string string_id("0123456789ABCDEF_psk");
   NetworkIdentifier id = NetworkIdentifier::DeserializeFromString(string_id);

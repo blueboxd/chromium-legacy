@@ -1479,6 +1479,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/signin/ProfileDownloader.java",
   "java/src/org/chromium/chrome/browser/signin/SignOutDialogFragment.java",
   "java/src/org/chromium/chrome/browser/signin/SigninActivity.java",
+  "java/src/org/chromium/chrome/browser/signin/SigninActivityLauncher.java",
   "java/src/org/chromium/chrome/browser/signin/SigninFragment.java",
   "java/src/org/chromium/chrome/browser/signin/SigninFragmentBase.java",
   "java/src/org/chromium/chrome/browser/signin/SigninHelper.java",

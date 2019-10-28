@@ -641,7 +641,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
   // | |-B
   // | +-C (insertion point)
   // |   |-D (*)
-  if (IsHTMLSpanElement(insertion_pos.AnchorNode())) {
+  if (IsA<HTMLSpanElement>(insertion_pos.AnchorNode())) {
     insertion_pos =
         Position::InParentBeforeNode(*insertion_pos.ComputeContainerNode());
   }

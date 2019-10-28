@@ -55,14 +55,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     navigation_response_override_ = std::move(response_override);
   }
 
-  // Copy of the settings value determining if mixed plugin content should be
-  // blocked.
-  bool block_mixed_plugin_content() const {
-    return block_mixed_plugin_content_;
-  }
-  void set_block_mixed_plugin_content(bool block_mixed_plugin_content) {
-    block_mixed_plugin_content_ = block_mixed_plugin_content;
-  }
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   TakeURLLoaderThrottles() {
     return std::move(url_loader_throttles_);
@@ -91,7 +83,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   blink::WebString custom_user_agent_;
   std::unique_ptr<NavigationResponseOverrideParameters>
       navigation_response_override_;
-  bool block_mixed_plugin_content_ = false;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> url_loader_throttles_;
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
   bool allow_cross_origin_auth_prompt_ = false;

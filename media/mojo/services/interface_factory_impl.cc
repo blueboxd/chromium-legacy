@@ -157,16 +157,19 @@ void InterfaceFactoryImpl::CreateCastRenderer(
 
 #if defined(OS_ANDROID)
 void InterfaceFactoryImpl::CreateMediaPlayerRenderer(
-    mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
-    mojom::RendererRequest request,
-    mojom::MediaPlayerRendererExtensionRequest renderer_extension_request) {
+    mojo::PendingRemote<mojom::MediaPlayerRendererClientExtension>
+        client_extension_ptr,
+    mojo::PendingReceiver<mojom::Renderer> receiver,
+    mojo::PendingReceiver<mojom::MediaPlayerRendererExtension>
+        renderer_extension_receiver) {
   NOTREACHED();
 }
 
 void InterfaceFactoryImpl::CreateFlingingRenderer(
     const std::string& audio_device_id,
-    mojom::FlingingRendererClientExtensionPtr client_extension,
-    mojo::InterfaceRequest<mojom::Renderer> request) {
+    mojo::PendingRemote<mojom::FlingingRendererClientExtension>
+        client_extension,
+    mojo::PendingReceiver<mojom::Renderer> receiver) {
   NOTREACHED();
 }
 #endif  // defined(OS_ANDROID)

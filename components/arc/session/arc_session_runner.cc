@@ -251,7 +251,9 @@ void ArcSessionRunner::StartArcSession() {
       RecordInstanceCrashUma(ArcContainerLifetimeEvent::CONTAINER_STARTING);
   }
   if (target_mode_ == ArcInstanceMode::FULL_INSTANCE) {
-    arc_session_->RequestUpgrade(std::move(upgrade_params_));
+    // Do not std::move the params intentionally. RestartArcSession() can
+    // reuse the params without preceded by resetting them.
+    arc_session_->RequestUpgrade(upgrade_params_);
   }
 }
 

@@ -373,7 +373,7 @@ class TranslateManagerRenderViewHostTest
 
   TestRenderViewContextMenu* CreateContextMenu() {
     content::ContextMenuParams params;
-    params.media_type = blink::WebContextMenuData::kMediaTypeNone;
+    params.media_type = blink::ContextMenuDataMediaType::kNone;
     params.x = 0;
     params.y = 0;
     params.has_image_contents = true;

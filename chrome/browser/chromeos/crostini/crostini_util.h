@@ -70,9 +70,9 @@ bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy = true);
 // Returns whether the default Crostini VM is running for the user.
 bool IsCrostiniRunning(Profile* profile);
 
-// Returns whether infrastructure for applying Ansible playbook to default
-// Crostini container is enabled.
-bool IsCrostiniAnsibleInfrastructureEnabled();
+// Returns whether default Crostini container should be configured according to
+// the configuration specified by CrostiniAnsiblePlaybook user policy.
+bool ShouldConfigureDefaultContainer(Profile* profile);
 
 // Launches the Crostini app with ID of |app_id| on the display with ID of
 // |display_id|. |app_id| should be a valid Crostini app list id.
@@ -160,7 +160,7 @@ void PrepareShowCrostiniUpgradeContainerView(Profile* profile,
 // not open until PrepareShowCrostiniUpgradeContainerView is called again.
 void CloseCrostiniUpgradeContainerView();
 
-// Show the Crostini Software Config Upgrade dialog (for installing Ansible and
+// Show the Crostini Software Config dialog (for installing Ansible and
 // applying an Ansible playbook in the container).
 void ShowCrostiniAnsibleSoftwareConfigView(Profile* profile);
 

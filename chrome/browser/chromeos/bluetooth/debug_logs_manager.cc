@@ -7,7 +7,8 @@
 #include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "components/user_manager/user.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
@@ -15,19 +16,28 @@ namespace bluetooth {
 
 namespace {
 const char kSupportedEmailSuffix[] = "@google.com";
+const char kVerboseLoggingEnablePrefName[] = "bluetooth.verboseLogging.enable";
 }  // namespace
 
-DebugLogsManager::DebugLogsManager(const user_manager::User* primary_user)
-    : primary_user_(primary_user) {}
+DebugLogsManager::DebugLogsManager(const std::string& primary_user_email,
+                                   PrefService* pref_service)
+    : primary_user_email_(primary_user_email), pref_service_(pref_service) {}
 
 DebugLogsManager::~DebugLogsManager() = default;
+
+// static
+void DebugLogsManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(kVerboseLoggingEnablePrefName,
+                                false /* default_value */);
+}
 
 DebugLogsManager::DebugLogsState DebugLogsManager::GetDebugLogsState() const {
   if (!AreDebugLogsSupported())
     return DebugLogsState::kNotSupported;
 
-  return are_debug_logs_enabled_ ? DebugLogsState::kSupportedAndEnabled
-                                 : DebugLogsState::kSupportedButDisabled;
+  return pref_service_->GetBoolean(kVerboseLoggingEnablePrefName)
+             ? DebugLogsState::kSupportedAndEnabled
+             : DebugLogsState::kSupportedButDisabled;
 }
 
 mojom::DebugLogsChangeHandlerPtr DebugLogsManager::GenerateInterfacePtr() {
@@ -39,8 +49,9 @@ mojom::DebugLogsChangeHandlerPtr DebugLogsManager::GenerateInterfacePtr() {
 void DebugLogsManager::ChangeDebugLogsState(bool should_debug_logs_be_enabled) {
   DCHECK_NE(GetDebugLogsState(), DebugLogsState::kNotSupported);
 
-  // TODO(yshavit): Handle the user enabling/disabling logs.
-  are_debug_logs_enabled_ = should_debug_logs_be_enabled;
+  pref_service_->SetBoolean(kVerboseLoggingEnablePrefName,
+                            should_debug_logs_be_enabled);
+  // TODO(crbug.com/734152): On login, enable logs based on this value
 }
 
 bool DebugLogsManager::AreDebugLogsSupported() const {
@@ -49,10 +60,7 @@ bool DebugLogsManager::AreDebugLogsSupported() const {
     return false;
   }
 
-  if (!primary_user_)
-    return false;
-
-  return base::EndsWith(primary_user_->GetDisplayEmail(), kSupportedEmailSuffix,
+  return base::EndsWith(primary_user_email_, kSupportedEmailSuffix,
                         base::CompareCase::INSENSITIVE_ASCII);
 }
 

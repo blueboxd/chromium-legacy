@@ -27,6 +27,7 @@
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "media/renderers/video_overlay_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -70,15 +71,15 @@ class MojoRendererTest : public ::testing::Test {
         new StrictMock<MockRenderer>());
     mock_renderer_ = mock_renderer.get();
 
-    mojom::RendererPtr remote_renderer;
+    mojo::PendingRemote<mojom::Renderer> remote_renderer_remote;
     renderer_binding_ = MojoRendererService::Create(
         &mojo_cdm_service_context_, std::move(mock_renderer),
-        mojo::MakeRequest(&remote_renderer));
+        remote_renderer_remote.InitWithNewPipeAndPassReceiver());
 
     mojo_renderer_.reset(
         new MojoRenderer(message_loop_.task_runner(),
                          std::unique_ptr<VideoOverlayFactory>(nullptr), nullptr,
-                         std::move(remote_renderer)));
+                         std::move(remote_renderer_remote)));
 
     // CreateAudioStream() and CreateVideoStream() overrides expectations for
     // expected non-NULL streams.

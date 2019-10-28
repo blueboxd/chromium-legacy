@@ -17,6 +17,7 @@ namespace {
 const char* kDecisionFailureReasonStrings[] = {
     "Browser opted out via enterprise policy",
     "Tab opted out via origin trial",
+    "Tab did not report its origin trial opt-in/opt-out",
     "Origin is in global blacklist",
     "Origin has been observed playing audio while backgrounded",
     "Origin has been observed updating favicon while backgrounded",
@@ -84,6 +85,9 @@ void PopulateFailureReason(
       break;
     case DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT:
       ukm->SetFailureOriginTrialOptOut(1);
+      break;
+    case DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN:
+      ukm->SetFailureOriginTrialUnknown(1);
       break;
     case DecisionFailureReason::GLOBAL_BLACKLIST:
       ukm->SetFailureGlobalBlacklist(1);

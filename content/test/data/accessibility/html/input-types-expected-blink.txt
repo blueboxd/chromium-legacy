@@ -23,16 +23,10 @@ rootWebArea
 ++++++staticText name='File: '
 ++++++++inlineTextBox name='File: '
 ++++++button name='File:' value='No file chosen'
-++++++++button name='Choose File'
-++++++++++staticText name='Choose File'
-++++++++++++inlineTextBox name='Choose File'
 ++++labelText
 ++++++staticText name='Image: '
 ++++++++inlineTextBox name='Image: '
 ++++++button name='Image:'
-++++++++image
-++++++++staticText name='Submit'
-++++++++++inlineTextBox name='Submit'
 ++++labelText
 ++++++staticText name='Number: '
 ++++++++inlineTextBox name='Number: '
@@ -53,8 +47,6 @@ rootWebArea
 ++++++staticText name='Reset: '
 ++++++++inlineTextBox name='Reset: '
 ++++++button name='Reset:'
-++++++++staticText name='Reset'
-++++++++++inlineTextBox name='Reset'
 ++++labelText
 ++++++staticText name='Search: '
 ++++++++inlineTextBox name='Search: '
@@ -64,8 +56,6 @@ rootWebArea
 ++++++staticText name='Submit: '
 ++++++++inlineTextBox name='Submit: '
 ++++++button name='Submit:'
-++++++++staticText name='Submit'
-++++++++++inlineTextBox name='Submit'
 ++++labelText
 ++++++staticText name='Tel: '
 ++++++++inlineTextBox name='Tel: '

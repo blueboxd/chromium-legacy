@@ -131,6 +131,8 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
 
 IntPoint GetSelectionStartpoint(const PositionWithAffinity& position) {
   const LocalCaretRect& local_caret_rect = LocalCaretRectOfPosition(position);
+  if (local_caret_rect.IsEmpty())
+    return IntPoint();
   const IntRect rect = AbsoluteCaretBoundsOf(position);
   // In a multiline edit, rect.MaxY() would end up on the next line, so
   // take the midpoint in order to use this corner point directly.
@@ -144,6 +146,8 @@ IntPoint GetSelectionStartpoint(const PositionWithAffinity& position) {
 
 IntPoint GetSelectionEndpoint(const PositionWithAffinity& position) {
   const LocalCaretRect& local_caret_rect = LocalCaretRectOfPosition(position);
+  if (local_caret_rect.IsEmpty())
+    return IntPoint();
   const IntRect rect = AbsoluteCaretBoundsOf(position);
   // In a multiline edit, rect.MaxY() would end up on the next line, so
   // take the midpoint in order to use this corner point directly.

@@ -306,7 +306,7 @@ static void TestInterfaceEmptyMethodOverloadWithVariadicArgs1Method(const v8::Fu
 
   node_arg = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!node_arg) {
-    exception_state.ThrowTypeError("parameter 2 is not of type 'Node'.");
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(1, "Node"));
     return;
   }
 

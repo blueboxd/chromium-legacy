@@ -143,6 +143,8 @@ following sign-offs. Some of these are accessible to Googlers only.
 Non-Googlers can email one of the people in
 [//third_party/OWNERS](../third_party/OWNERS) for help.
 
+* Make sure you have the approval from Chrome Eng Review as mentioned
+  [above](#before-you-start).
 * Get security@chromium.org approval. Email the list with relevant details and
   a link to the CL. Third party code is a hot spot for security vulnerabilities.
   When adding a new package that could potentially carry security risk, make

@@ -98,7 +98,8 @@ AwSafeBrowsingUIManager::GetURLLoaderFactoryOnIOThread() {
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&AwSafeBrowsingUIManager::CreateURLLoaderFactoryForIO,
-                       this, MakeRequest(&url_loader_factory_on_io_)));
+                       this,
+                       url_loader_factory_on_io_.BindNewPipeAndPassReceiver()));
     shared_url_loader_factory_on_io_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             url_loader_factory_on_io_.get());

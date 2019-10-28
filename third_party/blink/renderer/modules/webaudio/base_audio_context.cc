@@ -320,7 +320,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
   ScriptPromise promise = resolver->Promise();
 
   v8::Isolate* isolate = script_state->GetIsolate();
-  WTF::ArrayBufferContents buffer_contents;
+  ArrayBufferContents buffer_contents;
   // Detach the audio array buffer from the main thread and start
   // async decoding of the data.
   if (audio_data->IsDetachable(isolate) &&

@@ -1,6 +1,3 @@
 rootWebArea
 ++genericContainer
 ++++button inputType='image' name='email'
-++++++image
-++++++staticText name='email'
-++++++++inlineTextBox name='email'

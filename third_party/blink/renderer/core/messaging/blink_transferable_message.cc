@@ -86,9 +86,9 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
 
     for (auto& item : message.array_buffer_contents_array) {
       mojo_base::BigBuffer& big_buffer = item->contents;
-      WTF::ArrayBufferContents contents(
-          big_buffer.size(), 1, WTF::ArrayBufferContents::kNotShared,
-          WTF::ArrayBufferContents::kDontInitialize);
+      ArrayBufferContents contents(big_buffer.size(), 1,
+                                   ArrayBufferContents::kNotShared,
+                                   ArrayBufferContents::kDontInitialize);
       // Check if we allocated the backing store of the ArrayBufferContents
       // correctly.
       CHECK_EQ(contents.DataLength(), big_buffer.size());

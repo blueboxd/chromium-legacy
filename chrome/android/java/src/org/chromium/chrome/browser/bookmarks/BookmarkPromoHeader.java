@@ -263,7 +263,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
      * @param promoState The promo state to which the header will be set to.
      */
     @VisibleForTesting
-    public static void forcePromoStateForTests(@PromoState int promoState) {
+    static void forcePromoStateForTests(@Nullable @PromoState Integer promoState) {
         sPromoStateForTests = promoState;
     }
 }

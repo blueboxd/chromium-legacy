@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.blink_public.web.WebContextMenuMediaType;
+import org.chromium.blink_public.common.ContextMenuDataMediaType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuGroup;
@@ -47,7 +47,7 @@ public class RevampedContextMenuCoordinatorTest {
     @Test
     public void testGetItemListWithImageLink() {
         final ContextMenuParams params = new ContextMenuParams(
-                WebContextMenuMediaType.IMAGE, "", "", "", "", "", "", null, false, 0, 0, 0);
+                ContextMenuDataMediaType.IMAGE, "", "", "", "", "", "", null, false, 0, 0, 0);
         List<Pair<Integer, List<ContextMenuItem>>> rawItems = new ArrayList<>();
         // Link items
         List<ContextMenuItem> groupOne = new ArrayList<>();
@@ -87,7 +87,7 @@ public class RevampedContextMenuCoordinatorTest {
         // Profile.getLastUsedProfile(), which throws an exception because native isn't initialized.
         // mediaType here doesn't have any effect on what we're testing.
         final ContextMenuParams params = new ContextMenuParams(
-                WebContextMenuMediaType.IMAGE, "", "", "", "", "", "", null, false, 0, 0, 0);
+                ContextMenuDataMediaType.IMAGE, "", "", "", "", "", "", null, false, 0, 0, 0);
         List<Pair<Integer, List<ContextMenuItem>>> rawItems = new ArrayList<>();
         // Link items
         List<ContextMenuItem> groupOne = new ArrayList<>();
@@ -112,7 +112,7 @@ public class RevampedContextMenuCoordinatorTest {
     @Test
     public void testGetItemListWithVideo() {
         final ContextMenuParams params = new ContextMenuParams(
-                WebContextMenuMediaType.VIDEO, "", "", "", "", "", "", null, false, 0, 0, 0);
+                ContextMenuDataMediaType.VIDEO, "", "", "", "", "", "", null, false, 0, 0, 0);
         List<Pair<Integer, List<ContextMenuItem>>> rawItems = new ArrayList<>();
         // Video items
         List<ContextMenuItem> groupOne = new ArrayList<>();

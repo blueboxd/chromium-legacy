@@ -116,7 +116,7 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   // GetSystemContext(), so consumers don't all need to create their own
   // factory.
   scoped_refptr<URLLoaderFactoryForSystem> system_shared_url_loader_factory_;
-  network::mojom::URLLoaderFactoryPtr system_url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> system_url_loader_factory_;
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   // Monitors prefs related to proxy configuration.

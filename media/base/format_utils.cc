@@ -17,6 +17,9 @@ base::Optional<VideoPixelFormat> GfxBufferFormatToVideoPixelFormat(
     case gfx::BufferFormat::BGRA_8888:
       return PIXEL_FORMAT_ARGB;
 
+    case gfx::BufferFormat::RGBA_8888:
+      return PIXEL_FORMAT_ABGR;
+
     // There is no PIXEL_FORMAT_XBGR which would have been the right mapping.
     // See ui/ozone drm_util.cc::GetFourCCFormatFromBufferFormat as reference.
     // But here it is only about indicating to not consider the alpha channel.

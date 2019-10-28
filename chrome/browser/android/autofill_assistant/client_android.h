@@ -64,13 +64,17 @@ class ClientAndroid : public Client,
                      jboolean success,
                      const base::android::JavaParamRef<jstring>& access_token);
 
-  void ListDirectActions(
+  void FetchWebsiteActions(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jexperiment_ids,
       const base::android::JavaParamRef<jobjectArray>& jargument_names,
       const base::android::JavaParamRef<jobjectArray>& jargument_values,
       const base::android::JavaParamRef<jobject>& jcallback);
+
+  bool HasRunFirstCheck(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller) const;
 
   base::android::ScopedJavaLocalRef<jobjectArray> GetDirectActions(
       JNIEnv* env,
@@ -112,7 +116,7 @@ class ClientAndroid : public Client,
   void AttachUI(
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
   bool NeedsUI();
-  void OnListDirectActions(const base::android::JavaRef<jobject>& jcallback);
+  void OnFetchWebsiteActions(const base::android::JavaRef<jobject>& jcallback);
 
   base::android::ScopedJavaLocalRef<jobjectArray>
   GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const;

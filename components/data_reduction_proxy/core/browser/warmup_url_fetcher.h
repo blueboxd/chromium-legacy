@@ -130,7 +130,7 @@ class WarmupURLFetcher {
   size_t previous_attempt_counts_;
 
   CreateCustomProxyConfigCallback create_custom_proxy_config_callback_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
   mojo::Remote<network::mojom::NetworkContext> context_;
 
   // Callback that should be executed when the fetching of the warmup URL is

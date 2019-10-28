@@ -41,7 +41,6 @@
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/ip_endpoint.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
@@ -406,9 +405,9 @@ Session::Session(
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
   network_context_->CreateURLLoaderFactory(
-      mojo::MakeRequest(&url_loader_factory), std::move(params));
+      url_loader_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
 
   // Generate session level tags.
   base::Value session_tags(base::Value::Type::DICTIONARY);

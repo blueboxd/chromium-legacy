@@ -42,11 +42,6 @@ public class TabDelegateFactoryImpl implements TabDelegateFactory {
     }
 
     @Override
-    public boolean canShowAppBanners() {
-        return true;
-    }
-
-    @Override
     public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
         return new TabStateBrowserControlsVisibilityDelegate(tab);
     }

@@ -212,6 +212,11 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         protected @WebDisplayMode int getDisplayMode() {
             return mIsTrustedWebActivity ? WebDisplayMode.STANDALONE : WebDisplayMode.BROWSER;
         }
+
+        @Override
+        public boolean canShowAppBanners() {
+            return !mIsTrustedWebActivity;
+        }
     }
 
     private final ChromeActivity mActivity;
@@ -309,11 +314,6 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
         return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
                 ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
-    }
-
-    @Override
-    public boolean canShowAppBanners() {
-        return !mIsTrustedWebActivity;
     }
 
     /**

@@ -214,6 +214,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "javatests/src/org/chromium/weblayer/test/EventUtils.java",
     "javatests/src/org/chromium/weblayer/test/FullscreenDelegateTest.java",
     "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
+    "javatests/src/org/chromium/weblayer/test/DataClearingTest.java",
     "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
     "javatests/src/org/chromium/weblayer/test/EventUtils.java",
     "javatests/src/org/chromium/weblayer/test/ExecuteScriptTest.java",

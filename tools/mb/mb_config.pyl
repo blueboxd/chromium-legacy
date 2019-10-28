@@ -1118,7 +1118,7 @@
 
     'android_release_bot_minimal_symbols_arm64_coverage': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'strip_debug_info', 'use_java_coverage',
+      'strip_debug_info', 'use_java_coverage', 'use_clang_coverage',
     ],
 
     'android_release_bot_minimal_symbols_arm64_webview_google': [

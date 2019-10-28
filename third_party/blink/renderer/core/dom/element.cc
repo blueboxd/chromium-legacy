@@ -3977,11 +3977,15 @@ bool Element::hasAttributeNS(const AtomicString& namespace_uri,
   return GetElementData()->Attributes().Find(q_name);
 }
 
+bool Element::DelegatesFocus() const {
+  return AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus();
+}
+
 // Step 1 of https://html.spec.whatwg.org/C/#focusing-steps in a case
 // where |new focus target| is an element.
 Element* Element::FindActualFocusTarget() const {
   // TODO(crbug.com/1018619): Support AREA -> IMG delegation.
-  if (!AuthorShadowRoot() || !AuthorShadowRoot()->delegatesFocus())
+  if (!DelegatesFocus())
     return nullptr;
   Document& doc = GetDocument();
   UseCounter::Count(doc, WebFeature::kDelegateFocus);
@@ -4146,7 +4150,7 @@ bool Element::SupportsFocus() const {
   // But supportsFocus must return true when the element is editable, or else
   // it won't be focusable. Furthermore, supportsFocus cannot just return true
   // always or else tabIndex() will change for all HTML elements.
-  if (AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus())
+  if (DelegatesFocus())
     return false;
   return HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly) ||
          IsRootEditableElementWithCounting(*this) ||

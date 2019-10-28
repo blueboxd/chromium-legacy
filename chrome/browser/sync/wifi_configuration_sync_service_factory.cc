@@ -39,10 +39,10 @@ WifiConfigurationSyncServiceFactory::~WifiConfigurationSyncServiceFactory() =
 
 KeyedService* WifiConfigurationSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
   return new chromeos::sync_wifi::WifiConfigurationSyncService(
-      chrome::GetChannel(), profile->GetPrefs(),
-      ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory());
+      chrome::GetChannel(), ModelTypeStoreServiceFactory::GetForProfile(
+                                Profile::FromBrowserContext(context))
+                                ->GetStoreFactory());
 }
 
 void WifiConfigurationSyncServiceFactory::RegisterProfilePrefs(

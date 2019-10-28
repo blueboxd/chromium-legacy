@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/streams/transform_stream_native.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
@@ -66,11 +67,12 @@ class TransformStreamNative::FlushAlgorithm final : public StreamAlgorithm {
     ExceptionState exception_state(script_state->GetIsolate(),
                                    ExceptionState::kUnknownContext, "", "");
     ControllerInterface controller_interface(script_state, controller_);
+    ScriptPromise promise;
     {
       // This is needed because the realm of the transformer can be different
       // from the realm of the transform stream.
       ScriptState::Scope scope(transformer_->GetScriptState());
-      transformer_->Flush(&controller_interface, exception_state);
+      promise = transformer_->Flush(&controller_interface, exception_state);
     }
     if (exception_state.HadException()) {
       auto exception = exception_state.GetException();
@@ -78,7 +80,7 @@ class TransformStreamNative::FlushAlgorithm final : public StreamAlgorithm {
       return PromiseReject(script_state, exception);
     }
 
-    return PromiseResolveWithUndefined(script_state);
+    return promise.V8Value().As<v8::Promise>();
   }
 
   // SetController() must be called before Run() is.
@@ -112,11 +114,13 @@ class TransformStreamNative::TransformAlgorithm final : public StreamAlgorithm {
     ExceptionState exception_state(script_state->GetIsolate(),
                                    ExceptionState::kUnknownContext, "", "");
     ControllerInterface controller_interface(script_state, controller_);
+    ScriptPromise promise;
     {
       // This is needed because the realm of the transformer can be different
       // from the realm of the transform stream.
       ScriptState::Scope scope(transformer_->GetScriptState());
-      transformer_->Transform(argv[0], &controller_interface, exception_state);
+      promise = transformer_->Transform(argv[0], &controller_interface,
+                                        exception_state);
     }
     if (exception_state.HadException()) {
       auto exception = exception_state.GetException();
@@ -124,7 +128,7 @@ class TransformStreamNative::TransformAlgorithm final : public StreamAlgorithm {
       return PromiseReject(script_state, exception);
     }
 
-    return PromiseResolveWithUndefined(script_state);
+    return promise.V8Value().As<v8::Promise>();
   }
 
   // SetController() must be called before Run() is.

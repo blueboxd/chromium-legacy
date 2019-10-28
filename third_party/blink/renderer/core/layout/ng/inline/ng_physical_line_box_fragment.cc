@@ -24,18 +24,6 @@ static_assert(sizeof(NGPhysicalLineBoxFragment) ==
                   sizeof(SameSizeAsNGPhysicalLineBoxFragment),
               "NGPhysicalLineBoxFragment should stay small");
 
-bool IsInlineLeaf(const NGPhysicalFragment& fragment) {
-  if (fragment.IsText())
-    return true;
-  return fragment.IsBox() && fragment.IsAtomicInline();
-}
-
-bool IsEditableFragment(const NGPhysicalFragment& fragment) {
-  if (!fragment.GetNode())
-    return false;
-  return HasEditableStyle(*fragment.GetNode());
-}
-
 }  // namespace
 
 scoped_refptr<const NGPhysicalLineBoxFragment>
@@ -149,49 +137,6 @@ PhysicalOffset NGPhysicalLineBoxFragment::LineEndPoint() const {
   const PhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
   return logical_end.ConvertToPhysical(Style().GetWritingMode(),
                                        BaseDirection(), Size(), pixel_size);
-}
-
-const LayoutObject* NGPhysicalLineBoxFragment::ClosestLeafChildForPoint(
-    const PhysicalOffset& point,
-    bool only_editable_leaves) const {
-  const PhysicalSize unit_square(LayoutUnit(1), LayoutUnit(1));
-  const LogicalOffset logical_point = point.ConvertToLogical(
-      Style().GetWritingMode(), BaseDirection(), Size(), unit_square);
-  const LayoutUnit inline_offset = logical_point.inline_offset;
-  const NGPhysicalFragment* closest_leaf_child = nullptr;
-  LayoutUnit closest_leaf_distance;
-  for (const auto& descendant :
-       NGInlineFragmentTraversal::DescendantsOf(*this)) {
-    const NGPhysicalFragment& fragment = *descendant.fragment;
-    if (!fragment.GetLayoutObject())
-      continue;
-    if (!IsInlineLeaf(fragment) || fragment.IsListMarker())
-      continue;
-    if (only_editable_leaves && !IsEditableFragment(fragment))
-      continue;
-
-    const LogicalSize fragment_logical_size =
-        fragment.Size().ConvertToLogical(Style().GetWritingMode());
-    const LogicalOffset fragment_logical_offset =
-        descendant.offset_to_container_box.ConvertToLogical(
-            Style().GetWritingMode(), BaseDirection(), Size(), fragment.Size());
-    const LayoutUnit inline_min = fragment_logical_offset.inline_offset;
-    const LayoutUnit inline_max = fragment_logical_offset.inline_offset +
-                                  fragment_logical_size.inline_size;
-    if (inline_offset >= inline_min && inline_offset < inline_max)
-      return fragment.GetLayoutObject();
-
-    const LayoutUnit distance =
-        inline_offset < inline_min ? inline_min - inline_offset
-                                   : inline_offset - inline_max + LayoutUnit(1);
-    if (!closest_leaf_child || distance < closest_leaf_distance) {
-      closest_leaf_child = &fragment;
-      closest_leaf_distance = distance;
-    }
-  }
-  if (!closest_leaf_child)
-    return nullptr;
-  return closest_leaf_child->GetLayoutObject();
 }
 
 }  // namespace blink

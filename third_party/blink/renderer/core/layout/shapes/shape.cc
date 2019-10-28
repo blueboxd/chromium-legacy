@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/layout/shapes/raster_shape.h"
 #include "third_party/blink/renderer/core/layout/shapes/rectangle_shape.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
@@ -50,7 +51,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
@@ -233,7 +233,7 @@ std::unique_ptr<Shape> Shape::CreateEmptyRasterShape(WritingMode writing_mode,
 
 static bool ExtractImageData(Image* image,
                              const IntSize& image_size,
-                             WTF::ArrayBufferContents& contents) {
+                             ArrayBufferContents& contents) {
   if (!image)
     return false;
 
@@ -266,9 +266,8 @@ static bool ExtractImageData(Image* image,
       StaticBitmapImage::GetSizeInBytes(image_dest_rect, color_params);
   if (size_in_bytes > v8::TypedArray::kMaxLength)
     return false;
-  WTF::ArrayBufferContents result(size_in_bytes, 1,
-                                  WTF::ArrayBufferContents::kNotShared,
-                                  WTF::ArrayBufferContents::kZeroInitialize);
+  ArrayBufferContents result(size_in_bytes, 1, ArrayBufferContents::kNotShared,
+                             ArrayBufferContents::kZeroInitialize);
   if (result.DataLength() != size_in_bytes)
     return false;
   result.Transfer(contents);
@@ -281,7 +280,7 @@ static bool ExtractImageData(Image* image,
 }
 
 static std::unique_ptr<RasterShapeIntervals> ExtractIntervalsFromImageData(
-    WTF::ArrayBufferContents& contents,
+    ArrayBufferContents& contents,
     float threshold,
     const IntRect& image_rect,
     const IntRect& margin_rect) {
@@ -344,7 +343,7 @@ std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
     return CreateEmptyRasterShape(writing_mode, margin);
   }
 
-  WTF::ArrayBufferContents contents;
+  ArrayBufferContents contents;
   if (!ExtractImageData(image, image_rect.Size(), contents))
     return CreateEmptyRasterShape(writing_mode, margin);
 

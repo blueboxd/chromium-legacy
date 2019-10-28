@@ -30,11 +30,6 @@ See the
 [Tast quickstart guide](https://chromium.googlesource.com/chromiumos/platform/tast/+/HEAD/docs/quickstart.md)
 for more information about the Tast framework.
 
-__Note:__ Tast tests are currently being migrated from the
-_video_decode_accelerator_unittest_ to the new _video_decode_accelerator_tests_
-binary. Check the [documentation](vdatest_usage.md) for more info about the old
-video decode accelerator tests.
-
 ## Running manually
 To run the video decoder tests manually the _video_decode_accelerator_tests_
 target needs to be built and deployed to the device being tested. Running

@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.directactions.DirectActionReporter;
 import org.chromium.chrome.browser.directactions.DirectActionReporter.Type;
@@ -19,18 +19,14 @@ import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * A handler that provides just enough functionality to allow on-demand loading of the module
  * through direct actions. The actual implementation is in the module.
  */
 public class AutofillAssistantDirectActionHandler implements DirectActionHandler {
-    // TODO(b/138833619): Rename this action into something that shows that it is starting the
-    // controller / dynamic actions stack.
-    private static final String LIST_AA_ACTIONS = "list_assistant_actions";
-    private static final String LIST_AA_ACTIONS_RESULT = "names";
+    private static final String FETCH_WEBSITE_ACTIONS = "fetch_website_actions";
+    private static final String FETCH_WEBSITE_ACTIONS_RESULT = "success";
     // TODO(b/138833619): Remove this action entirely.
     private static final String PERFORM_AA_ACTION = "perform_assistant_action";
     private static final String AA_ACTION_RESULT = "success";
@@ -38,12 +34,6 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     private static final String EXPERIMENT_IDS = "experiment_ids";
     private static final String ONBOARDING_ACTION = "onboarding";
     private static final String USER_NAME = "user_name";
-
-    /**
-     * Set of actions to report when AA is not available, because of preference or
-     * lack of DFM.
-     */
-    private static final Set<String> FALLBACK_ACTION_SET = Collections.singleton(ONBOARDING_ACTION);
 
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
@@ -78,15 +68,18 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             return;
         }
 
-        reporter.addDirectAction(LIST_AA_ACTIONS)
-                .withParameter(USER_NAME, Type.STRING, /* required= */ false)
-                .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
-                .withResult(LIST_AA_ACTIONS_RESULT, Type.STRING);
-
         reporter.addDirectAction(PERFORM_AA_ACTION)
                 .withParameter(ACTION_NAME, Type.STRING, /* required= */ false)
                 .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
                 .withResult(AA_ACTION_RESULT, Type.BOOLEAN);
+
+        ThreadUtils.assertOnUiThread();
+        if (mDelegate == null || (mDelegate != null && !mDelegate.hasRunFirstCheck())) {
+            reporter.addDirectAction(FETCH_WEBSITE_ACTIONS)
+                    .withParameter(USER_NAME, Type.STRING, /* required= */ false)
+                    .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
+                    .withResult(FETCH_WEBSITE_ACTIONS_RESULT, Type.BOOLEAN);
+        }
 
         // Additionally report if there are dynamic actions.
         if (mDelegate != null) {
@@ -101,8 +94,8 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     @Override
     public boolean performDirectAction(
             String actionId, Bundle arguments, Callback<Bundle> callback) {
-        if (actionId.equals(LIST_AA_ACTIONS)) {
-            listActions(arguments, callback);
+        if (actionId.equals(FETCH_WEBSITE_ACTIONS)) {
+            fetchWebsiteActions(arguments, callback);
             return true;
         }
         if (actionId.equals(PERFORM_AA_ACTION)) {
@@ -110,7 +103,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             return true;
         }
         // Only handle and perform the action if it is known to the controller.
-        if (isActionAvailable(actionId)) {
+        if (isActionAvailable(actionId) || ONBOARDING_ACTION.equals(actionId)) {
             arguments.putString("name", actionId);
             performAction(arguments, callback);
             return true;
@@ -123,20 +116,20 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
         return Arrays.asList(mDelegate.getActions()).contains(actionId);
     }
 
-    private void listActions(Bundle arguments, Callback<Bundle> bundleCallback) {
-        Callback<Set<String>> namesCallback = (names) -> {
+    private void fetchWebsiteActions(Bundle arguments, Callback<Bundle> bundleCallback) {
+        Callback<Boolean> successCallback = (success) -> {
             Bundle bundle = new Bundle();
-            bundle.putString(LIST_AA_ACTIONS_RESULT, TextUtils.join(",", names));
+            bundle.putBoolean(FETCH_WEBSITE_ACTIONS_RESULT, success);
             bundleCallback.onResult(bundle);
         };
 
         if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
-            namesCallback.onResult(Collections.emptySet());
+            successCallback.onResult(false);
             return;
         }
 
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
-            namesCallback.onResult(FALLBACK_ACTION_SET);
+            successCallback.onResult(false);
             return;
         }
 
@@ -148,10 +141,10 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
 
         getDelegate(/* installIfNecessary= */ false, (delegate) -> {
             if (delegate == null) {
-                namesCallback.onResult(FALLBACK_ACTION_SET);
+                successCallback.onResult(false);
                 return;
             }
-            delegate.listActions(userName, experimentIds, arguments, namesCallback);
+            delegate.fetchWebsiteActions(userName, experimentIds, arguments, successCallback);
         });
     }
 
@@ -182,7 +175,11 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
                 delegate.performOnboarding(experimentIds, booleanCallback);
                 return;
             }
-            delegate.performAction(name, experimentIds, arguments, booleanCallback);
+
+            Callback<Boolean> successCallback = (success) -> {
+                booleanCallback.onResult(success && delegate.getActions().length != 0);
+            };
+            delegate.performAction(name, experimentIds, arguments, successCallback);
         });
     }
 

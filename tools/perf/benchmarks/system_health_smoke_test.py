@@ -15,10 +15,11 @@ import unittest
 from chrome_telemetry_build import chromium_config
 
 from core import perf_benchmark
+from core import results_processor
+from core import testing
 
 from telemetry import decorators
 from telemetry.internal.browser import browser_finder
-from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
 
 from py_utils import discover
@@ -194,7 +195,11 @@ _DISABLED_TESTS = frozenset({
 })
 
 
-MAX_NUM_VALUES = 50000
+# We want to prevent benchmarks from accidentally trying to upload too much
+# data to the chrome perf dashboard. So the smoke tests below cap the max
+# number of values that each story tested would produce when running on the
+# waterfall.
+MAX_VALUES_PERT_TEST_CASE = 1000
 
 
 def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
@@ -211,18 +216,6 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
       def CreateStorySet(self, options):
         # pylint: disable=super-on-old-class
         story_set = super(SinglePageBenchmark, self).CreateStorySet(options)
-
-        # We want to prevent benchmarks from accidentally trying to upload too
-        # much data to the chrome perf dashboard. So this tests tries to
-        # estimate the amount of values that the benchmark _would_ create when
-        # running on the waterfall, and fails if too many values are produced.
-        # As we run a single story and not the whole benchmark, the number of
-        # max values allowed is scaled proportionally.
-        # TODO(crbug.com/981349): This logic is only really valid for legacy
-        # values, and does not take histograms into account. An alternative
-        # should be implemented when using the results processor.
-        type(self).MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set)
-
         stories_to_remove = [s for s in story_set.stories if s !=
                              story_to_smoke_test]
         for s in stories_to_remove:
@@ -251,9 +244,15 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
         self.skipTest('Test is explicitly disabled')
       single_page_benchmark = SinglePageBenchmark()
       return_code = single_page_benchmark.Run(options)
-    if return_code == -1:
-      self.skipTest('The benchmark was not run.')
-    self.assertEqual(0, return_code, msg='Failed: %s' % benchmark_class)
+      if return_code == -1:
+        self.skipTest('The benchmark was not run.')
+      self.assertEqual(
+          return_code, 0,
+          msg='Benchmark run failed: %s' % benchmark_class.Name())
+      return_code = results_processor.ProcessResults(options)
+      self.assertEqual(
+          return_code, 0,
+          msg='Result processing failed: %s' % benchmark_class.Name())
 
   # We attach the test method to SystemHealthBenchmarkSmokeTest dynamically
   # so that we can set the test method name to include
@@ -270,10 +269,12 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
 
 
 def GenerateBenchmarkOptions(output_dir, benchmark_cls):
-  options = options_for_unittests.GetRunOptions(
+  options = testing.GetRunOptions(
       output_dir=output_dir, benchmark_cls=benchmark_cls,
       environment=chromium_config.GetDefaultChromiumConfig())
   options.pageset_repeat = 1  # For smoke testing only run each page once.
+  options.output_formats = ['histograms']
+  options.max_values_per_test_case = MAX_VALUES_PERT_TEST_CASE
 
   # Enable browser logging in the smoke test only. Hopefully, this will detect
   # all crashes and hence remove the need to enable logging in actual perf
@@ -292,7 +293,7 @@ def load_tests(loader, standard_tests, pattern):
   names_stories_to_smoke_tests = []
   for benchmark_class in benchmark_classes:
 
-    # HACK: these options should be derived from options_for_unittests which are
+    # HACK: these options should be derived from GetRunOptions which are
     # the resolved options from run_tests' arguments. However, options is only
     # parsed during test time which happens after load_tests are called.
     # Since none of our system health benchmarks creates stories based on

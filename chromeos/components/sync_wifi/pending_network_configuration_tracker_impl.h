@@ -28,7 +28,8 @@ class PendingNetworkConfigurationTrackerImpl
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // sync_wifi::PendingNetworkConfigurationTracker::
-  std::string TrackPendingUpdate(
+  void TrackPendingUpdate(
+      const std::string& change_guid,
       const NetworkIdentifier& id,
       const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics)
       override;

@@ -8,7 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -59,7 +61,8 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   AwProxyingURLLoaderFactory(
       int process_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-      network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          target_factory_remote,
       bool intercept_only);
 
   ~AwProxyingURLLoaderFactory() override;
@@ -68,7 +71,8 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   static void CreateProxy(
       int process_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader,
-      network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          target_factory_remote);
 
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
@@ -88,7 +92,7 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   const int process_id_;
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
-  network::mojom::URLLoaderFactoryPtr target_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
 
   // When true the loader resulting from this factory will only execute
   // intercept callback (shouldInterceptRequest). If that returns without

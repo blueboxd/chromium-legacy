@@ -87,6 +87,12 @@ public class WebappDelegateFactory extends TabDelegateFactoryImpl {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), intent);
         }
+
+        @Override
+        public boolean canShowAppBanners() {
+            // Do not show banners when we are in a standalone activity.
+            return false;
+        }
     }
 
     private final WebappActivity mActivity;
@@ -113,11 +119,5 @@ public class WebappDelegateFactory extends TabDelegateFactoryImpl {
                 new WebappBrowserControlsDelegate(mActivity, tab),
                 // Ensures browser controls hiding is delayed after activity start.
                 mActivity.getFullscreenManager().getBrowserVisibilityDelegate());
-    }
-
-    @Override
-    public boolean canShowAppBanners() {
-        // Do not show banners when we are in a standalone activity.
-        return false;
     }
 }

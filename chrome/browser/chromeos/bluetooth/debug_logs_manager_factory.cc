@@ -23,8 +23,10 @@ namespace {
 class DebugLogsManagerService : public KeyedService {
  public:
   explicit DebugLogsManagerService(Profile* profile)
-      : debug_logs_manager_(
-            chromeos::ProfileHelper::Get()->GetUserByProfile(profile)) {}
+      : debug_logs_manager_(chromeos::ProfileHelper::Get()
+                                ->GetUserByProfile(profile)
+                                ->GetDisplayEmail(),
+                            profile->GetPrefs()) {}
 
   ~DebugLogsManagerService() override = default;
 

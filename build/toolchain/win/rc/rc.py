@@ -180,15 +180,16 @@ def RunRc(preprocessed_output, is_utf8, flags):
   p.communicate(input=preprocessed_output)
 
   if flags.show_includes and p.returncode == 0:
+    TOOL_DIR = os.path.dirname(os.path.relpath(THIS_DIR)).replace("\\", "/")
     # Since tool("rc") can't have deps, add deps on this script and on rc.py
     # and its deps here, so that rc edges become dirty if rc.py changes.
-    print('Note: including file: ../../build/toolchain/win/tool_wrapper.py')
-    print('Note: including file: ../../build/toolchain/win/rc/rc.py')
+    print('Note: including file: {}/tool_wrapper.py'.format(TOOL_DIR))
+    print('Note: including file: {}/rc/rc.py'.format(TOOL_DIR))
     print(
-        'Note: including file: ../../build/toolchain/win/rc/linux64/rc.sha1')
-    print('Note: including file: ../../build/toolchain/win/rc/mac/rc.sha1')
+        'Note: including file: {}/rc/linux64/rc.sha1'.format(TOOL_DIR))
+    print('Note: including file: {}/rc/mac/rc.sha1'.format(TOOL_DIR))
     print(
-        'Note: including file: ../../build/toolchain/win/rc/win/rc.exe.sha1')
+        'Note: including file: {}/rc/win/rc.exe.sha1'.format(TOOL_DIR))
 
   return p.returncode
 

@@ -9,8 +9,7 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -20,7 +19,6 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 
 import android.os.Bundle;
 import android.support.test.filters.MediumTest;
-import android.text.TextUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,7 +43,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /** Tests the direct actions exposed by AA. */
@@ -86,10 +83,9 @@ public class AutofillAssistantDirectActionHandlerTest {
     @MediumTest
     public void testReportOnboardingOnlyIfNotAccepted() throws Exception {
         mModuleEntryProvider.setInstalled();
-        assertThat(listActions(), contains("onboarding"));
 
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
-        mHandler.reportAvailableDirectActions(reporter);
+        reportAvailableDirectActions(mHandler, reporter);
 
         assertEquals(1, reporter.mActions.size());
 
@@ -109,31 +105,16 @@ public class AutofillAssistantDirectActionHandlerTest {
     @MediumTest
     public void testReportAvailableDirectActions() throws Exception {
         mModuleEntryProvider.setInstalled();
-        assertThat(listActions(), contains("onboarding"));
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
-        // Ask again for a new list of actions.
-        listActions();
+
+        // Start the autofill assistant stack.
 
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
-        mHandler.reportAvailableDirectActions(reporter);
+        reportAvailableDirectActions(mHandler, reporter);
 
-        assertEquals(4, reporter.mActions.size());
+        assertEquals(2, reporter.mActions.size());
 
-        FakeDirectActionDefinition list = reporter.mActions.get(0);
-        assertEquals("list_assistant_actions", list.mId);
-        assertEquals(2, list.mParameters.size());
-        assertEquals("user_name", list.mParameters.get(0).mName);
-        assertEquals(Type.STRING, list.mParameters.get(0).mType);
-        assertEquals(false, list.mParameters.get(0).mRequired);
-        assertEquals("experiment_ids", list.mParameters.get(1).mName);
-        assertEquals(Type.STRING, list.mParameters.get(1).mType);
-        assertEquals(false, list.mParameters.get(1).mRequired);
-
-        assertEquals(1, list.mResults.size());
-        assertEquals("names", list.mResults.get(0).mName);
-        assertEquals(Type.STRING, list.mResults.get(0).mType);
-
-        FakeDirectActionDefinition perform = reporter.mActions.get(1);
+        FakeDirectActionDefinition perform = reporter.mActions.get(0);
         assertEquals("perform_assistant_action", perform.mId);
         assertEquals(2, perform.mParameters.size());
         assertEquals("name", perform.mParameters.get(0).mName);
@@ -144,8 +125,32 @@ public class AutofillAssistantDirectActionHandlerTest {
         assertEquals("success", perform.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, perform.mResults.get(0).mType);
 
+        FakeDirectActionDefinition fetch = reporter.mActions.get(1);
+        assertEquals("fetch_website_actions", fetch.mId);
+        assertEquals(2, fetch.mParameters.size());
+        assertEquals("user_name", fetch.mParameters.get(0).mName);
+        assertEquals(Type.STRING, fetch.mParameters.get(0).mType);
+        assertEquals(false, fetch.mParameters.get(0).mRequired);
+        assertEquals("experiment_ids", fetch.mParameters.get(1).mName);
+        assertEquals(Type.STRING, fetch.mParameters.get(1).mType);
+        assertEquals(false, fetch.mParameters.get(1).mRequired);
+        assertEquals(1, fetch.mResults.size());
+        assertEquals("success", fetch.mResults.get(0).mName);
+        assertEquals(Type.BOOLEAN, fetch.mResults.get(0).mType);
+
+        // Start the autofill assistant stack.
+        fetchWebsiteActions();
+        // Reset the reported actions.
+        reporter = new FakeDirectActionReporter();
+        reportAvailableDirectActions(mHandler, reporter);
+
+        // Now that the AA stack is up, the fetdch_website_actions should no longer show up.
+        assertEquals(3, reporter.mActions.size());
+
+        assertEquals("perform_assistant_action", reporter.mActions.get(0).mId);
+
         // Now we expect 2 dyamic actions "search" and "action2".
-        FakeDirectActionDefinition search = reporter.mActions.get(2);
+        FakeDirectActionDefinition search = reporter.mActions.get(1);
         assertEquals("search", search.mId);
         assertEquals(1, search.mParameters.size());
         assertEquals("experiment_ids", search.mParameters.get(0).mName);
@@ -154,7 +159,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         assertEquals("success", search.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, search.mResults.get(0).mType);
 
-        FakeDirectActionDefinition action2 = reporter.mActions.get(3);
+        FakeDirectActionDefinition action2 = reporter.mActions.get(2);
         assertEquals("action2", action2.mId);
         assertEquals(1, action2.mParameters.size());
         assertEquals("experiment_ids", action2.mParameters.get(0).mName);
@@ -168,29 +173,14 @@ public class AutofillAssistantDirectActionHandlerTest {
     @MediumTest
     public void testReportAvailableAutofillAssistantActions() throws Exception {
         mModuleEntryProvider.setInstalled();
-        assertThat(listActions(), contains("onboarding"));
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
 
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
-        mHandler.reportAvailableDirectActions(reporter);
+        reportAvailableDirectActions(mHandler, reporter);
 
         assertEquals(2, reporter.mActions.size());
 
-        FakeDirectActionDefinition list = reporter.mActions.get(0);
-        assertEquals("list_assistant_actions", list.mId);
-        assertEquals(2, list.mParameters.size());
-        assertEquals("user_name", list.mParameters.get(0).mName);
-        assertEquals(Type.STRING, list.mParameters.get(0).mType);
-        assertEquals(false, list.mParameters.get(0).mRequired);
-        assertEquals("experiment_ids", list.mParameters.get(1).mName);
-        assertEquals(Type.STRING, list.mParameters.get(1).mType);
-        assertEquals(false, list.mParameters.get(1).mRequired);
-
-        assertEquals(1, list.mResults.size());
-        assertEquals("names", list.mResults.get(0).mName);
-        assertEquals(Type.STRING, list.mResults.get(0).mType);
-
-        FakeDirectActionDefinition perform = reporter.mActions.get(1);
+        FakeDirectActionDefinition perform = reporter.mActions.get(0);
         assertEquals("perform_assistant_action", perform.mId);
         assertEquals(2, perform.mParameters.size());
         assertEquals("name", perform.mParameters.get(0).mName);
@@ -200,6 +190,20 @@ public class AutofillAssistantDirectActionHandlerTest {
         assertEquals(1, perform.mResults.size());
         assertEquals("success", perform.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, perform.mResults.get(0).mType);
+
+        FakeDirectActionDefinition fetch = reporter.mActions.get(1);
+        assertEquals("fetch_website_actions", fetch.mId);
+        assertEquals(2, fetch.mParameters.size());
+        assertEquals("user_name", fetch.mParameters.get(0).mName);
+        assertEquals(Type.STRING, fetch.mParameters.get(0).mType);
+        assertEquals(false, fetch.mParameters.get(0).mRequired);
+        assertEquals("experiment_ids", fetch.mParameters.get(1).mName);
+        assertEquals(Type.STRING, fetch.mParameters.get(1).mType);
+        assertEquals(false, fetch.mParameters.get(1).mRequired);
+
+        assertEquals(1, fetch.mResults.size());
+        assertEquals("success", fetch.mResults.get(0).mName);
+        assertEquals(Type.BOOLEAN, fetch.mResults.get(0).mType);
     }
 
     @Test
@@ -208,8 +212,7 @@ public class AutofillAssistantDirectActionHandlerTest {
     public void testOnboarding() throws Exception {
         mModuleEntryProvider.setInstalled();
 
-        assertThat(listActions(), contains("onboarding"));
-
+        assertThat(isOnboardingReported(), is(true));
         acceptOnboarding();
 
         assertTrue(AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted());
@@ -220,7 +223,7 @@ public class AutofillAssistantDirectActionHandlerTest {
     public void testModuleNotAvailable() throws Exception {
         mModuleEntryProvider.setCannotInstall();
 
-        assertThat(listActions(), contains("onboarding"));
+        assertThat(isOnboardingReported(), is(true));
         assertFalse(performAction("onboarding", Bundle.EMPTY));
     }
 
@@ -230,7 +233,7 @@ public class AutofillAssistantDirectActionHandlerTest {
     public void testInstallModuleOnDemand() throws Exception {
         mModuleEntryProvider.setNotInstalled();
 
-        assertThat(listActions(), contains("onboarding"));
+        assertThat(isOnboardingReported(), is(true));
         acceptOnboarding();
     }
 
@@ -239,7 +242,7 @@ public class AutofillAssistantDirectActionHandlerTest {
     public void testSwitchedOffInPreferences() throws Exception {
         AutofillAssistantPreferencesUtil.setInitialPreferences(false);
 
-        assertThat(listActions(), empty());
+        assertThat(isOnboardingReported(), is(false));
         assertFalse(performAction("onboarding", Bundle.EMPTY));
     }
 
@@ -254,18 +257,41 @@ public class AutofillAssistantDirectActionHandlerTest {
         assertEquals(Boolean.TRUE, onboardingCallback.waitForResult("accept onboarding"));
     }
 
+    private boolean isOnboardingReported() throws Exception {
+        FakeDirectActionReporter reporter = new FakeDirectActionReporter();
+        reportAvailableDirectActions(mHandler, reporter);
+
+        for (FakeDirectActionDefinition definition : reporter.mActions) {
+            if (definition.mId.equals("onboarding")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // TODO(b/134741524): Add tests that list and execute direct actions coming from scripts, once
     // we have a way to fake RPCs and can create a bottom sheet controller on demand.
 
-    /** Calls list_assistant_actions and returns the result. */
-    private List<String> listActions() throws Exception {
+    /** Calls fetch_website_actions and returns whether that succeeded or not. */
+    private boolean fetchWebsiteActions() throws Exception {
         WaitingCallback<Bundle> callback = new WaitingCallback<Bundle>();
         assertTrue(TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mHandler.performDirectAction(
-                                "list_assistant_actions", Bundle.EMPTY, callback)));
-        return Arrays.asList(TextUtils.split(
-                callback.waitForResult("list_assistant_actions").getString("names", ""), ","));
+                                "fetch_website_actions", Bundle.EMPTY, callback)));
+        return callback.waitForResult("fetch_website_actions").getBoolean("success", false);
+    }
+
+    /**
+     * When reporting direct actions involves web_contents in the controller, it needs to run on the
+     * UI thread.
+     */
+    private void reportAvailableDirectActions(
+            DirectActionHandler handler, DirectActionReporter reporter) throws Exception {
+        assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> {
+            handler.reportAvailableDirectActions(reporter);
+            return true;
+        }));
     }
 
     /** Calls perform_assistant_action and returns the result. */

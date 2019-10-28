@@ -171,11 +171,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '62160f2f358a7b4a5b81d3a782e964d1c39c86da',
+  'skia_revision': '428b5de64a081642736a4e35f0f9265e27dcff9b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'be638514c9876e80c222068059b205d64091c78d',
+  'v8_revision': '99564c9b22ad426db6165f680cb1a897dee3fcb6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -183,7 +183,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '95a736bd334711626a0af3d6ead3c4c789932aaf',
+  'angle_revision': '225301d6dc53eb798622c86a272402de7f59f52f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '7568fa8a28d974cdbbae590232915e1283937736',
+  'catapult_revision': 'e44b5225dbfdd3f0ba6676e48b0bac4c6b477402',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -242,7 +242,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c20eb36aa74460b2cd476e2ec4af675e66e62f00',
+  'devtools_frontend_revision': '77f2a9d8d6ebe07576736a9b8a073141769e45a8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -306,7 +306,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '04863c42beddde4b4e8a76884094101c0ba7e1cc',
+  'dawn_revision': 'f6281a5530c0f04529b8e330b1020f8c722485d8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -870,7 +870,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'a8c4e3a48ffde94eb75630b0640328e4f62fbe59',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'c5f1be68e3ff3b183c19c977a38cc8e7185cd21a',
       'condition': 'checkout_linux',
   },
 
@@ -1301,7 +1301,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '512f209de9b5955d62b26e675dff7762688397d2',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '2b0233b972a6eb88b72a88de72e9eabaecca0a81',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1502,7 +1502,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '2701c130839edbeb226735b0775966b6423d9e83',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'e38e11986f0037818df79abc120024420e901074',
+    Var('webrtc_git') + '/src.git' + '@' + '3eae7e4e3cdf1a7459905e734f2902876bdaa9cd',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.

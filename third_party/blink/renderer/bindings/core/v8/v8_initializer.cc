@@ -78,7 +78,6 @@
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
 
@@ -639,17 +638,17 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   // should respond by throwing a RangeError, per
   // http://www.ecma-international.org/ecma-262/6.0/#sec-createbytedatablock.
   void* Allocate(size_t size) override {
-    return WTF::ArrayBufferContents::AllocateMemoryOrNull(
-        size, WTF::ArrayBufferContents::kZeroInitialize);
+    return ArrayBufferContents::AllocateMemoryOrNull(
+        size, ArrayBufferContents::kZeroInitialize);
   }
 
   void* AllocateUninitialized(size_t size) override {
-    return WTF::ArrayBufferContents::AllocateMemoryOrNull(
-        size, WTF::ArrayBufferContents::kDontInitialize);
+    return ArrayBufferContents::AllocateMemoryOrNull(
+        size, ArrayBufferContents::kDontInitialize);
   }
 
   void Free(void* data, size_t size) override {
-    WTF::ArrayBufferContents::FreeMemory(data);
+    ArrayBufferContents::FreeMemory(data);
   }
 };
 

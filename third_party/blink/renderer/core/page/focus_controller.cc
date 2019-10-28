@@ -420,21 +420,16 @@ inline bool IsShadowHostWithoutCustomFocusLogic(const Element& element) {
   return IsShadowHost(element) && !HasCustomFocusLogic(element);
 }
 
-inline bool IsShadowHostDelegatesFocus(const Element& element) {
-  return element.AuthorShadowRoot() &&
-         element.AuthorShadowRoot()->delegatesFocus();
-}
-
 inline bool IsNonKeyboardFocusableShadowHost(const Element& element) {
   return IsShadowHostWithoutCustomFocusLogic(element) &&
          !(element.ShadowRootIfV1()
-               ? (element.IsFocusable() || IsShadowHostDelegatesFocus(element))
+               ? (element.IsFocusable() || element.DelegatesFocus())
                : element.IsKeyboardFocusable());
 }
 
 inline bool IsKeyboardFocusableShadowHost(const Element& element) {
   return IsShadowHostWithoutCustomFocusLogic(element) &&
-         (element.IsKeyboardFocusable() || IsShadowHostDelegatesFocus(element));
+         (element.IsKeyboardFocusable() || element.DelegatesFocus());
 }
 
 inline bool IsNonFocusableFocusScopeOwner(Element& element) {
@@ -445,7 +440,7 @@ inline bool IsNonFocusableFocusScopeOwner(Element& element) {
 inline int AdjustedTabIndex(Element& element) {
   if (IsNonKeyboardFocusableShadowHost(element))
     return 0;
-  if (IsShadowHostDelegatesFocus(element)) {
+  if (element.DelegatesFocus()) {
     // We can't use Element::tabIndex(), which returns -1 for invalid or
     // missing values.
     return element.GetIntegralAttribute(html_names::kTabindexAttr, 0);
@@ -454,7 +449,7 @@ inline int AdjustedTabIndex(Element& element) {
 }
 
 inline bool ShouldVisit(Element& element) {
-  return element.IsKeyboardFocusable() || IsShadowHostDelegatesFocus(element) ||
+  return element.IsKeyboardFocusable() || element.DelegatesFocus() ||
          IsNonFocusableFocusScopeOwner(element);
 }
 
@@ -594,7 +589,7 @@ Element* FindFocusableElementRecursivelyForward(
     FocusController::OwnerMap& owner_map) {
   // Starting element is exclusive.
   while (Element* found = scope.FindFocusableElement(kWebFocusTypeForward)) {
-    if (IsShadowHostDelegatesFocus(*found)) {
+    if (found->DelegatesFocus()) {
       // If tabindex is positive, invalid, or missing, find focusable element
       // inside its shadow tree.
       if (AdjustedTabIndex(*found) >= 0 &&
@@ -639,14 +634,14 @@ Element* FindFocusableElementRecursivelyBackward(
           FindFocusableElementRecursivelyBackward(inner_scope, owner_map);
       if (found_in_inner_focus_scope)
         return found_in_inner_focus_scope;
-      if (IsShadowHostDelegatesFocus(*found))
+      if (found->DelegatesFocus())
         continue;
       return found;
     }
 
     // If delegatesFocus is true and tabindex is negative, skip the whole shadow
     // tree under the shadow host.
-    if (IsShadowHostDelegatesFocus(*found) && AdjustedTabIndex(*found) < 0)
+    if (found->DelegatesFocus() && AdjustedTabIndex(*found) < 0)
       continue;
 
     // Now |found| is on a non focusable scope owner (a shadow host, a <shadow>
@@ -661,7 +656,7 @@ Element* FindFocusableElementRecursivelyBackward(
         return found_in_inner_focus_scope;
       continue;
     }
-    if (!IsShadowHostDelegatesFocus(*found))
+    if (!found->DelegatesFocus())
       return found;
   }
   return nullptr;
@@ -745,8 +740,7 @@ Element* FindFocusableElementAcrossFocusScopesBackward(
     if (!owner)
       break;
     current_scope = ScopedFocusNavigation::CreateFor(*owner, owner_map);
-    if (IsKeyboardFocusableShadowHost(*owner) &&
-        !IsShadowHostDelegatesFocus(*owner)) {
+    if (IsKeyboardFocusableShadowHost(*owner) && !owner->DelegatesFocus()) {
       found = owner;
       break;
     }

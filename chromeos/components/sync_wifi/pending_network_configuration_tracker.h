@@ -28,8 +28,9 @@ class PendingNetworkConfigurationTracker {
   // Adds an update to the list of in flight changes.  |change_uuid| is a
   // unique identifier for each update, |id| is the identifier for the network
   // which is getting updated, and |specifics| should be nullopt if the network
-  // is being deleted.  Returns the change_guid.
-  virtual std::string TrackPendingUpdate(
+  // is being deleted.
+  virtual void TrackPendingUpdate(
+      const std::string& change_guid,
       const NetworkIdentifier& id,
       const base::Optional<sync_pb::WifiConfigurationSpecificsData>&
           specifics) = 0;

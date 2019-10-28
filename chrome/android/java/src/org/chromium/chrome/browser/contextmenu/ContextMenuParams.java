@@ -8,7 +8,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.blink_public.web.WebContextMenuMediaType;
+import org.chromium.blink_public.common.ContextMenuDataMediaType;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.MenuSourceType;
@@ -155,10 +155,10 @@ public class ContextMenuParams {
         }
     }
 
-    public ContextMenuParams(@WebContextMenuMediaType int mediaType, String pageUrl, String linkUrl,
-            String linkText, String unfilteredLinkUrl, String srcUrl, String titleText,
-            Referrer referrer, boolean canSaveMedia, int triggeringTouchXDp, int triggeringTouchYDp,
-            @MenuSourceType int sourceType) {
+    public ContextMenuParams(@ContextMenuDataMediaType int mediaType, String pageUrl,
+            String linkUrl, String linkText, String unfilteredLinkUrl, String srcUrl,
+            String titleText, Referrer referrer, boolean canSaveMedia, int triggeringTouchXDp,
+            int triggeringTouchYDp, @MenuSourceType int sourceType) {
         mPageUrl = pageUrl;
         mLinkUrl = linkUrl;
         mLinkText = linkText;
@@ -168,8 +168,8 @@ public class ContextMenuParams {
         mReferrer = referrer;
 
         mIsAnchor = !TextUtils.isEmpty(linkUrl);
-        mIsImage = mediaType == WebContextMenuMediaType.IMAGE;
-        mIsVideo = mediaType == WebContextMenuMediaType.VIDEO;
+        mIsImage = mediaType == ContextMenuDataMediaType.IMAGE;
+        mIsVideo = mediaType == ContextMenuDataMediaType.VIDEO;
         mCanSaveMedia = canSaveMedia;
         mTriggeringTouchXDp = triggeringTouchXDp;
         mTriggeringTouchYDp = triggeringTouchYDp;
@@ -177,7 +177,7 @@ public class ContextMenuParams {
     }
 
     @CalledByNative
-    private static ContextMenuParams create(@WebContextMenuMediaType int mediaType, String pageUrl,
+    private static ContextMenuParams create(@ContextMenuDataMediaType int mediaType, String pageUrl,
             String linkUrl, String linkText, String unfilteredLinkUrl, String srcUrl,
             String titleText, String sanitizedReferrer, int referrerPolicy, boolean canSaveMedia,
             int triggeringTouchXDp, int triggeringTouchYDp, @MenuSourceType int sourceType) {

@@ -6,9 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_BASE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 
 namespace blink {
 
@@ -16,8 +16,8 @@ class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
  public:
   ~DOMArrayBufferBase() override = default;
 
-  const WTF::ArrayBuffer* Buffer() const { return buffer_.get(); }
-  WTF::ArrayBuffer* Buffer() { return buffer_.get(); }
+  const ArrayBuffer* Buffer() const { return buffer_.get(); }
+  ArrayBuffer* Buffer() { return buffer_.get(); }
 
   const void* Data() const { return Buffer()->Data(); }
   void* Data() { return Buffer()->Data(); }
@@ -32,12 +32,12 @@ class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
   }
 
  protected:
-  explicit DOMArrayBufferBase(scoped_refptr<WTF::ArrayBuffer> buffer)
+  explicit DOMArrayBufferBase(scoped_refptr<ArrayBuffer> buffer)
       : buffer_(std::move(buffer)) {
     DCHECK(buffer_);
   }
 
-  scoped_refptr<WTF::ArrayBuffer> buffer_;
+  scoped_refptr<ArrayBuffer> buffer_;
 };
 
 }  // namespace blink

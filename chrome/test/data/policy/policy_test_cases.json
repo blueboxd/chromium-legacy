@@ -476,7 +476,7 @@
     "test_policy": {
       "NativePrintersBulkConfiguration": {
         "url": "https://example.com/policyfile",
-        "hash": "deadbeefdeadbeefdeadbeef"
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
       }
     }
   },
@@ -4353,7 +4353,7 @@
     "test_policy": {
       "DeviceWallpaperImage": {
         "url": "http://localhost/",
-        "hash": "examplewallpaperhash"
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
       }
     },
     "pref_mappings": [
@@ -4409,7 +4409,7 @@
     "test_policy": {
       "DeviceNativePrinters": {
         "url": "https://example.com/policyfile",
-        "hash": "deadbeefdeadbeefdeadbeef"
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
       }
     }
   },
@@ -4621,6 +4621,16 @@
     ]
   },
 
+  "CrostiniAnsiblePlaybook": {
+    "os": ["chromeos"],
+    "test_policy": {
+       "CrostiniAnsiblePlaybook": {
+         "url": "https://example.com/ansibleplaybook",
+         "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+       }
+    }
+  },
+
   "DeviceSamlLoginAuthenticationType": {
   },
 
@@ -4819,7 +4829,7 @@
     "test_policy": {
        "DeviceWilcoDtcCOnfiguration": {
          "url": "https://example.com/wilcodtcconfiguration",
-         "hash": "deadbeefdeadbeefdeadbeef"
+         "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
        }
     }
   },

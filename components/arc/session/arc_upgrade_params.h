@@ -37,6 +37,8 @@ struct UpgradeParams {
   // https://cs.chromium.org/chromium/src/tools/clang/plugins/FindBadConstructsConsumer.cpp
   UpgradeParams();
   ~UpgradeParams();
+  // Intentionally allows copying. The parameter is for container restart.
+  UpgradeParams(const UpgradeParams& other);
   UpgradeParams(UpgradeParams&& other);
   UpgradeParams& operator=(UpgradeParams&& other);
 
@@ -75,9 +77,6 @@ struct UpgradeParams {
   // pre-installed.
   // Should be empty if |is_demo_session| is not set.
   base::FilePath demo_session_apps_path;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UpgradeParams);
 };
 
 }  // namespace arc

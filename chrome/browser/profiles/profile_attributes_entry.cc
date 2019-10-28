@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -45,8 +46,6 @@ int NextAvailableMetricsBucketIndex() {
 
 const base::Feature kPersistUPAInProfileInfoCache{
     "PersistUPAInProfileInfoCache", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kConcatenateGaiaAndProfileName{
-    "ConcatenateGaiaAndProfileName", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char ProfileAttributesEntry::kAvatarIconKey[] = "avatar_icon";
 const char ProfileAttributesEntry::kBackgroundAppsKey[] = "background_apps";
@@ -67,6 +66,11 @@ ProfileAttributesEntry::ProfileAttributesEntry()
     : profile_info_cache_(nullptr),
       prefs_(nullptr),
       profile_path_(base::FilePath()) {}
+
+// static
+bool ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName() {
+  return base::FeatureList::IsEnabled(features::kProfileMenuRevamp);
+}
 
 void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
                                         const base::FilePath& path,
@@ -178,7 +182,7 @@ bool ProfileAttributesEntry::ShouldShowProfileLocalName(
 }
 
 base::string16 ProfileAttributesEntry::GetNameToDisplay() const {
-  DCHECK(base::FeatureList::IsEnabled(kConcatenateGaiaAndProfileName));
+  DCHECK(ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName);
   base::string16 name_to_display = GetGAIANameToDisplay();
 
   base::string16 local_profile_name = GetLocalProfileName();
@@ -208,10 +212,9 @@ bool ProfileAttributesEntry::HasProfileNameChanged() {
 }
 
 base::string16 ProfileAttributesEntry::GetName() const {
-  if (base::FeatureList::IsEnabled(kConcatenateGaiaAndProfileName))
-    return GetNameToDisplay();
-
-  return profile_info_cache_->GetNameOfProfileAtIndex(profile_index());
+  return ShouldConcatenateGaiaAndProfileName()
+             ? GetNameToDisplay()
+             : profile_info_cache_->GetNameOfProfileAtIndex(profile_index());
 }
 
 base::string16 ProfileAttributesEntry::GetShortcutName() const {

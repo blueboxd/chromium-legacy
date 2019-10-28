@@ -1,9 +1,4 @@
 rootWebArea
 ++genericContainer ignored
 ++++genericContainer name='Done'
-++++button name='Before'
-++++++paragraph ignored
-++++++genericContainer
-++++++++staticText name='After'
-++++++++++inlineTextBox name='After'
-++++++paragraph ignored
+++++button name='After'

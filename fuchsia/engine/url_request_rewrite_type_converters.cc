@@ -4,6 +4,16 @@
 
 #include "fuchsia/engine/url_request_rewrite_type_converters.h"
 
+#include "base/strings/strcat.h"
+
+namespace {
+
+std::string NormalizeHost(base::StringPiece host) {
+  return GURL(base::StrCat({url::kHttpScheme, "://", host})).host();
+}
+
+}  // namespace
+
 namespace mojo {
 
 mojom::UrlRequestRewriteAddHeadersPtr
@@ -96,8 +106,21 @@ TypeConverter<mojom::UrlRequestRewriteRulePtr,
               fuchsia::web::UrlRequestRewriteRule>::
     Convert(const fuchsia::web::UrlRequestRewriteRule& input) {
   mojom::UrlRequestRewriteRulePtr rule = mojom::UrlRequestRewriteRule::New();
-  if (input.has_hosts_filter())
-    rule->hosts_filter = base::make_optional(input.hosts_filter());
+  if (input.has_hosts_filter()) {
+    // Convert host names in case they contain non-ASCII characters.
+    const base::StringPiece kWildcard("*.");
+
+    std::vector<std::string> hosts;
+    for (const base::StringPiece host : input.hosts_filter()) {
+      if (base::StartsWith(host, kWildcard, base::CompareCase::SENSITIVE)) {
+        hosts.push_back(
+            base::StrCat({kWildcard, NormalizeHost(host.substr(2))}));
+      } else {
+        hosts.push_back(NormalizeHost(host));
+      }
+    }
+    rule->hosts_filter = std::move(hosts);
+  }
   if (input.has_schemes_filter())
     rule->schemes_filter = base::make_optional(input.schemes_filter());
   if (input.has_rewrites())

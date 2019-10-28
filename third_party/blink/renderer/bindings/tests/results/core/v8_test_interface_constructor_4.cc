@@ -73,7 +73,7 @@ static void Constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceConstructor4* test_interface_4_arg;
   test_interface_4_arg = V8TestInterfaceConstructor4::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!test_interface_4_arg) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToConstruct("TestInterfaceConstructor4", "parameter 1 is not of type 'TestInterfaceConstructor4'."));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToConstruct("TestInterfaceConstructor4", ExceptionMessages::ArgumentNotOfType(0, "TestInterfaceConstructor4")));
     return;
   }
 

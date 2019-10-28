@@ -21,6 +21,7 @@
 #include "components/sync/driver/profile_sync_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/blink/public/common/context_menu_data/media_type.h"
 
 SharingBrowserTest::SharingBrowserTest()
     : SyncTest(TWO_CLIENT),
@@ -126,7 +127,7 @@ std::unique_ptr<TestRenderViewContextMenu> SharingBrowserTest::InitContextMenu(
     base::StringPiece selection_text) {
   content::ContextMenuParams params;
   params.selection_text = base::ASCIIToUTF16(selection_text);
-  params.media_type = blink::WebContextMenuData::MediaType::kMediaTypeNone;
+  params.media_type = blink::ContextMenuDataMediaType::kNone;
   params.unfiltered_link_url = url;
   params.link_url = url;
   params.src_url = url;

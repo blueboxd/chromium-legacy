@@ -32,6 +32,9 @@ class CircularProgress extends HTMLElement {
     this.indicator_ = this.shadowRoot.querySelector('.top');
 
     /** @private {Element} */
+    this.errormark_ = assert(this.shadowRoot.querySelector('.errormark'));
+
+    /** @private {Element} */
     this.label_ = this.shadowRoot.querySelector('.label');
 
     /** @private {number} */
@@ -79,6 +82,9 @@ class CircularProgress extends HTMLElement {
                             cx='18' cy='18' r='10' stroke-dasharray='0 1'/>
                         <text class='label' x='18' y='18' text-anchor='middle'
                             alignment-baseline='central'></text>
+                        <circle class='errormark' visibility='hidden'
+                            cx='25.5' cy='10.5' r='4'
+                            fill='#D93025' stroke='none'/>
                     </svg>
                 </div>`;
   }
@@ -89,6 +95,7 @@ class CircularProgress extends HTMLElement {
    */
   static get observedAttributes() {
     return [
+      'errormark',
       'label',
       'progress',
       'radius',
@@ -111,6 +118,22 @@ class CircularProgress extends HTMLElement {
   }
 
   /**
+   * Sets the position of the error indicator.
+   * The error indicator is used by the summary panel. Its position is aligned
+   * with the top-right square that contains the progress circle itself.
+   * @param {number} radius The radius of the progress circle.
+   * @param {number} strokeWidth The width of the progress circle stroke.
+   * @private
+   */
+  setErrorPosition_(radius, strokeWidth) {
+    const center = 18;
+    const x = center + radius + (strokeWidth / 2) - 4;
+    const y = center - radius - (strokeWidth / 2) + 4;
+    this.errormark_.setAttribute('cx', x);
+    this.errormark_.setAttribute('cy', y);
+  }
+
+  /**
    * Callback triggered by the browser when our attribute values change.
    * TODO(crbug.com/947388) Add unit tests to exercise attribute edge cases.
    * @param {string} name Attribute that's changed.
@@ -123,6 +146,9 @@ class CircularProgress extends HTMLElement {
       return;
     }
     switch (name) {
+      case 'errormark':
+        this.errormark_.setAttribute('visibility', newValue || '');
+        break;
       case 'label':
         this.label_.textContent = newValue;
         break;
@@ -135,6 +161,9 @@ class CircularProgress extends HTMLElement {
         if (radius < 0 || radius > 16.5) {
           return;
         }
+        const strokeWidth = 3;
+        // Position the error indicator relative to the progress circle.
+        this.setErrorPosition_(radius, strokeWidth);
         // Calculate the circumference for the progress dash length.
         this.fullCircle_ = Math.PI * 2 * radius;
         const bottom = this.shadowRoot.querySelector('.bottom');
@@ -147,6 +176,25 @@ class CircularProgress extends HTMLElement {
         this.progress_ = this.setProgress(progress);
         break;
     }
+  }
+
+  /**
+   * Getter for the visibility of the error marker.
+   * @public
+   * @return {string}
+   */
+  get errorMarkerVisibility() {
+    return this.errormark_.getAttribute('visibility');
+  }
+
+  /**
+   * Set the visibility of the error marker.
+   * @param {string} visibility Visibility value being set.
+   * @public
+   */
+  set errorMarkerVisibility(visibility) {
+    // Reflect the progress property into the attribute.
+    this.setAttribute('errormark', visibility);
   }
 
   /**

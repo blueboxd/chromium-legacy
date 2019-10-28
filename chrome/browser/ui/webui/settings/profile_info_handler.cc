@@ -153,7 +153,7 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
           ->GetProfileAttributesStorage()
           .GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
     name = base::UTF16ToUTF8(
-        base::FeatureList::IsEnabled(kConcatenateGaiaAndProfileName)
+        ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName()
             ? entry->GetLocalProfileName()
             : entry->GetName());
     // TODO(crbug.com/710660): return chrome://theme/IDR_PROFILE_AVATAR_*

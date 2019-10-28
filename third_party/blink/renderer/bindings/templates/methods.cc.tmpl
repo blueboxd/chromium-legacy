@@ -182,7 +182,7 @@ if (info[{{argument.index}}]->IsFunction()) {
 {% elif argument.is_variadic_wrapper_type %}
 for (int i = {{argument.index}}; i < info.Length(); ++i) {
   if (!V8{{argument.idl_type}}::HasInstance(info[i], info.GetIsolate())) {
-    {{throw_argument_error(method, argument, "parameter %(index)d is not of type '%(type)s'.")}}
+    {{throw_type_error(method, "ExceptionMessages::ArgumentNotOfType(%(index)d, \"%(type)s\")" | format(index=argument.index, type=argument.idl_type))}}
     return;
   }
   {{argument.local_cpp_variable}}.push_back(V8{{argument.idl_type}}::ToImpl(v8::Local<v8::Object>::Cast(info[i])));
@@ -226,7 +226,7 @@ if (info[{{argument.index}}]->IsObject()) {
    Note: for variadic arguments, the type checking is done for each matched
    argument instead; see argument.is_variadic_wrapper_type code-path above. #}
 if (!{{argument.local_cpp_variable}}{% if argument.is_nullable %} && !IsUndefinedOrNull(info[{{argument.index}}]){% endif %}) {
-  {{throw_argument_error(method, argument, "parameter %(index)d is not of type '%(type)s'.")}}
+  {{throw_type_error(method, "ExceptionMessages::ArgumentNotOfType(%(index)d, \"%(type)s\")" | format(index=argument.index, type=argument.idl_type))}}
   return;
 }
 {% elif argument.enum_values %}

@@ -873,6 +873,10 @@ void Controller::Track(std::unique_ptr<TriggerContext> trigger_context,
   }
 }
 
+bool Controller::HasRunFirstCheck() const {
+  return tracking_ && has_run_first_check_;
+}
+
 bool Controller::Start(const GURL& deeplink_url,
                        std::unique_ptr<TriggerContext> trigger_context) {
   if (state_ != AutofillAssistantState::INACTIVE &&
@@ -1195,6 +1199,7 @@ void Controller::PerformDelayedShutdownIfNecessary() {
   if (delayed_shutdown_reason_ && script_domain_ != GetCurrentURL().host()) {
     Metrics::DropOutReason reason = delayed_shutdown_reason_.value();
     delayed_shutdown_reason_ = base::nullopt;
+    tracking_ = false;
     client_->Shutdown(reason);
   }
 }

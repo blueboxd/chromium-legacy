@@ -441,7 +441,6 @@ void TestRenderFrameHost::SimulateCommitProcessed(
         browser_interface_broker_receiver,
     bool same_document) {
   CHECK(params);
-  blink::mojom::CommitResult result = blink::mojom::CommitResult::Ok;
 
   bool did_commit = false;
   if (!same_document) {
@@ -450,13 +449,7 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     // is unique across all callback storages.
     {
       auto callback_it = commit_callback_.find(navigation_request);
-      if (callback_it != commit_callback_.end())
-        std::move(callback_it->second).Run(result);
-    }
-    {
-      auto callback_it =
-          navigation_client_commit_callback_.find(navigation_request);
-      if (callback_it != navigation_client_commit_callback_.end()) {
+      if (callback_it != commit_callback_.end()) {
         std::move(callback_it->second)
             .Run(std::move(params),
                  mojom::DidCommitProvisionalLoadInterfaceParams::New(
@@ -469,13 +462,7 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     }
     {
       auto callback_it = commit_failed_callback_.find(navigation_request);
-      if (callback_it != commit_failed_callback_.end())
-        std::move(callback_it->second).Run(result);
-    }
-    {
-      auto callback_it =
-          navigation_client_commit_failed_callback_.find(navigation_request);
-      if (callback_it != navigation_client_commit_failed_callback_.end()) {
+      if (callback_it != commit_failed_callback_.end()) {
         std::move(callback_it->second)
             .Run(std::move(params),
                  mojom::DidCommitProvisionalLoadInterfaceParams::New(
@@ -532,13 +519,9 @@ void TestRenderFrameHost::SendCommitNavigation(
     const base::UnguessableToken& devtools_navigation_token) {
   if (!navigation_request)
     return;
-  if (navigation_client) {
-    navigation_client_commit_callback_[navigation_request] =
-        BuildNavigationClientCommitNavigationCallback(navigation_request);
-  } else {
-    commit_callback_[navigation_request] =
-        BuildCommitNavigationCallback(navigation_request);
-  }
+  CHECK(navigation_client);
+  commit_callback_[navigation_request] =
+      BuildCommitNavigationCallback(navigation_request);
 }
 
 void TestRenderFrameHost::SendCommitFailedNavigation(
@@ -551,13 +534,9 @@ void TestRenderFrameHost::SendCommitFailedNavigation(
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories) {
-  if (navigation_client) {
-    navigation_client_commit_failed_callback_[navigation_request] =
-        BuildNavigationClientCommitFailedNavigationCallback(navigation_request);
-  } else {
-    commit_failed_callback_[navigation_request] =
-        BuildCommitFailedNavigationCallback(navigation_request);
-  }
+  CHECK(navigation_client);
+  commit_failed_callback_[navigation_request] =
+      BuildCommitFailedNavigationCallback(navigation_request);
 }
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

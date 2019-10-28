@@ -36,11 +36,9 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
@@ -73,12 +71,9 @@ class AbstractLineBox {
     if (!logical_size.block_size)
       return false;
     // Use |ClosestLeafChildForPoint| to check if there's any leaf child.
-    // TODO(yosin): We should use |NGInlineCursor| version of
-    // |ClosestLeafChildForPoint()|.
     const bool only_editable_leaves = false;
-    return To<NGPhysicalLineBoxFragment>(
-               cursor_.CurrentPaintFragment()->PhysicalFragment())
-        .ClosestLeafChildForPoint(PhysicalOffset(), only_editable_leaves);
+    return ClosestLeafChildForPoint(cursor_, PhysicalOffset(),
+                                    only_editable_leaves);
   }
 
   AbstractLineBox PreviousLine() const {
@@ -133,11 +128,8 @@ class AbstractLineBox {
           GetBlock().FlipForWritingMode(point), only_editable_leaves);
     }
     const PhysicalOffset local_physical_point = point - cursor_.CurrentOffset();
-    // TODO(yosin): We should use |NGInlineCursor| version of
-    // |ClosestLeafChildForPoint()|.
-    return To<NGPhysicalLineBoxFragment>(
-               cursor_.CurrentPaintFragment()->PhysicalFragment())
-        .ClosestLeafChildForPoint(local_physical_point, only_editable_leaves);
+    return ClosestLeafChildForPoint(cursor_, local_physical_point,
+                                    only_editable_leaves);
   }
 
  private:
@@ -183,6 +175,48 @@ class AbstractLineBox {
     const LayoutObject* const layout_object = cursor.CurrentLayoutObject();
     return layout_object && layout_object->GetNode() &&
            HasEditableStyle(*layout_object->GetNode());
+  }
+
+  static const LayoutObject* ClosestLeafChildForPoint(
+      const NGInlineCursor& line,
+      const PhysicalOffset& point,
+      bool only_editable_leaves) {
+    const PhysicalSize unit_square(LayoutUnit(1), LayoutUnit(1));
+    const LogicalOffset logical_point = point.ConvertToLogical(
+        line.CurrentStyle().GetWritingMode(), line.CurrentBaseDirection(),
+        line.CurrentSize(), unit_square);
+    const LayoutUnit inline_offset = logical_point.inline_offset;
+    const LayoutObject* closest_leaf_child = nullptr;
+    LayoutUnit closest_leaf_distance;
+    NGInlineCursor cursor(line);
+    for (cursor.MoveToNext(); cursor; cursor.MoveToNext()) {
+      if (!cursor.CurrentLayoutObject())
+        continue;
+      if (!cursor.IsInlineLeaf())
+        continue;
+      if (only_editable_leaves && !IsEditable(cursor))
+        continue;
+
+      const LogicalRect fragment_logical_rect =
+          cursor.CurrentRect().ConvertToLogical(
+              line.CurrentStyle().GetWritingMode(), line.CurrentBaseDirection(),
+              line.CurrentSize(), cursor.CurrentSize());
+      const LayoutUnit inline_min = fragment_logical_rect.offset.inline_offset;
+      const LayoutUnit inline_max = fragment_logical_rect.offset.inline_offset +
+                                    fragment_logical_rect.size.inline_size;
+      if (inline_offset >= inline_min && inline_offset < inline_max)
+        return cursor.CurrentLayoutObject();
+
+      const LayoutUnit distance =
+          inline_offset < inline_min
+              ? inline_min - inline_offset
+              : inline_offset - inline_max + LayoutUnit(1);
+      if (!closest_leaf_child || distance < closest_leaf_distance) {
+        closest_leaf_child = cursor.CurrentLayoutObject();
+        closest_leaf_distance = distance;
+      }
+    }
+    return closest_leaf_child;
   }
 
   enum class Type { kNull, kOldLayout, kLayoutNG };

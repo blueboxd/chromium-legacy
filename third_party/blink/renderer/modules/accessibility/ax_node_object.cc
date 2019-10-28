@@ -294,7 +294,7 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
   // <span> tags are inline tags and not meant to convey information if they
   // have no other ARIA information on them. If we don't ignore them, they may
   // emit signals expected to come from their parent.
-  if (node && IsHTMLSpanElement(node)) {
+  if (node && IsA<HTMLSpanElement>(node)) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
     return kIgnoreObject;
@@ -1025,8 +1025,9 @@ bool AXNodeObject::IsInPageLinkTarget() const {
     return anchor->HasName() || anchor->HasID();
   }
 
-  if (element->HasID() && (IsLandmarkRelated() || IsHTMLSpanElement(element) ||
-                           IsHTMLDivElement(element))) {
+  if (element->HasID() &&
+      (IsLandmarkRelated() || IsA<HTMLSpanElement>(element) ||
+       IsHTMLDivElement(element))) {
     return true;
   }
   return false;
@@ -2503,6 +2504,7 @@ bool AXNodeObject::CanHaveChildren() const {
     return false;  // Does not have a role, so check here
 
   switch (native_role_) {
+    case ax::mojom::Role::kButton:
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kImage:
     case ax::mojom::Role::kListBoxOption:
@@ -2533,6 +2535,7 @@ bool AXNodeObject::CanHaveChildren() const {
   switch (AriaRoleAttribute()) {
     case ax::mojom::Role::kImage:
       return false;
+    case ax::mojom::Role::kButton:
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kMath:  // role="math" is flat, unlike <math>

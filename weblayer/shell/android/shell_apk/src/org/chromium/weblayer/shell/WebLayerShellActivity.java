@@ -51,6 +51,8 @@ public class WebLayerShellActivity extends FragmentActivity {
     private static final String TAG = "WebLayerShell";
     private static final String KEY_MAIN_VIEW_ID = "mainViewId";
 
+    public static final String EXTRA_PROFILE_NAME = "EXTRA_PROFILE_NAME";
+
     private Profile mProfile;
     private BrowserFragmentController mBrowserFragmentController;
     private BrowserController mBrowserController;
@@ -255,8 +257,14 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         }
 
-        File profile = new File(getFilesDir(), "defaultProfile");
-        BrowserFragment fragment = WebLayer.createBrowserFragment(profile.getPath());
+        String profileName = getIntent().hasExtra(EXTRA_PROFILE_NAME)
+                ? getIntent().getStringExtra(EXTRA_PROFILE_NAME) : "DefaultProfile";
+        String profilePath = null;
+        if (!TextUtils.isEmpty(profileName)) {
+            profilePath = new File(getFilesDir(), profileName).getPath();
+        } // else create an in-memory Profile.
+
+        BrowserFragment fragment = WebLayer.createBrowserFragment(profilePath);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(mMainViewId, fragment);
 

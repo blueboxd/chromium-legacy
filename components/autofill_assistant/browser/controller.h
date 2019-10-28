@@ -72,6 +72,10 @@ class Controller : public ScriptExecutorDelegate,
   void Track(std::unique_ptr<TriggerContext> trigger_context,
              base::OnceCallback<void()> on_first_check_done);
 
+  // Returns true if we are in tracking mode and the first round of script
+  // checks has been completed.
+  bool HasRunFirstCheck() const;
+
   // Called when autofill assistant should start.
   //
   // This shows a UI, containing a progress bar, and executes the first

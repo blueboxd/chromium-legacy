@@ -16,6 +16,7 @@ class ComputedStyle;
 class LayoutBlockFlow;
 class LayoutInline;
 class LayoutObject;
+class LayoutUnit;
 class NGFragmentItem;
 class NGFragmentItems;
 class NGInlineBreakToken;
@@ -154,6 +155,10 @@ class CORE_EXPORT NGInlineCursor {
   // |CurrentTextEndOffset()|. It is error to call other than text.
   PhysicalRect CurrentLocalRect(unsigned start_offset,
                                 unsigned end_offset) const;
+
+  // Relative to fragment of the current position. It is error to call other
+  // than text.
+  LayoutUnit InlinePositionForOffset(unsigned offset) const;
 
   //
   // Functions to move the current position.

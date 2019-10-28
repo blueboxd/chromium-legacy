@@ -43,17 +43,19 @@ interface InterfaceFactory {
   //   from MediaPlayerRendererClient.
   // - |client_extension| is bound in MediaPlayerRendererClient, and receives
   //   calls from the MediaPlayerRenderer.
-  CreateMediaPlayerRenderer(MediaPlayerRendererClientExtension client_extension,
-                            Renderer& renderer,
-                            MediaPlayerRendererExtension& renderer_extension);
+  CreateMediaPlayerRenderer(
+      pending_remote<MediaPlayerRendererClientExtension> client_extension,
+      pending_receiver<Renderer> renderer,
+      pending_receiver<MediaPlayerRendererExtension> renderer_extension);
 
   [EnableIf=is_android]
   // Creates a FlingingRenderer (FlingingRendererFactory).
   // The |presentation_id| is used to find an already set-up RemotePlayback
   // session (see blink::RemotePlayback).
-  CreateFlingingRenderer(string presentation_id,
-                         FlingingRendererClientExtension client_extension,
-                         Renderer& renderer);
+  CreateFlingingRenderer(
+      string presentation_id,
+      pending_remote<FlingingRendererClientExtension> client_extension,
+      pending_receiver<Renderer> renderer);
 
   // Creates a CDM based on the |key_system| provided. A |key_system| is a
   // generic term for a decryption mechanism and/or content protection provider.

@@ -118,21 +118,17 @@ class CodeNode(object):
         return "gensym{}".format(cls._gensym_seq_id)
 
     def __init__(self,
-                 outer=None,
-                 prev=None,
                  template_text=None,
                  template_vars=None,
                  renderer=None):
-        assert outer is None or isinstance(outer, CodeNode)
-        assert prev is None or isinstance(prev, CodeNode)
         assert template_text is None or isinstance(template_text, str)
         assert template_vars is None or isinstance(template_vars, dict)
         assert renderer is None or isinstance(renderer, MakoRenderer)
 
         # The outer CodeNode or None iff this is a top-level node
-        self._outer = outer
+        self._outer = None
         # The previous CodeNode if this is a Sequence or None
-        self._prev = prev
+        self._prev = None
 
         # Mako's template text, bindings dict, and the renderer object
         self._template_text = template_text
@@ -196,6 +192,10 @@ class CodeNode(object):
         assert self._outer is None
         self._outer = outer
 
+    def reset_outer(self, outer):
+        assert isinstance(outer, CodeNode) or outer is None
+        self._outer = outer
+
     @property
     def prev(self):
         """Returns the previous CodeNode if this is a Sequence or None."""
@@ -207,7 +207,7 @@ class CodeNode(object):
         self._prev = prev
 
     def reset_prev(self, prev):
-        assert isinstance(prev, CodeNode)
+        assert isinstance(prev, CodeNode) or prev is None
         self._prev = prev
 
     @property
@@ -251,7 +251,8 @@ class CodeNode(object):
         return binds
 
     def add_template_var(self, name, value):
-        assert name not in self._template_vars
+        assert name not in self._template_vars, (
+            "Duplicated template variable binding: {}".format(name))
         if isinstance(value, CodeNode):
             value.set_outer(self)
         self._template_vars[name] = value
@@ -263,7 +264,11 @@ class CodeNode(object):
 
     @property
     def renderer(self):
-        return self._renderer or self.outer.renderer
+        # Always use the renderer of the root node in order not to mix renderers
+        # during rendering of a single code node tree.
+        if self.outer is not None:
+            return self.outer.renderer
+        return self._renderer
 
     @property
     def current_render_state(self):
@@ -365,7 +370,7 @@ class SequenceNode(CodeNode):
         template_text = CodeNode.format_template(
             """\
 % for node in {element_nodes}:
-${node | trim}\\
+${node}\\
 % if not loop.last:
 {separator}\\
 % endif
@@ -432,101 +437,17 @@ ${node | trim}\\
         node.set_outer(self)
         self._element_nodes.insert(index, node)
 
+    def remove(self, node):
+        assert node in self
 
-class SymbolNode(CodeNode):
-    """
-    Represents a code symbol such as a local variable of generated code.
-
-    Using a SymbolNode combined with SymbolScopeNode, SymbolDefinitionNode(s)
-    will be automatically inserted iff this symbol is referenced.
-    """
-
-    def __init__(self,
-                 name,
-                 template_text=None,
-                 definition_node_constructor=None):
-        """
-        Args:
-            name: The name of this code symbol.
-            template_text: Template text to be used to define the code symbol.
-            definition_node_constructor: A callable that creates and returns a
-                new definition node.  This SymbolNode will be passed as the
-                argument.
-                Either of |template_text| or |definition_node_constructor| must
-                be given.
-        """
-        assert isinstance(name, str) and name
-        assert (template_text is not None
-                or definition_node_constructor is not None)
-        assert template_text is None or definition_node_constructor is None
-        if template_text is not None:
-            assert isinstance(template_text, str)
-        if definition_node_constructor is not None:
-            assert callable(definition_node_constructor)
-
-        CodeNode.__init__(self)
-
-        self._name = name
-
-        if template_text is not None:
-
-            def constructor(symbol_node):
-                return SymbolDefinitionNode(
-                    symbol_node=symbol_node, template_text=template_text)
-
-            self._definition_node_constructor = constructor
-        else:
-            self._definition_node_constructor = definition_node_constructor
-
-    def _render(self, renderer, last_render_state):
-        for caller in renderer.callers:
-            assert isinstance(caller, CodeNode)
-            if caller.is_code_symbol_defined(self):
-                break
-            caller.on_undefined_code_symbol_found(self)
-
-        return self.name
-
-    @property
-    def name(self):
-        return self._name
-
-    def create_definition_node(self):
-        """Creates a new definition node."""
-        node = self._definition_node_constructor(self)
-        assert isinstance(node, SymbolDefinitionNode)
-        return node
-
-
-class SymbolDefinitionNode(CodeNode):
-    """
-    Represents a definition of a code symbol.
-
-    It's allowed to define the same code symbol multiple times, and most
-    upstream definition(s) are effective.
-    """
-
-    def __init__(self, symbol_node, template_text, template_vars=None):
-        assert isinstance(symbol_node, SymbolNode)
-
-        CodeNode.__init__(
-            self, template_text=template_text, template_vars=template_vars)
-
-        self._symbol_node = symbol_node
-
-    def _render(self, renderer, last_render_state):
-        if (self.upstream
-                and self.upstream.is_code_symbol_defined(self._symbol_node)):
-            return ""
-
-        return super(SymbolDefinitionNode, self)._render(
-            renderer=renderer, last_render_state=last_render_state)
-
-    def is_code_symbol_defined(self, symbol_node):
-        if symbol_node is self._symbol_node:
-            return True
-        return super(SymbolDefinitionNode,
-                     self).is_code_symbol_defined(symbol_node)
+        index = self._element_nodes.index(node)
+        if index + 1 < len(self._element_nodes):
+            next_node = self._element_nodes[index + 1]
+            prev_node = self._element_nodes[index - 1] if index != 0 else None
+            next_node.reset_prev(prev_node)
+        del self._element_nodes[index]
+        node.reset_outer(None)
+        node.reset_prev(None)
 
 
 class SymbolScopeNode(SequenceNode):
@@ -537,17 +458,29 @@ class SymbolScopeNode(SequenceNode):
     insert corresponding SymbolDefinitionNodes appropriately.
     """
 
-    def __init__(self, code_nodes=None, renderer=None):
+    def __init__(self,
+                 code_nodes=None,
+                 separator="\n",
+                 separator_last="",
+                 renderer=None):
         SequenceNode.__init__(
             self,
             code_nodes=code_nodes,
-            separator="\n",
-            separator_last="\n",
+            separator=separator,
+            separator_last=separator_last,
             renderer=renderer)
 
         self._registered_code_symbols = set()
 
     def _render(self, renderer, last_render_state):
+        duplicates = []
+        for element_node in self:
+            if (isinstance(element_node, SymbolDefinitionNode)
+                    and element_node.is_duplicated()):
+                duplicates.append(element_node)
+        for element_node in duplicates:
+            self.remove(element_node)
+
         for symbol_node in last_render_state.undefined_code_symbols:
             if (self.is_code_symbol_registered(symbol_node)
                     and not self.is_code_symbol_defined(symbol_node)):
@@ -634,6 +567,103 @@ class SymbolScopeNode(SequenceNode):
             self.register_code_symbol(symbol_node)
 
 
+class SymbolNode(CodeNode):
+    """
+    Represents a code symbol such as a local variable of generated code.
+
+    Using a SymbolNode combined with SymbolScopeNode, SymbolDefinitionNode(s)
+    will be automatically inserted iff this symbol is referenced.
+    """
+
+    def __init__(self, name, template_text=None, definition_constructor=None):
+        """
+        Args:
+            name: The name of this code symbol.
+            template_text: Template text to be used to define the code symbol.
+            definition_constructor: A callable that creates and returns a new
+                definition node.  This SymbolNode will be passed as the
+                argument.
+                Either of |template_text| or |definition_constructor| must be
+                given.
+        """
+        assert isinstance(name, str) and name
+        assert (template_text is not None
+                or definition_constructor is not None)
+        assert template_text is None or definition_constructor is None
+        if template_text is not None:
+            assert isinstance(template_text, str)
+        if definition_constructor is not None:
+            assert callable(definition_constructor)
+
+        CodeNode.__init__(self)
+
+        self._name = name
+
+        if template_text is not None:
+
+            def constructor(symbol_node):
+                return SymbolDefinitionNode(
+                    symbol_node=symbol_node,
+                    code_nodes=[TextNode(template_text)])
+
+            self._definition_constructor = constructor
+        else:
+            self._definition_constructor = definition_constructor
+
+    def _render(self, renderer, last_render_state):
+        for caller in renderer.callers:
+            assert isinstance(caller, CodeNode)
+            if caller.is_code_symbol_defined(self):
+                break
+            caller.on_undefined_code_symbol_found(self)
+
+        return self.name
+
+    @property
+    def name(self):
+        return self._name
+
+    def create_definition_node(self):
+        """Creates a new definition node."""
+        node = self._definition_constructor(self)
+        assert isinstance(node, SymbolDefinitionNode)
+        assert node.is_code_symbol_defined(self)
+        return node
+
+
+class SymbolDefinitionNode(SymbolScopeNode):
+    """
+    Represents a definition of a code symbol.
+
+    It's allowed to define the same code symbol multiple times, and most
+    upstream definition(s) are effective.
+    """
+
+    def __init__(self, symbol_node, code_nodes=None):
+        assert isinstance(symbol_node, SymbolNode)
+
+        SymbolScopeNode.__init__(self, code_nodes)
+
+        self._symbol_node = symbol_node
+
+    def _render(self, renderer, last_render_state):
+        if self.is_duplicated():
+            return ""
+
+        return super(SymbolDefinitionNode, self)._render(
+            renderer=renderer, last_render_state=last_render_state)
+
+    def is_code_symbol_defined(self, symbol_node):
+        if symbol_node is self._symbol_node:
+            return True
+        return super(SymbolDefinitionNode,
+                     self).is_code_symbol_defined(symbol_node)
+
+    def is_duplicated(self):
+        return (self.upstream is not None
+                and self.upstream.is_code_symbol_defined(self._symbol_node))
+
+
 class ConditionalNode(CodeNode):
     """
     This is the base class of code nodes that directly contain conditional
@@ -681,8 +711,8 @@ class ConditionalExitNode(ConditionalNode):
         template_text = CodeNode.format_template(
             """\
 if (${{{conditional}}}) {{
-  ${{{body} | trim}}
-}}
+  ${{{body}}}
+}}\\
 """, **gensyms)
         template_vars = {
             gensyms["conditional"]: cond,
@@ -781,10 +811,10 @@ class FunctionDefinitionNode(CodeNode):
 
         template_text = CodeNode.format_template(
             """\
-${{{comment} | trim}}
+${{{comment}}}
 ${{{return_type}}} ${{{name}}}(${{{arg_decls}}}) {{
-  ${{{body} | trim}}
-}}
+  ${{{body}}}
+}}\\
 """, **gensyms)
         template_vars = {
             gensyms["name"]: name,
